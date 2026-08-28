@@ -1,5 +1,17 @@
 ## Current
 
+- [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
+  and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
+  are `proposed` and awaiting review: port the exam-conversion domain
+  (DigiExam/Word/PDF parsing, authoring IR, answer-key enrichment, Exam.net
+  QTI/PDF/DOCX export) into Skriptoteket by incremental strangler, narrowing
+  ADR-SKRIPT-0066 so heavy OCR and STT stay in Sir Convert-a-Lot behind a
+  generic extraction contract. Prerequisites executing first in
+  sir-convert-a-lot: `TASK-SIRCON-REP-0029` (QTI export repair to the
+  empirically confirmed Exam.net contract) and `TASK-SIRCON-08-01-07`
+  (remote answer-key model profiles with a 5M token/day lease). Planning
+  record: sir-convert-a-lot retained session
+  `01a048d5-69f7-7394-93dd-8ff91af608cd`.
 - [TASK-SKRIPT-REP-0032](docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md)
   has a verified option-A implementation for importable production web/worker
   workload declarations and adapters plus the separate required cleanup gate.

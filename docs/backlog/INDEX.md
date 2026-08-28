@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | epic=38 | story=318 | task=0 | review=136
+- total | epic=39 | story=318 | task=0 | review=136
 - open | epic=17 | story=56 | task=0
 
 ## Lookup
@@ -47,6 +47,7 @@
 - epic | EPIC-SKRIPT-36 | [Klassrumskartan scoped sharing and authenticated import](epics/epic-skript-36-klassrumskartan-scoped-sharing-and-authenticated-import.md)
 - epic | EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md)
 - epic | EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md)
+- epic | EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
 - story | ST-01-01 | [Profession → category navigation](stories/story-01-01-profession-category-navigation.md)
 - story | ST-02-01 | [User model and identity service (MVP, testable)](stories/story-02-01-user-model-and-identity-service.md)
 - story | ST-02-03 | [Self-registration](stories/story-02-03-self-registration.md)

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f945cb4517469e4d02d6354cbf2bb9a882517617084e66eac47e4ff83b7ff700",
+  "source_set_digest": "8f37db271dfd2c484c4c535cada1e592f29ae92ad71a629de59ed2a990cd3692",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -541,6 +541,28 @@
         "decided_at": "2026-08-01T01:02:48+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": ".orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md"
+      }
+    },
+    {
+      "id": "EPIC-SKRIPT-39",
+      "type": "epic",
+      "title": "Skriptoteket-owned exam conversion",
+      "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md",
+      "status": "proposed",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": [
+          "ADR-SKRIPT-0090"
+        ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
@@ -6326,6 +6348,25 @@
       ]
     },
     {
+      "id": "ADR-SKRIPT-0090",
+      "type": "adr",
+      "title": "Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction",
+      "path": "docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md",
+      "status": "proposed",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "governing": [
+          "EPIC-SKRIPT-39",
+          "ADR-SKRIPT-0066"
+        ]
+      }
+    },
+    {
       "id": "REF-SKRIPT-DECISIONS-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25",
       "type": "reference",
       "title": "Klassrumskartan smart assignment v1 decision memo (2026-03-25)",
@@ -9812,6 +9853,20 @@
         "path": "docs/decisions/adr-skript-0089-tool-slug-lifecycle-draft-mutable-publish-final-post-publish-immutable.md",
         "governing": [],
         "governed_contracts": [],
+        "supersedes": [],
+        "superseded_by": null
+      },
+      {
+        "id": "ADR-SKRIPT-0090",
+        "title": "Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction",
+        "status": "proposed",
+        "path": "docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md",
+        "governing": [
+          "EPIC-SKRIPT-39"
+        ],
+        "governed_contracts": [
+          "EPIC-SKRIPT-39"
+        ],
         "supersedes": [],
         "superseded_by": null
       }
