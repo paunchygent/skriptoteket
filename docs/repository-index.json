@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8f37db271dfd2c484c4c535cada1e592f29ae92ad71a629de59ed2a990cd3692",
+  "source_set_digest": "dcccab67a17c6852db10632f6d42f6e5e4953b575f35ccc05159abaeb65a86d8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -548,7 +548,7 @@
       "type": "epic",
       "title": "Skriptoteket-owned exam conversion",
       "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md",
-      "status": "proposed",
+      "status": "active",
       "owners": [
         {
           "kind": "service",
@@ -6352,7 +6352,7 @@
       "type": "adr",
       "title": "Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction",
       "path": "docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md",
-      "status": "proposed",
+      "status": "accepted",
       "owners": [
         {
           "kind": "service",
@@ -9859,7 +9859,7 @@
       {
         "id": "ADR-SKRIPT-0090",
         "title": "Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction",
-        "status": "proposed",
+        "status": "accepted",
         "path": "docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md",
         "governing": [
           "EPIC-SKRIPT-39"
@@ -9997,6 +9997,13 @@
         "title": "Shared governed development system cutover",
         "status": "done",
         "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
+      },
+      {
+        "id": "EPIC-SKRIPT-39",
+        "type": "epic",
+        "title": "Skriptoteket-owned exam conversion",
+        "status": "active",
+        "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md"
       },
       {
         "id": "ST-SKRIPT-02-02",

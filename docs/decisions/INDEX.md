@@ -89,7 +89,7 @@
 - `ADR-SKRIPT-0087` | [Exam Converter durable correction sessions with stateless apply](adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md) | accepted | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0088` | [Cloudflare R2 storage boundary for Mina filer and FileRefs](adr-skript-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md) | proposed | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0089` | [Tool slug lifecycle (draft-mutable, publish-final, post-publish immutable)](adr-skript-0089-tool-slug-lifecycle-draft-mutable-publish-final-post-publish-immutable.md) | accepted | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
-- `ADR-SKRIPT-0090` | [Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction](adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md) | proposed | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39 | supersedes=- | superseded_by=-
+- `ADR-SKRIPT-0090` | [Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction](adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md) | accepted | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39 | supersedes=- | superseded_by=-
 
 ## Historical Coverage Debt
 
@@ -111,6 +111,7 @@
 - `EPIC-SKRIPT-35` | [Launch SEO and search indexing readiness](../backlog/epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | epic | active
 - `EPIC-SKRIPT-37` | [Backlog product-direction inventory and app surface realignment](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | epic | active
 - `EPIC-SKRIPT-38` | [Shared governed development system cutover](../backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md) | epic | done
+- `EPIC-SKRIPT-39` | [Skriptoteket-owned exam conversion](../backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | epic | active
 - `ST-SKRIPT-02-02` | [Admin nomination and superuser approval](../backlog/stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | story | ready
 - `ST-SKRIPT-02-06` | [Swedish school domain allowlist for registration](../backlog/stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | story | ready
 - `ST-SKRIPT-06-16` | [Backend SRP refactor of god modules](../backlog/stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | story | ready

@@ -2,7 +2,8 @@
 
 - [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
   and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
-  are `proposed` and awaiting review: port the exam-conversion domain
+  are approved (`active`/`accepted`) through `agent-planning:user-closure-gate`
+  on 2026-08-29: port the exam-conversion domain
   (DigiExam/Word/PDF parsing, authoring IR, answer-key enrichment, Exam.net
   QTI/PDF/DOCX export) into Skriptoteket by incremental strangler, narrowing
   ADR-SKRIPT-0066 so heavy OCR and STT stay in Sir Convert-a-Lot behind a

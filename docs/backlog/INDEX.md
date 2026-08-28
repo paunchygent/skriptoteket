@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=39 | story=318 | task=0 | review=136
-- open | epic=17 | story=56 | task=0
+- open | epic=18 | story=56 | task=0
 
 ## Lookup
 
@@ -524,6 +524,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=none | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0

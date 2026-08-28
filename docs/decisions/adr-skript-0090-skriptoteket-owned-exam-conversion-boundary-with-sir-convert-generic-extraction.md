@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-28'
-status: proposed
+status: accepted
 deciders:
 - user-lead
 links:
