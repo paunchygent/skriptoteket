@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Skriptoteket session file cleanup hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

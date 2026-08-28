@@ -4,8 +4,8 @@ id: RUN-SKRIPT-runbook-home-server-operations-PART-02
 title: 'Runbook: Home Server Operations — part 02'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: RUN-SKRIPT-runbook-home-server-operations
 part: 2
@@ -53,7 +53,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml <c
 ### 2) Run CLI inside web container (compose)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
 
-### 3) Direct docker exec (used by systemd timers)
+### 3) Manual direct-container CLI (not used by systemd timers)
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
 ```
 
@@ -139,9 +139,16 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up
 ### Disk Space / Session Cleanup
 
 Session files are stored in `ARTIFACTS_ROOT/sessions/` (prod: `/app/.artifacts/sessions/`). An hourly systemd timer
-runs TTL cleanup automatically.
+runs TTL cleanup through the tracked idle-safe wrapper. The current source and
+installer contract are in
+[Reference: Home Server Cleanup Timers](../reference/ref-skript-general-reference-home-server-cleanup-timers-reference-home-server-cleanup-timers.md).
+
+From the repository root, install or update the tracked wrapper and current
+unit sources without changing either timer's enabled or active state:
 
 ```bash
+ssh hemma "cd ~/apps/skriptoteket && sudo bash scripts/install_hemma_cleanup_units.sh"
+
 ### Check timer status
 ssh hemma "sudo systemctl list-timers | grep skriptoteket"
 
@@ -152,12 +159,15 @@ ssh hemma "sudo journalctl -u skriptoteket-session-files-cleanup.service -n 50 -
 ssh hemma "sudo systemctl start skriptoteket-session-files-cleanup.service"
 ```
 
-Manual cleanup commands:
+When `skriptoteket-web` is running, a successful service run means TTL cleanup
+completed. When it is intentionally absent or stopped, the service succeeds and
+the journal records `Cleanup skipped: state=absent` or
+`Cleanup skipped: state=stopped`. Docker or cleanup-command failures remain
+non-zero and retain their diagnostic in the journal.
+
+For an explicit destructive operation outside the scheduled cleanup path:
 
 ```bash
-### TTL-based cleanup (same as timer runs)
-ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli cleanup-session-files"
-
 ### DANGER: Delete ALL session files (requires --yes)
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli clear-all-session-files --yes"
 ```
@@ -188,19 +198,19 @@ ssh hemma \"sudo docker exec -T skriptoteket-web sh -lc 'cat /app/.artifacts/llm
 
 Sandbox preview snapshots are stored in PostgreSQL with a TTL (24h). Cleanup is scheduled server-side via systemd.
 
-Unit file definitions are in [ref-home-server-cleanup-timers.md](../reference/ref-home-server-cleanup-timers.md) (or inspect on host with
-`sudo systemctl cat skriptoteket-sandbox-snapshots-cleanup.service`).
+The tracked current units and installer are in
+[Reference: Home Server Cleanup Timers](../reference/ref-skript-general-reference-home-server-cleanup-timers-reference-home-server-cleanup-timers.md).
+Inspect deployed bytes with
+`sudo systemctl cat skriptoteket-sandbox-snapshots-cleanup.service`.
 
-Enable and verify:
+Install or update from the repository root without changing timer state, then
+inspect its status and journal:
 
 ```bash
-ssh hemma "sudo systemctl daemon-reload"
-ssh hemma "sudo systemctl enable --now skriptoteket-sandbox-snapshots-cleanup.timer"
+ssh hemma "cd ~/apps/skriptoteket && sudo bash scripts/install_hemma_cleanup_units.sh"
 ssh hemma "sudo systemctl list-timers | grep skriptoteket-sandbox-snapshots"
 ssh hemma "sudo journalctl -u skriptoteket-sandbox-snapshots-cleanup.service -n 50 --no-pager"
 ```
-
-Live note (hemma): timer is enabled and runs hourly; see `systemctl status skriptoteket-sandbox-snapshots-cleanup.timer`.
 
 Manual trigger:
 
@@ -208,27 +218,11 @@ Manual trigger:
 ssh hemma "sudo systemctl start skriptoteket-sandbox-snapshots-cleanup.service"
 ```
 
-### Login Events Cleanup (DB)
-
-Login event audit rows are retained for 90 days. Cleanup is scheduled server-side via systemd.
-
-Unit file definitions are in [ref-home-server-cleanup-timers.md](../reference/ref-home-server-cleanup-timers.md) (or inspect on host with
-`sudo systemctl cat skriptoteket-login-events-cleanup.service`).
-
-Enable and verify:
-
-```bash
-ssh hemma "sudo systemctl daemon-reload"
-ssh hemma "sudo systemctl enable --now skriptoteket-login-events-cleanup.timer"
-ssh hemma "sudo systemctl list-timers | grep skriptoteket-login-events"
-ssh hemma "sudo journalctl -u skriptoteket-login-events-cleanup.service -n 50 --no-pager"
-```
-
-Manual trigger:
-
-```bash
-ssh hemma "sudo systemctl start skriptoteket-login-events-cleanup.service"
-```
+When `skriptoteket-web` is running, a successful service run means snapshot
+cleanup completed. When it is intentionally absent or stopped, the service
+succeeds and records `Cleanup skipped: state=absent` or
+`Cleanup skipped: state=stopped`. Docker or cleanup-command failures remain
+non-zero and retain their diagnostic in the journal.
 
 ### SSL Certificate
 
