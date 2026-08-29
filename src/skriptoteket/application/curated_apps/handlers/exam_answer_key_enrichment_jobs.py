@@ -3,9 +3,12 @@
 Purpose:
     Complete one claimed enrichment job: reserve the daily token lease in the
     same Unit of Work transaction that records the enrichment attempt, call
-    the Luna profile once per unkeyed item, persist the machine-proposed
-    overlay, and finish the owning conversion with unchanged readiness
-    semantics. The web request never blocks on any of this.
+    the Luna profile once per unkeyed item with at most one GLM failover
+    attempt per item after a transient outage (a second lease from the same
+    daily counter), persist the machine-proposed overlay, and finish the
+    owning conversion with unchanged readiness semantics. Lease exhaustion
+    fail-closes without any provider call; it never routes to the failover.
+    The web request never blocks on any of this.
 
 Relationships:
     Claimed by the execution worker (``workers.exam_answer_key_enrichment``);
@@ -51,8 +54,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_comple
     plan_answer_key_enrichment,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
+    StructuredLLMResponse,
+    allows_answer_key_provider_failover,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
     AnswerKeyTokenLease,
@@ -145,32 +151,30 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 teacher_message=_MANUAL_COMPLETION_MESSAGE,
                 last_error=f"enrichment_plan_{plan.state.value}",
             )
-        profile = self._provider_selector.select_profile()
+        route = self._provider_selector.select_route()
         candidates = plan_answer_key_candidates(
             job_id=str(job.conversion_job_id),
             items=plan.unkeyed_items,
-            profile=profile,
+            profile=route.primary,
         )
 
         try:
             job, leases_by_item = await self._record_attempt_and_reserve(
                 job=job,
                 candidates=candidates,
-                profile=profile,
+                profile=route.primary,
             )
         except AnswerKeyTokenLeaseRefused as refusal:
             return await self._fail(
                 job=job,
-                teacher_message=(
-                    "Dagens AI-budget för facitförslag är förbrukad. Försök igen efter "
-                    f"{refusal.resets_at:%Y-%m-%d %H:%M} UTC."
-                ),
+                teacher_message=_lease_exhausted_message(refusal),
                 last_error="daily_token_lease_exhausted",
             )
 
-        proposals, failure = await self._collect_proposals(
+        proposals, serving_profile, failure = await self._collect_proposals(
+            job=job,
             candidates=candidates,
-            profile=profile,
+            route=route,
             leases_by_item=leases_by_item,
         )
         if failure is not None:
@@ -206,7 +210,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         return await self._succeed(
             job=job,
             overlay=overlay,
-            profile=profile,
+            profile=serving_profile,
             source_file_sha256=source_file_sha256,
             source_ir_sha256=source_ir_sha256,
         )
@@ -273,54 +277,128 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     async def _collect_proposals(
         self,
         *,
+        job: ExamAnswerKeyEnrichmentJob,
         candidates: tuple[AnswerKeyCandidatePlan, ...],
-        profile: StructuredLLMProviderProfile,
+        route: AnswerKeyProviderRoute,
         leases_by_item: dict[str, AnswerKeyTokenLease],
     ) -> tuple[
         tuple[tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey], ...],
+        StructuredLLMProviderProfile,
         "_EnrichmentFailure | None",
     ]:
         proposals: list[tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey]] = []
+        serving_profile = route.primary
         for candidate in candidates:
-            try:
-                response = await self._provider.complete_structured(
-                    request=candidate.request,
-                    profile=profile,
-                )
-            except StructuredLLMProviderError as exc:
-                logger.warning(
-                    "Answer-key provider attempt failed",
-                    extra={
-                        "item_id": candidate.item.item_id,
-                        "provider_id": exc.provider_id,
-                        "failure_code": exc.failure_code.value,
-                        "status_code": exc.status_code,
-                    },
-                )
-                return (), _EnrichmentFailure(
-                    teacher_message=_PROVIDER_FAILURE_MESSAGE,
-                    last_error=exc.failure_code.value,
-                )
-            usable_tokens = response.usage.usable_total_tokens
+            attempt = await self._attempt_with_failover(
+                job=job,
+                candidate=candidate,
+                route=route,
+                primary_lease=leases_by_item[candidate.item.item_id],
+            )
+            if isinstance(attempt, _EnrichmentFailure):
+                return (), serving_profile, attempt
+            if attempt.profile is route.failover:
+                serving_profile = route.failover
+            usable_tokens = attempt.response.usage.usable_total_tokens
             if usable_tokens is not None:
                 now = self._clock.now()
                 async with self._uow:
                     await self._leases.reconcile(
-                        lease_id=leases_by_item[candidate.item.item_id].lease_id,
+                        lease_id=attempt.lease.lease_id,
                         actual_tokens=usable_tokens,
                         now=now,
                     )
             key = manual_answer_key_from_model_content(
                 item=candidate.item,
-                content=response.content,
+                content=attempt.response.content,
             )
             if key is None:
-                return (), _EnrichmentFailure(
-                    teacher_message=_MANUAL_COMPLETION_MESSAGE,
-                    last_error="llm_output_invalid",
+                return (
+                    (),
+                    serving_profile,
+                    _EnrichmentFailure(
+                        teacher_message=_MANUAL_COMPLETION_MESSAGE,
+                        last_error="llm_output_invalid",
+                    ),
                 )
             proposals.append((candidate.item, key))
-        return tuple(proposals), None
+        return tuple(proposals), serving_profile, None
+
+    async def _attempt_with_failover(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        candidate: AnswerKeyCandidatePlan,
+        route: AnswerKeyProviderRoute,
+        primary_lease: AnswerKeyTokenLease,
+    ) -> "_ProviderAttempt | _EnrichmentFailure":
+        """Call the primary once; fail over exactly once on a transient outage."""
+
+        try:
+            response = await self._provider.complete_structured(
+                request=candidate.request,
+                profile=route.primary,
+            )
+        except StructuredLLMProviderError as exc:
+            _log_provider_failure(item_id=candidate.item.item_id, error=exc)
+            if not allows_answer_key_provider_failover(exc):
+                return _EnrichmentFailure(
+                    teacher_message=_PROVIDER_FAILURE_MESSAGE,
+                    last_error=exc.failure_code.value,
+                )
+            return await self._attempt_failover(job=job, item=candidate.item, route=route)
+        return _ProviderAttempt(response=response, lease=primary_lease, profile=route.primary)
+
+    async def _attempt_failover(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        item: DigiExamIrItem,
+        route: AnswerKeyProviderRoute,
+    ) -> "_ProviderAttempt | _EnrichmentFailure":
+        """Attempt the failover profile once with its own second lease.
+
+        The second reservation draws from the same daily counter. A refusal
+        here is the exhaustion hard stop: the failover provider is never
+        called and the job fails closed. The primary lease stays charged
+        either way; leases are never refunded.
+        """
+
+        candidate = plan_answer_key_candidates(
+            job_id=str(job.conversion_job_id),
+            items=(item,),
+            profile=route.failover,
+        )[0]
+        now = self._clock.now()
+        try:
+            async with self._uow:
+                lease = await self._leases.reserve(
+                    now=now,
+                    requested_tokens=requested_lease_tokens(
+                        estimated_input_tokens=candidate.request.estimated_input_tokens,
+                        max_output_tokens=candidate.request.max_output_tokens,
+                    ),
+                    job_id=job.id,
+                    item_id=item.item_id,
+                    provider_profile_id=route.failover.provider_id,
+                )
+        except AnswerKeyTokenLeaseRefused as refusal:
+            return _EnrichmentFailure(
+                teacher_message=_lease_exhausted_message(refusal),
+                last_error="daily_token_lease_exhausted",
+            )
+        try:
+            response = await self._provider.complete_structured(
+                request=candidate.request,
+                profile=route.failover,
+            )
+        except StructuredLLMProviderError as exc:
+            _log_provider_failure(item_id=item.item_id, error=exc)
+            return _EnrichmentFailure(
+                teacher_message=_PROVIDER_FAILURE_MESSAGE,
+                last_error=exc.failure_code.value,
+            )
+        return _ProviderAttempt(response=response, lease=lease, profile=route.failover)
 
     async def _succeed(
         self,
@@ -421,3 +499,31 @@ class _EnrichmentFailure:
 
     teacher_message: str
     last_error: str
+
+
+@dataclass(frozen=True)
+class _ProviderAttempt:
+    """One successful provider attempt with the lease it must reconcile."""
+
+    response: StructuredLLMResponse
+    lease: AnswerKeyTokenLease
+    profile: StructuredLLMProviderProfile
+
+
+def _lease_exhausted_message(refusal: AnswerKeyTokenLeaseRefused) -> str:
+    return (
+        "Dagens AI-budget för facitförslag är förbrukad. Försök igen efter "
+        f"{refusal.resets_at:%Y-%m-%d %H:%M} UTC."
+    )
+
+
+def _log_provider_failure(*, item_id: str, error: StructuredLLMProviderError) -> None:
+    logger.warning(
+        "Answer-key provider attempt failed",
+        extra={
+            "item_id": item_id,
+            "provider_id": error.provider_id,
+            "failure_code": error.failure_code.value,
+            "status_code": error.status_code,
+        },
+    )
