@@ -89,7 +89,7 @@
 - `ADR-SKRIPT-0087` | [Exam Converter durable correction sessions with stateless apply](adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md) | accepted | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0088` | [Cloudflare R2 storage boundary for Mina filer and FileRefs](adr-skript-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md) | proposed | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0089` | [Tool slug lifecycle (draft-mutable, publish-final, post-publish immutable)](adr-skript-0089-tool-slug-lifecycle-draft-mutable-publish-final-post-publish-immutable.md) | accepted | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
-- `ADR-SKRIPT-0090` | [Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction](adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md) | accepted | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39 | supersedes=- | superseded_by=-
+- `ADR-SKRIPT-0090` | [Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction](adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md) | accepted | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39,ST-SKRIPT-39-01 | supersedes=- | superseded_by=-
 
 ## Historical Coverage Debt
 

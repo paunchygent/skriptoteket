@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "dcccab67a17c6852db10632f6d42f6e5e4953b575f35ccc05159abaeb65a86d8",
+  "source_set_digest": "15192a5545636bf80704e673a605c6abc840bb66a3fe0a79e1bbc58f359afd1a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2104,6 +2104,29 @@
       }
     },
     {
+      "id": "ST-SKRIPT-39-01",
+      "type": "story",
+      "title": "Walking skeleton for Skriptoteket-owned exam conversion",
+      "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": [
+          "ADR-SKRIPT-0090"
+        ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-02-06-01",
       "type": "task",
       "title": "Swedish school domain allowlist for registration",
@@ -4074,6 +4097,25 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-01-01",
+      "type": "task",
+      "title": "Prove the in-process dxe to Exam.net bundle walking skeleton",
+      "path": "docs/backlog/tasks/task-skript-39-01-01-prove-the-in-process-dxe-to-exam-net-bundle-walking-skeleton.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -9865,7 +9907,8 @@
           "EPIC-SKRIPT-39"
         ],
         "governed_contracts": [
-          "EPIC-SKRIPT-39"
+          "EPIC-SKRIPT-39",
+          "ST-SKRIPT-39-01"
         ],
         "supersedes": [],
         "superseded_by": null
