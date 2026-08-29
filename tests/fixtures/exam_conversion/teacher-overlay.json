@@ -1,0 +1,99 @@
+{
+  "items": [
+    {
+      "item_id": "item-002",
+      "item_type": "single_choice",
+      "manual_answer_key": {
+        "correct_alternative_ids": [
+          1
+        ],
+        "kind": "choice"
+      },
+      "sequence": 2,
+      "source_item_fingerprint": "sha256:c2f5a1e6b78503b08be7b9e028ef95d86df6a000479bc8a3d6983f3aa3746277"
+    },
+    {
+      "item_id": "item-003",
+      "item_type": "single_choice",
+      "manual_answer_key": {
+        "correct_alternative_ids": [
+          1
+        ],
+        "kind": "choice"
+      },
+      "sequence": 3,
+      "source_item_fingerprint": "sha256:e0da0a605c93b9dd5885a34d000636a8f1170e249f58f7d8f4b49d0579f09df7"
+    },
+    {
+      "item_id": "item-004",
+      "item_type": "multiple_response",
+      "manual_answer_key": {
+        "correct_alternative_ids": [
+          1
+        ],
+        "kind": "choice"
+      },
+      "sequence": 4,
+      "source_item_fingerprint": "sha256:e40830358d05110062575a07b30620ef88e44cf7e0a426b2f8b44b7a8f2a2db9"
+    },
+    {
+      "item_id": "item-005",
+      "item_type": "multiple_response",
+      "manual_answer_key": {
+        "correct_alternative_ids": [
+          1
+        ],
+        "kind": "choice"
+      },
+      "sequence": 5,
+      "source_item_fingerprint": "sha256:e29b1c57d51fb05106f613d8d011f882aecdcd5358ef5e573ac91f8f62bb8518"
+    },
+    {
+      "item_id": "item-006",
+      "item_type": "multiple_response",
+      "manual_answer_key": {
+        "correct_alternative_ids": [
+          1
+        ],
+        "kind": "choice"
+      },
+      "sequence": 6,
+      "source_item_fingerprint": "sha256:a4121f64582abd39999a63b4a5225d95eefcf3a1c671b36ca75b2a1f07644fe5"
+    },
+    {
+      "item_id": "item-007",
+      "item_type": "gap_fill",
+      "manual_answer_key": {
+        "gap_answers": [
+          {
+            "accepted_values": [
+              "svar"
+            ],
+            "gap_id": "84ef31ef-d257-4bb2-9e27-d8bcba4ac1e1"
+          },
+          {
+            "accepted_values": [
+              "svar"
+            ],
+            "gap_id": "21d786a3-2f14-49f1-8ffc-388f06d9a20c"
+          },
+          {
+            "accepted_values": [
+              "svar"
+            ],
+            "gap_id": "b011fc52-c9b2-4d74-aa78-e94035e0599b"
+          }
+        ],
+        "kind": "gap_fill"
+      },
+      "sequence": 7,
+      "source_item_fingerprint": "sha256:5ac21291641d1bb350a6c6f7fb3efd42cb2d252a02a09599bedd14d1fe1c8125"
+    }
+  ],
+  "schema_version": "digiexam_ingestion_overlay_v2",
+  "source_binding": {
+    "source_file_sha256": "sha256:9a24b363b0066499ee574b118764f7f93361d7528f13ea9dc013ec06e24aaff5",
+    "source_ir_schema_version": "digiexam_intermediate_exam_v3",
+    "source_ir_sha256": "sha256:f6d205ae2cadab52acf6613a786a843958d819565bf183988481e5ca647d435c"
+  }
+}

@@ -135,6 +135,11 @@ class Settings(BaseSettings):
         "gpu_required", "gpu_prefer", "cpu_only"
     ] = "cpu_only"
 
+    # Exam Converter conversion lane (EPIC-SKRIPT-39 / ADR-SKRIPT-0090):
+    # operator-facing switch between the Sir Convert-backed conversion path
+    # and the in-process dxe -> Exam.net bundle walking skeleton.
+    EXAM_CONVERTER_CONVERSION_LANE: Literal["sir_convert", "in_process"] = "sir_convert"
+
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000
     VAULT_MAX_TOTAL_BYTES: int = 200_000_000

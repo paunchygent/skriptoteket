@@ -1,5 +1,37 @@
 ## Current
 
+- [TASK-SKRIPT-39-01-01](docs/backlog/tasks/task-skript-39-01-01-prove-the-in-process-dxe-to-exam-net-bundle-walking-skeleton.md)
+  has an implemented, independently reviewed walking skeleton (branch
+  `codex/task-skript-39-01-01`): the exam-conversion domain chain
+  ported from sir-convert-a-lot `41be61a6` under
+  `src/skriptoteket/domain/curated_apps/exam_conversion/`, QTI writer /
+  WeasyPrint / artifact-store seams under
+  `infrastructure/curated_apps/apps/conversion_hub/`, the operator lane switch
+  `EXAM_CONVERTER_CONVERSION_LANE` (default `sir_convert`), and the
+  authenticated route `POST /api/v1/apps/documents.conversion_hub/exam-converter/conversions`
+  served through the existing job-status and artifact-download surface via a
+  `local-exam:` producer id. Parity proof: the in-process QTI package and
+  Exam.net PDF are byte-identical to the Sir Convert reference outputs for
+  fixture `1772718003-test-samma-prov-i-digiexam.dxe` with a deterministic
+  teacher overlay (QTI sha256
+  `f36a4ae342a4a734a9f8126b694101517a46b7b3751d1b19ece72484a5328698`, empty
+  accepted-difference list). Verification 2026-08-29: 96 new/ported tests green
+  (`pdm run pytest tests/unit/domain/curated_apps/exam_conversion tests/unit/application/curated_apps/test_exam_conversion_parity.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/web/exam_converter -q`), `pdm run lint` green, `pdm run typecheck`
+  at the pre-existing 10-error `script_bank` baseline, full `tests/unit`
+  failure set identical to the clean tree. Live check: with the dev db up,
+  migrations applied, and `pdm run dev` running under
+  `EXAM_CONVERTER_CONVERSION_LANE=in_process`, the backend boots the full DI
+  container, exposes the new route in `/openapi.json`, and returns 401 for an
+  unauthenticated conversion POST; the authenticated HuleEdu browser-session
+  ceremony proof remains open and the task stays `in_progress` until it is
+  recorded here. Independent review 2026-08-29 (retained at the session
+  scratchpad `reviews/TASK-SKRIPT-39-01-01-review.md`): the reviewer
+  regenerated the Sir Convert reference from `41be61a6` and reproduced byte
+  equality for the QTI package and the PDF, confirmed the full validator set
+  and all named Exam.net contract obligations, and requested two changes,
+  both resolved at integration — the volatile `CHECKPOINT.md` state map was
+  excluded from the merge, and the conversion route now reads uploads through
+  the shared `read_upload_files` size caps.
 - [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
   and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
   are approved (`active`/`accepted`) through `agent-planning:user-closure-gate`
@@ -79,8 +111,8 @@
 
 ## Facts
 
-- Session Date: 2026-08-28
-- Last Refreshed: 2026-08-28
+- Session Date: 2026-08-29
+- Last Refreshed: 2026-08-29
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with
   `pdm run python -m scripts.historical_docs.validate_historical_docs`.
