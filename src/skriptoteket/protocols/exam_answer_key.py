@@ -10,8 +10,8 @@ Relationships:
     Implemented under ``infrastructure.llm.openai`` and
     ``infrastructure.repositories``; consumed by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs`` and
-    the execution worker. The provider-selection protocol is the seam
-    TASK-SKRIPT-39-02-02 extends with failover; it stays Luna-only here.
+    the execution worker. The provider-selection protocol yields the ordered
+    Luna-primary/GLM-failover route decided by TASK-SKRIPT-39-02-02.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyProposedOverlay,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
     StructuredLLMResponse,
@@ -33,6 +34,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
     AnswerKeyTokenLease,
     AnswerKeyTokenLeaseDayUsage,
 )
+from skriptoteket.domain.identity.models import User
 
 
 class AnswerKeyStructuredProviderProtocol(Protocol):
@@ -47,13 +49,9 @@ class AnswerKeyStructuredProviderProtocol(Protocol):
 
 
 class AnswerKeyProviderSelectorProtocol(Protocol):
-    """Select the provider profile for one enrichment attempt.
+    """Select the ordered primary/failover provider route for one job."""
 
-    TASK-SKRIPT-39-02-01 ships a Luna-only selection; the failover order in
-    TASK-SKRIPT-39-02-02 extends this seam without touching callers.
-    """
-
-    def select_profile(self) -> StructuredLLMProviderProfile: ...
+    def select_route(self) -> AnswerKeyProviderRoute: ...
 
 
 class AnswerKeyTokenLeaseRepositoryProtocol(Protocol):
@@ -83,6 +81,12 @@ class AnswerKeyTokenLeaseRepositoryProtocol(Protocol):
     ) -> None: ...
 
     async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage: ...
+
+
+class AnswerKeyLeaseStatusHandlerProtocol(Protocol):
+    """Read the current UTC day's answer-key lease balance for operators."""
+
+    async def handle(self, *, actor: User) -> AnswerKeyTokenLeaseDayUsage: ...
 
 
 class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):

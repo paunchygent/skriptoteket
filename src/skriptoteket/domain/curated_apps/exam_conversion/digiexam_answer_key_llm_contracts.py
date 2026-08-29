@@ -180,6 +180,23 @@ class StructuredLLMResponse:
     usage: StructuredLLMUsage = StructuredLLMUsage()
 
 
+@dataclass(frozen=True)
+class AnswerKeyProviderRoute:
+    """Ordered provider route: one primary profile, one failover-only backup.
+
+    The failover profile is attempted at most once per item, only after an
+    eligible transient primary outage, and draws its lease from the same
+    daily counter. Lease exhaustion never routes to the failover.
+    """
+
+    primary: StructuredLLMProviderProfile
+    failover: StructuredLLMProviderProfile
+
+    def __post_init__(self) -> None:
+        if self.primary.provider_id == self.failover.provider_id:
+            raise ValueError("Answer-key route primary and failover must differ.")
+
+
 class StructuredLLMProviderError(Exception):
     """Typed provider failure that never stores raw prompts or responses."""
 
@@ -195,6 +212,26 @@ class StructuredLLMProviderError(Exception):
         self.failure_code = failure_code
         self.provider_id = provider_id
         self.status_code = status_code
+
+
+def allows_answer_key_provider_failover(error: StructuredLLMProviderError) -> bool:
+    """Limit failover execution to transient provider outages only.
+
+    Pinned to sir-convert-a-lot `76983339` D12: timeouts, pre-response request
+    failures, and HTTP 408/5xx fail over; every other provider failure is
+    terminal without a failover attempt.
+    """
+
+    if error.failure_code in {
+        StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT,
+        StructuredLLMBackendFailureCode.PROVIDER_REQUEST_FAILED,
+    }:
+        return True
+    return (
+        error.failure_code is StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR
+        and error.status_code is not None
+        and (error.status_code == 408 or 500 <= error.status_code <= 599)
+    )
 
 
 def estimate_prompt_tokens(text: str) -> int:

@@ -330,11 +330,16 @@ class Settings(BaseSettings):
 
     # Exam answer-key completion (ST-SKRIPT-39-02): GPT-5.6 Luna structured
     # proposals for unkeyed in-process conversions, guarded by the Postgres
-    # daily token lease. Only the Luna path exists in TASK-SKRIPT-39-02-01.
+    # daily token lease. GLM-5.3-flash via OpenRouter is the failover-only
+    # backup; it shares the context/output/timeout/temperature settings and
+    # draws from the same daily token lease.
     LLM_ANSWER_KEY_ENABLED: bool = False
     LLM_ANSWER_KEY_BASE_URL: str = "https://api.openai.com"
     OPENAI_LLM_ANSWER_KEY_API_KEY: str = ""
     LLM_ANSWER_KEY_MODEL: str = "gpt-5.6-luna"
+    LLM_ANSWER_KEY_FAILOVER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_LLM_ANSWER_KEY_API_KEY: str = ""
+    LLM_ANSWER_KEY_FAILOVER_MODEL: str = "z-ai/glm-5.3-flash"
     LLM_ANSWER_KEY_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_ANSWER_KEY_TEXT_VERBOSITY: LlmTextVerbosity = "low"
     LLM_ANSWER_KEY_CONTEXT_WINDOW_TOKENS: int = 32_768
