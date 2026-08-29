@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8dbf53a624bb14021fe79c4d22ce34ea04ba16f59a2c7c337582aa72b6a0177c",
+  "source_set_digest": "5a2778148b3d21fe89d6d920bcee47be403e93ad5c27aec558cf8872dd0e7946",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2131,7 +2131,7 @@
       "type": "story",
       "title": "Port the remote answer-key completion line with a daily token lease",
       "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md",
-      "status": "proposed",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4153,7 +4153,7 @@
       "type": "task",
       "title": "Stand up the in-process answer-key completion vertical with the Luna profile and Postgres lease",
       "path": "docs/backlog/tasks/task-skript-39-02-01-stand-up-the-in-process-answer-key-completion-vertical-with-the-luna-profile-and-postgres-lease.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [
@@ -4172,7 +4172,7 @@
       "type": "task",
       "title": "Prove failover, exhaustion fail-close, and operator lease status for the answer-key lane",
       "path": "docs/backlog/tasks/task-skript-39-02-02-prove-failover-exhaustion-fail-close-and-operator-lease-status-for-the-answer-key-lane.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [
@@ -10477,6 +10477,13 @@
         "title": "Walking skeleton for Skriptoteket-owned exam conversion",
         "status": "active",
         "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md"
+      },
+      {
+        "id": "ST-SKRIPT-39-02",
+        "type": "story",
+        "title": "Port the remote answer-key completion line with a daily token lease",
+        "status": "active",
+        "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md"
       }
     ]
   }

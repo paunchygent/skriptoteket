@@ -1,5 +1,17 @@
 ## Current
 
+- [ST-SKRIPT-39-02](docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
+  is `active` through `agent-planning:user-closure-gate` on 2026-08-29: port
+  the remote answer-key completion line from sir-convert-a-lot `76983339`
+  (Luna low-effort default, GLM-5.3-flash failover-only, 5M token/day
+  non-refundable lease) with the Skriptoteket-native design — the lease as a
+  Postgres table owned through the Unit of Work with UTC-day partitioning,
+  enrichment as an execution-worker job.
+  [TASK-SKRIPT-39-02-01](docs/backlog/tasks/task-skript-39-02-01-stand-up-the-in-process-answer-key-completion-vertical-with-the-luna-profile-and-postgres-lease.md)
+  (Luna vertical + lease) is `in_progress`;
+  [TASK-SKRIPT-39-02-02](docs/backlog/tasks/task-skript-39-02-02-prove-failover-exhaustion-fail-close-and-operator-lease-status-for-the-answer-key-lane.md)
+  (failover, exhaustion fail-close, operator lease status) is `ready` and
+  starts on the 02-01 seams.
 - [TASK-SKRIPT-39-01-01](docs/backlog/tasks/task-skript-39-01-01-prove-the-in-process-dxe-to-exam-net-bundle-walking-skeleton.md)
   has an implemented, independently reviewed walking skeleton (branch
   `codex/task-skript-39-01-01`): the exam-conversion domain chain
@@ -42,9 +54,9 @@
   dependence predicts; the committed structural PDF assertion covers this.
   The `.dxe` fixtures are byte-exact and excluded from the pre-commit
   end-of-file/whitespace fixers after the fixer mutated them once at
-  integration. The task worktree and its dev services, plus the live-check
-  docker lanes (HuleEdu auth-integration, Skriptoteket web/db/frontend from
-  main), are left running per policy; worktree retirement is pending.
+  integration. The task worktree is retired (branch deleted after the merge);
+  the live-check docker lanes (HuleEdu auth-integration, Skriptoteket
+  web/db/frontend from main) are left running per user decision.
 - [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
   and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
   are approved (`active`/`accepted`) through `agent-planning:user-closure-gate`

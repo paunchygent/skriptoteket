@@ -164,3 +164,4 @@
 - `ST-SKRIPT-37-05` | [Cross-app save/export file naming protocol](../backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | story | ready
 - `ST-SKRIPT-38-01` | [Adopt the shared governed development system](../backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | story | done
 - `ST-SKRIPT-39-01` | [Walking skeleton for Skriptoteket-owned exam conversion](../backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | story | active
+- `ST-SKRIPT-39-02` | [Port the remote answer-key completion line with a daily token lease](../backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md) | story | active
