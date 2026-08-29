@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -14,6 +14,9 @@ from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJob
+from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
+    ExamAnswerKeyEnrichmentJob,
+)
 from skriptoteket.application.curated_apps.exam_conversion import ExamConverterConversionLane
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
@@ -151,6 +154,28 @@ class RefusingSirConvertClient(SirConvertALotClientV2Protocol):
         raise AssertionError("Sir Convert client must not be called.")
 
 
+class RefusingEnrichmentJobRepository:
+    """Enrichment-job repository stub for lanes where enrichment is disabled."""
+
+    async def create(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+        raise AssertionError("Enrichment jobs must not be created in this lane.")
+
+    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+        raise AssertionError("Enrichment jobs must not be updated in this lane.")
+
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return None
+
+    async def claim_next(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        return None
+
+
 class _StubCuratedAppRegistry(CuratedAppRegistryProtocol):
     def __init__(self, *, app: CuratedAppDefinition) -> None:
         self._app = app
@@ -198,6 +223,8 @@ class ExamConverterConversionsApiProvider(Provider):
                 pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             ),
             artifacts=self._artifacts,
+            enrichment_jobs=RefusingEnrichmentJobRepository(),
+            enrichment_enabled=False,
             uow=UnitOfWorkStub(),
             clock=self._app_clock,
             id_generator=IdGeneratorStub(),
