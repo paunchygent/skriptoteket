@@ -54,6 +54,15 @@ from skriptoteket.infrastructure.db.models.conversion_hub_transcript_formatter_e
 from skriptoteket.infrastructure.db.models.conversion_hub_transcript_speaker_overlay import (
     ConversionHubTranscriptSpeakerOverlayModel,
 )
+from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
+    ExamAnswerKeyEnrichmentJobModel,
+)
+from skriptoteket.infrastructure.db.models.exam_answer_key_proposed_overlay import (
+    ExamAnswerKeyProposedOverlayModel,
+)
+from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
+    ExamAnswerKeyTokenLeaseModel,
+)
 from skriptoteket.infrastructure.db.models.exam_converter_correction_session import (
     ExamConverterCorrectionIntentModel,
     ExamConverterCorrectionSessionModel,
@@ -79,6 +88,9 @@ __all__ = [
     "ConversionHubTranscriptFormatterArtifactModel",
     "ConversionHubTranscriptFormatterExportStateModel",
     "ConversionHubTranscriptSpeakerOverlayModel",
+    "ExamAnswerKeyEnrichmentJobModel",
+    "ExamAnswerKeyProposedOverlayModel",
+    "ExamAnswerKeyTokenLeaseModel",
     "ExamConverterCorrectionIntentModel",
     "ExamConverterCorrectionSessionModel",
     "GroupingExportCheckpointModel",

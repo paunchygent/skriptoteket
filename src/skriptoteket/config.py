@@ -328,6 +328,22 @@ class Settings(BaseSettings):
     LLM_CHAT_FAILOVER_BREAKER_COOLDOWN_SECONDS: int = 90
     LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
 
+    # Exam answer-key completion (ST-SKRIPT-39-02): GPT-5.6 Luna structured
+    # proposals for unkeyed in-process conversions, guarded by the Postgres
+    # daily token lease. Only the Luna path exists in TASK-SKRIPT-39-02-01.
+    LLM_ANSWER_KEY_ENABLED: bool = False
+    LLM_ANSWER_KEY_BASE_URL: str = "https://api.openai.com"
+    OPENAI_LLM_ANSWER_KEY_API_KEY: str = ""
+    LLM_ANSWER_KEY_MODEL: str = "gpt-5.6-luna"
+    LLM_ANSWER_KEY_REASONING_EFFORT: LlmReasoningEffort = "low"
+    LLM_ANSWER_KEY_TEXT_VERBOSITY: LlmTextVerbosity = "low"
+    LLM_ANSWER_KEY_CONTEXT_WINDOW_TOKENS: int = 32_768
+    LLM_ANSWER_KEY_MAX_OUTPUT_TOKENS: int = 4_096
+    LLM_ANSWER_KEY_TEMPERATURE: float = 0.0
+    LLM_ANSWER_KEY_TIMEOUT_SECONDS: int = 90
+    LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT: int = 5_000_000
+    LLM_ANSWER_KEY_JOB_LEASE_TTL_SECONDS: int = 900
+
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
     # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect
     # packaged Tekken assets when `mistral-common` is installed. Missing tokenizers fall back
