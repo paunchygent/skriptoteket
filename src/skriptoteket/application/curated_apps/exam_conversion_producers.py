@@ -29,6 +29,7 @@ from skriptoteket.application.curated_apps.exam_conversion import (
     build_examnet_bundle_filename,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
+    DigiExamAnswerKeyProvenance,
     DigiExamParseStatus,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import (
@@ -97,13 +98,18 @@ class InProcessExamConversionProducer:
         upload: "ConversionHubUpload",
         overlay_bytes: bytes | None,
         correlation_id: str | None,
+        overlay_key_provenance: DigiExamAnswerKeyProvenance = (
+            DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
+        ),
     ) -> ExamConversionStoredArtifact:
         """Convert one upload through the in-process exam-conversion chain.
 
         Args:
             upload: Uploaded `.dxe` payload.
-            overlay_bytes: Optional source-bound teacher ingestion overlay.
+            overlay_bytes: Optional source-bound ingestion overlay.
             correlation_id: Request correlation id.
+            overlay_key_provenance: What applied overlay keys represent:
+                teacher-provided (default) or machine-proposed.
 
         Returns:
             The Exam.net bundle artifact (QTI package, PDF, validation report).
@@ -113,11 +119,12 @@ class InProcessExamConversionProducer:
                 bind to this source, or manual follow-ups block both targets.
         """
         del correlation_id
-        exam = _parse_source_exam(upload=upload)
+        exam = parse_source_exam(upload=upload)
         effective_exam = _apply_overlay(
             exam=exam,
             upload=upload,
             overlay_bytes=overlay_bytes,
+            overlay_key_provenance=overlay_key_provenance,
         )
         plan = _build_qti_package_plan(exam=effective_exam, input_filename=upload.filename)
         qti_package_bytes = self._qti_writer.build_package_bytes(plan)
@@ -155,7 +162,8 @@ def source_exam_digests(*, file_bytes: bytes, exam: DigiExamIntermediateExam) ->
     return source_file_sha256, source_ir_sha256
 
 
-def _parse_source_exam(*, upload: "ConversionHubUpload") -> DigiExamIntermediateExam:
+def parse_source_exam(*, upload: "ConversionHubUpload") -> DigiExamIntermediateExam:
+    """Parse one uploaded `.dxe` export into the renderer-neutral IR."""
     try:
         text = upload.file_bytes.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -171,6 +179,7 @@ def _apply_overlay(
     exam: DigiExamIntermediateExam,
     upload: "ConversionHubUpload",
     overlay_bytes: bytes | None,
+    overlay_key_provenance: DigiExamAnswerKeyProvenance,
 ) -> DigiExamIntermediateExam:
     if overlay_bytes is None:
         return exam
@@ -184,6 +193,7 @@ def _apply_overlay(
             source_file_sha256=source_file_sha256,
             source_ir_sha256=source_ir_sha256,
             source_exam=exam,
+            applied_key_provenance=overlay_key_provenance,
         )
     except DigiExamIngestionOverlayError as exc:
         raise validation_error(str(exc)) from exc

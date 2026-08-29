@@ -27,6 +27,9 @@ from skriptoteket.protocols.scripting_ui import (
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from skriptoteket.workers.exam_answer_key_enrichment import (
+    process_next_answer_key_enrichment_job,
+)
 from skriptoteket.workers.execution_queue.processor import process_claim
 
 logger = structlog.get_logger(__name__)
@@ -68,6 +71,9 @@ async def run_execution_queue_worker(
         id_generator = await container.get(IdGeneratorProtocol)
 
         lease_ttl = timedelta(seconds=max(1, int(settings.RUNNER_QUEUE_LEASE_TTL_SECONDS)))
+        enrichment_lease_ttl = timedelta(
+            seconds=max(1, int(settings.LLM_ANSWER_KEY_JOB_LEASE_TTL_SECONDS))
+        )
         heartbeat_interval = float(settings.RUNNER_QUEUE_HEARTBEAT_INTERVAL_SECONDS)
         poll_interval = float(settings.RUNNER_QUEUE_POLL_INTERVAL_SECONDS)
         reaper_interval = float(settings.RUNNER_QUEUE_REAPER_INTERVAL_SECONDS)
@@ -103,6 +109,17 @@ async def run_execution_queue_worker(
                     )
                 next_reaper_at = loop.time() + reaper_interval
 
+            processed_enrichment = False
+            if settings.LLM_ANSWER_KEY_ENABLED:
+                processed_enrichment = await process_next_answer_key_enrichment_job(
+                    container=container,
+                    worker_id=effective_worker_id,
+                    now=now,
+                    lease_ttl=enrichment_lease_ttl,
+                )
+                if processed_enrichment and once:
+                    return
+
             claim = await _claim_next_job(
                 container=container,
                 worker_id=effective_worker_id,
@@ -113,7 +130,8 @@ async def run_execution_queue_worker(
             if claim is None:
                 if once:
                     return
-                await sleeper.sleep(poll_interval)
+                if not processed_enrichment:
+                    await sleeper.sleep(poll_interval)
                 continue
 
             await process_claim(
