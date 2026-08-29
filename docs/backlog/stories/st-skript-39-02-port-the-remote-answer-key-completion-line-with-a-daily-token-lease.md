@@ -7,10 +7,20 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-29'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: spec-verifier
+  decided_at: '2026-08-30'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: >-
+    .orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md
+    verifies the combined authenticated live chain: real Luna completion,
+    transient-only real GLM failover with non-refundable leases, typed
+    exhaustion before provider I/O with zero calls, and authenticated operator
+    balance visibility, while preserving proposal, manual-follow-up, readiness,
+    and deterministic-lane semantics.
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - An overlay-free DigiExam exam converted through the in-process lane receives machine-proposed answer keys from the GPT-5.6 Luna low-effort remote profile with GLM-5.3-flash failover, executed as an execution-worker job under a Postgres-backed non-refundable daily token lease that fail-closes with operator-visible status, with target-readiness behavior matching the Sir Convert lane and focused tests plus a live functional check recorded in handoff.md
@@ -90,3 +100,14 @@ receives machine-proposed answer keys without leaving the product backend.
 | S3  | The provider configuration carries over from sircon D9-D14: Luna low-effort default, GLM-5.3-flash failover-only from the same lease, a configurable 5,000,000 token/day sub-allocation, identifiers re-verified in current provider docs. |
 | S4  | Teacher-review and target-readiness semantics are unchanged; machine keys are proposals under the existing overlay semantics.                                                                                                              |
 | S5  | Cutover and every retirement stay outside this slice.                                                                                                                                                                                      |
+
+## Closeout Evidence
+
+The combined slice is independently verified with no material findings. The
+retained verifier record covers the reviewed implementation, the authenticated
+real-DXE Luna completion, the transient-only real GLM failover, the typed
+exhaustion hard stop before provider I/O, the authenticated operator balance,
+and preservation of deterministic conversion, proposal provenance, readiness,
+and manual follow-ups.
+
+Evidence: `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md`.

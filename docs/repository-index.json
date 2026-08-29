@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7520ef0fd47fb1f94ec6e00f03fee45b5ac2ba641bd1097f9a84192c52bd8825",
+  "source_set_digest": "91c2d3b149c995f70ed7fb4fae2522168f8c18cb646c88885fc41f456f1f6548",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2131,7 +2131,7 @@
       "type": "story",
       "title": "Port the remote answer-key completion line with a daily token lease",
       "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2146,7 +2146,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "spec-verifier",
+        "decided_at": "2026-08-30",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md verifies the combined authenticated live chain: real Luna completion, transient-only real GLM failover with non-refundable leases, typed exhaustion before provider I/O with zero calls, and authenticated operator balance visibility, while preserving proposal, manual-follow-up, readiness, and deterministic-lane semantics."
       }
     },
     {
@@ -4153,7 +4157,7 @@
       "type": "task",
       "title": "Stand up the in-process answer-key completion vertical with the Luna profile and Postgres lease",
       "path": "docs/backlog/tasks/task-skript-39-02-01-stand-up-the-in-process-answer-key-completion-vertical-with-the-luna-profile-and-postgres-lease.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [
@@ -4176,7 +4180,7 @@
       "type": "task",
       "title": "Prove failover, exhaustion fail-close, and operator lease status for the answer-key lane",
       "path": "docs/backlog/tasks/task-skript-39-02-02-prove-failover-exhaustion-fail-close-and-operator-lease-status-for-the-answer-key-lane.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [
@@ -10490,7 +10494,7 @@
         "id": "ST-SKRIPT-39-02",
         "type": "story",
         "title": "Port the remote answer-key completion line with a daily token lease",
-        "status": "active",
+        "status": "done",
         "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md"
       }
     ]

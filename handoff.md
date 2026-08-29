@@ -1,11 +1,11 @@
 ## Current
 
 - [ST-SKRIPT-39-02](docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
-  remains `active` pending the terminal story verifier. Both tasks are
-  implemented, independently approved, integrated locally on main `6f4baa7a`
+  is `done` and independently `VERIFIED` with no material findings. Both tasks
+  are `done`, independently approved, integrated locally on main `6f4baa7a`
   (`7b32ed60` plus the reviewed mixed-exam port repair), and live-proven through
-  the authenticated HuleEdu browser-session ceremony. Retained evidence root:
-  `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/`.
+  the authenticated HuleEdu browser-session ceremony. Terminal verifier record:
+  `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md`.
   [TASK-SKRIPT-39-02-01](docs/backlog/tasks/task-skript-39-02-01-stand-up-the-in-process-answer-key-completion-vertical-with-the-luna-profile-and-postgres-lease.md)
   live proof on reviewed commit `847fae31`: unchanged real `.dxe` `a274a9d9…`,
   conversion `882f4d81-9eea-44ce-8d63-e1ac65e5af03`, enrichment

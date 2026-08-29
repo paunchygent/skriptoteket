@@ -111,6 +111,22 @@ Ordered; each later story assumes the earlier ones are done.
   recorded in `handoff.md`; backend changes run lint, typecheck, and focused
   tests per `AGENTS.md`.
 
+## Epic Verification Plan
+
+| Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
+| --- | --- | --- | --- | --- |
+| Port the remote answer-key completion line with a daily token lease | verified | `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md` | ST-SKRIPT-39-02 | None |
+
+## Current Implementation Summary
+
+- `ST-SKRIPT-39-02` is done and independently verified. Skriptoteket now owns
+  the execution-worker answer-key completion line with Luna low-effort as the
+  primary provider, transient-only GLM-5.3-flash failover, a Postgres/UoW
+  non-refundable UTC-day token lease, typed exhaustion before provider I/O,
+  and authenticated operator balance visibility. Real-DXE live checks cover
+  Luna completion, forced failover, and forced exhaustion while preserving
+  deterministic conversion and teacher-review semantics.
+
 ## Decided Contract Terms
 
 | ID  | Decided contract term |
