@@ -1,9 +1,9 @@
-"""GPT-5.6 Luna answer-key provider profile and Luna-only selection.
+"""GPT-5.6 Luna answer-key provider profile.
 
 Purpose:
-    Pin the GPT-5.6 Luna low-reasoning-effort profile as the only provider
-    path for TASK-SKRIPT-39-02-01 and implement the provider-selection seam
-    that TASK-SKRIPT-39-02-02 extends with GLM failover.
+    Pin the GPT-5.6 Luna low-reasoning-effort profile as the primary provider
+    path for the answer-key lane; the GLM failover profile lives in
+    ``infrastructure.llm.openrouter.answer_key_profiles``.
 
 Relationships:
     Model identifier `gpt-5.6-luna` verified against current OpenAI docs
@@ -20,7 +20,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMReasoningEffort,
     StructuredLLMTextVerbosity,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyProviderSelectorProtocol
 
 OPENAI_GPT56_LUNA_PROVIDER_ID = "openai-gpt-5.6-luna"
 OPENAI_GPT56_LUNA_MODEL = "gpt-5.6-luna"
@@ -40,13 +39,3 @@ def build_luna_answer_key_profile(settings: Settings) -> StructuredLLMProviderPr
         reasoning_effort=StructuredLLMReasoningEffort(settings.LLM_ANSWER_KEY_REASONING_EFFORT),
         text_verbosity=StructuredLLMTextVerbosity(settings.LLM_ANSWER_KEY_TEXT_VERBOSITY),
     )
-
-
-class LunaOnlyAnswerKeyProviderSelector(AnswerKeyProviderSelectorProtocol):
-    """Provider selection with exactly one path: the Luna profile."""
-
-    def __init__(self, *, profile: StructuredLLMProviderProfile) -> None:
-        self._profile = profile
-
-    def select_profile(self) -> StructuredLLMProviderProfile:
-        return self._profile

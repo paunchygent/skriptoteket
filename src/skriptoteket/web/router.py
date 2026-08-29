@@ -7,6 +7,7 @@ their bespoke endpoints without leaking concerns across modules.
 
 from fastapi import APIRouter
 
+from skriptoteket.web.api.v1 import admin_answer_key_lease as api_v1_admin_answer_key_lease
 from skriptoteket.web.api.v1 import admin_tools as api_v1_admin_tools
 from skriptoteket.web.api.v1 import admin_users as api_v1_admin_users
 from skriptoteket.web.api.v1 import apps as api_v1_apps
@@ -106,6 +107,7 @@ router.include_router(api_v1_profile.router)
 router.include_router(api_v1_suggestions.router)
 router.include_router(api_v1_tools.router)
 router.include_router(api_v1_vault.router)
+router.include_router(api_v1_admin_answer_key_lease.router)
 router.include_router(api_v1_admin_tools.router)
 router.include_router(api_v1_admin_users.router)
 router.include_router(api_v1_editor.router)

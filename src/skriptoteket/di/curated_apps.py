@@ -141,6 +141,9 @@ from skriptoteket.application.curated_apps.handlers.document_converter_saved_sou
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
+    GetAnswerKeyLeaseStatusHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
     CreateExamConverterConversionJobsHandler,
 )
@@ -186,6 +189,9 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import (
     ClassListHeuristicParser,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
 )
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner import (
     class_list_document_extractor as class_list_document_extractor_module,
@@ -270,12 +276,23 @@ from skriptoteket.infrastructure.documents.document_converter_project_previews i
 from skriptoteket.infrastructure.documents.markdown_rendering import PythonMarkdownToHtmlRenderer
 from skriptoteket.infrastructure.documents.pdf_rendering import WeasyPrintHtmlToPdfRenderer
 from skriptoteket.infrastructure.documents.pdf_text_extraction import PdfPlumberTextExtractor
+from skriptoteket.infrastructure.llm.answer_key_provider_dispatch import (
+    EndpointRoutedAnswerKeyProvider,
+)
+from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
+    FixedRouteAnswerKeyProviderSelector,
+)
 from skriptoteket.infrastructure.llm.openai.answer_key_profiles import (
-    LunaOnlyAnswerKeyProviderSelector,
     build_luna_answer_key_profile,
 )
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.llm.openrouter.answer_key_chat_provider import (
+    OpenRouterAnswerKeyChatProvider,
+)
+from skriptoteket.infrastructure.llm.openrouter.answer_key_profiles import (
+    build_glm_failover_answer_key_profile,
 )
 from skriptoteket.infrastructure.repositories import (
     conversion_hub_transcript_formatter_export_states as export_state_repositories,
@@ -382,6 +399,7 @@ from skriptoteket.protocols.documents import (
     PdfTextExtractorProtocol,
 )
 from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyLeaseStatusHandlerProtocol,
     AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
@@ -1835,9 +1853,22 @@ class CuratedAppsProvider(Provider):
     ) -> ExamAnswerKeyProposedOverlayRepositoryProtocol:
         return PostgreSQLExamAnswerKeyProposedOverlayRepository(session)
 
+    @provide(scope=Scope.REQUEST)
+    def answer_key_lease_status_handler(
+        self,
+        leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> AnswerKeyLeaseStatusHandlerProtocol:
+        return GetAnswerKeyLeaseStatusHandler(leases=leases, clock=clock)
+
     @provide(scope=Scope.APP)
     def answer_key_provider_selector(self, settings: Settings) -> AnswerKeyProviderSelectorProtocol:
-        return LunaOnlyAnswerKeyProviderSelector(profile=build_luna_answer_key_profile(settings))
+        return FixedRouteAnswerKeyProviderSelector(
+            route=AnswerKeyProviderRoute(
+                primary=build_luna_answer_key_profile(settings),
+                failover=build_glm_failover_answer_key_profile(settings),
+            )
+        )
 
     @provide(scope=Scope.APP)
     def answer_key_structured_provider(
@@ -1845,11 +1876,19 @@ class CuratedAppsProvider(Provider):
         settings: Settings,
         client: httpx.AsyncClient,
     ) -> AnswerKeyStructuredProviderProtocol:
-        return OpenAIAnswerKeyStructuredProvider(
-            client=client,
-            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-            api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
-            timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+        return EndpointRoutedAnswerKeyProvider(
+            responses_provider=OpenAIAnswerKeyStructuredProvider(
+                client=client,
+                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+            ),
+            chat_completions_provider=OpenRouterAnswerKeyChatProvider(
+                client=client,
+                base_url=settings.LLM_ANSWER_KEY_FAILOVER_BASE_URL,
+                api_key=settings.OPENROUTER_LLM_ANSWER_KEY_API_KEY,
+                timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+            ),
         )
 
     @provide(scope=Scope.REQUEST)

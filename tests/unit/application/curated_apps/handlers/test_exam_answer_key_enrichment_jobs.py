@@ -4,7 +4,9 @@ Purpose:
     Prove the enrichment processor with a stubbed provider: lease reserved
     before the call and reconciled from reported usage, machine-proposed
     overlay persisted, conversion completed; the typed lease refusal makes
-    zero provider calls; provider failures never refund the lease.
+    zero provider calls and never routes to the failover; a transient Luna
+    outage fails over exactly once to the GLM profile under a second lease
+    from the same daily counter; provider failures never refund any lease.
 
 Relationships:
     - Exercises `application.curated_apps.handlers.exam_answer_key_enrichment_jobs`
@@ -38,6 +40,7 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
     StructuredLLMBackendFailureCode,
     StructuredLLMEndpointKind,
     StructuredLLMProviderError,
@@ -58,8 +61,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
 )
-from skriptoteket.infrastructure.llm.openai.answer_key_profiles import (
-    LunaOnlyAnswerKeyProviderSelector,
+from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
+    FixedRouteAnswerKeyProviderSelector,
 )
 from tests.fixtures.application_fixtures import FakeUow
 
@@ -161,6 +164,7 @@ class InMemoryLeaseRepository:
     def __init__(self, *, daily_token_limit: int) -> None:
         self._daily_token_limit = daily_token_limit
         self.leases: dict[UUID, AnswerKeyTokenLease] = {}
+        self.profile_by_lease: dict[UUID, str] = {}
 
     async def reserve(
         self,
@@ -182,7 +186,15 @@ class InMemoryLeaseRepository:
             state=AnswerKeyTokenLeaseState.RESERVED,
         )
         self.leases[lease.lease_id] = lease
+        self.profile_by_lease[lease.lease_id] = provider_profile_id
         return lease
+
+    def leases_for_profile(self, provider_profile_id: str) -> list[AnswerKeyTokenLease]:
+        return [
+            lease
+            for lease_id, lease in self.leases.items()
+            if self.profile_by_lease[lease_id] == provider_profile_id
+        ]
 
     async def reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
         lease = self.leases[lease_id]
@@ -253,9 +265,20 @@ class StubProvider:
         )
 
 
-class FailingProvider:
-    def __init__(self) -> None:
-        self.call_count = 0
+class SequenceProvider:
+    """Yield one scripted outcome per call and record the profile order."""
+
+    def __init__(
+        self,
+        *,
+        outcomes: tuple[StructuredLLMResponse | StructuredLLMProviderError, ...],
+    ) -> None:
+        self._outcomes = outcomes
+        self.profiles: list[StructuredLLMProviderProfile] = []
+
+    @property
+    def call_count(self) -> int:
+        return len(self.profiles)
 
     async def complete_structured(
         self,
@@ -263,12 +286,11 @@ class FailingProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
     ) -> StructuredLLMResponse:
-        self.call_count += 1
-        raise StructuredLLMProviderError(
-            failure_code=StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT,
-            message="Structured provider request timed out.",
-            provider_id=profile.provider_id,
-        )
+        outcome = self._outcomes[len(self.profiles)]
+        self.profiles.append(profile)
+        if isinstance(outcome, StructuredLLMProviderError):
+            raise outcome
+        return outcome
 
 
 class RecordingProducer:
@@ -318,6 +340,29 @@ def _profile() -> StructuredLLMProviderProfile:
     )
 
 
+def _failover_profile() -> StructuredLLMProviderProfile:
+    return StructuredLLMProviderProfile(
+        provider_id="openrouter-glm-5.3-flash",
+        model="z-ai/glm-5.3-flash",
+        endpoint_kind=StructuredLLMEndpointKind.CHAT_COMPLETIONS,
+        is_remote=True,
+        context_window_tokens=32_768,
+        max_output_tokens=4_096,
+    )
+
+
+def _route() -> AnswerKeyProviderRoute:
+    return AnswerKeyProviderRoute(primary=_profile(), failover=_failover_profile())
+
+
+def _timeout_error(provider_id: str) -> StructuredLLMProviderError:
+    return StructuredLLMProviderError(
+        failure_code=StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT,
+        message="Structured provider request timed out.",
+        provider_id=provider_id,
+    )
+
+
 def _unkeyed_dxe_bytes(*, include_open_ended: bool = False) -> bytes:
     questions: list[dict[str, JsonValue]] = [
         {
@@ -353,7 +398,7 @@ class _Harness:
     def __init__(
         self,
         *,
-        provider: StubProvider | FailingProvider,
+        provider: StubProvider | SequenceProvider,
         daily_token_limit: int = 1_000_000,
     ) -> None:
         self.conversion_jobs = InMemoryConversionHubJobRepository()
@@ -369,7 +414,7 @@ class _Harness:
             leases=self.leases,
             proposed_overlays=self.proposed_overlays,
             provider=provider,
-            provider_selector=LunaOnlyAnswerKeyProviderSelector(profile=_profile()),
+            provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
             producer=self.producer,
             artifacts=self.artifacts,
             uow=FakeUow(),
@@ -494,14 +539,108 @@ async def test_lease_refusal_fails_closed_with_zero_provider_calls() -> None:
     assert harness.proposed_overlays.records == []
 
 
-async def test_provider_failure_never_refunds_the_reserved_lease() -> None:
-    harness = _Harness(provider=FailingProvider())
+async def test_transient_luna_failure_fails_over_once_and_succeeds_via_glm() -> None:
+    provider = SequenceProvider(
+        outcomes=(
+            _timeout_error("openai-gpt-5.6-luna"),
+            StructuredLLMResponse(
+                content={"correct_alternative_ids": [2]},
+                finish_reason="stop",
+                usage=StructuredLLMUsage(total_tokens=40),
+            ),
+        )
+    )
+    harness = _Harness(provider=provider)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert [profile.provider_id for profile in provider.profiles] == [
+        "openai-gpt-5.6-luna",
+        "openrouter-glm-5.3-flash",
+    ]
+    assert len(harness.leases.leases) == 2
+    primary_lease = harness.leases.leases_for_profile("openai-gpt-5.6-luna")[0]
+    failover_lease = harness.leases.leases_for_profile("openrouter-glm-5.3-flash")[0]
+    assert primary_lease.state is AnswerKeyTokenLeaseState.RESERVED
+    assert primary_lease.actual_tokens is None
+    assert failover_lease.state is AnswerKeyTokenLeaseState.RECONCILED
+    assert failover_lease.actual_tokens == 40
+    usage = await harness.leases.day_usage(utc_day=lease_utc_day(_NOW))
+    assert usage.charged_tokens == primary_lease.reserved_tokens + 40
+    proposal = harness.proposed_overlays.records[0]
+    assert proposal.provider_profile_id == "openrouter-glm-5.3-flash"
+    assert proposal.model == "z-ai/glm-5.3-flash"
+    conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
+    assert job.conversion_job_id in harness.artifacts.stored
+
+
+async def test_glm_failure_after_failover_fails_job_with_both_leases_charged() -> None:
+    provider = SequenceProvider(
+        outcomes=(
+            _timeout_error("openai-gpt-5.6-luna"),
+            _timeout_error("openrouter-glm-5.3-flash"),
+        )
+    )
+    harness = _Harness(provider=provider)
     job = await harness.seed_claimed_job()
 
     finished = await harness.handler.handle(job=job)
 
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "provider_timeout"
+    assert [profile.provider_id for profile in provider.profiles] == [
+        "openai-gpt-5.6-luna",
+        "openrouter-glm-5.3-flash",
+    ]
+    leases = list(harness.leases.leases.values())
+    assert len(leases) == 2
+    assert all(lease.state is AnswerKeyTokenLeaseState.RESERVED for lease in leases)
+    usage = await harness.leases.day_usage(utc_day=lease_utc_day(_NOW))
+    assert usage.charged_tokens == sum(lease.reserved_tokens for lease in leases)
+    assert harness.proposed_overlays.records == []
+    conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
+    assert conversion_job.status is ConversionHubJobStatus.FAILED
+
+
+async def test_second_lease_exhaustion_stops_before_the_failover_call() -> None:
+    provider = SequenceProvider(outcomes=(_timeout_error("openai-gpt-5.6-luna"),))
+    harness = _Harness(provider=provider, daily_token_limit=6_000)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "daily_token_lease_exhausted"
+    assert [profile.provider_id for profile in provider.profiles] == ["openai-gpt-5.6-luna"]
+    assert len(harness.leases.leases) == 1
+    conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
+    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.error_message is not None
+    assert "2026-08-30 00:00" in conversion_job.error_message
+
+
+async def test_non_transient_luna_failure_never_calls_the_failover() -> None:
+    provider = SequenceProvider(
+        outcomes=(
+            StructuredLLMProviderError(
+                failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
+                message="Structured provider returned an unsuccessful HTTP status.",
+                provider_id="openai-gpt-5.6-luna",
+                status_code=400,
+            ),
+        )
+    )
+    harness = _Harness(provider=provider)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "provider_http_error"
+    assert [profile.provider_id for profile in provider.profiles] == ["openai-gpt-5.6-luna"]
     leases = list(harness.leases.leases.values())
     assert len(leases) == 1
     assert leases[0].state is AnswerKeyTokenLeaseState.RESERVED
