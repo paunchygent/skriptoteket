@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7cd8a748a545b949695c4f642d2b8935bf3095934739487326fe9ba55033e8b8",
+  "source_set_digest": "7520ef0fd47fb1f94ec6e00f03fee45b5ac2ba641bd1097f9a84192c52bd8825",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4164,7 +4164,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "independent-reviewer",
+        "decided_at": "2026-08-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent review approved the original vertical and the bounded mixed-exam port repair at 847fae31 with no material findings; the authenticated real-DXE Luna proof then succeeded on that exact reviewed commit (conversion 882f4d81-9eea-44ce-8d63-e1ac65e5af03, enrichment f390fea4-10ae-4009-ab58-e4d3edb613c4, six reconciled Luna lease rows, machine-proposed overlay 9c46587e-853f-4784-b175-3c19bbe2738e, passed QTI package), recorded in handoff.md and retained session 01a04d62-c71c-721c-a43a-76384e182429."
       }
     },
     {
@@ -4183,7 +4187,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "independent-reviewer",
+        "decided_at": "2026-08-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent review approved the integrated failover orchestration at 7b32ed60 as behavior-identical to the reviewed transient gate, second-lease transaction, and exhaustion hard stop; authenticated live proofs on local main 6f4baa7a then showed two Luna request failures followed by two real GLM-5.3-flash completions with four non-refundable lease rows and successful conversion, followed by a token-limit-1 typed exhaustion with zero provider calls, zero new leases, and HTTP-200 admin balance, recorded in handoff.md and retained session 01a04d62-c71c-721c-a43a-76384e182429."
       }
     },
     {
