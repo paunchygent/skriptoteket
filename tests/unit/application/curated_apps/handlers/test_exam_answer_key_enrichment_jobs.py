@@ -318,30 +318,35 @@ def _profile() -> StructuredLLMProviderProfile:
     )
 
 
-def _unkeyed_dxe_bytes() -> bytes:
-    return json.dumps(
+def _unkeyed_dxe_bytes(*, include_open_ended: bool = False) -> bytes:
+    questions: list[dict[str, JsonValue]] = [
         {
-            "exams": [
-                {
-                    "questions": [
-                        {
-                            "id": 1,
-                            "title": "Single without key",
-                            "about": "",
-                            "bodyHTML": "<p>Choose the Greek letter.</p>",
-                            "images": [],
-                            "maxScore": 2,
-                            "type": 1,
-                            "alternatives": [
-                                {"id": 1, "title": "Alpha", "about": "", "right": False},
-                                {"id": 2, "title": "Beta", "about": "", "right": False},
-                            ],
-                        }
-                    ]
-                }
-            ]
+            "id": 1,
+            "title": "Single without key",
+            "about": "",
+            "bodyHTML": "<p>Choose the Greek letter.</p>",
+            "images": [],
+            "maxScore": 2,
+            "type": 1,
+            "alternatives": [
+                {"id": 1, "title": "Alpha", "about": "", "right": False},
+                {"id": 2, "title": "Beta", "about": "", "right": False},
+            ],
         }
-    ).encode("utf-8")
+    ]
+    if include_open_ended:
+        questions.append(
+            {
+                "id": 2,
+                "title": "Essay",
+                "about": "",
+                "bodyHTML": "<p>Explain.</p>",
+                "images": [],
+                "maxScore": 4,
+                "type": 0,
+            }
+        )
+    return json.dumps({"exams": [{"questions": questions}]}).encode("utf-8")
 
 
 class _Harness:
@@ -372,7 +377,11 @@ class _Harness:
             id_generator=UUIDGenerator(),
         )
 
-    async def seed_claimed_job(self) -> ExamAnswerKeyEnrichmentJob:
+    async def seed_claimed_job(
+        self,
+        *,
+        source_dxe: bytes | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob:
         conversion_job = ConversionHubJob(
             id=uuid4(),
             owner_user_id=uuid4(),
@@ -390,7 +399,7 @@ class _Harness:
                 conversion_job_id=conversion_job.id,
                 owner_user_id=conversion_job.owner_user_id,
                 input_filename="exam.dxe",
-                source_dxe=_unkeyed_dxe_bytes(),
+                source_dxe=source_dxe or _unkeyed_dxe_bytes(),
                 now=_NOW,
             )
         )
@@ -435,6 +444,34 @@ async def test_successful_job_reserves_reconciles_and_completes_conversion() -> 
     overlay_items = proposal.overlay_json["items"]
     assert isinstance(overlay_items, list)
     assert len(overlay_items) == 1
+
+
+async def test_mixed_exam_enriches_only_supported_item_and_completes_conversion() -> None:
+    harness = _Harness(
+        provider=StubProvider(
+            content={"correct_alternative_ids": [2]},
+            usage=StructuredLLMUsage(total_tokens=190),
+        )
+    )
+    job = await harness.seed_claimed_job(source_dxe=_unkeyed_dxe_bytes(include_open_ended=True))
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert harness.provider.call_count == 1
+    assert len(harness.leases.leases) == 1
+    proposal = harness.proposed_overlays.records[0]
+    overlay_items = proposal.overlay_json["items"]
+    assert isinstance(overlay_items, list)
+    assert len(overlay_items) == 1
+    overlay_item = overlay_items[0]
+    assert isinstance(overlay_item, dict)
+    assert overlay_item["item_id"] == "item-001"
+    assert harness.producer.overlay_key_provenance is (
+        DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY
+    )
+    conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
 
 
 async def test_lease_refusal_fails_closed_with_zero_provider_calls() -> None:

@@ -135,10 +135,10 @@ def numbered_gap_fill_output_spec(gap_count: int) -> StructuredOutputSpec:
 def plan_answer_key_enrichment(exam: DigiExamIntermediateExam) -> AnswerKeyEnrichmentPlan:
     """Decide whether machine proposals can complete this parsed exam.
 
-    ELIGIBLE requires that missing answer keys are the only conversion
-    blockers and that every unkeyed machine-marked item can carry one
-    text-only structured proposal; any other blocker keeps the exam on the
-    unchanged ST-SKRIPT-39-01 manual-follow-up path.
+    ELIGIBLE requires that every unkeyed machine-marked item can carry one
+    text-only structured proposal. Open-ended items may remain on the manual
+    marking path while supported unkeyed items are enriched; other blockers
+    keep the exam on the unchanged ST-SKRIPT-39-01 manual-follow-up path.
     """
 
     unkeyed_items = tuple(
@@ -157,7 +157,11 @@ def plan_answer_key_enrichment(exam: DigiExamIntermediateExam) -> AnswerKeyEnric
     other_blockers = tuple(
         follow_up
         for follow_up in exam.manual_follow_ups
-        if follow_up.reason != DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED
+        if follow_up.reason
+        not in {
+            DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED,
+            DigiExamIrManualFollowUpReason.MANUAL_MARKING_REQUIRED,
+        }
     )
     if other_blockers:
         return AnswerKeyEnrichmentPlan(

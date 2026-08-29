@@ -172,8 +172,21 @@ def _question(*, keyed: bool) -> dict[str, JsonValue]:
     }
 
 
-def _upload(*, keyed: bool) -> ConversionHubUpload:
-    payload = {"exams": [{"questions": [_question(keyed=keyed)]}]}
+def _upload(*, keyed: bool, include_open_ended: bool = False) -> ConversionHubUpload:
+    questions = [_question(keyed=keyed)]
+    if include_open_ended:
+        questions.append(
+            {
+                "id": 2,
+                "title": "Essay",
+                "about": "",
+                "bodyHTML": "<p>Explain.</p>",
+                "images": [],
+                "maxScore": 4,
+                "type": 0,
+            }
+        )
+    payload = {"exams": [{"questions": questions}]}
     return ConversionHubUpload(
         filename="exam.dxe",
         content_type="application/octet-stream",
@@ -217,6 +230,21 @@ async def test_unkeyed_upload_enqueues_one_enrichment_job_without_converting() -
     assert enrichment_job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED
     assert enrichment_job.conversion_job_id == result.job_id
     assert enrichment_job.source_dxe == _upload(keyed=False).file_bytes
+
+
+async def test_mixed_manual_marking_upload_enqueues_supported_unkeyed_items() -> None:
+    harness = _Harness(enrichment_enabled=True)
+
+    result = await harness.handler.handle(
+        actor=_actor(),
+        upload=_upload(keyed=False, include_open_ended=True),
+        overlay_bytes=None,
+        correlation_id=None,
+    )
+
+    assert result.status is ConversionHubJobStatus.SUBMITTED
+    assert harness.producer.calls == 0
+    assert len(harness.enrichment_jobs.jobs) == 1
 
 
 async def test_source_keyed_upload_keeps_the_synchronous_path() -> None:
