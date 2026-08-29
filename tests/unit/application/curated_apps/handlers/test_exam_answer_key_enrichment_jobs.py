@@ -140,6 +140,20 @@ class InMemoryEnrichmentJobRepository:
                 return claimed
         return None
 
+    async def claim_next_expired(
+        self,
+        *,
+        now: datetime,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        for job in self.jobs.values():
+            if (
+                job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING
+                and job.locked_until is not None
+                and job.locked_until < now
+            ):
+                return job
+        return None
+
 
 class InMemoryLeaseRepository:
     """In-memory mirror of the Postgres lease semantics for lifecycle tests."""
@@ -480,3 +494,40 @@ async def test_invalid_model_output_fails_without_a_proposal() -> None:
     assert harness.proposed_overlays.records == []
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
     assert conversion_job.status is ConversionHubJobStatus.FAILED
+
+
+async def test_expired_running_job_fail_closes_both_jobs_without_calls_or_refund() -> None:
+    provider = StubProvider(
+        content={"correct_alternative_ids": [2]},
+        usage=StructuredLLMUsage(total_tokens=190),
+    )
+    harness = _Harness(provider=provider)
+    job = await harness.seed_claimed_job()
+    await harness.leases.reserve(
+        now=_NOW,
+        requested_tokens=300,
+        job_id=job.id,
+        item_id="item-001",
+        provider_profile_id="openai-gpt-5.6-luna",
+    )
+
+    still_leased = await harness.handler.fail_next_expired(now=_NOW)
+    assert still_leased is None
+
+    after_expiry = _NOW + timedelta(seconds=1800)
+    failed = await harness.handler.fail_next_expired(now=after_expiry)
+
+    assert failed is not None
+    assert failed.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert failed.last_error == "enrichment_worker_lease_expired"
+    assert failed.locked_by is None
+    conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
+    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.error_message is not None
+    assert provider.call_count == 0
+    leases = list(harness.leases.leases.values())
+    assert len(leases) == 1
+    assert leases[0].state is AnswerKeyTokenLeaseState.RESERVED
+    usage = await harness.leases.day_usage(utc_day=lease_utc_day(_NOW))
+    assert usage.charged_tokens == 300
+    assert await harness.handler.fail_next_expired(now=after_expiry) is None

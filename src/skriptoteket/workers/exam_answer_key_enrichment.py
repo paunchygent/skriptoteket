@@ -34,9 +34,24 @@ async def process_next_answer_key_enrichment_job(
     now: datetime,
     lease_ttl: timedelta,
 ) -> bool:
-    """Claim and process at most one enrichment job; report whether one ran."""
+    """Advance the enrichment lane by one step; report whether one step ran.
+
+    Each invocation first fail-closes at most one RUNNING job whose worker
+    lease expired (a crashed worker; no retry), then claims and processes at
+    most one queued job.
+    """
 
     async with container(scope=Scope.REQUEST) as request:
+        handler = await request.get(ProcessExamAnswerKeyEnrichmentJobHandler)
+        expired = await handler.fail_next_expired(now=now)
+        if expired is not None:
+            logger.warning(
+                "Answer-key enrichment job fail-closed after worker lease expiry",
+                job_id=str(expired.id),
+                conversion_job_id=str(expired.conversion_job_id),
+                worker_id=worker_id,
+            )
+            return True
         uow = await request.get(UnitOfWorkProtocol)
         jobs = await request.get(ExamAnswerKeyEnrichmentJobRepositoryProtocol)
         async with uow:
@@ -49,7 +64,6 @@ async def process_next_answer_key_enrichment_job(
             conversion_job_id=str(job.conversion_job_id),
             worker_id=worker_id,
         )
-        handler = await request.get(ProcessExamAnswerKeyEnrichmentJobHandler)
         finished = await handler.handle(job=job)
         logger.info(
             "Answer-key enrichment job finished",

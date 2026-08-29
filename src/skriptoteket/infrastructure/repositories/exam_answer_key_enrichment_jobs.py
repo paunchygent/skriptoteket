@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -98,20 +98,10 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
                 < ExamAnswerKeyEnrichmentJobModel.max_attempts
             )
             .where(
-                or_(
-                    and_(
-                        ExamAnswerKeyEnrichmentJobModel.status
-                        == ExamAnswerKeyEnrichmentJobStatus.QUEUED.value,
-                        ExamAnswerKeyEnrichmentJobModel.available_at <= now,
-                    ),
-                    and_(
-                        ExamAnswerKeyEnrichmentJobModel.status
-                        == ExamAnswerKeyEnrichmentJobStatus.RUNNING.value,
-                        ExamAnswerKeyEnrichmentJobModel.locked_until.is_not(None),
-                        ExamAnswerKeyEnrichmentJobModel.locked_until < now,
-                    ),
-                )
+                ExamAnswerKeyEnrichmentJobModel.status
+                == ExamAnswerKeyEnrichmentJobStatus.QUEUED.value
             )
+            .where(ExamAnswerKeyEnrichmentJobModel.available_at <= now)
             .order_by(ExamAnswerKeyEnrichmentJobModel.created_at.asc())
             .with_for_update(skip_locked=True)
             .limit(1)
@@ -128,3 +118,29 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         await self._session.flush()
         await self._session.refresh(model)
         return ExamAnswerKeyEnrichmentJob.model_validate(model)
+
+    async def claim_next_expired(
+        self,
+        *,
+        now: datetime,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Take one RUNNING job whose worker lease expired, for fail-closing.
+
+        The row stays locked until the caller's transaction commits, so the
+        fail-close transition is atomic with this selection.
+        """
+        stmt = (
+            select(ExamAnswerKeyEnrichmentJobModel)
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.status
+                == ExamAnswerKeyEnrichmentJobStatus.RUNNING.value
+            )
+            .where(ExamAnswerKeyEnrichmentJobModel.locked_until.is_not(None))
+            .where(ExamAnswerKeyEnrichmentJobModel.locked_until < now)
+            .order_by(ExamAnswerKeyEnrichmentJobModel.created_at.asc())
+            .with_for_update(skip_locked=True)
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None

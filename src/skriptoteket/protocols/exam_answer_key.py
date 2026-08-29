@@ -102,6 +102,14 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None: ...
 
+    async def claim_next_expired(
+        self,
+        *,
+        now: datetime,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Take one RUNNING job whose worker lease expired, for fail-closing."""
+        ...
+
 
 class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):
     """Persist machine-proposed answer-key overlays as proposal records."""

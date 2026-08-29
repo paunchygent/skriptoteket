@@ -100,6 +100,13 @@ class InMemoryEnrichmentJobRepository:
     ) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
+    async def claim_next_expired(
+        self,
+        *,
+        now: datetime,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        return None
+
 
 class RecordingProducer:
     """Producer double that converts synchronously and records its calls."""

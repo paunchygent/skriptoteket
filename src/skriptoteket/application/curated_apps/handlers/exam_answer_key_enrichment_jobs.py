@@ -211,6 +211,33 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             source_ir_sha256=source_ir_sha256,
         )
 
+    async def fail_next_expired(self, *, now: datetime) -> ExamAnswerKeyEnrichmentJob | None:
+        """Fail-close one RUNNING job whose worker lease expired.
+
+        A crashed worker leaves its job RUNNING past the lease TTL; there is
+        no retry, so the job and its owning conversion fail closed in one
+        transaction. Leases already charged stay charged.
+        """
+
+        async with self._uow:
+            job = await self._enrichment_jobs.claim_next_expired(now=now)
+            if job is None:
+                return None
+            await self._update_conversion_job(
+                conversion_job_id=job.conversion_job_id,
+                status=ConversionHubJobStatus.FAILED,
+                error_message=_MANUAL_COMPLETION_MESSAGE,
+                now=now,
+            )
+            return await self._enrichment_jobs.update(
+                job=finish_enrichment_job(
+                    job=job,
+                    status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                    now=now,
+                    last_error="enrichment_worker_lease_expired",
+                )
+            )
+
     async def _record_attempt_and_reserve(
         self,
         *,

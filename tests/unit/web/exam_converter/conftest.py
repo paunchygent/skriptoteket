@@ -175,6 +175,13 @@ class RefusingEnrichmentJobRepository:
     ) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
+    async def claim_next_expired(
+        self,
+        *,
+        now: datetime,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        return None
+
 
 class _StubCuratedAppRegistry(CuratedAppRegistryProtocol):
     def __init__(self, *, app: CuratedAppDefinition) -> None:
