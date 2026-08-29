@@ -4,20 +4,20 @@ id: TASK-SKRIPT-39-01-01
 title: Prove the in-process dxe to Exam.net bundle walking skeleton
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-29'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: independent-reviewer
+  decided_at: '2026-08-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent review regenerated the Sir Convert reference from 41be61a6 and reproduced byte-equal QTI-package and PDF parity, verified the full validator set and Exam.net contract obligations on integrated commit 1b7392e6 (merge 704d7fe7, published), and approved on re-review after both requested changes were resolved (upload size caps via read_upload_files; volatile CHECKPOINT.md excluded from the merge) and the authenticated HuleEdu browser-session live check succeeded (job e3be5d9c-b7be-4e7a-9dbc-d7e5dd9aebcb, bundle qti-package.zip sha256 f36a4ae342a4a734a9f8126b694101517a46b7b3751d1b19ece72484a5328698, gateway log proxying to skriptoteket-web:8000), recorded in handoff.md.
 task_kind: story
 acceptance_criteria:
-- A real DigiExam .dxe fixture converts inside the Skriptoteket backend to an Exam.net
-  QTI package and Exam.net-profile PDF with byte-comparable parity against the Sir
-  Convert outputs at revision 41be61a6, reachable through the authenticated Exam Converter
-  flow behind a lane switch defaulting to the existing Sir Convert path, with the
-  ported contract-rule fixtures passing and a live functional check recorded in handoff.md
+  - A real DigiExam .dxe fixture converts inside the Skriptoteket backend to an Exam.net QTI package and Exam.net-profile PDF with byte-comparable parity against the Sir Convert outputs at revision 41be61a6, reachable through the authenticated Exam Converter flow behind a lane switch defaulting to the existing Sir Convert path, with the ported contract-rule fixtures passing and a live functional check recorded in handoff.md
 story: ST-SKRIPT-39-01
 backlog_document_profile: contract-derived
 ---
@@ -60,8 +60,8 @@ into the Skriptoteket backend and prove it end to end.
 
 - ST-SKRIPT-39-01 slice contract; EPIC-SKRIPT-39; ADR-SKRIPT-0090.
 - Source revision: sir-convert-a-lot `main` at `41be61a6` — exam domain
-  under `scripts/sir_convert_a_lot/domain/` (digiexam_*, examnet_qti_*,
-  exam_authoring_*), infrastructure seams `examnet_qti_package_writer.py`,
+  under `scripts/sir_convert_a_lot/domain/` (digiexam\_*, examnet_qti\_*,
+  exam_authoring\_\*), infrastructure seams `examnet_qti_package_writer.py`,
   `digiexam_examnet_pdf_renderer.py`, `weasyprint_html_to_pdf.py`,
   `digiexam_pdf_text.py`, and tests under `tests/sir_convert_a_lot/exam/`.
 - Governed contract:
@@ -110,9 +110,9 @@ require async offloading — follow the existing curated-app job pattern.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | The skeleton ports behavior and tests from `41be61a6`, not service plumbing; Skriptoteket layering governs placement. |
-| T2  | The in-process lane ships behind an operator-facing switch defaulting to the Sir Convert path. |
+| ID  | Decided contract term                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T1  | The skeleton ports behavior and tests from `41be61a6`, not service plumbing; Skriptoteket layering governs placement.                                              |
+| T2  | The in-process lane ships behind an operator-facing switch defaulting to the Sir Convert path.                                                                     |
 | T3  | Parity is byte-comparable for the QTI package with any accepted differences enumerated; the empirical-contract fixtures run inside Skriptoteket from this task on. |
-| T4  | No new heavy dependencies in the skeleton; the result-PDF evidence path may be deferred rather than adopting pymupdf here. |
+| T4  | No new heavy dependencies in the skeleton; the result-PDF evidence path may be deferred rather than adopting pymupdf here.                                         |

@@ -18,20 +18,33 @@
   accepted-difference list). Verification 2026-08-29: 96 new/ported tests green
   (`pdm run pytest tests/unit/domain/curated_apps/exam_conversion tests/unit/application/curated_apps/test_exam_conversion_parity.py tests/unit/application/curated_apps/handlers/test_conversion_hub_jobs.py tests/unit/web/exam_converter -q`), `pdm run lint` green, `pdm run typecheck`
   at the pre-existing 10-error `script_bank` baseline, full `tests/unit`
-  failure set identical to the clean tree. Live check: with the dev db up,
-  migrations applied, and `pdm run dev` running under
-  `EXAM_CONVERTER_CONVERSION_LANE=in_process`, the backend boots the full DI
-  container, exposes the new route in `/openapi.json`, and returns 401 for an
-  unauthenticated conversion POST; the authenticated HuleEdu browser-session
-  ceremony proof remains open and the task stays `in_progress` until it is
-  recorded here. Independent review 2026-08-29 (retained at the session
-  scratchpad `reviews/TASK-SKRIPT-39-01-01-review.md`): the reviewer
+  failure set identical to the clean tree. The task is `done`; integrated
+  merge `704d7fe7` is published. Independent review 2026-08-29: the reviewer
   regenerated the Sir Convert reference from `41be61a6` and reproduced byte
   equality for the QTI package and the PDF, confirmed the full validator set
-  and all named Exam.net contract obligations, and requested two changes,
-  both resolved at integration — the volatile `CHECKPOINT.md` state map was
-  excluded from the merge, and the conversion route now reads uploads through
-  the shared `read_upload_files` size caps.
+  and all named Exam.net contract obligations, requested two changes (both
+  resolved: the volatile `CHECKPOINT.md` state map excluded from the merge;
+  uploads read through the shared `read_upload_files` size caps), and
+  approved the resolutions on re-review. Live check 2026-08-29: the
+  authenticated HuleEdu browser-session ceremony proof is recorded — with the
+  local shared-auth lane (HuleEdu `auth-integration` Gateway :8080 + login UI
+  :5174, `auth-integration check` all ok) and the Docker-backed Skriptoteket
+  lane from main `704d7fe7` under `EXAM_CONVERTER_CONVERSION_LANE=in_process`,
+  `scripts/_playwright_auth.py::login_via_auth_entry` as `superuser@local.dev`
+  followed by an in-context CSRF-headered POST to the new conversions route
+  with the fixture and deterministic teacher overlay produced job
+  `e3be5d9c-b7be-4e7a-9dbc-d7e5dd9aebcb` (`succeeded`); the bundle downloaded
+  through the existing `/jobs/{id}/artifact` route contains `qti-package.zip`
+  byte-identical to the parity reference (sha256 `f36a4ae3…`), the Exam.net
+  PDF, and a passed `qti-validation-report.json`, and the Gateway log confirms
+  both calls were proxied to `skriptoteket-web:8000`. The container-rendered
+  PDF hash differs from the macOS seat as the documented WeasyPrint font-stack
+  dependence predicts; the committed structural PDF assertion covers this.
+  The `.dxe` fixtures are byte-exact and excluded from the pre-commit
+  end-of-file/whitespace fixers after the fixer mutated them once at
+  integration. The task worktree and its dev services, plus the live-check
+  docker lanes (HuleEdu auth-integration, Skriptoteket web/db/frontend from
+  main), are left running per policy; worktree retirement is pending.
 - [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
   and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
   are approved (`active`/`accepted`) through `agent-planning:user-closure-gate`
