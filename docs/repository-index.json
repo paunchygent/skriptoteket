@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "15192a5545636bf80704e673a605c6abc840bb66a3fe0a79e1bbc58f359afd1a",
+  "source_set_digest": "1c2759503a83c7da03b93d5ab6ce8d30d7d2ae0a3c065ad698506b3311c46ea9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2108,7 +2108,7 @@
       "type": "story",
       "title": "Walking skeleton for Skriptoteket-owned exam conversion",
       "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md",
-      "status": "proposed",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4107,7 +4107,7 @@
       "type": "task",
       "title": "Prove the in-process dxe to Exam.net bundle walking skeleton",
       "path": "docs/backlog/tasks/task-skript-39-01-01-prove-the-in-process-dxe-to-exam-net-bundle-walking-skeleton.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
@@ -10404,6 +10404,13 @@
         "title": "Adopt the shared governed development system",
         "status": "done",
         "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md"
+      },
+      {
+        "id": "ST-SKRIPT-39-01",
+        "type": "story",
+        "title": "Walking skeleton for Skriptoteket-owned exam conversion",
+        "status": "active",
+        "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md"
       }
     ]
   }

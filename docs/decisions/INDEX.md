@@ -163,3 +163,4 @@
 - `ST-SKRIPT-37-04` | [App presentation decomposition and naming reset](../backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md) | story | ready
 - `ST-SKRIPT-37-05` | [Cross-app save/export file naming protocol](../backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | story | ready
 - `ST-SKRIPT-38-01` | [Adopt the shared governed development system](../backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | story | done
+- `ST-SKRIPT-39-01` | [Walking skeleton for Skriptoteket-owned exam conversion](../backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | story | active
