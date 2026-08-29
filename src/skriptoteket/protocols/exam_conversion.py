@@ -18,6 +18,9 @@ from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
+    DigiExamAnswerKeyProvenance,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfDocument,
 )
@@ -62,6 +65,9 @@ class InProcessExamConverterProtocol(Protocol):
         upload: "ConversionHubUpload",
         overlay_bytes: bytes | None,
         correlation_id: str | None,
+        overlay_key_provenance: DigiExamAnswerKeyProvenance = (
+            DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
+        ),
     ) -> ExamConversionStoredArtifact: ...
 
 

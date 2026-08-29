@@ -23,18 +23,29 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
 )
+from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
+    enqueue_enrichment_job,
+)
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConverterConversionLane,
     ExamConverterConversionSubmitResult,
     build_local_exam_conversion_producer_id,
 )
+from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
+    AnswerKeyEnrichmentPlanState,
+    plan_answer_key_enrichment,
 )
 from skriptoteket.domain.errors import DomainError, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+)
 from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
@@ -58,6 +69,8 @@ class CreateExamConverterConversionJobsHandler:
         lane: ExamConverterConversionLane,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        enrichment_enabled: bool,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -66,6 +79,8 @@ class CreateExamConverterConversionJobsHandler:
         self._lane = lane
         self._producer = producer
         self._artifacts = artifacts
+        self._enrichment_jobs = enrichment_jobs
+        self._enrichment_enabled = enrichment_enabled
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
@@ -94,6 +109,17 @@ class CreateExamConverterConversionJobsHandler:
         """
         if self._lane.value != "in_process":
             raise validation_error(_LANE_DISABLED_MESSAGE)
+        if self._should_enqueue_enrichment(upload=upload, overlay_bytes=overlay_bytes):
+            job = await self._create_job_with_enrichment(
+                actor=actor,
+                upload=upload,
+                correlation_id=correlation_id,
+            )
+            return ExamConverterConversionSubmitResult(
+                job_id=job.id,
+                status=job.status,
+                error=job.error_message,
+            )
         job = await self._create_local_job(
             actor=actor,
             filename=upload.filename,
@@ -110,6 +136,62 @@ class CreateExamConverterConversionJobsHandler:
             status=job.status,
             error=job.error_message,
         )
+
+    def _should_enqueue_enrichment(
+        self,
+        *,
+        upload: ConversionHubUpload,
+        overlay_bytes: bytes | None,
+    ) -> bool:
+        """Route unkeyed, overlay-free exams to the enrichment worker job.
+
+        Source-keyed and overlay-keyed uploads keep the unchanged synchronous
+        ST-SKRIPT-39-01 path; so does every upload when the answer-key lane is
+        disabled or the exam has blockers machine proposals cannot clear.
+        """
+        if not self._enrichment_enabled or overlay_bytes is not None:
+            return False
+        try:
+            exam = parse_source_exam(upload=upload)
+        except DomainError:
+            return False
+        plan = plan_answer_key_enrichment(exam)
+        return plan.state is AnswerKeyEnrichmentPlanState.ELIGIBLE
+
+    async def _create_job_with_enrichment(
+        self,
+        *,
+        actor: User,
+        upload: ConversionHubUpload,
+        correlation_id: str | None,
+    ) -> ConversionHubJob:
+        now = self._clock.now()
+        async with self._uow:
+            job = await self._jobs.create(
+                job=ConversionHubJob(
+                    id=self._id_generator.new_uuid(),
+                    owner_user_id=actor.id,
+                    input_filename=upload.filename,
+                    source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+                    output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+                    pdf_layout=None,
+                    status=ConversionHubJobStatus.SUBMITTED,
+                    correlation_id=correlation_id,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+            await self._enrichment_jobs.create(
+                job=enqueue_enrichment_job(
+                    job_id=self._id_generator.new_uuid(),
+                    conversion_job_id=job.id,
+                    owner_user_id=actor.id,
+                    input_filename=upload.filename,
+                    source_dxe=upload.file_bytes,
+                    now=now,
+                )
+            )
+        return job
 
     async def _create_local_job(
         self,

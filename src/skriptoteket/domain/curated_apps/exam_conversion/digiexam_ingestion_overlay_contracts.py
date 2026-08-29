@@ -245,6 +245,7 @@ class DigiExamEffectiveAnswerKeyProvenance(StrEnum):
     """Effective answer-key provenance states separate from parser evidence."""
 
     TEACHER_PROVIDED = "teacher_provided"
+    MACHINE_PROPOSED = "machine_proposed"
 
 
 @dataclass(frozen=True)

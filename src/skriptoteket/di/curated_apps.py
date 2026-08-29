@@ -16,6 +16,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from pathlib import Path
 
+import httpx
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -136,6 +137,9 @@ from skriptoteket.application.curated_apps.handlers.document_converter_project_p
 from skriptoteket.application.curated_apps.handlers.document_converter_saved_sources import (
     ListDocumentConverterSavedFilesHandler,
     SubmitDocumentConverterSavedFileHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
+    ProcessExamAnswerKeyEnrichmentJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
     CreateExamConverterConversionJobsHandler,
@@ -266,6 +270,13 @@ from skriptoteket.infrastructure.documents.document_converter_project_previews i
 from skriptoteket.infrastructure.documents.markdown_rendering import PythonMarkdownToHtmlRenderer
 from skriptoteket.infrastructure.documents.pdf_rendering import WeasyPrintHtmlToPdfRenderer
 from skriptoteket.infrastructure.documents.pdf_text_extraction import PdfPlumberTextExtractor
+from skriptoteket.infrastructure.llm.openai.answer_key_profiles import (
+    LunaOnlyAnswerKeyProviderSelector,
+    build_luna_answer_key_profile,
+)
+from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
+    OpenAIAnswerKeyStructuredProvider,
+)
 from skriptoteket.infrastructure.repositories import (
     conversion_hub_transcript_formatter_export_states as export_state_repositories,
 )
@@ -304,6 +315,15 @@ from skriptoteket.infrastructure.repositories.conversion_hub_saved_transcripts i
 )
 from skriptoteket.infrastructure.repositories.conversion_hub_transcript_formatter_artifacts import (
     PostgreSQLConversionHubTranscriptFormatterArtifactRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
+    PostgreSQLExamAnswerKeyEnrichmentJobRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
+    PostgreSQLExamAnswerKeyProposedOverlayRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
+    PostgreSQLAnswerKeyTokenLeaseRepository,
 )
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
@@ -360,6 +380,13 @@ from skriptoteket.protocols.documents import (
     HtmlToPdfRendererProtocol,
     MarkdownToHtmlRendererProtocol,
     PdfTextExtractorProtocol,
+)
+from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyProviderSelectorProtocol,
+    AnswerKeyStructuredProviderProtocol,
+    AnswerKeyTokenLeaseRepositoryProtocol,
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ExamAnswerKeyProposedOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
@@ -1767,6 +1794,8 @@ class CuratedAppsProvider(Provider):
         lane: ExamConverterConversionLane,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -1774,6 +1803,77 @@ class CuratedAppsProvider(Provider):
         return CreateExamConverterConversionJobsHandler(
             jobs=jobs,
             lane=lane,
+            producer=producer,
+            artifacts=artifacts,
+            enrichment_jobs=enrichment_jobs,
+            enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_answer_key_enrichment_job_repository(
+        self, session: AsyncSession
+    ) -> ExamAnswerKeyEnrichmentJobRepositoryProtocol:
+        return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def exam_answer_key_token_lease_repository(
+        self,
+        session: AsyncSession,
+        settings: Settings,
+    ) -> AnswerKeyTokenLeaseRepositoryProtocol:
+        return PostgreSQLAnswerKeyTokenLeaseRepository(
+            session,
+            daily_token_limit=settings.LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_answer_key_proposed_overlay_repository(
+        self, session: AsyncSession
+    ) -> ExamAnswerKeyProposedOverlayRepositoryProtocol:
+        return PostgreSQLExamAnswerKeyProposedOverlayRepository(session)
+
+    @provide(scope=Scope.APP)
+    def answer_key_provider_selector(self, settings: Settings) -> AnswerKeyProviderSelectorProtocol:
+        return LunaOnlyAnswerKeyProviderSelector(profile=build_luna_answer_key_profile(settings))
+
+    @provide(scope=Scope.APP)
+    def answer_key_structured_provider(
+        self,
+        settings: Settings,
+        client: httpx.AsyncClient,
+    ) -> AnswerKeyStructuredProviderProtocol:
+        return OpenAIAnswerKeyStructuredProvider(
+            client=client,
+            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+            api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+            timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def process_exam_answer_key_enrichment_job_handler(
+        self,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        conversion_jobs: ConversionHubJobRepositoryProtocol,
+        leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
+        provider: AnswerKeyStructuredProviderProtocol,
+        provider_selector: AnswerKeyProviderSelectorProtocol,
+        producer: InProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
+        return ProcessExamAnswerKeyEnrichmentJobHandler(
+            enrichment_jobs=enrichment_jobs,
+            conversion_jobs=conversion_jobs,
+            leases=leases,
+            proposed_overlays=proposed_overlays,
+            provider=provider,
+            provider_selector=provider_selector,
             producer=producer,
             artifacts=artifacts,
             uow=uow,
