@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5a2778148b3d21fe89d6d920bcee47be403e93ad5c27aec558cf8872dd0e7946",
+  "source_set_digest": "7cd8a748a545b949695c4f642d2b8935bf3095934739487326fe9ba55033e8b8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4172,7 +4172,7 @@
       "type": "task",
       "title": "Prove failover, exhaustion fail-close, and operator lease status for the answer-key lane",
       "path": "docs/backlog/tasks/task-skript-39-02-02-prove-failover-exhaustion-fail-close-and-operator-lease-status-for-the-answer-key-lane.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [

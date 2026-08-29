@@ -8,10 +8,21 @@
   Postgres table owned through the Unit of Work with UTC-day partitioning,
   enrichment as an execution-worker job.
   [TASK-SKRIPT-39-02-01](docs/backlog/tasks/task-skript-39-02-01-stand-up-the-in-process-answer-key-completion-vertical-with-the-luna-profile-and-postgres-lease.md)
-  (Luna vertical + lease) is `in_progress`;
+  (Luna vertical + lease) is implemented, independently reviewed, and
+  approved after one fail-close correction; integrated merge `c191d8ac` is
+  published. The vertical: Luna profile `gpt-5.6-luna` (low effort,
+  docs-verified) behind a provider-selection seam, one Postgres lease table
+  `exam_answer_key_token_leases` reserved in the same UoW transaction as the
+  enrichment attempt (UTC-day reset, never refunded, typed refusal with
+  reset time, refusal means zero provider calls), enrichment as an
+  execution-worker job with TTL fail-close (`enrichment_worker_lease_expired`
+  fails both jobs atomically), and machine-proposed overlays under
+  `MACHINE_PROPOSED` provenance with teacher-review and readiness semantics
+  unchanged (228 affected tests green; migration `b7d3f1a5c9e2` idempotency
+  proven). The recorded live Luna completion still gates closure.
   [TASK-SKRIPT-39-02-02](docs/backlog/tasks/task-skript-39-02-02-prove-failover-exhaustion-fail-close-and-operator-lease-status-for-the-answer-key-lane.md)
-  (failover, exhaustion fail-close, operator lease status) is `ready` and
-  starts on the 02-01 seams.
+  (failover, exhaustion fail-close, operator lease status) is `in_progress`
+  on the 02-01 seams.
 - [TASK-SKRIPT-39-01-01](docs/backlog/tasks/task-skript-39-01-01-prove-the-in-process-dxe-to-exam-net-bundle-walking-skeleton.md)
   has an implemented, independently reviewed walking skeleton (branch
   `codex/task-skript-39-01-01`): the exam-conversion domain chain
