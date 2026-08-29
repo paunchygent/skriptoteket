@@ -62,6 +62,15 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprin
     source_item_fingerprint,
 )
 
+_EFFECTIVE_PROVENANCE_BY_APPLIED_KEY = {
+    DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY: (
+        DigiExamEffectiveAnswerKeyProvenance.TEACHER_PROVIDED
+    ),
+    DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY: (
+        DigiExamEffectiveAnswerKeyProvenance.MACHINE_PROPOSED
+    ),
+}
+
 
 def parse_and_apply_digiexam_ingestion_overlay(
     *,
@@ -69,9 +78,19 @@ def parse_and_apply_digiexam_ingestion_overlay(
     source_file_sha256: str,
     source_ir_sha256: str,
     source_exam: DigiExamIntermediateExam,
+    applied_key_provenance: DigiExamAnswerKeyProvenance = (
+        DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
+    ),
 ) -> DigiExamOverlayApplicationResult:
-    """Validate and apply one overlay to a source exam."""
+    """Validate and apply one overlay to a source exam.
 
+    ``applied_key_provenance`` states what applied manual keys represent: the
+    teacher-provided default from ST-SKRIPT-39-01, or machine-proposed keys
+    from the answer-key completion lane.
+    """
+
+    if applied_key_provenance not in _EFFECTIVE_PROVENANCE_BY_APPLIED_KEY:
+        raise ValueError(f"Overlay keys cannot claim provenance {applied_key_provenance.value!r}.")
     overlay = _parse_overlay(overlay_bytes)
     overlay_sha256 = f"sha256:{hashlib.sha256(overlay_bytes).hexdigest()}"
     _validate_source_binding(
@@ -86,6 +105,7 @@ def parse_and_apply_digiexam_ingestion_overlay(
         source_file_sha256=source_file_sha256,
         source_ir_sha256=source_ir_sha256,
         source_exam=source_exam,
+        applied_key_provenance=applied_key_provenance,
     )
 
 
@@ -152,6 +172,7 @@ def _apply_overlay(
     source_file_sha256: str,
     source_ir_sha256: str,
     source_exam: DigiExamIntermediateExam,
+    applied_key_provenance: DigiExamAnswerKeyProvenance,
 ) -> DigiExamOverlayApplicationResult:
     replacements: dict[str, DigiExamIrItem] = {}
     accepted: list[DigiExamIngestionOverlayAcceptedEntry] = []
@@ -185,7 +206,12 @@ def _apply_overlay(
             replacements[item.item_id] = item
             point_correction_summary = point_correction.summary
             applied_fields.append("point_correction")
-        replacement = _manual_key_replacement(entry=entry, item=item, rejected=rejected)
+        replacement = _manual_key_replacement(
+            entry=entry,
+            item=item,
+            rejected=rejected,
+            applied_key_provenance=applied_key_provenance,
+        )
         if replacement is not None:
             replacements[item.item_id] = replacement
             applied_fields.append("manual_answer_key")
@@ -193,7 +219,7 @@ def _apply_overlay(
             item = replacement
             effective_answer_keys[item.item_id] = _effective_answer_key_for_item(
                 item,
-                provenance=DigiExamEffectiveAnswerKeyProvenance.TEACHER_PROVIDED,
+                provenance=_EFFECTIVE_PROVENANCE_BY_APPLIED_KEY[applied_key_provenance],
             )
         if applied_fields:
             accepted.append(_accepted(entry, tuple(applied_fields)))
@@ -232,13 +258,26 @@ def _manual_key_replacement(
     entry: DigiExamIngestionOverlayItem,
     item: DigiExamIrItem,
     rejected: list[DigiExamIngestionOverlayRejectedEntry],
+    applied_key_provenance: DigiExamAnswerKeyProvenance,
 ) -> DigiExamIrItem | None:
     key = entry.manual_answer_key
     if key is None:
         return None
     if isinstance(key, DigiExamOverlayChoiceManualAnswerKey):
-        return _choice_replacement(entry=entry, item=item, key=key, rejected=rejected)
-    return _gap_fill_replacement(entry=entry, item=item, key=key, rejected=rejected)
+        return _choice_replacement(
+            entry=entry,
+            item=item,
+            key=key,
+            rejected=rejected,
+            applied_key_provenance=applied_key_provenance,
+        )
+    return _gap_fill_replacement(
+        entry=entry,
+        item=item,
+        key=key,
+        rejected=rejected,
+        applied_key_provenance=applied_key_provenance,
+    )
 
 
 def _choice_replacement(
@@ -247,6 +286,7 @@ def _choice_replacement(
     item: DigiExamIrItem,
     key: DigiExamOverlayChoiceManualAnswerKey,
     rejected: list[DigiExamIngestionOverlayRejectedEntry],
+    applied_key_provenance: DigiExamAnswerKeyProvenance,
 ) -> DigiExamIrItem | None:
     if item.item_type not in _CHOICE_ITEM_TYPES:
         rejected.append(
@@ -265,7 +305,7 @@ def _choice_replacement(
     return replace(
         item,
         answer_key=DigiExamIrAnswerKey(
-            provenance=DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY,
+            provenance=applied_key_provenance,
             correct_alternative_ids=key.correct_alternative_ids,
             correct_gap_answers=(),
         ),
@@ -278,6 +318,7 @@ def _gap_fill_replacement(
     item: DigiExamIrItem,
     key: DigiExamOverlayGapFillManualAnswerKey,
     rejected: list[DigiExamIngestionOverlayRejectedEntry],
+    applied_key_provenance: DigiExamAnswerKeyProvenance,
 ) -> DigiExamIrItem | None:
     if item.item_type != DigiExamItemType.GAP_FILL:
         rejected.append(
@@ -299,7 +340,7 @@ def _gap_fill_replacement(
     return replace(
         item,
         answer_key=DigiExamIrAnswerKey(
-            provenance=DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY,
+            provenance=applied_key_provenance,
             correct_alternative_ids=(),
             correct_gap_answers=tuple(answers),
         ),

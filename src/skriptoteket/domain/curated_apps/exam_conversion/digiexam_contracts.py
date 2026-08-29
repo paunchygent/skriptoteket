@@ -59,6 +59,7 @@ class DigiExamAnswerKeyProvenance(StrEnum):
     DXE_POPULATED_KEY = "dxe_populated_key"
     GRADED_RESULT_PDF_CORRECT_LABELS = "graded_result_pdf_correct_labels"
     MANUAL_TEACHER_KEY = "manual_teacher_key"
+    MACHINE_PROPOSED_KEY = "machine_proposed_key"
     NOT_APPLICABLE = "not_applicable"
 
 
