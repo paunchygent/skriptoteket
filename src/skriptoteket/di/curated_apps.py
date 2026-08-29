@@ -86,6 +86,12 @@ from skriptoteket.application.curated_apps.document_converter_producers import (
     DocumentConverterProducerPolicy,
     LocalDocumentConverterProducer,
 )
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConverterConversionLane,
+)
+from skriptoteket.application.curated_apps.exam_conversion_producers import (
+    InProcessExamConversionProducer,
+)
 from skriptoteket.application.curated_apps.flunk_out_frenzy import (
     GetFlunkOutFrenzyBootstrapHandler,
 )
@@ -130,6 +136,9 @@ from skriptoteket.application.curated_apps.handlers.document_converter_project_p
 from skriptoteket.application.curated_apps.handlers.document_converter_saved_sources import (
     ListDocumentConverterSavedFilesHandler,
     SubmitDocumentConverterSavedFileHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
+    CreateExamConverterConversionJobsHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
@@ -212,6 +221,15 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     sir_convert_transcript_formatter_producer as transcript_formatter_producer,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_conversion_artifacts import (
+    FilesystemExamConversionArtifactStore,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
+    WeasyPrintExamNetPdfRenderer,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
+    ExamNetQtiPackageWriter,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.sir_convert_client_v2 import (
     SirConvertALotClientV2,
@@ -342,6 +360,12 @@ from skriptoteket.protocols.documents import (
     HtmlToPdfRendererProtocol,
     MarkdownToHtmlRendererProtocol,
     PdfTextExtractorProtocol,
+)
+from skriptoteket.protocols.exam_conversion import (
+    ExamConversionArtifactStoreProtocol,
+    ExamNetPdfRendererProtocol,
+    ExamNetQtiPackageWriterProtocol,
+    InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionRepositoryProtocol,
@@ -1707,6 +1731,57 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
+    def exam_converter_conversion_lane(self, settings: Settings) -> ExamConverterConversionLane:
+        return ExamConverterConversionLane(value=settings.EXAM_CONVERTER_CONVERSION_LANE)
+
+    @provide(scope=Scope.APP)
+    def examnet_qti_package_writer(self) -> ExamNetQtiPackageWriterProtocol:
+        return ExamNetQtiPackageWriter()
+
+    @provide(scope=Scope.APP)
+    def examnet_pdf_renderer(self) -> ExamNetPdfRendererProtocol:
+        return WeasyPrintExamNetPdfRenderer()
+
+    @provide(scope=Scope.APP)
+    def exam_conversion_artifact_store(
+        self,
+        settings: Settings,
+    ) -> ExamConversionArtifactStoreProtocol:
+        return FilesystemExamConversionArtifactStore(artifacts_root=settings.ARTIFACTS_ROOT)
+
+    @provide(scope=Scope.APP)
+    def in_process_exam_converter(
+        self,
+        qti_writer: ExamNetQtiPackageWriterProtocol,
+        pdf_renderer: ExamNetPdfRendererProtocol,
+    ) -> InProcessExamConverterProtocol:
+        return InProcessExamConversionProducer(
+            qti_writer=qti_writer,
+            pdf_renderer=pdf_renderer,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_exam_converter_conversion_jobs_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        lane: ExamConverterConversionLane,
+        producer: InProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateExamConverterConversionJobsHandler:
+        return CreateExamConverterConversionJobsHandler(
+            jobs=jobs,
+            lane=lane,
+            producer=producer,
+            artifacts=artifacts,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.APP)
     def class_list_heuristic_parser(self) -> ClassListHeuristicParserProtocol:
         return ClassListHeuristicParser()
 
@@ -1909,12 +1984,14 @@ class CuratedAppsProvider(Provider):
         self,
         jobs: ConversionHubJobRepositoryProtocol,
         client: SirConvertALotClientV2Protocol,
+        exam_artifacts: ExamConversionArtifactStoreProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> DownloadConversionHubArtifactHandler:
         return DownloadConversionHubArtifactHandler(
             jobs=jobs,
             client=client,
+            exam_artifacts=exam_artifacts,
             uow=uow,
             clock=clock,
         )

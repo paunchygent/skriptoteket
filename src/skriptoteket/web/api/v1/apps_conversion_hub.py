@@ -44,6 +44,9 @@ from skriptoteket.application.curated_apps.document_converter import (
 from skriptoteket.application.curated_apps.document_converter import (
     list_document_converter_routes as build_document_converter_routes,
 )
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConverterConversionSubmitResult,
+)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
     SaveConversionHubSirConvertArtifactHandler,
 )
@@ -61,6 +64,9 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
 )
 from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
     CreateDocumentConverterJobsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
+    CreateExamConverterConversionJobsHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import validation_error
@@ -303,6 +309,55 @@ async def register_exam_converter_job(
 ) -> RegisterExamConverterConversionHubJobResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, request=register_request)
+
+
+@router.post(
+    "/exam-converter/conversions",
+    response_model=ExamConverterConversionSubmitResult,
+)
+async def submit_exam_converter_conversion(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[CreateExamConverterConversionJobsHandler],
+    settings: FromDishka[Settings],
+    file: UploadFile = File(...),
+    ingestion_overlay: UploadFile | None = File(None),
+    user: User = Depends(require_app_user_api),
+) -> ExamConverterConversionSubmitResult:
+    _require_app_access(registry=registry, user=user)
+    if file.filename is None or not file.filename:
+        raise validation_error("Uploaded file is missing a filename.")
+    if not file.filename.lower().endswith(".dxe"):
+        raise validation_error("Endast DigiExam-exporter (.dxe) stöds.")
+    correlation_id_uuid = get_correlation_id(request)
+    correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
+    input_files = await read_upload_files(
+        files=[file],
+        max_files=1,
+        max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+        max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+        default_filename="exam-converter-input.dxe",
+    )
+    overlay_bytes: bytes | None = None
+    if ingestion_overlay is not None:
+        overlay_files = await read_upload_files(
+            files=[ingestion_overlay],
+            max_files=1,
+            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
+            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
+            default_filename="ingestion-overlay.json",
+        )
+        overlay_bytes = overlay_files[0][1]
+    return await handler.handle(
+        actor=user,
+        upload=ConversionHubUpload(
+            filename=file.filename,
+            content_type=file.content_type or "application/octet-stream",
+            file_bytes=input_files[0][1],
+        ),
+        overlay_bytes=overlay_bytes,
+        correlation_id=correlation_id,
+    )
 
 
 @router.get(

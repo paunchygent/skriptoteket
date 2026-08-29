@@ -1,0 +1,21 @@
+{
+  "fixture": "1772718003-test-samma-prov-i-digiexam.dxe",
+  "item_count": 7,
+  "item_types": [
+    "open_ended",
+    "single_choice",
+    "single_choice",
+    "multiple_response",
+    "multiple_response",
+    "multiple_response",
+    "gap_fill"
+  ],
+  "overlay_sha256": "sha256:83a09d4f9326328163100f6386e1a4faf941d1655ef7eb92440856622f31d80c",
+  "pdf_sha256": "sha256:1fa7857b6be002d478b8a45c45b06d4ee36db3e53ba093d9f9d67ba6d6cb5670",
+  "pdf_status": "success",
+  "pdf_warnings": [],
+  "qti_package_sha256": "sha256:f36a4ae342a4a734a9f8126b694101517a46b7b3751d1b19ece72484a5328698",
+  "qti_report_status": "passed",
+  "source_file_sha256": "sha256:9a24b363b0066499ee574b118764f7f93361d7528f13ea9dc013ec06e24aaff5",
+  "source_ir_sha256": "sha256:f6d205ae2cadab52acf6613a786a843958d819565bf183988481e5ca647d435c"
+}

@@ -19,6 +19,10 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
     RegisterExamConverterConversionHubJobRequest,
 )
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConversionStoredArtifact,
+    build_local_exam_conversion_producer_id,
+)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
     CreateConversionHubJobsHandler,
@@ -26,7 +30,7 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     GetConversionHubJobHandler,
     RegisterExamConverterConversionHubJobHandler,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
     SirConvertArtifactV2,
@@ -79,6 +83,20 @@ class SequenceIdGenerator:
 
     def new_uuid(self) -> UUID:
         return self._ids.pop(0)
+
+
+class FakeExamConversionArtifactStore:
+    def __init__(self) -> None:
+        self.artifacts: dict[UUID, ExamConversionStoredArtifact] = {}
+
+    def store_artifact(self, *, job_id: UUID, artifact: ExamConversionStoredArtifact) -> None:
+        self.artifacts[job_id] = artifact
+
+    def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact:
+        artifact = self.artifacts.get(job_id)
+        if artifact is None:
+            raise not_found("ExamConversionArtifact", str(job_id))
+        return artifact
 
 
 class FakeSirConvertClient:
@@ -579,6 +597,7 @@ async def test_download_artifact_proxies_owned_succeeded_job_after_refresh() -> 
     handler = DownloadConversionHubArtifactHandler(
         jobs=repo,
         client=client,
+        exam_artifacts=FakeExamConversionArtifactStore(),
         uow=FakeUow(),
         clock=SequenceClock(datetime(2026, 3, 27, 0, 0, 1, tzinfo=timezone.utc)),
     )
@@ -593,6 +612,53 @@ async def test_download_artifact_proxies_owned_succeeded_job_after_refresh() -> 
     assert content_type == "application/pdf"
     assert content == b"%PDF-1.7"
     assert repo.jobs[job_id].status is ConversionHubJobStatus.SUCCEEDED
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_download_artifact_serves_local_exam_conversion_bundle() -> None:
+    actor = make_user()
+    job_id = uuid4()
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[job_id] = ConversionHubJob(
+        id=job_id,
+        owner_user_id=actor.id,
+        input_filename="prov.dxe",
+        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+        pdf_layout=None,
+        upstream_job_id=build_local_exam_conversion_producer_id(job_id=job_id),
+        status=ConversionHubJobStatus.SUCCEEDED,
+        correlation_id=None,
+        error_message=None,
+        created_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 3, 27, tzinfo=timezone.utc),
+    )
+    exam_artifacts = FakeExamConversionArtifactStore()
+    exam_artifacts.artifacts[job_id] = ExamConversionStoredArtifact(
+        filename="prov-examnet-bundle.zip",
+        content_type="application/zip",
+        content=b"PK-bundle",
+    )
+    client = FakeSirConvertClient()
+    handler = DownloadConversionHubArtifactHandler(
+        jobs=repo,
+        client=client,
+        exam_artifacts=exam_artifacts,
+        uow=FakeUow(),
+        clock=SequenceClock(datetime(2026, 3, 27, 0, 0, 1, tzinfo=timezone.utc)),
+    )
+
+    filename, content_type, content = await handler.handle(
+        actor=actor,
+        job_id=job_id,
+        correlation_id=None,
+    )
+
+    assert filename == "prov-examnet-bundle.zip"
+    assert content_type == "application/zip"
+    assert content == b"PK-bundle"
+    assert client.artifacts_by_upstream_id == {}
 
 
 @pytest.mark.unit
