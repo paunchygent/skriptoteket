@@ -14,6 +14,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
+
 from skriptoteket import config
 from skriptoteket.config import Settings
 
@@ -111,6 +114,35 @@ def test_authenticated_exam_converter_defaults_to_in_process_lane() -> None:
     settings = Settings(_env_file=None)
 
     assert settings.EXAM_CONVERTER_CONVERSION_LANE == "in_process"
+
+
+def test_answer_key_completion_requires_both_provider_credentials_when_enabled() -> None:
+    with pytest.raises(ValidationError, match="OPENAI_LLM_ANSWER_KEY_API_KEY"):
+        Settings(
+            _env_file=None,
+            LLM_ANSWER_KEY_ENABLED=True,
+            OPENAI_LLM_ANSWER_KEY_API_KEY="",
+            OPENROUTER_LLM_ANSWER_KEY_API_KEY="configured-failover",
+        )
+
+    with pytest.raises(ValidationError, match="OPENROUTER_LLM_ANSWER_KEY_API_KEY"):
+        Settings(
+            _env_file=None,
+            LLM_ANSWER_KEY_ENABLED=True,
+            OPENAI_LLM_ANSWER_KEY_API_KEY="configured-primary",
+            OPENROUTER_LLM_ANSWER_KEY_API_KEY="",
+        )
+
+
+def test_answer_key_completion_accepts_configured_provider_credentials() -> None:
+    settings = Settings(
+        _env_file=None,
+        LLM_ANSWER_KEY_ENABLED=True,
+        OPENAI_LLM_ANSWER_KEY_API_KEY="configured-primary",
+        OPENROUTER_LLM_ANSWER_KEY_API_KEY="configured-failover",
+    )
+
+    assert settings.LLM_ANSWER_KEY_ENABLED is True
 
 
 def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:

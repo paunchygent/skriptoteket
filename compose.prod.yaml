@@ -102,6 +102,10 @@ services:
       LLM_CHAT_OPS_FALLBACK_BASE_URL: ${LLM_CHAT_OPS_FALLBACK_BASE_URL:-https://api.openai.com}
       LLM_CHAT_OPS_FALLBACK_MODEL: ${LLM_CHAT_OPS_FALLBACK_MODEL:-gpt-5.2}
       LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT: ${LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT:-low}
+      # Exam answer-key completion: Luna primary with GLM failover.
+      LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
+      OPENAI_LLM_ANSWER_KEY_API_KEY: ${OPENAI_LLM_ANSWER_KEY_API_KEY:-}
+      OPENROUTER_LLM_ANSWER_KEY_API_KEY: ${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}
       # Conversion Hub -> Sir Convert-a-Lot v2
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
@@ -146,6 +150,10 @@ services:
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      # Keep answer-key provider enablement and credentials identical to web.
+      LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
+      OPENAI_LLM_ANSWER_KEY_API_KEY: ${OPENAI_LLM_ANSWER_KEY_API_KEY:-}
+      OPENROUTER_LLM_ANSWER_KEY_API_KEY: ${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}
       # Keep worker runtime on the same canonical Sir Convert v2 env contract as web
       # so queue/CLI flows never depend on stale aliases or partial recreates.
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}

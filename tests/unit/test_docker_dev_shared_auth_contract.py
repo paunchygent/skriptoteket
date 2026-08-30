@@ -172,3 +172,16 @@ def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api(
         "CMD-SHELL",
         WORKER_FAST_HEALTHCHECK_COMMAND,
     ]
+
+
+def test_production_compose_wires_answer_key_provider_config_to_web_and_worker() -> None:
+    compose_payload = yaml.safe_load((ROOT / "compose.prod.yaml").read_text(encoding="utf-8"))
+    expected_environment = {
+        "LLM_ANSWER_KEY_ENABLED": "${LLM_ANSWER_KEY_ENABLED:-false}",
+        "OPENAI_LLM_ANSWER_KEY_API_KEY": "${OPENAI_LLM_ANSWER_KEY_API_KEY:-}",
+        "OPENROUTER_LLM_ANSWER_KEY_API_KEY": "${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}",
+    }
+
+    for service_name in ("web", "worker"):
+        environment = compose_payload["services"][service_name]["environment"]
+        assert {key: environment[key] for key in expected_environment} == expected_environment
