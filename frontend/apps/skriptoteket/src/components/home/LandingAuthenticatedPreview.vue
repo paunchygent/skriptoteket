@@ -13,9 +13,12 @@ import { useRoute } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
+import { useAppAvailability } from "../../composables/useAppAvailability";
 import { HOME_PRIMARY_WORK_APPS } from "./homeWorkApps";
+import type { HomeWorkApp } from "./homeWorkApps";
 
 const route = useRoute();
+const { availabilityLabel, isUnavailable } = useAppAvailability();
 
 const loginUrl = computed(() => {
   const continuation = resolveLandingAuthContinuation(route);
@@ -32,28 +35,35 @@ const registerUrl = computed(() => {
     origin: window.location.origin,
   });
 });
-function getWorkAppSymbol(appId: string): string {
+function getWorkApp(appId: string): HomeWorkApp {
   const app = HOME_PRIMARY_WORK_APPS.find((candidate) => candidate.id === appId);
 
   if (!app) {
-    throw new Error(`Missing work-app symbol for landing preview: ${appId}`);
+    throw new Error(`Missing work app for landing preview: ${appId}`);
   }
 
-  return app.imageSrc;
+  return app;
 }
+
+const audioTranscriptionApp = getWorkApp("audio-transcription");
+const documentConverterApp = getWorkApp("document-converter");
+const examConverterApp = getWorkApp("exam-converter");
 
 const panels = [
   {
     title: "Transkribera tal till text",
-    imageSrc: getWorkAppSymbol("audio-transcription"),
+    imageSrc: audioTranscriptionApp.imageSrc,
+    availability: audioTranscriptionApp.availability ?? "available",
   },
   {
     title: "Skapa PDF:er med hjälp av HTML och CSS",
-    imageSrc: getWorkAppSymbol("document-converter"),
+    imageSrc: documentConverterApp.imageSrc,
+    availability: documentConverterApp.availability ?? "available",
   },
   {
     title: "Skapa, redigera och konvertera prov",
-    imageSrc: getWorkAppSymbol("exam-converter"),
+    imageSrc: examConverterApp.imageSrc,
+    availability: examConverterApp.availability ?? "available",
   },
 ] as const;
 </script>
@@ -81,6 +91,7 @@ const panels = [
         v-for="panel in panels"
         :key="panel.title"
         class="min-h-[15rem] p-6"
+        :class="isUnavailable(panel.availability) ? 'opacity-60 grayscale' : ''"
       >
         <div
           aria-hidden="true"
@@ -98,6 +109,12 @@ const panels = [
         <h3 class="mt-5 text-base font-semibold leading-[1.35] text-navy">
           {{ panel.title }}
         </h3>
+        <p
+          v-if="availabilityLabel(panel.availability)"
+          class="mt-2 text-xs font-semibold text-navy/55"
+        >
+          {{ availabilityLabel(panel.availability) }}
+        </p>
       </article>
     </div>
 

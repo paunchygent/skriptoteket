@@ -205,7 +205,7 @@ async def test_list_saved_files_only_returns_owned_supported_existing_files() ->
     vault_storage = InMemoryVaultStorage()
 
     compatible_html = _vault_file(user_id=actor.id, name="lektion.html")
-    compatible_docx = _vault_file(user_id=actor.id, name="mall.docx")
+    disabled_docx = _vault_file(user_id=actor.id, name="mall.docx")
     unsupported_txt = _vault_file(user_id=actor.id, name="anteckningar.txt")
     deleted_pdf = _vault_file(
         user_id=actor.id,
@@ -217,7 +217,7 @@ async def test_list_saved_files_only_returns_owned_supported_existing_files() ->
 
     for item in [
         compatible_html,
-        compatible_docx,
+        disabled_docx,
         unsupported_txt,
         deleted_pdf,
         other_user_md,
@@ -232,7 +232,7 @@ async def test_list_saved_files_only_returns_owned_supported_existing_files() ->
     )
     await vault_storage.store_file(
         user_id=actor.id,
-        file_id=compatible_docx.id,
+        file_id=disabled_docx.id,
         content=b"docx",
     )
 
@@ -246,10 +246,6 @@ async def test_list_saved_files_only_returns_owned_supported_existing_files() ->
 
     assert [(item.name, item.source_format) for item in result.files] == [
         ("lektion.html", ConversionHubSourceFormatV2.HTML),
-        (
-            "mall.docx",
-            ConversionHubSourceFormatV2.DOCX,
-        ),
     ]
     assert all(item.ref == build_vault_file_ref(file_id=item.file_id) for item in result.files)
 

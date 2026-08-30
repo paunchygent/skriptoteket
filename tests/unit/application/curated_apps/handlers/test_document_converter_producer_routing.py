@@ -1,7 +1,7 @@
-"""Document Converter producer-routing tests.
+"""Document Converter producer-policy tests.
 
 Purpose:
-    Prove automatic local/Sir Convert producer selection and owner-scoped jobs.
+    Prove local CPU selection, unavailable-route rejection, and owner-scoped jobs.
 
 Relationships:
     Exercises the application handler and routing policy.
@@ -33,10 +33,10 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
 from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
     CreateDocumentConverterJobsHandler,
 )
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.documents import PdfTextExtractionProbe
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactOutcomeV2,
-    SirConvertJobStatusV2,
     SirConvertJobV2,
     SirConvertSubmitRequestV2,
     SirConvertSubmittedJobV2,
@@ -232,18 +232,19 @@ async def test_document_converter_policy_marks_simple_html_pdf_as_local() -> Non
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_document_converter_policy_routes_pdf_without_text_to_sir_convert() -> None:
+async def test_document_converter_policy_rejects_pdf_without_text() -> None:
     extractor = FakePdfTextExtractor({"scan.pdf": None})
     policy = DocumentConverterProducerPolicy(pdf_text_extractor=extractor)
 
-    decision = await policy.decide(
-        spec=_pdf_markdown_spec(),
-        upload=ConversionHubUpload("scan.pdf", "application/pdf", b"%PDF-1.7"),
-        correlation_id="corr-1",
-    )
+    with pytest.raises(DomainError) as excinfo:
+        await policy.decide(
+            spec=_pdf_markdown_spec(),
+            upload=ConversionHubUpload("scan.pdf", "application/pdf", b"%PDF-1.7"),
+            correlation_id="corr-1",
+        )
 
-    assert decision.producer is DocumentConverterProducerKind.SIR_CONVERT
-    assert decision.reason == "failed_local_pdf_text_extraction"
+    assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
+    assert excinfo.value.message == "PDF-filen saknar ett läsbart textlager."
     assert extractor.calls == ["scan.pdf"]
 
 
@@ -271,7 +272,7 @@ async def test_document_converter_policy_keeps_simple_extractable_pdf_local() ->
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_document_converter_policy_routes_extractable_complex_pdf_to_sir_convert() -> None:
+async def test_document_converter_policy_rejects_pdf_that_requires_ocr() -> None:
     extractor = FakePdfTextExtractor(
         text_by_filename={"table.pdf": "Column A Column B\n1 2\n3 4"},
         probe_by_filename={
@@ -283,14 +284,17 @@ async def test_document_converter_policy_routes_extractable_complex_pdf_to_sir_c
     )
     policy = DocumentConverterProducerPolicy(pdf_text_extractor=extractor)
 
-    decision = await policy.decide(
-        spec=_pdf_markdown_spec(),
-        upload=ConversionHubUpload("table.pdf", "application/pdf", b"%PDF-1.7"),
-        correlation_id="corr-1",
-    )
+    with pytest.raises(DomainError) as excinfo:
+        await policy.decide(
+            spec=_pdf_markdown_spec(),
+            upload=ConversionHubUpload("table.pdf", "application/pdf", b"%PDF-1.7"),
+            correlation_id="corr-1",
+        )
 
-    assert decision.producer is DocumentConverterProducerKind.SIR_CONVERT
-    assert decision.reason == "table_dense_pdf"
+    assert excinfo.value.code is ErrorCode.VALIDATION_ERROR
+    assert excinfo.value.message == (
+        "PDF-filen kräver textigenkänning som inte är tillgänglig för närvarande."
+    )
     assert extractor.calls == ["table.pdf"]
 
 
@@ -388,18 +392,13 @@ async def test_create_document_converter_jobs_marks_failed_when_local_artifact_s
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_document_converter_jobs_routes_heavy_pdf_to_sir_convert_explicitly() -> None:
+async def test_create_document_converter_jobs_rejects_pdf_without_text_before_job_creation() -> (
+    None
+):
     actor = make_user()
     local_job_id = uuid4()
     repo = InMemoryConversionHubJobRepository()
     client = RecordingSirConvertClient()
-    client.submit_results = [
-        SirConvertSubmittedJobV2(
-            job_id="sir-heavy-1",
-            status=SirConvertJobStatusV2.QUEUED,
-            idempotent_replay=False,
-        )
-    ]
     store = InMemoryDocumentConverterArtifactStore()
     producer = FakeLocalProducer(
         DocumentConverterStoredArtifact(
@@ -421,40 +420,29 @@ async def test_create_document_converter_jobs_routes_heavy_pdf_to_sir_convert_ex
         id_generator=SequenceIdGenerator([local_job_id]),
     )
 
-    result = await handler.handle(
-        actor=actor,
-        spec=_pdf_markdown_spec(),
-        uploads=[ConversionHubUpload("scan.pdf", "application/pdf", b"%PDF-1.7")],
-        wait_seconds=0,
-        correlation_id="corr-1",
-        build_job_spec=_build_job_spec,
-    )
+    with pytest.raises(DomainError):
+        await handler.handle(
+            actor=actor,
+            spec=_pdf_markdown_spec(),
+            uploads=[ConversionHubUpload("scan.pdf", "application/pdf", b"%PDF-1.7")],
+            wait_seconds=0,
+            correlation_id="corr-1",
+            build_job_spec=_build_job_spec,
+        )
 
-    assert result.jobs[0].producer is DocumentConverterProducerKind.SIR_CONVERT
-    assert result.jobs[0].producer_reason == "failed_local_pdf_text_extraction"
-    assert repo.jobs[local_job_id].status is ConversionHubJobStatus.QUEUED
-    assert repo.jobs[local_job_id].upstream_job_id == "sir-heavy-1"
-    assert client.submitted_requests[0].idempotency_key == str(local_job_id)
+    assert repo.jobs == {}
+    assert client.submitted_requests == []
     assert store.artifacts == {}
     assert producer.calls == []
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_create_document_converter_jobs_routes_extractable_complex_pdf_to_sir_convert() -> (
-    None
-):
+async def test_create_document_converter_jobs_rejects_complex_pdf_before_job_creation() -> None:
     actor = make_user()
     local_job_id = uuid4()
     repo = InMemoryConversionHubJobRepository()
     client = RecordingSirConvertClient()
-    client.submit_results = [
-        SirConvertSubmittedJobV2(
-            job_id="sir-table-1",
-            status=SirConvertJobStatusV2.QUEUED,
-            idempotent_replay=False,
-        )
-    ]
     store = InMemoryDocumentConverterArtifactStore()
     producer = FakeLocalProducer(
         DocumentConverterStoredArtifact(
@@ -484,19 +472,17 @@ async def test_create_document_converter_jobs_routes_extractable_complex_pdf_to_
         id_generator=SequenceIdGenerator([local_job_id]),
     )
 
-    result = await handler.handle(
-        actor=actor,
-        spec=_pdf_markdown_spec(),
-        uploads=[ConversionHubUpload("table.pdf", "application/pdf", b"%PDF-1.7")],
-        wait_seconds=0,
-        correlation_id="corr-1",
-        build_job_spec=_build_job_spec,
-    )
+    with pytest.raises(DomainError):
+        await handler.handle(
+            actor=actor,
+            spec=_pdf_markdown_spec(),
+            uploads=[ConversionHubUpload("table.pdf", "application/pdf", b"%PDF-1.7")],
+            wait_seconds=0,
+            correlation_id="corr-1",
+            build_job_spec=_build_job_spec,
+        )
 
-    assert result.jobs[0].producer is DocumentConverterProducerKind.SIR_CONVERT
-    assert result.jobs[0].producer_reason == "table_dense_pdf"
-    assert repo.jobs[local_job_id].status is ConversionHubJobStatus.QUEUED
-    assert repo.jobs[local_job_id].upstream_job_id == "sir-table-1"
-    assert client.submitted_requests[0].idempotency_key == str(local_job_id)
+    assert repo.jobs == {}
+    assert client.submitted_requests == []
     assert store.artifacts == {}
     assert producer.calls == []

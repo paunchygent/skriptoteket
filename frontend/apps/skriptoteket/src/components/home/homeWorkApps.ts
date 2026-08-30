@@ -12,6 +12,7 @@ import documentConverterSymbolUrl from "../../assets/home/work-apps/dokumentkonv
 import codeEditorSymbolUrl from "../../assets/home/work-apps/kodredigerare.png";
 import audioTranscriptionSymbolUrl from "../../assets/home/work-apps/ljudtranskribering.png";
 import examConverterSymbolUrl from "../../assets/home/work-apps/provkonverteraren.png";
+import type { AppAvailability } from "../../composables/useAppAvailability";
 
 export type HomeWorkAppMinRole = "user" | "contributor" | "admin" | "superuser";
 
@@ -21,7 +22,7 @@ export type HomeWorkApp = {
   description: string;
   imageSrc: string;
   to?: string;
-  availabilityLabel?: string;
+  availability?: AppAvailability;
   minRole?: HomeWorkAppMinRole;
 };
 
@@ -46,6 +47,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     description: "Transkribera tal till text och spara resultatet bland dina filer.",
     imageSrc: audioTranscriptionSymbolUrl,
     to: "/apps/audio-transcription",
+    availability: "unavailable",
   },
   {
     id: "document-converter",

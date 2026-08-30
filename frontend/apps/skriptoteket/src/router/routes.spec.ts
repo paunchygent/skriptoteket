@@ -62,7 +62,7 @@ describe("routes", () => {
     });
   });
 
-  it("adds a canonical protected Audio Transcription app identity route", () => {
+  it("keeps Audio Transcription on the shared unavailable-app surface", () => {
     const router = createTestRouter();
 
     const resolved = router.resolve("/apps/audio-transcription");
@@ -70,8 +70,10 @@ describe("routes", () => {
     expect(resolved.name).toBe("audio-transcription-authenticated");
     expect(resolved.meta.requiresAuth).toBe(true);
     expect(resolveMatchedProps("/apps/audio-transcription")).toEqual({
-      presentationMode: "transcript",
+      appTitle: "Ljudtranskribering",
     });
+    const route = routes.find((candidate) => candidate.path === "/apps/audio-transcription");
+    expect(String(route?.component)).toContain("UnavailableAppView.vue");
   });
 
   it("adds the route-visible authenticated Document Converter app before the generic app host", () => {
@@ -101,18 +103,6 @@ describe("routes", () => {
 
     expect(resolved.name).toBe("exam-converter-ui-inspection-fixture");
     expect(resolved.params.fixtureId).toBe("complete-qti-blocked");
-    expect(resolved.meta.requiresAuth).toBe(true);
-  });
-
-  it("adds the authenticated transcript UI-inspection fixture route for test/dev", () => {
-    const router = createTestRouter();
-
-    const resolved = router.resolve(
-      "/apps/documents.conversion_hub/transcript/ui-fixtures/completed-export",
-    );
-
-    expect(resolved.name).toBe("transcript-ui-inspection-fixture");
-    expect(resolved.params.fixtureId).toBe("completed-export");
     expect(resolved.meta.requiresAuth).toBe(true);
   });
 
