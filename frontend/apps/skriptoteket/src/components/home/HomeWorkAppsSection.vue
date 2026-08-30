@@ -11,7 +11,13 @@
 import type { HomeWorkApp } from "./homeWorkApps";
 import { useAppAvailability } from "../../composables/useAppAvailability";
 
-const { availabilityLabel, isUnavailable } = useAppAvailability();
+const { availabilityLabel, isUnavailable, notifyUnavailable } = useAppAvailability();
+
+function handleAppClick(app: HomeWorkApp): void {
+  if (isUnavailable(app.availability)) {
+    notifyUnavailable(app.title);
+  }
+}
 
 defineProps<{
   apps: readonly HomeWorkApp[];
@@ -25,17 +31,26 @@ defineProps<{
   >
     <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
       <component
-        :is="app.to ? 'RouterLink' : 'article'"
+        :is="isUnavailable(app.availability) ? 'button' : app.to ? 'RouterLink' : 'article'"
         v-for="app in apps"
         :key="app.id"
-        v-bind="app.to ? { to: app.to } : { 'aria-disabled': 'true' }"
+        v-bind="
+          isUnavailable(app.availability)
+            ? { type: 'button' }
+            : app.to
+              ? { to: app.to }
+              : { 'aria-disabled': 'true' }
+        "
         :data-testid="`home-work-app-${app.id}`"
-        :data-app-linkable="app.to ? 'true' : 'false'"
+        :data-app-linkable="app.to && !isUnavailable(app.availability) ? 'true' : 'false'"
         class="home-work-app"
         :class="[
-          app.to ? 'group no-underline' : 'home-work-app--static',
+          app.to && !isUnavailable(app.availability)
+            ? 'group no-underline'
+            : 'home-work-app--static',
           isUnavailable(app.availability) ? 'home-work-app--unavailable' : '',
         ]"
+        @click="handleAppClick(app)"
       >
         <div
           class="home-work-app__graphic"
@@ -80,6 +95,10 @@ defineProps<{
   min-height: 18rem;
   border: 1px solid var(--color-navy);
   background: var(--color-panel);
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-align: left;
 }
 
 .home-work-app__body {
@@ -122,5 +141,6 @@ defineProps<{
   background: color-mix(in srgb, var(--color-panel) 88%, var(--color-canvas));
   filter: grayscale(1);
   opacity: 0.58;
+  cursor: pointer;
 }
 </style>

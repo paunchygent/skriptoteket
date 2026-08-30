@@ -55,7 +55,7 @@ class FakeUow(UnitOfWorkProtocol):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_submit_suggestion_requires_contributor(now: datetime) -> None:
+async def test_submit_suggestion_allows_authenticated_user(now: datetime) -> None:
     uow = FakeUow()
     suggestions = AsyncMock(spec=SuggestionRepositoryProtocol)
     professions = AsyncMock(spec=ProfessionRepositoryProtocol)
@@ -72,21 +72,24 @@ async def test_submit_suggestion_requires_contributor(now: datetime) -> None:
         id_generator=id_generator,
     )
 
-    actor = make_user(role=Role.USER)
-    with pytest.raises(DomainError) as exc_info:
-        await handler.handle(
-            actor=actor,
-            command=SubmitSuggestionCommand(
-                title="My idea",
-                description="A useful script",
-                profession_slugs=["larare"],
-                category_slugs=["lektionsplanering"],
-            ),
-        )
+    professions.get_by_slug.return_value = make_profession(now=now)
+    categories.get_by_slug.return_value = make_category(now=now)
 
-    assert exc_info.value.code is ErrorCode.FORBIDDEN
-    assert uow.entered is False
-    suggestions.create.assert_not_called()
+    actor = make_user(role=Role.USER)
+    result = await handler.handle(
+        actor=actor,
+        command=SubmitSuggestionCommand(
+            title="My idea",
+            description="A useful script",
+            profession_slugs=["larare"],
+            category_slugs=["lektionsplanering"],
+        ),
+    )
+
+    assert result.suggestion_id == id_generator.new_uuid.return_value
+    assert uow.entered is True
+    assert uow.exited is True
+    suggestions.create.assert_awaited_once()
 
 
 @pytest.mark.unit

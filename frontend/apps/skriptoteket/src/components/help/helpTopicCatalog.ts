@@ -144,7 +144,7 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     title: "Föreslå verktyg",
     description: "Beskriv ett verktyg du saknar.",
     routes: ["suggestion-new"],
-    indexSection: "contributor",
+    indexSection: "starter",
   },
   {
     topic: "apps_detail",

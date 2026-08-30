@@ -1,6 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockUseAuthStore = vi.fn();
+const availabilityMocks = vi.hoisted(() => ({
+  notifyUnavailable: vi.fn(),
+}));
 let registeredGuard: ((to: unknown, from: unknown) => Promise<unknown> | unknown) | null = null;
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -23,6 +26,10 @@ vi.mock("../stores/auth", () => ({
   useAuthStore: mockUseAuthStore,
 }));
 
+vi.mock("../composables/useAppAvailability", () => ({
+  useAppAvailability: () => availabilityMocks,
+}));
+
 function createAuth(overrides?: {
   isAuthenticated?: boolean;
   isProvisioningRequired?: boolean;
@@ -42,9 +49,33 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   mockUseAuthStore.mockReset();
+  availabilityMocks.notifyUnavailable.mockReset();
 });
 
 describe("router guards", () => {
+  it("returns unavailable application routes home with the shared system message", async () => {
+    const auth = createAuth({ isAuthenticated: true });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      path: "/apps/audio-transcription",
+      fullPath: "/apps/audio-transcription",
+      meta: {
+        requiresAuth: true,
+        unavailableAppTitle: "Ljudtranskribering",
+      },
+      query: {},
+    }, {
+      name: "home",
+    });
+
+    expect(auth.bootstrap).toHaveBeenCalled();
+    expect(availabilityMocks.notifyUnavailable).toHaveBeenCalledWith("Ljudtranskribering");
+    expect(result).toEqual({ name: "home" });
+  });
+
   it("redirects protected routes to auth-login when the user is unauthenticated", async () => {
     const auth = createAuth();
     mockUseAuthStore.mockReturnValue(auth);

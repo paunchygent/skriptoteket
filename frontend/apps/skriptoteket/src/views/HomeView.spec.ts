@@ -34,6 +34,9 @@ const homeMocks = vi.hoisted(() => ({
     adminPendingReview: 0,
     adminLoading: false,
   },
+  toast: {
+    info: vi.fn(),
+  },
 }));
 
 vi.mock("../stores/auth", () => ({
@@ -42,6 +45,10 @@ vi.mock("../stores/auth", () => ({
 
 vi.mock("../composables/home/useHomeDashboard", () => ({
   useHomeDashboard: () => homeMocks.dashboard,
+}));
+
+vi.mock("../composables/useToast", () => ({
+  useToast: () => homeMocks.toast,
 }));
 
 vi.mock("vue-router", () => ({
@@ -112,6 +119,7 @@ describe("HomeView", () => {
     homeMocks.auth.hasAtLeastRole.mockReset();
     homeMocks.auth.hasAtLeastRole.mockReturnValue(false);
     homeMocks.dashboard.loadDashboard.mockReset();
+    homeMocks.toast.info.mockReset();
   });
 
   it("shows the public-entry hero hierarchy for signed-out users", () => {
@@ -294,9 +302,7 @@ describe("HomeView", () => {
     expect(findRouterLinkByText(wrapper, "Provhantering")?.props("to")).toBe(
       "/apps/exam-converter",
     );
-    expect(findRouterLinkByText(wrapper, "Ljudtranskribering")?.props("to")).toBe(
-      "/apps/audio-transcription",
-    );
+    expect(findRouterLinkByText(wrapper, "Ljudtranskribering")).toBeUndefined();
     expect(findRouterLinkByText(wrapper, "Dokumentkonvertering")?.props("to")).toBe(
       "/apps/document-converter",
     );
@@ -309,8 +315,17 @@ describe("HomeView", () => {
     expect(
       wrapper
         .get('[data-testid="home-work-app-audio-transcription"]')
+        .attributes("data-app-linkable"),
+    ).toBe("false");
+    expect(
+      wrapper
+        .get('[data-testid="home-work-app-audio-transcription"]')
         .text(),
     ).toContain("Inte tillgänglig för närvarande");
+    await wrapper.get('[data-testid="home-work-app-audio-transcription"]').trigger("click");
+    expect(homeMocks.toast.info).toHaveBeenCalledWith(
+      "Ljudtranskribering är inte tillgänglig för närvarande.",
+    );
     expect(
       wrapper
         .get('[data-testid="home-work-app-document-converter"]')

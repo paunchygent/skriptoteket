@@ -7639,7 +7639,7 @@ export interface components {
         };
         /**
          * SubmitSuggestionRequest
-         * @description Payload for creating a new suggestion (contributor+).
+         * @description Payload for creating a new suggestion as an authenticated user.
          */
         SubmitSuggestionRequest: {
             /** Category Slugs */

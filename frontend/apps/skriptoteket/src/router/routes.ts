@@ -38,9 +38,11 @@ const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
   {
     path: "/apps/audio-transcription",
     name: "audio-transcription-authenticated",
-    component: () => import("../views/apps/UnavailableAppView.vue"),
-    props: () => ({ appTitle: "Ljudtranskribering" }),
-    meta: { requiresAuth: true },
+    component: () => import("../views/HomeView.vue"),
+    meta: {
+      requiresAuth: true,
+      unavailableAppTitle: "Ljudtranskribering",
+    },
   },
   {
     path: "/apps/document-converter",
@@ -223,7 +225,7 @@ export const routes: RouteRecordRaw[] = [
     path: "/suggestions/new",
     name: "suggestion-new",
     component: () => import("../views/SuggestionNewView.vue"),
-    meta: { requiresAuth: true, minRole: "contributor" },
+    meta: { requiresAuth: true },
   },
   {
     path: "/admin/suggestions",
