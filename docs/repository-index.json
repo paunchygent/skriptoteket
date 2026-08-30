@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a587761978b12c1be37675b4fd71516555294fd0f523683841e01f3db37f5efc",
+  "source_set_digest": "83c15d66cda382cb959c304d9205a03d485e5425e5c3fa2931c98043ecce824c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4247,7 +4247,7 @@
       "type": "task",
       "title": "Cut over the public Exam Converter to Skriptoteket-owned execution",
       "path": "docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
       "owners": [
@@ -4258,7 +4258,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User directed repair until green and then movement to the cleanup tasks on 2026-08-30; no further review was requested."
       }
     },
     {

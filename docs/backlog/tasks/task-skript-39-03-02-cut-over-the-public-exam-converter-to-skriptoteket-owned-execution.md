@@ -7,10 +7,12 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-30'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User directed repair until green and then movement to the cleanup tasks on 2026-08-30; no further review was requested.
 task_kind: story
 acceptance_criteria:
   - An anonymous user completes the existing public Exam Converter workflow through the unchanged Skriptoteket public API and locally produced jobs and artifacts without a request reaching Sir Convert and without new public remote-provider behavior
@@ -78,3 +80,20 @@ conversion does not become an unbounded synchronous public request.
 | T2  | Limits, transient lifecycle, optional evidence, targets, warnings, follow-ups, manifests, and downloads are preserved. |
 | T3  | The public lane gains no Luna, GLM, answer-key-completion, or other remote-provider behavior.                          |
 | T4  | The production public execution path no longer needs Sir grants, upstream jobs, or artifact leases.                    |
+
+## Closeout Evidence
+
+- Published main `8fe6b722` deployed canonically on Hemma with migration
+  `c8e4f2a6d9b1 (head)` and healthy web, worker, and Gateway services.
+- A fresh anonymous browser context directly loaded the declared public route,
+  submitted a genuine unmodified MCQ `.dxe`, polled local job
+  `1a6dc301-d63e-40e7-b335-b71e75d44fb9` to success, and downloaded every
+  naturally available output with byte and SHA-256 matches.
+- The result preserved the public lane's warnings, manual follow-ups, requested
+  targets, target readiness, artifact manifest, and terminal status. Bounded
+  logs contained zero Sir exam-conversion calls and zero provider calls.
+- Retained evidence is under session
+  `01a04d62-c71c-721c-a43a-76384e182429` at
+  `evidence/live/TASK-SKRIPT-39-03-02/20260830T063138Z/`; bounded remote logs
+  are under
+  `/home/paunchygent/apps/skriptoteket/.artifacts/task-skript-39-03-02-live-20260830T063138Z/`.
