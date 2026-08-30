@@ -1,5 +1,14 @@
 ## Current
 
+- [TASK-SKRIPT-39-03-02](docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md)
+  is `done` under the user-directed no-further-review closeout. Canonical Hemma
+  main `8fe6b722` serves the declared public deep link directly and completed
+  anonymous local job `1a6dc301-d63e-40e7-b335-b71e75d44fb9` from a genuine
+  unmodified MCQ `.dxe`. The public result preserved warnings, manual
+  follow-ups, readiness, and named downloads; all available artifact sizes and
+  hashes matched. Bounded logs contained zero Sir exam-conversion calls and
+  zero provider calls. Both production consumers have now moved, so Task 03
+  Sir exam cleanup and then Task 04 Qwen cleanup are next.
 - [TASK-SKRIPT-39-03-01](docs/backlog/tasks/task-skript-39-03-01-cut-over-the-authenticated-exam-converter-to-skriptoteket-owned-execution.md)
   is `done` under the existing independent approval. Canonical Hemma main
   `098f5100` runs migration `c8e4f2a6d9b1`, the native `in_process` lane, and
@@ -7,8 +16,7 @@
   HuleEdu job `8b8c837d-4bdf-4996-b652-6c6ebc0b20d1` completed from a genuine
   unmodified MCQ `.dxe` through Luna, teacher review/replay, local PDF download,
   and Mina filer save with zero Sir exam-conversion requests. The temporary
-  live Compose override was removed. Task 02 public cutover is next; Tasks 03
-  and 04 remain ordered cleanup after both consumers move.
+  live Compose override was removed.
 - [ST-SKRIPT-39-02](docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
   is `done` and independently `VERIFIED` with no material findings. Both tasks
   are `done`, independently approved, implemented on main through `6f4baa7a`
