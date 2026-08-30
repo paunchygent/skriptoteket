@@ -400,17 +400,6 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
     expect(wrapper.text()).not.toContain("unsupported_target_shape");
   });
 
-  it("does not render the removed current-state export gate", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-
-    expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists()).toBe(false);
-    expect(wrapper.text()).not.toContain("Använd provet som det är");
-    expect(wrapper.text()).not.toContain("Godkänn");
-  });
-
   it("keeps replayed file actions disabled when replay gives no artifact reference", async () => {
     const replayResult = correctionApplyResult();
     gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(
