@@ -27,6 +27,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfDocument,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
+    DigiExamResultPdfAnswerEvidence,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackagePlan,
 )
@@ -82,6 +85,21 @@ class InProcessExamConverterProtocol(Protocol):
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
         ),
+    ) -> ExamConversionStoredArtifact: ...
+
+
+class PublicInProcessExamConverterProtocol(Protocol):
+    """Produce a public local conversion with optional graded-result evidence."""
+
+    async def convert(
+        self,
+        *,
+        job_id: UUID,
+        upload: "ConversionHubUpload",
+        overlay_bytes: bytes | None,
+        answer_evidence: DigiExamResultPdfAnswerEvidence | None,
+        enrichment_failure_code: str | None,
+        correlation_id: str | None,
     ) -> ExamConversionStoredArtifact: ...
 
 

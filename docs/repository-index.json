@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "780be6d75d0f4e8dc3dc4bb617e9151000d5cc78b830a72c25b092253def6181",
+  "source_set_digest": "a587761978b12c1be37675b4fd71516555294fd0f523683841e01f3db37f5efc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4247,7 +4247,7 @@
       "type": "task",
       "title": "Cut over the public Exam Converter to Skriptoteket-owned execution",
       "path": "docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
       "owners": [

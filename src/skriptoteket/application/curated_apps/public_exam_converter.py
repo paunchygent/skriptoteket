@@ -17,9 +17,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from typing import assert_never
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
+from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
 from skriptoteket.application.curated_apps.sir_convert_contracts import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     DigiExamMigrationBundleSchemaVersion,
@@ -35,7 +37,7 @@ class PublicExamConverterTarget(StrEnum):
 
 
 class PublicExamConverterJobStatus(StrEnum):
-    """Public-facing job lifecycle normalized from Sir Convert status values."""
+    """Public-facing job lifecycle for one transient local conversion."""
 
     SUBMITTED = "submitted"
     QUEUED = "queued"
@@ -50,7 +52,7 @@ class PublicExamConverterJobStatus(StrEnum):
         cls,
         status: SirConvertJobStatusV2,
     ) -> "PublicExamConverterJobStatus":
-        """Translate typed Sir Convert v2 job state into the public job lifecycle."""
+        """Translate the retained Sir client status until Task 03 removes it."""
 
         match status:
             case SirConvertJobStatusV2.QUEUED:
@@ -77,7 +79,7 @@ class PublicExamConverterUpload:
 
 @dataclass(frozen=True, slots=True)
 class PublicExamConverterArtifactReadLease:
-    """Server-side Sir Convert read lease for one named public artifact."""
+    """Retained Sir artifact lease value pending Task 03 cleanup."""
 
     artifact_key: str
     token: str
@@ -85,12 +87,10 @@ class PublicExamConverterArtifactReadLease:
 
 @dataclass(frozen=True, slots=True)
 class PublicExamConverterSubmittedJob:
-    """Transient local state created for one public upstream job."""
+    """Transient local state for one anonymous in-process conversion."""
 
     public_job_id: str
-    upstream_job_id: str
-    grant_token: str
-    manifest_artifact_read_lease_token: str
+    local_job_id: UUID
     requested_targets: tuple[PublicExamConverterTarget, ...]
     status: PublicExamConverterJobStatus
     source_filename: str
@@ -99,7 +99,18 @@ class PublicExamConverterSubmittedJob:
     expires_at: datetime
     correlation_id: str | None
     error_message: str | None = None
+    artifact: ExamConversionStoredArtifact | None = None
+    result: dict[str, JsonValue] | None = None
     artifact_read_leases: tuple[PublicExamConverterArtifactReadLease, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class PublicExamConverterArtifact:
+    """One locally held named artifact returned through the public API."""
+
+    filename: str
+    content_type: str
+    content: bytes
 
 
 class PublicExamConverterSubmitResponse(BaseModel):
@@ -160,6 +171,6 @@ class PublicExamConverterJobResultResponse(BaseModel):
     public_job_id: str = Field(min_length=1)
     status: PublicExamConverterJobStatus
     expires_at: datetime
-    result: dict[str, object] | None = None
+    result: dict[str, JsonValue] | None = None
     artifact_manifest_url: str | None = None
     error: str | None = None

@@ -62,6 +62,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIntermediateExam,
     build_digiexam_intermediate_exam,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
+    DigiExamResultPdfAnswerEvidence,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackagePlan,
     ExamNetQtiPackageStatus,
@@ -116,6 +119,7 @@ class InProcessExamConversionProducer:
         correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
         enrichment_failure_code: str | None = None,
         retry_identity: str | None = None,
+        answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
@@ -138,7 +142,7 @@ class InProcessExamConversionProducer:
                 bind to this source, or manual follow-ups block both targets.
         """
         del correlation_id
-        exam = parse_source_exam(upload=upload)
+        exam = parse_source_exam(upload=upload, answer_evidence=answer_evidence)
         effective_exam, effective_report, applied_overlay = apply_exam_overlay(
             exam=exam,
             upload=upload,
@@ -232,13 +236,21 @@ def source_exam_digests(*, file_bytes: bytes, exam: DigiExamIntermediateExam) ->
     return source_file_sha256, source_ir_sha256
 
 
-def parse_source_exam(*, upload: "ConversionHubUpload") -> DigiExamIntermediateExam:
+def parse_source_exam(
+    *,
+    upload: "ConversionHubUpload",
+    answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
+) -> DigiExamIntermediateExam:
     """Parse one uploaded `.dxe` export into the renderer-neutral IR."""
     try:
         text = upload.file_bytes.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise validation_error(_INVALID_DXE_MESSAGE) from exc
-    parse_result = DigiExamDxeParser().parse_text(text, filename=upload.filename)
+    parse_result = DigiExamDxeParser().parse_text(
+        text,
+        filename=upload.filename,
+        answer_evidence=answer_evidence,
+    )
     if parse_result.status is DigiExamParseStatus.BLOCKED and not parse_result.items:
         raise validation_error(_INVALID_DXE_MESSAGE)
     return build_digiexam_intermediate_exam(parse_result)

@@ -12,7 +12,10 @@ Relationships:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
+
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterArtifactEntry,
@@ -79,7 +82,7 @@ def project_public_exam_converter_manifest(
     public_job_id: str,
     status: PublicExamConverterJobStatus,
     expires_at: datetime,
-    manifest: dict[str, object],
+    manifest: Mapping[str, JsonValue],
     api_namespace: str,
 ) -> PublicExamConverterArtifactManifestResponse:
     artifact_entries = manifest.get("artifacts")
@@ -111,7 +114,7 @@ def project_public_exam_converter_manifest(
 
 def _project_artifact_entry(
     *,
-    entry: dict[str, object],
+    entry: Mapping[str, JsonValue],
     public_job_id: str,
     api_namespace: str,
 ) -> PublicExamConverterArtifactEntry:

@@ -2,22 +2,28 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from datetime import UTC, datetime, timedelta
+from collections.abc import AsyncIterator, Awaitable, Callable
+from dataclasses import replace
+from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
 )
+from skriptoteket.application.curated_apps.public_exam_converter import (
+    PublicExamConverterJobStatus,
+    PublicExamConverterSubmittedJob,
+    PublicExamConverterTarget,
+    PublicExamConverterUpload,
+)
 from skriptoteket.application.curated_apps.sir_convert_contracts import (
     DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
-    DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
 )
 from skriptoteket.config import Settings
@@ -41,21 +47,13 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.public_exam_converter import (
-    PublicExamConverterGrant,
-    PublicExamConverterGrantAuthorityProtocol,
-    PublicExamConverterGrantRequest,
     PublicExamConverterJobStoreProtocol,
-    PublicExamConverterSirConvertSubmitRequest,
-    PublicExamConverterSirConvertSubmittedJob,
+    PublicExamConverterLocalExecutorProtocol,
 )
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
-from skriptoteket.protocols.sir_convert_a_lot_v2 import (
-    SirConvertArtifactV2,
-    SirConvertJobStatusV2,
-    SirConvertJobV2,
-)
 from skriptoteket.web.api.v1 import public_apps_exam_converter as api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from tests.fixtures.public_exam_converter_runtime import local_public_exam_artifact
 
 
 class FixedClock:
@@ -71,148 +69,52 @@ class FixedIdGenerator:
         return UUID("4f27d43f-7c2e-4c9c-a4df-2d799f88527a")
 
 
-class FakeGrantAuthority:
-    def __init__(self, *, now: datetime) -> None:
-        self.requests: list[PublicExamConverterGrantRequest] = []
-        self._now = now
-
-    async def mint_conversion_grant(
+class FakeLocalExecutor:
+    def __init__(
         self,
         *,
-        request: PublicExamConverterGrantRequest,
-    ) -> PublicExamConverterGrant:
-        self.requests.append(request)
-        return PublicExamConverterGrant(
-            token="opaque-public-grant",
-            artifact_ttl_seconds=3600,
-            expires_at=self._now + timedelta(seconds=3600),
-        )
+        store: PublicExamConverterJobStoreProtocol,
+        complete_immediately: bool = True,
+    ) -> None:
+        self.requests: list[
+            tuple[
+                PublicExamConverterSubmittedJob,
+                PublicExamConverterUpload,
+                PublicExamConverterUpload | None,
+                str,
+            ]
+        ] = []
+        self._store = store
+        self._complete_immediately = complete_immediately
 
+    @property
+    def store(self) -> PublicExamConverterJobStoreProtocol:
+        return self._store
 
-class FakeSirConvertClient:
-    def __init__(self) -> None:
-        self.submit_requests: list[PublicExamConverterSirConvertSubmitRequest] = []
-        self.download_requests: list[tuple[str, str, str]] = []
-        self.status = SirConvertJobStatusV2.SUCCEEDED
-
-    async def submit_public_exam_converter_job(
+    async def enqueue(
         self,
         *,
-        request: PublicExamConverterSirConvertSubmitRequest,
-    ) -> PublicExamConverterSirConvertSubmittedJob:
-        self.submit_requests.append(request)
-        return PublicExamConverterSirConvertSubmittedJob(
-            job_id="sir-job-123",
-            status=self.status,
-            idempotent_replay=False,
-            manifest_artifact_read_lease_token="opaque-manifest-lease",
-        )
-
-    async def get_public_exam_converter_job(
-        self,
-        job_id: str,
-        *,
-        public_conversion_grant: str,
+        job: PublicExamConverterSubmittedJob,
+        source_dxe: PublicExamConverterUpload,
+        graded_result_pdf: PublicExamConverterUpload | None,
         correlation_id: str,
-    ) -> SirConvertJobV2:
-        assert public_conversion_grant == "opaque-public-grant"
-        assert correlation_id
-        return SirConvertJobV2(job_id=job_id, status=self.status)
-
-    async def get_public_exam_converter_result(
-        self,
-        job_id: str,
-        *,
-        public_conversion_grant: str,
-        correlation_id: str,
-    ) -> dict[str, object]:
-        assert public_conversion_grant == "opaque-public-grant"
-        return {
-            "job_id": job_id,
-            "result": {
-                "conversion_metadata": {
-                    "route_key": "digiexam_dxe_to_examnet_migration_bundle",
-                    "bundle_schema_version": DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-                    "target_readiness_report_artifact_key": "target_readiness_report",
-                }
-            },
-        }
-
-    async def get_public_exam_converter_artifact_manifest(
-        self,
-        job_id: str,
-        *,
-        public_conversion_grant: str,
-        public_artifact_read_lease: str,
-        correlation_id: str,
-    ) -> dict[str, object]:
-        assert public_conversion_grant == "opaque-public-grant"
-        assert public_artifact_read_lease == "opaque-manifest-lease"
-        return {
-            "schema_version": DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-            "job_id": job_id,
-            "bundle_status": "partial",
-            "artifacts": [
-                {
-                    "artifact_key": "examnet_pdf",
-                    "filename": "examnet-import.pdf",
-                    "content_type": "application/pdf",
-                    "availability": "available",
-                    "size_bytes": 16,
-                    "sha256": "sha256:abc",
-                    "download_path": "/v2/convert/jobs/sir-job-123/artifacts/examnet_pdf",
-                    "public_artifact_read_lease": {
-                        "token": "opaque-examnet-pdf-lease",
-                        "artifact_key": "examnet_pdf",
-                    },
+    ) -> None:
+        self.requests.append((job, source_dxe, graded_result_pdf, correlation_id))
+        if not self._complete_immediately:
+            return
+        await self._store.update(
+            job=replace(
+                job,
+                status=PublicExamConverterJobStatus.SUCCEEDED,
+                artifact=local_public_exam_artifact(source_dxe=source_dxe),
+                result={
+                    "conversion_metadata": {
+                        "route_key": "digiexam_dxe_to_examnet_migration_bundle",
+                        "bundle_schema_version": DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+                        "target_readiness_report_artifact_key": "target_readiness_report",
+                    }
                 },
-                {
-                    "artifact_key": "target_readiness_report",
-                    "filename": "target-readiness-report.json",
-                    "content_type": "application/json",
-                    "availability": "available",
-                    "public_artifact_read_lease": {
-                        "token": "opaque-readiness-lease",
-                        "artifact_key": "target_readiness_report",
-                    },
-                },
-                {
-                    "artifact_key": "qti_package",
-                    "filename": "qti-package.zip",
-                    "content_type": "application/zip",
-                    "availability": "not_requested",
-                },
-            ],
-            "manual_follow_up": {"required": True, "count": 1},
-            "readiness": {
-                "artifact_key": "target_readiness_report",
-                "exportable_targets": ["examnet_pdf"],
-                "review_required": True,
-            },
-            "source_binding": {
-                "source_ir_schema_version": DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-                "source_ir_sha256": "sha256:source",
-                "effective_exam_schema_version": DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
-                "effective_exam_sha256": "sha256:source",
-            },
-            "warnings": {"count": 0},
-        }
-
-    async def download_public_exam_converter_artifact(
-        self,
-        job_id: str,
-        *,
-        artifact_key: str,
-        public_conversion_grant: str,
-        public_artifact_read_lease: str,
-        correlation_id: str,
-    ) -> SirConvertArtifactV2:
-        assert public_conversion_grant == "opaque-public-grant"
-        self.download_requests.append((job_id, artifact_key, public_artifact_read_lease))
-        return SirConvertArtifactV2(
-            filename="examnet-import.pdf",
-            content_type="application/pdf",
-            content=b"%PDF fake",
+            )
         )
 
 
@@ -225,8 +127,7 @@ class RuntimeProvider(Provider):
         registry: CuratedAppRegistryProtocol,
         throttle: PublicHelperThrottleProtocol,
         store: PublicExamConverterJobStoreProtocol,
-        grant_authority: PublicExamConverterGrantAuthorityProtocol,
-        sir_convert: FakeSirConvertClient,
+        executor: PublicExamConverterLocalExecutorProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -234,8 +135,7 @@ class RuntimeProvider(Provider):
         self._registry = registry
         self._throttle = throttle
         self._store = store
-        self._grant_authority = grant_authority
-        self._sir_convert = sir_convert
+        self._executor = executor
 
     @provide(scope=Scope.APP)
     def settings(self) -> Settings:
@@ -258,12 +158,8 @@ class RuntimeProvider(Provider):
         return self._store
 
     @provide(scope=Scope.APP)
-    def grant_authority(self) -> PublicExamConverterGrantAuthorityProtocol:
-        return self._grant_authority
-
-    @provide(scope=Scope.APP)
-    def sir_convert(self) -> FakeSirConvertClient:
-        return self._sir_convert
+    def executor(self) -> PublicExamConverterLocalExecutorProtocol:
+        return self._executor
 
     @provide(scope=Scope.APP)
     def id_generator(self) -> IdGeneratorProtocol:
@@ -273,8 +169,7 @@ class RuntimeProvider(Provider):
     def handler(self) -> PublicExamConverterRuntimeHandler:
         return PublicExamConverterRuntimeHandler(
             store=self._store,
-            grant_authority=self._grant_authority,
-            sir_convert=self._sir_convert,
+            executor=self._executor,
             clock=self._clock,
             id_generator=FixedIdGenerator(),
         )
@@ -330,13 +225,9 @@ def registry() -> CuratedAppRegistryProtocol:
 
 
 @pytest.fixture
-def sir_convert() -> FakeSirConvertClient:
-    return FakeSirConvertClient()
-
-
-@pytest.fixture
-def grant_authority(now: datetime) -> FakeGrantAuthority:
-    return FakeGrantAuthority(now=now)
+def local_executor() -> FakeLocalExecutor:
+    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
+    return FakeLocalExecutor(store=store)
 
 
 @pytest.fixture
@@ -344,13 +235,15 @@ def app(
     settings: Settings,
     now: datetime,
     registry: CuratedAppRegistryProtocol,
-    grant_authority: FakeGrantAuthority,
-    sir_convert: FakeSirConvertClient,
+    local_executor: FakeLocalExecutor,
 ) -> FastAPI:
     app = FastAPI()
 
     @app.middleware("http")
-    async def attach_correlation_id(request, call_next):  # type: ignore[no-untyped-def]
+    async def attach_correlation_id(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         header_value = request.headers.get("X-Correlation-ID")
         if header_value:
             request.state.correlation_id = UUID(header_value)
@@ -358,15 +251,15 @@ def app(
 
     app.middleware("http")(error_handler_middleware)
     app.include_router(api.router)
+    store = local_executor.store
     container = make_async_container(
         RuntimeProvider(
             settings=settings,
             clock=FixedClock(now=now),
             registry=registry,
             throttle=InMemoryPublicHelperRequestThrottle(),
-            store=public_exam_converter_store.InMemoryPublicExamConverterJobStore(),
-            grant_authority=grant_authority,
-            sir_convert=sir_convert,
+            store=store,
+            executor=local_executor,
         )
     )
     setup_dishka(container, app)
@@ -383,10 +276,9 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 
 
 @pytest.mark.asyncio
-async def test_public_exam_converter_submit_poll_manifest_and_download_use_opaque_grant(
+async def test_public_exam_converter_submit_poll_manifest_and_download_use_local_executor(
     client: httpx.AsyncClient,
-    grant_authority: FakeGrantAuthority,
-    sir_convert: FakeSirConvertClient,
+    local_executor: FakeLocalExecutor,
 ) -> None:
     client.cookies.set("ambient_session", "ignored")
     response = await client.post(
@@ -402,26 +294,17 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_opaqu
     assert response.status_code == 200
     payload = response.json()
     assert payload["public_job_id"] == "4f27d43f-7c2e-4c9c-a4df-2d799f88527a"
-    assert payload["status"] == "succeeded"
+    assert payload["status"] == "queued"
     assert payload["requested_targets"] == ["examnet_pdf"]
-    assert grant_authority.requests[0].correlation_id == "53f6d262-789c-4af4-a2c2-5ff5044d452f"
-    assert grant_authority.requests[0].upload_mime_types == (
-        "application/octet-stream",
-        "application/pdf",
-    )
-    submit_request = sir_convert.submit_requests[0]
-    assert submit_request.public_conversion_grant == "opaque-public-grant"
-    assert submit_request.job_spec["source"] == {
-        "kind": "upload",
-        "filename": "exam.dxe",
-        "format": "digiexam_dxe",
-    }
-    assert submit_request.job_spec["conversion"] == {
-        "output_format": "examnet_migration_bundle",
-        "targets": ["examnet_pdf"],
-        "artifact_language": "sv",
-        "reference_docx_filename": None,
-    }
+    job, source_dxe, graded_result_pdf, correlation_id = local_executor.requests[0]
+    assert job.local_job_id == UUID("4f27d43f-7c2e-4c9c-a4df-2d799f88527a")
+    assert job.requested_targets == (PublicExamConverterTarget.EXAMNET_PDF,)
+    assert source_dxe.filename == "exam.dxe"
+    assert graded_result_pdf is not None
+    assert graded_result_pdf.filename == "graded-result.pdf"
+    assert correlation_id == "53f6d262-789c-4af4-a2c2-5ff5044d452f"
+    assert "grant_token" not in PublicExamConverterSubmittedJob.__dataclass_fields__
+    assert "upstream_job_id" not in PublicExamConverterSubmittedJob.__dataclass_fields__
 
     status_response = await client.get(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
@@ -453,6 +336,15 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_opaqu
     assert manifest["source_binding"]["effective_exam_schema_version"] == (
         DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION
     )
+    assert manifest["warnings"] == {
+        "count": 1,
+        "items": [
+            {
+                "code": "unsupported_source_fragment",
+                "message": "One source fragment requires review.",
+            }
+        ],
+    }
     assert manifest["artifacts"][0]["download_url"].endswith(
         "/jobs/4f27d43f-7c2e-4c9c-a4df-2d799f88527a/artifacts/examnet_pdf/download"
     )
@@ -461,16 +353,12 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_opaqu
     assert artifact_response.headers["content-type"] == "application/pdf"
     assert artifact_response.content.startswith(b"%PDF")
     assert artifact_response.headers.get("set-cookie") is None
-    assert sir_convert.download_requests == [
-        ("sir-job-123", "examnet_pdf", "opaque-examnet-pdf-lease")
-    ]
 
 
 @pytest.mark.asyncio
-async def test_public_exam_converter_rejects_invalid_target_before_grant_mint(
+async def test_public_exam_converter_rejects_invalid_target_before_local_enqueue(
     client: httpx.AsyncClient,
-    grant_authority: FakeGrantAuthority,
-    sir_convert: FakeSirConvertClient,
+    local_executor: FakeLocalExecutor,
 ) -> None:
     response = await client.post(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
@@ -482,14 +370,13 @@ async def test_public_exam_converter_rejects_invalid_target_before_grant_mint(
     assert response.json()["error"]["details"]["reason_code"] == (
         "public_exam_converter_invalid_target"
     )
-    assert grant_authority.requests == []
-    assert sir_convert.submit_requests == []
+    assert local_executor.requests == []
 
 
 @pytest.mark.asyncio
 async def test_public_exam_converter_rejects_unsupported_source_file_type(
     client: httpx.AsyncClient,
-    grant_authority: FakeGrantAuthority,
+    local_executor: FakeLocalExecutor,
 ) -> None:
     response = await client.post(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
@@ -500,16 +387,15 @@ async def test_public_exam_converter_rejects_unsupported_source_file_type(
     assert response.json()["error"]["details"]["reason_code"] == (
         "public_exam_converter_unsupported_file_type"
     )
-    assert grant_authority.requests == []
+    assert local_executor.requests == []
 
 
 @pytest.mark.asyncio
 async def test_public_exam_converter_rate_limits_anonymous_submit(
     now: datetime,
     registry: CuratedAppRegistryProtocol,
-    grant_authority: FakeGrantAuthority,
-    sir_convert: FakeSirConvertClient,
 ) -> None:
+    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(api.router)
@@ -519,9 +405,8 @@ async def test_public_exam_converter_rate_limits_anonymous_submit(
             clock=FixedClock(now=now),
             registry=registry,
             throttle=InMemoryPublicHelperRequestThrottle(),
-            store=public_exam_converter_store.InMemoryPublicExamConverterJobStore(),
-            grant_authority=grant_authority,
-            sir_convert=sir_convert,
+            store=store,
+            executor=FakeLocalExecutor(store=store),
         )
     )
     setup_dishka(container, app)
@@ -542,4 +427,73 @@ async def test_public_exam_converter_rate_limits_anonymous_submit(
     assert second.status_code == 429
     assert second.json()["error"]["details"]["reason_code"] == (
         "public_exam_converter_rate_limited"
+    )
+
+
+@pytest.mark.asyncio
+async def test_public_exam_converter_queued_job_remains_pollable_and_enforces_concurrency_limit(
+    now: datetime,
+    registry: CuratedAppRegistryProtocol,
+) -> None:
+    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
+    executor = FakeLocalExecutor(store=store, complete_immediately=False)
+    app = FastAPI()
+    app.middleware("http")(error_handler_middleware)
+    app.include_router(api.router)
+    container = make_async_container(
+        RuntimeProvider(
+            settings=Settings(PUBLIC_EXAM_CONVERTER_CONCURRENCY_LIMIT=1),
+            clock=FixedClock(now=now),
+            registry=registry,
+            throttle=InMemoryPublicHelperRequestThrottle(),
+            store=store,
+            executor=executor,
+        )
+    )
+    setup_dishka(container, app)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    ) as queued_client:
+        first = await queued_client.post(
+            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
+            files={"source_dxe": ("exam.dxe", b"{}", "application/octet-stream")},
+        )
+        public_job_id = first.json()["public_job_id"]
+        status = await queued_client.get(
+            f"/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}"
+        )
+        result = await queued_client.get(
+            f"/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/result"
+        )
+        manifest = await queued_client.get(
+            f"/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/artifacts"
+        )
+        download = await queued_client.get(
+            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
+            f"{public_job_id}/artifacts/examnet_pdf/download"
+        )
+        second = await queued_client.post(
+            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
+            files={"source_dxe": ("another-exam.dxe", b"{}", "application/octet-stream")},
+        )
+
+    assert first.status_code == 200
+    assert first.json()["status"] == "queued"
+    assert status.status_code == 200
+    assert status.json()["status"] == "queued"
+    assert result.status_code == 200
+    assert result.json()["status"] == "queued"
+    assert result.json()["result"] is None
+    assert result.json()["artifact_manifest_url"] is None
+    assert manifest.status_code == 200
+    assert manifest.json()["status"] == "queued"
+    assert manifest.json()["artifacts"] == []
+    assert download.status_code == 422
+    assert download.json()["error"]["details"]["reason_code"] == (
+        "public_exam_converter_artifact_not_ready"
+    )
+    assert second.status_code == 429
+    assert second.json()["error"]["details"]["reason_code"] == (
+        "public_exam_converter_concurrency_limited"
     )
