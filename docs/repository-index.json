@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fb863453ee5132c4ccd803a46a54cde18379d55c1557c94f2172035026ee89c2",
+  "source_set_digest": "1acdff1c83180721935d073f62b17c53a1c6e2df5ebcca95f49daa8dbcb1674c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2158,7 +2158,7 @@
       "type": "story",
       "title": "Cut over the Exam Converter and retire the Sir exam lane",
       "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4224,7 +4224,7 @@
       "type": "task",
       "title": "Cut over the authenticated Exam Converter to Skriptoteket-owned execution",
       "path": "docs/backlog/tasks/task-skript-39-03-01-cut-over-the-authenticated-exam-converter-to-skriptoteket-owned-execution.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
       "owners": [
@@ -10598,7 +10598,7 @@
         "id": "ST-SKRIPT-39-03",
         "type": "story",
         "title": "Cut over the Exam Converter and retire the Sir exam lane",
-        "status": "ready",
+        "status": "active",
         "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
       }
     ]
