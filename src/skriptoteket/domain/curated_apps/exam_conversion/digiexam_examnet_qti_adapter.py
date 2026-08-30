@@ -117,7 +117,7 @@ def _choice_item(
 def _free_text_item(item: DigiExamIrItem) -> ExamNetQtiItem:
     base_item = _base_qti_item(item, ExamNetQtiInteractionType.FREE_TEXT)
     if item.max_score is None or item.max_score < 1:
-        return base_item
+        return replace(base_item, evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED)
     return replace(base_item, free_text_criterion_points=item.max_score)
 
 
