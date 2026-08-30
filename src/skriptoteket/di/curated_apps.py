@@ -87,9 +87,6 @@ from skriptoteket.application.curated_apps.document_converter_producers import (
     DocumentConverterProducerPolicy,
     LocalDocumentConverterProducer,
 )
-from skriptoteket.application.curated_apps.exam_conversion import (
-    ExamConverterConversionLane,
-)
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
 )
@@ -102,9 +99,6 @@ from skriptoteket.application.curated_apps.handlers import (
 from skriptoteket.application.curated_apps.handlers import (
     conversion_hub_transcript_formatter_exports as transcript_export_handlers,
 )
-from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
-    SaveConversionHubSirConvertArtifactHandler,
-)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_document_converter import (
     DownloadDocumentConverterArtifactHandler,
     GetDocumentConverterJobHandler,
@@ -114,7 +108,6 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
-    RegisterExamConverterConversionHubJobHandler,
     RegisterTranscriptConversionHubJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_transcript_saves import (
@@ -233,11 +226,7 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_rende
     StaticClassroomPlannerShareRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    public_exam_converter_grants,
     public_exam_converter_store,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    public_exam_converter_sir_convert_client_v2 as public_exam_converter_sir_convert,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     sir_convert_transcript_formatter_producer as transcript_formatter_producer,
@@ -432,10 +421,8 @@ from skriptoteket.protocols.exam_converter_correction_sessions import (
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.public_exam_converter import (
-    PublicExamConverterGrantAuthorityProtocol,
     PublicExamConverterJobStoreProtocol,
     PublicExamConverterLocalExecutorProtocol,
-    PublicExamConverterSirConvertProtocol,
 )
 from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefChemicalsHandlerProtocol,
@@ -524,41 +511,6 @@ class CuratedAppsProvider(Provider):
             await http_client.aclose()
 
     @provide(scope=Scope.APP)
-    def public_exam_converter_grant_authority_settings(
-        self,
-        settings: Settings,
-    ) -> public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings:
-        return public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings(
-            base_url=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_GRANT_BASE_URL,
-            client_id=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ID,
-            client_assertion=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION,
-            client_assertion_secret=(
-                settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_SECRET
-            ),
-            assertion_audience=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_ASSERTION_AUDIENCE,
-            timeout_seconds=settings.HULEEDU_PUBLIC_EXAM_CONVERTER_TIMEOUT_SECONDS,
-            fallback_artifact_ttl_seconds=settings.PUBLIC_EXAM_CONVERTER_ARTIFACT_TTL_SECONDS,
-            client_assertion_ttl_seconds=(
-                settings.HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_TTL_SECONDS
-            ),
-        )
-
-    @provide(scope=Scope.APP)
-    async def public_exam_converter_grant_authority(
-        self,
-        settings: public_exam_converter_grants.PublicExamConverterGrantAuthoritySettings,
-    ) -> AsyncIterator[PublicExamConverterGrantAuthorityProtocol]:
-        http_client = public_exam_converter_grants.build_public_exam_converter_grant_http_client(
-            settings=settings
-        )
-        try:
-            yield public_exam_converter_grants.HuleEduPublicExamConverterGrantAuthority(
-                settings=settings, client=http_client
-            )
-        finally:
-            await http_client.aclose()
-
-    @provide(scope=Scope.APP)
     def public_exam_converter_job_store(self) -> PublicExamConverterJobStoreProtocol:
         return public_exam_converter_store.InMemoryPublicExamConverterJobStore()
 
@@ -576,20 +528,6 @@ class CuratedAppsProvider(Provider):
             pdf_text_extractor=pdf_text_extractor,
             clock=clock,
         )
-
-    @provide(scope=Scope.APP)
-    async def public_exam_converter_sir_convert(
-        self,
-        settings: SirConvertClientSettingsV2,
-    ) -> AsyncIterator[PublicExamConverterSirConvertProtocol]:
-        http_client = build_sir_convert_async_http_client(settings=settings)
-        try:
-            yield public_exam_converter_sir_convert.PublicExamConverterSirConvertClientV2(
-                settings=settings,
-                client=http_client,
-            )
-        finally:
-            await http_client.aclose()
 
     @provide(scope=Scope.APP)
     def reagent_prep_chef_hazards(self) -> ReagentPrepChefHazardStoreProtocol:
@@ -1824,10 +1762,6 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
-    def exam_converter_conversion_lane(self, settings: Settings) -> ExamConverterConversionLane:
-        return ExamConverterConversionLane(value=settings.EXAM_CONVERTER_CONVERSION_LANE)
-
-    @provide(scope=Scope.APP)
     def examnet_qti_package_writer(self) -> ExamNetQtiPackageWriterProtocol:
         return ExamNetQtiPackageWriter()
 
@@ -1869,7 +1803,6 @@ class CuratedAppsProvider(Provider):
         self,
         jobs: ConversionHubJobRepositoryProtocol,
         submission_lookup: ExamConverterSubmissionRepositoryProtocol,
-        lane: ExamConverterConversionLane,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -1881,7 +1814,6 @@ class CuratedAppsProvider(Provider):
         return CreateExamConverterConversionJobsHandler(
             jobs=jobs,
             submission_lookup=submission_lookup,
-            lane=lane,
             producer=producer,
             artifacts=artifacts,
             enrichment_jobs=enrichment_jobs,
@@ -2194,21 +2126,6 @@ class CuratedAppsProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
-    def register_exam_converter_conversion_hub_job_handler(
-        self,
-        jobs: ConversionHubJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-    ) -> RegisterExamConverterConversionHubJobHandler:
-        return RegisterExamConverterConversionHubJobHandler(
-            jobs=jobs,
-            uow=uow,
-            clock=clock,
-            id_generator=id_generator,
-        )
-
-    @provide(scope=Scope.REQUEST)
     def register_transcript_conversion_hub_job_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
@@ -2482,27 +2399,6 @@ class CuratedAppsProvider(Provider):
             jobs=jobs,
             sessions=sessions,
             uow=uow,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def save_conversion_hub_sir_convert_artifact_handler(
-        self,
-        vault_files: VaultFileRepositoryProtocol,
-        vault_usage: VaultUsageRepositoryProtocol,
-        vault_storage: VaultStorageProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-        settings: Settings,
-    ) -> SaveConversionHubSirConvertArtifactHandler:
-        return SaveConversionHubSirConvertArtifactHandler(
-            vault_files=vault_files,
-            vault_usage=vault_usage,
-            vault_storage=vault_storage,
-            uow=uow,
-            clock=clock,
-            id_generator=id_generator,
-            settings=settings,
         )
 
     @provide(scope=Scope.REQUEST)

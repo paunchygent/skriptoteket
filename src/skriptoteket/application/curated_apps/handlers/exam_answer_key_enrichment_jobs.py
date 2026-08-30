@@ -35,9 +35,6 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     finish_enrichment_job,
     record_enrichment_attempt,
 )
-from skriptoteket.application.curated_apps.exam_conversion import (
-    build_local_exam_conversion_producer_id,
-)
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     parse_source_exam,
     source_exam_digests,
@@ -455,15 +452,11 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 extra={"conversion_job_id": str(conversion_job_id)},
             )
             return None
-        upstream_job_id = conversion_job.upstream_job_id
-        if status is ConversionHubJobStatus.SUCCEEDED:
-            upstream_job_id = build_local_exam_conversion_producer_id(job_id=conversion_job.id)
         return await self._conversion_jobs.update(
             job=conversion_job.model_copy(
                 update={
                     "status": status,
                     "error_message": error_message,
-                    "upstream_job_id": upstream_job_id,
                     "updated_at": now,
                 }
             )

@@ -2,7 +2,7 @@
  * Exam Converter correction-session projection.
  *
  * Domain purpose:
- *   Convert fresh Sir Convert replay results into the authenticated Exam
+ *   Convert fresh local replay results into the authenticated Exam
  *   Converter review projection shown to teachers.
  *
  * Relationships:
@@ -21,7 +21,7 @@ import type {
   ExamAuthoringCorrectionSourceItem,
   ExamAuthoringCorrectionSourceStateIssueResult,
   ExamAuthoringCorrectionsApplyResult,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewFileActionReference,
@@ -29,7 +29,7 @@ import type {
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 import { buildAiSuggestionReport, hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
-import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/sirConvertGateway/contractValues";
+import { DIGIEXAM_ITEM_TYPE_OPEN_ENDED } from "../../../api/examConverterContracts";
 import {
   applyAnswerKeyReviewStateToQuestions,
   parseAnswerKeyReviewState,

@@ -7,7 +7,7 @@
  *
  * Relationships:
  *   - Consumed by `useExamConverterUnifiedCorrections`.
- *   - Uses Sir Convert source-state DTOs only as binding material.
+ *   - Uses product-owned source-state DTOs as binding material.
  *   - Keeps matching corrections blocked until their governed producer state exists.
  */
 
@@ -19,7 +19,7 @@ import type {
   ExamAuthoringCorrectionSourceItem,
   ExamAuthoringCorrectionSourceStateIssueResult,
   ExamAuthoringNonMatchingCorrectionEntry,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import type {
   ExamConverterQuestionReviewRow,
 } from "./digiexamIrReviewParser";
@@ -74,8 +74,8 @@ export function intentFromCorrectionRequest(
   request: ExamAuthoringCorrectionsApplyRequest,
 ): ExamConverterCorrectionIntentWrite {
   const [correction] = request.corrections;
-  if (!correction || correction.kind === "manual_matching_answer_key") {
-    throw new Error("Matching corrections are blocked until Task 332.");
+  if (!correction) {
+    throw new Error("A durable correction request requires one correction.");
   }
   if (!correction.source_item_fingerprint) {
     throw new Error("Durable corrections require source item fingerprints.");

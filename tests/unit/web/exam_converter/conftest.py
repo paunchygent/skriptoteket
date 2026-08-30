@@ -17,7 +17,6 @@ from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJo
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
 )
-from skriptoteket.application.curated_apps.exam_conversion import ExamConverterConversionLane
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
 )
@@ -203,14 +202,12 @@ class ExamConverterConversionsApiProvider(Provider):
         *,
         curated_apps: CuratedAppRegistryProtocol,
         jobs: InMemoryConversionHubJobRepository,
-        lane: ExamConverterConversionLane,
         artifacts: ExamConversionArtifactStoreProtocol,
         clock: ClockProtocol,
     ) -> None:
         super().__init__()
         self._curated_apps = curated_apps
         self._jobs = jobs
-        self._lane = lane
         self._artifacts = artifacts
         self._app_clock = clock
 
@@ -224,7 +221,6 @@ class ExamConverterConversionsApiProvider(Provider):
     ) -> CreateExamConverterConversionJobsHandler:
         return CreateExamConverterConversionJobsHandler(
             jobs=self._jobs,
-            lane=self._lane,
             producer=InProcessExamConversionProducer(
                 qti_writer=ExamNetQtiPackageWriter(),
                 pdf_renderer=WeasyPrintExamNetPdfRenderer(),
@@ -331,11 +327,6 @@ def jobs_repository() -> InMemoryConversionHubJobRepository:
 
 
 @pytest.fixture
-def lane(settings: Settings) -> ExamConverterConversionLane:
-    return ExamConverterConversionLane(value=settings.EXAM_CONVERTER_CONVERSION_LANE)
-
-
-@pytest.fixture
 def artifact_store(tmp_path: Path) -> ExamConversionArtifactStoreProtocol:
     return FilesystemExamConversionArtifactStore(artifacts_root=tmp_path / "artifacts")
 
@@ -348,7 +339,6 @@ def app(
     profiles: ProfileRepositoryStub,
     curated_apps: CuratedAppRegistryProtocol,
     jobs_repository: InMemoryConversionHubJobRepository,
-    lane: ExamConverterConversionLane,
     artifact_store: ExamConversionArtifactStoreProtocol,
 ) -> FastAPI:
     app = FastAPI()
@@ -365,7 +355,6 @@ def app(
         ExamConverterConversionsApiProvider(
             curated_apps=curated_apps,
             jobs=jobs_repository,
-            lane=lane,
             artifacts=artifact_store,
             clock=clock,
         ),

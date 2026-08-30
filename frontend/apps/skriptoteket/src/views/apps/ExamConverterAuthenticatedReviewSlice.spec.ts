@@ -31,12 +31,12 @@ import {
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_QTI_PACKAGE,
   DIGIEXAM_TARGET_READY,
-  SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
-} from "../../api/sirConvertGateway/contractValues";
+  EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 
 const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),
@@ -369,7 +369,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       ...resultWithNonBlockingWarning,
       conversion_metadata: {
         ...resultWithNonBlockingWarning.conversion_metadata,
-        bundle_status: SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+        bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
         manual_follow_up_required: false,
         warning_count: 1,
       },
@@ -433,7 +433,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       ...terminalResult(),
       conversion_metadata: {
         ...terminalResult().conversion_metadata,
-        bundle_status: SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+        bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
         manual_follow_up_required: false,
         warning_count: 0,
       },

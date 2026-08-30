@@ -135,11 +135,6 @@ class Settings(BaseSettings):
         "gpu_required", "gpu_prefer", "cpu_only"
     ] = "cpu_only"
 
-    # Exam Converter conversion lane (EPIC-SKRIPT-39 / ADR-SKRIPT-0090):
-    # the authenticated product defaults to the accepted in-process cutover;
-    # operators can still select the Sir lane until its governed retirement.
-    EXAM_CONVERTER_CONVERSION_LANE: Literal["sir_convert", "in_process"] = "in_process"
-
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000
     VAULT_MAX_TOTAL_BYTES: int = 200_000_000
@@ -216,13 +211,6 @@ class Settings(BaseSettings):
     PUBLIC_EXAM_CONVERTER_REQUEST_TIME_BUDGET_SECONDS: int = 120
     PUBLIC_EXAM_CONVERTER_CONCURRENCY_LIMIT: int = 1
     PUBLIC_EXAM_CONVERTER_ARTIFACT_TTL_SECONDS: int = 3600
-    HULEEDU_PUBLIC_EXAM_CONVERTER_GRANT_BASE_URL: str = ""
-    HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ID: str = "skriptoteket-public-exam-converter-backend"
-    HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION: str = ""
-    HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_SECRET: str = ""
-    HULEEDU_PUBLIC_EXAM_CONVERTER_CLIENT_ASSERTION_TTL_SECONDS: int = 60
-    HULEEDU_PUBLIC_EXAM_CONVERTER_ASSERTION_AUDIENCE: str = ""
-    HULEEDU_PUBLIC_EXAM_CONVERTER_TIMEOUT_SECONDS: float = 10.0
     CLASSROOM_SHARE_PREVIEW_MAX_CONCURRENCY: int = 2
     CLASSROOM_SHARE_PREVIEW_TIMEOUT_SECONDS: float = 8.0
 

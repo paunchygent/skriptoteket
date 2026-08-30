@@ -10,27 +10,27 @@ import {
   sha256HexFromBlob,
   sha256HexFromText,
   stableJsonStringify,
-} from "./sirConvertGateway/requestFingerprint";
+} from "./examConverterContracts";
 import type {
   DigiExamMigrationSubmitParams,
+  ExamConverterArtifactBlob,
+  ExamConverterArtifactManifest,
+  ExamConverterJob,
+  ExamConverterSavedUserFile,
+  ExamConverterTerminalResult,
   ExamAuthoringCorrectionSourceStateIssueResult,
-  SirConvertArtifactBlob,
-  SirConvertArtifactManifest,
-  SirConvertJob,
-  SirConvertSavedUserFile,
-  SirConvertTerminalResult,
-} from "./sirConvertGateway";
+} from "./examConverterContracts";
 
 const ROOT = "/api/v1/apps/documents.conversion_hub/exam-converter";
 
 type LocalSubmitResult = {
   error: string | null;
   job_id: string;
-  status: SirConvertJob["status"];
+  status: ExamConverterJob["status"];
   idempotent_replay: boolean;
 };
 
-export type LocalExamConversionSubmittedJob = SirConvertJob & {
+export type LocalExamConversionSubmittedJob = ExamConverterJob & {
   correlationId: string;
   idempotencyKey: string;
   idempotentReplay: boolean;
@@ -42,7 +42,7 @@ type LocalResult = {
   error: string | null;
   job_id: string;
   manual_follow_up_required: boolean;
-  status: SirConvertJob["status"];
+  status: ExamConverterJob["status"];
   warning_count: number;
 };
 
@@ -98,8 +98,8 @@ export async function submitLocalExamConversion(
 export async function getLocalExamConversionJob(params: {
   correlationId?: string;
   jobId: string;
-}): Promise<SirConvertJob> {
-  const result = await apiGet<{ error: string | null; job_id: string; status: SirConvertJob["status"] }>(
+}): Promise<ExamConverterJob> {
+  const result = await apiGet<{ error: string | null; job_id: string; status: ExamConverterJob["status"] }>(
     `/api/v1/apps/documents.conversion_hub/jobs/${encodeURIComponent(params.jobId)}`,
   );
   return { jobId: result.job_id, status: result.status };
@@ -108,7 +108,7 @@ export async function getLocalExamConversionJob(params: {
 export async function getLocalExamConversionResult(params: {
   correlationId?: string;
   jobId: string;
-}): Promise<SirConvertTerminalResult> {
+}): Promise<ExamConverterTerminalResult> {
   const result = await apiGet<LocalResult>(`${jobPath(params.jobId)}/result`);
   if (result.status !== "succeeded" || !result.bundle_status) {
     throw new Error(result.error ?? "Exam Converter job did not finish.");
@@ -137,15 +137,15 @@ export async function getLocalExamConversionResult(params: {
 export async function listLocalExamConversionArtifacts(params: {
   correlationId?: string;
   jobId: string;
-}): Promise<SirConvertArtifactManifest> {
-  return await apiGet<SirConvertArtifactManifest>(`${jobPath(params.jobId)}/artifacts`);
+}): Promise<ExamConverterArtifactManifest> {
+  return await apiGet<ExamConverterArtifactManifest>(`${jobPath(params.jobId)}/artifacts`);
 }
 
 export async function downloadLocalExamConversionArtifact(params: {
   artifactKey: string;
   correlationId?: string;
   jobId: string;
-}): Promise<SirConvertArtifactBlob> {
+}): Promise<ExamConverterArtifactBlob> {
   const response = await apiFetchBlobResponse(
     `${jobPath(params.jobId)}/artifacts/${encodeURIComponent(params.artifactKey)}`,
   );
@@ -169,15 +169,15 @@ export async function getLocalExamConversionSourceState(params: {
 export async function replayLocalExamConversion(params: {
   correlationId?: string;
   jobId: string;
-}): Promise<SirConvertArtifactManifest> {
-  return await apiPost<SirConvertArtifactManifest>(`${jobPath(params.jobId)}/replay`);
+}): Promise<ExamConverterArtifactManifest> {
+  return await apiPost<ExamConverterArtifactManifest>(`${jobPath(params.jobId)}/replay`);
 }
 
 export async function saveLocalExamConversionArtifact(params: {
   artifactKey: string;
   jobId: string;
-}): Promise<SirConvertSavedUserFile> {
-  return await apiPost<SirConvertSavedUserFile>(
+}): Promise<ExamConverterSavedUserFile> {
+  return await apiPost<ExamConverterSavedUserFile>(
     `${jobPath(params.jobId)}/artifacts/${encodeURIComponent(params.artifactKey)}/save`,
   );
 }

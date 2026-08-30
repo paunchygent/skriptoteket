@@ -2,7 +2,7 @@
  * DigiExam answer-key completion projection.
  *
  * Domain purpose:
- *   Validate Sir Convert's advisory answer-key completion report and expose
+ *   Validate the local advisory answer-key completion report and expose
  *   bounded AI-facit candidate data for authenticated teacher review.
  *
  * Relationships:
@@ -19,7 +19,7 @@ import type {
   DigiExamEffectiveExam,
   DigiExamEffectivePointCorrection,
   DigiExamItemType,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED,
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
@@ -27,11 +27,11 @@ import {
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
   DIGIEXAM_ITEM_TYPES,
-} from "../../../api/sirConvertGateway/contractValues";
+} from "../../../api/examConverterContracts";
 import {
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
-} from "../../../api/sirConvertGateway/schemaVersions";
+} from "../../../api/examConverterContracts";
 
 type JsonRecord = Record<string, unknown>;
 

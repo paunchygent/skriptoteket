@@ -10,7 +10,7 @@
  *   - Shares primitive readers with `transcriptParserScalars.ts`.
  */
 
-import type { SirConvertJobStatus } from "./types";
+import type { SirConvertJobStatus } from "./transcriptTypes";
 import {
   hasOwnField,
   isRecord,

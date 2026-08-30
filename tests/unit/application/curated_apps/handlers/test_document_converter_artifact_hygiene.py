@@ -35,7 +35,7 @@ from skriptoteket.protocols.sir_convert_a_lot_v2 import (
 )
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers.test_conversion_hub_artifact_saves import (
+from tests.fixtures.time_fixtures import (
     FixedClock,
     FixedIdGenerator,
 )

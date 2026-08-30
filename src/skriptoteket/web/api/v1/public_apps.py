@@ -16,7 +16,7 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.application.curated_apps.sir_convert_contracts import (
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     DigiExamMigrationBundleSchemaVersion,
 )
@@ -80,9 +80,6 @@ _EXAM_CONVERTER_REASON_CODES = [
     "public_exam_converter_empty_payload",
     "public_exam_converter_artifact_not_ready",
     "public_exam_converter_concurrency_limited",
-    "public_exam_converter_grant_authority_failed",
-    "public_exam_converter_grant_authority_unconfigured",
-    "public_exam_converter_invalid_grant_payload",
     "public_exam_converter_invalid_target",
     "public_exam_converter_missing_filename",
     "public_exam_converter_missing_dxe",
@@ -92,7 +89,6 @@ _EXAM_CONVERTER_REASON_CODES = [
     "public_exam_converter_time_budget_exceeded",
     "public_exam_converter_unsupported_content_type",
     "public_exam_converter_unsupported_file_type",
-    "public_exam_converter_upstream_unavailable",
 ]
 _EXAM_CONVERTER_TARGETS = ["examnet_pdf", "qti_package"]
 _EXAM_CONVERTER_TELEMETRY = [
@@ -103,13 +99,7 @@ _EXAM_CONVERTER_TELEMETRY = [
     "no_filename_or_content_capture",
     "no_account_or_owner_identifier",
 ]
-_EXAM_CONVERTER_BLOCKED_AUTHORITY_EXPOSURE = [
-    "raw_conversion_grant",
-    "raw_artifact_read_lease",
-    "huleedu_signing_material",
-    "sir_convert_credentials",
-    "direct_upstream_host",
-]
+_EXAM_CONVERTER_BLOCKED_AUTHORITY_EXPOSURE = ["server_artifact_storage"]
 
 PublicCapabilityAction = Literal[
     "submit",
@@ -157,7 +147,7 @@ class PublicCapabilityAuthorityBoundary(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     browser_authority: Literal["opaque_public_handles_only"]
-    upstream_calls: Literal["server_mediated_public_conversion"]
+    upstream_calls: Literal["none_local_execution"]
     artifact_reads: Literal["server_mediated_artifact_download"]
     account_authority: Literal["ignored"]
     persistence: Literal["transient_public_only"]
@@ -271,7 +261,7 @@ def _build_exam_converter_action_affordances(
 def _build_exam_converter_authority_boundary() -> PublicCapabilityAuthorityBoundary:
     return PublicCapabilityAuthorityBoundary(
         browser_authority="opaque_public_handles_only",
-        upstream_calls="server_mediated_public_conversion",
+        upstream_calls="none_local_execution",
         artifact_reads="server_mediated_artifact_download",
         account_authority="ignored",
         persistence="transient_public_only",

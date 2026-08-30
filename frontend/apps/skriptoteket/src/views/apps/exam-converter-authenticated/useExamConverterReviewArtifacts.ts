@@ -17,7 +17,7 @@ import {
   downloadLocalExamConversionArtifact,
   listLocalExamConversionArtifacts,
 } from "../../../api/examConverterLocal";
-import { parseTargetReadinessReport } from "../../../api/sirConvertGateway";
+import { parseTargetReadinessReport } from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
@@ -25,9 +25,9 @@ import {
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-} from "../../../api/sirConvertGateway/contractValues";
-import type { SirConvertArtifactBlob, SirConvertArtifactManifest } from "../../../api/sirConvertGateway";
+  EXAM_CONVERTER_ARTIFACT_AVAILABLE,
+} from "../../../api/examConverterContracts";
+import type { ExamConverterArtifactBlob, ExamConverterArtifactManifest } from "../../../api/examConverterContracts";
 import {
   parseAnswerKeyCompletionReport,
   parseEffectiveItemState,
@@ -59,7 +59,7 @@ const DEFAULT_CLIENT: ReviewArtifactClient = {
   listDigiExamMigrationArtifacts: listLocalExamConversionArtifacts,
 };
 
-async function readArtifactJson(artifact: SirConvertArtifactBlob): Promise<unknown> {
+async function readArtifactJson(artifact: ExamConverterArtifactBlob): Promise<unknown> {
   const text =
     typeof artifact.blob.text === "function"
       ? await artifact.blob.text()
@@ -74,27 +74,27 @@ async function readArtifactJson(artifact: SirConvertArtifactBlob): Promise<unkno
 
 function availableArtifactSha256(params: {
   artifactKey: string;
-  artifactManifest: SirConvertArtifactManifest;
+  artifactManifest: ExamConverterArtifactManifest;
   required: boolean;
 }): string | null {
   const entry = params.artifactManifest.artifacts.find(
     (artifact) => artifact.artifact_key === params.artifactKey,
   );
-  if (!entry || entry.availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+  if (!entry || entry.availability !== EXAM_CONVERTER_ARTIFACT_AVAILABLE) {
     if (params.required) {
-      throw new Error(`Sir Convert bundle is missing ${params.artifactKey}.`);
+      throw new Error(`Exam Converter bundle is missing ${params.artifactKey}.`);
     }
     return null;
   }
   if (!entry.sha256) {
-    throw new Error(`Sir Convert bundle artifact ${params.artifactKey} is missing sha256.`);
+    throw new Error(`Exam Converter bundle artifact ${params.artifactKey} is missing sha256.`);
   }
   return entry.sha256;
 }
 
 async function loadOptionalArtifactJson(params: {
   artifactKey: string;
-  artifactManifest: SirConvertArtifactManifest;
+  artifactManifest: ExamConverterArtifactManifest;
   client: ReviewArtifactClient;
   correlationId: string;
   jobId: string;

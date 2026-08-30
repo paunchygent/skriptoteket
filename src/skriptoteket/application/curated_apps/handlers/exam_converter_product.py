@@ -13,13 +13,12 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
-    SaveConversionHubSirConvertArtifactResult,
+    SaveConversionHubArtifactResult,
 )
 from skriptoteket.application.curated_apps.document_converter import DocumentConverterStoredArtifact
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConversionNamedArtifact,
     ExamConversionStoredArtifact,
-    is_local_exam_conversion_job,
 )
 from skriptoteket.application.curated_apps.exam_conversion_correction_source import (
     build_correction_source_state,
@@ -306,10 +305,7 @@ class ExamConverterProductHandler:
             and job.source_format is ConversionHubSourceFormatV2.DIGIEXAM_DXE
             and job.output_format is ConversionHubOutputFormatV2.EXAMNET_BUNDLE
         )
-        is_native_job = job is not None and (
-            job.upstream_job_id is None or is_local_exam_conversion_job(job)
-        )
-        if job is None or job.owner_user_id != actor.id or not is_exam_job or not is_native_job:
+        if job is None or job.owner_user_id != actor.id or not is_exam_job:
             raise not_found("ConversionHubJob", str(job_id))
         return job
 
@@ -332,7 +328,7 @@ class SaveExamConverterLocalArtifactHandler:
         actor: User,
         job_id: UUID,
         artifact_key: str,
-    ) -> SaveConversionHubSirConvertArtifactResult:
+    ) -> SaveConversionHubArtifactResult:
         artifact = await self._product.named_artifact(
             actor=actor, job_id=job_id, artifact_key=artifact_key
         )
@@ -346,7 +342,7 @@ class SaveExamConverterLocalArtifactHandler:
             ),
             source_artifact_id=source_artifact_id,
         )
-        return SaveConversionHubSirConvertArtifactResult(
+        return SaveConversionHubArtifactResult(
             vault_artifact=saved,
             source_artifact_id=source_artifact_id,
         )

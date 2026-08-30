@@ -3,7 +3,7 @@
 Purpose:
     Persist server-owned in-process Exam Converter bundles under the existing
     Skriptoteket artifacts root so downloads use the local job id as authority
-    instead of upstream Sir Convert artifact references.
+    inside the Skriptoteket application boundary.
 
 Relationships:
     Implements ``ExamConversionArtifactStoreProtocol`` for

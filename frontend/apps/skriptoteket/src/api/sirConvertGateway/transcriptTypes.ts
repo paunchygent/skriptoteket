@@ -11,8 +11,17 @@
  *     responses before UI consumption.
  */
 
-import type { SirConvertJobStatus } from "./types";
 import type { SirConvertUploadProgressHandler } from "./uploadProgress";
+
+export type SirConvertJobStatus =
+  | "submitted"
+  | "queued"
+  | "running"
+  | "processing"
+  | "succeeded"
+  | "failed"
+  | "canceled"
+  | "cancelled";
 
 export const SIR_CONVERT_TRANSCRIPT_OUTPUT_ARTIFACTS = [
   "json",
@@ -76,6 +85,8 @@ export const SIR_CONVERT_TRANSCRIPT_ARTIFACT_AVAILABILITIES = [
   "failed",
   "unrequested",
 ] as const;
+
+export const SIR_CONVERT_ARTIFACT_AVAILABLE = "available" as const;
 
 export type SirConvertTranscriptArtifactAvailability =
   (typeof SIR_CONVERT_TRANSCRIPT_ARTIFACT_AVAILABILITIES)[number];

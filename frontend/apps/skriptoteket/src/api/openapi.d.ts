@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/admin/answer-key-lease/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Answer Key Lease Status */
+        get: operations["get_answer_key_lease_status_api_v1_admin_answer_key_lease_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/suggestions": {
         parameters: {
             query?: never;
@@ -1266,7 +1283,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/apps/documents.conversion_hub/exam-converter/artifacts/save": {
+    "/api/v1/apps/documents.conversion_hub/exam-converter/conversions": {
         parameters: {
             query?: never;
             header?: never;
@@ -1275,15 +1292,49 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Save Exam Converter Artifact */
-        post: operations["save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post"];
+        /** Submit Exam Converter Conversion */
+        post: operations["submit_exam_converter_conversion_api_v1_apps_documents_conversion_hub_exam_converter_conversions_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs": {
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Converter Artifacts */
+        get: operations["get_exam_converter_artifacts_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/artifacts/{artifact_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Exam Converter Named Artifact */
+        get: operations["download_exam_converter_named_artifact_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts__artifact_key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/artifacts/{artifact_key}/save": {
         parameters: {
             query?: never;
             header?: never;
@@ -1292,8 +1343,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Register Exam Converter Job */
-        post: operations["register_exam_converter_job_api_v1_apps_documents_conversion_hub_exam_converter_jobs_post"];
+        /** Save Local Exam Converter Artifact */
+        post: operations["save_local_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts__artifact_key__save_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1330,6 +1381,57 @@ export interface paths {
         post?: never;
         /** Revert Exam Converter Correction Intent */
         delete: operations["revert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replay Exam Converter Corrections */
+        post: operations["replay_exam_converter_corrections_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Converter Result */
+        get: operations["get_exam_converter_result_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__result_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/source-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Converter Source State */
+        get: operations["get_exam_converter_source_state_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__source_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2961,6 +3063,28 @@ export interface components {
             row_number?: number | null;
         };
         /**
+         * AnswerKeyLeaseStatusResponse
+         * @description Current UTC day's non-refundable answer-key lease balance.
+         */
+        AnswerKeyLeaseStatusResponse: {
+            /** Allocated Tokens */
+            allocated_tokens: number;
+            /** Available Tokens */
+            available_tokens: number;
+            /**
+             * Resets At
+             * Format: date-time
+             */
+            resets_at: string;
+            /** Spent Tokens */
+            spent_tokens: number;
+            /**
+             * Utc Day
+             * Format: date
+             */
+            utc_day: string;
+        };
+        /**
          * AppDetailResponse
          * @description Response payload for a curated app detail lookup.
          */
@@ -3064,13 +3188,6 @@ export interface components {
             /** Snapshot */
             snapshot: string;
         };
-        /** Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post */
-        Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post: {
-            /** Artifact */
-            artifact: string;
-            /** Metadata Json */
-            metadata_json: string;
-        };
         /** Body_start_tool_run_api_v1_tools__slug__run_post */
         Body_start_tool_run_api_v1_tools__slug__run_post: {
             /** File Fields */
@@ -3097,6 +3214,17 @@ export interface components {
              * @default 0
              */
             wait_seconds: number;
+        };
+        /** Body_submit_exam_converter_conversion_api_v1_apps_documents_conversion_hub_exam_converter_conversions_post */
+        Body_submit_exam_converter_conversion_api_v1_apps_documents_conversion_hub_exam_converter_conversions_post: {
+            /** Advisory Retry Attempt */
+            advisory_retry_attempt?: number | null;
+            /** File */
+            file: string;
+            /** Idempotency Key */
+            idempotency_key: string;
+            /** Ingestion Overlay */
+            ingestion_overlay?: string | null;
         };
         /** Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post */
         Body_submit_jobs_api_v1_apps_documents_conversion_hub_jobs_post: {
@@ -3822,7 +3950,7 @@ export interface components {
          * CuratedAppPublicRuntimeStatus
          * @enum {string}
          */
-        CuratedAppPublicRuntimeStatus: "contract_only" | "grant_contract_ready" | "active";
+        CuratedAppPublicRuntimeStatus: "contract_only" | "active";
         /**
          * CuratedAppUiMode
          * @enum {string}
@@ -4567,6 +4695,25 @@ export interface components {
             "usage_instructions.md": string;
         };
         /**
+         * ExamConverterConversionSubmitResult
+         * @description Return the locally owned job created for one in-process conversion.
+         */
+        ExamConverterConversionSubmitResult: {
+            /** Error */
+            error?: string | null;
+            /**
+             * Idempotent Replay
+             * @default false
+             */
+            idempotent_replay: boolean;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            status: components["schemas"]["ConversionHubJobStatus"];
+        };
+        /**
          * ExamConverterCorrectionIntentKind
          * @description Supported durable Exam Converter correction intent kinds.
          * @enum {string}
@@ -4680,6 +4827,29 @@ export interface components {
             text_field?: string | null;
             /** Text Field Target Id */
             text_field_target_id?: string | null;
+        };
+        /**
+         * ExamConverterProductResult
+         * @description Native terminal result consumed by the authenticated SPA.
+         */
+        ExamConverterProductResult: {
+            /** Artifact Count */
+            artifact_count: number;
+            /** Bundle Status */
+            bundle_status: string | null;
+            /** Error */
+            error: string | null;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            /** Manual Follow Up Required */
+            manual_follow_up_required: boolean;
+            /** Status */
+            status: string;
+            /** Warning Count */
+            warning_count: number;
         };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
@@ -5860,7 +6030,7 @@ export interface components {
              * Upstream Calls
              * @constant
              */
-            upstream_calls: "server_mediated_public_conversion";
+            upstream_calls: "none_local_execution";
         };
         /**
          * PublicCapabilityMetadata
@@ -6026,13 +6196,13 @@ export interface components {
             public_job_id: string;
             /** Result */
             result?: {
-                [key: string]: unknown;
+                [key: string]: components["schemas"]["JsonValue"];
             } | null;
             status: components["schemas"]["PublicExamConverterJobStatus"];
         };
         /**
          * PublicExamConverterJobStatus
-         * @description Public-facing job lifecycle normalized from Sir Convert status values.
+         * @description Public-facing job lifecycle for one transient local conversion.
          * @enum {string}
          */
         PublicExamConverterJobStatus: "submitted" | "queued" | "processing" | "succeeded" | "failed" | "canceled" | "expired";
@@ -6654,34 +6824,6 @@ export interface components {
             title: string;
         };
         /**
-         * RegisterExamConverterConversionHubJobRequest
-         * @description Register one upstream Exam Converter job in Skriptoteket's local ledger.
-         */
-        RegisterExamConverterConversionHubJobRequest: {
-            /** Correlation Id */
-            correlation_id?: string | null;
-            /** Input Filename */
-            input_filename: string;
-            /** @default succeeded */
-            status: components["schemas"]["ConversionHubJobStatus"];
-            /** Upstream Job Id */
-            upstream_job_id: string;
-        };
-        /**
-         * RegisterExamConverterConversionHubJobResult
-         * @description Return the owner-scoped local Conversion Hub job id for corrections.
-         */
-        RegisterExamConverterConversionHubJobResult: {
-            /**
-             * Job Id
-             * Format: uuid
-             */
-            job_id: string;
-            status: components["schemas"]["ConversionHubJobStatus"];
-            /** Upstream Job Id */
-            upstream_job_id: string;
-        };
-        /**
          * RegisterTranscriptConversionHubJobRequest
          * @description Register one upstream transcript job in Skriptoteket's local ledger.
          */
@@ -7013,10 +7155,10 @@ export interface components {
             };
         };
         /**
-         * SaveConversionHubSirConvertArtifactResult
-         * @description Result returned after one Sir Convert artifact has been saved.
+         * SaveConversionHubArtifactResult
+         * @description Result returned after one Conversion Hub artifact has been saved.
          */
-        SaveConversionHubSirConvertArtifactResult: {
+        SaveConversionHubArtifactResult: {
             /** Source Artifact Id */
             source_artifact_id: string;
             vault_artifact: components["schemas"]["ConversionHubSavedVaultArtifact"];
@@ -8376,6 +8518,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_answer_key_lease_status_api_v1_admin_answer_key_lease_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerKeyLeaseStatusResponse"];
+                };
+            };
+        };
+    };
     list_suggestions_for_review_api_v1_admin_suggestions_get: {
         parameters: {
             query?: never;
@@ -10936,7 +11098,7 @@ export interface operations {
             };
         };
     };
-    save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post: {
+    submit_exam_converter_conversion_api_v1_apps_documents_conversion_hub_exam_converter_conversions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -10945,7 +11107,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_save_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_artifacts_save_post"];
+                "multipart/form-data": components["schemas"]["Body_submit_exam_converter_conversion_api_v1_apps_documents_conversion_hub_exam_converter_conversions_post"];
             };
         };
         responses: {
@@ -10955,7 +11117,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SaveConversionHubSirConvertArtifactResult"];
+                    "application/json": components["schemas"]["ExamConverterConversionSubmitResult"];
                 };
             };
             /** @description Validation Error */
@@ -10969,18 +11131,16 @@ export interface operations {
             };
         };
     };
-    register_exam_converter_job_api_v1_apps_documents_conversion_hub_exam_converter_jobs_post: {
+    get_exam_converter_artifacts_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts_get: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                job_id: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterExamConverterConversionHubJobRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -10988,7 +11148,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterExamConverterConversionHubJobResult"];
+                    "application/json": {
+                        [key: string]: components["schemas"]["JsonValue"];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_exam_converter_named_artifact_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts__artifact_key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+                artifact_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_local_exam_converter_artifact_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__artifacts__artifact_key__save_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+                artifact_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveConversionHubArtifactResult"];
                 };
             };
             /** @description Validation Error */
@@ -11090,6 +11316,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamConverterCorrectionSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replay_exam_converter_corrections_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__replay_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["JsonValue"];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_converter_result_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__result_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamConverterProductResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_converter_source_state_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__source_state_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["JsonValue"];
+                    };
                 };
             };
             /** @description Validation Error */

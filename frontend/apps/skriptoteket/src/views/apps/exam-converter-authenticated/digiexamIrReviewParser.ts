@@ -6,7 +6,7 @@
  *   project them into a teacher-facing Exam Converter review model.
  *
  * Relationships:
- *   - Consumes Sir Convert `ir_json` and `migration_manifest` named artifacts.
+ *   - Consumes Exam Converter `ir_json` and `migration_manifest` named artifacts.
  *   - Feeds authenticated Exam Converter inspection components.
  *   - Does not mutate IR, create local review state, or invent missing data.
  */
@@ -17,24 +17,22 @@ import type {
   DigiExamTargetReadinessReport,
   DigiExamTargetReadinessRow,
   DigiExamAnswerKeyReviewState,
-  SirConvertArtifactAvailability,
-  SirConvertArtifactEntry,
-  SirConvertArtifactManifest,
-  SirConvertArtifactManifestSourceBinding,
-} from "../../../api/sirConvertGateway";
+  ExamConverterArtifactAvailability,
+  ExamConverterArtifactEntry,
+  ExamConverterArtifactManifest,
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ARTIFACT_IR_JSON,
   DIGIEXAM_ARTIFACT_MIGRATION_MANIFEST,
   DIGIEXAM_ITEM_TYPES,
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-  SIR_CONVERT_ARTIFACT_NOT_REQUESTED,
-} from "../../../api/sirConvertGateway/contractValues";
+  EXAM_CONVERTER_ARTIFACT_AVAILABLE,
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
-} from "../../../api/sirConvertGateway/schemaVersions";
+} from "../../../api/examConverterContracts";
 import { digiExamTargetFileLabel, isDigiExamTargetFile } from "./digiexamTargetArtifacts";
 import {
   applyAnswerKeyReviewStateToQuestions,
@@ -74,7 +72,7 @@ export type ExamConverterInspectionMode = "questions" | "files" | "report";
 export type ExamConverterReviewFile = {
   artifactActionReference: ExamConverterReviewFileActionReference | null;
   artifactKey: string;
-  availability: SirConvertArtifactAvailability;
+  availability: ExamConverterArtifactAvailability;
   contentType: string;
   exportEnabled: boolean;
   filename: string;
@@ -141,7 +139,7 @@ export type ExamConverterReportProjection = {
 export type ExamConverterReviewProjection = {
   sourceFilename: string;
   sourceFileSha256: string;
-  artifactSourceBinding: SirConvertArtifactManifestSourceBinding;
+  artifactSourceBinding: ExamConverterArtifactManifest["source_binding"];
   questions: ExamConverterQuestionReviewRow[];
   files: ExamConverterReviewFile[];
   report: ExamConverterReportProjection;
@@ -389,18 +387,18 @@ function primaryReadinessRow(rows: DigiExamTargetReadinessRow[]): DigiExamTarget
 }
 
 function exportEnabledForFile(
-  entry: SirConvertArtifactEntry,
+  entry: ExamConverterArtifactEntry,
   rows: DigiExamTargetReadinessRow[],
 ): boolean {
   return (
-    entry.availability === SIR_CONVERT_ARTIFACT_AVAILABLE &&
+    entry.availability === EXAM_CONVERTER_ARTIFACT_AVAILABLE &&
     rows.some((row) => row.export_enabled)
   );
 }
 
 function statusLabelForFile(params: {
   artifactActionReference: ExamConverterReviewFileActionReference | null;
-  availability: SirConvertArtifactAvailability;
+  availability: ExamConverterArtifactAvailability;
   exportEnabled: boolean;
   readinessRow: DigiExamTargetReadinessRow | null;
   unavailableCode: string | null;
@@ -413,10 +411,10 @@ function statusLabelForFile(params: {
   if (exportEnabled && !artifactActionReference) {
     return "Filer kunde inte skapas";
   }
-  if (availability === SIR_CONVERT_ARTIFACT_AVAILABLE) {
+  if (availability === EXAM_CONVERTER_ARTIFACT_AVAILABLE) {
     return "Granska facit först";
   }
-  if (availability === SIR_CONVERT_ARTIFACT_NOT_REQUESTED) {
+  if (availability === "not_requested") {
     return "Inte vald";
   }
   if (
@@ -429,7 +427,7 @@ function statusLabelForFile(params: {
 }
 
 function projectFiles(
-  artifactManifest: SirConvertArtifactManifest,
+  artifactManifest: ExamConverterArtifactManifest,
   targetReadinessReport: DigiExamTargetReadinessReport,
   answerKeyReviewState: DigiExamAnswerKeyReviewState,
 ): ExamConverterReviewFile[] {
@@ -484,12 +482,12 @@ function replayReferencesByTarget(
 }
 
 function fileActionReferenceForEntry(params: {
-  entry: SirConvertArtifactEntry;
+  entry: ExamConverterArtifactEntry;
   exportEnabled: boolean;
   hasReplayAuthority: boolean;
   replayReference: DigiExamAnswerKeyReviewReplayArtifactReference | undefined;
 }): ExamConverterReviewFileActionReference | null {
-  if (!params.exportEnabled || params.entry.availability !== SIR_CONVERT_ARTIFACT_AVAILABLE) {
+  if (!params.exportEnabled || params.entry.availability !== EXAM_CONVERTER_ARTIFACT_AVAILABLE) {
     return null;
   }
   if (params.replayReference) {
@@ -595,7 +593,7 @@ function followUpsByItemId(
 export function parseExamConverterReviewProjection(params: {
   answerKeyCompletionReport?: ExamConverterAnswerKeyCompletionReport | null;
   answerKeyReviewStateReport: unknown;
-  artifactManifest: SirConvertArtifactManifest;
+  artifactManifest: ExamConverterArtifactManifest;
   effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
   effectivePointCorrectionsByItem?: ExamConverterEffectivePointCorrectionByItem | null;
   irJson: unknown;

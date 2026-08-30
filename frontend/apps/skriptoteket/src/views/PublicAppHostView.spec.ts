@@ -10,7 +10,7 @@ import { defineComponent, nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
-import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "../api/sirConvertGateway/schemaVersions";
+import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "../api/examConverterContracts";
 import PublicAppHostView from "./PublicAppHostView.vue";
 import type { components } from "../api/openapi";
 
@@ -149,7 +149,7 @@ function createScopedPublicBootstrap(
       ],
       authority_boundary: {
         browser_authority: "opaque_public_handles_only",
-        upstream_calls: "server_mediated_public_conversion",
+        upstream_calls: "none_local_execution",
         artifact_reads: "server_mediated_artifact_download",
         account_authority: "ignored",
         persistence: "transient_public_only",

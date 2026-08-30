@@ -6,9 +6,7 @@ Purpose:
 
 Relationships:
     - Parsed by `domain.curated_apps.exam_conversion.digiexam_ingestion_overlay`.
-    - Mirrors the Sir Convert-a-Lot v2 ingestion-overlay artifact contract at
-      revision 41be61a6, without the reviewed-completion answer-key surface
-      (answer-key completion stays outside this walking skeleton).
+    - Defines the Skriptoteket-owned ingestion-overlay artifact contract.
 """
 
 from __future__ import annotations

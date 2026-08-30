@@ -2,8 +2,7 @@
 
 Purpose:
   Expose the approved anonymous Exam Converter capability under the public
-  Conversion Hub namespace while keeping grants, upstream authority, and
-  artifacts server-side.
+  Conversion Hub namespace while keeping transient artifacts server-side.
 
 Relationships:
   - Reads active capability metadata from the curated-app registry.

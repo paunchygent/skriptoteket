@@ -8,11 +8,11 @@
  * Relationships:
  *   - Used by `ExamConverterAuthenticatedView`.
  *   - Feeds `ExamConverterResultStrip` with approved teacher-facing copy.
- *   - Stays independent of Gateway clients, Sir Convert DTOs, and save flows.
+ *   - Stays independent of transport clients, producer DTOs, and save flows.
  */
 
 import { computed, onBeforeUnmount, ref } from "vue";
-import type { SirConvertBundleStatus } from "../../../api/sirConvertGateway";
+import type { ExamConverterBundleStatus } from "../../../api/examConverterContracts";
 
 export type ExamConverterConversionStatus =
   | "idle"
@@ -32,7 +32,7 @@ export type ExamConverterRunningProgress = {
 
 export type ExamConverterRuntimeOutcome = {
   artifactCount: number;
-  bundleStatus: SirConvertBundleStatus;
+  bundleStatus: ExamConverterBundleStatus;
   manualFollowUpCount: number | null;
   manualFollowUpRequired: boolean;
   warningCount: number;

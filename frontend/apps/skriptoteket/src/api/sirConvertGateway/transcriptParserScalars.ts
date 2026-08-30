@@ -10,7 +10,7 @@
  *   - Keeps Gateway contract drift errors close to the transcript boundary.
  */
 
-import type { SirConvertJobStatus } from "./types";
+import type { SirConvertJobStatus } from "./transcriptTypes";
 
 export type JsonRecord = Record<string, unknown>;
 

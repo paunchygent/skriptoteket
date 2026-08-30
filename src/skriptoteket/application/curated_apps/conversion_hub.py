@@ -220,27 +220,6 @@ class ConversionHubJobStatusResult(BaseModel):
     error: str | None = None
 
 
-class RegisterExamConverterConversionHubJobRequest(BaseModel):
-    """Register one upstream Exam Converter job in Skriptoteket's local ledger."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    upstream_job_id: str = Field(min_length=1, max_length=255)
-    input_filename: str = Field(min_length=1, max_length=255)
-    correlation_id: str | None = Field(default=None, max_length=64)
-    status: ConversionHubJobStatus = ConversionHubJobStatus.SUCCEEDED
-
-
-class RegisterExamConverterConversionHubJobResult(BaseModel):
-    """Return the owner-scoped local Conversion Hub job id for corrections."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    job_id: UUID
-    upstream_job_id: str
-    status: ConversionHubJobStatus
-
-
 class RegisterTranscriptConversionHubJobRequest(BaseModel):
     """Register one upstream transcript job in Skriptoteket's local ledger."""
 

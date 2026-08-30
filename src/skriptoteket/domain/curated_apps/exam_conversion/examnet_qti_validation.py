@@ -94,7 +94,7 @@ def _local_validation_result(
 ) -> ExamNetQtiValidatorResult:
     if plan.status == ExamNetQtiPackageStatus.BLOCKED:
         return ExamNetQtiValidatorResult(
-            name="sir-convert-local-qti-package-preflight",
+            name="skriptoteket-examnet-qti-package-preflight",
             version=EXAMNET_QTI_GENERATOR_VERSION,
             layer="package_xml_preflight",
             status=ExamNetQtiValidationStatus.BLOCKED,
@@ -102,7 +102,7 @@ def _local_validation_result(
         )
     if plan.status == ExamNetQtiPackageStatus.FAILED or package_bytes is None:
         return ExamNetQtiValidatorResult(
-            name="sir-convert-local-qti-package-preflight",
+            name="skriptoteket-examnet-qti-package-preflight",
             version=EXAMNET_QTI_GENERATOR_VERSION,
             layer="package_xml_preflight",
             status=ExamNetQtiValidationStatus.FAILED,
@@ -111,14 +111,14 @@ def _local_validation_result(
     errors = _validate_package_bytes(package_bytes)
     if errors:
         return ExamNetQtiValidatorResult(
-            name="sir-convert-local-qti-package-preflight",
+            name="skriptoteket-examnet-qti-package-preflight",
             version=EXAMNET_QTI_GENERATOR_VERSION,
             layer="package_xml_preflight",
             status=ExamNetQtiValidationStatus.FAILED,
             message="; ".join(errors),
         )
     return ExamNetQtiValidatorResult(
-        name="sir-convert-local-qti-package-preflight",
+        name="skriptoteket-examnet-qti-package-preflight",
         version=EXAMNET_QTI_GENERATOR_VERSION,
         layer="package_xml_preflight",
         status=ExamNetQtiValidationStatus.PASSED,

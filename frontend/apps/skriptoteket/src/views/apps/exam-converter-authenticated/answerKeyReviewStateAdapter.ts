@@ -2,7 +2,7 @@
  * Exam Converter answer-key review-state adapter.
  *
  * Domain purpose:
- *   Consume Sir Convert's compact answer-key review-state projection and map
+ *   Consume the local compact answer-key review-state projection and map
  *   producer semantics into Skriptoteket's teacher-facing review rows.
  *
  * Relationships:
@@ -16,17 +16,17 @@ import type {
   DigiExamAnswerKeyReviewReplayArtifactReference,
   DigiExamAnswerKeyReviewState,
   DigiExamAnswerKeyReviewStateItem,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ANSWER_KEY_ORIGINS,
   DIGIEXAM_ANSWER_KEY_REVIEW_REASONS,
   DIGIEXAM_ANSWER_KEY_REVIEW_STATES,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
-} from "../../../api/sirConvertGateway/contractValues";
+} from "../../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   CORRECTION_REPLAY_ARTIFACT_REFERENCE_SCHEMA_VERSION,
-} from "../../../api/sirConvertGateway/schemaVersions";
+} from "../../../api/examConverterContracts";
 import type {
   ExamConverterMissingFieldLabel,
   ExamConverterQuestionReviewRow,

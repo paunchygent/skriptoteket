@@ -7,10 +7,10 @@
  *
  * Relationships:
  *   - Used by review and correction-session Vitest slices.
- *   - Mirrors the minimum source-bound fields required by Sir Convert replay.
+ *   - Mirrors the minimum source-bound fields required by local correction replay.
  */
 
-import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
+import { ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION } from "../../api/examConverterContracts";
 
 function replayArtifactReferences(jobId: string = "job_correction_replay") {
   return [

@@ -2,12 +2,12 @@
 
 Purpose:
   Own source-bound teacher correction intent semantics for authenticated Exam
-  Converter workflows while Sir Convert remains a stateless replay applicator.
+  Converter workflows and replay them through Skriptoteket-owned execution.
 
 Relationships:
   - Governed by ADR-0087 and ST-21-04.
   - Persisted by the correction-session repository.
-  - Replayed later through the HuleEdu/Sir Convert unified correction edge.
+  - Replayed through the local Exam Converter product handler.
 """
 
 from __future__ import annotations

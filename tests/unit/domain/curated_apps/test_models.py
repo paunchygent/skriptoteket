@@ -66,16 +66,6 @@ def test_public_capability_defaults_to_contract_only_runtime_status() -> None:
     assert capability.runtime_status is CuratedAppPublicRuntimeStatus.CONTRACT_ONLY
 
 
-def test_public_capability_accepts_grant_contract_ready_runtime_status() -> None:
-    capability = CuratedAppPublicCapability(
-        scope="exam_converter",
-        profile=CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME,
-        runtime_status=CuratedAppPublicRuntimeStatus.GRANT_CONTRACT_READY,
-    )
-
-    assert capability.runtime_status is CuratedAppPublicRuntimeStatus.GRANT_CONTRACT_READY
-
-
 def test_curated_app_rejects_duplicate_public_capability_scopes() -> None:
     capability = CuratedAppPublicCapability(
         scope="exam_converter",

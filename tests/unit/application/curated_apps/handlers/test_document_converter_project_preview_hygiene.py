@@ -28,7 +28,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultUsage
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers.test_conversion_hub_artifact_saves import (
+from tests.fixtures.time_fixtures import (
     FixedClock,
     FixedIdGenerator,
 )

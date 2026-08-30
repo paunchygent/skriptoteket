@@ -27,9 +27,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     enqueue_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_conversion import (
-    ExamConverterConversionLane,
     ExamConverterConversionSubmitResult,
-    build_local_exam_conversion_producer_id,
 )
 from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
@@ -39,7 +37,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_comple
     AnswerKeyEnrichmentPlanState,
     plan_answer_key_enrichment,
 )
-from skriptoteket.domain.errors import DomainError, validation_error
+from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import (
@@ -56,7 +54,6 @@ from skriptoteket.protocols.exam_conversion import (
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-_LANE_DISABLED_MESSAGE = "Den inbyggda provkonverteringen är inte aktiverad."
 _LOCAL_ARTIFACT_FAILURE_MESSAGE = "Kunde inte spara konverteringsresultatet just nu."
 
 logger = logging.getLogger(__name__)
@@ -69,7 +66,6 @@ class CreateExamConverterConversionJobsHandler:
         self,
         *,
         jobs: ConversionHubJobRepositoryProtocol,
-        lane: ExamConverterConversionLane,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -81,7 +77,6 @@ class CreateExamConverterConversionJobsHandler:
     ) -> None:
         self._jobs = jobs
         self._submission_lookup = submission_lookup
-        self._lane = lane
         self._producer = producer
         self._artifacts = artifacts
         self._enrichment_jobs = enrichment_jobs
@@ -111,11 +106,7 @@ class CreateExamConverterConversionJobsHandler:
         Returns:
             The locally owned job id plus terminal conversion status.
 
-        Raises:
-            DomainError: If the in-process lane is not enabled.
         """
-        if self._lane.value != "in_process":
-            raise validation_error(_LANE_DISABLED_MESSAGE)
         enqueue_enrichment = self._should_enqueue_enrichment(
             upload=upload, overlay_bytes=overlay_bytes
         )
@@ -262,7 +253,6 @@ class CreateExamConverterConversionJobsHandler:
         return await self._update_job(
             job=job,
             status=ConversionHubJobStatus.SUCCEEDED,
-            upstream_job_id=build_local_exam_conversion_producer_id(job_id=job.id),
             error_message=None,
         )
 

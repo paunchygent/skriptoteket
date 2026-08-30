@@ -1,13 +1,10 @@
 """Public Exam Converter artifact projection helpers.
 
 Purpose:
-  Extract server-side artifact read leases from Sir Convert manifest payloads
-  and project browser-safe artifact metadata for the public Exam Converter lane.
+  Project browser-safe artifact metadata for the public Exam Converter lane.
 
 Relationships:
   - Used by `handlers.public_exam_converter_jobs`.
-  - Keeps raw Sir Convert read leases in application state while stripping them
-    from public browser responses.
 """
 
 from __future__ import annotations
@@ -20,12 +17,10 @@ from pydantic import JsonValue
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterArtifactEntry,
     PublicExamConverterArtifactManifestResponse,
-    PublicExamConverterArtifactReadLease,
     PublicExamConverterJobStatus,
-    PublicExamConverterSubmittedJob,
     PublicExamConverterUpload,
 )
-from skriptoteket.application.curated_apps.sir_convert_contracts import (
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
 )
 
@@ -44,37 +39,6 @@ def upload_mime_types(
         if candidate and candidate not in normalized:
             normalized.append(candidate)
     return tuple(normalized)
-
-
-def artifact_read_leases_from_manifest(
-    manifest: dict[str, object],
-) -> tuple[PublicExamConverterArtifactReadLease, ...]:
-    artifact_entries = manifest.get("artifacts")
-    if not isinstance(artifact_entries, list):
-        return ()
-    leases: list[PublicExamConverterArtifactReadLease] = []
-    for entry in artifact_entries:
-        if not isinstance(entry, dict):
-            continue
-        artifact_key = _string_value(entry.get("artifact_key"))
-        lease = _dict_value(entry.get("public_artifact_read_lease"))
-        token = _string_value(lease.get("token")) if lease is not None else None
-        if artifact_key is not None and token is not None:
-            leases.append(
-                PublicExamConverterArtifactReadLease(artifact_key=artifact_key, token=token)
-            )
-    return tuple(leases)
-
-
-def artifact_read_lease_for_key(
-    *,
-    job: PublicExamConverterSubmittedJob,
-    artifact_key: str,
-) -> PublicExamConverterArtifactReadLease | None:
-    for lease in job.artifact_read_leases:
-        if lease.artifact_key == artifact_key:
-            return lease
-    return None
 
 
 def project_public_exam_converter_manifest(
