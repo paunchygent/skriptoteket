@@ -1,5 +1,19 @@
 ## Current
 
+- Production main `59193f07` corrects the temporarily unavailable transcription
+  UX: the grey home card is a button that stays on `/` and raises the reusable
+  toast `Ljudtranskribering är inte tillgänglig för närvarande.`; a direct old
+  `/apps/audio-transcription` address returns home through the same message.
+  Every authenticated role can now open and submit the suggestion form, while
+  contributor-only editor/ownership routes remain restricted. The catalog now
+  presents the conversion app as `Provhantering` without transcription copy.
+  Focused checks passed (40 frontend, 13 backend, changed-file lint, frontend
+  lint/typecheck/build). Backend-wide typecheck remains at the existing ten
+  unrelated script-bank errors. The HuleEdu production bootstrap identity was
+  repaired and public-login verified; its signed-in production browser journey
+  proved both unavailable paths, the normal-user suggestion form, and catalog
+  copy. Skriptoteket web/worker are healthy; reserved Sir/GPU/STT containers
+  remain exited with restart disabled.
 - Exam Converter repair main `4273c3c2` uses PostgreSQL/UoW as the public-job
   authority and removes the web-process queue. Teacher review now persists one
   or all valid AI suggestions through one atomic correction-session write,
@@ -169,19 +183,6 @@
   producers, corrected active routing to root `handoff.md`, and passed current
   and historical document validation, read-only Hemma transport, and
   deterministic staleness proof.
-- Task 0005 synchronized only the reserved catalog block, adopted all 17 shared
-  dependency references, and produced a bounded PNPM lock closure.
-- Frozen PNPM installation, frontend typecheck, five focused UI primitive
-  tests, and the production build pass.
-- The shared resource manifest, schema, and package metadata match central
-  authority byte-for-byte; Skriptoteket CSS and components remain unchanged.
-- Task 0004 inspected the complete, backend, and frontend plans before running
-  only the two approved named checks.
-- Backend typecheck is clean for `src` and `tests`; frontend typecheck is clean.
-- The named runs exposed existing backend and frontend test failures. Focused
-  classification proved they are pre-existing product/test readiness debt.
-- The targeted pre-commit pytest helper now routes through the existing
-  native-library-aware `test-parallel` producer.
 
 ## Facts
 
