@@ -16,7 +16,6 @@ import { routes } from "../../router/routes";
 
 const INTERNAL_INSPECTION_ROUTES = new Set([
   "exam-converter-ui-inspection-fixture",
-  "transcript-ui-inspection-fixture",
 ]);
 
 function collectRouteNames(routeRecords: readonly RouteRecordRaw[]): string[] {
@@ -47,7 +46,6 @@ describe("help topic catalog", () => {
     expect(resolveHelpTopic("audio-transcription-authenticated")).toBe("conversion_tools");
     expect(resolveHelpTopic("document-converter-authenticated")).toBe("conversion_tools");
     expect(resolveHelpTopic("exam-converter-ui-inspection-fixture")).toBeNull();
-    expect(resolveHelpTopic("transcript-ui-inspection-fixture")).toBeNull();
   });
 
   it("lets planner context override the generic app route", () => {

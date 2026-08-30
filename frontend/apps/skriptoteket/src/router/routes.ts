@@ -25,22 +25,6 @@ const EXAM_CONVERTER_UI_INSPECTION_ROUTES: RouteRecordRaw[] =
       ]
     : [];
 
-const TRANSCRIPT_UI_INSPECTION_ROUTES: RouteRecordRaw[] =
-  import.meta.env.DEV || import.meta.env.MODE === "test"
-    ? [
-        {
-          path: "/apps/documents.conversion_hub/transcript/ui-fixtures/:fixtureId",
-          name: "transcript-ui-inspection-fixture",
-          component: () =>
-            import("../views/apps/conversion-hub-transcript/TranscriptUiInspectionView.vue"),
-          props: (route) => ({
-            fixtureId: route.params.fixtureId,
-          }),
-          meta: { requiresAuth: true },
-        },
-      ]
-    : [];
-
 const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
   {
     path: "/apps/exam-converter",
@@ -54,10 +38,8 @@ const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
   {
     path: "/apps/audio-transcription",
     name: "audio-transcription-authenticated",
-    component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
-    props: () => ({
-      presentationMode: "transcript",
-    }),
+    component: () => import("../views/apps/UnavailableAppView.vue"),
+    props: () => ({ appTitle: "Ljudtranskribering" }),
     meta: { requiresAuth: true },
   },
   {
@@ -145,7 +127,6 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   ...EXAM_CONVERTER_UI_INSPECTION_ROUTES,
-  ...TRANSCRIPT_UI_INSPECTION_ROUTES,
   ...CANONICAL_CONVERSION_APP_ROUTES,
   {
     path: "/apps/:appId",

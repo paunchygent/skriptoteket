@@ -168,14 +168,8 @@ async def test_document_converter_routes_return_only_document_mvp_routes() -> No
     route_pairs = {(route.source_format, route.output_format) for route in result.routes}
     assert route_pairs == {
         (ConversionHubSourceFormatV2.PDF, ConversionHubOutputFormatV2.MD),
-        (ConversionHubSourceFormatV2.PDF, ConversionHubOutputFormatV2.DOCX),
-        (ConversionHubSourceFormatV2.DOCX, ConversionHubOutputFormatV2.MD),
-        (ConversionHubSourceFormatV2.DOCX, ConversionHubOutputFormatV2.PDF),
         (ConversionHubSourceFormatV2.MD, ConversionHubOutputFormatV2.PDF),
-        (ConversionHubSourceFormatV2.MD, ConversionHubOutputFormatV2.DOCX),
-        (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.MD),
         (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.PDF),
-        (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.DOCX),
     }
     assert all(
         route.source_format

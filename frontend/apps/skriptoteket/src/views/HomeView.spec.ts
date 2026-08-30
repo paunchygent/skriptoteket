@@ -135,6 +135,7 @@ describe("HomeView", () => {
 
     expect(text).toContain("När du loggar in");
     expect(text).toContain("Transkribera tal till text");
+    expect(text).toContain("Inte tillgänglig för närvarande");
     expect(text).toContain("Skapa PDF:er med hjälp av HTML och CSS");
     expect(text).toContain("Skapa, redigera och konvertera prov");
     expect(text).toContain("Logga in");
@@ -236,7 +237,7 @@ describe("HomeView", () => {
     expect(workAppsSection.text()).toContain(
       "Skapa PDF:er med hjälp av HTML och CSS.",
     );
-    expect(workAppsSection.text()).not.toContain("Kommer senare");
+    expect(workAppsSection.text()).toContain("Inte tillgänglig för närvarande");
     expect(
       workAppsSection.findAll('[data-testid^="home-work-app-"]').map((app) => {
         const heading = app.find("h3");
@@ -284,7 +285,7 @@ describe("HomeView", () => {
     expect(secondaryLedgers.text()).not.toContain("Att granska");
   });
 
-  it("uses truthful authenticated route targets and activates Dokumentkonvertering", async () => {
+  it("keeps Ljudtranskribering visibly unavailable and Dokumentkonvertering active", async () => {
     const wrapper = await mountAuthenticatedHomeView();
 
     expect(findRouterLinkByText(wrapper, "Klassrumskartan")?.props("to")).toBe(
@@ -300,6 +301,16 @@ describe("HomeView", () => {
       "/apps/document-converter",
     );
     expect(findRouterLinkByText(wrapper, "Kodredigerare")).toBeUndefined();
+    expect(
+      wrapper
+        .get('[data-testid="home-work-app-audio-transcription"]')
+        .classes(),
+    ).toContain("home-work-app--unavailable");
+    expect(
+      wrapper
+        .get('[data-testid="home-work-app-audio-transcription"]')
+        .text(),
+    ).toContain("Inte tillgänglig för närvarande");
     expect(
       wrapper
         .get('[data-testid="home-work-app-document-converter"]')

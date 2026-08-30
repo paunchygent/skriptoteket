@@ -9,6 +9,9 @@
  */
 
 import type { HomeWorkApp } from "./homeWorkApps";
+import { useAppAvailability } from "../../composables/useAppAvailability";
+
+const { availabilityLabel, isUnavailable } = useAppAvailability();
 
 defineProps<{
   apps: readonly HomeWorkApp[];
@@ -29,7 +32,10 @@ defineProps<{
         :data-testid="`home-work-app-${app.id}`"
         :data-app-linkable="app.to ? 'true' : 'false'"
         class="home-work-app"
-        :class="app.to ? 'group no-underline' : 'home-work-app--static'"
+        :class="[
+          app.to ? 'group no-underline' : 'home-work-app--static',
+          isUnavailable(app.availability) ? 'home-work-app--unavailable' : '',
+        ]"
       >
         <div
           class="home-work-app__graphic"
@@ -55,11 +61,11 @@ defineProps<{
           </div>
 
           <p
-            v-if="app.availabilityLabel"
+            v-if="availabilityLabel(app.availability)"
             class="text-xs font-semibold"
-            :class="app.to ? 'text-action' : 'text-navy/55'"
+            :class="isUnavailable(app.availability) ? 'text-navy/55' : 'text-action'"
           >
-            {{ app.availabilityLabel }}
+            {{ availabilityLabel(app.availability) }}
           </p>
         </div>
       </component>
@@ -110,5 +116,11 @@ defineProps<{
 
 .home-work-app--static {
   background: color-mix(in srgb, var(--color-panel) 88%, var(--color-canvas));
+}
+
+.home-work-app--unavailable {
+  background: color-mix(in srgb, var(--color-panel) 88%, var(--color-canvas));
+  filter: grayscale(1);
+  opacity: 0.58;
 }
 </style>

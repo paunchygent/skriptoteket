@@ -222,6 +222,35 @@ def _exam_job(*, job_id: UUID, owner_user_id: UUID) -> ConversionHubJob:
     )
 
 
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_get_document_converter_job_preserves_disabled_route_history() -> None:
+    actor = make_user()
+    job_id = uuid4()
+    repo = InMemoryConversionHubJobRepository()
+    repo.jobs[job_id] = _document_job(
+        job_id=job_id,
+        owner_user_id=actor.id,
+    ).model_copy(
+        update={
+            "input_filename": "mall.docx",
+            "source_format": ConversionHubSourceFormatV2.DOCX,
+            "output_format": ConversionHubOutputFormatV2.PDF,
+        }
+    )
+    handler = GetDocumentConverterJobHandler(
+        jobs=repo,
+        client=FakeSirConvertClient(),
+        uow=FakeUow(),
+        clock=SequenceClock(datetime(2026, 6, 25, tzinfo=timezone.utc)),
+    )
+
+    result = await handler.handle(actor=actor, job_id=job_id, correlation_id="corr-1")
+
+    assert result.job_id == job_id
+    assert result.status is ConversionHubJobStatus.SUCCEEDED
+
+
 def _artifact(*, content: bytes = b"%PDF-1.7") -> SirConvertArtifactOutcomeV2:
     return SirConvertArtifactOutcomeV2(
         job_id="sir-job-1",

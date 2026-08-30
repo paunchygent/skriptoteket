@@ -50,48 +50,33 @@ _DOCUMENT_ROUTES = (
         title="PDF -> Markdown",
     ),
     ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.PDF,
-        output_format=ConversionHubOutputFormatV2.DOCX,
-        title="PDF -> DOCX",
-    ),
-    ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.DOCX,
-        output_format=ConversionHubOutputFormatV2.MD,
-        title="DOCX -> Markdown",
-    ),
-    ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.DOCX,
-        output_format=ConversionHubOutputFormatV2.PDF,
-        title="DOCX -> PDF",
-    ),
-    ConversionHubRouteV2(
         source_format=ConversionHubSourceFormatV2.MD,
         output_format=ConversionHubOutputFormatV2.PDF,
         title="Markdown -> PDF",
-    ),
-    ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.MD,
-        output_format=ConversionHubOutputFormatV2.DOCX,
-        title="Markdown -> DOCX",
-    ),
-    ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.HTML,
-        output_format=ConversionHubOutputFormatV2.MD,
-        title="HTML -> Markdown",
     ),
     ConversionHubRouteV2(
         source_format=ConversionHubSourceFormatV2.HTML,
         output_format=ConversionHubOutputFormatV2.PDF,
         title="HTML -> PDF",
     ),
-    ConversionHubRouteV2(
-        source_format=ConversionHubSourceFormatV2.HTML,
-        output_format=ConversionHubOutputFormatV2.DOCX,
-        title="HTML -> DOCX",
-    ),
 )
 _DOCUMENT_ROUTE_PAIRS = frozenset(
     (route.source_format, route.output_format) for route in _DOCUMENT_ROUTES
+)
+# New submissions use the current route catalog; persisted jobs retain every
+# formerly accepted Document Converter pair for status and artifact access.
+_DOCUMENT_JOB_ROUTE_PAIRS = frozenset(
+    {
+        (ConversionHubSourceFormatV2.PDF, ConversionHubOutputFormatV2.MD),
+        (ConversionHubSourceFormatV2.PDF, ConversionHubOutputFormatV2.DOCX),
+        (ConversionHubSourceFormatV2.DOCX, ConversionHubOutputFormatV2.MD),
+        (ConversionHubSourceFormatV2.DOCX, ConversionHubOutputFormatV2.PDF),
+        (ConversionHubSourceFormatV2.MD, ConversionHubOutputFormatV2.PDF),
+        (ConversionHubSourceFormatV2.MD, ConversionHubOutputFormatV2.DOCX),
+        (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.MD),
+        (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.PDF),
+        (ConversionHubSourceFormatV2.HTML, ConversionHubOutputFormatV2.DOCX),
+    }
 )
 _OUTPUT_EXTENSIONS = {
     ConversionHubOutputFormatV2.MD: "md",
@@ -101,15 +86,11 @@ _OUTPUT_EXTENSIONS = {
 _GENERIC_UPLOAD_CONTENT_TYPES = frozenset({"", "application/octet-stream"})
 _SOURCE_UPLOAD_SUFFIXES = {
     ConversionHubSourceFormatV2.PDF: frozenset({".pdf"}),
-    ConversionHubSourceFormatV2.DOCX: frozenset({".docx"}),
     ConversionHubSourceFormatV2.MD: frozenset({".md", ".markdown"}),
     ConversionHubSourceFormatV2.HTML: frozenset({".html", ".htm"}),
 }
 _SOURCE_UPLOAD_CONTENT_TYPES = {
     ConversionHubSourceFormatV2.PDF: frozenset({"application/pdf"}),
-    ConversionHubSourceFormatV2.DOCX: frozenset(
-        {"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
-    ),
     ConversionHubSourceFormatV2.MD: frozenset({"text/markdown", "text/plain", "text/x-markdown"}),
     ConversionHubSourceFormatV2.HTML: frozenset({"application/xhtml+xml", "text/html"}),
 }
@@ -238,7 +219,7 @@ def list_document_converter_routes() -> ConversionHubListRoutesResult:
 
 
 def validate_document_converter_route(spec: ConversionHubJobSpecV2) -> None:
-    """Reject Conversion Hub specs outside the Document Converter MVP route set."""
+    """Reject Conversion Hub specs outside the current Document Converter route set."""
     route = (spec.source_format, spec.output_format)
     if route not in _DOCUMENT_ROUTE_PAIRS:
         route_str = f"{spec.source_format.value} -> {spec.output_format.value}"
@@ -331,7 +312,7 @@ def infer_document_converter_source_format(
 
 def is_document_converter_job(job: ConversionHubJob) -> bool:
     """Return true when a local Conversion Hub job belongs to Document Converter."""
-    return (job.source_format, job.output_format) in _DOCUMENT_ROUTE_PAIRS
+    return (job.source_format, job.output_format) in _DOCUMENT_JOB_ROUTE_PAIRS
 
 
 def is_local_document_converter_job(job: ConversionHubJob) -> bool:

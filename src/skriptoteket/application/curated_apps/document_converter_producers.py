@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 
 class DocumentConverterProducerPolicy:
-    """Choose the local app producer or Sir Convert for one validated item."""
+    """Choose a local CPU producer or reject an unavailable conversion."""
 
     def __init__(self, *, pdf_text_extractor: PdfTextExtractorProtocol) -> None:
         self._pdf_text_extractor = pdf_text_extractor
@@ -67,11 +67,13 @@ class DocumentConverterProducerPolicy:
                 filename=upload.filename,
             )
             if probe.heavy_reason is not None:
-                return _sir_convert_decision(probe.heavy_reason)
+                raise validation_error(
+                    "PDF-filen kräver textigenkänning som inte är tillgänglig för närvarande."
+                )
             if probe.text is not None:
                 return _local_decision("local_pdf_text_to_markdown")
-            return _sir_convert_decision("failed_local_pdf_text_extraction")
-        return _sir_convert_decision(_sir_convert_route_reason(spec=spec))
+            raise validation_error("PDF-filen saknar ett läsbart textlager.")
+        raise validation_error("Dokumentkonverteringen stöder inte det valda formatet.")
 
 
 class LocalDocumentConverterProducer:
@@ -155,23 +157,6 @@ def _local_decision(reason: str) -> DocumentConverterProducerDecision:
         producer=DocumentConverterProducerKind.LOCAL,
         reason=reason,
     )
-
-
-def _sir_convert_decision(reason: str) -> DocumentConverterProducerDecision:
-    return DocumentConverterProducerDecision(
-        producer=DocumentConverterProducerKind.SIR_CONVERT,
-        reason=reason,
-    )
-
-
-def _sir_convert_route_reason(*, spec: ConversionHubJobSpecV2) -> str:
-    if spec.source_format is ConversionHubSourceFormatV2.PDF:
-        return "heavy_pdf_route"
-    if spec.source_format is ConversionHubSourceFormatV2.DOCX:
-        return "docx_route_requires_producer"
-    if spec.output_format is ConversionHubOutputFormatV2.DOCX:
-        return "docx_output_requires_producer"
-    return "unsupported_local_route_requires_producer"
 
 
 def _decode_text_source(*, upload: "ConversionHubUpload") -> str:
