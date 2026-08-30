@@ -76,6 +76,7 @@ class TestShouldServeSpa:
         [
             "/",
             PUBLIC_APP_PATH,
+            "/public/apps/documents.conversion_hub/exam-converter",
             "/auth/login",
             "/auth/callback",
             "/auth/provisioning-required",
@@ -181,6 +182,7 @@ class TestSpaFallbackResponses:
         [
             "/",
             "/public/apps/classroom.group-seating-studio",
+            "/public/apps/documents.conversion_hub/exam-converter",
             "/auth/login",
             "/auth/callback",
             "/apps/classroom.group-seating-studio",

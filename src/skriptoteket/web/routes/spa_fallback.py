@@ -20,6 +20,7 @@ from xml.sax.saxutils import escape
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
+from skriptoteket.web.api.v1.public_apps import EXAM_CONVERTER_PUBLIC_FRONTEND_ROUTE
 from skriptoteket.web.spa_metadata import (
     PUBLIC_CLASSROOM_APP_PATH,
     build_not_found_html,
@@ -44,6 +45,7 @@ _EXACT_SPA_PATHS = frozenset(
     {
         "/",
         PUBLIC_CLASSROOM_APP_PATH,
+        EXAM_CONVERTER_PUBLIC_FRONTEND_ROUTE,
         "/auth/login",
         "/auth/callback",
         "/auth/provisioning-required",
