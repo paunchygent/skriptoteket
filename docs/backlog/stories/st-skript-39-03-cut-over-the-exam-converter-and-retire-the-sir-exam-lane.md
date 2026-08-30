@@ -28,7 +28,9 @@ Switch both existing Exam Converter product lanes from Sir-backed execution to
 Skriptoteket-owned execution without changing their accepted user behavior.
 
 - The authenticated lane uses the completed local conversion, worker
-  enrichment, provider lease, review/correction, job, and artifact seams.
+  enrichment, provider lease, job, and artifact seams and ports the remaining
+  Sir-owned source-state, review/correction replay, and result-projection
+  surfaces required by the existing product workflow.
 - The public lane keeps its current anonymous UI and API contract while its
   Sir-backed producer implementation is replaced with local execution. It gains
   no Luna, GLM, answer-key-completion, or other remote-provider behavior.
@@ -78,7 +80,7 @@ document-extraction or STT capabilities.
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| S1 | Both cutovers preserve their current product contracts; they do not rebuild or narrow the conversion capability. |
+| S1 | Both cutovers preserve their current product contracts; they reuse the completed conversion engine and implement any missing product-facing producer surfaces required for cutover without narrowing behavior. |
 | S2 | The public lane receives no new remote-provider or answer-key-completion behavior. |
 | S3 | Exam-specific Sir surfaces retire only after both production consumers move; generic heavy-document extraction and STT remain. |
 | S4 | Qwen retires only after its last exam consumer moves; Luna-primary and GLM-failover remain. |

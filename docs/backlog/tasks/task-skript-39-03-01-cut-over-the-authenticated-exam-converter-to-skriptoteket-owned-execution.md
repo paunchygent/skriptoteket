@@ -31,6 +31,12 @@ correction, replay, and artifact path with Skriptoteket-owned APIs and state.
 - Use the implemented in-process conversion engine, execution-worker
   enrichment, Luna/GLM provider line, Postgres lease, local job ledger, and
   local artifact ownership.
+- Port the remaining authenticated product-facing behavior now owned by Sir:
+  correction source-state issuance, correction application and replay,
+  readiness/review state, replay artifacts, artifact manifests, and terminal
+  migration-result projection. These surfaces preserve the current UI contract
+  and operate over Skriptoteket-owned source, job, proposal, correction-intent,
+  and artifact state.
 - Machine-proposed keys remain proposals under the existing teacher-review
   contract.
 - Keep the Sir lane available only until the local product path is confirmed
@@ -43,6 +49,10 @@ correction, replay, and artifact path with Skriptoteket-owned APIs and state.
 - Worker enrichment, provider, lease, proposal, and failure behavior from
   `ST-SKRIPT-39-02`.
 - The current authenticated SPA workflow is the product behavior to preserve.
+- Current Sir correction source-state, apply/replay, review-artifact, readiness,
+  and migration-result behavior is the porting reference for the locally
+  missing product-facing producer surfaces; Sir implementation structure is
+  not the target architecture.
 
 ## Core Vertical And Performance
 
@@ -71,13 +81,14 @@ request into a provider-bound synchronous operation.
 - Do not complete the task while a required authenticated exam-conversion
   operation still depends on Sir Convert.
 - A material change to teacher-review, correction, readiness, or provider
-  behavior returns to the parent authority.
+  behavior returns to the parent authority. Implementing the local producers
+  needed to preserve that behavior is inside this task.
 
 ## Decided Contract Terms
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| T1 | The task is a consumer and adapter cutover over the implemented local conversion and enrichment vertical. |
+| T1 | The task reuses the implemented local conversion and enrichment vertical and includes the missing local source-state, correction apply/replay, review/readiness, artifact-manifest, and result-projection producers required for the consumer cutover. |
 | T2 | Existing authenticated inputs, review/correction behavior, readiness decisions, warnings, follow-ups, and outputs are preserved. |
 | T3 | The complete authenticated product path stops reaching Sir for exam conversion; Sir removal waits for Task 03. |
 | T4 | Remote completion remains worker-owned and machine keys remain teacher-review proposals. |
