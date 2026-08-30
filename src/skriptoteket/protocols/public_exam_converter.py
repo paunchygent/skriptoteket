@@ -19,6 +19,7 @@ from typing import Protocol
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterSubmittedJob,
     PublicExamConverterTarget,
+    PublicExamConverterUpload,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertArtifactV2,
@@ -69,6 +70,19 @@ class PublicExamConverterJobStoreProtocol(Protocol):
     ) -> PublicExamConverterSubmittedJob: ...
 
     async def count_active(self, *, now: datetime) -> int: ...
+
+
+class PublicExamConverterLocalExecutorProtocol(Protocol):
+    """Enqueue one bounded in-process conversion outside the submit request."""
+
+    async def enqueue(
+        self,
+        *,
+        job: PublicExamConverterSubmittedJob,
+        source_dxe: PublicExamConverterUpload,
+        graded_result_pdf: PublicExamConverterUpload | None,
+        correlation_id: str,
+    ) -> None: ...
 
 
 @dataclass(frozen=True, slots=True)

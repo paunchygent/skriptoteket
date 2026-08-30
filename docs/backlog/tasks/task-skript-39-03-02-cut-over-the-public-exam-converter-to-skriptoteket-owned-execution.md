@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-03-02
 title: Cut over the public Exam Converter to Skriptoteket-owned execution
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-30'
 status: in_progress
 closeout_review:
@@ -13,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- An anonymous user completes the existing public Exam Converter workflow through
-  the unchanged Skriptoteket public API and locally produced jobs and artifacts without
-  a request reaching Sir Convert and without new public remote-provider behavior
+  - An anonymous user completes the existing public Exam Converter workflow through the unchanged Skriptoteket public API and locally produced jobs and artifacts without a request reaching Sir Convert and without new public remote-provider behavior
 story: ST-SKRIPT-39-03
 backlog_document_profile: contract-derived
 ---
@@ -74,9 +72,9 @@ conversion does not become an unbounded synchronous public request.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | The public UI and API remain stable while their producer implementation becomes Skriptoteket-owned. |
-| T2 | Limits, transient lifecycle, optional evidence, targets, warnings, follow-ups, manifests, and downloads are preserved. |
-| T3 | The public lane gains no Luna, GLM, answer-key-completion, or other remote-provider behavior. |
-| T4 | The production public execution path no longer needs Sir grants, upstream jobs, or artifact leases. |
+| ID  | Decided contract term                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------- |
+| T1  | The public UI and API remain stable while their producer implementation becomes Skriptoteket-owned.                    |
+| T2  | Limits, transient lifecycle, optional evidence, targets, warnings, follow-ups, manifests, and downloads are preserved. |
+| T3  | The public lane gains no Luna, GLM, answer-key-completion, or other remote-provider behavior.                          |
+| T4  | The production public execution path no longer needs Sir grants, upstream jobs, or artifact leases.                    |

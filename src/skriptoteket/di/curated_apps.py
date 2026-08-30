@@ -193,6 +193,9 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_pdf i
 from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_pdf import (
     ReagentPrepChefSaveRiskPdfHandler,
 )
+from skriptoteket.application.curated_apps.public_exam_converter_local_execution import (
+    PublicExamConverterLocalExecutor,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import (
     ClassListHeuristicParser,
@@ -419,6 +422,7 @@ from skriptoteket.protocols.exam_conversion import (
     ExamNetPdfRendererProtocol,
     ExamNetQtiPackageWriterProtocol,
     InProcessExamConverterProtocol,
+    PublicInProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_converter_correction_sessions import (
     ExamConverterCorrectionMutationRepositoryProtocol,
@@ -430,6 +434,7 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.public_exam_converter import (
     PublicExamConverterGrantAuthorityProtocol,
     PublicExamConverterJobStoreProtocol,
+    PublicExamConverterLocalExecutorProtocol,
     PublicExamConverterSirConvertProtocol,
 )
 from skriptoteket.protocols.reagent_prep_chef import (
@@ -556,6 +561,21 @@ class CuratedAppsProvider(Provider):
     @provide(scope=Scope.APP)
     def public_exam_converter_job_store(self) -> PublicExamConverterJobStoreProtocol:
         return public_exam_converter_store.InMemoryPublicExamConverterJobStore()
+
+    @provide(scope=Scope.APP)
+    def public_exam_converter_local_executor(
+        self,
+        store: PublicExamConverterJobStoreProtocol,
+        producer: PublicInProcessExamConverterProtocol,
+        pdf_text_extractor: PdfTextExtractorProtocol,
+        clock: ClockProtocol,
+    ) -> PublicExamConverterLocalExecutorProtocol:
+        return PublicExamConverterLocalExecutor(
+            store=store,
+            producer=producer,
+            pdf_text_extractor=pdf_text_extractor,
+            clock=clock,
+        )
 
     @provide(scope=Scope.APP)
     async def public_exam_converter_sir_convert(
@@ -1833,6 +1853,17 @@ class CuratedAppsProvider(Provider):
             pdf_renderer=pdf_renderer,
         )
 
+    @provide(scope=Scope.APP)
+    def public_in_process_exam_converter(
+        self,
+        qti_writer: ExamNetQtiPackageWriterProtocol,
+        pdf_renderer: ExamNetPdfRendererProtocol,
+    ) -> PublicInProcessExamConverterProtocol:
+        return InProcessExamConversionProducer(
+            qti_writer=qti_writer,
+            pdf_renderer=pdf_renderer,
+        )
+
     @provide(scope=Scope.REQUEST)
     def create_exam_converter_conversion_jobs_handler(
         self,
@@ -2478,15 +2509,13 @@ class CuratedAppsProvider(Provider):
     def public_exam_converter_runtime_handler(
         self,
         store: PublicExamConverterJobStoreProtocol,
-        grant_authority: PublicExamConverterGrantAuthorityProtocol,
-        sir_convert: PublicExamConverterSirConvertProtocol,
+        executor: PublicExamConverterLocalExecutorProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> PublicExamConverterRuntimeHandler:
         return PublicExamConverterRuntimeHandler(
             store=store,
-            grant_authority=grant_authority,
-            sir_convert=sir_convert,
+            executor=executor,
             clock=clock,
             id_generator=id_generator,
         )
