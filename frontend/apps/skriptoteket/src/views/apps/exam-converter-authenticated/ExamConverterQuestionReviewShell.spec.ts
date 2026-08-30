@@ -180,24 +180,45 @@ describe("ExamConverterQuestionReviewShell", () => {
         projection: projection(question),
       },
     });
+    await wrapper.setProps({ aiSuggestionFocusKey: 1 });
 
     expect(wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists())
       .toBe(true);
     expect(wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').exists())
       .toBe(false);
     expect(wrapper.get('[data-test="exam-converter-accept-advisory-answer-key-action"]').text())
-      .toBe("Acceptera");
+      .toBe("Godkänn");
     expect(wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]').text())
       .toBe("Ändra");
+    expect(wrapper.get('[data-test="exam-converter-review-top-actions"]').findAll("button"))
+      .toHaveLength(3);
+    expect(wrapper.get('[data-test="exam-converter-review-bottom-actions"]').findAll("button"))
+      .toHaveLength(2);
+    expect(wrapper.get('[data-test="exam-converter-review-top-actions"]').find(".lucide-layout-dashboard").exists())
+      .toBe(true);
+    expect(wrapper.get('[data-test="exam-converter-review-top-actions"]').find(".lucide-check").exists())
+      .toBe(true);
+    expect(wrapper.get('[data-test="exam-converter-review-top-actions"]').find(".lucide-pencil-line").exists())
+      .toBe(true);
     expect(wrapper.text()).toContain("Lucka 1: Första svaret");
     expect(wrapper.text()).toContain("Lucka 2: Andra svaret");
     expect(wrapper.text()).not.toContain(FIRST_GAP_ID);
     expect(wrapper.text()).not.toContain(SECOND_GAP_ID);
 
+    await wrapper.get('[data-test="exam-converter-advisory-overview-action"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-converter-question-list-surface"]').exists()).toBe(true);
+    await wrapper.setProps({ aiSuggestionFocusKey: 2 });
+
     await wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]').trigger("click");
     expect(wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').exists())
       .toBe(false);
-    expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists())
+    expect(wrapper.get('[data-test="exam-converter-advisory-review-detail"]')
+      .attributes("data-editing")).toBe("true");
+    expect(wrapper.get('[data-test="exam-converter-save-advisory-answer-key-action"]').text())
+      .toBe("Spara");
+    expect(wrapper.get('[data-test="exam-converter-cancel-advisory-edit-action"]').text())
+      .toBe("Avbryt");
+    expect(wrapper.find('[data-test="exam-converter-advisory-edit-gap-' + FIRST_GAP_ID + '"]').exists())
       .toBe(true);
 
     const freshWrapper = mount(ExamConverterQuestionReviewShell, {
@@ -207,6 +228,7 @@ describe("ExamConverterQuestionReviewShell", () => {
         projection: projection(question),
       },
     });
+    await freshWrapper.setProps({ aiSuggestionFocusKey: 1 });
 
     await freshWrapper
       .get('[data-test="exam-converter-accept-advisory-answer-key-action"]')
@@ -221,7 +243,7 @@ describe("ExamConverterQuestionReviewShell", () => {
     });
   });
 
-  it("renders persisted gap values in source order without leaking identifiers", () => {
+  it("renders persisted gap values in source order without leaking identifiers", async () => {
     const question = gapQuestion("review_complete");
     const wrapper = mount(ExamConverterQuestionReviewShell, {
       props: {
@@ -230,6 +252,7 @@ describe("ExamConverterQuestionReviewShell", () => {
         projection: projection(question),
       },
     });
+    await wrapper.get('[data-test="exam-converter-question-row-item-gap"]').trigger("click");
 
     const summary = wrapper.get('[data-test="exam-converter-effective-answer-key-summary"]');
     expect(summary.text()).toContain("Första svaret, Andra svaret");
@@ -256,7 +279,7 @@ describe("ExamConverterQuestionReviewShell", () => {
 
     await wrapper.setProps({ aiSuggestionFocusKey: 1 });
 
-    expect(wrapper.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.classes()).toContain("is-detail-open");
     expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
       .attributes("data-selected-item-id")).toBe("item-unresolved");
   });
@@ -281,7 +304,7 @@ describe("ExamConverterQuestionReviewShell", () => {
     });
     await wrapper.setProps({ isCorrectionApplying: false });
 
-    expect(wrapper.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.classes()).toContain("is-detail-open");
     expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
       .attributes("data-selected-item-id")).toBe("item-second");
 
@@ -296,6 +319,7 @@ describe("ExamConverterQuestionReviewShell", () => {
     });
     await wrapper.setProps({ isCorrectionApplying: false });
 
-    expect(wrapper.classes()).not.toContain("is-compact-detail-open");
+    expect(wrapper.classes()).not.toContain("is-detail-open");
+    expect(wrapper.find('[data-test="exam-converter-question-list-surface"]').exists()).toBe(true);
   });
 });

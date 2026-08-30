@@ -109,8 +109,8 @@ def test_replace_supersedes_existing_target_and_increments_version() -> None:
     first = _intent(intent_id=uuid4(), binding=session.source_binding)
     second = _intent(intent_id=uuid4(), binding=session.source_binding)
 
-    saved = session.replace_intent(intent=first, expected_session_version=0)
-    replaced = saved.replace_intent(intent=second, expected_session_version=1)
+    saved = session.replace_intents(intents=(first,), expected_session_version=0)
+    replaced = saved.replace_intents(intents=(second,), expected_session_version=1)
 
     assert replaced.session_version == 2
     assert replaced.active_replay_intents() == (second,)
@@ -119,7 +119,7 @@ def test_replace_supersedes_existing_target_and_increments_version() -> None:
 def test_revert_removes_target_from_replay_set() -> None:
     session = _session()
     intent = _intent(binding=session.source_binding)
-    saved = session.replace_intent(intent=intent, expected_session_version=0)
+    saved = session.replace_intents(intents=(intent,), expected_session_version=0)
 
     reverted = saved.revert_target(target_key=intent.target_key, expected_session_version=1)
 
@@ -129,14 +129,14 @@ def test_revert_removes_target_from_replay_set() -> None:
 
 def test_stale_session_version_raises_conflict() -> None:
     session = _session()
-    saved = session.replace_intent(
-        intent=_intent(binding=session.source_binding),
+    saved = session.replace_intents(
+        intents=(_intent(binding=session.source_binding),),
         expected_session_version=0,
     )
 
     with pytest.raises(DomainError) as exc:
-        saved.replace_intent(
-            intent=_intent(binding=saved.source_binding),
+        saved.replace_intents(
+            intents=(_intent(binding=saved.source_binding),),
             expected_session_version=0,
         )
 
@@ -198,7 +198,7 @@ def test_intent_source_binding_must_match_session() -> None:
     stale = _intent(binding=_binding("sha256:stale-source-state"))
 
     with pytest.raises(DomainError) as exc:
-        session.replace_intent(intent=stale, expected_session_version=0)
+        session.replace_intents(intents=(stale,), expected_session_version=0)
 
     assert exc.value.code is ErrorCode.VALIDATION_ERROR
     assert "source binding does not match" in exc.value.message

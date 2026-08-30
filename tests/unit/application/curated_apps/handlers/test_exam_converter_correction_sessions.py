@@ -1,7 +1,7 @@
 """Tests for Exam Converter correction-session application handlers.
 
 Purpose:
-  Prove PR-0334 read, upsert, revert, owner-scope, and conflict behavior before
+  Prove PR-0334 read, replacement, revert, owner-scope, and conflict behavior before
   frontend or replay orchestration consumes the API contract.
 
 Relationships:
@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 import pytest
+from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJob,
@@ -24,13 +25,13 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 )
 from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionIntentWrite,
+    ReplaceExamConverterCorrectionIntentsRequest,
     RevertExamConverterCorrectionIntentRequest,
-    UpsertExamConverterCorrectionIntentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
+    ReplaceExamConverterCorrectionIntentsHandler,
     RevertExamConverterCorrectionIntentHandler,
-    UpsertExamConverterCorrectionIntentHandler,
 )
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSession,
@@ -68,6 +69,7 @@ class InMemoryCorrectionSessionRepository:
     def __init__(self) -> None:
         self.sessions: dict[tuple[UUID, UUID], ExamConverterCorrectionSession] = {}
         self.locked_jobs: list[tuple[UUID, UUID]] = []
+        self.save_calls = 0
 
     async def lock_owned_job(self, *, owner_user_id: UUID, conversion_hub_job_id: UUID) -> None:
         self.locked_jobs.append((owner_user_id, conversion_hub_job_id))
@@ -86,6 +88,7 @@ class InMemoryCorrectionSessionRepository:
         session: ExamConverterCorrectionSession,
         expected_session_version: int,
     ) -> ExamConverterCorrectionSession:
+        self.save_calls += 1
         current = self.sessions.get((session.owner_user_id, session.conversion_hub_job_id))
         current_version = current.session_version if current is not None else 0
         if current_version != expected_session_version:
@@ -116,14 +119,19 @@ def _binding() -> ExamConverterCorrectionSourceBinding:
     )
 
 
-def _intent(kind: str = "point_correction") -> ExamConverterCorrectionIntentWrite:
+def _intent(
+    kind: str = "point_correction",
+    *,
+    item_id: str = "item-001",
+    sequence: int = 1,
+) -> ExamConverterCorrectionIntentWrite:
     return ExamConverterCorrectionIntentWrite(
-        entry_id=f"entry-{kind}-item-001",
+        entry_id=f"entry-{kind}-{item_id}",
         source_binding=_binding(),
-        item_id="item-001",
-        sequence=1,
+        item_id=item_id,
+        sequence=sequence,
         item_type="multiple_choice",
-        source_item_fingerprint="sha256:item-001",
+        source_item_fingerprint=f"sha256:{item_id}",
         kind=kind,
         target=ExamConverterCorrectionTarget(),
         payload={"kind": kind, "max_score": 2},
@@ -146,17 +154,17 @@ def _job(*, owner_user_id: UUID, job_id: UUID) -> ConversionHubJob:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_upsert_and_read_return_current_active_set() -> None:
+async def test_replace_batch_and_read_return_current_active_set() -> None:
     actor = make_user()
     job_id = uuid4()
     jobs = InMemoryConversionHubJobRepository()
     jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
     sessions = InMemoryCorrectionSessionRepository()
-    upsert = UpsertExamConverterCorrectionIntentHandler(
+    replace = ReplaceExamConverterCorrectionIntentsHandler(
         jobs=jobs,
         sessions=sessions,
         uow=FakeUow(),
-        id_generator=SequenceIdGenerator([uuid4(), uuid4()]),
+        id_generator=SequenceIdGenerator([uuid4(), uuid4(), uuid4()]),
     )
     read = GetExamConverterCorrectionSessionHandler(
         jobs=jobs,
@@ -164,45 +172,57 @@ async def test_upsert_and_read_return_current_active_set() -> None:
         uow=FakeUow(),
     )
 
-    result = await upsert.handle(
+    result = await replace.handle(
         actor=actor,
         job_id=job_id,
-        request=UpsertExamConverterCorrectionIntentRequest(
+        request=ReplaceExamConverterCorrectionIntentsRequest(
             expected_session_version=0,
-            intent=_intent(),
+            intents=[_intent(), _intent(item_id="item-002", sequence=2)],
         ),
     )
     readback = await read.handle(actor=actor, job_id=job_id)
 
     assert result.session_version == 1
     assert sessions.locked_jobs == [(actor.id, job_id)]
-    assert [intent.kind.value for intent in readback.active_intents] == ["point_correction"]
+    assert sessions.save_calls == 1
+    assert [intent.item_id for intent in readback.active_intents] == ["item-001", "item-002"]
     assert readback.source_binding == _binding()
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_missing_expected_version_is_conflict() -> None:
+async def test_one_intent_list_works() -> None:
     actor = make_user()
     job_id = uuid4()
     jobs = InMemoryConversionHubJobRepository()
     jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
-    handler = UpsertExamConverterCorrectionIntentHandler(
+    handler = ReplaceExamConverterCorrectionIntentsHandler(
         jobs=jobs,
         sessions=InMemoryCorrectionSessionRepository(),
         uow=FakeUow(),
         id_generator=SequenceIdGenerator([uuid4(), uuid4()]),
     )
 
-    with pytest.raises(DomainError) as exc:
-        await handler.handle(
-            actor=actor,
-            job_id=job_id,
-            request=UpsertExamConverterCorrectionIntentRequest(intent=_intent()),
-        )
+    result = await handler.handle(
+        actor=actor,
+        job_id=job_id,
+        request=ReplaceExamConverterCorrectionIntentsRequest(
+            expected_session_version=0,
+            intents=[_intent()],
+        ),
+    )
 
-    assert exc.value.code is ErrorCode.CONFLICT
-    assert exc.value.details["current_session_version"] == 0
+    assert result.session_version == 1
+    assert len(result.active_intents) == 1
+
+
+@pytest.mark.unit
+def test_replace_request_rejects_empty_intents() -> None:
+    with pytest.raises(ValidationError):
+        ReplaceExamConverterCorrectionIntentsRequest(
+            expected_session_version=0,
+            intents=[],
+        )
 
 
 @pytest.mark.unit
@@ -213,7 +233,7 @@ async def test_stale_expected_version_is_conflict() -> None:
     jobs = InMemoryConversionHubJobRepository()
     jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
     sessions = InMemoryCorrectionSessionRepository()
-    handler = UpsertExamConverterCorrectionIntentHandler(
+    handler = ReplaceExamConverterCorrectionIntentsHandler(
         jobs=jobs,
         sessions=sessions,
         uow=FakeUow(),
@@ -222,9 +242,9 @@ async def test_stale_expected_version_is_conflict() -> None:
     await handler.handle(
         actor=actor,
         job_id=job_id,
-        request=UpsertExamConverterCorrectionIntentRequest(
+        request=ReplaceExamConverterCorrectionIntentsRequest(
             expected_session_version=0,
-            intent=_intent(),
+            intents=[_intent()],
         ),
     )
 
@@ -232,14 +252,44 @@ async def test_stale_expected_version_is_conflict() -> None:
         await handler.handle(
             actor=actor,
             job_id=job_id,
-            request=UpsertExamConverterCorrectionIntentRequest(
+            request=ReplaceExamConverterCorrectionIntentsRequest(
                 expected_session_version=0,
-                intent=_intent(),
+                intents=[_intent()],
             ),
         )
 
     assert exc.value.code is ErrorCode.CONFLICT
     assert exc.value.details["current_session_version"] == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_duplicate_batch_fails_without_repository_save() -> None:
+    actor = make_user()
+    job_id = uuid4()
+    jobs = InMemoryConversionHubJobRepository()
+    jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
+    sessions = InMemoryCorrectionSessionRepository()
+    handler = ReplaceExamConverterCorrectionIntentsHandler(
+        jobs=jobs,
+        sessions=sessions,
+        uow=FakeUow(),
+        id_generator=SequenceIdGenerator([uuid4(), uuid4(), uuid4()]),
+    )
+
+    with pytest.raises(DomainError) as exc:
+        await handler.handle(
+            actor=actor,
+            job_id=job_id,
+            request=ReplaceExamConverterCorrectionIntentsRequest(
+                expected_session_version=0,
+                intents=[_intent(), _intent()],
+            ),
+        )
+
+    assert exc.value.code is ErrorCode.VALIDATION_ERROR
+    assert sessions.save_calls == 0
+    assert sessions.sessions == {}
 
 
 @pytest.mark.unit
@@ -268,7 +318,7 @@ async def test_unsupported_matching_kind_is_validation_error() -> None:
     job_id = uuid4()
     jobs = InMemoryConversionHubJobRepository()
     jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
-    handler = UpsertExamConverterCorrectionIntentHandler(
+    handler = ReplaceExamConverterCorrectionIntentsHandler(
         jobs=jobs,
         sessions=InMemoryCorrectionSessionRepository(),
         uow=FakeUow(),
@@ -279,9 +329,9 @@ async def test_unsupported_matching_kind_is_validation_error() -> None:
         await handler.handle(
             actor=actor,
             job_id=job_id,
-            request=UpsertExamConverterCorrectionIntentRequest(
+            request=ReplaceExamConverterCorrectionIntentsRequest(
                 expected_session_version=0,
-                intent=_intent("manual_matching_answer_key"),
+                intents=[_intent("manual_matching_answer_key")],
             ),
         )
 
@@ -296,7 +346,7 @@ async def test_revert_deletes_active_intent() -> None:
     jobs = InMemoryConversionHubJobRepository()
     jobs.jobs[job_id] = _job(owner_user_id=actor.id, job_id=job_id)
     sessions = InMemoryCorrectionSessionRepository()
-    upsert = UpsertExamConverterCorrectionIntentHandler(
+    replace = ReplaceExamConverterCorrectionIntentsHandler(
         jobs=jobs,
         sessions=sessions,
         uow=FakeUow(),
@@ -307,12 +357,12 @@ async def test_revert_deletes_active_intent() -> None:
         sessions=sessions,
         uow=FakeUow(),
     )
-    saved = await upsert.handle(
+    saved = await replace.handle(
         actor=actor,
         job_id=job_id,
-        request=UpsertExamConverterCorrectionIntentRequest(
+        request=ReplaceExamConverterCorrectionIntentsRequest(
             expected_session_version=0,
-            intent=_intent(),
+            intents=[_intent()],
         ),
     )
 

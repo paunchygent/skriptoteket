@@ -62,7 +62,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
@@ -86,7 +86,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 beforeEach(() => {
@@ -94,7 +94,7 @@ beforeEach(() => {
   correctionSessionRecorder.reset();
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockReset();
   correctionSessionApiMocks.registerExamConverterConversionHubJob.mockReset();
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockReset();
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockReset();
   gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
@@ -112,9 +112,9 @@ beforeEach(() => {
     status: "succeeded",
     upstream_job_id: "job_exam_converter_review",
   });
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
@@ -156,8 +156,8 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     const questions = wrapper.find('[data-test="exam-converter-question-review-shell"]');
 
     expect(questions.text()).toContain("Saknas");
-    expect(questions.text()).toContain("Granska facit");
-    expect(questions.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists()).toBe(true);
+    expect(questions.text()).toContain("Granska");
+    expect(questions.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists()).toBe(false);
     expect(questions.text()).toContain("Poäng");
     expect(questions.text()).not.toContain("Facit saknas");
     expect(questions.text()).not.toContain("Poäng saknas");
@@ -452,7 +452,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.find('[data-test="exam-converter-accept-current-state-action"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain("Skapa filer");
     expect(wrapper.text()).not.toContain("Godkänn");
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).not.toHaveBeenCalled();
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).not.toHaveBeenCalled();
     expect(gatewayMocks.applyExamAuthoringCorrections).not.toHaveBeenCalled();
   });
 

@@ -75,10 +75,10 @@ export function createCorrectionSessionRecorder() {
   let current = emptyCorrectionSession();
   return {
     current: () => current,
-    recordIntent: (intent: Record<string, unknown>) => {
-      current = correctionSessionFromIntent({
+    recordIntents: (intents: Record<string, unknown>[]) => {
+      current = correctionSessionFromIntents({
         current,
-        intent,
+        intents,
       });
       return current;
     },
@@ -93,19 +93,27 @@ function targetKeyForIntent(intent: Record<string, unknown>): string {
   return `${String(intent.kind)}:${String(intent.item_id)}:${String(target?.interaction_id ?? "-")}`;
 }
 
-function correctionSessionFromIntent(params: {
+function correctionSessionFromIntents(params: {
   current: CorrectionSessionFixture;
-  intent: Record<string, unknown>;
+  intents: Record<string, unknown>[];
 }): CorrectionSessionFixture {
-  const targetKey = targetKeyForIntent(params.intent);
+  const replacements = new Map(
+    params.intents.map((intent, index) => {
+      const targetKey = targetKeyForIntent(intent);
+      return [
+        targetKey,
+        {
+          ...intent,
+          intent_id: `22222222-2222-4222-8222-${String(index + 1).padStart(12, "0")}`,
+          target: intent.target ?? {},
+          target_key: targetKey,
+        },
+      ];
+    }),
+  );
   const activeIntents = [
-    ...params.current.active_intents.filter((intent) => intent.target_key !== targetKey),
-    {
-      ...params.intent,
-      intent_id: "22222222-2222-4222-8222-222222222222",
-      target: params.intent.target ?? {},
-      target_key: targetKey,
-    },
+    ...params.current.active_intents.filter((intent) => !replacements.has(intent.target_key)),
+    ...replacements.values(),
   ];
   return {
     active_intents: activeIntents,
@@ -113,7 +121,7 @@ function correctionSessionFromIntent(params: {
     owner_user_id: "11111111-1111-4111-8111-111111111111",
     session_id: "33333333-3333-4333-8333-333333333333",
     session_version: params.current.session_version + 1,
-    source_binding: params.intent.source_binding,
+    source_binding: params.intents[0]?.source_binding ?? params.current.source_binding,
   };
 }
 

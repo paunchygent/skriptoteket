@@ -139,7 +139,7 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     await wrapper.get('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
 
     expect(wrapper.get('[data-test="exam-converter-question-review-shell"]').classes())
-      .toContain("is-compact-detail-open");
+      .toContain("is-detail-open");
     expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
       .attributes("data-selected-item-id")).toBe("item-001");
   });
@@ -150,8 +150,8 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     });
 
     await flushPromises();
+    await wrapper.get('[data-test="exam-converter-question-navigator-row-item-001"]').trigger("click");
 
-    expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
     expect(wrapper.find('[data-test="exam-converter-review-decision-gate"]').exists()).toBe(
       false,
     );

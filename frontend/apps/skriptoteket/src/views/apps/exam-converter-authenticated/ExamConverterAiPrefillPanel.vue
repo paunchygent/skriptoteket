@@ -13,17 +13,21 @@
  *   - Emits navigation intent only; answer-key writes stay in the item editor.
  */
 
-import { ListChecks } from "lucide-vue-next";
-
-import { IconAi } from "../../../components/icons";
+import {
+  IconAi,
+  IconCheck,
+  IconClipboardList,
+} from "../../../components/icons";
 import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
 
 const props = defineProps<{
+  disabled: boolean;
   focus: ExamConverterAiPrefillFocus;
   reviewCount: number;
 }>();
 
 const emit = defineEmits<{
+  acceptAllAdvisoryCandidates: [];
   openQuestions: [];
 }>();
 
@@ -58,31 +62,45 @@ const copyByFocus: Record<ExamConverterAiPrefillFocus, ActionCopy> = {
         />
       </span>
       <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div>
           <h2 class="text-base font-semibold leading-tight text-navy">
             {{ copyByFocus[props.focus].title }}
           </h2>
-          <div class="flex min-w-0 flex-wrap items-center justify-end gap-2">
-            <span class="text-sm font-semibold leading-tight text-navy">
-              {{ props.reviewCount.toLocaleString("sv-SE") }} att granska
-            </span>
-            <button
-              type="button"
-              class="btn-ghost inline-flex items-center gap-2 shadow-none"
-              data-test="exam-converter-open-ai-prefill-action"
-              @click="emit('openQuestions')"
-            >
-              <ListChecks
-                class="h-4 w-4 text-action"
-                aria-hidden="true"
-              />
-              Granska
-            </button>
-          </div>
+          <p class="mt-1 text-sm leading-snug text-navy/75">
+            {{ props.reviewCount.toLocaleString("sv-SE") }} frågor att granska.
+          </p>
         </div>
-        <p class="mt-2 text-sm leading-snug text-navy/75">
-          Granska frågorna som saknar rätt svar eller facitsvar.
-        </p>
+        <div
+          class="mt-3 grid grid-cols-2 gap-3"
+          data-test="exam-converter-ai-prefill-actions"
+        >
+          <button
+            type="button"
+            class="btn-primary min-w-0 shadow-none"
+            :disabled="disabled"
+            data-test="exam-converter-open-ai-prefill-action"
+            @click="emit('openQuestions')"
+          >
+            <IconClipboardList
+              :size="16"
+              class="h-4 w-4 shrink-0"
+            />
+            Granska
+          </button>
+          <button
+            type="button"
+            class="btn-ghost min-w-0 shadow-none"
+            :disabled="disabled"
+            data-test="exam-converter-accept-all-ai-prefill-action"
+            @click="emit('acceptAllAdvisoryCandidates')"
+          >
+            <IconCheck
+              :size="16"
+              class="h-4 w-4 shrink-0"
+            />
+            Godkänn alla
+          </button>
+        </div>
       </div>
     </div>
   </section>

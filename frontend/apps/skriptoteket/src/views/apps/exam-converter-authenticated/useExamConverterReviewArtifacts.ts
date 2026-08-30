@@ -48,6 +48,7 @@ export type ExamConverterReviewArtifactsLoadParams = {
   completionReportRequired?: boolean;
   correlationId: string;
   jobId: string;
+  preserveCurrentProjection?: boolean;
 };
 
 export type ExamConverterReviewArtifactsOptions = {
@@ -143,8 +144,12 @@ export function useExamConverterReviewArtifacts(
   ): Promise<ExamConverterReviewProjection | null> {
     const token = loadToken.value + 1;
     loadToken.value = token;
-    projection.value = null;
-    status.value = "loading";
+    const isBackgroundRefresh =
+      params.preserveCurrentProjection === true && projection.value !== null;
+    if (!isBackgroundRefresh) {
+      projection.value = null;
+      status.value = "loading";
+    }
 
     try {
       const artifactManifest = await client.listDigiExamMigrationArtifacts(params);
@@ -230,8 +235,10 @@ export function useExamConverterReviewArtifacts(
       return parsedProjection;
     } catch {
       if (loadToken.value === token) {
-        projection.value = null;
-        status.value = "failed";
+        if (!isBackgroundRefresh) {
+          projection.value = null;
+          status.value = "failed";
+        }
       }
       return null;
     }

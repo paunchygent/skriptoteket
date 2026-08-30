@@ -1,7 +1,7 @@
 """Application handlers for Exam Converter correction sessions.
 
 Purpose:
-  Orchestrate owner-scoped read, upsert, and revert use cases for durable
+  Orchestrate owner-scoped read, replacement, and revert use cases for durable
   correction-session truth without exposing persistence or HTTP concerns.
 
 Relationships:
@@ -16,8 +16,8 @@ from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionResponse,
+    ReplaceExamConverterCorrectionIntentsRequest,
     RevertExamConverterCorrectionIntentRequest,
-    UpsertExamConverterCorrectionIntentRequest,
 )
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSession,
@@ -127,8 +127,8 @@ class _BaseExamConverterCorrectionMutationHandler(_BaseExamConverterCorrectionSe
         )
 
 
-class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionMutationHandler):
-    """Upsert or replace one active correction intent."""
+class ReplaceExamConverterCorrectionIntentsHandler(_BaseExamConverterCorrectionMutationHandler):
+    """Replace active correction targets through one atomic session write."""
 
     def __init__(
         self,
@@ -146,7 +146,7 @@ class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionMut
         *,
         actor: User,
         job_id: UUID,
-        request: UpsertExamConverterCorrectionIntentRequest,
+        request: ReplaceExamConverterCorrectionIntentsRequest,
     ) -> ExamConverterCorrectionSessionResponse:
         async with self._uow:
             current = await self._load_locked_session(actor=actor, job_id=job_id)
@@ -158,11 +158,14 @@ class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionMut
                 id=self._id_generator.new_uuid(),
                 owner_user_id=actor.id,
                 conversion_hub_job_id=job_id,
-                source_binding=request.intent.source_binding,
+                source_binding=request.intents[0].source_binding,
                 session_version=0,
             )
-            updated = session.replace_intent(
-                intent=request.intent.to_domain(intent_id=self._id_generator.new_uuid()),
+            updated = session.replace_intents(
+                intents=tuple(
+                    intent.to_domain(intent_id=self._id_generator.new_uuid())
+                    for intent in request.intents
+                ),
                 expected_session_version=expected,
             )
             saved = await self._sessions.save(

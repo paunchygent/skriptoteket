@@ -1,7 +1,7 @@
 """Unit coverage for Exam Converter correction-session API routes.
 
 Purpose:
-  Prove PR-0334 route functions expose read, upsert, and revert contracts while
+  Prove PR-0334 route functions expose read, replacement, and revert contracts while
   staying thin over application handlers and Conversion Hub access checks.
 
 Relationships:
@@ -19,8 +19,8 @@ import pytest
 from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionIntentWrite,
     ExamConverterCorrectionSessionResponse,
+    ReplaceExamConverterCorrectionIntentsRequest,
     RevertExamConverterCorrectionIntentRequest,
-    UpsertExamConverterCorrectionIntentRequest,
 )
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSourceBinding,
@@ -104,16 +104,16 @@ async def test_get_correction_session_delegates_to_handler() -> None:
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_upsert_correction_intent_exposes_request_contract() -> None:
+async def test_replace_correction_intents_delegates_plural_request() -> None:
     user = make_user()
     job_id = uuid4()
-    request = UpsertExamConverterCorrectionIntentRequest(
+    request = ReplaceExamConverterCorrectionIntentsRequest(
         expected_session_version=0,
-        intent=_intent(),
+        intents=[_intent()],
     )
     handler = CapturingHandler(_response())
 
-    await _unwrap_dishka(api.upsert_exam_converter_correction_intent)(
+    await _unwrap_dishka(api.replace_exam_converter_correction_intents)(
         job_id=job_id,
         request=request,
         registry=FakeRegistry(),

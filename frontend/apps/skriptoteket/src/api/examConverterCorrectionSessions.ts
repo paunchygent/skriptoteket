@@ -21,8 +21,8 @@ export type ExamConverterCorrectionSessionResponse =
   components["schemas"]["ExamConverterCorrectionSessionResponse"];
 export type ExamConverterCorrectionSourceBinding =
   components["schemas"]["ExamConverterCorrectionSourceBinding"];
-export type UpsertExamConverterCorrectionIntentRequest =
-  components["schemas"]["UpsertExamConverterCorrectionIntentRequest"];
+export type ReplaceExamConverterCorrectionIntentsRequest =
+  components["schemas"]["ReplaceExamConverterCorrectionIntentsRequest"];
 
 
 const CORRECTION_SESSION_ROOT =
@@ -44,9 +44,9 @@ export async function getExamConverterCorrectionSession(params: {
   );
 }
 
-export async function upsertExamConverterCorrectionIntent(params: {
+export async function replaceExamConverterCorrectionIntents(params: {
   conversionHubJobId: string;
-  request: UpsertExamConverterCorrectionIntentRequest;
+  request: ReplaceExamConverterCorrectionIntentsRequest;
 }): Promise<ExamConverterCorrectionSessionResponse> {
   return await apiPut<ExamConverterCorrectionSessionResponse>(
     correctionSessionIntentsPath(params.conversionHubJobId),

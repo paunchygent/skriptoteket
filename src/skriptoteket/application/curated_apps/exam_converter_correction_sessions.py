@@ -146,13 +146,13 @@ class ExamConverterCorrectionSessionResponse(BaseModel):
         )
 
 
-class UpsertExamConverterCorrectionIntentRequest(BaseModel):
-    """Upsert/replace request requiring optimistic session concurrency."""
+class ReplaceExamConverterCorrectionIntentsRequest(BaseModel):
+    """Replace active correction targets through one optimistic batch write."""
 
     model_config = ConfigDict(extra="forbid")
 
-    expected_session_version: int | None = Field(default=None, ge=0)
-    intent: ExamConverterCorrectionIntentWrite
+    expected_session_version: int = Field(ge=0)
+    intents: list[ExamConverterCorrectionIntentWrite] = Field(min_length=1)
 
 
 class RevertExamConverterCorrectionIntentRequest(BaseModel):
