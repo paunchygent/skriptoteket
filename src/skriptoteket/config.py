@@ -136,9 +136,9 @@ class Settings(BaseSettings):
     ] = "cpu_only"
 
     # Exam Converter conversion lane (EPIC-SKRIPT-39 / ADR-SKRIPT-0090):
-    # operator-facing switch between the Sir Convert-backed conversion path
-    # and the in-process dxe -> Exam.net bundle walking skeleton.
-    EXAM_CONVERTER_CONVERSION_LANE: Literal["sir_convert", "in_process"] = "sir_convert"
+    # the authenticated product defaults to the accepted in-process cutover;
+    # operators can still select the Sir lane until its governed retirement.
+    EXAM_CONVERTER_CONVERSION_LANE: Literal["sir_convert", "in_process"] = "in_process"
 
     VAULT_ROOT: Path = Path("/var/lib/skriptoteket/vault")
     VAULT_MAX_FILE_BYTES: int = 20_000_000

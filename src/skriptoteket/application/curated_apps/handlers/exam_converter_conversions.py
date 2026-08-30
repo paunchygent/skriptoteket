@@ -9,8 +9,8 @@ Purpose:
 Relationships:
     Reuses the Conversion Hub local job ledger and the in-process Exam
     Converter producer/artifact-store protocols. The lane switch defaults to
-    the Sir Convert-backed path, which keeps this handler inert until an
-    operator enables the in-process lane.
+    the accepted authenticated in-process cutover while retaining an explicit
+    Sir selection until that lane's governed retirement.
 """
 
 from __future__ import annotations

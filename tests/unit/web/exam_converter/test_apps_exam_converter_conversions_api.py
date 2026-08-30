@@ -126,7 +126,7 @@ async def test_conversion_route_requires_authentication(client: httpx.AsyncClien
     assert response.status_code == 401
 
 
-class TestSirConvertLaneDefault:
+class TestExplicitSirConvertLane:
     @pytest.fixture
     def lane(self) -> ExamConverterConversionLane:
         return ExamConverterConversionLane(value="sir_convert")
@@ -150,6 +150,12 @@ class TestSirConvertLaneDefault:
             },
         )
 
-        assert response.json()["error"]["code"] == "VALIDATION_ERROR"
-        assert "inte aktiverad" in response.json()["error"]["message"]
+        assert response.json() == {
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Den inbyggda provkonverteringen är inte aktiverad.",
+                "details": {},
+            },
+            "correlation_id": None,
+        }
         assert jobs_repository.jobs == {}

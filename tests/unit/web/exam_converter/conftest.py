@@ -331,8 +331,8 @@ def jobs_repository() -> InMemoryConversionHubJobRepository:
 
 
 @pytest.fixture
-def lane() -> ExamConverterConversionLane:
-    return ExamConverterConversionLane(value="in_process")
+def lane(settings: Settings) -> ExamConverterConversionLane:
+    return ExamConverterConversionLane(value=settings.EXAM_CONVERTER_CONVERSION_LANE)
 
 
 @pytest.fixture
