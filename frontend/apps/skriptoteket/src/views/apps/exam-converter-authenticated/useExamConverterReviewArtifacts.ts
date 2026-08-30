@@ -6,7 +6,7 @@
  *   conversion job and expose a teacher-facing projection to the workspace.
  *
  * Relationships:
- *   - Uses the existing Sir Convert Gateway artifact client.
+ *   - Uses Skriptoteket-owned named artifact endpoints.
  *   - Delegates IR validation and projection to `digiexamIrReviewParser`.
  *   - Does not download final files, save files, or write review state.
  */
@@ -14,10 +14,10 @@
 import { ref } from "vue";
 
 import {
-  downloadDigiExamMigrationArtifact,
-  listDigiExamMigrationArtifacts,
-  parseTargetReadinessReport,
-} from "../../../api/sirConvertGateway";
+  downloadLocalExamConversionArtifact,
+  listLocalExamConversionArtifacts,
+} from "../../../api/examConverterLocal";
+import { parseTargetReadinessReport } from "../../../api/sirConvertGateway";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
@@ -38,8 +38,8 @@ import {
 } from "./digiexamIrReviewParser";
 
 type ReviewArtifactClient = {
-  downloadDigiExamMigrationArtifact: typeof downloadDigiExamMigrationArtifact;
-  listDigiExamMigrationArtifacts: typeof listDigiExamMigrationArtifacts;
+  downloadDigiExamMigrationArtifact: typeof downloadLocalExamConversionArtifact;
+  listDigiExamMigrationArtifacts: typeof listLocalExamConversionArtifacts;
 };
 
 export type ExamConverterReviewArtifactsStatus = "idle" | "loading" | "ready" | "failed";
@@ -55,8 +55,8 @@ export type ExamConverterReviewArtifactsOptions = {
 };
 
 const DEFAULT_CLIENT: ReviewArtifactClient = {
-  downloadDigiExamMigrationArtifact,
-  listDigiExamMigrationArtifacts,
+  downloadDigiExamMigrationArtifact: downloadLocalExamConversionArtifact,
+  listDigiExamMigrationArtifacts: listLocalExamConversionArtifacts,
 };
 
 async function readArtifactJson(artifact: SirConvertArtifactBlob): Promise<unknown> {

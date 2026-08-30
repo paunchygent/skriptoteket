@@ -4,8 +4,8 @@ id: ST-SKRIPT-39-03
 title: Cut over the Exam Converter and retire the Sir exam lane
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-30'
 status: active
 closeout_review:
@@ -13,10 +13,7 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-- Authenticated and public product workflows preserve their accepted behavior while
-  running without Sir Convert exam-conversion calls, after which exam-specific Sir
-  integration and the Qwen answer-key sidecar are removed without affecting generic
-  heavy-document extraction or STT
+  - Authenticated and public product workflows preserve their accepted behavior while running without Sir Convert exam-conversion calls, after which exam-specific Sir integration and the Qwen answer-key sidecar are removed without affecting generic heavy-document extraction or STT
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -83,11 +80,11 @@ Unit-of-Work and PostgreSQL boundary.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| S1 | Both cutovers preserve their current product contracts; they reuse the completed conversion engine and implement any missing product-facing producer surfaces required for cutover without narrowing behavior. |
-| S2 | The public lane receives no new remote-provider or answer-key-completion behavior. |
-| S3 | Exam-specific Sir surfaces retire only after both production consumers move; generic heavy-document extraction and STT remain. |
-| S4 | Qwen retires only after its last exam consumer moves; Luna-primary and GLM-failover remain. |
-| S5 | Validation does not impose a particular fixture identity, item count, provider-call count, lease-row count, or evidence-package shape. |
-| S6 | Local cutovers preserve product behavior while replacing needless Sir/API/file-pipeline complexity with the simplest aligned Unit-of-Work and PostgreSQL ownership model. |
+| ID  | Decided contract term                                                                                                                                                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | Both cutovers preserve their current product contracts; they reuse the completed conversion engine and implement any missing product-facing producer surfaces required for cutover without narrowing behavior. |
+| S2  | The public lane receives no new remote-provider or answer-key-completion behavior.                                                                                                                             |
+| S3  | Exam-specific Sir surfaces retire only after both production consumers move; generic heavy-document extraction and STT remain.                                                                                 |
+| S4  | Qwen retires only after its last exam consumer moves; Luna-primary and GLM-failover remain.                                                                                                                    |
+| S5  | Validation does not impose a particular fixture identity, item count, provider-call count, lease-row count, or evidence-package shape.                                                                         |
+| S6  | Local cutovers preserve product behavior while replacing needless Sir/API/file-pipeline complexity with the simplest aligned Unit-of-Work and PostgreSQL ownership model.                                      |

@@ -203,8 +203,12 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         )
         try:
             artifact = await self._producer.convert(
+                job_id=job.conversion_job_id,
                 upload=upload,
                 overlay_bytes=overlay_json_bytes(overlay),
+                proposal_overlay_bytes=overlay_json_bytes(overlay),
+                proposal_provider_profile_id=serving_profile.provider_id,
+                proposal_model=serving_profile.model,
                 correlation_id=None,
                 overlay_key_provenance=DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY,
             )

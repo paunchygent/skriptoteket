@@ -19,6 +19,7 @@ import json
 import zipfile
 from io import BytesIO
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from pypdf import PdfReader
@@ -57,6 +58,7 @@ async def bundle_entries() -> dict[str, bytes]:
         file_bytes=(_FIXTURE_DIR / _DXE_FILENAME).read_bytes(),
     )
     artifact = await producer.convert(
+        job_id=UUID(int=0),
         upload=upload,
         overlay_bytes=(_FIXTURE_DIR / "teacher-overlay.json").read_bytes(),
         correlation_id=None,

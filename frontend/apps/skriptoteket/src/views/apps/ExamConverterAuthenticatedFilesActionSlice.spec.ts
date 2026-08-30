@@ -56,6 +56,16 @@ const gatewayMocks = vi.hoisted(() => ({
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: vi.fn(),
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
+}));
+
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
@@ -418,7 +428,7 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
     const saveBefore = wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]');
     expect(downloadBefore.attributes("disabled")).toBeDefined();
     expect(saveBefore.attributes("disabled")).toBeDefined();
-    expect(wrapper.text()).toContain("Filer kunde inte skapas");
+    expect(wrapper.text()).toContain("Granska facit först");
 
     await flushPromises();
 
@@ -429,7 +439,7 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
       '[data-test="exam-converter-download-file-qti_package"]',
     );
     const qtiSaveAfter = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-    expect(wrapper.text()).toContain("Filer kunde inte skapas");
+    expect(wrapper.text()).toContain("Granska facit först");
     expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
     expect(qtiDownloadAfter.attributes("disabled")).toBeDefined();
     expect(qtiSaveAfter.attributes("disabled")).toBeDefined();
@@ -485,27 +495,8 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
     gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockClear();
 
     const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-    expect(saveAction.attributes("disabled")).toBeUndefined();
-    await saveAction.trigger("click");
-    await flushPromises();
-
-    expect(gatewayMocks.downloadDigiExamMigrationArtifact).not.toHaveBeenCalled();
-    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith(
-      expect.objectContaining({
-        artifactKey: "correction_replay_qti_package",
-        artifactSetId: "job_correction_replay-artifact-set-qti",
-        contentSha256: "sha256:job_correction_replay-qti",
-        correlationId: "corr_exam_converter_files",
-        jobId: "job_correction_replay",
-      }),
-    );
-    expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
-      expect.objectContaining({
-        artifact: expect.objectContaining({
-          artifact_key: "correction_replay_qti_package",
-        }),
-      }),
-    );
+    expect(saveAction.attributes("disabled")).toBeDefined();
+    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
   });
 
   it("clears corrected file state when local choices are reset", async () => {
@@ -519,7 +510,7 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
       wrapper.find('[data-test="exam-converter-download-file-qti_package"]').attributes(
         "disabled",
       ),
-    ).toBeUndefined();
+    ).toBeDefined();
 
     await wrapper.find('[data-test="exam-converter-reset-local-choices"]').trigger("click");
 

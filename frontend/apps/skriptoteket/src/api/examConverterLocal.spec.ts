@@ -1,0 +1,83 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import {
+  downloadLocalExamConversionArtifact,
+  getLocalExamConversionResult,
+  replayLocalExamConversion,
+  submitLocalExamConversion,
+} from "./examConverterLocal";
+
+const clientMocks = vi.hoisted(() => ({
+  apiFetch: vi.fn(),
+  apiFetchBlobResponse: vi.fn(),
+  apiGet: vi.fn(),
+  apiPost: vi.fn(),
+}));
+const requestContextMocks = vi.hoisted(() => ({
+  prepare: vi.fn(),
+}));
+
+vi.mock("./client", () => clientMocks);
+vi.mock("./sirConvertGateway/requestContext", () => ({
+  prepareDigiExamMigrationRequestContext: requestContextMocks.prepare,
+}));
+
+describe("Skriptoteket-owned Exam Converter API", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    requestContextMocks.prepare.mockResolvedValue({
+      correlationId: "corr-local",
+      idempotencyKey: "idem-local",
+      jobSpec: {},
+    });
+  });
+
+  it("submits the source directly to the local curated-app endpoint", async () => {
+    clientMocks.apiFetch.mockResolvedValue({
+      error: null,
+      job_id: "local-job-1",
+      status: "submitted",
+    });
+    const file = new File(["{}"], "prov.dxe", { type: "application/json" });
+
+    const result = await submitLocalExamConversion({ file });
+
+    expect(clientMocks.apiFetch).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/exam-converter/conversions",
+      expect.objectContaining({ body: expect.any(FormData), method: "POST" }),
+    );
+    expect(result.jobId).toBe("local-job-1");
+  });
+
+  it("reads terminal state, replay, and artifacts from local job identity", async () => {
+    clientMocks.apiGet.mockResolvedValue({
+      artifact_count: 9,
+      bundle_status: "complete",
+      error: null,
+      job_id: "local-job-1",
+      manual_follow_up_required: false,
+      status: "succeeded",
+      warning_count: 0,
+    });
+    clientMocks.apiPost.mockResolvedValue({ job_id: "local-job-1" });
+    clientMocks.apiFetchBlobResponse.mockResolvedValue({
+      blob: new Blob(["pdf"]),
+      contentType: "application/pdf",
+      filename: "examnet-import.pdf",
+    });
+
+    const result = await getLocalExamConversionResult({ jobId: "local-job-1" });
+    await replayLocalExamConversion({ jobId: "local-job-1" });
+    const artifact = await downloadLocalExamConversionArtifact({
+      artifactKey: "examnet_pdf",
+      jobId: "local-job-1",
+    });
+
+    expect(result.job.jobId).toBe("local-job-1");
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/exam-converter/jobs/local-job-1/replay",
+    );
+    expect(artifact.filename).toBe("examnet-import.pdf");
+    expect(JSON.stringify(clientMocks)).not.toContain("/sir-convert/");
+  });
+});

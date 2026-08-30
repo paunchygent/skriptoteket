@@ -152,6 +152,9 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
     RevertExamConverterCorrectionIntentHandler,
     UpsertExamConverterCorrectionIntentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
+    ExamConverterProductHandler,
+)
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
 )
@@ -1828,6 +1831,25 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_product_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        proposals: ExamAnswerKeyProposedOverlayRepositoryProtocol,
+        producer: InProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ExamConverterProductHandler:
+        return ExamConverterProductHandler(
+            jobs=jobs,
+            sessions=sessions,
+            proposals=proposals,
+            producer=producer,
+            artifacts=artifacts,
+            uow=uow,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -17,9 +17,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, is_dataclass
-from enum import StrEnum
+from dataclasses import asdict, replace
 from typing import TYPE_CHECKING
+from uuid import UUID
+
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_conversion import (
     EXAMNET_BUNDLE_PDF_FILENAME,
@@ -27,6 +29,9 @@ from skriptoteket.application.curated_apps.exam_conversion import (
     EXAMNET_BUNDLE_QTI_VALIDATION_REPORT_FILENAME,
     ExamConversionStoredArtifact,
     build_examnet_bundle_filename,
+)
+from skriptoteket.application.curated_apps.exam_conversion_review_artifacts import (
+    build_review_named_artifacts,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
@@ -48,6 +53,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay
     parse_and_apply_digiexam_ingestion_overlay,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay_contracts import (
+    DigiExamEffectiveExam,
+    DigiExamIngestionOverlay,
     DigiExamIngestionOverlayError,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
@@ -95,8 +102,13 @@ class InProcessExamConversionProducer:
     async def convert(
         self,
         *,
+        job_id: UUID,
         upload: "ConversionHubUpload",
         overlay_bytes: bytes | None,
+        proposal_overlay_bytes: bytes | None = None,
+        proposal_provider_profile_id: str | None = None,
+        proposal_model: str | None = None,
+        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
@@ -120,11 +132,12 @@ class InProcessExamConversionProducer:
         """
         del correlation_id
         exam = parse_source_exam(upload=upload)
-        effective_exam = _apply_overlay(
+        effective_exam, effective_report, applied_overlay = apply_exam_overlay(
             exam=exam,
             upload=upload,
             overlay_bytes=overlay_bytes,
             overlay_key_provenance=overlay_key_provenance,
+            teacher_answer_key_item_ids=teacher_answer_key_item_ids,
         )
         plan = _build_qti_package_plan(exam=effective_exam, input_filename=upload.filename)
         qti_package_bytes = self._qti_writer.build_package_bytes(plan)
@@ -141,10 +154,31 @@ class InProcessExamConversionProducer:
                 (EXAMNET_BUNDLE_QTI_VALIDATION_REPORT_FILENAME, report_bytes),
             )
         )
+        proposal_overlay = _parse_overlay(proposal_overlay_bytes)
+        named_artifacts = build_review_named_artifacts(
+            job_id=job_id,
+            source_exam=exam,
+            effective_exam=effective_exam,
+            effective_report=effective_report,
+            proposal_overlay=proposal_overlay
+            or (
+                applied_overlay
+                if overlay_key_provenance is DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY
+                else None
+            ),
+            proposal_provider_profile_id=proposal_provider_profile_id,
+            proposal_model=proposal_model,
+            qti_package_bytes=qti_package_bytes,
+            pdf_bytes=pdf_bytes,
+            validation_report_bytes=report_bytes,
+        )
         return ExamConversionStoredArtifact(
             filename=build_examnet_bundle_filename(input_filename=upload.filename),
             content_type=_BUNDLE_CONTENT_TYPE,
             content=bundle_bytes,
+            source_filename=upload.filename,
+            source_content=upload.file_bytes,
+            named_artifacts=named_artifacts,
         )
 
     def _build_pdf_bytes(self, *, exam: DigiExamIntermediateExam) -> bytes:
@@ -157,7 +191,7 @@ class InProcessExamConversionProducer:
 def source_exam_digests(*, file_bytes: bytes, exam: DigiExamIntermediateExam) -> tuple[str, str]:
     """Return the deterministic source-file and source-IR digests for one exam."""
     source_file_sha256 = f"sha256:{hashlib.sha256(file_bytes).hexdigest()}"
-    ir_payload = _json_bytes(_json_ready(asdict(exam)))
+    ir_payload = _json_bytes(asdict(exam))
     source_ir_sha256 = f"sha256:{hashlib.sha256(ir_payload).hexdigest()}"
     return source_file_sha256, source_ir_sha256
 
@@ -174,20 +208,22 @@ def parse_source_exam(*, upload: "ConversionHubUpload") -> DigiExamIntermediateE
     return build_digiexam_intermediate_exam(parse_result)
 
 
-def _apply_overlay(
+def apply_exam_overlay(
     *,
     exam: DigiExamIntermediateExam,
     upload: "ConversionHubUpload",
     overlay_bytes: bytes | None,
     overlay_key_provenance: DigiExamAnswerKeyProvenance,
-) -> DigiExamIntermediateExam:
+    teacher_answer_key_item_ids: frozenset[str],
+) -> tuple[DigiExamIntermediateExam, DigiExamEffectiveExam | None, DigiExamIngestionOverlay | None]:
     if overlay_bytes is None:
-        return exam
+        return exam, None, None
     source_file_sha256, source_ir_sha256 = source_exam_digests(
         file_bytes=upload.file_bytes,
         exam=exam,
     )
     try:
+        overlay = DigiExamIngestionOverlay.model_validate_json(overlay_bytes)
         overlay_result = parse_and_apply_digiexam_ingestion_overlay(
             overlay_bytes=overlay_bytes,
             source_file_sha256=source_file_sha256,
@@ -197,7 +233,53 @@ def _apply_overlay(
         )
     except DigiExamIngestionOverlayError as exc:
         raise validation_error(str(exc)) from exc
-    return overlay_result.effective_exam_for_rendering
+    if not teacher_answer_key_item_ids:
+        return (
+            overlay_result.effective_exam_for_rendering,
+            overlay_result.effective_exam_report,
+            overlay,
+        )
+    effective_exam = replace(
+        overlay_result.effective_exam_for_rendering,
+        items=tuple(
+            replace(
+                item,
+                answer_key=replace(
+                    item.answer_key,
+                    provenance=DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY,
+                ),
+            )
+            if item.item_id in teacher_answer_key_item_ids
+            else item
+            for item in overlay_result.effective_exam_for_rendering.items
+        ),
+    )
+    effective_report = replace(
+        overlay_result.effective_exam_report,
+        items=tuple(
+            replace(
+                item,
+                effective_answer_key=(
+                    replace(item.effective_answer_key, provenance="teacher_provided")
+                    if item.effective_answer_key is not None
+                    else None
+                ),
+            )
+            if item.item_id in teacher_answer_key_item_ids
+            else item
+            for item in overlay_result.effective_exam_report.items
+        ),
+    )
+    return effective_exam, effective_report, overlay
+
+
+def _parse_overlay(overlay_bytes: bytes | None) -> DigiExamIngestionOverlay | None:
+    if overlay_bytes is None:
+        return None
+    try:
+        return DigiExamIngestionOverlay.model_validate_json(overlay_bytes)
+    except ValueError as exc:
+        raise validation_error(str(exc)) from exc
 
 
 def _build_qti_package_plan(
@@ -219,18 +301,6 @@ def _package_name(input_filename: str) -> str:
     return input_filename.rsplit(".", 1)[0] if "." in input_filename else input_filename
 
 
-def _json_bytes(payload: object) -> bytes:
+def _json_bytes(payload: JsonValue) -> bytes:
     text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
     return f"{text}\n".encode("utf-8")
-
-
-def _json_ready(value: object) -> object:
-    if is_dataclass(value) and not isinstance(value, type):
-        return _json_ready(asdict(value))
-    if isinstance(value, StrEnum):
-        return value.value
-    if isinstance(value, dict):
-        return {str(key): _json_ready(child) for key, child in value.items()}
-    if isinstance(value, tuple | list):
-        return [_json_ready(child) for child in value]
-    return value

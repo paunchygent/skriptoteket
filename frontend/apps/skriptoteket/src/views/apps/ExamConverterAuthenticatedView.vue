@@ -117,6 +117,7 @@ const {
   lastConversionHubJobId,
   lastCorrelationId,
   lastJobId,
+  loadReviewArtifacts,
   resetFileActions,
   reviewProjection,
   runtime: {
@@ -349,7 +350,7 @@ onMounted(async () => {
         const projection = await loadReviewArtifacts({
           completionReportRequired: false,
           correlationId: handle.correlationId,
-          jobId: handle.sirConvertJobId,
+          jobId: handle.jobId,
         });
         if (projection) {
           activeInspectionMode.value = projection.defaultMode;

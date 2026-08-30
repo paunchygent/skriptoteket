@@ -35,6 +35,16 @@ const gatewayMocks = vi.hoisted(() => ({
   submitTranscriptJob: vi.fn(),
 }));
 
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: vi.fn(),
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
+}));
+
 vi.mock("../../api/sirConvertGateway", () => ({
   SIR_CONVERT_ARTIFACT_AVAILABLE: "available",
   applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,

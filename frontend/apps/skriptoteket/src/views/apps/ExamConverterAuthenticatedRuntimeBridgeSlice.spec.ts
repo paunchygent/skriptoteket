@@ -51,8 +51,19 @@ const gatewayMocks = vi.hoisted(() => ({
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
+  replayLocalExamConversion: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
+}));
+
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: gatewayMocks.replayLocalExamConversion,
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
 }));
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
@@ -483,14 +494,7 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
       correlationId: "corr_exam_converter_1",
       jobId: "job_exam_converter_1",
     });
-    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenCalledWith({
-      request: {
-        correlation_id: "corr_exam_converter_1",
-        input_filename: "Ma1c_NationelltProv_HT25.dxe",
-        status: "succeeded",
-        upstream_job_id: "job_exam_converter_1",
-      },
-    });
+    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain("Provet är konverterat");
     expect(wrapper.text()).toContain("Frågor (2)");
     expect(wrapper.text()).toContain("Filer (2)");
@@ -533,28 +537,7 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
       correlationId: "corr_exam_converter_1",
       jobId: "job_exam_converter_1",
     });
-    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenNthCalledWith(
-      1,
-      {
-        request: {
-          correlation_id: "corr_exam_converter_1",
-          input_filename: "Ma1c_NationelltProv_HT25.dxe",
-          status: "queued",
-          upstream_job_id: "job_exam_converter_1",
-        },
-      },
-    );
-    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).toHaveBeenNthCalledWith(
-      2,
-      {
-        request: {
-          correlation_id: "corr_exam_converter_1",
-          input_filename: "Ma1c_NationelltProv_HT25.dxe",
-          status: "succeeded",
-          upstream_job_id: "job_exam_converter_1",
-        },
-      },
-    );
+    expect(correctionSessionApiMocks.registerExamConverterConversionHubJob).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain("Provet är konverterat");
     wrapper.unmount();
   });

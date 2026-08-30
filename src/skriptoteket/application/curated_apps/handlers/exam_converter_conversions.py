@@ -227,6 +227,7 @@ class CreateExamConverterConversionJobsHandler:
     ) -> ConversionHubJob:
         try:
             artifact = await self._producer.convert(
+                job_id=job.id,
                 upload=upload,
                 overlay_bytes=overlay_bytes,
                 correlation_id=correlation_id,

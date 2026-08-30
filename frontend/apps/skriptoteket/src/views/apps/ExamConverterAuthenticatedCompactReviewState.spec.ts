@@ -43,6 +43,16 @@ const gatewayMocks = vi.hoisted(() => ({
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: vi.fn(),
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
+}));
+
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
@@ -223,7 +233,7 @@ describe("ExamConverterAuthenticatedView compact review state", () => {
     await flushPromises();
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
 
-    expect(wrapper.text()).toContain("Kunde inte skapas");
+    expect(wrapper.text()).toContain("Granska facit först");
     expect(
       wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes("disabled"),
     ).toBeDefined();

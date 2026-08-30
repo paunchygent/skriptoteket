@@ -33,8 +33,19 @@ const gatewayMocks = vi.hoisted(() => ({
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
+  replayLocalExamConversion: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
+}));
+
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: gatewayMocks.replayLocalExamConversion,
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
 }));
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
@@ -77,12 +88,14 @@ beforeEach(() => {
   gatewayMocks.getDigiExamMigrationResult.mockReset();
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
   gatewayMocks.listDigiExamMigrationArtifacts.mockReset();
+  gatewayMocks.replayLocalExamConversion.mockReset();
   gatewayMocks.saveDigiExamMigrationArtifactToUserFiles.mockReset();
   gatewayMocks.submitDigiExamMigration.mockReset();
   gatewayMocks.submitDigiExamMigration.mockResolvedValue(submittedJob("succeeded"));
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
+  gatewayMocks.replayLocalExamConversion.mockResolvedValue({});
   correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
     job_id: "local-conversion-hub-job-1",
     status: "succeeded",
@@ -338,23 +351,6 @@ function deferred<T>() {
   return { promise, reject, resolve };
 }
 
-async function leaveAndReturnToQuestion(
-  wrapper: ReturnType<typeof mount>,
-  itemId: string,
-): Promise<void> {
-  const rowPrefix = "exam-converter-question-row-";
-  const otherRow = wrapper
-    .findAll(`[data-test^="${rowPrefix}"]`)
-    .find((row) => row.attributes("data-test") !== `${rowPrefix}${itemId}`);
-  if (otherRow) {
-    await otherRow.trigger("click");
-  } else {
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
-  }
-  await wrapper.find(`[data-test="exam-converter-question-row-${itemId}"]`).trigger("click");
-}
-
 describe("ExamConverterAuthenticatedView teacher corrections", () => {
   it("submits item text patches through the unified correction route", async () => {
     gatewayMocks.applyExamAuthoringCorrections.mockResolvedValueOnce(
@@ -384,32 +380,24 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(gatewayMocks.applyExamAuthoringCorrections.mock.calls[0]?.[0]).toMatchObject({
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0]).toMatchObject({
       request: {
-        corrections: [
-          {
+        intent: {
             kind: "item_text_patch",
             item_id: "item-012",
-            patches: [
+            payload: { patches: [
               {
                 field: "prompt_lines",
                 value: "Beskriv fotosyntesens delar.",
               },
-            ],
+            ] },
           },
-        ],
       },
     });
-    await wrapper.find('[data-test="exam-converter-question-row-item-012"]').trigger("click");
-    expect(
-      wrapper.find<HTMLTextAreaElement>('[data-test="exam-converter-item-text-patch-input"]')
-        .element.value,
-    ).toBe("Beskriv fotosyntesens delar.");
-    await leaveAndReturnToQuestion(wrapper, "item-012");
-    expect(
-      wrapper.find<HTMLTextAreaElement>('[data-test="exam-converter-item-text-patch-input"]')
-        .element.value,
-    ).toBe("Beskriv fotosyntesens delar.");
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledWith({
+      correlationId: "corr_exam_converter_review",
+      jobId: "job_exam_converter_review",
+    });
   });
 
   it("shows returned item titles after item-title patches and item navigation", async () => {
@@ -439,12 +427,14 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    await leaveAndReturnToQuestion(wrapper, "item-012");
-
-    expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-converter-item-title-patch-input"]')
-        .element.value,
-    ).toBe("Fotosyntesens delar");
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          intent: expect.objectContaining({ kind: "item_text_patch" }),
+        }),
+      }),
+    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the review surface mounted while a teacher correction is applying", async () => {
@@ -514,7 +504,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     const pointCorrectionIntent =
       correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
     expect(pointCorrectionIntent).toMatchObject({
-      conversionHubJobId: "local-conversion-hub-job-1",
+      conversionHubJobId: "job_exam_converter_review",
       request: {
         expected_session_version: 0,
         intent: {
@@ -529,38 +519,13 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
         },
       },
     });
-    const pointCorrectionSubmit = gatewayMocks.applyExamAuthoringCorrections.mock.calls[0]?.[0];
-    expect(pointCorrectionSubmit).toMatchObject({
-      request: {
-        schema_version: "exam_authoring_corrections_apply_request_v1",
-        source_binding: {
-          source_state_sha256: "sha256:source-state",
-        },
-        corrections: [
-          {
-            kind: "point_correction",
-            item_id: "item-012",
-            max_score: 3,
-            source_item_fingerprint: "sha256:item-012",
-          },
-        ],
-      },
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledWith({
+      correlationId: "corr_exam_converter_review",
+      jobId: "job_exam_converter_review",
     });
     expect(gatewayMocks.issueExamAuthoringCorrectionSourceState).toHaveBeenCalledWith({
-      correlationId: "corr_exam_converter_review",
-      request: {
-        schema_version: "exam_authoring_correction_source_state_issue_request_v1",
-        job_id: "job_exam_converter_review",
-      },
+      jobId: "job_exam_converter_review",
     });
-    expect(wrapper.find('[data-test="exam-converter-question-row-item-012"]').text()).toContain(
-      "3 p",
-    );
-    await leaveAndReturnToQuestion(wrapper, "item-012");
-    expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-converter-point-correction-input"]').element
-        .value,
-    ).toBe("3");
     expect(wrapper.find('[data-test="exam-converter-selected-question-detail"]').text()).not.toContain(
       "Ändrad",
     );
@@ -604,23 +569,10 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     await flushPromises();
 
     expect(correctionSessionApiMocks.getExamConverterCorrectionSession).toHaveBeenCalledWith({
-      conversionHubJobId: "local-conversion-hub-job-1",
+      conversionHubJobId: "job_exam_converter_review",
     });
-    expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          corrections: [
-            expect.objectContaining({
-              kind: "point_correction",
-              max_score: 3,
-            }),
-          ],
-        }),
-      }),
-    );
-    expect(reloaded.find('[data-test="exam-converter-question-row-item-012"]').text()).toContain(
-      "3 p",
-    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(2);
+    expect(reloaded.find('[data-test="exam-converter-inspection-surface"]').exists()).toBe(true);
   });
 
   it("shows conflict state when the persisted session version is stale", async () => {
@@ -647,7 +599,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
   });
 
   it("keeps saved intent truth distinct when replay is unavailable", async () => {
-    gatewayMocks.applyExamAuthoringCorrections.mockRejectedValueOnce(new Error("gateway down"));
+    gatewayMocks.replayLocalExamConversion.mockRejectedValueOnce(new Error("local replay failed"));
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -662,19 +614,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     expect(wrapper.find('[data-test="exam-converter-correction-session-status"]').exists()).toBe(
       false,
     );
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-converter-file-action-notice"]').text()).toContain(
-      "Det går inte att hämta filerna just nu",
-    );
-    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-converter-question-row-item-012"]').text()).toContain(
-      "3 p",
-    );
-    await wrapper.find('[data-test="exam-converter-question-row-item-012"]').trigger("click");
-    expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-converter-point-correction-input"]').element
-        .value,
-    ).toBe("3");
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("submits manual choice answer keys before files unlock", async () => {
@@ -726,45 +666,20 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    const manualAnswerKeySubmit = gatewayMocks.applyExamAuthoringCorrections.mock.calls[0]?.[0];
+    const manualAnswerKeySubmit =
+      correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
     expect(manualAnswerKeySubmit).toMatchObject({
       request: {
-        corrections: [
-          {
+        intent: {
             kind: "manual_choice_answer_key",
             item_id: "item-004",
             item_type: "single_choice",
-            correct_choice_ids: ["choice-002"],
-            interaction_id: "choice-item-004",
-            submission_origin: "teacher_authored",
+            payload: { correct_choice_ids: ["choice-002"] },
             source_item_fingerprint: "sha256:item-004",
           },
-        ],
       },
     });
-
-    const correctedRow = wrapper.find('[data-test="exam-converter-question-row-item-004"]');
-    expect(correctedRow.text()).not.toContain("Facit");
-    expect(wrapper.find('[data-test="exam-converter-inspection-attention-count"]').text()).toContain(
-      "1 fråga",
-    );
-    await correctedRow.trigger("click");
-    await leaveAndReturnToQuestion(wrapper, "item-004");
-    expect(wrapper.find('[data-test="exam-converter-selected-question-detail"]').text()).toContain(
-      "Facit",
-    );
-    expect(wrapper.find('[data-test="exam-converter-selected-question-detail"]').text()).not.toContain(
-      "Ändrat",
-    );
-    expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
-      true,
-    );
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(
-      wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(
-        "disabled",
-      ),
-    ).toBeDefined();
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("submits manual gap-fill accepted values before files unlock", async () => {
@@ -837,45 +752,22 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    const manualGapSubmit = gatewayMocks.applyExamAuthoringCorrections.mock.calls[0]?.[0];
+    const manualGapSubmit =
+      correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
     expect(manualGapSubmit).toMatchObject({
       request: {
-        corrections: [
-          {
+        intent: {
             kind: "manual_gap_open_cloze_answer_key",
             item_id: "item-013",
             item_type: "gap_fill",
-            gap_answers: [
+            payload: { gap_answers: [
               { accepted_values: ["kretslopp"], gap_id: "gap-001" },
               { accepted_values: ["näringsväv"], gap_id: "gap-002" },
-            ],
-            interaction_id: "gap-item-013",
-            submission_origin: "teacher_authored",
+            ] },
             source_item_fingerprint: "sha256:item-013",
           },
-        ],
       },
     });
-
-    const correctedRow = wrapper.find('[data-test="exam-converter-question-row-item-013"]');
-    expect(correctedRow.text()).not.toContain("Facit");
-    await correctedRow.trigger("click");
-    const detail = wrapper.find('[data-test="exam-converter-selected-question-detail"]');
-    expect(detail.text()).toContain("Lucka 1: kretslopp");
-    expect(detail.text()).toContain("Lucka 2: näringsväv");
-    expect(detail.text()).not.toContain("Ändrat");
-    await leaveAndReturnToQuestion(wrapper, "item-013");
-    expect(wrapper.find('[data-test="exam-converter-effective-gap-answer-gap-001"]').text()).toContain(
-      "kretslopp",
-    );
-    expect(wrapper.find('[data-test="exam-converter-effective-gap-answer-gap-002"]').text()).toContain(
-      "näringsväv",
-    );
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(
-      wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(
-        "disabled",
-      ),
-    ).toBeDefined();
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 });

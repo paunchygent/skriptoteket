@@ -7,7 +7,7 @@
  *   artifact references authorized for file actions.
  *
  * Relationships:
- *   - Uses the HuleEdu Gateway Sir Convert artifact client for named downloads.
+ *   - Uses Skriptoteket-owned named artifact endpoints for downloads.
  *   - Uses Skriptoteket's owner-scoped user-file save client for Vault saves.
  *   - Keeps action state local to the current conversion job.
  */
@@ -15,10 +15,9 @@
 import { ref } from "vue";
 
 import {
-  downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact,
-  saveDigiExamMigrationArtifactToUserFiles,
-} from "../../../api/sirConvertGateway";
+  downloadLocalExamConversionArtifact,
+} from "../../../api/examConverterLocal";
+import { saveDigiExamMigrationArtifactToUserFiles } from "../../../api/sirConvertGateway";
 import type {
   SirConvertArtifactBlob,
   SirConvertArtifactEntry,
@@ -37,9 +36,14 @@ export type ExamConverterFileActionState = {
 export type ExamConverterFileActionStates = Record<string, ExamConverterFileActionState>;
 
 type FileActionClient = {
-  downloadDigiExamMigrationArtifact: typeof downloadDigiExamMigrationArtifact;
-  downloadDigiExamMigrationCorrectionReplayArtifact:
-    typeof downloadDigiExamMigrationCorrectionReplayArtifact;
+  downloadDigiExamMigrationArtifact: typeof downloadLocalExamConversionArtifact;
+  downloadDigiExamMigrationCorrectionReplayArtifact?: (params: {
+    artifactKey: string;
+    artifactSetId: string;
+    contentSha256: string;
+    correlationId: string;
+    jobId: string;
+  }) => Promise<SirConvertArtifactBlob>;
   saveDigiExamMigrationArtifactToUserFiles: typeof saveDigiExamMigrationArtifactToUserFiles;
 };
 
@@ -51,8 +55,7 @@ export type ExamConverterFileActionOptions = {
 };
 
 const DEFAULT_CLIENT: FileActionClient = {
-  downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact,
+  downloadDigiExamMigrationArtifact: downloadLocalExamConversionArtifact,
   saveDigiExamMigrationArtifactToUserFiles,
 };
 
@@ -138,15 +141,6 @@ export function useExamConverterFileActions(
     const actionReference = params.file.artifactActionReference;
     if (!actionReference) {
       throw new Error("Exam Converter file action requires an authorized artifact reference.");
-    }
-    if (actionReference.authority === "replay_result") {
-      return await client.downloadDigiExamMigrationCorrectionReplayArtifact({
-        artifactKey: actionReference.artifactKey,
-        artifactSetId: actionReference.artifactSetId,
-        contentSha256: actionReference.contentSha256,
-        correlationId: params.correlationId,
-        jobId: actionReference.jobId,
-      });
     }
     return await client.downloadDigiExamMigrationArtifact({
       artifactKey: actionReference.artifactKey,

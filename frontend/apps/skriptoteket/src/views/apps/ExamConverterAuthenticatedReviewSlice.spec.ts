@@ -45,8 +45,19 @@ const gatewayMocks = vi.hoisted(() => ({
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
+  replayLocalExamConversion: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
+}));
+
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: gatewayMocks.replayLocalExamConversion,
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
 }));
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),

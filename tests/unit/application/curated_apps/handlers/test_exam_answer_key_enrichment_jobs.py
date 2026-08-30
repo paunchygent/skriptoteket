@@ -301,19 +301,28 @@ class RecordingProducer:
     async def convert(
         self,
         *,
+        job_id: UUID,
         upload: ConversionHubUpload,
         overlay_bytes: bytes | None,
+        proposal_overlay_bytes: bytes | None = None,
+        proposal_provider_profile_id: str | None = None,
+        proposal_model: str | None = None,
+        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
         ),
     ) -> ExamConversionStoredArtifact:
+        del job_id, proposal_overlay_bytes, proposal_provider_profile_id, proposal_model
+        del teacher_answer_key_item_ids
         self.overlay_bytes = overlay_bytes
         self.overlay_key_provenance = overlay_key_provenance
         return ExamConversionStoredArtifact(
             filename="exam-examnet-bundle.zip",
             content_type="application/zip",
             content=b"bundle",
+            source_filename=upload.filename,
+            source_content=upload.file_bytes,
         )
 
 
@@ -326,6 +335,13 @@ class RecordingArtifactStore:
 
     def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact:
         return self.stored[job_id]
+
+    def read_named_artifact(self, *, job_id: UUID, artifact_key: str):
+        return next(
+            artifact
+            for artifact in self.stored[job_id].named_artifacts
+            if artifact.artifact_key == artifact_key
+        )
 
 
 def _profile() -> StructuredLLMProviderProfile:

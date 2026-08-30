@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-03-01
 title: Cut over the authenticated Exam Converter to Skriptoteket-owned execution
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-30'
 status: in_progress
 closeout_review:
@@ -13,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- An authenticated teacher completes the existing Exam Converter workflow through
-  Skriptoteket-owned submission, jobs, review and correction state, and artifact delivery
-  without an exam-conversion request reaching Sir Convert
+  - An authenticated teacher completes the existing Exam Converter workflow through Skriptoteket-owned submission, jobs, review and correction state, and artifact delivery without an exam-conversion request reaching Sir Convert
 story: ST-SKRIPT-39-03
 backlog_document_profile: contract-derived
 ---
@@ -91,10 +89,10 @@ request into a provider-bound synchronous operation.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | The task reuses the implemented local conversion and enrichment vertical and includes the missing local source-state, correction apply/replay, review/readiness, artifact-manifest, and result-projection producers required for the consumer cutover. |
-| T2 | Existing authenticated inputs, review/correction behavior, readiness decisions, warnings, follow-ups, and outputs are preserved. |
-| T3 | The complete authenticated product path stops reaching Sir for exam conversion; Sir removal waits for Task 03. |
-| T4 | Remote completion remains worker-owned and machine keys remain teacher-review proposals. |
-| T5 | Preserve teacher-visible behavior and domain semantics, not needless cross-service or file-pipeline complexity; prefer direct Unit-of-Work and PostgreSQL ownership. |
+| ID  | Decided contract term                                                                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T1  | The task reuses the implemented local conversion and enrichment vertical and includes the missing local source-state, correction apply/replay, review/readiness, artifact-manifest, and result-projection producers required for the consumer cutover. |
+| T2  | Existing authenticated inputs, review/correction behavior, readiness decisions, warnings, follow-ups, and outputs are preserved.                                                                                                                       |
+| T3  | The complete authenticated product path stops reaching Sir for exam conversion; Sir removal waits for Task 03.                                                                                                                                         |
+| T4  | Remote completion remains worker-owned and machine keys remain teacher-review proposals.                                                                                                                                                               |
+| T5  | Preserve teacher-visible behavior and domain semantics, not needless cross-service or file-pipeline complexity; prefer direct Unit-of-Work and PostgreSQL ownership.                                                                                   |
