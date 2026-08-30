@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1d306fe29a83831e56f76fdaac793e5880019e3b75829a9689d745ba9ddd44dc",
+  "source_set_digest": "fb863453ee5132c4ccd803a46a54cde18379d55c1557c94f2172035026ee89c2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2158,7 +2158,7 @@
       "type": "story",
       "title": "Cut over the Exam Converter and retire the Sir exam lane",
       "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4217,6 +4217,82 @@
         "decided_at": "2026-08-29",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent review approved the integrated failover orchestration at 7b32ed60 as behavior-identical to the reviewed transient gate, second-lease transaction, and exhaustion hard stop; authenticated live proofs on local main 6f4baa7a then showed two Luna request failures followed by two real GLM-5.3-flash completions with four non-refundable lease rows and successful conversion, followed by a token-limit-1 typed exhaustion with zero provider calls, zero new leases, and HTTP-200 admin balance, recorded in handoff.md and retained session 01a04d62-c71c-721c-a43a-76384e182429."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-03-01",
+      "type": "task",
+      "title": "Cut over the authenticated Exam Converter to Skriptoteket-owned execution",
+      "path": "docs/backlog/tasks/task-skript-39-03-01-cut-over-the-authenticated-exam-converter-to-skriptoteket-owned-execution.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-03-02",
+      "type": "task",
+      "title": "Cut over the public Exam Converter to Skriptoteket-owned execution",
+      "path": "docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-03-03",
+      "type": "task",
+      "title": "Retire the Sir Convert exam-specific integration",
+      "path": "docs/backlog/tasks/task-skript-39-03-03-retire-the-sir-convert-exam-specific-integration.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-03-04",
+      "type": "task",
+      "title": "Retire the Hemma Qwen answer-key sidecar",
+      "path": "docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
@@ -10517,6 +10593,13 @@
         "title": "Port the remote answer-key completion line with a daily token lease",
         "status": "done",
         "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md"
+      },
+      {
+        "id": "ST-SKRIPT-39-03",
+        "type": "story",
+        "title": "Cut over the Exam Converter and retire the Sir exam lane",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
       }
     ]
   }
