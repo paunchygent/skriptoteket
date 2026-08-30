@@ -1,8 +1,8 @@
 ## Current
 
-- Production main `fab9412a` serves the corrected Exam Converter review flow.
-  The canonical Hemma checkout matches that published revision, Skriptoteket
-  web/worker are healthy, and public `/healthz` returns 200. The deploy applied
+- Production code merge `fab9412a` serves the corrected Exam Converter review flow.
+  The canonical Hemma checkout follows published `main` and contains that merge;
+  Skriptoteket web/worker are healthy, and public `/healthz` returns 200. The deploy applied
   migrations and passed the seating-export readiness gate. Reserved Sir GPU and
   STT containers remain exited and were not restarted. The user retains the
   production `.dxe` acceptance; agents did not submit a production conversion.
