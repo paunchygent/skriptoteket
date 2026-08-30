@@ -60,6 +60,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     DigiExamIntermediateExam,
+    DigiExamIrManualFollowUpReason,
     build_digiexam_intermediate_exam,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
@@ -92,6 +93,7 @@ _MANUAL_FOLLOW_UP_MESSAGE = (
     "Provet kan inte konverteras automatiskt ännu: frågor saknar facit eller "
     "har en frågetyp som inte stöds. Komplettera provet och försök igen."
 )
+_PARTIAL_ENRICHMENT_MANUAL_FOLLOW_UP_CODE = "partial_enrichment_manual_follow_up_required"
 
 
 class InProcessExamConversionProducer:
@@ -150,7 +152,18 @@ class InProcessExamConversionProducer:
             overlay_key_provenance=overlay_key_provenance,
             teacher_answer_key_item_ids=teacher_answer_key_item_ids,
         )
-        if enrichment_failure_code is not None:
+        proposal_overlay = _parse_overlay(proposal_overlay_bytes)
+        manual_follow_up_code = enrichment_failure_code
+        if (
+            manual_follow_up_code is None
+            and proposal_overlay is not None
+            and any(
+                follow_up.reason is DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED
+                for follow_up in effective_exam.manual_follow_ups
+            )
+        ):
+            manual_follow_up_code = _PARTIAL_ENRICHMENT_MANUAL_FOLLOW_UP_CODE
+        if manual_follow_up_code is not None:
             pdf_bytes = self._pdf_renderer.render_pdf(
                 document=DigiExamExamNetPdfDocument(
                     status=DigiExamExamNetPdfStatus.SUCCESS,
@@ -168,7 +181,7 @@ class InProcessExamConversionProducer:
                 {
                     "schema_version": "qti_validation_report_v1",
                     "status": "manual_follow_up_required",
-                    "failure_code": enrichment_failure_code,
+                    "failure_code": manual_follow_up_code,
                     "retry_identity": retry_identity,
                 }
             )
@@ -191,7 +204,6 @@ class InProcessExamConversionProducer:
                 (EXAMNET_BUNDLE_QTI_VALIDATION_REPORT_FILENAME, report_bytes),
             )
         )
-        proposal_overlay = _parse_overlay(proposal_overlay_bytes)
         named_artifacts = build_review_named_artifacts(
             job_id=job_id,
             source_exam=exam,
@@ -206,7 +218,7 @@ class InProcessExamConversionProducer:
             proposal_provider_profile_id=proposal_provider_profile_id,
             proposal_model=proposal_model,
             correction_intents=correction_intents,
-            enrichment_failure_code=enrichment_failure_code,
+            enrichment_failure_code=manual_follow_up_code,
             retry_identity=retry_identity,
             qti_package_bytes=qti_package_bytes,
             pdf_bytes=pdf_bytes,

@@ -135,17 +135,12 @@ def numbered_gap_fill_output_spec(gap_count: int) -> StructuredOutputSpec:
 def plan_answer_key_enrichment(exam: DigiExamIntermediateExam) -> AnswerKeyEnrichmentPlan:
     """Decide whether machine proposals can complete this parsed exam.
 
-    ELIGIBLE requires that every unkeyed machine-marked item can carry one
-    text-only structured proposal. Open-ended items may remain on the manual
-    marking path while supported unkeyed items are enriched; other blockers
-    keep the exam on the unchanged ST-SKRIPT-39-01 manual-follow-up path.
+    Eligible machine-marked items receive text-only structured proposals.
+    Unsupported unkeyed items stay untouched in the source IR for manual
+    review. Open-ended items may remain on the manual marking path; exam-level
+    blockers prevent enrichment until their existing manual follow-up is resolved.
     """
 
-    unkeyed_items = tuple(
-        item
-        for item in exam.items
-        if item.answer_key.provenance == DigiExamAnswerKeyProvenance.ABSENT
-    )
     if not any(
         follow_up.reason == DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED
         for follow_up in exam.manual_follow_ups
@@ -154,6 +149,12 @@ def plan_answer_key_enrichment(exam: DigiExamIntermediateExam) -> AnswerKeyEnric
             state=AnswerKeyEnrichmentPlanState.NOT_NEEDED,
             unkeyed_items=(),
         )
+    enrichable_items = tuple(
+        item
+        for item in exam.items
+        if item.answer_key.provenance == DigiExamAnswerKeyProvenance.ABSENT
+        and item_is_enrichable(item)
+    )
     other_blockers = tuple(
         follow_up
         for follow_up in exam.manual_follow_ups
@@ -166,13 +167,12 @@ def plan_answer_key_enrichment(exam: DigiExamIntermediateExam) -> AnswerKeyEnric
     if other_blockers:
         return AnswerKeyEnrichmentPlan(
             state=AnswerKeyEnrichmentPlanState.BLOCKED,
-            unkeyed_items=unkeyed_items,
+            unkeyed_items=enrichable_items,
         )
-    enrichable_items = tuple(item for item in unkeyed_items if item_is_enrichable(item))
-    if len(enrichable_items) != len(unkeyed_items) or not enrichable_items:
+    if not enrichable_items:
         return AnswerKeyEnrichmentPlan(
             state=AnswerKeyEnrichmentPlanState.BLOCKED,
-            unkeyed_items=unkeyed_items,
+            unkeyed_items=(),
         )
     return AnswerKeyEnrichmentPlan(
         state=AnswerKeyEnrichmentPlanState.ELIGIBLE,

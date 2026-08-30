@@ -118,18 +118,6 @@ def _open_ended_question() -> dict[str, JsonValue]:
     }
 
 
-def _unsupported_question() -> dict[str, JsonValue]:
-    return {
-        "id": 3,
-        "title": "Unsupported",
-        "about": "",
-        "bodyHTML": "<p>Unsupported item.</p>",
-        "images": [],
-        "maxScore": 1,
-        "type": 99,
-    }
-
-
 def test_profile_rejects_output_budget_at_or_above_context_window() -> None:
     with pytest.raises(ValueError):
         StructuredLLMProviderProfile(
@@ -167,14 +155,6 @@ def test_manual_marking_items_do_not_block_supported_unkeyed_items() -> None:
         ("item-001", DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED),
         ("item-002", DigiExamIrManualFollowUpReason.MANUAL_MARKING_REQUIRED),
     }
-
-
-def test_unsupported_item_still_blocks_enrichment() -> None:
-    plan = plan_answer_key_enrichment(
-        _exam([_unkeyed_single_choice_question(), _unsupported_question()])
-    )
-
-    assert plan.state is AnswerKeyEnrichmentPlanState.BLOCKED
 
 
 def test_candidate_plan_builds_one_luna_request_per_unkeyed_item() -> None:

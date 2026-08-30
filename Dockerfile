@@ -184,6 +184,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && rm -rf /var/lib/apt/lists/*
 
 RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
-    pdm install --frozen-lockfile -G monorepo-tools -G dev -G llm --no-editable --no-self
+    pdm install --frozen-lockfile -G dev -G llm --no-editable --no-self
 
 CMD ["pdm", "run", "dev-docker"]
