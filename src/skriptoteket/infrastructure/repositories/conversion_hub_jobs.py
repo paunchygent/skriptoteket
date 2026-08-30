@@ -15,6 +15,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -99,20 +100,37 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         model = result.scalar_one_or_none()
         return self._to_job(model) if model is not None else None
 
-    async def get_by_owner_and_submission_key(
+    async def acquire_by_owner_and_submission_key(
         self,
         *,
-        owner_user_id: UUID,
-        submission_idempotency_key: str,
-    ) -> ConversionHubJob | None:
+        job: ConversionHubJob,
+    ) -> tuple[ConversionHubJob, bool]:
+        if job.submission_idempotency_key is None:
+            return await self.create(job=job), True
+        candidate_model = self._to_model(job)
+        values = {
+            column.name: getattr(candidate_model, column.name)
+            for column in ConversionHubJobModel.__table__.columns
+        }
+        inserted = await self._session.execute(
+            insert(ConversionHubJobModel)
+            .values(**values)
+            .on_conflict_do_nothing(
+                index_elements=["owner_user_id", "submission_idempotency_key"],
+                index_where=ConversionHubJobModel.submission_idempotency_key.is_not(None),
+            )
+            .returning(ConversionHubJobModel)
+        )
+        model = inserted.scalar_one_or_none()
+        if model is not None:
+            return self._to_job(model), True
         result = await self._session.execute(
             select(ConversionHubJobModel).where(
-                ConversionHubJobModel.owner_user_id == owner_user_id,
-                ConversionHubJobModel.submission_idempotency_key == submission_idempotency_key,
+                ConversionHubJobModel.owner_user_id == job.owner_user_id,
+                ConversionHubJobModel.submission_idempotency_key == job.submission_idempotency_key,
             )
         )
-        model = result.scalar_one_or_none()
-        return self._to_job(model) if model is not None else None
+        return self._to_job(result.scalar_one()), False
 
     async def get_latest_transcript_formatter_export(
         self,

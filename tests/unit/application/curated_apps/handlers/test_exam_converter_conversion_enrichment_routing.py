@@ -13,6 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
@@ -74,18 +75,22 @@ class InMemoryConversionHubJobRepository:
     async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> ConversionHubJob | None:
         return None
 
-    async def get_by_owner_and_submission_key(
-        self, *, owner_user_id: UUID, submission_idempotency_key: str
-    ) -> ConversionHubJob | None:
-        return next(
+    async def acquire_by_owner_and_submission_key(
+        self, *, job: ConversionHubJob
+    ) -> tuple[ConversionHubJob, bool]:
+        existing = next(
             (
-                job
-                for job in self.jobs.values()
-                if job.owner_user_id == owner_user_id
-                and job.submission_idempotency_key == submission_idempotency_key
+                stored
+                for stored in self.jobs.values()
+                if stored.owner_user_id == job.owner_user_id
+                and stored.submission_idempotency_key == job.submission_idempotency_key
             ),
             None,
         )
+        if existing is not None:
+            return existing, False
+        self.jobs[job.id] = job
+        return job, True
 
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
         self.jobs[job.id] = job
@@ -289,6 +294,33 @@ async def test_repeated_native_submission_returns_the_existing_job() -> None:
 
     assert second.job_id == first.job_id
     assert second.idempotent_replay is True
+    assert len(harness.jobs.jobs) == 1
+    assert len(harness.enrichment_jobs.jobs) == 1
+
+
+async def test_concurrent_native_submission_enriches_only_the_acquired_job() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first, second = await asyncio.gather(
+        harness.handler.handle(
+            actor=actor,
+            upload=_upload(keyed=False),
+            overlay_bytes=None,
+            correlation_id="corr-first",
+            idempotency_key="same-concurrent-submit",
+        ),
+        harness.handler.handle(
+            actor=actor,
+            upload=_upload(keyed=False),
+            overlay_bytes=None,
+            correlation_id="corr-second",
+            idempotency_key="same-concurrent-submit",
+        ),
+    )
+
+    assert first.job_id == second.job_id
+    assert sorted((first.idempotent_replay, second.idempotent_replay)) == [False, True]
     assert len(harness.jobs.jobs) == 1
     assert len(harness.enrichment_jobs.jobs) == 1
 

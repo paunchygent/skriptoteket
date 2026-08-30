@@ -421,6 +421,7 @@ from skriptoteket.protocols.exam_conversion import (
     InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_converter_correction_sessions import (
+    ExamConverterCorrectionMutationRepositoryProtocol,
     ExamConverterCorrectionSessionRepositoryProtocol,
     ExamConverterReplayCorrectionSessionRepositoryProtocol,
 )
@@ -1684,6 +1685,12 @@ class CuratedAppsProvider(Provider):
     ) -> ExamConverterReplayCorrectionSessionRepositoryProtocol:
         return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
 
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_correction_mutation_repository(
+        self, session: AsyncSession
+    ) -> ExamConverterCorrectionMutationRepositoryProtocol:
+        return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
+
     @provide(scope=Scope.APP)
     def seating_poster_renderer(self) -> SeatingPosterRendererProtocol:
         return BrutalistPosterRenderer()
@@ -2422,7 +2429,7 @@ class CuratedAppsProvider(Provider):
     def upsert_exam_converter_correction_intent_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> UpsertExamConverterCorrectionIntentHandler:
@@ -2437,7 +2444,7 @@ class CuratedAppsProvider(Provider):
     def revert_exam_converter_correction_intent_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
         uow: UnitOfWorkProtocol,
     ) -> RevertExamConverterCorrectionIntentHandler:
         return RevertExamConverterCorrectionIntentHandler(

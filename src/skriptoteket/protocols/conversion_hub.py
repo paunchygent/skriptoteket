@@ -48,14 +48,13 @@ class ConversionHubJobRepositoryProtocol(Protocol):
 
 
 class ExamConverterSubmissionRepositoryProtocol(Protocol):
-    """Conversion job repository with native Exam Converter submission lookup."""
+    """Atomically acquire an owner-scoped native Exam Converter submission."""
 
-    async def get_by_owner_and_submission_key(
+    async def acquire_by_owner_and_submission_key(
         self,
         *,
-        owner_user_id: UUID,
-        submission_idempotency_key: str,
-    ) -> ConversionHubJob | None: ...
+        job: ConversionHubJob,
+    ) -> tuple[ConversionHubJob, bool]: ...
 
 
 class ConversionHubTranscriptFormatterExportJobRepositoryProtocol(Protocol):

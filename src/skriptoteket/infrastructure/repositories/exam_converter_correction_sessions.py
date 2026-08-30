@@ -72,6 +72,22 @@ class PostgreSQLExamConverterCorrectionSessionRepository(
         )
         return await self._to_session(model) if model is not None else None
 
+    async def lock_owned_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> None:
+        stmt = (
+            select(ConversionHubJobModel.id)
+            .where(ConversionHubJobModel.id == conversion_hub_job_id)
+            .where(ConversionHubJobModel.owner_user_id == owner_user_id)
+            .with_for_update()
+        )
+        result = await self._session.execute(stmt)
+        if result.scalar_one_or_none() is None:
+            raise not_found("ConversionHubJob", str(conversion_hub_job_id))
+
     async def save(
         self,
         *,

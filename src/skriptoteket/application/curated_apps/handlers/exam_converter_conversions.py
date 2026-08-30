@@ -116,39 +116,30 @@ class CreateExamConverterConversionJobsHandler:
         """
         if self._lane.value != "in_process":
             raise validation_error(_LANE_DISABLED_MESSAGE)
-        existing = None
-        if idempotency_key is not None and self._submission_lookup is not None:
-            async with self._uow:
-                existing = await self._submission_lookup.get_by_owner_and_submission_key(
-                    owner_user_id=actor.id,
-                    submission_idempotency_key=idempotency_key,
-                )
-        if existing is not None:
+        enqueue_enrichment = self._should_enqueue_enrichment(
+            upload=upload, overlay_bytes=overlay_bytes
+        )
+        job, created = await self._acquire_job(
+            actor=actor,
+            upload=upload,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+            advisory_retry_attempt=advisory_retry_attempt,
+            enqueue_enrichment=enqueue_enrichment,
+        )
+        if not created:
             return ExamConverterConversionSubmitResult(
-                job_id=existing.id,
-                status=existing.status,
-                error=existing.error_message,
+                job_id=job.id,
+                status=job.status,
+                error=job.error_message,
                 idempotent_replay=True,
             )
-        if self._should_enqueue_enrichment(upload=upload, overlay_bytes=overlay_bytes):
-            job = await self._create_job_with_enrichment(
-                actor=actor,
-                upload=upload,
-                correlation_id=correlation_id,
-                idempotency_key=idempotency_key,
-                advisory_retry_attempt=advisory_retry_attempt,
-            )
+        if enqueue_enrichment:
             return ExamConverterConversionSubmitResult(
                 job_id=job.id,
                 status=job.status,
                 error=job.error_message,
             )
-        job = await self._create_local_job(
-            actor=actor,
-            filename=upload.filename,
-            correlation_id=correlation_id,
-            idempotency_key=idempotency_key,
-        )
         job = await self._complete_local_job(
             job=job,
             upload=upload,
@@ -182,7 +173,7 @@ class CreateExamConverterConversionJobsHandler:
         plan = plan_answer_key_enrichment(exam)
         return plan.state is AnswerKeyEnrichmentPlanState.ELIGIBLE
 
-    async def _create_job_with_enrichment(
+    async def _acquire_job(
         self,
         *,
         actor: User,
@@ -190,66 +181,47 @@ class CreateExamConverterConversionJobsHandler:
         correlation_id: str | None,
         idempotency_key: str | None,
         advisory_retry_attempt: int | None,
-    ) -> ConversionHubJob:
+        enqueue_enrichment: bool,
+    ) -> tuple[ConversionHubJob, bool]:
         now = self._clock.now()
+        candidate = ConversionHubJob(
+            id=self._id_generator.new_uuid(),
+            owner_user_id=actor.id,
+            input_filename=upload.filename,
+            source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+            output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+            pdf_layout=None,
+            status=ConversionHubJobStatus.SUBMITTED,
+            correlation_id=correlation_id,
+            submission_idempotency_key=idempotency_key,
+            created_at=now,
+            updated_at=now,
+        )
         async with self._uow:
-            job = await self._jobs.create(
-                job=ConversionHubJob(
-                    id=self._id_generator.new_uuid(),
-                    owner_user_id=actor.id,
-                    input_filename=upload.filename,
-                    source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
-                    output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
-                    pdf_layout=None,
-                    status=ConversionHubJobStatus.SUBMITTED,
-                    correlation_id=correlation_id,
-                    submission_idempotency_key=idempotency_key,
-                    created_at=now,
-                    updated_at=now,
+            if idempotency_key is not None and self._submission_lookup is not None:
+                job, created = await self._submission_lookup.acquire_by_owner_and_submission_key(
+                    job=candidate
                 )
-            )
-            await self._enrichment_jobs.create(
-                job=enqueue_enrichment_job(
-                    job_id=self._id_generator.new_uuid(),
-                    conversion_job_id=job.id,
-                    owner_user_id=actor.id,
-                    input_filename=upload.filename,
-                    source_dxe=upload.file_bytes,
-                    retry_identity=(
-                        f"{idempotency_key}:advisory:{advisory_retry_attempt or 0}"
-                        if idempotency_key is not None
-                        else None
-                    ),
-                    now=now,
+            else:
+                job = await self._jobs.create(job=candidate)
+                created = True
+            if created and enqueue_enrichment:
+                await self._enrichment_jobs.create(
+                    job=enqueue_enrichment_job(
+                        job_id=self._id_generator.new_uuid(),
+                        conversion_job_id=job.id,
+                        owner_user_id=actor.id,
+                        input_filename=upload.filename,
+                        source_dxe=upload.file_bytes,
+                        retry_identity=(
+                            f"{idempotency_key}:advisory:{advisory_retry_attempt or 0}"
+                            if idempotency_key is not None
+                            else None
+                        ),
+                        now=now,
+                    )
                 )
-            )
-        return job
-
-    async def _create_local_job(
-        self,
-        *,
-        actor: User,
-        filename: str,
-        correlation_id: str | None,
-        idempotency_key: str | None,
-    ) -> ConversionHubJob:
-        now = self._clock.now()
-        async with self._uow:
-            return await self._jobs.create(
-                job=ConversionHubJob(
-                    id=self._id_generator.new_uuid(),
-                    owner_user_id=actor.id,
-                    input_filename=filename,
-                    source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
-                    output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
-                    pdf_layout=None,
-                    status=ConversionHubJobStatus.SUBMITTED,
-                    correlation_id=correlation_id,
-                    submission_idempotency_key=idempotency_key,
-                    created_at=now,
-                    updated_at=now,
-                )
-            )
+        return job, created
 
     async def _complete_local_job(
         self,

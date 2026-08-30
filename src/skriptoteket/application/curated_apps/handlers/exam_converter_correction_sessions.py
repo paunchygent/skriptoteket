@@ -26,6 +26,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.exam_converter_correction_sessions import (
+    ExamConverterCorrectionMutationRepositoryProtocol,
     ExamConverterCorrectionSessionRepositoryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -102,14 +103,38 @@ class GetExamConverterCorrectionSessionHandler(_BaseExamConverterCorrectionSessi
         return ExamConverterCorrectionSessionResponse.from_domain(session)
 
 
-class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionSessionHandler):
+class _BaseExamConverterCorrectionMutationHandler(_BaseExamConverterCorrectionSessionHandler):
+    def __init__(
+        self,
+        *,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> None:
+        super().__init__(jobs=jobs, sessions=sessions, uow=uow)
+        self._mutation_sessions = sessions
+
+    async def _load_locked_session(
+        self, *, actor: User, job_id: UUID
+    ) -> ExamConverterCorrectionSession | None:
+        await self._mutation_sessions.lock_owned_job(
+            owner_user_id=actor.id,
+            conversion_hub_job_id=job_id,
+        )
+        return await self._sessions.get_by_owner_and_job(
+            owner_user_id=actor.id,
+            conversion_hub_job_id=job_id,
+        )
+
+
+class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionMutationHandler):
     """Upsert or replace one active correction intent."""
 
     def __init__(
         self,
         *,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
@@ -124,7 +149,7 @@ class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionSes
         request: UpsertExamConverterCorrectionIntentRequest,
     ) -> ExamConverterCorrectionSessionResponse:
         async with self._uow:
-            current = await self._load_owned_session(actor=actor, job_id=job_id)
+            current = await self._load_locked_session(actor=actor, job_id=job_id)
             expected = self._require_expected_version(
                 expected_session_version=request.expected_session_version,
                 current_session=current,
@@ -147,7 +172,7 @@ class UpsertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionSes
         return ExamConverterCorrectionSessionResponse.from_domain(saved)
 
 
-class RevertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionSessionHandler):
+class RevertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionMutationHandler):
     """Delete or deactivate one active correction intent."""
 
     async def handle(
@@ -158,7 +183,7 @@ class RevertExamConverterCorrectionIntentHandler(_BaseExamConverterCorrectionSes
         request: RevertExamConverterCorrectionIntentRequest,
     ) -> ExamConverterCorrectionSessionResponse:
         async with self._uow:
-            current = await self._load_owned_session(actor=actor, job_id=job_id)
+            current = await self._load_locked_session(actor=actor, job_id=job_id)
             expected = self._require_expected_version(
                 expected_session_version=request.expected_session_version,
                 current_session=current,

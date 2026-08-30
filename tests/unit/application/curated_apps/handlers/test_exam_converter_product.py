@@ -71,7 +71,12 @@ class JobRepository:
 
 
 class SessionRepository:
-    session: ExamConverterCorrectionSession | None = None
+    def __init__(self) -> None:
+        self.session: ExamConverterCorrectionSession | None = None
+        self.locked_jobs: list[tuple[UUID, UUID]] = []
+
+    async def lock_owned_job(self, *, owner_user_id: UUID, conversion_hub_job_id: UUID) -> None:
+        self.locked_jobs.append((owner_user_id, conversion_hub_job_id))
 
     async def get_by_owner_and_job(
         self, *, owner_user_id: UUID, conversion_hub_job_id: UUID
@@ -303,6 +308,7 @@ async def test_replay_projects_durable_point_correction_into_local_artifacts(
     review_ir_payload = json.loads(review_ir.content)
 
     assert manifest["job_id"] == str(job_id)
+    assert sessions.locked_jobs == [(actor.id, job_id)]
     assert effective_payload["items"][0]["effective_point_correction"]["effective_max_score"] == 3
     assert review_ir_payload["items"][0]["max_score"] == 3
     assert review_ir_payload["items"][0]["title"] == "Teacher title"

@@ -37,8 +37,21 @@ class ExamConverterCorrectionSessionRepositoryProtocol(Protocol):
     ) -> ExamConverterCorrectionSession: ...
 
 
-class ExamConverterReplayCorrectionSessionRepositoryProtocol(
+class ExamConverterCorrectionMutationRepositoryProtocol(
     ExamConverterCorrectionSessionRepositoryProtocol, Protocol
+):
+    """Correction persistence serialized by its always-present parent job."""
+
+    async def lock_owned_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> None: ...
+
+
+class ExamConverterReplayCorrectionSessionRepositoryProtocol(
+    ExamConverterCorrectionMutationRepositoryProtocol, Protocol
 ):
     """Correction-session repository with replay publication locking."""
 

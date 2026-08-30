@@ -277,6 +277,10 @@ class ExamConverterProductHandler:
                 ),
             )
         async with self._uow:
+            await self._sessions.lock_owned_job(
+                owner_user_id=actor.id,
+                conversion_hub_job_id=job_id,
+            )
             current_session = await self._sessions.get_by_owner_and_job_for_update(
                 owner_user_id=actor.id,
                 conversion_hub_job_id=job_id,
