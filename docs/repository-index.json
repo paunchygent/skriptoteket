@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "405d282a70f3e538b3637bacff793ce7a74b5c0f98463956baf8ab04f6337839",
+  "source_set_digest": "3da7731921ad52528c25d871af73a578fa5c49f1f4c0510ba97d10acc9f9b965",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5089,7 +5089,7 @@
       "type": "task",
       "title": "Adopt shared Hemma workload switching for Skriptoteket production services",
       "path": "docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -5099,7 +5099,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "spec-verifier",
+        "decided_at": "2026-08-30T06:33:23+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Retained terminal verification .orchestration/context/sessions/01a04755-7262-77e3-982e-fa8466918b4d/evidence/reviews/TASK-SKRIPT-REP-0032/terminal-spec-verification.md verified the implementation published on main at 3b1b1f92db35e64b9a46ae828f15c4eae6cde857"
       }
     },
     {
