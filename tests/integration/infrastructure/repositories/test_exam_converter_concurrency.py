@@ -109,6 +109,54 @@ async def test_identical_submissions_atomically_return_one_job(
     assert count == 1
 
 
+async def test_concurrent_submissions_after_failure_atomically_acquire_one_fresh_job(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    owner_id = await _create_owner(session_factory)
+    submission_key = f"failed-submit-{uuid4()}"
+    failed, _ = await _acquire(
+        session_factory=session_factory,
+        candidate=_candidate(owner_id=owner_id, submission_key=submission_key),
+    )
+    async with session_factory() as session, session.begin():
+        repository = PostgreSQLConversionHubJobRepository(session)
+        await repository.update(
+            job=failed.model_copy(
+                update={
+                    "status": ConversionHubJobStatus.FAILED,
+                    "error_message": "conversion failed",
+                }
+            )
+        )
+
+    first, second = await asyncio.gather(
+        _acquire(
+            session_factory=session_factory,
+            candidate=_candidate(owner_id=owner_id, submission_key=submission_key),
+        ),
+        _acquire(
+            session_factory=session_factory,
+            candidate=_candidate(owner_id=owner_id, submission_key=submission_key),
+        ),
+    )
+
+    assert first[0].id == second[0].id
+    assert first[0].id != failed.id
+    assert sorted((first[1], second[1])) == [False, True]
+    async with session_factory() as session:
+        rows = (
+            await session.scalars(
+                select(ConversionHubJobModel)
+                .where(ConversionHubJobModel.owner_user_id == owner_id)
+                .order_by(ConversionHubJobModel.created_at)
+            )
+        ).all()
+    assert len(rows) == 2
+    assert rows[0].status == ConversionHubJobStatus.FAILED
+    assert rows[0].submission_idempotency_key is None
+    assert rows[1].submission_idempotency_key == submission_key
+
+
 async def test_parent_job_lock_serializes_first_correction_and_publication(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
