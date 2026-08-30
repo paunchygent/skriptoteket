@@ -202,6 +202,34 @@ describe("answerKeyReviewStateAdapter", () => {
     ]);
   });
 
+  it("retains reviewed-advisory completion-report lineage", () => {
+    const parsed = parseAnswerKeyReviewState(
+      reviewState({
+        items: [
+          reviewItem({
+            current_key_origin: "reviewed_advisory",
+            provenance_detail: {
+              candidate_id: "candidate-001",
+              candidate_payload_digest: "sha256:candidate",
+              completion_report_sha256: "sha256:completion-report",
+              prompt_template_version: "prompt-v1",
+              provider_profile_id: "provider-local",
+              schema_name: "exam_authoring_answer_key_candidate_v1",
+              schema_version: "v1",
+              validation_state: "valid",
+            },
+            reasons: ["reviewed_advisory_accepted"],
+            review_state: "review_complete",
+          }),
+        ],
+      }),
+    );
+
+    expect(parsed.items[0]?.provenance_detail?.completion_report_sha256).toBe(
+      "sha256:completion-report",
+    );
+  });
+
   it("maps every producer state to approved Swedish label and symbol semantics", () => {
     const parsed = parseAnswerKeyReviewState({
       schema_version: "digiexam_answer_key_review_state_v1",

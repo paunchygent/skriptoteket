@@ -327,6 +327,12 @@ function hasEffectiveAnswerKey(
   return Boolean(answerKey?.provenance && answerKey.provenance !== "absent");
 }
 
+export function suppressesPendingCompletionCandidate(
+  answerKey: DigiExamEffectiveAnswerKey | null | undefined,
+): boolean {
+  return hasEffectiveAnswerKey(answerKey) && answerKey.provenance !== "machine_proposed";
+}
+
 export function isAiAnswerKeyProvenance(provenance: string | null | undefined): boolean {
   return provenance === "accepted_advisory_candidate";
 }
@@ -393,7 +399,9 @@ export function projectQuestionReviewRow(
     effectiveAnswerKey,
     followUps: itemFollowUps,
   });
-  const resolvedCandidate = hasEffectiveAnswerKey(effectiveAnswerKey) ? null : llmCandidate;
+  const resolvedCandidate = suppressesPendingCompletionCandidate(effectiveAnswerKey)
+    ? null
+    : llmCandidate;
   const missingFields = missingFieldsForItem(
     effectivePointCorrection,
     item,

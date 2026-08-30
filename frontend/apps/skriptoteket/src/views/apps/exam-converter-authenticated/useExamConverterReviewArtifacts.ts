@@ -233,7 +233,8 @@ export function useExamConverterReviewArtifacts(
       projection.value = parsedProjection;
       status.value = "ready";
       return parsedProjection;
-    } catch {
+    } catch (error) {
+      console.error("Exam Converter review artifact projection failed.", error);
       if (loadToken.value === token) {
         if (!isBackgroundRefresh) {
           projection.value = null;
