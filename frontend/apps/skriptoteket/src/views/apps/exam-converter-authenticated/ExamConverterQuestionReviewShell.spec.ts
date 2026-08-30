@@ -89,11 +89,18 @@ function gapQuestion(reviewState: "review_complete" | "review_required"):
   };
 }
 
-function projection(question: ExamConverterQuestionReviewRow): ExamConverterReviewProjection {
+function projection(
+  questionOrQuestions: ExamConverterQuestionReviewRow | ExamConverterQuestionReviewRow[],
+): ExamConverterReviewProjection {
+  const questions = Array.isArray(questionOrQuestions)
+    ? questionOrQuestions
+    : [questionOrQuestions];
   const effectiveAnswerKeysByItem: ExamConverterReviewProjection["effectiveAnswerKeysByItem"] =
     new Map();
-  if (question.effectiveAnswerKey) {
-    effectiveAnswerKeysByItem.set(question.itemId, question.effectiveAnswerKey);
+  for (const question of questions) {
+    if (question.effectiveAnswerKey) {
+      effectiveAnswerKeysByItem.set(question.itemId, question.effectiveAnswerKey);
+    }
   }
   return {
     answerKeyCompletionReport: null,
@@ -111,25 +118,55 @@ function projection(question: ExamConverterQuestionReviewRow): ExamConverterRevi
     effectiveAnswerKeysByItem,
     effectivePointCorrectionsByItem: new Map(),
     files: [],
-    questions: [question],
+    questions,
     report: {
-      aiSuggestionCount: question.llmCandidate ? 1 : 0,
+      aiSuggestionCount: questions.filter((question) => question.llmCandidate).length,
       aiSuggestionOutcomes: {
-        acceptedUnchangedCount: question.llmCandidate ? 0 : 1,
+        acceptedUnchangedCount: questions.filter(
+          (question) => question.answerKeyReviewState === "review_complete",
+        ).length,
         items: [],
         suppressedCount: 0,
         teacherEditedCount: 0,
-        totalCount: 1,
-        unresolvedCount: question.llmCandidate ? 1 : 0,
+        totalCount: questions.length,
+        unresolvedCount: questions.filter(
+          (question) => question.answerKeyReviewState === "review_required",
+        ).length,
       },
-      attentionQuestionCount: question.status === "attention" ? 1 : 0,
+      attentionQuestionCount: questions.filter((question) => question.status === "attention").length,
       blockedTargetFileCount: 0,
-      missingAnswerKeyCount: question.missingFields.includes("Facit") ? 1 : 0,
+      missingAnswerKeyCount: questions.filter((question) => question.missingFields.includes("Facit"))
+        .length,
       missingPointsCount: 0,
       warningCount: 0,
     },
     sourceFilename: "lag-och-ratt.dxe",
     sourceFileSha256: "sha256:source",
+  };
+}
+
+function sequencedPendingQuestion(itemId: string, sequence: number): ExamConverterQuestionReviewRow {
+  return {
+    ...gapQuestion("review_required"),
+    itemId,
+    sequence,
+    title: `Fråga ${sequence}`,
+  };
+}
+
+function resolvedQuestionKeepingCandidate(
+  question: ExamConverterQuestionReviewRow,
+): ExamConverterQuestionReviewRow {
+  return {
+    ...question,
+    answerKeyReviewOrigin: "reviewed_advisory",
+    answerKeyReviewReasons: ["reviewed_advisory_accepted"],
+    answerKeyReviewState: "review_complete",
+    answerKeyReviewStateLabel: "Facit granskat",
+    currentAnswerKeyProvenance: "reviewed",
+    missingFields: [],
+    status: "complete",
+    statusSymbol: "complete",
   };
 }
 
@@ -202,5 +239,63 @@ describe("ExamConverterQuestionReviewShell", () => {
       .toBe("Lucka 1: Första svaret");
     expect(wrapper.get(`[data-test="exam-converter-effective-gap-answer-${SECOND_GAP_ID}"]`).text())
       .toBe("Lucka 2: Andra svaret");
+  });
+
+  it("opens the first unresolved question when review focus is requested", async () => {
+    const alreadyReviewed = resolvedQuestionKeepingCandidate(
+      sequencedPendingQuestion("item-reviewed", 1),
+    );
+    const firstUnresolved = sequencedPendingQuestion("item-unresolved", 2);
+    const wrapper = mount(ExamConverterQuestionReviewShell, {
+      props: {
+        aiSuggestionFocusKey: 0,
+        isCorrectionApplying: false,
+        projection: projection([alreadyReviewed, firstUnresolved]),
+      },
+    });
+
+    await wrapper.setProps({ aiSuggestionFocusKey: 1 });
+
+    expect(wrapper.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-unresolved");
+  });
+
+  it("advances through unresolved questions after persisted reprojection", async () => {
+    const first = sequencedPendingQuestion("item-first", 1);
+    const second = sequencedPendingQuestion("item-second", 2);
+    const wrapper = mount(ExamConverterQuestionReviewShell, {
+      props: {
+        aiSuggestionFocusKey: 0,
+        isCorrectionApplying: false,
+        projection: projection([first, second]),
+      },
+    });
+
+    await wrapper.setProps({ aiSuggestionFocusKey: 1 });
+    await wrapper.get('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+      .trigger("click");
+    await wrapper.setProps({ isCorrectionApplying: true });
+    await wrapper.setProps({
+      projection: projection([resolvedQuestionKeepingCandidate(first), second]),
+    });
+    await wrapper.setProps({ isCorrectionApplying: false });
+
+    expect(wrapper.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-second");
+
+    await wrapper.get('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+      .trigger("click");
+    await wrapper.setProps({ isCorrectionApplying: true });
+    await wrapper.setProps({
+      projection: projection([
+        resolvedQuestionKeepingCandidate(first),
+        resolvedQuestionKeepingCandidate(second),
+      ]),
+    });
+    await wrapper.setProps({ isCorrectionApplying: false });
+
+    expect(wrapper.classes()).not.toContain("is-compact-detail-open");
   });
 });

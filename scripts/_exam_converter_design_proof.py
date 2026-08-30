@@ -14,6 +14,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypedDict
@@ -167,6 +168,15 @@ def prove_phone(page: Page, artifact_dir: Path) -> list[Capture]:
     expect(page.locator(".exam-converter-question-navigator")).to_be_visible()
     captures = [capture(page, artifact_dir, "phone-list")]
 
+    page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
+    review_shell = page.locator('[data-test="exam-converter-question-review-shell"]')
+    expect(review_shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_have_attribute(
+        "data-selected-item-id", "item-001"
+    )
+    captures.append(capture(page, artifact_dir, "phone-review-action"))
+    page.locator('[data-test="exam-converter-compact-back-to-questions"]').click()
+
     page.locator('[data-test="exam-converter-question-navigator-row-item-001"]').click()
     expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible()
     expect(page.locator('[data-test="exam-converter-compact-back-to-questions"]')).to_be_visible()
@@ -180,6 +190,169 @@ def prove_phone(page: Page, artifact_dir: Path) -> list[Capture]:
     _assert_report_surface(page)
     captures.append(capture(page, artifact_dir, "phone-report"))
     return captures
+
+
+def prove_review_routing_journey(page: Page, artifact_dir: Path) -> Capture:
+    """Exercise production review navigation in a real browser with local projections."""
+    page.goto("/", wait_until="domcontentloaded")
+    page.evaluate(
+        """async () => {
+          document.body.innerHTML = '<main><div id="review-routing-proof"></div></main>';
+          const vue = await import('/node_modules/.vite/deps/vue.js');
+          const component = (await import(
+            '/@fs/WORKTREE/frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue'
+          )).default;
+          const candidate = (itemId, sequence, correctIds) => ({
+            answerPayload: { correctAlternativeIds: correctIds, kind: 'choice' },
+            backendFailureCode: null,
+            backendStatus: 'success',
+            candidateId: `candidate-${itemId}`,
+            candidatePayloadDigest: `sha256:candidate-${itemId}`,
+            completionReportSha256: 'sha256:completion',
+            decisionState: 'suggested',
+            itemId,
+            itemType: sequence === 1 ? 'single_choice' : 'multiple_response',
+            modelProfile: 'browser-proof',
+            promptTemplateVersion: 'browser-proof-v1',
+            providerProfileId: 'local',
+            schemaName: 'digiexam_choice_answer_key_decision_v1',
+            schemaVersion: 'digiexam_choice_answer_key_decision_v1',
+            sequence,
+            validationState: 'valid',
+          });
+          const question = (itemId, sequence, correctIds) => ({
+            alternatives: [
+              { id: '1', text: 'Alternativ ett' },
+              { id: '2', text: 'Alternativ två' },
+              { id: '3', text: 'Alternativ tre' },
+            ],
+            answerKeyReviewOrigin: 'none',
+            answerKeyReviewReasons: ['advisory_candidate_pending'],
+            answerKeyReviewState: 'review_required',
+            answerKeyReviewStateLabel: 'Granska facit',
+            answerKeyReviewStateReasonLabel: null,
+            currentAnswerKeyProvenance: 'machine_proposed',
+            effectiveAnswerKey: null,
+            effectivePointCorrection: null,
+            gaps: [],
+            itemId,
+            itemType: sequence === 1 ? 'single_choice' : 'multiple_response',
+            llmCandidate: candidate(itemId, sequence, correctIds),
+            lucktextStructure: null,
+            manualFollowUpMessages: [],
+            missingFields: ['Facit'],
+            pointsLabel: '1 p',
+            pointsValue: 1,
+            promptText: `Kontrollfråga ${sequence}`,
+            sequence,
+            sourceItemFingerprint: `sha256:${itemId}`,
+            status: 'attention',
+            statusSymbol: 'ai_suggestion',
+            title: `Fråga ${sequence}`,
+            typeLabel: sequence === 1 ? 'Envalsfråga' : 'Flervalsfråga',
+          });
+          const projectionFor = (questions) => ({
+            answerKeyCompletionReport: null,
+            answerKeyReviewState: { items: [], schema_version: 'digiexam_answer_key_review_state_v1' },
+            artifactSourceBinding: {
+              effective_exam_schema_version: 'digiexam_effective_exam_v1',
+              effective_exam_sha256: 'sha256:effective',
+              source_ir_schema_version: 'digiexam_intermediate_exam_v1',
+              source_ir_sha256: 'sha256:source-ir',
+            },
+            defaultMode: 'questions',
+            effectiveAnswerKeysByItem: new Map(),
+            effectivePointCorrectionsByItem: new Map(),
+            files: [],
+            questions,
+            report: {
+              aiSuggestionCount: questions.filter((entry) => entry.llmCandidate).length,
+              aiSuggestionOutcomes: {
+                acceptedUnchangedCount: 0,
+                items: [],
+                suppressedCount: 0,
+                teacherEditedCount: 0,
+                totalCount: questions.length,
+                unresolvedCount: questions.filter(
+                  (entry) => entry.answerKeyReviewState === 'review_required'
+                ).length,
+              },
+              attentionQuestionCount: questions.filter(
+                (entry) => entry.answerKeyReviewState === 'review_required'
+              ).length,
+              blockedTargetFileCount: 0,
+              missingAnswerKeyCount: 0,
+              missingPointsCount: 0,
+              warningCount: 0,
+            },
+            sourceFilename: 'browser-proof.dxe',
+            sourceFileSha256: 'sha256:browser-proof',
+          });
+          const resolved = (entry) => ({
+            ...entry,
+            answerKeyReviewOrigin: 'reviewed_advisory',
+            answerKeyReviewReasons: ['reviewed_advisory_accepted'],
+            answerKeyReviewState: 'review_complete',
+            answerKeyReviewStateLabel: 'Facit granskat',
+            currentAnswerKeyProvenance: 'reviewed',
+            effectiveAnswerKey: {
+              correct_alternative_ids: entry.llmCandidate.answerPayload.correctAlternativeIds,
+              lineage: null,
+              provenance: 'reviewed',
+            },
+            missingFields: [],
+            status: 'complete',
+            statusSymbol: 'complete',
+          });
+          const first = question('item-first', 1, [2]);
+          const second = question('item-second', 2, [1, 3]);
+          vue.createApp({
+            setup() {
+              const applying = vue.ref(false);
+              const focusKey = vue.ref(0);
+              const questions = vue.ref([first, second]);
+              const apply = (selected) => {
+                applying.value = true;
+                window.setTimeout(() => {
+                  questions.value = questions.value.map((entry) =>
+                    entry.itemId === selected.itemId ? resolved(entry) : entry
+                  );
+                  applying.value = false;
+                }, 0);
+              };
+              return () => vue.h('div', [
+                vue.h('button', {
+                  'data-test': 'browser-open-review',
+                  onClick: () => { focusKey.value += 1; },
+                  type: 'button',
+                }, 'Granska frågor'),
+                vue.h(component, {
+                  aiSuggestionFocusKey: focusKey.value,
+                  isCorrectionApplying: applying.value,
+                  onApplyManualAnswerKey: apply,
+                  onAiPrefillFocused: () => undefined,
+                  onApplyItemTextPatch: () => undefined,
+                  onApplyPointCorrection: () => undefined,
+                  projection: projectionFor(questions.value),
+                }),
+              ]);
+            },
+          }).mount('#review-routing-proof');
+        }""".replace("WORKTREE", str(Path.cwd()).replace("'", "\\'"))
+    )
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.locator('[data-test="browser-open-review"]').click()
+    shell = page.locator('[data-test="exam-converter-question-review-shell"]')
+    expect(shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    detail = page.locator('[data-test="exam-converter-selected-question-detail"]')
+    expect(detail).to_have_attribute("data-selected-item-id", "item-first")
+    page.locator('[data-test="exam-converter-accept-advisory-answer-key-action"]').click()
+    expect(detail).to_have_attribute("data-selected-item-id", "item-second")
+    expect(shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]').click()
+    page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]').click()
+    expect(shell).not_to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    return capture(page, artifact_dir, "phone-review-routing-journey")
 
 
 def run_exam_converter_design_proof() -> Path:
@@ -215,6 +388,7 @@ def run_exam_converter_design_proof() -> Path:
             )
             captures = prove_desktop(page, artifact_dir)
             captures.extend(prove_phone(page, artifact_dir))
+            captures.append(prove_review_routing_journey(page, artifact_dir))
             manifest["captures"] = captures
             manifest["status"] = "ok"
             write_manifest(artifact_dir, manifest)

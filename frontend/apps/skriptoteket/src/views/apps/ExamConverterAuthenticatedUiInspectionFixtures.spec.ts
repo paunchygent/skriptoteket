@@ -130,6 +130,20 @@ describe("ExamConverterAuthenticatedView UI inspection fixtures", () => {
     expect(wrapper.text()).toContain("Vilket påstående beskriver DNA bäst?");
   });
 
+  it("opens the unresolved question from the review call to action", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView, {
+      props: { inspectionFixtureId: "ai-facit-review" },
+    });
+
+    await flushPromises();
+    await wrapper.get('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
+
+    expect(wrapper.get('[data-test="exam-converter-question-review-shell"]').classes())
+      .toContain("is-compact-detail-open");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-001");
+  });
+
   it("renders producer-returned persisted corrections for browser proof", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView, {
       props: { inspectionFixtureId: "persisted-corrections" },
