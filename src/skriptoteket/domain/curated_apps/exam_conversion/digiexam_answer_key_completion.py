@@ -332,12 +332,16 @@ def _validated_gap_key(
     content: dict[str, JsonValue],
 ) -> DigiExamOverlayGapFillManualAnswerKey | None:
     gap_answers: list[DigiExamOverlayGapAnswer] = []
+    source_gap_ids = {gap.guid.strip().casefold() for gap in item.gaps if gap.guid.strip()}
     for index, gap in enumerate(item.gaps, start=1):
         value = content.get(str(index))
         if not isinstance(value, str) or not value.strip():
             return None
+        stripped_value = value.strip()
+        if stripped_value.casefold() in source_gap_ids:
+            return None
         gap_answers.append(
-            DigiExamOverlayGapAnswer(gap_id=gap.guid, accepted_values=(value.strip(),))
+            DigiExamOverlayGapAnswer(gap_id=gap.guid, accepted_values=(stripped_value,))
         )
     if len(gap_answers) != len(item.gaps):
         return None
