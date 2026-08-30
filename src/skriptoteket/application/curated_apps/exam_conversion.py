@@ -48,6 +48,20 @@ class ExamConversionStoredArtifact(BaseModel):
     filename: str = Field(min_length=1, max_length=255)
     content_type: str = Field(min_length=1, max_length=255)
     content: bytes = Field(min_length=1)
+    source_filename: str = Field(min_length=1, max_length=255)
+    source_content: bytes = Field(min_length=1)
+    named_artifacts: tuple["ExamConversionNamedArtifact", ...] = ()
+
+
+class ExamConversionNamedArtifact(BaseModel):
+    """One product-facing artifact owned by a local Exam Converter job."""
+
+    model_config = ConfigDict(frozen=True)
+
+    artifact_key: str = Field(min_length=1, max_length=128)
+    filename: str = Field(min_length=1, max_length=255)
+    content_type: str = Field(min_length=1, max_length=255)
+    content: bytes = Field(min_length=1)
 
 
 class ExamConverterConversionSubmitResult(BaseModel):
@@ -58,6 +72,7 @@ class ExamConverterConversionSubmitResult(BaseModel):
     job_id: UUID
     status: ConversionHubJobStatus
     error: str | None = None
+    idempotent_replay: bool = False
 
 
 def is_local_exam_conversion_job(job: ConversionHubJob) -> bool:

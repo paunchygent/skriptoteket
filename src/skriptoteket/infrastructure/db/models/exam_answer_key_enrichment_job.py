@@ -40,6 +40,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     status: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
     input_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     source_dxe: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     max_attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")

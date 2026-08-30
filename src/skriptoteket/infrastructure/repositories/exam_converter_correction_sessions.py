@@ -59,6 +59,35 @@ class PostgreSQLExamConverterCorrectionSessionRepository(
             return None
         return await self._to_session(model)
 
+    async def get_by_owner_and_job_for_update(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> ExamConverterCorrectionSession | None:
+        model = await self._get_session_model(
+            owner_user_id=owner_user_id,
+            conversion_hub_job_id=conversion_hub_job_id,
+            for_update=True,
+        )
+        return await self._to_session(model) if model is not None else None
+
+    async def lock_owned_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> None:
+        stmt = (
+            select(ConversionHubJobModel.id)
+            .where(ConversionHubJobModel.id == conversion_hub_job_id)
+            .where(ConversionHubJobModel.owner_user_id == owner_user_id)
+            .with_for_update()
+        )
+        result = await self._session.execute(stmt)
+        if result.scalar_one_or_none() is None:
+            raise not_found("ConversionHubJob", str(conversion_hub_job_id))
+
     async def save(
         self,
         *,
@@ -133,6 +162,7 @@ class PostgreSQLExamConverterCorrectionSessionRepository(
         *,
         owner_user_id: UUID,
         conversion_hub_job_id: UUID,
+        for_update: bool = False,
     ) -> ExamConverterCorrectionSessionModel | None:
         stmt = (
             select(ExamConverterCorrectionSessionModel)
@@ -141,6 +171,8 @@ class PostgreSQLExamConverterCorrectionSessionRepository(
                 ExamConverterCorrectionSessionModel.conversion_hub_job_id == conversion_hub_job_id
             )
         )
+        if for_update:
+            stmt = stmt.with_for_update()
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 

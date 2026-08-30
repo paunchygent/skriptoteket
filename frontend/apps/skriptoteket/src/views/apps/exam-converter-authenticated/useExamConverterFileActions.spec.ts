@@ -88,7 +88,7 @@ function replayBlob(): SirConvertArtifactBlob {
 }
 
 describe("useExamConverterFileActions", () => {
-  it("downloads replay bytes from the request-scoped nested route with the teacher-facing target filename", async () => {
+  it("downloads corrected target bytes from the local named-artifact route", async () => {
     const triggerDownload = vi.fn();
     const downloadDigiExamMigrationArtifact = vi.fn().mockResolvedValue(replayBlob());
     const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn().mockResolvedValue(replayBlob());
@@ -96,7 +96,7 @@ describe("useExamConverterFileActions", () => {
       client: {
         downloadDigiExamMigrationArtifact,
         downloadDigiExamMigrationCorrectionReplayArtifact,
-        saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
+        saveLocalExamConversionArtifact: vi.fn(),
       },
       triggerDownload,
     });
@@ -107,14 +107,12 @@ describe("useExamConverterFileActions", () => {
       jobId: "job-filename",
     });
 
-    expect(downloadDigiExamMigrationArtifact).not.toHaveBeenCalled();
-    expect(downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith({
+    expect(downloadDigiExamMigrationArtifact).toHaveBeenCalledWith({
       artifactKey: "correction_replay_qti_package",
-      artifactSetId: "artifact-set-qti",
-      contentSha256: "sha256:replay-qti",
       correlationId: "corr-filename",
-      jobId: "sir-replay-job",
+      jobId: "job-filename",
     });
+    expect(downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
     expect(triggerDownload).toHaveBeenCalledWith(
       expect.objectContaining({
         artifactKey: "correction_replay_qti_package",
@@ -134,7 +132,7 @@ describe("useExamConverterFileActions", () => {
       client: {
         downloadDigiExamMigrationArtifact,
         downloadDigiExamMigrationCorrectionReplayArtifact,
-        saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
+        saveLocalExamConversionArtifact: vi.fn(),
       },
       triggerDownload: vi.fn(),
     });
@@ -153,7 +151,7 @@ describe("useExamConverterFileActions", () => {
     expect(downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
   });
 
-  it("saves replay bytes with the teacher-facing target filename", async () => {
+  it("saves corrected local bytes with the teacher-facing target filename", async () => {
     const saved: SirConvertSavedUserFile = {
       source_artifact_id: "documents.conversion_hub:job-filename:qti_package",
       vault_artifact: {
@@ -163,13 +161,14 @@ describe("useExamConverterFileActions", () => {
         name: "Ekologiprov_QTI.zip",
       },
     };
-    const saveDigiExamMigrationArtifactToUserFiles = vi.fn().mockResolvedValue(saved);
-    const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn().mockResolvedValue(replayBlob());
+    const saveLocalExamConversionArtifact = vi.fn().mockResolvedValue(saved);
+    const downloadDigiExamMigrationArtifact = vi.fn().mockResolvedValue(replayBlob());
+    const downloadDigiExamMigrationCorrectionReplayArtifact = vi.fn();
     const { saveFile } = useExamConverterFileActions({
       client: {
-        downloadDigiExamMigrationArtifact: vi.fn(),
+        downloadDigiExamMigrationArtifact,
         downloadDigiExamMigrationCorrectionReplayArtifact,
-        saveDigiExamMigrationArtifactToUserFiles,
+        saveLocalExamConversionArtifact,
       },
     });
 
@@ -179,24 +178,11 @@ describe("useExamConverterFileActions", () => {
       jobId: "job-filename",
     });
 
-    expect(downloadDigiExamMigrationCorrectionReplayArtifact).toHaveBeenCalledWith({
+    expect(downloadDigiExamMigrationArtifact).not.toHaveBeenCalled();
+    expect(downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
+    expect(saveLocalExamConversionArtifact).toHaveBeenCalledWith({
       artifactKey: "correction_replay_qti_package",
-      artifactSetId: "artifact-set-qti",
-      contentSha256: "sha256:replay-qti",
-      correlationId: "corr-filename",
-      jobId: "sir-replay-job",
+      jobId: "job-filename",
     });
-    expect(saveDigiExamMigrationArtifactToUserFiles).toHaveBeenCalledWith(
-      expect.objectContaining({
-        artifact: expect.objectContaining({
-          artifact_key: "correction_replay_qti_package",
-          filename: "Ekologiprov_QTI.zip",
-        }),
-        artifactBlob: expect.objectContaining({
-          artifactKey: "correction_replay_qti_package",
-          filename: "Ekologiprov_QTI.zip",
-        }),
-      }),
-    );
   });
 });

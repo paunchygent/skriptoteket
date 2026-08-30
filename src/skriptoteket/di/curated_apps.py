@@ -138,6 +138,9 @@ from skriptoteket.application.curated_apps.handlers.document_converter_saved_sou
     ListDocumentConverterSavedFilesHandler,
     SubmitDocumentConverterSavedFileHandler,
 )
+from skriptoteket.application.curated_apps.handlers.document_converter_vault_saves import (
+    DocumentConverterVaultSaveService,
+)
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
@@ -151,6 +154,10 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
     GetExamConverterCorrectionSessionHandler,
     RevertExamConverterCorrectionIntentHandler,
     UpsertExamConverterCorrectionIntentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
+    ExamConverterProductHandler,
+    SaveExamConverterLocalArtifactHandler,
 )
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
@@ -385,6 +392,7 @@ from skriptoteket.protocols.conversion_hub import (
     ConversionHubTranscriptFormatterExportStateRepositoryProtocol,
     ConversionHubTranscriptFormatterProducerProtocol,
     ConversionHubTranscriptSpeakerOverlayRepositoryProtocol,
+    ExamConverterSubmissionRepositoryProtocol,
 )
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.document_converter import (
@@ -413,7 +421,9 @@ from skriptoteket.protocols.exam_conversion import (
     InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_converter_correction_sessions import (
+    ExamConverterCorrectionMutationRepositoryProtocol,
     ExamConverterCorrectionSessionRepositoryProtocol,
+    ExamConverterReplayCorrectionSessionRepositoryProtocol,
 )
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -1613,6 +1623,12 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLConversionHubJobRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def exam_converter_submission_repository(
+        self, session: AsyncSession
+    ) -> ExamConverterSubmissionRepositoryProtocol:
+        return PostgreSQLConversionHubJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def conversion_hub_transcript_formatter_export_job_repository(
         self,
         session: AsyncSession,
@@ -1661,6 +1677,18 @@ class CuratedAppsProvider(Provider):
         self,
         session: AsyncSession,
     ) -> ExamConverterCorrectionSessionRepositoryProtocol:
+        return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_replay_correction_session_repository(
+        self, session: AsyncSession
+    ) -> ExamConverterReplayCorrectionSessionRepositoryProtocol:
+        return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_correction_mutation_repository(
+        self, session: AsyncSession
+    ) -> ExamConverterCorrectionMutationRepositoryProtocol:
         return PostgreSQLExamConverterCorrectionSessionRepository(session=session)
 
     @provide(scope=Scope.APP)
@@ -1809,6 +1837,7 @@ class CuratedAppsProvider(Provider):
     def create_exam_converter_conversion_jobs_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
+        submission_lookup: ExamConverterSubmissionRepositoryProtocol,
         lane: ExamConverterConversionLane,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
@@ -1820,6 +1849,7 @@ class CuratedAppsProvider(Provider):
     ) -> CreateExamConverterConversionJobsHandler:
         return CreateExamConverterConversionJobsHandler(
             jobs=jobs,
+            submission_lookup=submission_lookup,
             lane=lane,
             producer=producer,
             artifacts=artifacts,
@@ -1828,6 +1858,50 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_product_handler(
+        self,
+        jobs: ConversionHubJobRepositoryProtocol,
+        sessions: ExamConverterReplayCorrectionSessionRepositoryProtocol,
+        proposals: ExamAnswerKeyProposedOverlayRepositoryProtocol,
+        producer: InProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ExamConverterProductHandler:
+        return ExamConverterProductHandler(
+            jobs=jobs,
+            sessions=sessions,
+            proposals=proposals,
+            producer=producer,
+            artifacts=artifacts,
+            uow=uow,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def save_exam_converter_local_artifact_handler(
+        self,
+        product: ExamConverterProductHandler,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_usage: VaultUsageRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        settings: Settings,
+    ) -> SaveExamConverterLocalArtifactHandler:
+        return SaveExamConverterLocalArtifactHandler(
+            product=product,
+            vault_saves=DocumentConverterVaultSaveService(
+                vault_files=vault_files,
+                vault_usage=vault_usage,
+                vault_storage=vault_storage,
+                uow=uow,
+                clock=clock,
+                id_generator=id_generator,
+                settings=settings,
+            ),
         )
 
     @provide(scope=Scope.REQUEST)
@@ -2355,7 +2429,7 @@ class CuratedAppsProvider(Provider):
     def upsert_exam_converter_correction_intent_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> UpsertExamConverterCorrectionIntentHandler:
@@ -2370,7 +2444,7 @@ class CuratedAppsProvider(Provider):
     def revert_exam_converter_correction_intent_handler(
         self,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterCorrectionMutationRepositoryProtocol,
         uow: UnitOfWorkProtocol,
     ) -> RevertExamConverterCorrectionIntentHandler:
         return RevertExamConverterCorrectionIntentHandler(

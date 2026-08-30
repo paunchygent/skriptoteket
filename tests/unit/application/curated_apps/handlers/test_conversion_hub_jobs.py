@@ -98,6 +98,12 @@ class FakeExamConversionArtifactStore:
             raise not_found("ExamConversionArtifact", str(job_id))
         return artifact
 
+    def read_named_artifact(self, *, job_id: UUID, artifact_key: str):
+        artifact = self.read_artifact(job_id=job_id)
+        return next(
+            named for named in artifact.named_artifacts if named.artifact_key == artifact_key
+        )
+
 
 class FakeSirConvertClient:
     def __init__(self) -> None:
@@ -639,6 +645,8 @@ async def test_download_artifact_serves_local_exam_conversion_bundle() -> None:
         filename="prov-examnet-bundle.zip",
         content_type="application/zip",
         content=b"PK-bundle",
+        source_filename="prov.dxe",
+        source_content=b"{}",
     )
     client = FakeSirConvertClient()
     handler = DownloadConversionHubArtifactHandler(

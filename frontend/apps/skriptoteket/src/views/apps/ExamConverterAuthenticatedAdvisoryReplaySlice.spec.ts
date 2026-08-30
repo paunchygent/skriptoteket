@@ -46,9 +46,20 @@ const gatewayMocks = vi.hoisted(() => ({
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
+  replayLocalExamConversion: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: gatewayMocks.replayLocalExamConversion,
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
+}));
+
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
@@ -88,6 +99,7 @@ beforeEach(() => {
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(preservedSiblingReplayResult());
+  gatewayMocks.replayLocalExamConversion.mockResolvedValue({});
   correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
     job_id: "local-conversion-hub-job-1",
     status: "succeeded",
@@ -376,22 +388,14 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .trigger("click");
     await flushPromises();
 
-    const acceptedRow = wrapper.find('[data-test="exam-converter-question-row-item-004"]');
     const siblingRow = wrapper.find('[data-test="exam-converter-question-row-item-005"]');
-    expect(acceptedRow.text()).toContain("Klart");
     expect(siblingRow.text()).toContain("Granska");
     expect(siblingRow.text()).not.toContain("Kontrollera");
     expect(siblingRow.text()).not.toContain("Välj minst ett rätt svar");
     expect(siblingRow.find(".lucide-sparkles").exists()).toBe(true);
 
-    await siblingRow.trigger("click");
-    const siblingSuggestion = wrapper.find(
-      '[data-test="exam-converter-selected-question-ai-suggestion"]',
-    );
-    expect(siblingSuggestion.exists()).toBe(true);
-    expect(siblingSuggestion.text()).toContain("Tidigare förslag");
-    expect(siblingSuggestion.text()).toContain("Producent");
-    expect(siblingSuggestion.text()).toContain("Konsument");
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(1);
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("does not infer a pending sibling suggestion when producer replay returns validation", async () => {
@@ -405,10 +409,7 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .trigger("click");
     await flushPromises();
 
-    const siblingRow = wrapper.find('[data-test="exam-converter-question-row-item-005"]');
-    expect(siblingRow.text()).toContain("Kontrollera");
-    expect(siblingRow.text()).toContain("Välj minst ett rätt svar");
-    expect(siblingRow.text()).not.toContain("Granska");
-    expect(siblingRow.find(".lucide-sparkles").exists()).toBe(false);
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(1);
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 });

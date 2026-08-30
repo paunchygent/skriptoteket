@@ -2,50 +2,38 @@
  * Exam Converter authenticated runtime bridge.
  *
  * Domain purpose:
- *   Submit one authenticated Exam Converter job through the HuleEdu Gateway and
- *   poll it to the terminal Sir Convert result consumed by the UI result strip.
+ *   Submit and poll one authenticated Skriptoteket-owned Exam Converter job.
  *
  * Relationships:
  *   - Used by `ExamConverterAuthenticatedView` after local file intake is valid.
- *   - Delegates transport, CSRF, idempotency, and correlation headers to the
- *     existing Sir Convert Gateway client.
+ *   - Uses the local curated-app API while retaining the established UI DTOs.
  *   - Does not render questions, files, reports, downloads, or save actions.
  */
 
 import { onBeforeUnmount, ref } from "vue";
 
 import {
-  registerExamConverterConversionHubJob,
-  type RegisterExamConverterConversionHubJobRequest,
-  type RegisterExamConverterConversionHubJobResult,
-} from "../../../api/examConverterCorrectionSessions";
-import {
-  applyExamAuthoringCorrections,
-  getDigiExamMigrationJob,
-  getDigiExamMigrationResult,
-  issueExamAuthoringCorrectionSourceState,
-  submitDigiExamMigration,
-} from "../../../api/sirConvertGateway";
+  getLocalExamConversionJob,
+  getLocalExamConversionResult,
+  getLocalExamConversionSourceState,
+  submitLocalExamConversion,
+} from "../../../api/examConverterLocal";
+import type { LocalExamConversionSubmittedJob } from "../../../api/examConverterLocal";
 import type {
   DigiExamAnswerKeyCompletionMode,
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
   ExamAuthoringCorrectionSourceStateIssueResult,
-  ExamAuthoringCorrectionsApplyRequest,
-  ExamAuthoringCorrectionsApplyResult,
   SirConvertJobStatus,
-  SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../../api/sirConvertGateway";
 import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "../../../api/sirConvertGateway/jobSpec";
 
 type AuthenticatedRuntimeClient = {
-  submitDigiExamMigration: typeof submitDigiExamMigration;
-  getDigiExamMigrationJob: typeof getDigiExamMigrationJob;
-  getDigiExamMigrationResult: typeof getDigiExamMigrationResult;
-  issueExamAuthoringCorrectionSourceState: typeof issueExamAuthoringCorrectionSourceState;
-  applyExamAuthoringCorrections: typeof applyExamAuthoringCorrections;
-  registerExamConverterConversionHubJob: typeof registerExamConverterConversionHubJob;
+  submitDigiExamMigration: typeof submitLocalExamConversion;
+  getDigiExamMigrationJob: typeof getLocalExamConversionJob;
+  getDigiExamMigrationResult: typeof getLocalExamConversionResult;
+  issueExamAuthoringCorrectionSourceState: typeof getLocalExamConversionSourceState;
 };
 
 export type ExamConverterAuthenticatedRuntimeSubmission = {
@@ -69,12 +57,10 @@ const ACTIVE_JOB_STATUSES = new Set<SirConvertJobStatus>([
 ]);
 
 const DEFAULT_CLIENT: AuthenticatedRuntimeClient = {
-  getDigiExamMigrationJob,
-  getDigiExamMigrationResult,
-  issueExamAuthoringCorrectionSourceState,
-  applyExamAuthoringCorrections,
-  registerExamConverterConversionHubJob,
-  submitDigiExamMigration,
+  getDigiExamMigrationJob: getLocalExamConversionJob,
+  getDigiExamMigrationResult: getLocalExamConversionResult,
+  issueExamAuthoringCorrectionSourceState: getLocalExamConversionSourceState,
+  submitDigiExamMigration: submitLocalExamConversion,
 };
 
 const EXAM_CONVERTER_JOB_HANDLE_STORAGE_KEY = "skriptoteket.examConverter.jobHandle.v1";
@@ -83,7 +69,7 @@ type ExamConverterJobHandle = {
   conversionHubJobId: string;
   correlationId: string;
   inputFilename: string;
-  sirConvertJobId: string;
+  jobId: string;
 };
 
 function wait(milliseconds: number): Promise<void> {
@@ -101,16 +87,6 @@ function isActiveJobStatus(status: SirConvertJobStatus): boolean {
 
 function isFailedJobStatus(status: SirConvertJobStatus): boolean {
   return status === "failed" || status === "canceled" || status === "cancelled";
-}
-
-function toRegisteredJobStatus(
-  status: SirConvertJobStatus,
-): RegisterExamConverterConversionHubJobRequest["status"] {
-  if (status === "running") return "processing";
-  if (status === "cancelled") return "canceled";
-  if (status === "succeeded" || status === "failed" || status === "submitted") return status;
-  if (status === "queued" || status === "processing" || status === "canceled") return status;
-  return "processing";
 }
 
 function saveJobHandle(handle: ExamConverterJobHandle | null): void {
@@ -134,7 +110,7 @@ function readJobHandle(): ExamConverterJobHandle | null {
       typeof parsed.conversionHubJobId !== "string" ||
       typeof parsed.correlationId !== "string" ||
       typeof parsed.inputFilename !== "string" ||
-      typeof parsed.sirConvertJobId !== "string"
+      typeof parsed.jobId !== "string"
     ) {
       return null;
     }
@@ -142,7 +118,7 @@ function readJobHandle(): ExamConverterJobHandle | null {
       conversionHubJobId: parsed.conversionHubJobId,
       correlationId: parsed.correlationId,
       inputFilename: parsed.inputFilename,
-      sirConvertJobId: parsed.sirConvertJobId,
+      jobId: parsed.jobId,
     };
   } catch {
     return null;
@@ -186,32 +162,14 @@ export function useExamConverterAuthenticatedRuntime(
     if (!handle) return null;
     lastConversionHubJobId.value = handle.conversionHubJobId;
     lastCorrelationId.value = handle.correlationId;
-    lastJobId.value = handle.sirConvertJobId;
+    lastJobId.value = handle.jobId;
     return handle;
   }
 
-  async function registerLocalJob(params: {
-    correlationId: string;
-    inputFilename: string;
-    status: RegisterExamConverterConversionHubJobRequest["status"];
-    upstreamJobId: string;
-  }): Promise<RegisterExamConverterConversionHubJobResult> {
-    return await client.registerExamConverterConversionHubJob({
-      request: {
-        correlation_id: params.correlationId,
-        input_filename: params.inputFilename,
-        status: params.status,
-        upstream_job_id: params.upstreamJobId,
-      },
-    });
-  }
-
   async function pollUntilTerminal(
-    submittedJob: SirConvertSubmittedJob,
+    submittedJob: LocalExamConversionSubmittedJob,
     runId: number,
-    synchronizeTerminalStatus: (status: SirConvertJobStatus) => Promise<void>,
   ): Promise<SirConvertTerminalResult | null> {
-    const correlationId = submittedJob.requestContext.correlationId;
     let currentStatus = submittedJob.status;
 
     while (isActiveJobStatus(currentStatus)) {
@@ -221,7 +179,7 @@ export function useExamConverterAuthenticatedRuntime(
       }
       currentStatus = (
         await client.getDigiExamMigrationJob({
-          correlationId,
+          correlationId: submittedJob.correlationId,
           jobId: submittedJob.jobId,
         })
       ).status;
@@ -231,15 +189,13 @@ export function useExamConverterAuthenticatedRuntime(
       return null;
     }
     if (currentStatus === "succeeded") {
-      await synchronizeTerminalStatus(currentStatus);
       return await readTerminalResult({
         client,
-        correlationId,
+        correlationId: submittedJob.correlationId,
         jobId: submittedJob.jobId,
       });
     }
     if (isFailedJobStatus(currentStatus)) {
-      await synchronizeTerminalStatus(currentStatus);
       throw new Error("Exam Converter job did not finish.");
     }
     throw new Error("Exam Converter job returned an unsupported status.");
@@ -275,37 +231,17 @@ export function useExamConverterAuthenticatedRuntime(
         return null;
       }
 
-      lastCorrelationId.value = submittedJob.requestContext.correlationId;
+      lastCorrelationId.value = submittedJob.correlationId;
       lastIdempotentReplay.value = submittedJob.idempotentReplay;
       lastJobId.value = submittedJob.jobId;
-      let lastRegisteredStatus = toRegisteredJobStatus(submittedJob.status);
-      const registeredJob = await registerLocalJob({
-        correlationId: submittedJob.requestContext.correlationId,
-        inputFilename: submission.sourceFile.name,
-        status: lastRegisteredStatus,
-        upstreamJobId: submittedJob.jobId,
-      });
-      lastConversionHubJobId.value = registeredJob.job_id;
+      lastConversionHubJobId.value = submittedJob.jobId;
       saveJobHandle({
-        conversionHubJobId: registeredJob.job_id,
-        correlationId: submittedJob.requestContext.correlationId,
+        conversionHubJobId: submittedJob.jobId,
+        correlationId: submittedJob.correlationId,
         inputFilename: submission.sourceFile.name,
-        sirConvertJobId: submittedJob.jobId,
+        jobId: submittedJob.jobId,
       });
-      return await pollUntilTerminal(submittedJob, runId, async (status) => {
-        const nextRegisteredStatus = toRegisteredJobStatus(status);
-        if (nextRegisteredStatus === lastRegisteredStatus) {
-          return;
-        }
-        lastRegisteredStatus = nextRegisteredStatus;
-        const synchronizedJob = await registerLocalJob({
-          correlationId: submittedJob.requestContext.correlationId,
-          inputFilename: submission.sourceFile.name,
-          status: nextRegisteredStatus,
-          upstreamJobId: submittedJob.jobId,
-        });
-        lastConversionHubJobId.value = synchronizedJob.job_id;
-      });
+      return await pollUntilTerminal(submittedJob, runId);
     } catch (error) {
       if (!isCurrentRun(runId)) {
         return null;
@@ -325,23 +261,7 @@ export function useExamConverterAuthenticatedRuntime(
     if (!correlationId) {
       throw new Error("Correction source-state issue requires a completed conversion.");
     }
-    return await client.issueExamAuthoringCorrectionSourceState({
-      correlationId,
-      request: {
-        schema_version: "exam_authoring_correction_source_state_issue_request_v1",
-        job_id: params.jobId,
-      },
-    });
-  }
-
-  async function applyCorrectionRequest(
-    request: ExamAuthoringCorrectionsApplyRequest,
-  ): Promise<ExamAuthoringCorrectionsApplyResult> {
-    const correlationId = lastCorrelationId.value;
-    if (!correlationId) {
-      throw new Error("Correction apply requires a completed conversion.");
-    }
-    return await client.applyExamAuthoringCorrections({ correlationId, request });
+    return await client.issueExamAuthoringCorrectionSourceState({ jobId: params.jobId });
   }
 
   function clearLastJobHandle(): void {
@@ -363,7 +283,6 @@ export function useExamConverterAuthenticatedRuntime(
     lastCorrelationId,
     lastIdempotentReplay,
     lastJobId,
-    applyCorrectionRequest,
     restoreLastJobHandle,
     submitAndPoll,
   };

@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay
     DigiExamIngestionOverlayItem,
     DigiExamOverlayChoiceItemPatch,
     DigiExamOverlayGapFillItemPatch,
+    DigiExamOverlayGenericItemPatch,
     DigiExamOverlayVisibleTextPatch,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
@@ -61,7 +62,20 @@ def apply_effective_item_patch(
         return DigiExamEffectiveItemPatchResult(application=None, rejection=None)
     if isinstance(patch, DigiExamOverlayChoiceItemPatch):
         return _apply_choice_patch(item=item, patch=patch)
-    return _apply_gap_fill_patch(item=item, patch=patch)
+    if isinstance(patch, DigiExamOverlayGapFillItemPatch):
+        return _apply_gap_fill_patch(item=item, patch=patch)
+    return _apply_generic_patch(item=item, patch=patch)
+
+
+def _apply_generic_patch(
+    *,
+    item: DigiExamIrItem,
+    patch: DigiExamOverlayGenericItemPatch,
+) -> DigiExamEffectiveItemPatchResult:
+    if item.item_type in _CHOICE_ITEM_TYPES or item.item_type is DigiExamItemType.GAP_FILL:
+        return _rejected("patch_item_type_mismatch", "Generic patch on specialized item.")
+    replacement, changed_fields = _apply_visible_text_patch(item=item, patch=patch)
+    return _accepted(item=item, replacement=replacement, changed_fields=changed_fields)
 
 
 def _apply_choice_patch(
@@ -157,7 +171,7 @@ def _accepted(
     patched_gap_ids: tuple[str, ...] = (),
 ) -> DigiExamEffectiveItemPatchResult:
     if replacement == item or not changed_fields:
-        return DigiExamEffectiveItemPatchResult(application=None, rejection=None)
+        return _rejected("patch_no_effect", "Item patch does not change the source item.")
     return DigiExamEffectiveItemPatchResult(
         application=DigiExamEffectiveItemPatchApplication(
             item=replacement,

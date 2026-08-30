@@ -67,6 +67,10 @@ class InMemoryConversionHubJobRepository:
 class InMemoryCorrectionSessionRepository:
     def __init__(self) -> None:
         self.sessions: dict[tuple[UUID, UUID], ExamConverterCorrectionSession] = {}
+        self.locked_jobs: list[tuple[UUID, UUID]] = []
+
+    async def lock_owned_job(self, *, owner_user_id: UUID, conversion_hub_job_id: UUID) -> None:
+        self.locked_jobs.append((owner_user_id, conversion_hub_job_id))
 
     async def get_by_owner_and_job(
         self,
@@ -171,6 +175,7 @@ async def test_upsert_and_read_return_current_active_set() -> None:
     readback = await read.handle(actor=actor, job_id=job_id)
 
     assert result.session_version == 1
+    assert sessions.locked_jobs == [(actor.id, job_id)]
     assert [intent.kind.value for intent in readback.active_intents] == ["point_correction"]
     assert readback.source_binding == _binding()
 

@@ -17,7 +17,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
-from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConversionNamedArtifact,
+    ExamConversionStoredArtifact,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
 )
@@ -26,6 +29,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackagePlan,
+)
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
 )
 
 if TYPE_CHECKING:
@@ -62,8 +68,16 @@ class InProcessExamConverterProtocol(Protocol):
     async def convert(
         self,
         *,
+        job_id: UUID,
         upload: "ConversionHubUpload",
         overlay_bytes: bytes | None,
+        proposal_overlay_bytes: bytes | None = None,
+        proposal_provider_profile_id: str | None = None,
+        proposal_model: str | None = None,
+        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
@@ -82,3 +96,10 @@ class ExamConversionArtifactStoreProtocol(Protocol):
     ) -> None: ...
 
     def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact: ...
+
+    def read_named_artifact(
+        self,
+        *,
+        job_id: UUID,
+        artifact_key: str,
+    ) -> ExamConversionNamedArtifact: ...

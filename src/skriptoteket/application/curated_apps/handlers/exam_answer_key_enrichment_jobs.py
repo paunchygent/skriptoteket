@@ -173,8 +173,9 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 profile=route.primary,
             )
         except AnswerKeyTokenLeaseRefused as refusal:
-            return await self._fail(
+            return await self._complete_with_failure(
                 job=job,
+                upload=upload,
                 teacher_message=lease_exhausted_message(refusal),
                 last_error="daily_token_lease_exhausted",
             )
@@ -186,8 +187,9 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             leases_by_item=leases_by_item,
         )
         if failure is not None:
-            return await self._fail(
+            return await self._complete_with_failure(
                 job=job,
+                upload=upload,
                 teacher_message=failure.teacher_message,
                 last_error=failure.last_error,
             )
@@ -203,8 +205,12 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         )
         try:
             artifact = await self._producer.convert(
+                job_id=job.conversion_job_id,
                 upload=upload,
                 overlay_bytes=overlay_json_bytes(overlay),
+                proposal_overlay_bytes=overlay_json_bytes(overlay),
+                proposal_provider_profile_id=serving_profile.provider_id,
+                proposal_model=serving_profile.model,
                 correlation_id=None,
                 overlay_key_provenance=DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY,
             )
@@ -235,20 +241,16 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             job = await self._enrichment_jobs.claim_next_expired(now=now)
             if job is None:
                 return None
-            await self._update_conversion_job(
-                conversion_job_id=job.conversion_job_id,
-                status=ConversionHubJobStatus.FAILED,
-                error_message=_MANUAL_COMPLETION_MESSAGE,
-                now=now,
-            )
-            return await self._enrichment_jobs.update(
-                job=finish_enrichment_job(
-                    job=job,
-                    status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
-                    now=now,
-                    last_error="enrichment_worker_lease_expired",
-                )
-            )
+        return await self._complete_with_failure(
+            job=job,
+            upload=ConversionHubUpload(
+                filename=job.input_filename,
+                content_type=_DXE_CONTENT_TYPE,
+                file_bytes=job.source_dxe,
+            ),
+            teacher_message=_MANUAL_COMPLETION_MESSAGE,
+            last_error="enrichment_worker_lease_expired",
+        )
 
     async def _record_attempt_and_reserve(
         self,
@@ -383,6 +385,49 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             await self._update_conversion_job(
                 conversion_job_id=job.conversion_job_id,
                 status=ConversionHubJobStatus.FAILED,
+                error_message=teacher_message,
+                now=now,
+            )
+            return await self._enrichment_jobs.update(
+                job=finish_enrichment_job(
+                    job=job,
+                    status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                    now=now,
+                    last_error=last_error,
+                )
+            )
+
+    async def _complete_with_failure(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        upload: ConversionHubUpload,
+        teacher_message: str,
+        last_error: str,
+    ) -> ExamAnswerKeyEnrichmentJob:
+        """Publish deterministic artifacts and typed manual-follow-up state."""
+
+        try:
+            artifact = await self._producer.convert(
+                job_id=job.conversion_job_id,
+                upload=upload,
+                overlay_bytes=None,
+                correlation_id=None,
+                enrichment_failure_code=last_error,
+                retry_identity=job.retry_identity,
+            )
+            self._artifacts.store_artifact(job_id=job.conversion_job_id, artifact=artifact)
+        except DomainError:
+            return await self._fail(
+                job=job,
+                teacher_message=teacher_message,
+                last_error=last_error,
+            )
+        now = self._clock.now()
+        async with self._uow:
+            await self._update_conversion_job(
+                conversion_job_id=job.conversion_job_id,
+                status=ConversionHubJobStatus.SUCCEEDED,
                 error_message=teacher_message,
                 now=now,
             )

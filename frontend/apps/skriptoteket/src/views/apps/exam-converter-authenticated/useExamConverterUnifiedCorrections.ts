@@ -3,26 +3,26 @@
  *
  * Domain purpose:
  *   Persist producer-issued Exam Authoring corrections for the authenticated
- *   Exam Converter, then replay them through Sir Convert for effective truth.
+ *   Exam Converter, then replay them through Skriptoteket-owned conversion state.
  *
  * Relationships:
  *   - Called by `ExamConverterAuthenticatedView` for durable teacher edits.
  *   - Uses `useExamConverterAuthenticatedRuntime` source-state methods.
- *   - Projects returned effective source-neutral state into review rows.
+ *   - Reloads the locally projected review and readiness artifacts after replay.
  */
 
 import { ref, type Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import {
+  getExamConverterCorrectionSession,
   upsertExamConverterCorrectionIntent,
   type ExamConverterCorrectionIntentWrite,
   type ExamConverterCorrectionSessionResponse,
 } from "../../../api/examConverterCorrectionSessions";
+import { replayLocalExamConversion } from "../../../api/examConverterLocal";
 import type {
   ExamAuthoringCorrectionsApplyRequest,
-  ExamAuthoringCorrectionsApplyResult,
-  ExamAuthoringCorrectionSourceStateIssueResult,
 } from "../../../api/sirConvertGateway";
 import type { ExamConverterRuntimeOutcome } from "./useExamConverterConversionState";
 import {
@@ -38,11 +38,6 @@ import type {
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
 import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
-import {
-  replayPersistedCorrectionSession,
-  type CorrectionSessionReplayResult,
-} from "./correctionSessionReplay";
-import { projectUnifiedCorrectionResult } from "./correctionSessionProjection";
 import {
   candidateSuppressionIntent,
   intentFromCorrectionRequest,
@@ -62,6 +57,11 @@ export type ExamConverterUnifiedCorrectionOptions = {
   lastConversionHubJobId: Ref<string | null>;
   lastCorrelationId: Ref<string | null>;
   lastJobId: Ref<string | null>;
+  loadReviewArtifacts: (params: {
+    completionReportRequired?: boolean;
+    correlationId: string;
+    jobId: string;
+  }) => Promise<ExamConverterReviewProjection | null>;
   resetFileActions: () => void;
   reviewProjection: Ref<ExamConverterReviewProjection | null>;
   runtime: UnifiedCorrectionRuntime;
@@ -73,21 +73,6 @@ export type ExamConverterCorrectionProjectionFreshness =
   | "unavailable"
   | "conflict"
   | null;
-
-function replayApplyResult(
-  replay: Extract<CorrectionSessionReplayResult, { projectionFreshness: "fresh" }>,
-): ExamAuthoringCorrectionsApplyResult {
-  return {
-    answer_key_review_state: replay.answerKeyReviewState,
-    artifact_availability: replay.artifactAvailability,
-    correction_report: replay.correctionReport,
-    effective_state: replay.effectiveState,
-    request_id: replay.replayedRequestId,
-    schema_version: "exam_authoring_corrections_apply_result_v1",
-    source_binding: replay.sourceBinding,
-    target_readiness: replay.targetReadiness,
-  };
-}
 
 export function useExamConverterUnifiedCorrections(
   options: ExamConverterUnifiedCorrectionOptions,
@@ -105,79 +90,31 @@ export function useExamConverterUnifiedCorrections(
     sessionVersion.value = 0;
   }
 
-  function sourceStateApplyResult(params: {
-    projection: ExamConverterReviewProjection;
-    sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
-  }): ExamAuthoringCorrectionsApplyResult {
-    return {
-      artifact_availability: [],
-      answer_key_review_state: params.projection.answerKeyReviewState,
-      correction_report: {
-        accepted_entries: [],
-        rejected_entries: [],
-        schema_version: "exam_authoring_correction_report_v1",
-      },
-      effective_state: {
-        effective_state_sha256: params.sourceState.source_authoring_state.source_state_sha256,
-        items: params.sourceState.source_authoring_state.items,
-        schema_version: "exam_authoring_effective_state_v1",
-      },
-      request_id: "correction-session-revert-to-source",
-      schema_version: "exam_authoring_corrections_apply_result_v1",
-      source_binding: params.sourceState.source_binding,
-      target_readiness: {
-        schema_version: "target_readiness_report_v1",
-        targets: [],
-      },
-    };
-  }
-
   async function replayAndProject(params: {
     conversionHubJobId: string;
     correlationId: string;
     jobId: string;
-    projectEmptySession?: boolean;
     projection: ExamConverterReviewProjection;
-    sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
   }): Promise<boolean> {
-    const replay = await replayPersistedCorrectionSession({
+    const session = await getExamConverterCorrectionSession({
       conversionHubJobId: params.conversionHubJobId,
+    });
+    setSession(session);
+    if (session.active_intents.length === 0) {
+      correctionProjectionFreshness.value = "fresh";
+      return false;
+    }
+    await replayLocalExamConversion({
       correlationId: params.correlationId,
-      sirConvertJobId: params.jobId,
+      jobId: params.jobId,
     });
-    setSession(replay.correctionSession);
-    correctionProjectionFreshness.value = replay.projectionFreshness;
-    if (replay.projectionFreshness !== "fresh") {
-      if (replay.projectionFreshness === "unavailable") {
-        const savedIntentProjection = projectUnifiedCorrectionResult({
-          correctionSession: replay.correctionSession,
-          projection: params.projection,
-          result: sourceStateApplyResult({
-            projection: params.projection,
-            sourceState: params.sourceState,
-          }),
-          sourceState: params.sourceState,
-        });
-        options.reviewProjection.value = savedIntentProjection;
-      }
-      return false;
-    }
-    if (replay.submittedCorrectionCount === 0 && !params.projectEmptySession) {
-      return false;
-    }
-    const result =
-      replay.submittedCorrectionCount === 0
-        ? sourceStateApplyResult({
-            projection: params.projection,
-            sourceState: params.sourceState,
-          })
-        : replayApplyResult(replay);
-    const correctedProjection = projectUnifiedCorrectionResult({
-      correctionSession: replay.correctionSession,
-      projection: params.projection,
-      result,
-      sourceState: params.sourceState,
+    const correctedProjection = await options.loadReviewArtifacts({
+      completionReportRequired: false,
+      correlationId: params.correlationId,
+      jobId: params.jobId,
     });
+    correctionProjectionFreshness.value = correctedProjection ? "fresh" : "unavailable";
+    if (!correctedProjection) return false;
     options.reviewProjection.value = correctedProjection;
     const visibleIssueCount = correctedProjection.questions.filter(
       (question) => visibleMissingFieldsForQuestion(question).length > 0,
@@ -215,7 +152,6 @@ export function useExamConverterUnifiedCorrections(
   async function applyPersistedIntents(params: {
     intents: ExamConverterCorrectionIntentWrite[];
     projection: ExamConverterReviewProjection;
-    sourceState: ExamAuthoringCorrectionSourceStateIssueResult;
   }): Promise<boolean> {
     const jobId = options.lastJobId.value;
     const conversionHubJobId = options.lastConversionHubJobId.value;
@@ -229,7 +165,6 @@ export function useExamConverterUnifiedCorrections(
       correlationId,
       jobId,
       projection: params.projection,
-      sourceState: params.sourceState,
     });
   }
 
@@ -242,8 +177,7 @@ export function useExamConverterUnifiedCorrections(
       return;
     }
     try {
-      const sourceState = await options.runtime.issueCorrectionSourceState({ jobId });
-      await replayAndProject({ conversionHubJobId, correlationId, jobId, projection, sourceState });
+      await replayAndProject({ conversionHubJobId, correlationId, jobId, projection });
     } catch (error) {
       console.error("Exam Converter correction-session readback failed.", error);
       correctionProjectionFreshness.value = "unavailable";
@@ -278,7 +212,6 @@ export function useExamConverterUnifiedCorrections(
       const projected = await applyPersistedIntents({
         intents: [intentFromCorrectionRequest(request)],
         projection,
-        sourceState,
       });
       if (!projected) {
         return;
@@ -333,7 +266,6 @@ export function useExamConverterUnifiedCorrections(
       return await applyPersistedIntents({
         intents: [candidateSuppressionIntent({ question, sourceState })],
         projection,
-        sourceState,
       });
     } catch (error) {
       console.error("Exam Converter candidate suppression failed.", error);

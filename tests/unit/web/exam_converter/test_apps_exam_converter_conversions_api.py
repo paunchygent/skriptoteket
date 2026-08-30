@@ -40,6 +40,7 @@ async def test_in_process_lane_converts_and_serves_bundle_through_job_surface(
     submit_response = await client.post(
         f"{_BASE}/exam-converter/conversions",
         headers=auth_headers,
+        data={"idempotency_key": "test-keyed-conversion"},
         files={
             "file": (
                 _DXE_FILENAME,
@@ -85,6 +86,7 @@ async def test_in_process_lane_fails_job_when_answer_keys_are_missing(
     submit_response = await client.post(
         f"{_BASE}/exam-converter/conversions",
         headers=auth_headers,
+        data={"idempotency_key": "test-unkeyed-conversion"},
         files={
             "file": (
                 _DXE_FILENAME,
@@ -108,6 +110,7 @@ async def test_conversion_route_rejects_non_dxe_uploads(
     response = await client.post(
         f"{_BASE}/exam-converter/conversions",
         headers=auth_headers,
+        data={"idempotency_key": "test-invalid-upload"},
         files={"file": ("notes.pdf", b"%PDF-1.7", "application/pdf")},
     )
 
@@ -137,6 +140,7 @@ class TestSirConvertLaneDefault:
         response = await client.post(
             f"{_BASE}/exam-converter/conversions",
             headers=auth_headers,
+            data={"idempotency_key": "test-disabled-lane"},
             files={
                 "file": (
                     _DXE_FILENAME,

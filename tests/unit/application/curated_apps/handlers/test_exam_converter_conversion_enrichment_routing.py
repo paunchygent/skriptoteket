@@ -13,6 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
@@ -38,6 +39,9 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_conversions i
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
+)
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
 )
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from tests.fixtures.application_fixtures import FakeUow
@@ -70,6 +74,23 @@ class InMemoryConversionHubJobRepository:
 
     async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> ConversionHubJob | None:
         return None
+
+    async def acquire_by_owner_and_submission_key(
+        self, *, job: ConversionHubJob
+    ) -> tuple[ConversionHubJob, bool]:
+        existing = next(
+            (
+                stored
+                for stored in self.jobs.values()
+                if stored.owner_user_id == job.owner_user_id
+                and stored.submission_idempotency_key == job.submission_idempotency_key
+            ),
+            None,
+        )
+        if existing is not None:
+            return existing, False
+        self.jobs[job.id] = job
+        return job, True
 
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
         self.jobs[job.id] = job
@@ -117,18 +138,30 @@ class RecordingProducer:
     async def convert(
         self,
         *,
+        job_id: UUID,
         upload: ConversionHubUpload,
         overlay_bytes: bytes | None,
+        proposal_overlay_bytes: bytes | None = None,
+        proposal_provider_profile_id: str | None = None,
+        proposal_model: str | None = None,
+        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
         ),
     ) -> ExamConversionStoredArtifact:
+        del job_id, proposal_overlay_bytes, proposal_provider_profile_id, proposal_model
+        del teacher_answer_key_item_ids, correction_intents, enrichment_failure_code, retry_identity
         self.calls += 1
         return ExamConversionStoredArtifact(
             filename="exam-examnet-bundle.zip",
             content_type="application/zip",
             content=b"bundle",
+            source_filename=upload.filename,
+            source_content=upload.file_bytes,
         )
 
 
@@ -141,6 +174,13 @@ class RecordingArtifactStore:
 
     def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact:
         return self.stored[job_id]
+
+    def read_named_artifact(self, *, job_id: UUID, artifact_key: str):
+        return next(
+            artifact
+            for artifact in self.stored[job_id].named_artifacts
+            if artifact.artifact_key == artifact_key
+        )
 
 
 def _actor() -> User:
@@ -210,6 +250,7 @@ class _Harness:
             uow=FakeUow(),
             clock=FixedClock(),
             id_generator=UUIDGenerator(),
+            submission_lookup=self.jobs,
         )
 
 
@@ -230,6 +271,87 @@ async def test_unkeyed_upload_enqueues_one_enrichment_job_without_converting() -
     assert enrichment_job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED
     assert enrichment_job.conversion_job_id == result.job_id
     assert enrichment_job.source_dxe == _upload(keyed=False).file_bytes
+
+
+async def test_repeated_native_submission_returns_the_existing_job() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-first",
+        idempotency_key="same-native-submit",
+    )
+    second = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-response-retry",
+        idempotency_key="same-native-submit",
+    )
+
+    assert second.job_id == first.job_id
+    assert second.idempotent_replay is True
+    assert len(harness.jobs.jobs) == 1
+    assert len(harness.enrichment_jobs.jobs) == 1
+
+
+async def test_concurrent_native_submission_enriches_only_the_acquired_job() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first, second = await asyncio.gather(
+        harness.handler.handle(
+            actor=actor,
+            upload=_upload(keyed=False),
+            overlay_bytes=None,
+            correlation_id="corr-first",
+            idempotency_key="same-concurrent-submit",
+        ),
+        harness.handler.handle(
+            actor=actor,
+            upload=_upload(keyed=False),
+            overlay_bytes=None,
+            correlation_id="corr-second",
+            idempotency_key="same-concurrent-submit",
+        ),
+    )
+
+    assert first.job_id == second.job_id
+    assert sorted((first.idempotent_replay, second.idempotent_replay)) == [False, True]
+    assert len(harness.jobs.jobs) == 1
+    assert len(harness.enrichment_jobs.jobs) == 1
+
+
+async def test_advisory_retry_identity_creates_a_distinct_enrichment_attempt() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-first",
+        idempotency_key="native-submit-retry-1",
+        advisory_retry_attempt=1,
+    )
+    second = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-second",
+        idempotency_key="native-submit-retry-2",
+        advisory_retry_attempt=2,
+    )
+
+    assert second.job_id != first.job_id
+    retry_identities = {job.retry_identity for job in harness.enrichment_jobs.jobs.values()}
+    assert retry_identities == {
+        "native-submit-retry-1:advisory:1",
+        "native-submit-retry-2:advisory:2",
+    }
 
 
 async def test_mixed_manual_marking_upload_enqueues_supported_unkeyed_items() -> None:

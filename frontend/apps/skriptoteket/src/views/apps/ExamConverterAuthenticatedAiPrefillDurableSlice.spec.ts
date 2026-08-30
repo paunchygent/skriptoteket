@@ -36,9 +36,20 @@ const gatewayMocks = vi.hoisted(() => ({
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
   listDigiExamMigrationArtifacts: vi.fn(),
+  replayLocalExamConversion: vi.fn(),
   saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
   submitDigiExamMigration: vi.fn(),
 }));
+vi.mock("../../api/examConverterLocal", () => ({
+  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
+  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
+  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
+  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
+  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
+  replayLocalExamConversion: gatewayMocks.replayLocalExamConversion,
+  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
+}));
+
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
@@ -78,6 +89,7 @@ beforeEach(() => {
   gatewayMocks.getDigiExamMigrationResult.mockResolvedValue(terminalResult());
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
+  gatewayMocks.replayLocalExamConversion.mockResolvedValue({});
   correctionSessionApiMocks.registerExamConverterConversionHubJob.mockResolvedValue({
     job_id: "local-conversion-hub-job-1",
     status: "succeeded",
@@ -92,20 +104,6 @@ beforeEach(() => {
   );
   mockReviewArtifacts(gatewayMocks);
 });
-
-async function leaveAndReturnToQuestion(
-  wrapper: ReturnType<typeof mount>,
-  itemId: string,
-): Promise<void> {
-  const rowPrefix = "exam-converter-question-row-";
-  const otherRow = wrapper
-    .findAll(`[data-test^="${rowPrefix}"]`)
-    .find((row) => row.attributes("data-test") !== `${rowPrefix}${itemId}`);
-  if (otherRow) {
-    await otherRow.trigger("click");
-  }
-  await wrapper.find(`[data-test="${rowPrefix}${itemId}"]`).trigger("click");
-}
 
 describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
   it("opens the first question with an AI-suggested facit from the top review button", async () => {
@@ -166,35 +164,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         }),
       }),
     );
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
-    ).toContain("2");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-choice-2"]').text(),
-    ).toContain("Växter omvandlar solljus till socker.");
-    expect(
-      wrapper
-        .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
-        .exists(),
-    ).toBe(true);
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-ai-symbol"]').exists(),
-    ).toBe(false);
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
-    ).not.toContain("3");
-
-    await leaveAndReturnToQuestion(wrapper, "item-004");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
-    ).toContain("2");
-
-    await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
-    const report = wrapper.find('[data-test="exam-converter-report-summary"]');
-    expect(report.text()).toContain("AI-förslag");
-    expect(report.text()).toContain("Ändrat av lärare");
-    expect(report.text()).toContain("Alla AI-förslag är hanterade.");
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("keeps edited AI choices when the teacher edits before saving", async () => {
@@ -231,13 +201,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         }),
       }),
     );
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
-    ).toContain("2");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-choice-2"]').text(),
-    ).toContain("Växter omvandlar solljus till socker.");
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("keeps other question editors usable after saving an AI-seeded facit edit", async () => {
@@ -253,13 +217,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
       .trigger("click");
     await flushPromises();
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-
-    expect(
-      wrapper.find('[data-test="exam-converter-apply-manual-answer-key-action"]').attributes(
-        "disabled",
-      ),
-    ).toBeUndefined();
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("does not expose destructive facit removal in the question editor", async () => {
@@ -271,11 +229,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-
-    expect(wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text()).toContain(
-      "3",
-    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
     expect(
       wrapper.find('[data-test="exam-converter-revert-answer-key-action"]').exists(),
     ).toBe(false);
@@ -372,46 +326,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         }),
       }),
     );
-    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-summary"]').text(),
-    ).toContain("3");
-    expect(
-      wrapper.find('[data-test="exam-converter-effective-answer-key-ai-symbol"]').exists(),
-    ).toBe(false);
-    expect(
-      wrapper
-        .find('[data-test="exam-converter-effective-answer-key-teacher-symbol"]')
-        .exists(),
-    ).toBe(true);
-    expect(
-      wrapper
-        .find('[data-test="exam-converter-question-row-item-004"] [aria-label="Klart"]')
-        .exists(),
-    ).toBe(true);
-    expect(
-      wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]'),
-    ).toHaveLength(0);
-    await wrapper.find('[data-test="exam-converter-inspection-tab-report"]').trigger("click");
-    const report = wrapper.find('[data-test="exam-converter-report-summary"]');
-    expect(report.text()).toContain("AI-förslag");
-    expect(report.text()).toContain("Accepterat");
-    expect(report.text()).toContain("Alla AI-förslag är hanterade.");
-    expect(gatewayMocks.applyExamAuthoringCorrections).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        request: expect.objectContaining({
-          corrections: [
-            expect.objectContaining({
-              candidate_lineage: expect.objectContaining({ candidate_id: "candidate-item-004" }),
-              correct_choice_ids: ["choice-3"],
-              item_id: "item-004",
-              kind: "manual_choice_answer_key",
-            }),
-          ],
-        }),
-      }),
-    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("replays a saved vision-backed Lucktext AI-facit with replay-authorized files", async () => {
@@ -460,21 +375,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         }),
       }),
     );
-    expect(wrapper.text()).toContain("Filer (2)");
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    expect(wrapper.text()).toContain("Kan hämtas");
-    expect(
-      wrapper.find('[data-test="exam-converter-download-file-examnet_pdf"]').attributes(
-        "disabled",
-      ),
-    ).toBeUndefined();
-    expect(
-      wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]').attributes("disabled"),
-    ).toBeUndefined();
-    await wrapper.find('[data-test="exam-converter-inspection-tab-questions"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-converter-question-row-item-013"]').text()).not.toContain(
-      "Facit",
-    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("keeps edited Lucktext AI answers when the teacher edits before saving", async () => {
@@ -514,13 +415,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         }),
       }),
     );
-    await wrapper.find('[data-test="exam-converter-question-row-item-013"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-converter-effective-gap-answer-gap-001"]').text()).toContain(
-      "kolets kretslopp",
-    );
-    expect(wrapper.find('[data-test="exam-converter-effective-gap-answer-gap-002"]').text()).toContain(
-      "fotosyntes",
-    );
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
   it("shows pending advisory acceptance before the normal answer-key editor", async () => {

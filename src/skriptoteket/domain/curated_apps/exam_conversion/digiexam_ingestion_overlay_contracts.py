@@ -174,8 +174,24 @@ class DigiExamOverlayGapFillItemPatch(DigiExamOverlayVisibleTextPatch):
         return self
 
 
+class DigiExamOverlayGenericItemPatch(DigiExamOverlayVisibleTextPatch):
+    """Visible text patch for source item types without specialized fields."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["generic"]
+
+    @model_validator(mode="after")
+    def _require_patch_content(self) -> Self:
+        if self.title is None and self.prompt_html is None and self.prompt_lines is None:
+            raise ValueError("generic item patch must contain at least one visible edit")
+        return self
+
+
 DigiExamOverlayEffectiveItemPatch = Annotated[
-    DigiExamOverlayChoiceItemPatch | DigiExamOverlayGapFillItemPatch,
+    DigiExamOverlayChoiceItemPatch
+    | DigiExamOverlayGapFillItemPatch
+    | DigiExamOverlayGenericItemPatch,
     Field(discriminator="kind"),
 ]
 

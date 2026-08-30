@@ -7,7 +7,7 @@
  *   artifact references authorized for file actions.
  *
  * Relationships:
- *   - Uses the HuleEdu Gateway Sir Convert artifact client for named downloads.
+ *   - Uses Skriptoteket-owned named artifact endpoints for downloads.
  *   - Uses Skriptoteket's owner-scoped user-file save client for Vault saves.
  *   - Keeps action state local to the current conversion job.
  */
@@ -15,13 +15,11 @@
 import { ref } from "vue";
 
 import {
-  downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact,
-  saveDigiExamMigrationArtifactToUserFiles,
-} from "../../../api/sirConvertGateway";
+  downloadLocalExamConversionArtifact,
+  saveLocalExamConversionArtifact,
+} from "../../../api/examConverterLocal";
 import type {
   SirConvertArtifactBlob,
-  SirConvertArtifactEntry,
   SirConvertSavedUserFile,
 } from "../../../api/sirConvertGateway";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
@@ -37,10 +35,15 @@ export type ExamConverterFileActionState = {
 export type ExamConverterFileActionStates = Record<string, ExamConverterFileActionState>;
 
 type FileActionClient = {
-  downloadDigiExamMigrationArtifact: typeof downloadDigiExamMigrationArtifact;
-  downloadDigiExamMigrationCorrectionReplayArtifact:
-    typeof downloadDigiExamMigrationCorrectionReplayArtifact;
-  saveDigiExamMigrationArtifactToUserFiles: typeof saveDigiExamMigrationArtifactToUserFiles;
+  downloadDigiExamMigrationArtifact: typeof downloadLocalExamConversionArtifact;
+  downloadDigiExamMigrationCorrectionReplayArtifact?: (params: {
+    artifactKey: string;
+    artifactSetId: string;
+    contentSha256: string;
+    correlationId: string;
+    jobId: string;
+  }) => Promise<SirConvertArtifactBlob>;
+  saveLocalExamConversionArtifact: typeof saveLocalExamConversionArtifact;
 };
 
 type TriggerDownload = (artifact: SirConvertArtifactBlob, fallbackFilename: string) => void;
@@ -51,9 +54,9 @@ export type ExamConverterFileActionOptions = {
 };
 
 const DEFAULT_CLIENT: FileActionClient = {
-  downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact,
-  saveDigiExamMigrationArtifactToUserFiles,
+  downloadDigiExamMigrationArtifact: downloadLocalExamConversionArtifact,
+  saveLocalExamConversionArtifact: async (params) =>
+    await saveLocalExamConversionArtifact(params),
 };
 
 function defaultTriggerDownload(
@@ -69,22 +72,6 @@ function defaultTriggerDownload(
   link.click();
   link.remove();
   URL.revokeObjectURL(objectUrl);
-}
-
-function toArtifactEntry(file: ExamConverterReviewFile): SirConvertArtifactEntry {
-  const artifactKey = file.artifactActionReference?.artifactKey;
-  if (!artifactKey) {
-    throw new Error("Exam Converter file save requires an authorized artifact reference.");
-  }
-  return {
-    artifact_key: artifactKey,
-    availability: file.availability,
-    content_type: file.contentType,
-    filename: file.filename,
-    sha256: file.sha256,
-    size_bytes: file.sizeBytes,
-    ...(file.unavailableCode ? { unavailable_code: file.unavailableCode } : {}),
-  };
 }
 
 function withTeacherFacingFilename(
@@ -139,15 +126,6 @@ export function useExamConverterFileActions(
     if (!actionReference) {
       throw new Error("Exam Converter file action requires an authorized artifact reference.");
     }
-    if (actionReference.authority === "replay_result") {
-      return await client.downloadDigiExamMigrationCorrectionReplayArtifact({
-        artifactKey: actionReference.artifactKey,
-        artifactSetId: actionReference.artifactSetId,
-        contentSha256: actionReference.contentSha256,
-        correlationId: params.correlationId,
-        jobId: actionReference.jobId,
-      });
-    }
     return await client.downloadDigiExamMigrationArtifact({
       artifactKey: actionReference.artifactKey,
       correlationId: params.correlationId,
@@ -196,14 +174,12 @@ export function useExamConverterFileActions(
       save: "running",
     });
     try {
-      const artifactBlob = withTeacherFacingFilename(
-        await fetchArtifact(params),
-        params.file.filename,
-      );
-      const saved = await client.saveDigiExamMigrationArtifactToUserFiles({
-        artifact: toArtifactEntry(params.file),
-        artifactBlob,
-        correlationId: params.correlationId,
+      const actionReference = params.file.artifactActionReference;
+      if (!actionReference) {
+        throw new Error("Exam Converter file save requires an authorized artifact reference.");
+      }
+      const saved = await client.saveLocalExamConversionArtifact({
+        artifactKey: actionReference.artifactKey,
         jobId: params.jobId,
       });
       fileActionStates.value = setFileActionState(
