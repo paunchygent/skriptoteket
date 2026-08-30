@@ -187,7 +187,7 @@ from skriptoteket.application.curated_apps.handlers.reagent_prep_chef_save_risk_
     ReagentPrepChefSaveRiskPdfHandler,
 )
 from skriptoteket.application.curated_apps.public_exam_converter_local_execution import (
-    PublicExamConverterLocalExecutor,
+    ProcessPublicExamConverterJobHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.import_heuristics import (
@@ -224,9 +224,6 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_previ
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
     SEATING_SHARE_RENDERER_VERSION,
     StaticClassroomPlannerShareRenderer,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    public_exam_converter_store,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     sir_convert_transcript_formatter_producer as transcript_formatter_producer,
@@ -344,6 +341,9 @@ from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases impor
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
 )
+from skriptoteket.infrastructure.repositories.public_exam_converter_jobs import (
+    PostgreSQLPublicExamConverterJobRepository,
+)
 from skriptoteket.protocols.classroom_planner import (
     GroupingExportCheckpointRepositoryProtocol,
     PlanDraftRepositoryProtocol,
@@ -420,10 +420,7 @@ from skriptoteket.protocols.exam_converter_correction_sessions import (
 )
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.public_exam_converter import (
-    PublicExamConverterJobStoreProtocol,
-    PublicExamConverterLocalExecutorProtocol,
-)
+from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
 from skriptoteket.protocols.reagent_prep_chef import (
     ReagentPrepChefChemicalsHandlerProtocol,
     ReagentPrepChefExportPdfHandlerProtocol,
@@ -509,25 +506,6 @@ class CuratedAppsProvider(Provider):
             )
         finally:
             await http_client.aclose()
-
-    @provide(scope=Scope.APP)
-    def public_exam_converter_job_store(self) -> PublicExamConverterJobStoreProtocol:
-        return public_exam_converter_store.InMemoryPublicExamConverterJobStore()
-
-    @provide(scope=Scope.APP)
-    def public_exam_converter_local_executor(
-        self,
-        store: PublicExamConverterJobStoreProtocol,
-        producer: PublicInProcessExamConverterProtocol,
-        pdf_text_extractor: PdfTextExtractorProtocol,
-        clock: ClockProtocol,
-    ) -> PublicExamConverterLocalExecutorProtocol:
-        return PublicExamConverterLocalExecutor(
-            store=store,
-            producer=producer,
-            pdf_text_extractor=pdf_text_extractor,
-            clock=clock,
-        )
 
     @provide(scope=Scope.APP)
     def reagent_prep_chef_hazards(self) -> ReagentPrepChefHazardStoreProtocol:
@@ -1581,6 +1559,13 @@ class CuratedAppsProvider(Provider):
         return PostgreSQLConversionHubJobRepository(session=session)
 
     @provide(scope=Scope.REQUEST)
+    def public_exam_converter_job_store(
+        self,
+        session: AsyncSession,
+    ) -> PublicExamConverterJobStoreProtocol:
+        return PostgreSQLPublicExamConverterJobRepository(session=session)
+
+    @provide(scope=Scope.REQUEST)
     def exam_converter_submission_repository(
         self, session: AsyncSession
     ) -> ExamConverterSubmissionRepositoryProtocol:
@@ -2405,13 +2390,34 @@ class CuratedAppsProvider(Provider):
     def public_exam_converter_runtime_handler(
         self,
         store: PublicExamConverterJobStoreProtocol,
-        executor: PublicExamConverterLocalExecutorProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> PublicExamConverterRuntimeHandler:
         return PublicExamConverterRuntimeHandler(
             store=store,
-            executor=executor,
+            artifacts=artifacts,
+            uow=uow,
             clock=clock,
             id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def process_public_exam_converter_job_handler(
+        self,
+        store: PublicExamConverterJobStoreProtocol,
+        producer: PublicInProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        pdf_text_extractor: PdfTextExtractorProtocol,
+        clock: ClockProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ProcessPublicExamConverterJobHandler:
+        return ProcessPublicExamConverterJobHandler(
+            store=store,
+            producer=producer,
+            artifacts=artifacts,
+            pdf_text_extractor=pdf_text_extractor,
+            clock=clock,
+            uow=uow,
         )

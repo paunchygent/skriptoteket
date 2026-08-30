@@ -117,7 +117,19 @@ class InMemoryEnrichmentJobRepository:
         self.jobs[job.id] = job
         return job
 
-    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+    async def update(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        expected_worker_id: str | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob:
+        current = self.jobs.get(job.id)
+        if (
+            expected_worker_id is not None
+            and current is not None
+            and current.locked_by != expected_worker_id
+        ):
+            raise AssertionError("worker lease is no longer owned")
         self.jobs[job.id] = job
         return job
 
@@ -149,7 +161,9 @@ class InMemoryEnrichmentJobRepository:
     async def claim_next_expired(
         self,
         *,
+        worker_id: str,
         now: datetime,
+        lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         for job in self.jobs.values():
             if (
@@ -157,8 +171,32 @@ class InMemoryEnrichmentJobRepository:
                 and job.locked_until is not None
                 and job.locked_until < now
             ):
-                return job
+                claimed = job.model_copy(
+                    update={
+                        "locked_by": worker_id,
+                        "locked_until": now + lease_ttl,
+                        "updated_at": now,
+                    }
+                )
+                self.jobs[job.id] = claimed
+                return claimed
         return None
+
+    async def heartbeat(
+        self,
+        *,
+        job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool:
+        job = self.jobs.get(job_id)
+        if job is None or job.locked_by != worker_id:
+            return False
+        self.jobs[job_id] = job.model_copy(
+            update={"locked_until": now + lease_ttl, "updated_at": now}
+        )
+        return True
 
 
 class InMemoryLeaseRepository:
@@ -349,6 +387,9 @@ class RecordingArtifactStore:
             if artifact.artifact_key == artifact_key
         )
 
+    def delete_artifact(self, *, job_id: UUID) -> None:
+        self.stored.pop(job_id, None)
+
 
 def _profile() -> StructuredLLMProviderProfile:
     return StructuredLLMProviderProfile(
@@ -498,7 +539,7 @@ async def test_successful_job_reserves_reconciles_and_completes_conversion() -> 
     assert leases[0].actual_tokens == 190
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
     assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
-    assert conversion_job.upstream_job_id == f"local-exam:{job.conversion_job_id}"
+    assert conversion_job.upstream_job_id is None
     assert harness.producer.overlay_key_provenance is (
         DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY
     )
@@ -709,11 +750,19 @@ async def test_expired_running_job_fail_closes_both_jobs_without_calls_or_refund
         provider_profile_id="openai-gpt-5.6-luna",
     )
 
-    still_leased = await harness.handler.fail_next_expired(now=_NOW)
+    still_leased = await harness.handler.fail_next_expired(
+        worker_id="reaper",
+        now=_NOW,
+        lease_ttl=timedelta(minutes=15),
+    )
     assert still_leased is None
 
     after_expiry = _NOW + timedelta(seconds=1800)
-    failed = await harness.handler.fail_next_expired(now=after_expiry)
+    failed = await harness.handler.fail_next_expired(
+        worker_id="reaper",
+        now=after_expiry,
+        lease_ttl=timedelta(minutes=15),
+    )
 
     assert failed is not None
     assert failed.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
@@ -728,4 +777,11 @@ async def test_expired_running_job_fail_closes_both_jobs_without_calls_or_refund
     assert leases[0].state is AnswerKeyTokenLeaseState.RESERVED
     usage = await harness.leases.day_usage(utc_day=lease_utc_day(_NOW))
     assert usage.charged_tokens == 300
-    assert await harness.handler.fail_next_expired(now=after_expiry) is None
+    assert (
+        await harness.handler.fail_next_expired(
+            worker_id="reaper",
+            now=after_expiry,
+            lease_ttl=timedelta(minutes=15),
+        )
+        is None
+    )

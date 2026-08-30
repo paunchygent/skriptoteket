@@ -159,7 +159,13 @@ class RefusingEnrichmentJobRepository:
     async def create(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         raise AssertionError("Enrichment jobs must not be created in this lane.")
 
-    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+    async def update(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        expected_worker_id: str | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob:
+        del expected_worker_id
         raise AssertionError("Enrichment jobs must not be updated in this lane.")
 
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
@@ -177,9 +183,23 @@ class RefusingEnrichmentJobRepository:
     async def claim_next_expired(
         self,
         *,
+        worker_id: str,
         now: datetime,
+        lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None:
+        del worker_id, now, lease_ttl
         return None
+
+    async def heartbeat(
+        self,
+        *,
+        job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool:
+        del job_id, worker_id, now, lease_ttl
+        return False
 
 
 class _StubCuratedAppRegistry(CuratedAppRegistryProtocol):

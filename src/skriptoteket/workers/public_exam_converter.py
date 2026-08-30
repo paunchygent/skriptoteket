@@ -1,15 +1,4 @@
-"""Execution-worker lane for machine answer-key enrichment jobs.
-
-Purpose:
-    Claim and process one queued answer-key enrichment job inside the
-    existing execution-worker process (`skriptoteket.cli run-execution-worker`)
-    so remote provider calls never run inside a web request.
-
-Relationships:
-    Called from ``workers.execution_queue_worker`` on each loop iteration;
-    claiming uses the SKIP LOCKED repository and processing runs through
-    ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
-"""
+"""Execution-worker lane for durable public Exam Converter jobs."""
 
 from __future__ import annotations
 
@@ -20,17 +9,18 @@ from uuid import UUID
 import structlog
 from dishka import AsyncContainer, Scope
 
-from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
-    ProcessExamAnswerKeyEnrichmentJobHandler,
+from skriptoteket.application.curated_apps.public_exam_converter_local_execution import (
+    ProcessPublicExamConverterJobHandler,
 )
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_conversion import ExamConversionArtifactStoreProtocol
+from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
 
 
-async def process_next_answer_key_enrichment_job(
+async def process_next_public_exam_converter_job(
     *,
     container: AsyncContainer,
     worker_id: str,
@@ -38,45 +28,48 @@ async def process_next_answer_key_enrichment_job(
     lease_ttl: timedelta,
     clock: ClockProtocol,
 ) -> bool:
-    """Advance the enrichment lane by one step; report whether one step ran.
-
-    Each invocation first fail-closes at most one RUNNING job whose worker
-    lease expired (a crashed worker; no retry), then claims and processes at
-    most one queued job.
-    """
+    """Fail-close one expired claim or process one queued public job."""
 
     async with container(scope=Scope.REQUEST) as request:
-        handler = await request.get(ProcessExamAnswerKeyEnrichmentJobHandler)
-        expired = await handler.fail_next_expired(
-            worker_id=worker_id,
-            now=now,
-            lease_ttl=lease_ttl,
-        )
+        jobs = await request.get(PublicExamConverterJobStoreProtocol)
+        handler = await request.get(ProcessPublicExamConverterJobHandler)
+        artifacts = await request.get(ExamConversionArtifactStoreProtocol)
+        uow = await request.get(UnitOfWorkProtocol)
+        async with uow:
+            expired_job_id = await jobs.delete_next_expired(now=now)
+        if expired_job_id is not None:
+            artifacts.delete_artifact(job_id=expired_job_id)
+            logger.info(
+                "Deleted expired public Exam Converter job",
+                job_id=str(expired_job_id),
+            )
+            return True
+
+        async with uow:
+            expired = await jobs.claim_next_expired(
+                worker_id=worker_id,
+                now=now,
+                lease_ttl=lease_ttl,
+            )
         if expired is not None:
+            await handler.fail_expired(job=expired)
             logger.warning(
-                "Answer-key enrichment job fail-closed after worker lease expiry",
-                job_id=str(expired.id),
-                conversion_job_id=str(expired.conversion_job_id),
+                "Public Exam Converter job failed after worker lease expiry",
+                job_id=str(expired.local_job_id),
                 worker_id=worker_id,
             )
             return True
-        uow = await request.get(UnitOfWorkProtocol)
-        jobs = await request.get(ExamAnswerKeyEnrichmentJobRepositoryProtocol)
+
         async with uow:
             job = await jobs.claim_next(worker_id=worker_id, now=now, lease_ttl=lease_ttl)
         if job is None:
             return False
-        logger.info(
-            "Answer-key enrichment job claimed",
-            job_id=str(job.id),
-            conversion_job_id=str(job.conversion_job_id),
-            worker_id=worker_id,
-        )
+
         stop_heartbeat = asyncio.Event()
         heartbeat_task = asyncio.create_task(
             _heartbeat_loop(
                 container=container,
-                job_id=job.id,
+                local_job_id=job.local_job_id,
                 worker_id=worker_id,
                 lease_ttl=lease_ttl,
                 clock=clock,
@@ -93,10 +86,9 @@ async def process_next_answer_key_enrichment_job(
             except asyncio.CancelledError:
                 pass
         logger.info(
-            "Answer-key enrichment job finished",
-            job_id=str(finished.id),
+            "Public Exam Converter job finished",
+            job_id=str(finished.local_job_id),
             status=finished.status.value,
-            last_error=finished.last_error,
         )
         return True
 
@@ -104,7 +96,7 @@ async def process_next_answer_key_enrichment_job(
 async def _heartbeat_loop(
     *,
     container: AsyncContainer,
-    job_id: UUID,
+    local_job_id: UUID,
     worker_id: str,
     lease_ttl: timedelta,
     clock: ClockProtocol,
@@ -116,19 +108,19 @@ async def _heartbeat_loop(
         if stop_event.is_set():
             return
         async with container(scope=Scope.REQUEST) as request:
-            jobs = await request.get(ExamAnswerKeyEnrichmentJobRepositoryProtocol)
+            jobs = await request.get(PublicExamConverterJobStoreProtocol)
             uow = await request.get(UnitOfWorkProtocol)
             async with uow:
                 renewed = await jobs.heartbeat(
-                    job_id=job_id,
+                    local_job_id=local_job_id,
                     worker_id=worker_id,
                     now=clock.now(),
                     lease_ttl=lease_ttl,
                 )
         if not renewed:
             logger.warning(
-                "Answer-key enrichment heartbeat lost its lease",
-                job_id=str(job_id),
+                "Public Exam Converter heartbeat lost its lease",
+                job_id=str(local_job_id),
                 worker_id=worker_id,
             )
             return

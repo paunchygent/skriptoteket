@@ -11,39 +11,58 @@ Relationships:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Protocol
+from uuid import UUID
 
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterSubmittedJob,
-    PublicExamConverterUpload,
 )
 
 
 class PublicExamConverterJobStoreProtocol(Protocol):
-    async def create(
-        self, *, job: PublicExamConverterSubmittedJob
-    ) -> PublicExamConverterSubmittedJob: ...
+    async def create_if_capacity(
+        self,
+        *,
+        job: PublicExamConverterSubmittedJob,
+        now: datetime,
+        concurrency_limit: int,
+    ) -> PublicExamConverterSubmittedJob | None: ...
 
     async def get(
         self, *, public_job_id: str, now: datetime
     ) -> PublicExamConverterSubmittedJob | None: ...
 
     async def update(
-        self, *, job: PublicExamConverterSubmittedJob
-    ) -> PublicExamConverterSubmittedJob: ...
-
-    async def count_active(self, *, now: datetime) -> int: ...
-
-
-class PublicExamConverterLocalExecutorProtocol(Protocol):
-    """Enqueue one bounded in-process conversion outside the submit request."""
-
-    async def enqueue(
         self,
         *,
         job: PublicExamConverterSubmittedJob,
-        source_dxe: PublicExamConverterUpload,
-        graded_result_pdf: PublicExamConverterUpload | None,
-        correlation_id: str,
-    ) -> None: ...
+        expected_worker_id: str | None = None,
+    ) -> PublicExamConverterSubmittedJob: ...
+
+    async def claim_next(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> PublicExamConverterSubmittedJob | None: ...
+
+    async def claim_next_expired(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> PublicExamConverterSubmittedJob | None: ...
+
+    async def heartbeat(
+        self,
+        *,
+        local_job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool: ...
+
+    async def delete_next_expired(self, *, now: datetime) -> UUID | None: ...

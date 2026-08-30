@@ -15,14 +15,14 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
 )
-from skriptoteket.domain.errors import not_found
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
@@ -60,10 +60,20 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         await self._session.refresh(model)
         return ExamAnswerKeyEnrichmentJob.model_validate(model)
 
-    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+    async def update(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        expected_worker_id: str | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob:
         model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job.id)
         if model is None:
             raise not_found("ExamAnswerKeyEnrichmentJob", str(job.id))
+        if expected_worker_id is not None and model.locked_by != expected_worker_id:
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message="Answer-key enrichment worker lease is no longer owned.",
+            )
         model.status = job.status.value
         model.attempts = job.attempts
         model.max_attempts = job.max_attempts
@@ -123,7 +133,9 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
     async def claim_next_expired(
         self,
         *,
+        worker_id: str,
         now: datetime,
+        lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         """Take one RUNNING job whose worker lease expired, for fail-closing.
 
@@ -144,4 +156,32 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
-        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+        if model is None:
+            return None
+        model.locked_by = worker_id
+        model.locked_until = now + lease_ttl
+        model.updated_at = now
+        await self._session.flush()
+        await self._session.refresh(model)
+        return ExamAnswerKeyEnrichmentJob.model_validate(model)
+
+    async def heartbeat(
+        self,
+        *,
+        job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool:
+        renewed_id = await self._session.scalar(
+            update(ExamAnswerKeyEnrichmentJobModel)
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.id == job_id,
+                ExamAnswerKeyEnrichmentJobModel.status
+                == ExamAnswerKeyEnrichmentJobStatus.RUNNING.value,
+                ExamAnswerKeyEnrichmentJobModel.locked_by == worker_id,
+            )
+            .values(locked_until=now + lease_ttl, updated_at=now)
+            .returning(ExamAnswerKeyEnrichmentJobModel.id)
+        )
+        return renewed_id is not None

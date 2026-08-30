@@ -14,6 +14,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -140,6 +141,13 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
             if named.artifact_key == artifact_key:
                 return named
         raise not_found("ExamConversionNamedArtifact", f"{job_id}:{artifact_key}")
+
+    def delete_artifact(self, *, job_id: UUID) -> None:
+        """Delete every stored generation for an expired job."""
+
+        job_dir = self._job_dir(job_id=job_id)
+        if job_dir.exists():
+            shutil.rmtree(job_dir)
 
     def _read_named_from_metadata(
         self,
