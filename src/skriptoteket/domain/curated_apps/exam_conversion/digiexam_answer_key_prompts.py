@@ -207,11 +207,17 @@ class _TextProjectionParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self._chunks: list[str] = []
         self._gap_numbers = gap_numbers
+        self._gap_span_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self._gap_span_depth:
+            if tag == "span":
+                self._gap_span_depth += 1
+            return
         attributes = {name: value for name, value in attrs if value is not None}
         gap_id = attributes.get("dx-wg-id")
         if tag == "span" and gap_id is not None and gap_id.strip():
+            self._gap_span_depth = 1
             if self._gap_numbers is None:
                 self._chunks.append(f" [[gap:{gap_id.strip()}]] ")
             else:
@@ -223,10 +229,16 @@ class _TextProjectionParser(HTMLParser):
             self._chunks.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
+        if self._gap_span_depth:
+            if tag == "span":
+                self._gap_span_depth -= 1
+            return
         if tag in self._BLOCK_TAGS:
             self._chunks.append("\n")
 
     def handle_data(self, data: str) -> None:
+        if self._gap_span_depth:
+            return
         self._chunks.append(data)
 
     def text(self) -> str:
