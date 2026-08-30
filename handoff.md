@@ -83,12 +83,11 @@
   record: sir-convert-a-lot retained session
   `01a048d5-69f7-7394-93dd-8ff91af608cd`.
 - [TASK-SKRIPT-REP-0032](docs/backlog/tasks/task-skript-rep-0032-adopt-shared-hemma-workload-switching-for-skriptoteket-production-services.md)
-  has a verified option-A implementation for importable production web/worker
-  workload declarations and adapters plus the separate required cleanup gate.
-  Hule `TASK-HULE-09-02-26` retains the closed host registry, controller,
-  target/conflict selection, and exact-subset restoration proof. The task stays
-  `in_progress` with closeout not started until a real overseer owns that
-  authority transition.
+  is independently verified and done. Its published option-A implementation
+  provides importable production web/worker workload declarations and adapters
+  plus the separate required cleanup gate. Hule `TASK-HULE-09-02-26` retains
+  the closed host registry, controller, target/conflict selection, and
+  exact-subset restoration proof.
 - [TASK-SKRIPT-REP-0026](docs/backlog/tasks/task-skript-rep-0026-st-28-04-make-hemma-cleanup-units-idle-safe.md)
   is independently verified and done. Its tracked wrapper, two hourly cleanup
   pairs, and bounded installer are published and installed on Hemma. Both
