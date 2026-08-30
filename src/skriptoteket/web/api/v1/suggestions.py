@@ -32,7 +32,7 @@ from skriptoteket.web.api.v1.suggestions_dto import (
 )
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_admin_api,
-    require_app_contributor_api,
+    require_app_user_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -47,7 +47,7 @@ router = APIRouter(prefix="/api/v1", tags=["suggestions"])
 async def submit_suggestion(
     request: SubmitSuggestionRequest,
     handler: FromDishka[SubmitSuggestionHandlerProtocol],
-    user: User = Depends(require_app_contributor_api),
+    user: User = Depends(require_app_user_api),
 ) -> SubmitSuggestionResponse:
     result = await handler.handle(
         actor=user,

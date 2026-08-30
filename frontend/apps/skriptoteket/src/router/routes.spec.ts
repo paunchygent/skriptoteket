@@ -69,11 +69,9 @@ describe("routes", () => {
 
     expect(resolved.name).toBe("audio-transcription-authenticated");
     expect(resolved.meta.requiresAuth).toBe(true);
-    expect(resolveMatchedProps("/apps/audio-transcription")).toEqual({
-      appTitle: "Ljudtranskribering",
-    });
+    expect(resolved.meta.unavailableAppTitle).toBe("Ljudtranskribering");
     const route = routes.find((candidate) => candidate.path === "/apps/audio-transcription");
-    expect(String(route?.component)).toContain("UnavailableAppView.vue");
+    expect(String(route?.component)).toContain("HomeView.vue");
   });
 
   it("adds the route-visible authenticated Document Converter app before the generic app host", () => {
@@ -92,6 +90,16 @@ describe("routes", () => {
     expect(String(routes[documentRouteIndex]?.component)).toContain(
       "DocumentConverterView.vue",
     );
+  });
+
+  it("lets every authenticated role open the suggestion form", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/suggestions/new");
+
+    expect(resolved.name).toBe("suggestion-new");
+    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(resolved.meta.minRole).toBeUndefined();
   });
 
   it("adds the authenticated Exam Converter UI-inspection fixture route for test/dev", () => {

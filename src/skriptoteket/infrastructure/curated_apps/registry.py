@@ -70,10 +70,9 @@ class InMemoryCuratedAppRegistry(CuratedAppRegistryProtocol):
                 tool_id=curated_app_tool_id(app_id="documents.conversion_hub"),
                 app_version=app_version,
                 ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED,
-                title="Provhantering och ljudtranskribering",
+                title="Provhantering",
                 summary=(
-                    "Skapa, redigera och konvertera prov eller transkribera tal till text "
-                    "och spara resultatet bland dina filer."
+                    "Skapa, redigera och konvertera prov och spara resultatet bland dina filer."
                 ),
                 min_role=Role.USER,
                 public_access_profile=CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY,

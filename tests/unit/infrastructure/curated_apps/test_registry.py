@@ -99,7 +99,7 @@ def test_registry_keeps_conversion_hub_general_access_authenticated_only() -> No
     assert capability.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE
 
 
-def test_registry_presents_conversion_hub_as_exam_and_transcript_compatibility_app() -> None:
+def test_registry_presents_conversion_hub_as_exam_management_app() -> None:
     registry = InMemoryCuratedAppRegistry(
         settings=Settings(
             APP_VERSION="9.9.9",
@@ -112,10 +112,9 @@ def test_registry_presents_conversion_hub_as_exam_and_transcript_compatibility_a
 
     assert app is not None
     assert app.app_id == "documents.conversion_hub"
-    assert app.title == "Provhantering och ljudtranskribering"
-    assert app.summary == (
-        "Skapa, redigera och konvertera prov eller transkribera tal till text "
-        "och spara resultatet bland dina filer."
+    assert app.title == "Provhantering"
+    assert (
+        app.summary == "Skapa, redigera och konvertera prov och spara resultatet bland dina filer."
     )
     metadata_text = f"{app.title} {app.summary}".casefold()
     assert "konvertera dokument" not in metadata_text

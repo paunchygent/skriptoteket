@@ -58,6 +58,7 @@ describe("help topic catalog", () => {
       "auth_lifecycle",
     ]);
     expect(getHelpIndexItems("contributor").map((item) => item.topic)).toContain("editor_hub");
+    expect(getHelpIndexItems("starter").map((item) => item.topic)).toContain("suggestions_new");
     expect(getHelpIndexItems("superuser").map((item) => item.topic)).toEqual(["admin_users"]);
   });
 });

@@ -16,6 +16,7 @@ import {
   resolveAuthLoginSuccessLocation,
   resolveProvisioningRequiredExitPath,
 } from "../composables/auth/authEntryNavigation";
+import { useAppAvailability } from "../composables/useAppAvailability";
 import { useAuthStore } from "../stores/auth";
 import { routes } from "./routes";
 
@@ -37,6 +38,8 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = Boolean(to.meta.requiresAuth);
   const rawMinRole = typeof to.meta.minRole === "string" ? to.meta.minRole : null;
   const minRole = rawMinRole && isRole(rawMinRole) ? rawMinRole : null;
+  const unavailableAppTitle =
+    typeof to.meta.unavailableAppTitle === "string" ? to.meta.unavailableAppTitle : null;
   const isAuthEntryRoute = isAuthEntryPath(to.path);
   const isProvisioningRequiredPath = to.name === "auth-provisioning-required";
 
@@ -84,6 +87,12 @@ router.beforeEach(async (to, from) => {
         from: to.fullPath,
       },
     };
+  }
+
+  if (unavailableAppTitle) {
+    const { notifyUnavailable } = useAppAvailability();
+    notifyUnavailable(unavailableAppTitle);
+    return { name: "home" };
   }
 
   return true;

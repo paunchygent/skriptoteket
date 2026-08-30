@@ -14,7 +14,7 @@ from skriptoteket.domain.suggestions.models import (
 
 
 class SubmitSuggestionRequest(BaseModel):
-    """Payload for creating a new suggestion (contributor+)."""
+    """Payload for creating a new suggestion as an authenticated user."""
 
     model_config = ConfigDict(frozen=True)
 

@@ -5,8 +5,7 @@ from skriptoteket.application.suggestions.commands import (
     SubmitSuggestionResult,
 )
 from skriptoteket.domain.errors import validation_error
-from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.suggestions.models import create_suggestion
 from skriptoteket.protocols.catalog import CategoryRepositoryProtocol, ProfessionRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
@@ -39,8 +38,6 @@ class SubmitSuggestionHandler(SubmitSuggestionHandlerProtocol):
     async def handle(
         self, *, actor: User, command: SubmitSuggestionCommand
     ) -> SubmitSuggestionResult:
-        require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
-
         async with self._uow:
             for slug in command.profession_slugs:
                 if await self._professions.get_by_slug(slug) is None:
