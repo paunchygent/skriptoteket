@@ -16,11 +16,10 @@ import { ref } from "vue";
 
 import {
   downloadLocalExamConversionArtifact,
+  saveLocalExamConversionArtifact,
 } from "../../../api/examConverterLocal";
-import { saveDigiExamMigrationArtifactToUserFiles } from "../../../api/sirConvertGateway";
 import type {
   SirConvertArtifactBlob,
-  SirConvertArtifactEntry,
   SirConvertSavedUserFile,
 } from "../../../api/sirConvertGateway";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
@@ -44,7 +43,7 @@ type FileActionClient = {
     correlationId: string;
     jobId: string;
   }) => Promise<SirConvertArtifactBlob>;
-  saveDigiExamMigrationArtifactToUserFiles: typeof saveDigiExamMigrationArtifactToUserFiles;
+  saveLocalExamConversionArtifact: typeof saveLocalExamConversionArtifact;
 };
 
 type TriggerDownload = (artifact: SirConvertArtifactBlob, fallbackFilename: string) => void;
@@ -56,7 +55,8 @@ export type ExamConverterFileActionOptions = {
 
 const DEFAULT_CLIENT: FileActionClient = {
   downloadDigiExamMigrationArtifact: downloadLocalExamConversionArtifact,
-  saveDigiExamMigrationArtifactToUserFiles,
+  saveLocalExamConversionArtifact: async (params) =>
+    await saveLocalExamConversionArtifact(params),
 };
 
 function defaultTriggerDownload(
@@ -72,22 +72,6 @@ function defaultTriggerDownload(
   link.click();
   link.remove();
   URL.revokeObjectURL(objectUrl);
-}
-
-function toArtifactEntry(file: ExamConverterReviewFile): SirConvertArtifactEntry {
-  const artifactKey = file.artifactActionReference?.artifactKey;
-  if (!artifactKey) {
-    throw new Error("Exam Converter file save requires an authorized artifact reference.");
-  }
-  return {
-    artifact_key: artifactKey,
-    availability: file.availability,
-    content_type: file.contentType,
-    filename: file.filename,
-    sha256: file.sha256,
-    size_bytes: file.sizeBytes,
-    ...(file.unavailableCode ? { unavailable_code: file.unavailableCode } : {}),
-  };
 }
 
 function withTeacherFacingFilename(
@@ -190,14 +174,12 @@ export function useExamConverterFileActions(
       save: "running",
     });
     try {
-      const artifactBlob = withTeacherFacingFilename(
-        await fetchArtifact(params),
-        params.file.filename,
-      );
-      const saved = await client.saveDigiExamMigrationArtifactToUserFiles({
-        artifact: toArtifactEntry(params.file),
-        artifactBlob,
-        correlationId: params.correlationId,
+      const actionReference = params.file.artifactActionReference;
+      if (!actionReference) {
+        throw new Error("Exam Converter file save requires an authorized artifact reference.");
+      }
+      const saved = await client.saveLocalExamConversionArtifact({
+        artifactKey: actionReference.artifactKey,
         jobId: params.jobId,
       });
       fileActionStates.value = setFileActionState(

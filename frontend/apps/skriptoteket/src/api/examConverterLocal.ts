@@ -6,14 +6,18 @@ import {
   apiGet,
   apiPost,
 } from "./client";
-import { prepareDigiExamMigrationRequestContext } from "./sirConvertGateway/requestContext";
+import {
+  sha256HexFromBlob,
+  sha256HexFromText,
+  stableJsonStringify,
+} from "./sirConvertGateway/requestFingerprint";
 import type {
   DigiExamMigrationSubmitParams,
   ExamAuthoringCorrectionSourceStateIssueResult,
   SirConvertArtifactBlob,
   SirConvertArtifactManifest,
   SirConvertJob,
-  SirConvertSubmittedJob,
+  SirConvertSavedUserFile,
   SirConvertTerminalResult,
 } from "./sirConvertGateway";
 
@@ -23,6 +27,13 @@ type LocalSubmitResult = {
   error: string | null;
   job_id: string;
   status: SirConvertJob["status"];
+  idempotent_replay: boolean;
+};
+
+export type LocalExamConversionSubmittedJob = SirConvertJob & {
+  correlationId: string;
+  idempotencyKey: string;
+  idempotentReplay: boolean;
 };
 
 type LocalResult = {
@@ -41,10 +52,29 @@ function jobPath(jobId: string): string {
 
 export async function submitLocalExamConversion(
   params: DigiExamMigrationSubmitParams,
-): Promise<SirConvertSubmittedJob> {
-  const requestContext = await prepareDigiExamMigrationRequestContext(params);
+): Promise<LocalExamConversionSubmittedJob> {
+  if (
+    params.advisoryRetryAttempt !== null &&
+    params.advisoryRetryAttempt !== undefined &&
+    (!Number.isSafeInteger(params.advisoryRetryAttempt) || params.advisoryRetryAttempt < 1)
+  ) {
+    throw new Error("advisoryRetryAttempt must be a positive integer.");
+  }
+  const identity = stableJsonStringify({
+    advisoryRetryAttempt: params.advisoryRetryAttempt ?? null,
+    completionMode: params.completionMode ?? null,
+    fileSha256: await sha256HexFromBlob(params.file),
+    ingestionOverlay: params.ingestionOverlay ?? null,
+  });
+  const digest = await sha256HexFromText(identity);
+  const idempotencyKey = `exam-converter-${digest.slice(0, 48)}`;
+  const correlationId = params.correlationId?.trim() || `local-${digest.slice(0, 16)}`;
   const form = new FormData();
   form.append("file", params.file, params.file.name);
+  form.append("idempotency_key", idempotencyKey);
+  if (params.advisoryRetryAttempt !== null && params.advisoryRetryAttempt !== undefined) {
+    form.append("advisory_retry_attempt", String(params.advisoryRetryAttempt));
+  }
   if (params.ingestionOverlay) {
     form.append(
       "ingestion_overlay",
@@ -57,9 +87,10 @@ export async function submitLocalExamConversion(
     method: "POST",
   });
   return {
-    idempotentReplay: false,
+    correlationId,
+    idempotencyKey,
+    idempotentReplay: result.idempotent_replay,
     jobId: result.job_id,
-    requestContext,
     status: result.status,
   };
 }
@@ -140,4 +171,13 @@ export async function replayLocalExamConversion(params: {
   jobId: string;
 }): Promise<SirConvertArtifactManifest> {
   return await apiPost<SirConvertArtifactManifest>(`${jobPath(params.jobId)}/replay`);
+}
+
+export async function saveLocalExamConversionArtifact(params: {
+  artifactKey: string;
+  jobId: string;
+}): Promise<SirConvertSavedUserFile> {
+  return await apiPost<SirConvertSavedUserFile>(
+    `${jobPath(params.jobId)}/artifacts/${encodeURIComponent(params.artifactKey)}/save`,
+  );
 }

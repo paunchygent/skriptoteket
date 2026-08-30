@@ -13,28 +13,17 @@ const clientMocks = vi.hoisted(() => ({
   apiGet: vi.fn(),
   apiPost: vi.fn(),
 }));
-const requestContextMocks = vi.hoisted(() => ({
-  prepare: vi.fn(),
-}));
-
 vi.mock("./client", () => clientMocks);
-vi.mock("./sirConvertGateway/requestContext", () => ({
-  prepareDigiExamMigrationRequestContext: requestContextMocks.prepare,
-}));
 
 describe("Skriptoteket-owned Exam Converter API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    requestContextMocks.prepare.mockResolvedValue({
-      correlationId: "corr-local",
-      idempotencyKey: "idem-local",
-      jobSpec: {},
-    });
   });
 
   it("submits the source directly to the local curated-app endpoint", async () => {
     clientMocks.apiFetch.mockResolvedValue({
       error: null,
+      idempotent_replay: false,
       job_id: "local-job-1",
       status: "submitted",
     });
@@ -47,6 +36,9 @@ describe("Skriptoteket-owned Exam Converter API", () => {
       expect.objectContaining({ body: expect.any(FormData), method: "POST" }),
     );
     expect(result.jobId).toBe("local-job-1");
+    const request = clientMocks.apiFetch.mock.calls[0]?.[1] as { body: FormData };
+    expect(request.body.get("idempotency_key")).toMatch(/^exam-converter-/);
+    expect(result.idempotentReplay).toBe(false);
   });
 
   it("reads terminal state, replay, and artifacts from local job identity", async () => {

@@ -191,6 +191,7 @@ class ConversionHubJob(BaseModel):
     upstream_job_id: str | None = None
     status: ConversionHubJobStatus
     correlation_id: str | None = None
+    submission_idempotency_key: str | None = None
     error_message: str | None = None
     created_at: datetime
     updated_at: datetime

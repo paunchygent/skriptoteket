@@ -47,6 +47,17 @@ class ConversionHubJobRepositoryProtocol(Protocol):
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob: ...
 
 
+class ExamConverterSubmissionRepositoryProtocol(Protocol):
+    """Conversion job repository with native Exam Converter submission lookup."""
+
+    async def get_by_owner_and_submission_key(
+        self,
+        *,
+        owner_user_id: UUID,
+        submission_idempotency_key: str,
+    ) -> ConversionHubJob | None: ...
+
+
 class ConversionHubTranscriptFormatterExportJobRepositoryProtocol(Protocol):
     """Read product-owned formatter export jobs."""
 

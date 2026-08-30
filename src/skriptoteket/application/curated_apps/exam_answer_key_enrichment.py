@@ -41,6 +41,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     status: ExamAnswerKeyEnrichmentJobStatus
     input_filename: str = Field(min_length=1, max_length=255)
     source_dxe: bytes = Field(min_length=1)
+    retry_identity: str | None = Field(default=None, max_length=255)
 
     attempts: int = 0
     max_attempts: int = 1
@@ -80,6 +81,7 @@ def enqueue_enrichment_job(
     input_filename: str,
     source_dxe: bytes,
     now: datetime,
+    retry_identity: str | None = None,
 ) -> ExamAnswerKeyEnrichmentJob:
     """Build one queued enrichment job for a submitted conversion."""
 
@@ -90,6 +92,7 @@ def enqueue_enrichment_job(
         status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
         input_filename=input_filename,
         source_dxe=source_dxe,
+        retry_identity=retry_identity,
         available_at=now,
         created_at=now,
         updated_at=now,

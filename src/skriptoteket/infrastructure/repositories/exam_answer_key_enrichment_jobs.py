@@ -43,6 +43,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             status=job.status.value,
             input_filename=job.input_filename,
             source_dxe=job.source_dxe,
+            retry_identity=job.retry_identity,
             attempts=job.attempts,
             max_attempts=job.max_attempts,
             available_at=job.available_at,

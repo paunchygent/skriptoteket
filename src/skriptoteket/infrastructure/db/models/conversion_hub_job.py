@@ -34,6 +34,13 @@ class ConversionHubJobModel(Base):
             unique=True,
             postgresql_where=text("upstream_job_id IS NOT NULL"),
         ),
+        Index(
+            "uq_conversion_hub_jobs_owner_submission_key",
+            "owner_user_id",
+            "submission_idempotency_key",
+            unique=True,
+            postgresql_where=text("submission_idempotency_key IS NOT NULL"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
@@ -52,6 +59,7 @@ class ConversionHubJobModel(Base):
     upstream_job_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     correlation_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    submission_idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True)
     error_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

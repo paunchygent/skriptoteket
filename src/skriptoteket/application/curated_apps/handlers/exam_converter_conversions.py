@@ -42,7 +42,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_comple
 from skriptoteket.domain.errors import DomainError, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
+from skriptoteket.protocols.conversion_hub import (
+    ConversionHubJobRepositoryProtocol,
+    ExamConverterSubmissionRepositoryProtocol,
+)
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
@@ -74,8 +77,10 @@ class CreateExamConverterConversionJobsHandler:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        submission_lookup: ExamConverterSubmissionRepositoryProtocol | None = None,
     ) -> None:
         self._jobs = jobs
+        self._submission_lookup = submission_lookup
         self._lane = lane
         self._producer = producer
         self._artifacts = artifacts
@@ -92,6 +97,8 @@ class CreateExamConverterConversionJobsHandler:
         upload: ConversionHubUpload,
         overlay_bytes: bytes | None,
         correlation_id: str | None,
+        idempotency_key: str | None = None,
+        advisory_retry_attempt: int | None = None,
     ) -> ExamConverterConversionSubmitResult:
         """Convert one uploaded `.dxe` export through the in-process lane.
 
@@ -109,11 +116,27 @@ class CreateExamConverterConversionJobsHandler:
         """
         if self._lane.value != "in_process":
             raise validation_error(_LANE_DISABLED_MESSAGE)
+        existing = None
+        if idempotency_key is not None and self._submission_lookup is not None:
+            async with self._uow:
+                existing = await self._submission_lookup.get_by_owner_and_submission_key(
+                    owner_user_id=actor.id,
+                    submission_idempotency_key=idempotency_key,
+                )
+        if existing is not None:
+            return ExamConverterConversionSubmitResult(
+                job_id=existing.id,
+                status=existing.status,
+                error=existing.error_message,
+                idempotent_replay=True,
+            )
         if self._should_enqueue_enrichment(upload=upload, overlay_bytes=overlay_bytes):
             job = await self._create_job_with_enrichment(
                 actor=actor,
                 upload=upload,
                 correlation_id=correlation_id,
+                idempotency_key=idempotency_key,
+                advisory_retry_attempt=advisory_retry_attempt,
             )
             return ExamConverterConversionSubmitResult(
                 job_id=job.id,
@@ -124,6 +147,7 @@ class CreateExamConverterConversionJobsHandler:
             actor=actor,
             filename=upload.filename,
             correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
         )
         job = await self._complete_local_job(
             job=job,
@@ -164,6 +188,8 @@ class CreateExamConverterConversionJobsHandler:
         actor: User,
         upload: ConversionHubUpload,
         correlation_id: str | None,
+        idempotency_key: str | None,
+        advisory_retry_attempt: int | None,
     ) -> ConversionHubJob:
         now = self._clock.now()
         async with self._uow:
@@ -177,6 +203,7 @@ class CreateExamConverterConversionJobsHandler:
                     pdf_layout=None,
                     status=ConversionHubJobStatus.SUBMITTED,
                     correlation_id=correlation_id,
+                    submission_idempotency_key=idempotency_key,
                     created_at=now,
                     updated_at=now,
                 )
@@ -188,6 +215,11 @@ class CreateExamConverterConversionJobsHandler:
                     owner_user_id=actor.id,
                     input_filename=upload.filename,
                     source_dxe=upload.file_bytes,
+                    retry_identity=(
+                        f"{idempotency_key}:advisory:{advisory_retry_attempt or 0}"
+                        if idempotency_key is not None
+                        else None
+                    ),
                     now=now,
                 )
             )
@@ -199,6 +231,7 @@ class CreateExamConverterConversionJobsHandler:
         actor: User,
         filename: str,
         correlation_id: str | None,
+        idempotency_key: str | None,
     ) -> ConversionHubJob:
         now = self._clock.now()
         async with self._uow:
@@ -212,6 +245,7 @@ class CreateExamConverterConversionJobsHandler:
                     pdf_layout=None,
                     status=ConversionHubJobStatus.SUBMITTED,
                     correlation_id=correlation_id,
+                    submission_idempotency_key=idempotency_key,
                     created_at=now,
                     updated_at=now,
                 )

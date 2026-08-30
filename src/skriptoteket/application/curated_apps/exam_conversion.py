@@ -72,6 +72,7 @@ class ExamConverterConversionSubmitResult(BaseModel):
     job_id: UUID
     status: ConversionHubJobStatus
     error: str | None = None
+    idempotent_replay: bool = False
 
 
 def is_local_exam_conversion_job(job: ConversionHubJob) -> bool:

@@ -61,6 +61,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
 )
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
+)
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
@@ -308,13 +311,16 @@ class RecordingProducer:
         proposal_provider_profile_id: str | None = None,
         proposal_model: str | None = None,
         teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
         ),
     ) -> ExamConversionStoredArtifact:
         del job_id, proposal_overlay_bytes, proposal_provider_profile_id, proposal_model
-        del teacher_answer_key_item_ids
+        del teacher_answer_key_item_ids, correction_intents, enrichment_failure_code, retry_identity
         self.overlay_bytes = overlay_bytes
         self.overlay_key_provenance = overlay_key_provenance
         return ExamConversionStoredArtifact(
@@ -549,7 +555,7 @@ async def test_lease_refusal_fails_closed_with_zero_provider_calls() -> None:
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "daily_token_lease_exhausted"
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
     assert conversion_job.error_message is not None
     assert "2026-08-30 00:00" in conversion_job.error_message
     assert harness.proposed_overlays.records == []
@@ -618,7 +624,7 @@ async def test_glm_failure_after_failover_fails_job_with_both_leases_charged() -
     assert usage.charged_tokens == sum(lease.reserved_tokens for lease in leases)
     assert harness.proposed_overlays.records == []
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
 
 
 async def test_second_lease_exhaustion_stops_before_the_failover_call() -> None:
@@ -633,7 +639,7 @@ async def test_second_lease_exhaustion_stops_before_the_failover_call() -> None:
     assert [profile.provider_id for profile in provider.profiles] == ["openai-gpt-5.6-luna"]
     assert len(harness.leases.leases) == 1
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
     assert conversion_job.error_message is not None
     assert "2026-08-30 00:00" in conversion_job.error_message
 
@@ -664,7 +670,7 @@ async def test_non_transient_luna_failure_never_calls_the_failover() -> None:
     usage = await harness.leases.day_usage(utc_day=lease_utc_day(_NOW))
     assert usage.charged_tokens == leases[0].reserved_tokens
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
 
 
 async def test_invalid_model_output_fails_without_a_proposal() -> None:
@@ -685,7 +691,7 @@ async def test_invalid_model_output_fails_without_a_proposal() -> None:
     assert leases[0].actual_tokens == 50
     assert harness.proposed_overlays.records == []
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
 
 
 async def test_expired_running_job_fail_closes_both_jobs_without_calls_or_refund() -> None:
@@ -714,7 +720,7 @@ async def test_expired_running_job_fail_closes_both_jobs_without_calls_or_refund
     assert failed.last_error == "enrichment_worker_lease_expired"
     assert failed.locked_by is None
     conversion_job = harness.conversion_jobs.jobs[job.conversion_job_id]
-    assert conversion_job.status is ConversionHubJobStatus.FAILED
+    assert conversion_job.status is ConversionHubJobStatus.SUCCEEDED
     assert conversion_job.error_message is not None
     assert provider.call_count == 0
     leases = list(harness.leases.leases.values())

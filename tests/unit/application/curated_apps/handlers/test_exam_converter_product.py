@@ -85,6 +85,14 @@ class SessionRepository:
             return self.session
         return None
 
+    async def get_by_owner_and_job_for_update(
+        self, *, owner_user_id: UUID, conversion_hub_job_id: UUID
+    ) -> ExamConverterCorrectionSession | None:
+        return await self.get_by_owner_and_job(
+            owner_user_id=owner_user_id,
+            conversion_hub_job_id=conversion_hub_job_id,
+        )
+
     async def save(
         self, *, session: ExamConverterCorrectionSession, expected_session_version: int
     ) -> ExamConverterCorrectionSession:
@@ -145,6 +153,44 @@ def _upload() -> ConversionHubUpload:
         content_type="application/octet-stream",
         file_bytes=json.dumps(payload).encode(),
     )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_provider_failure_still_produces_typed_review_artifacts() -> None:
+    upload = _upload()
+    payload = json.loads(upload.file_bytes)
+    payload["exams"][0]["questions"][0]["alternatives"][1]["right"] = False
+    unkeyed_upload = ConversionHubUpload(
+        filename=upload.filename,
+        content_type=upload.content_type,
+        file_bytes=json.dumps(payload).encode("utf-8"),
+    )
+    producer = InProcessExamConversionProducer(
+        qti_writer=ExamNetQtiPackageWriter(),
+        pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+    )
+
+    artifact = await producer.convert(
+        job_id=uuid4(),
+        upload=unkeyed_upload,
+        overlay_bytes=None,
+        correlation_id=None,
+        enrichment_failure_code="provider_timeout",
+        retry_identity="retry-native-2",
+    )
+
+    completion_artifact = next(
+        named
+        for named in artifact.named_artifacts
+        if named.artifact_key == "answer_key_completion_report"
+    )
+    completion = json.loads(completion_artifact.content)
+    item = completion["items"][0]
+    assert item["decision_state"] == "manual_follow_up_required"
+    assert item["backend_status"] == "failed"
+    assert item["backend_failure_code"] == "provider_timeout"
+    assert item["retry_identity"] == "retry-native-2"
 
 
 @pytest.mark.unit

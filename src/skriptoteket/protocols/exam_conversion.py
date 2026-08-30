@@ -30,6 +30,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackagePlan,
 )
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
+)
 
 if TYPE_CHECKING:
     from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
@@ -72,6 +75,9 @@ class InProcessExamConverterProtocol(Protocol):
         proposal_provider_profile_id: str | None = None,
         proposal_model: str | None = None,
         teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY

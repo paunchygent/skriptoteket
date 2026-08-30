@@ -24,7 +24,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import type {
   SirConvertJobStatus,
-  SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
@@ -96,15 +95,12 @@ vi.mock("../../api/examConverterCorrectionSessions", async (importOriginal) => {
   };
 });
 
-function submittedJob(status: SirConvertJobStatus): SirConvertSubmittedJob {
+function submittedJob(status: SirConvertJobStatus) {
   return {
+    correlationId: "corr_exam_converter_1",
+    idempotencyKey: "idem_exam_converter_1",
     idempotentReplay: false,
     jobId: "job_exam_converter_1",
-    requestContext: {
-      correlationId: "corr_exam_converter_1",
-      idempotencyKey: "idem_exam_converter_1",
-      jobSpec: {} as SirConvertSubmittedJob["requestContext"]["jobSpec"],
-    },
     status,
   };
 }

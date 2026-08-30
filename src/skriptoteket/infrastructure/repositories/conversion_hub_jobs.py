@@ -45,6 +45,7 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
             upstream_job_id=job.upstream_job_id,
             status=job.status.value,
             correlation_id=job.correlation_id,
+            submission_idempotency_key=job.submission_idempotency_key,
             error_message=job.error_message,
             created_at=job.created_at,
             updated_at=job.updated_at,
@@ -72,6 +73,7 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
             upstream_job_id=model.upstream_job_id,
             status=model.status,
             correlation_id=model.correlation_id,
+            submission_idempotency_key=model.submission_idempotency_key,
             error_message=model.error_message,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -92,6 +94,21 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         result = await self._session.execute(
             select(ConversionHubJobModel).where(
                 ConversionHubJobModel.upstream_job_id == upstream_job_id
+            )
+        )
+        model = result.scalar_one_or_none()
+        return self._to_job(model) if model is not None else None
+
+    async def get_by_owner_and_submission_key(
+        self,
+        *,
+        owner_user_id: UUID,
+        submission_idempotency_key: str,
+    ) -> ConversionHubJob | None:
+        result = await self._session.execute(
+            select(ConversionHubJobModel).where(
+                ConversionHubJobModel.owner_user_id == owner_user_id,
+                ConversionHubJobModel.submission_idempotency_key == submission_idempotency_key,
             )
         )
         model = result.scalar_one_or_none()
@@ -135,6 +152,7 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         model.upstream_job_id = job.upstream_job_id
         model.status = job.status.value
         model.correlation_id = job.correlation_id
+        model.submission_idempotency_key = job.submission_idempotency_key
         model.error_message = job.error_message
 
         await self._session.flush()

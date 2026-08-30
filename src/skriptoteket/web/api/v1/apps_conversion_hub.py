@@ -72,6 +72,7 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_conversions i
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
     ExamConverterProductResult,
+    SaveExamConverterLocalArtifactHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import validation_error
@@ -303,6 +304,21 @@ async def save_exam_converter_artifact(
 
 
 @router.post(
+    "/exam-converter/jobs/{job_id}/artifacts/{artifact_key}/save",
+    response_model=SaveConversionHubSirConvertArtifactResult,
+)
+async def save_local_exam_converter_artifact(
+    job_id: UUID,
+    artifact_key: str,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[SaveExamConverterLocalArtifactHandler],
+    user: User = Depends(require_app_user_api),
+) -> SaveConversionHubSirConvertArtifactResult:
+    _require_app_access(registry=registry, user=user)
+    return await handler.handle(actor=user, job_id=job_id, artifact_key=artifact_key)
+
+
+@router.post(
     "/exam-converter/jobs",
     response_model=RegisterExamConverterConversionHubJobResult,
 )
@@ -325,8 +341,10 @@ async def submit_exam_converter_conversion(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[CreateExamConverterConversionJobsHandler],
     settings: FromDishka[Settings],
+    idempotency_key: Annotated[str, Form(min_length=1, max_length=128)],
     file: UploadFile = File(...),
     ingestion_overlay: UploadFile | None = File(None),
+    advisory_retry_attempt: Annotated[int | None, Form(ge=1)] = None,
     user: User = Depends(require_app_user_api),
 ) -> ExamConverterConversionSubmitResult:
     _require_app_access(registry=registry, user=user)
@@ -362,6 +380,8 @@ async def submit_exam_converter_conversion(
         ),
         overlay_bytes=overlay_bytes,
         correlation_id=correlation_id,
+        idempotency_key=idempotency_key,
+        advisory_retry_attempt=advisory_retry_attempt,
     )
 
 

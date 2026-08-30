@@ -44,6 +44,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf impor
     build_digiexam_examnet_pdf_document,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
+    DigiExamExamNetPdfDocument,
     DigiExamExamNetPdfStatus,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
@@ -67,6 +68,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import (
     build_examnet_qti_package_plan,
+)
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
 )
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.protocols.exam_conversion import (
@@ -109,6 +113,9 @@ class InProcessExamConversionProducer:
         proposal_provider_profile_id: str | None = None,
         proposal_model: str | None = None,
         teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
         correlation_id: str | None,
         overlay_key_provenance: DigiExamAnswerKeyProvenance = (
             DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
@@ -139,14 +146,40 @@ class InProcessExamConversionProducer:
             overlay_key_provenance=overlay_key_provenance,
             teacher_answer_key_item_ids=teacher_answer_key_item_ids,
         )
-        plan = _build_qti_package_plan(exam=effective_exam, input_filename=upload.filename)
-        qti_package_bytes = self._qti_writer.build_package_bytes(plan)
-        pdf_bytes = self._build_pdf_bytes(exam=effective_exam)
-        report_bytes = self._qti_writer.build_validation_report_bytes(
-            plan=plan,
-            package_filename=EXAMNET_BUNDLE_QTI_PACKAGE_FILENAME,
-            package_bytes=qti_package_bytes,
-        )
+        if enrichment_failure_code is not None:
+            pdf_bytes = self._pdf_renderer.render_pdf(
+                document=DigiExamExamNetPdfDocument(
+                    status=DigiExamExamNetPdfStatus.SUCCESS,
+                    html=(
+                        "<!doctype html><html lang='sv'><meta charset='utf-8'>"
+                        "<title>Manuell granskning krävs</title>"
+                        "<body><h1>Manuell granskning krävs</h1>"
+                        "<p>Facit behöver kompletteras innan export.</p></body></html>"
+                    ),
+                    asset_files=(),
+                    warnings=(),
+                )
+            )
+            report_bytes = _json_bytes(
+                {
+                    "schema_version": "qti_validation_report_v1",
+                    "status": "manual_follow_up_required",
+                    "failure_code": enrichment_failure_code,
+                    "retry_identity": retry_identity,
+                }
+            )
+            qti_package_bytes = self._qti_writer.build_bundle_bytes(
+                entries=(("manual-follow-up.json", report_bytes),)
+            )
+        else:
+            pdf_bytes = self._build_pdf_bytes(exam=effective_exam)
+            plan = _build_qti_package_plan(exam=effective_exam, input_filename=upload.filename)
+            qti_package_bytes = self._qti_writer.build_package_bytes(plan)
+            report_bytes = self._qti_writer.build_validation_report_bytes(
+                plan=plan,
+                package_filename=EXAMNET_BUNDLE_QTI_PACKAGE_FILENAME,
+                package_bytes=qti_package_bytes,
+            )
         bundle_bytes = self._qti_writer.build_bundle_bytes(
             entries=(
                 (EXAMNET_BUNDLE_QTI_PACKAGE_FILENAME, qti_package_bytes),
@@ -168,6 +201,9 @@ class InProcessExamConversionProducer:
             ),
             proposal_provider_profile_id=proposal_provider_profile_id,
             proposal_model=proposal_model,
+            correction_intents=correction_intents,
+            enrichment_failure_code=enrichment_failure_code,
+            retry_identity=retry_identity,
             qti_package_bytes=qti_package_bytes,
             pdf_bytes=pdf_bytes,
             validation_report_bytes=report_bytes,
@@ -233,6 +269,12 @@ def apply_exam_overlay(
         )
     except DigiExamIngestionOverlayError as exc:
         raise validation_error(str(exc)) from exc
+    if overlay_result.ingestion_overlay_report.rejected_entries:
+        rejection = overlay_result.ingestion_overlay_report.rejected_entries[0]
+        raise validation_error(
+            "Correction could not be applied to the current exam source.",
+            details={"item_id": rejection.item_id, "reason_code": rejection.reason_code},
+        )
     if not teacher_answer_key_item_ids:
         return (
             overlay_result.effective_exam_for_rendering,

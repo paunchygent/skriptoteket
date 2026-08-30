@@ -12,7 +12,6 @@
 
 import type {
   SirConvertJobStatus,
-  SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
@@ -22,15 +21,12 @@ import {
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
 } from "../../api/sirConvertGateway/schemaVersions";
 
-export function submittedFilesJob(status: SirConvertJobStatus): SirConvertSubmittedJob {
+export function submittedFilesJob(status: SirConvertJobStatus) {
   return {
+    correlationId: "corr_exam_converter_files",
+    idempotencyKey: "idem_exam_converter_files",
     idempotentReplay: false,
     jobId: "job_exam_converter_files",
-    requestContext: {
-      correlationId: "corr_exam_converter_files",
-      idempotencyKey: "idem_exam_converter_files",
-      jobSpec: {} as SirConvertSubmittedJob["requestContext"]["jobSpec"],
-    },
     status,
   };
 }

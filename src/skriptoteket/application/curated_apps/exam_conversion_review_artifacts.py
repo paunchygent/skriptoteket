@@ -31,6 +31,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
     source_item_fingerprint,
 )
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
+)
 
 _MACHINE_MARKED = frozenset(
     {
@@ -54,6 +57,9 @@ def build_review_named_artifacts(
     qti_package_bytes: bytes,
     pdf_bytes: bytes,
     validation_report_bytes: bytes,
+    correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+    enrichment_failure_code: str | None = None,
+    retry_identity: str | None = None,
 ) -> tuple[ExamConversionNamedArtifact, ...]:
     """Build the complete local product projection from owned conversion state."""
 
@@ -71,6 +77,7 @@ def build_review_named_artifacts(
         source_exam=source_exam,
         effective_exam=effective_exam,
         proposal_item_ids=frozenset(proposal_items),
+        correction_intents=correction_intents,
     )
     readiness = _target_readiness(
         job_id=job_id,
@@ -123,6 +130,8 @@ def build_review_named_artifacts(
         proposal_overlay=proposal_overlay,
         provider_profile_id=proposal_provider_profile_id,
         model=proposal_model,
+        failure_code=enrichment_failure_code,
+        retry_identity=retry_identity,
     )
     artifacts.append(
         _named(
@@ -210,10 +219,16 @@ def _review_state(
     source_exam: DigiExamIntermediateExam,
     effective_exam: DigiExamIntermediateExam,
     proposal_item_ids: frozenset[str],
+    correction_intents: tuple[SourceBoundCorrectionIntent, ...],
 ) -> tuple[dict[str, JsonValue], set[str]]:
     effective_by_id = {item.item_id: item for item in effective_exam.items}
     rows: list[JsonValue] = []
     blocked_item_ids: set[str] = set()
+    manual_intents = {
+        intent.item_id: intent
+        for intent in correction_intents
+        if intent.kind.value in {"manual_choice_answer_key", "manual_gap_open_cloze_answer_key"}
+    }
     for item in source_exam.items:
         effective_item = effective_by_id[item.item_id]
         is_machine = item.item_id in proposal_item_ids
@@ -224,10 +239,26 @@ def _review_state(
             reasons = ["advisory_candidate_pending"]
             message_key = "exam_converter.answer_key.advisory_pending"
         elif provenance is DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY:
+            intent = manual_intents.get(item.item_id)
+            submission_origin = (
+                intent.payload.get("submission_origin") if intent is not None else None
+            )
             review_state = "teacher_modified"
             origin = "teacher_authored"
             reasons = ["teacher_answer_key_present"]
             message_key = "exam_converter.answer_key.teacher_answer_key_present"
+            provenance_detail = None
+            if submission_origin == "accepted_advisory_candidate" and intent is not None:
+                review_state = "review_complete"
+                origin = "reviewed_advisory"
+                reasons = ["reviewed_advisory_accepted"]
+                message_key = "exam_converter.answer_key.advisory_accepted"
+                provenance_detail = intent.payload.get("candidate_lineage")
+            elif submission_origin == "teacher_edited_advisory_candidate" and intent is not None:
+                origin = "teacher_edited_advisory"
+                reasons = ["teacher_edited_advisory_candidate"]
+                message_key = "exam_converter.answer_key.advisory_edited"
+                provenance_detail = intent.payload.get("candidate_lineage")
         elif provenance is not DigiExamAnswerKeyProvenance.ABSENT:
             review_state = "review_complete"
             origin = "source_provided"
@@ -243,6 +274,8 @@ def _review_state(
             origin = "none"
             reasons = ["answer_key_not_applicable"]
             message_key = "exam_converter.answer_key.not_applicable"
+        if provenance is not DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY:
+            provenance_detail = None
         if review_state in {"review_required", "validation_required"}:
             blocked_item_ids.add(item.item_id)
         rows.append(
@@ -268,7 +301,7 @@ def _review_state(
                     [f"gap-{item.item_id}"] if item.item_type is DigiExamItemType.GAP_FILL else []
                 ),
                 "correction_affordances": _correction_affordances(item),
-                "provenance_detail": None,
+                "provenance_detail": provenance_detail,
                 "replay_artifact_references": [],
             }
         )
@@ -346,6 +379,8 @@ def _completion_report(
     proposal_overlay: DigiExamIngestionOverlay | None,
     provider_profile_id: str | None,
     model: str | None,
+    failure_code: str | None,
+    retry_identity: str | None,
 ) -> dict[str, JsonValue]:
     proposals = {
         item.item_id: item for item in (proposal_overlay.items if proposal_overlay else ())
@@ -369,11 +404,30 @@ def _completion_report(
                 "item_id": item.item_id,
                 "sequence": item.sequence,
                 "item_type": item.item_type.value,
-                "decision_state": "suggested" if payload is not None else "skipped",
+                "decision_state": (
+                    "suggested"
+                    if payload is not None
+                    else "manual_follow_up_required"
+                    if failure_code is not None and item.item_type in _MACHINE_MARKED
+                    else "skipped"
+                ),
                 "validation_state": "valid" if payload is not None else "skipped",
                 "answer_payload": payload,
-                "backend_status": "succeeded" if payload is not None else "not_requested",
-                "backend_failure_code": None,
+                "backend_status": (
+                    "succeeded"
+                    if payload is not None
+                    else "failed"
+                    if failure_code is not None and item.item_type in _MACHINE_MARKED
+                    else "not_requested"
+                ),
+                "backend_failure_code": (
+                    failure_code if item.item_type in _MACHINE_MARKED else None
+                ),
+                "retry_identity": (
+                    retry_identity
+                    if failure_code is not None and item.item_type in _MACHINE_MARKED
+                    else None
+                ),
                 "candidate_id": f"candidate-{item.item_id}" if payload is not None else None,
                 "candidate_payload_digest": _sha256(payload_bytes) if payload is not None else None,
                 "provider_profile_id": provider_profile_id if payload is not None else None,

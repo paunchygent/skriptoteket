@@ -12,6 +12,10 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
 )
+from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
+    SaveConversionHubSirConvertArtifactResult,
+)
+from skriptoteket.application.curated_apps.document_converter import DocumentConverterStoredArtifact
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConversionNamedArtifact,
     ExamConversionStoredArtifact,
@@ -30,6 +34,9 @@ from skriptoteket.application.curated_apps.exam_conversion_review_artifacts impo
     build_review_named_artifacts,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
+from skriptoteket.application.curated_apps.handlers.document_converter_vault_saves import (
+    DocumentConverterVaultSaveService,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
     DigiExamItemType,
@@ -42,6 +49,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay
     DigiExamOverlayGapAnswer,
     DigiExamOverlayGapFillItemPatch,
     DigiExamOverlayGapFillManualAnswerKey,
+    DigiExamOverlayGenericItemPatch,
     DigiExamOverlayPointCorrection,
     DigiExamOverlaySourceBinding,
 )
@@ -56,7 +64,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprin
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     SourceBoundCorrectionIntent,
 )
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyProposedOverlayRepositoryProtocol
@@ -65,7 +73,7 @@ from skriptoteket.protocols.exam_conversion import (
     InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_converter_correction_sessions import (
-    ExamConverterCorrectionSessionRepositoryProtocol,
+    ExamConverterReplayCorrectionSessionRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -91,7 +99,7 @@ class ExamConverterProductHandler:
         self,
         *,
         jobs: ConversionHubJobRepositoryProtocol,
-        sessions: ExamConverterCorrectionSessionRepositoryProtocol,
+        sessions: ExamConverterReplayCorrectionSessionRepositoryProtocol,
         proposals: ExamAnswerKeyProposedOverlayRepositoryProtocol,
         producer: InProcessExamConverterProtocol,
         artifacts: ExamConversionArtifactStoreProtocol,
@@ -199,6 +207,7 @@ class ExamConverterProductHandler:
         proposal_overlay = (
             DigiExamIngestionOverlay.model_validate(proposal.overlay_json) if proposal else None
         )
+        correction_version = session.session_version if session is not None else 0
         intents = session.active_replay_intents() if session else ()
         overlay, teacher_key_item_ids = _replay_overlay(
             exam=exam,
@@ -242,6 +251,7 @@ class ExamConverterProductHandler:
                         qti_package_bytes=_named_content(stored, "qti_package"),
                         pdf_bytes=_named_content(stored, "examnet_pdf"),
                         validation_report_bytes=_named_content(stored, "qti_validation_report"),
+                        correction_intents=intents,
                     )
                 }
             )
@@ -258,6 +268,7 @@ class ExamConverterProductHandler:
                 proposal_provider_profile_id=proposal.provider_profile_id if proposal else None,
                 proposal_model=proposal.model if proposal else None,
                 teacher_answer_key_item_ids=teacher_key_item_ids,
+                correction_intents=intents,
                 correlation_id=None,
                 overlay_key_provenance=(
                     DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY
@@ -265,7 +276,22 @@ class ExamConverterProductHandler:
                     else DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
                 ),
             )
-        self._artifacts.store_artifact(job_id=job_id, artifact=artifact)
+        async with self._uow:
+            current_session = await self._sessions.get_by_owner_and_job_for_update(
+                owner_user_id=actor.id,
+                conversion_hub_job_id=job_id,
+            )
+            current_version = current_session.session_version if current_session is not None else 0
+            if current_version != correction_version:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="Corrections changed while artifacts were being regenerated.",
+                    details={
+                        "expected_session_version": correction_version,
+                        "current_session_version": current_version,
+                    },
+                )
+            self._artifacts.store_artifact(job_id=job_id, artifact=artifact)
         return await self.manifest(actor=actor, job_id=job_id)
 
     async def _owned_local_job(self, *, actor: User, job_id: UUID) -> ConversionHubJob:
@@ -282,6 +308,44 @@ class ExamConverterProductHandler:
         if job is None or job.owner_user_id != actor.id or not is_exam_job or not is_native_job:
             raise not_found("ConversionHubJob", str(job_id))
         return job
+
+
+class SaveExamConverterLocalArtifactHandler:
+    """Save one owner-authorized local artifact without a browser re-upload."""
+
+    def __init__(
+        self,
+        *,
+        product: ExamConverterProductHandler,
+        vault_saves: DocumentConverterVaultSaveService,
+    ) -> None:
+        self._product = product
+        self._vault_saves = vault_saves
+
+    async def handle(
+        self,
+        *,
+        actor: User,
+        job_id: UUID,
+        artifact_key: str,
+    ) -> SaveConversionHubSirConvertArtifactResult:
+        artifact = await self._product.named_artifact(
+            actor=actor, job_id=job_id, artifact_key=artifact_key
+        )
+        source_artifact_id = f"documents.conversion_hub:exam-converter:{job_id}:{artifact_key}"
+        saved = await self._vault_saves.save(
+            actor=actor,
+            artifact=DocumentConverterStoredArtifact(
+                filename=artifact.filename,
+                content_type=artifact.content_type,
+                content=artifact.content,
+            ),
+            source_artifact_id=source_artifact_id,
+        )
+        return SaveConversionHubSirConvertArtifactResult(
+            vault_artifact=saved,
+            source_artifact_id=source_artifact_id,
+        )
 
 
 def _parse_stored_source(stored: ExamConversionStoredArtifact) -> DigiExamIntermediateExam:
@@ -341,6 +405,7 @@ def _replay_overlay(
             source_item_fingerprint=intent.source_item_fingerprint,
         )
         if intent.kind.value == "candidate_suppression":
+            _validate_candidate_lineage(intent)
             entries.pop(intent.item_id, None)
             continue
         if intent.kind.value == "point_correction":
@@ -412,7 +477,11 @@ def _replay_overlay(
 
 def _text_patch(
     item: DigiExamIrItem, payload: dict[str, JsonValue]
-) -> DigiExamOverlayChoiceItemPatch | DigiExamOverlayGapFillItemPatch:
+) -> (
+    DigiExamOverlayChoiceItemPatch
+    | DigiExamOverlayGapFillItemPatch
+    | DigiExamOverlayGenericItemPatch
+):
     patches = payload.get("patches")
     if not isinstance(patches, list) or len(patches) != 1 or not isinstance(patches[0], dict):
         raise validation_error("Text correction payload is invalid.")
@@ -421,9 +490,14 @@ def _text_patch(
     value = patch.get("value")
     if not isinstance(field, str) or not isinstance(value, str):
         raise validation_error("Text correction payload is invalid.")
-    update: dict[str, JsonValue] = {
-        "kind": "gap_fill" if item.item_type is DigiExamItemType.GAP_FILL else "choice"
-    }
+    kind = "gap_fill" if item.item_type is DigiExamItemType.GAP_FILL else "generic"
+    if item.item_type in {
+        DigiExamItemType.SINGLE_CHOICE,
+        DigiExamItemType.MULTIPLE_CHOICE,
+        DigiExamItemType.MULTIPLE_RESPONSE,
+    }:
+        kind = "choice"
+    update: dict[str, JsonValue] = {"kind": kind}
     if field == "item_title":
         update["title"] = value
     elif field == "prompt_html":
@@ -434,7 +508,9 @@ def _text_patch(
         raise validation_error("Unsupported text correction field.")
     if item.item_type is DigiExamItemType.GAP_FILL:
         return DigiExamOverlayGapFillItemPatch.model_validate(update)
-    return DigiExamOverlayChoiceItemPatch.model_validate(update)
+    if kind == "choice":
+        return DigiExamOverlayChoiceItemPatch.model_validate(update)
+    return DigiExamOverlayGenericItemPatch.model_validate(update)
 
 
 def _choice_source_id(value: JsonValue) -> int:
@@ -444,6 +520,19 @@ def _choice_source_id(value: JsonValue) -> int:
         return int(value.removeprefix("choice-"))
     except ValueError as exc:
         raise validation_error("Choice correction references an unknown source choice.") from exc
+
+
+def _validate_candidate_lineage(intent: SourceBoundCorrectionIntent) -> None:
+    lineage = intent.payload.get("candidate_lineage")
+    if not isinstance(lineage, dict):
+        raise validation_error("Candidate suppression lineage is invalid.")
+    candidate_id = lineage.get("candidate_id")
+    candidate_digest = lineage.get("candidate_payload_digest")
+    if (
+        candidate_id != intent.target.candidate_lineage_id
+        or candidate_digest != intent.target.candidate_payload_digest
+    ):
+        raise validation_error("Candidate suppression lineage no longer matches its target.")
 
 
 def _json_bytes(value: JsonValue) -> bytes:

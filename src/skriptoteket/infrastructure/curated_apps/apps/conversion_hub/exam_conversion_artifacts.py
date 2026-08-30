@@ -30,6 +30,8 @@ _CONTENT_FILENAME = "examnet_bundle.zip"
 _METADATA_FILENAME = "examnet_bundle.json"
 _SOURCE_FILENAME = "source.dxe"
 _NAMED_DIRECTORY = "named"
+_GENERATIONS_DIRECTORY = "generations"
+_CURRENT_FILENAME = "current.json"
 
 
 class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol):
@@ -51,15 +53,17 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
             artifact: Produced bundle metadata and bytes.
         """
         job_dir = self._job_dir(job_id=job_id)
-        job_dir.mkdir(parents=True, exist_ok=True)
-        _atomic_write_bytes(path=job_dir / _CONTENT_FILENAME, content=artifact.content)
-        _atomic_write_bytes(path=job_dir / _SOURCE_FILENAME, content=artifact.source_content)
-        named_dir = job_dir / _NAMED_DIRECTORY
+        generation_id = str(uuid4())
+        generation_dir = job_dir / _GENERATIONS_DIRECTORY / generation_id
+        generation_dir.mkdir(parents=True, exist_ok=False)
+        _atomic_write_bytes(path=generation_dir / _CONTENT_FILENAME, content=artifact.content)
+        _atomic_write_bytes(path=generation_dir / _SOURCE_FILENAME, content=artifact.source_content)
+        named_dir = generation_dir / _NAMED_DIRECTORY
         named_dir.mkdir(parents=True, exist_ok=True)
         for named in artifact.named_artifacts:
             _atomic_write_bytes(path=named_dir / named.artifact_key, content=named.content)
         _atomic_write_text(
-            path=job_dir / _METADATA_FILENAME,
+            path=generation_dir / _METADATA_FILENAME,
             content=json.dumps(
                 {
                     "filename": artifact.filename,
@@ -77,6 +81,10 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
                 sort_keys=True,
             ),
         )
+        _atomic_write_text(
+            path=job_dir / _CURRENT_FILENAME,
+            content=json.dumps({"generation_id": generation_id}, sort_keys=True),
+        )
 
     def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact:
         """Read the bundle artifact for a local Exam Converter job.
@@ -90,7 +98,7 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
         Raises:
             DomainError: If the artifact metadata or bytes are missing.
         """
-        job_dir = self._job_dir(job_id=job_id)
+        job_dir = self._current_generation_dir(job_id=job_id)
         metadata_path = job_dir / _METADATA_FILENAME
         content_path = job_dir / _CONTENT_FILENAME
         source_path = job_dir / _SOURCE_FILENAME
@@ -158,6 +166,24 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
         if root not in candidate.parents and root != candidate:
             raise validation_error("Exam Converter artifact path is invalid.")
         return candidate
+
+    def _current_generation_dir(self, *, job_id: UUID) -> Path:
+        job_dir = self._job_dir(job_id=job_id)
+        pointer_path = job_dir / _CURRENT_FILENAME
+        if not pointer_path.is_file():
+            raise not_found("ExamConversionArtifact", str(job_id))
+        try:
+            pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise validation_error("Exam Converter artifact pointer is invalid.") from exc
+        generation_id = pointer.get("generation_id")
+        if not isinstance(generation_id, str):
+            raise validation_error("Exam Converter artifact pointer is invalid.")
+        generation_dir = (job_dir / _GENERATIONS_DIRECTORY / generation_id).resolve()
+        generations_root = (job_dir / _GENERATIONS_DIRECTORY).resolve()
+        if generations_root not in generation_dir.parents:
+            raise validation_error("Exam Converter artifact pointer is invalid.")
+        return generation_dir
 
 
 def _atomic_write_bytes(*, path: Path, content: bytes) -> None:

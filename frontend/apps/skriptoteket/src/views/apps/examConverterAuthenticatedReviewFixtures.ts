@@ -14,7 +14,6 @@ import type { Mock } from "vitest";
 
 import type {
   SirConvertJobStatus,
-  SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../api/sirConvertGateway";
 import {
@@ -61,15 +60,12 @@ export type ExamConverterGatewayMocks = {
 export function submittedJob(
   status: SirConvertJobStatus,
   jobId = "job_exam_converter_review",
-): SirConvertSubmittedJob {
+) {
   return {
+    correlationId: "corr_exam_converter_review",
+    idempotencyKey: "idem_exam_converter_review",
     idempotentReplay: false,
     jobId,
-    requestContext: {
-      correlationId: "corr_exam_converter_review",
-      idempotencyKey: "idem_exam_converter_review",
-      jobSpec: {} as SirConvertSubmittedJob["requestContext"]["jobSpec"],
-    },
     status,
   };
 }

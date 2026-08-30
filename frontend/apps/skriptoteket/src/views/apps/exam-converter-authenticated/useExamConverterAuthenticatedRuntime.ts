@@ -18,13 +18,13 @@ import {
   getLocalExamConversionSourceState,
   submitLocalExamConversion,
 } from "../../../api/examConverterLocal";
+import type { LocalExamConversionSubmittedJob } from "../../../api/examConverterLocal";
 import type {
   DigiExamAnswerKeyCompletionMode,
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
   ExamAuthoringCorrectionSourceStateIssueResult,
   SirConvertJobStatus,
-  SirConvertSubmittedJob,
   SirConvertTerminalResult,
 } from "../../../api/sirConvertGateway";
 import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "../../../api/sirConvertGateway/jobSpec";
@@ -167,7 +167,7 @@ export function useExamConverterAuthenticatedRuntime(
   }
 
   async function pollUntilTerminal(
-    submittedJob: SirConvertSubmittedJob,
+    submittedJob: LocalExamConversionSubmittedJob,
     runId: number,
   ): Promise<SirConvertTerminalResult | null> {
     let currentStatus = submittedJob.status;
@@ -179,7 +179,7 @@ export function useExamConverterAuthenticatedRuntime(
       }
       currentStatus = (
         await client.getDigiExamMigrationJob({
-          correlationId: submittedJob.requestContext.correlationId,
+          correlationId: submittedJob.correlationId,
           jobId: submittedJob.jobId,
         })
       ).status;
@@ -191,7 +191,7 @@ export function useExamConverterAuthenticatedRuntime(
     if (currentStatus === "succeeded") {
       return await readTerminalResult({
         client,
-        correlationId: submittedJob.requestContext.correlationId,
+        correlationId: submittedJob.correlationId,
         jobId: submittedJob.jobId,
       });
     }
@@ -231,13 +231,13 @@ export function useExamConverterAuthenticatedRuntime(
         return null;
       }
 
-      lastCorrelationId.value = submittedJob.requestContext.correlationId;
+      lastCorrelationId.value = submittedJob.correlationId;
       lastIdempotentReplay.value = submittedJob.idempotentReplay;
       lastJobId.value = submittedJob.jobId;
       lastConversionHubJobId.value = submittedJob.jobId;
       saveJobHandle({
         conversionHubJobId: submittedJob.jobId,
-        correlationId: submittedJob.requestContext.correlationId,
+        correlationId: submittedJob.correlationId,
         inputFilename: submission.sourceFile.name,
         jobId: submittedJob.jobId,
       });

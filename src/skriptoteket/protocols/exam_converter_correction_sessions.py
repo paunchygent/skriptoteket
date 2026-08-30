@@ -35,3 +35,16 @@ class ExamConverterCorrectionSessionRepositoryProtocol(Protocol):
         session: ExamConverterCorrectionSession,
         expected_session_version: int,
     ) -> ExamConverterCorrectionSession: ...
+
+
+class ExamConverterReplayCorrectionSessionRepositoryProtocol(
+    ExamConverterCorrectionSessionRepositoryProtocol, Protocol
+):
+    """Correction-session repository with replay publication locking."""
+
+    async def get_by_owner_and_job_for_update(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> ExamConverterCorrectionSession | None: ...
