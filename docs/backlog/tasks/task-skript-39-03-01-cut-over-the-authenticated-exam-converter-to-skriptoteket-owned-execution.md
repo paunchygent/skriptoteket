@@ -37,6 +37,11 @@ correction, replay, and artifact path with Skriptoteket-owned APIs and state.
   migration-result projection. These surfaces preserve the current UI contract
   and operate over Skriptoteket-owned source, job, proposal, correction-intent,
   and artifact state.
+- Implement those surfaces as one Skriptoteket-native transactional model.
+  Collapse Sir-specific API round trips, file handoffs, mirrored schemas,
+  polling/replay ceremony, and intermediate representations that have no
+  product, provenance, readiness, asynchronous-execution, or transactional
+  purpose inside the local Unit of Work and PostgreSQL boundary.
 - Machine-proposed keys remain proposals under the existing teacher-review
   contract.
 - Keep the Sir lane available only until the local product path is confirmed
@@ -92,3 +97,4 @@ request into a provider-bound synchronous operation.
 | T2 | Existing authenticated inputs, review/correction behavior, readiness decisions, warnings, follow-ups, and outputs are preserved. |
 | T3 | The complete authenticated product path stops reaching Sir for exam conversion; Sir removal waits for Task 03. |
 | T4 | Remote completion remains worker-owned and machine keys remain teacher-review proposals. |
+| T5 | Preserve teacher-visible behavior and domain semantics, not needless cross-service or file-pipeline complexity; prefer direct Unit-of-Work and PostgreSQL ownership. |

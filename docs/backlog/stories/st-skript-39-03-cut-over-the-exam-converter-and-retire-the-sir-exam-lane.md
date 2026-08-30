@@ -44,6 +44,11 @@ Out of scope: new source formats, changes to the public product contract,
 narrowing current authenticated behavior, and retirement of generic Sir
 document-extraction or STT capabilities.
 
+Preservation applies to product behavior and domain semantics, not to Sir's
+cross-service API choreography, file handoffs, mirrored representations, or
+other implementation complexity that has no purpose inside Skriptoteket's
+Unit-of-Work and PostgreSQL boundary.
+
 ## Contract Inputs
 
 - `EPIC-SKRIPT-39` terms E2, E5, and E7; accepted `ADR-SKRIPT-0090`.
@@ -85,3 +90,4 @@ document-extraction or STT capabilities.
 | S3 | Exam-specific Sir surfaces retire only after both production consumers move; generic heavy-document extraction and STT remain. |
 | S4 | Qwen retires only after its last exam consumer moves; Luna-primary and GLM-failover remain. |
 | S5 | Validation does not impose a particular fixture identity, item count, provider-call count, lease-row count, or evidence-package shape. |
+| S6 | Local cutovers preserve product behavior while replacing needless Sir/API/file-pipeline complexity with the simplest aligned Unit-of-Work and PostgreSQL ownership model. |
