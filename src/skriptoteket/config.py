@@ -402,6 +402,29 @@ class Settings(BaseSettings):
             self.SIR_CONVERT_A_LOT_V2_BASE_URL = normalized_base_url
         return self
 
+    @model_validator(mode="after")
+    def _require_answer_key_provider_credentials(self) -> Settings:
+        if not self.LLM_ANSWER_KEY_ENABLED:
+            return self
+
+        missing_keys = [
+            key
+            for key, value in (
+                ("OPENAI_LLM_ANSWER_KEY_API_KEY", self.OPENAI_LLM_ANSWER_KEY_API_KEY),
+                (
+                    "OPENROUTER_LLM_ANSWER_KEY_API_KEY",
+                    self.OPENROUTER_LLM_ANSWER_KEY_API_KEY,
+                ),
+            )
+            if value.strip() == ""
+        ]
+        if missing_keys:
+            joined_keys = ", ".join(missing_keys)
+            raise ValueError(
+                f"LLM answer-key completion requires configured provider credentials: {joined_keys}"
+            )
+        return self
+
     @property
     def healthz_detailed_response(self) -> bool:
         if self.HEALTHZ_DETAILED_RESPONSE is None:
