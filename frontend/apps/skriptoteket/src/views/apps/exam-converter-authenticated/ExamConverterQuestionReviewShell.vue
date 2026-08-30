@@ -52,6 +52,7 @@ const pendingAiAdvanceFromItemId = ref<string | null>(null);
 const {
   canShowAnswerKeyEditor,
   editAdvisoryAnswerKey,
+  isPendingAdvisoryQuestion,
   showAdvisoryAnswerKeyPanel,
 } = useExamConverterAdvisoryAnswerKeyMode(toRef(props, "projection"));
 
@@ -304,18 +305,21 @@ watch(
         />
 
         <section class="mt-5 grid gap-4">
-          <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
-          <ExamConverterPointCorrectionEditor
-            :disabled="isCorrectionApplying"
-            :question="selectedQuestion"
-            @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
-          />
           <ExamConverterAdvisoryAnswerKeyPanel
             v-if="showAdvisoryAnswerKeyPanel(selectedQuestion)"
             :disabled="isCorrectionApplying"
             :question="selectedQuestion"
             @accept-advisory-answer-key="acceptAdvisoryAnswerKey"
             @edit-advisory-answer-key="editAdvisoryAnswerKey"
+          />
+          <ExamConverterEffectiveAnswerKeySummary
+            v-if="!isPendingAdvisoryQuestion(selectedQuestion)"
+            :question="selectedQuestion"
+          />
+          <ExamConverterPointCorrectionEditor
+            :disabled="isCorrectionApplying"
+            :question="selectedQuestion"
+            @apply-point-correction="(question, maxScore) => emit('applyPointCorrection', question, maxScore)"
           />
           <ExamConverterManualAnswerKeyEditor
             v-if="showsAnswerKeyEditor"

@@ -27,6 +27,7 @@ import type {
 } from "./digiexamTeacherCorrectionOverlay";
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
 import { isAiAnswerKeyProvenance } from "./digiexamIrQuestionReviewProjection";
+import { effectiveGapAnswerEntries } from "./examConverterPersistedCorrectionDisplay";
 
 const props = defineProps<{
   disabled: boolean;
@@ -146,11 +147,7 @@ function resetDrafts(): void {
   selectedChoiceIds.value = props.question.effectiveAnswerKey?.correct_alternative_ids?.length
     ? [...props.question.effectiveAnswerKey.correct_alternative_ids]
     : candidateChoiceIds();
-  const effectiveGapAnswers = new Map(
-    (props.question.effectiveAnswerKey?.correct_gap_answers ?? []).flatMap((gapAnswer) =>
-      Object.entries(gapAnswer),
-    ),
-  );
+  const effectiveGapAnswers = new Map(effectiveGapAnswerEntries(props.question));
   const candidateAnswers = candidateGapAnswers();
   gapAnswerDrafts.value = Object.fromEntries(
     props.question.gaps.map((gap) => [

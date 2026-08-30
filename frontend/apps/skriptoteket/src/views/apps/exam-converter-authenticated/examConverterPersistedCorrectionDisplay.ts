@@ -39,9 +39,10 @@ export function isEffectiveChoiceAlternative(params: {
 export function effectiveGapAnswerEntries(
   question: ExamConverterQuestionReviewRow,
 ): [string, string][] {
-  return question.effectiveAnswerKey?.correct_gap_answers?.flatMap((gapAnswer) =>
-    Object.entries(gapAnswer),
-  ) ?? [];
+  return question.effectiveAnswerKey?.correct_gap_answers?.map((gapAnswer) => [
+    gapAnswer.gap_id,
+    gapAnswer.value,
+  ]) ?? [];
 }
 
 export type EffectiveGapAnswerDisplayEntry = {

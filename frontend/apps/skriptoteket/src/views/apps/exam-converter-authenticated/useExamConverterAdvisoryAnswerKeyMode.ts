@@ -78,6 +78,7 @@ export function useExamConverterAdvisoryAnswerKeyMode(
   return {
     canShowAnswerKeyEditor,
     editAdvisoryAnswerKey,
+    isPendingAdvisoryQuestion,
     showAdvisoryAnswerKeyPanel,
   };
 }
