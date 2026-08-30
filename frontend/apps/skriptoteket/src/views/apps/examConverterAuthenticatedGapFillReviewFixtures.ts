@@ -372,8 +372,8 @@ function effectiveIrPayload(jobId: string) {
       {
         effective_answer_key: {
           correct_gap_answers: [
-            { "gap-001": "kretslopp" },
-            { "gap-002": "näringsväv" },
+            { gap_id: "gap-001", value: "kretslopp" },
+            { gap_id: "gap-002", value: "näringsväv" },
           ],
           lineage: isManualCorrection
             ? null

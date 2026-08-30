@@ -232,9 +232,9 @@ function persistedCorrectionQuestions(): FixtureQuestion[] {
 }
 
 function persistedCorrectionAnswerKeys(): ExamConverterEffectiveAnswerKeyByItem {
-  const gapAnswers: Record<string, string>[] = [
-    { "gap-001": "kretslopp" },
-    { "gap-002": "näringsväv" },
+  const gapAnswers = [
+    { gap_id: "gap-001", value: "kretslopp" },
+    { gap_id: "gap-002", value: "näringsväv" },
   ];
   return new Map([
     [

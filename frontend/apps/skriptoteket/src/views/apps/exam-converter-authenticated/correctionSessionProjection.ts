@@ -91,7 +91,8 @@ function effectiveAnswerKeyForSourceItem(params: {
   if (gapAnswerKey?.provenance && gapAnswerKey.provenance !== "absent") {
     return {
       correct_gap_answers: gapAnswerKey.accepted_values.map((acceptedValue) => ({
-        [acceptedValue.gap_id]: acceptedValue.value,
+        gap_id: acceptedValue.gap_id,
+        value: acceptedValue.value,
       })),
       lineage: null,
       provenance: gapAnswerKey.provenance,
@@ -128,7 +129,7 @@ function savedAnswerKeyForIntent(params: {
     const gapAnswers = Array.isArray(intent.payload.gap_answers)
       ? intent.payload.gap_answers
       : [];
-    const correctGapAnswers = gapAnswers.flatMap((gapAnswer): Record<string, string>[] => {
+    const correctGapAnswers = gapAnswers.flatMap((gapAnswer) => {
       if (!isJsonRecord(gapAnswer)) {
         return [];
       }
@@ -139,7 +140,7 @@ function savedAnswerKeyForIntent(params: {
           : [];
       return acceptedValues
         .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-        .map((value: string) => ({ [gapId]: value }));
+        .map((value: string) => ({ gap_id: gapId, value }));
     });
     if (correctGapAnswers.length === 0) return null;
     return {

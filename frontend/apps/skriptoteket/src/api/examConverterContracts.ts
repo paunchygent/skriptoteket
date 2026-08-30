@@ -148,7 +148,7 @@ type ExamAuthoringCandidateLineage = Omit<
 >;
 export type DigiExamEffectiveAnswerKey = {
   correct_alternative_ids?: number[];
-  correct_gap_answers?: Record<string, string>[];
+  correct_gap_answers?: { gap_id: string; value: string }[];
   lineage: DigiExamEffectiveAnswerKeyLineage | null;
   provenance: string;
 };

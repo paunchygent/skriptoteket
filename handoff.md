@@ -1,5 +1,14 @@
 ## Current
 
+- The Exam Converter frontend now reads effective gap answers through their
+  actual `{gap_id, value}` contract, so internal DigiExam gap identifiers are
+  never flattened into teacher-facing answer labels. Pending AI suggestions
+  show the proposal and Accept/Edit controls before any persisted effective-key
+  summary, and that summary stays hidden while the proposal is still pending.
+  Focused Vitest (19 tests), frontend typecheck, frontend lint, the production
+  build, and `git diff --check` passed. The user owns the production mobile
+  acceptance check; agents must not submit another `.dxe` unless the user
+  explicitly requests it.
 - Production repair main `e9fc77de` is deployed on Hemma. It preserves
   zero/absent-point open-ended questions as manual QTI, removes internal
   DigiExam gap identifiers from model-facing cloze text, rejects exact source
@@ -8,9 +17,7 @@
   it while the failed row remains historical. Focused validation passed: 22
   QTI repair tests, 123 affected answer-key domain tests, 10 native routing
   tests, and 3 real-PostgreSQL concurrency tests; lint and changed-file typing
-  passed. Hemma migrations and the checked-in readiness gate passed. The user
-  owns the remaining live conversion check with their original `.dxe`; agents
-  must not submit it again unless the user explicitly requests that action.
+  passed. Hemma migrations and the checked-in readiness gate passed.
 - [TASK-SKRIPT-39-03-02](docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md)
   is `done` under the user-directed no-further-review closeout. Canonical Hemma
   main `8fe6b722` serves the declared public deep link directly and completed
