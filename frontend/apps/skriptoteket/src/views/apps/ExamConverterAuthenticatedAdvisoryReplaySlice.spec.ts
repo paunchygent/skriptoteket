@@ -162,6 +162,7 @@ function pendingAdvisoryReviewItem(params: {
     provenance_detail: {
       candidate_id: `candidate-${params.itemId}`,
       candidate_payload_digest: `sha256:candidate-${params.itemId}`,
+      completion_report_sha256: "sha256:completion-report",
       prompt_template_version: "digiexam-choice-answer-key-v1",
       provider_profile_id: "task309-llama-cpp",
       schema_name: "digiexam_choice_answer_key_decision_v1",
@@ -339,6 +340,7 @@ function preservedSiblingReplayResult() {
         provenance_detail: {
           candidate_id: "candidate-item-005",
           candidate_payload_digest: "sha256:candidate-item-005",
+          completion_report_sha256: "sha256:completion-report",
           prompt_template_version: "digiexam-choice-answer-key-v1",
           provider_profile_id: "task309-llama-cpp",
           schema_name: "digiexam_choice_answer_key_decision_v1",
@@ -463,15 +465,72 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .not.toContain("is-detail-open");
   });
 
+  it("opens the selected row and discards an unsaved edit in place", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.get('[data-test="exam-converter-question-row-item-005"]').trigger("click");
+
+    const detail = wrapper.get('[data-test="exam-converter-selected-question-detail"]');
+    expect(detail.attributes("data-selected-item-id")).toBe("item-005");
+
+    await wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
+    await wrapper.get('[data-test="exam-converter-advisory-edit-choice-1"]')
+      .trigger("click");
+    expect(wrapper.get('[data-test="exam-converter-advisory-edit-choice-1"]')
+      .attributes("aria-pressed")).toBe("false");
+
+    await wrapper.get('[data-test="exam-converter-cancel-advisory-edit-action"]')
+      .trigger("click");
+
+    expect(detail.attributes("data-selected-item-id")).toBe("item-005");
+    expect(wrapper.get('[data-test="exam-converter-advisory-review-detail"]')
+      .attributes("data-editing")).toBe("false");
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).not.toHaveBeenCalled();
+    expect(gatewayMocks.replayLocalExamConversion).not.toHaveBeenCalled();
+
+    await wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
+    expect(wrapper.get('[data-test="exam-converter-advisory-edit-choice-1"]')
+      .attributes("aria-pressed")).toBe("true");
+  });
+
+  it("keeps the current question open until persistence and reprojection finish", async () => {
+    let resolveReplay: (value: Record<string, never>) => void = () => {};
+    gatewayMocks.replayLocalExamConversion.mockReturnValueOnce(
+      new Promise<Record<string, never>>((resolve) => {
+        resolveReplay = resolve;
+      }),
+    );
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.get('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
+    await wrapper.get('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledOnce();
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-004");
+
+    resolveReplay({});
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-005");
+  });
+
   it("renders untouched sibling AI suggestions when correction replay preserves them", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
     expect(wrapper.find('[data-test="exam-converter-question-row-item-004"]').text()).toContain(
-      "Granska",
+      "Förslag",
     );
     expect(wrapper.find('[data-test="exam-converter-question-row-item-005"]').text()).toContain(
-      "Granska",
+      "Förslag",
     );
 
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");

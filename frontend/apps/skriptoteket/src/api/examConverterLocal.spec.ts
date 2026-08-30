@@ -20,16 +20,20 @@ describe("Skriptoteket-owned Exam Converter API", () => {
     vi.clearAllMocks();
   });
 
-  it("submits the source directly to the local curated-app endpoint", async () => {
+  it("submits binary sources directly with byte-derived idempotency", async () => {
     clientMocks.apiFetch.mockResolvedValue({
       error: null,
       idempotent_replay: false,
       job_id: "local-job-1",
       status: "submitted",
     });
-    const file = new File(["{}"], "prov.dxe", { type: "application/json" });
+    const firstFile = new File([new Uint8Array([0x80])], "prov.dxe", { type: "application/octet-stream" });
+    const sameBytesFile = new File([new Uint8Array([0x80])], "prov.dxe", { type: "application/octet-stream" });
+    const distinctBytesFile = new File([new Uint8Array([0x81])], "prov.dxe", { type: "application/octet-stream" });
 
-    const result = await submitLocalExamConversion({ file });
+    const result = await submitLocalExamConversion({ file: firstFile });
+    const sameBytesResult = await submitLocalExamConversion({ file: sameBytesFile });
+    const distinctBytesResult = await submitLocalExamConversion({ file: distinctBytesFile });
 
     expect(clientMocks.apiFetch).toHaveBeenCalledWith(
       "/api/v1/apps/documents.conversion_hub/exam-converter/conversions",
@@ -38,6 +42,8 @@ describe("Skriptoteket-owned Exam Converter API", () => {
     expect(result.jobId).toBe("local-job-1");
     const request = clientMocks.apiFetch.mock.calls[0]?.[1] as { body: FormData };
     expect(request.body.get("idempotency_key")).toMatch(/^exam-converter-/);
+    expect(result.idempotencyKey).toBe(sameBytesResult.idempotencyKey);
+    expect(result.idempotencyKey).not.toBe(distinctBytesResult.idempotencyKey);
     expect(result.idempotentReplay).toBe(false);
   });
 

@@ -215,8 +215,24 @@ export async function sha256HexFromText(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error("Could not read upload bytes."));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read upload bytes."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 export async function sha256HexFromBlob(blob: Blob): Promise<string> {
-  return await sha256HexFromText(await blob.text());
+  const digest = await crypto.subtle.digest("SHA-256", await readBlobAsArrayBuffer(blob));
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export function stableJsonStringify(value: unknown): string {

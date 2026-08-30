@@ -16,18 +16,21 @@
   remain exited with restart disabled.
 - Exam Converter uses PostgreSQL/UoW as the public-job authority and has no
   web-process queue. Teacher review persists one or all valid AI suggestions
-  through one atomic correction-session write, waits for durable reprojection,
-  and advances directly through unresolved questions. The approved token UI
-  provides equal icon actions on desktop and phone, top and bottom accept/edit
-  controls, explicit overview navigation, and bulk acceptance without exposing
-  gap identifiers.
+  through the correction-session UoW, waits for durable reprojection, and advances directly
+  through unresolved questions. The corrected review UI has neutral equal `Granska` /
+  `Godkänn alla` actions, separate `Förslag` and `Saknar facit` states, exact-row navigation,
+  local `Avbryt`, and no exposed gap identifiers. Desktop keeps one fixed-height detail frame with stationary
+  `Översikt | Godkänn/Spara | Ändra/Avbryt` slots and no duplicate footer; phone uses its
+  distinct natural-height composition with contained top and bottom actions.
 - The mixed-DigiExam backend repair and frontend review-projection follow-up are
   integrated on `main` and deployed on Hemma. The real authenticated local
   browser journey used unchanged `1776888013-ak7-lag-och-ratt.dxe` and crossed
-  upload, actual worker/provider completion, bulk acceptance, four manual gaps,
-  durable replay/reprojection, and QTI/PDF downloads with zero browser errors.
-  Focused frontend tests (14), lint, typecheck, real PostgreSQL integration, and
-  conversion/idempotency concurrency checks are green. The user owns the
+  upload, actual worker/provider completion, 390 px and 1440 px layouts, local
+  cancel with zero writes, individual acceptance/advance, atomic bulk
+  acceptance, four manual gaps, durable replay/reprojection, and QTI/PDF
+  downloads with zero browser errors. The real PostgreSQL vertical, 1,264
+  frontend tests, lint, typecheck, production build, and binary source-hash
+  checks are green. The user owns the
   production mobile `.dxe` acceptance; agents did not submit a production file.
   Production state confirms the failed-job replay fix: failed row
   `29b8b86f-0edb-47ac-9899-7523893504a3` relinquished its deterministic key when
@@ -184,11 +187,10 @@
 
 ## Facts
 
-- Session Date: 2026-08-29
-- Last Refreshed: 2026-08-30
+- Session Date: 2026-08-31
+- Last Refreshed: 2026-08-31
 - Current docs validate with `pdm run docs-validate`.
-- Historical terminal docs audit separately with
-  `pdm run python -m scripts.historical_docs.validate_historical_docs`.
+- Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - The quality manifest is a routing table for existing repository commands; it
   does not model product architecture or replace local producers.
 - Product, Docker, deployment, database, auth, worker, and observability

@@ -110,6 +110,12 @@ function saveEdited(): void {
   if (!props.disabled && editedAnswerKey.value) emit("save", editedAnswerKey.value);
 }
 
+function cancelEdit(): void {
+  if (props.disabled) return;
+  resetDrafts();
+  emit("cancel");
+}
+
 watch(
   () => [props.question.itemId, JSON.stringify(candidatePayload.value)],
   resetDrafts,
@@ -119,7 +125,7 @@ watch(
 
 <template>
   <article
-    class="min-w-0"
+    class="grid min-w-0 grid-rows-[auto_1fr] md:h-[30rem]"
     data-test="exam-converter-advisory-review-detail"
     :data-editing="editing ? 'true' : 'false'"
   >
@@ -181,7 +187,7 @@ watch(
           class="btn-ghost min-w-0 px-2 shadow-none sm:px-4"
           :disabled="disabled"
           data-test="exam-converter-cancel-advisory-edit-action"
-          @click="emit('cancel')"
+          @click="cancelEdit"
         >
           <IconX
             :size="16"
@@ -208,7 +214,7 @@ watch(
 
     <section
       v-if="editing"
-      class="grid gap-4 py-5"
+      class="grid content-start gap-4 py-5 md:min-h-0 md:overflow-y-auto"
     >
       <ol
         v-if="candidatePayload?.kind === 'choice'"
@@ -256,7 +262,7 @@ watch(
 
     <section
       v-else
-      class="grid gap-5 py-5"
+      class="grid content-start gap-5 py-5 md:min-h-0 md:overflow-y-auto"
     >
       <div>
         <h4 class="border-b border-navy/35 pb-2 text-base font-semibold leading-tight text-navy">Frågetext</h4>
@@ -266,7 +272,7 @@ watch(
     </section>
 
     <footer
-      class="grid grid-cols-2 gap-3 border-t border-navy/25 pt-5"
+      class="grid grid-cols-2 gap-3 border-t border-navy/25 pt-5 md:hidden"
       data-test="exam-converter-review-bottom-actions"
     >
       <button
@@ -293,7 +299,7 @@ watch(
         class="btn-ghost min-w-0 shadow-none"
         :disabled="disabled"
         :data-test="editing ? 'exam-converter-cancel-advisory-edit-bottom-action' : 'exam-converter-edit-advisory-answer-key-bottom-action'"
-        @click="editing ? emit('cancel') : emit('edit')"
+        @click="editing ? cancelEdit() : emit('edit')"
       >
         <IconX
           v-if="editing"

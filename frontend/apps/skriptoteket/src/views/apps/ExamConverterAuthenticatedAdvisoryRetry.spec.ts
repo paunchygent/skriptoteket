@@ -185,7 +185,7 @@ describe("ExamConverterAuthenticatedView advisory retry", () => {
     expect(wrapper.find('[data-test="exam-converter-advisory-retry-panel"]').exists()).toBe(
       false,
     );
-    expect(wrapper.text()).toContain("Kontrollera facit");
+    expect(wrapper.text()).toContain("Föreslagna facit");
   });
 
   it("increments only after a completed retry returns the same failure class", async () => {

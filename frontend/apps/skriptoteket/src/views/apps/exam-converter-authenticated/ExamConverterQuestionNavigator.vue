@@ -11,10 +11,15 @@
  *   - Uses the review projection rows produced by `digiexamIrReviewParser`.
  */
 
-import { IconAi, IconCheck, IconEdit, IconWarning } from "../../../components/icons";
+import {
+  IconAi,
+  IconCheck,
+  IconEdit,
+  IconNextPage,
+  IconWarning,
+} from "../../../components/icons";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
-import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
 
 defineProps<{
   questions: ExamConverterQuestionReviewRow[];
@@ -26,9 +31,10 @@ const emit = defineEmits<{
 }>();
 
 function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
+  if (question.statusSymbol === "ai_suggestion") return "Förslag";
+  if (question.statusSymbol === "validation_required") return "Saknar facit";
   return question.answerKeyReviewStateLabel;
 }
-
 </script>
 
 <template>
@@ -38,7 +44,7 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
       :key="question.itemId"
       type="button"
       :aria-selected="question.itemId === selectedItemId ? 'true' : 'false'"
-      class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] gap-2 border px-2.5 py-2.5 text-left text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
+      class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_5.75rem_1rem] items-center gap-2 border px-2.5 py-2.5 text-left text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
       :class="question.itemId === selectedItemId ? 'border-navy bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'border-navy/15 bg-panel'"
       :data-test="`exam-converter-question-navigator-row-${question.itemId}`"
       role="option"
@@ -51,28 +57,16 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         <span class="line-clamp-2 text-sm font-medium leading-snug">
           {{ question.promptText }}
         </span>
-        <span class="mt-2 flex flex-wrap items-center gap-1">
-          <span class="border border-navy/20 bg-panel px-1.5 py-0.5 text-[0.6875rem] font-medium leading-none text-navy/75">
-            {{ question.typeLabel }}
-          </span>
-          <span
-            v-for="missingField in visibleMissingFieldsForQuestion(question)"
-            :key="missingField"
-            class="border border-warning/70 bg-panel px-1.5 py-0.5 text-[0.6875rem] font-medium leading-none text-warning"
-          >
-            {{ missingField }}
-          </span>
-        </span>
       </span>
       <span
-        class="inline-grid min-w-[5rem] place-items-center gap-1"
+        class="inline-flex min-w-0 items-center gap-1.5 text-left"
         :aria-label="statusSymbolLabel(question)"
         role="img"
       >
         <IconAi
           v-if="question.statusSymbol === 'ai_suggestion'"
           :size="18"
-          class="h-4 w-4 text-success"
+          class="h-4 w-4 shrink-0 text-navy"
           aria-hidden="true"
         />
         <IconCheck
@@ -90,19 +84,18 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         <IconWarning
           v-else
           :size="18"
-          class="h-4 w-4 text-error"
+          class="h-4 w-4 shrink-0 text-warning"
           aria-hidden="true"
         />
-        <span class="text-xs font-semibold leading-tight">
-          {{ question.answerKeyReviewStateLabel }}
-        </span>
-        <span
-          v-if="question.answerKeyReviewStateReasonLabel"
-          class="text-[0.6875rem] font-medium leading-tight text-navy/65"
-        >
-          {{ question.answerKeyReviewStateReasonLabel }}
+        <span class="text-[0.6875rem] font-semibold leading-tight">
+          {{ statusSymbolLabel(question) }}
         </span>
       </span>
+      <IconNextPage
+        :size="18"
+        class="h-[1.125rem] w-[1.125rem] shrink-0 text-navy/65"
+        aria-hidden="true"
+      />
     </button>
   </div>
 </template>

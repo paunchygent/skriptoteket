@@ -185,7 +185,7 @@ watch(
       data-test="exam-converter-question-list-surface"
     >
       <h3 class="text-base font-semibold leading-tight text-navy">
-        Frågor att kontrollera
+        Att hantera
       </h3>
 
       <div

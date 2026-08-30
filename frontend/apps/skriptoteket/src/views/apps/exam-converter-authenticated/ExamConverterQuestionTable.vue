@@ -11,10 +11,15 @@
  *   - Shares review row contracts with `ExamConverterQuestionNavigator`.
  */
 
-import { IconAi, IconCheck, IconEdit, IconWarning } from "../../../components/icons";
+import {
+  IconAi,
+  IconCheck,
+  IconEdit,
+  IconNextPage,
+  IconWarning,
+} from "../../../components/icons";
 
 import type { ExamConverterQuestionReviewRow } from "./digiexamIrReviewParser";
-import { visibleMissingFieldsForQuestion } from "./digiexamIrReviewParser";
 
 defineProps<{
   questions: ExamConverterQuestionReviewRow[];
@@ -26,9 +31,10 @@ const emit = defineEmits<{
 }>();
 
 function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
+  if (question.statusSymbol === "ai_suggestion") return "Förslag";
+  if (question.statusSymbol === "validation_required") return "Saknar facit";
   return question.answerKeyReviewStateLabel;
 }
-
 </script>
 
 <template>
@@ -41,14 +47,14 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
         <th class="w-24 px-2 py-3 font-semibold xl:w-28">
           Typ
         </th>
-        <th class="w-24 px-2 py-3 font-semibold xl:w-28">
-          Saknas
-        </th>
         <th class="w-20 px-2 py-3 font-semibold">
           Poäng
         </th>
-        <th class="w-24 px-2 py-3 text-center font-semibold">
+        <th class="w-36 px-2 py-3 text-left font-semibold">
           Status
+        </th>
+        <th class="w-14 px-2 py-3">
+          <span class="sr-only">Öppna</span>
         </th>
       </tr>
     </thead>
@@ -73,34 +79,18 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
           {{ question.typeLabel }}
         </td>
         <td class="px-2 py-4 align-top">
-          <span
-            v-if="visibleMissingFieldsForQuestion(question).length === 0"
-            class="text-navy/70"
-          >
-            —
-          </span>
-          <span
-            v-for="missingField in visibleMissingFieldsForQuestion(question)"
-            v-else
-            :key="missingField"
-            class="mr-1 inline-flex border border-warning/70 bg-panel px-2 py-1 text-xs font-medium leading-none text-warning"
-          >
-            {{ missingField }}
-          </span>
-        </td>
-        <td class="px-2 py-4 align-top">
           {{ question.pointsLabel }}
         </td>
-        <td class="px-2 py-4 text-center align-top">
+        <td class="px-2 py-4 text-left align-middle">
           <span
-            class="inline-grid place-items-center gap-1"
+            class="inline-flex items-center gap-2"
             :aria-label="statusSymbolLabel(question)"
             role="img"
           >
             <IconAi
               v-if="question.statusSymbol === 'ai_suggestion'"
               :size="20"
-              class="h-5 w-5 text-success"
+              class="h-5 w-5 shrink-0 text-navy"
               aria-hidden="true"
             />
             <IconCheck
@@ -118,19 +108,26 @@ function statusSymbolLabel(question: ExamConverterQuestionReviewRow): string {
             <IconWarning
               v-else
               :size="20"
-              class="h-5 w-5 text-error"
+              class="h-5 w-5 shrink-0 text-warning"
               aria-hidden="true"
             />
             <span class="text-xs font-semibold leading-tight text-navy">
-              {{ question.answerKeyReviewStateLabel }}
-            </span>
-            <span
-              v-if="question.answerKeyReviewStateReasonLabel"
-              class="text-[0.6875rem] font-medium leading-tight text-navy/65"
-            >
-              {{ question.answerKeyReviewStateReasonLabel }}
+              {{ statusSymbolLabel(question) }}
             </span>
           </span>
+        </td>
+        <td class="px-2 py-4 text-right align-middle">
+          <button
+            type="button"
+            class="btn-ghost grid h-10 w-10 place-items-center p-0 shadow-none"
+            :aria-label="`Öppna fråga ${question.sequence}`"
+            @click.stop="emit('questionSelected', question)"
+          >
+            <IconNextPage
+              :size="18"
+              class="h-[1.125rem] w-[1.125rem] text-navy/65"
+            />
+          </button>
         </td>
       </tr>
     </tbody>

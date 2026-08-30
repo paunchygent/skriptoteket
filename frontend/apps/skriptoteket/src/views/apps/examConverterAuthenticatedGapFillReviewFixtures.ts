@@ -327,6 +327,7 @@ function answerKeyReviewStatePayload(jobId: string, candidateAvailable: boolean)
           : {
               candidate_id: "candidate-item-013",
               candidate_payload_digest: "sha256:candidate-item-013",
+              completion_report_sha256: "sha256:completion-report-gap",
               prompt_template_version: "digiexam-gap-fill-answer-key-v1",
               provider_profile_id: "task309-llama-cpp",
               schema_name: "digiexam_gap_fill_answer_key_decision_v1",

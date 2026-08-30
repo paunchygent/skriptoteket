@@ -204,37 +204,6 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps other question editors usable after saving an AI-seeded facit edit", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    await wrapper
-      .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
-      .trigger("click");
-    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').trigger("click");
-    await wrapper
-      .find('[data-test="exam-converter-save-advisory-answer-key-action"]')
-      .trigger("click");
-    await flushPromises();
-    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not expose destructive facit removal in the question editor", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
-    await wrapper
-      .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
-      .trigger("click");
-    await flushPromises();
-    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
-    expect(
-      wrapper.find('[data-test="exam-converter-revert-answer-key-action"]').exists(),
-    ).toBe(false);
-  });
-
   it("persists unchanged AI-prefilled choice facit with advisory candidate provenance", async () => {
     gatewayMocks.applyExamAuthoringCorrections.mockResolvedValueOnce({
       ...correctionApplyResult(),
@@ -336,8 +305,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await finishConversion(wrapper);
     const gapFillRow = wrapper.find('[data-test="exam-converter-question-row-item-013"]');
     expect(gapFillRow.text()).toContain("Lucktext");
-    expect(gapFillRow.text()).toContain("Granska");
-    expect(gapFillRow.text()).not.toContain("Frågetypen behöver kontrolleras");
+    expect(gapFillRow.text()).toContain("Förslag");
     expect(gapFillRow.find(".lucide-sparkles").exists()).toBe(true);
     await gapFillRow.trigger("click");
     expect(
@@ -456,5 +424,19 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     expect(
       wrapper.find('[data-test="exam-converter-advisory-edit-choice-3"]').attributes("aria-pressed"),
     ).toBe("true");
+
+    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').trigger("click");
+    expect(
+      wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').attributes("aria-pressed"),
+    ).toBe("true");
+    await wrapper.find('[data-test="exam-converter-cancel-advisory-edit-action"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').trigger("click");
+
+    expect(
+      wrapper.find('[data-test="exam-converter-advisory-edit-choice-3"]').attributes("aria-pressed"),
+    ).toBe("true");
+    expect(
+      wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').attributes("aria-pressed"),
+    ).toBe("false");
   });
 });

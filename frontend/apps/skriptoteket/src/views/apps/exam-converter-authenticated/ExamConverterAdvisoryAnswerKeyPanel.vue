@@ -49,13 +49,13 @@ const candidateGapEntries = computed(() => {
 <template>
   <section
     v-if="candidatePayload"
-    class="grid gap-3 border border-action/35 bg-action/5 p-3 text-sm text-navy"
+    class="grid gap-3 border border-navy/25 bg-navy/5 p-3 text-sm text-navy"
     data-test="exam-converter-selected-question-ai-suggestion"
   >
     <div class="flex items-start gap-2">
       <IconAi
         :size="18"
-        class="mt-0.5 h-4 w-4 shrink-0 text-success"
+        class="mt-0.5 h-4 w-4 shrink-0 text-navy"
         aria-hidden="true"
       />
       <div class="grid min-w-0 gap-1">
@@ -76,10 +76,10 @@ const candidateGapEntries = computed(() => {
         <li
           v-for="entry in candidateChoiceEntries"
           :key="entry.id"
-          class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] gap-3 border border-success/40 bg-success/10 px-2 py-2"
+          class="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] gap-3 border border-navy/25 bg-panel px-2 py-2"
           :data-test="`exam-converter-advisory-choice-${entry.id}`"
         >
-          <span class="inline-grid h-7 w-7 place-items-center border border-success bg-success text-xs font-semibold leading-none text-panel">
+          <span class="inline-grid h-7 w-7 place-items-center border border-navy/25 text-xs font-semibold leading-none text-navy">
             {{ entry.id }}
           </span>
           <span class="leading-relaxed">
@@ -94,7 +94,7 @@ const candidateGapEntries = computed(() => {
         <span
           v-for="entry in candidateGapEntries"
           :key="entry.gapId"
-          class="inline-flex min-w-0 border border-success/40 bg-success/10 px-2 py-2 text-xs font-semibold leading-tight text-success"
+          class="inline-flex min-w-0 border border-navy/25 bg-panel px-2 py-2 text-xs font-semibold leading-tight text-navy"
           :data-test="`exam-converter-advisory-gap-${entry.gapId}`"
         >
           {{ entry.label }}: {{ entry.value }}
