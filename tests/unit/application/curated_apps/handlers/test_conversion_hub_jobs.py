@@ -99,6 +99,9 @@ class FakeExamConversionArtifactStore:
             named for named in artifact.named_artifacts if named.artifact_key == artifact_key
         )
 
+    def delete_artifact(self, *, job_id: UUID) -> None:
+        self.artifacts.pop(job_id, None)
+
 
 class FakeSirConvertClient:
     def __init__(self) -> None:

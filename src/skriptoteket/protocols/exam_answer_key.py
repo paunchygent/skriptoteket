@@ -94,7 +94,12 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
 
     async def create(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob: ...
 
-    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob: ...
+    async def update(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        expected_worker_id: str | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob: ...
 
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None: ...
 
@@ -109,10 +114,21 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
     async def claim_next_expired(
         self,
         *,
+        worker_id: str,
         now: datetime,
+        lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         """Take one RUNNING job whose worker lease expired, for fail-closing."""
         ...
+
+    async def heartbeat(
+        self,
+        *,
+        job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool: ...
 
 
 class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):

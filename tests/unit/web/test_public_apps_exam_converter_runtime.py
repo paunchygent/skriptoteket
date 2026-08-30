@@ -20,7 +20,6 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterJobStatus,
     PublicExamConverterSubmittedJob,
     PublicExamConverterTarget,
-    PublicExamConverterUpload,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
@@ -37,23 +36,24 @@ from skriptoteket.domain.curated_apps.models import (
     curated_app_tool_id,
 )
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    public_exam_converter_store,
-)
 from skriptoteket.infrastructure.security.public_helper_request_throttle import (
     InMemoryPublicHelperRequestThrottle,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.exam_conversion import ExamConversionArtifactStoreProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.public_exam_converter import (
-    PublicExamConverterJobStoreProtocol,
-    PublicExamConverterLocalExecutorProtocol,
-)
+from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.web.api.v1 import public_apps_exam_converter as api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
-from tests.fixtures.public_exam_converter_runtime import local_public_exam_artifact
+from tests.fixtures.public_exam_converter_runtime import (
+    FakeExamConversionArtifactStore,
+    FakePublicExamConverterJobRepository,
+    FakeUnitOfWork,
+    local_public_exam_artifact,
+)
 
 
 class FixedClock:
@@ -69,44 +69,21 @@ class FixedIdGenerator:
         return UUID("4f27d43f-7c2e-4c9c-a4df-2d799f88527a")
 
 
-class FakeLocalExecutor:
-    def __init__(
-        self,
-        *,
-        store: PublicExamConverterJobStoreProtocol,
-        complete_immediately: bool = True,
-    ) -> None:
-        self.requests: list[
-            tuple[
-                PublicExamConverterSubmittedJob,
-                PublicExamConverterUpload,
-                PublicExamConverterUpload | None,
-                str,
-            ]
-        ] = []
-        self._store = store
-        self._complete_immediately = complete_immediately
+class RuntimeHarness:
+    def __init__(self) -> None:
+        self.store = FakePublicExamConverterJobRepository()
+        self.artifacts = FakeExamConversionArtifactStore()
 
-    @property
-    def store(self) -> PublicExamConverterJobStoreProtocol:
-        return self._store
-
-    async def enqueue(
-        self,
-        *,
-        job: PublicExamConverterSubmittedJob,
-        source_dxe: PublicExamConverterUpload,
-        graded_result_pdf: PublicExamConverterUpload | None,
-        correlation_id: str,
-    ) -> None:
-        self.requests.append((job, source_dxe, graded_result_pdf, correlation_id))
-        if not self._complete_immediately:
-            return
-        await self._store.update(
+    async def complete(self, *, job_id: UUID) -> None:
+        job = self.store.jobs[job_id]
+        self.artifacts.store_artifact(
+            job_id=job_id,
+            artifact=local_public_exam_artifact(source_dxe=job.source_dxe),
+        )
+        await self.store.update(
             job=replace(
                 job,
                 status=PublicExamConverterJobStatus.SUCCEEDED,
-                artifact=local_public_exam_artifact(source_dxe=source_dxe),
                 result={
                     "conversion_metadata": {
                         "route_key": "digiexam_dxe_to_examnet_migration_bundle",
@@ -127,7 +104,7 @@ class RuntimeProvider(Provider):
         registry: CuratedAppRegistryProtocol,
         throttle: PublicHelperThrottleProtocol,
         store: PublicExamConverterJobStoreProtocol,
-        executor: PublicExamConverterLocalExecutorProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
     ) -> None:
         super().__init__()
         self._settings = settings
@@ -135,7 +112,7 @@ class RuntimeProvider(Provider):
         self._registry = registry
         self._throttle = throttle
         self._store = store
-        self._executor = executor
+        self._artifacts = artifacts
 
     @provide(scope=Scope.APP)
     def settings(self) -> Settings:
@@ -158,8 +135,12 @@ class RuntimeProvider(Provider):
         return self._store
 
     @provide(scope=Scope.APP)
-    def executor(self) -> PublicExamConverterLocalExecutorProtocol:
-        return self._executor
+    def artifacts(self) -> ExamConversionArtifactStoreProtocol:
+        return self._artifacts
+
+    @provide(scope=Scope.REQUEST)
+    def uow(self) -> UnitOfWorkProtocol:
+        return FakeUnitOfWork()
 
     @provide(scope=Scope.APP)
     def id_generator(self) -> IdGeneratorProtocol:
@@ -169,7 +150,8 @@ class RuntimeProvider(Provider):
     def handler(self) -> PublicExamConverterRuntimeHandler:
         return PublicExamConverterRuntimeHandler(
             store=self._store,
-            executor=self._executor,
+            artifacts=self._artifacts,
+            uow=FakeUnitOfWork(),
             clock=self._clock,
             id_generator=FixedIdGenerator(),
         )
@@ -225,9 +207,8 @@ def registry() -> CuratedAppRegistryProtocol:
 
 
 @pytest.fixture
-def local_executor() -> FakeLocalExecutor:
-    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
-    return FakeLocalExecutor(store=store)
+def runtime() -> RuntimeHarness:
+    return RuntimeHarness()
 
 
 @pytest.fixture
@@ -235,7 +216,7 @@ def app(
     settings: Settings,
     now: datetime,
     registry: CuratedAppRegistryProtocol,
-    local_executor: FakeLocalExecutor,
+    runtime: RuntimeHarness,
 ) -> FastAPI:
     app = FastAPI()
 
@@ -251,15 +232,14 @@ def app(
 
     app.middleware("http")(error_handler_middleware)
     app.include_router(api.router)
-    store = local_executor.store
     container = make_async_container(
         RuntimeProvider(
             settings=settings,
             clock=FixedClock(now=now),
             registry=registry,
             throttle=InMemoryPublicHelperRequestThrottle(),
-            store=store,
-            executor=local_executor,
+            store=runtime.store,
+            artifacts=runtime.artifacts,
         )
     )
     setup_dishka(container, app)
@@ -278,7 +258,7 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 @pytest.mark.asyncio
 async def test_public_exam_converter_submit_poll_manifest_and_download_use_local_executor(
     client: httpx.AsyncClient,
-    local_executor: FakeLocalExecutor,
+    runtime: RuntimeHarness,
 ) -> None:
     client.cookies.set("ambient_session", "ignored")
     response = await client.post(
@@ -296,15 +276,19 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
     assert payload["public_job_id"] == "4f27d43f-7c2e-4c9c-a4df-2d799f88527a"
     assert payload["status"] == "queued"
     assert payload["requested_targets"] == ["examnet_pdf"]
-    job, source_dxe, graded_result_pdf, correlation_id = local_executor.requests[0]
+    job_id = UUID(payload["public_job_id"])
+    job = runtime.store.jobs[job_id]
+    source_dxe = job.source_dxe
+    graded_result_pdf = job.graded_result_pdf
     assert job.local_job_id == UUID("4f27d43f-7c2e-4c9c-a4df-2d799f88527a")
     assert job.requested_targets == (PublicExamConverterTarget.EXAMNET_PDF,)
     assert source_dxe.filename == "exam.dxe"
     assert graded_result_pdf is not None
     assert graded_result_pdf.filename == "graded-result.pdf"
-    assert correlation_id == "53f6d262-789c-4af4-a2c2-5ff5044d452f"
+    assert job.correlation_id == "53f6d262-789c-4af4-a2c2-5ff5044d452f"
     assert "grant_token" not in PublicExamConverterSubmittedJob.__dataclass_fields__
     assert "upstream_job_id" not in PublicExamConverterSubmittedJob.__dataclass_fields__
+    await runtime.complete(job_id=job_id)
 
     status_response = await client.get(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
@@ -358,7 +342,7 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
 @pytest.mark.asyncio
 async def test_public_exam_converter_rejects_invalid_target_before_local_enqueue(
     client: httpx.AsyncClient,
-    local_executor: FakeLocalExecutor,
+    runtime: RuntimeHarness,
 ) -> None:
     response = await client.post(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
@@ -370,13 +354,13 @@ async def test_public_exam_converter_rejects_invalid_target_before_local_enqueue
     assert response.json()["error"]["details"]["reason_code"] == (
         "public_exam_converter_invalid_target"
     )
-    assert local_executor.requests == []
+    assert runtime.store.jobs == {}
 
 
 @pytest.mark.asyncio
 async def test_public_exam_converter_rejects_unsupported_source_file_type(
     client: httpx.AsyncClient,
-    local_executor: FakeLocalExecutor,
+    runtime: RuntimeHarness,
 ) -> None:
     response = await client.post(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
@@ -387,7 +371,7 @@ async def test_public_exam_converter_rejects_unsupported_source_file_type(
     assert response.json()["error"]["details"]["reason_code"] == (
         "public_exam_converter_unsupported_file_type"
     )
-    assert local_executor.requests == []
+    assert runtime.store.jobs == {}
 
 
 @pytest.mark.asyncio
@@ -395,7 +379,7 @@ async def test_public_exam_converter_rate_limits_anonymous_submit(
     now: datetime,
     registry: CuratedAppRegistryProtocol,
 ) -> None:
-    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
+    runtime = RuntimeHarness()
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(api.router)
@@ -405,8 +389,8 @@ async def test_public_exam_converter_rate_limits_anonymous_submit(
             clock=FixedClock(now=now),
             registry=registry,
             throttle=InMemoryPublicHelperRequestThrottle(),
-            store=store,
-            executor=FakeLocalExecutor(store=store),
+            store=runtime.store,
+            artifacts=runtime.artifacts,
         )
     )
     setup_dishka(container, app)
@@ -435,8 +419,7 @@ async def test_public_exam_converter_queued_job_remains_pollable_and_enforces_co
     now: datetime,
     registry: CuratedAppRegistryProtocol,
 ) -> None:
-    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
-    executor = FakeLocalExecutor(store=store, complete_immediately=False)
+    runtime = RuntimeHarness()
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(api.router)
@@ -446,8 +429,8 @@ async def test_public_exam_converter_queued_job_remains_pollable_and_enforces_co
             clock=FixedClock(now=now),
             registry=registry,
             throttle=InMemoryPublicHelperRequestThrottle(),
-            store=store,
-            executor=executor,
+            store=runtime.store,
+            artifacts=runtime.artifacts,
         )
     )
     setup_dishka(container, app)

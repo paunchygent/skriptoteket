@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobStatus,
     ConversionHubPdfLayoutV2,
 )
+from skriptoteket.domain.errors import not_found
 from skriptoteket.infrastructure.db.models.conversion_hub_job import ConversionHubJobModel
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 
@@ -160,7 +161,7 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
         model = await self._session.get(ConversionHubJobModel, job.id)
         if model is None:
-            return job
+            raise not_found("ConversionHubJob", str(job.id))
 
         pdf_layout = job.pdf_layout
         model.input_filename = job.input_filename

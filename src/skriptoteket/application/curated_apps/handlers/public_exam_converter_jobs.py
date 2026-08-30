@@ -7,7 +7,10 @@ from datetime import timedelta
 
 from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.exam_conversion import ExamConversionNamedArtifact
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConversionNamedArtifact,
+    ExamConversionStoredArtifact,
+)
 from skriptoteket.application.curated_apps.exam_conversion_review_artifacts import (
     build_artifact_manifest,
 )
@@ -25,13 +28,12 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
 from skriptoteket.application.curated_apps.public_exam_converter_artifacts import (
     project_public_exam_converter_manifest,
 )
-from skriptoteket.domain.errors import not_found, validation_error
+from skriptoteket.domain.errors import DomainError, ErrorCode, not_found, validation_error
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.exam_conversion import ExamConversionArtifactStoreProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.public_exam_converter import (
-    PublicExamConverterJobStoreProtocol,
-    PublicExamConverterLocalExecutorProtocol,
-)
+from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 APP_ID = "documents.conversion_hub"
 CAPABILITY = "exam_converter"
@@ -44,12 +46,14 @@ class PublicExamConverterRuntimeHandler:
         self,
         *,
         store: PublicExamConverterJobStoreProtocol,
-        executor: PublicExamConverterLocalExecutorProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
+        uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._store = store
-        self._executor = executor
+        self._artifacts = artifacts
+        self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
 
@@ -61,30 +65,41 @@ class PublicExamConverterRuntimeHandler:
         targets: tuple[PublicExamConverterTarget, ...],
         correlation_id: str,
         artifact_ttl_seconds: int,
+        concurrency_limit: int,
         api_namespace: str,
     ) -> PublicExamConverterSubmitResponse:
         now = self._clock.now()
         local_job_id = self._id_generator.new_uuid()
         public_job_id = str(local_job_id)
-        job = await self._store.create(
-            job=PublicExamConverterSubmittedJob(
-                public_job_id=public_job_id,
-                local_job_id=local_job_id,
-                requested_targets=targets,
-                status=PublicExamConverterJobStatus.QUEUED,
-                source_filename=source_dxe.filename,
-                submitted_at=now,
-                updated_at=now,
-                expires_at=now + timedelta(seconds=artifact_ttl_seconds),
-                correlation_id=correlation_id,
-            )
-        )
-        await self._executor.enqueue(
-            job=job,
+        candidate = PublicExamConverterSubmittedJob(
+            public_job_id=public_job_id,
+            local_job_id=local_job_id,
+            requested_targets=targets,
+            status=PublicExamConverterJobStatus.QUEUED,
+            source_filename=source_dxe.filename,
+            submitted_at=now,
+            updated_at=now,
+            expires_at=now + timedelta(seconds=artifact_ttl_seconds),
+            correlation_id=correlation_id,
             source_dxe=source_dxe,
             graded_result_pdf=graded_result_pdf,
-            correlation_id=correlation_id,
         )
+        async with self._uow:
+            job = await self._store.create_if_capacity(
+                job=candidate,
+                now=now,
+                concurrency_limit=concurrency_limit,
+            )
+        if job is None:
+            raise DomainError(
+                code=ErrorCode.TOO_MANY_REQUESTS,
+                message="Public Exam Converter concurrency limit exceeded.",
+                details={
+                    "app_id": APP_ID,
+                    "capability": CAPABILITY,
+                    "reason_code": "public_exam_converter_concurrency_limited",
+                },
+            )
         return PublicExamConverterSubmitResponse(
             public_job_id=public_job_id,
             status=job.status,
@@ -95,9 +110,6 @@ class PublicExamConverterRuntimeHandler:
             result_url=f"{api_namespace}/jobs/{public_job_id}/result",
             artifact_manifest_url=f"{api_namespace}/jobs/{public_job_id}/artifacts",
         )
-
-    async def count_active_jobs(self) -> int:
-        return await self._store.count_active(now=self._clock.now())
 
     async def get_status(
         self,
@@ -149,18 +161,19 @@ class PublicExamConverterRuntimeHandler:
     ) -> PublicExamConverterArtifactManifestResponse:
         del correlation_id
         job = await self._load_job(public_job_id=public_job_id)
-        if job.status is not PublicExamConverterJobStatus.SUCCEEDED or job.artifact is None:
+        if job.status is not PublicExamConverterJobStatus.SUCCEEDED:
             return PublicExamConverterArtifactManifestResponse(
                 public_job_id=job.public_job_id,
                 status=job.status,
                 expires_at=job.expires_at,
                 artifacts=[],
             )
+        artifact = self._artifacts.read_artifact(job_id=job.local_job_id)
         return project_public_exam_converter_manifest(
             public_job_id=job.public_job_id,
             status=job.status,
             expires_at=job.expires_at,
-            manifest=_local_manifest(job=job),
+            manifest=_local_manifest(job=job, artifact=artifact),
             api_namespace=api_namespace,
         )
 
@@ -173,7 +186,7 @@ class PublicExamConverterRuntimeHandler:
     ) -> PublicExamConverterArtifact:
         del correlation_id
         job = await self._load_job(public_job_id=public_job_id)
-        if job.status is not PublicExamConverterJobStatus.SUCCEEDED or job.artifact is None:
+        if job.status is not PublicExamConverterJobStatus.SUCCEEDED:
             raise validation_error(
                 "Public Exam Converter job has no downloadable artifact yet.",
                 details={
@@ -183,7 +196,8 @@ class PublicExamConverterRuntimeHandler:
                     "status": job.status.value,
                 },
             )
-        manifest = _local_manifest(job=job)
+        artifact = self._artifacts.read_artifact(job_id=job.local_job_id)
+        manifest = _local_manifest(job=job, artifact=artifact)
         entries = manifest.get("artifacts")
         available: set[str] = set()
         if isinstance(entries, list):
@@ -202,26 +216,28 @@ class PublicExamConverterRuntimeHandler:
                     "artifact_key": artifact_key,
                 },
             )
-        for artifact in job.artifact.named_artifacts:
-            if artifact.artifact_key == artifact_key:
+        for named in artifact.named_artifacts:
+            if named.artifact_key == artifact_key:
                 return PublicExamConverterArtifact(
-                    filename=artifact.filename,
-                    content_type=artifact.content_type,
-                    content=artifact.content,
+                    filename=named.filename,
+                    content_type=named.content_type,
+                    content=named.content,
                 )
         raise not_found("PublicExamConverterArtifact", artifact_key)
 
     async def _load_job(self, *, public_job_id: str) -> PublicExamConverterSubmittedJob:
-        job = await self._store.get(public_job_id=public_job_id, now=self._clock.now())
+        async with self._uow:
+            job = await self._store.get(public_job_id=public_job_id, now=self._clock.now())
         if job is None:
             raise not_found("PublicExamConverterJob", public_job_id)
         return job
 
 
-def _local_manifest(*, job: PublicExamConverterSubmittedJob) -> dict[str, JsonValue]:
-    artifact = job.artifact
-    if artifact is None:
-        raise ValueError("A successful public conversion must carry its local artifact.")
+def _local_manifest(
+    *,
+    job: PublicExamConverterSubmittedJob,
+    artifact: ExamConversionStoredArtifact,
+) -> dict[str, JsonValue]:
     manifest = build_artifact_manifest(
         job_id=job.local_job_id,
         source_filename=artifact.source_filename,

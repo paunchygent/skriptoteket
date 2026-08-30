@@ -19,7 +19,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
-from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     DigiExamMigrationBundleSchemaVersion,
@@ -56,7 +55,7 @@ class PublicExamConverterUpload:
 
 @dataclass(frozen=True, slots=True)
 class PublicExamConverterSubmittedJob:
-    """Transient local state for one anonymous in-process conversion."""
+    """PostgreSQL-backed state and input for one anonymous conversion."""
 
     public_job_id: str
     local_job_id: UUID
@@ -67,8 +66,11 @@ class PublicExamConverterSubmittedJob:
     updated_at: datetime
     expires_at: datetime
     correlation_id: str | None
+    source_dxe: PublicExamConverterUpload
+    graded_result_pdf: PublicExamConverterUpload | None = None
+    locked_by: str | None = None
+    locked_until: datetime | None = None
     error_message: str | None = None
-    artifact: ExamConversionStoredArtifact | None = None
     result: dict[str, JsonValue] | None = None
 
 

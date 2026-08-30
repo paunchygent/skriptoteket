@@ -108,7 +108,19 @@ class InMemoryEnrichmentJobRepository:
         self.jobs[job.id] = job
         return job
 
-    async def update(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+    async def update(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        expected_worker_id: str | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob:
+        current = self.jobs.get(job.id)
+        if (
+            expected_worker_id is not None
+            and current is not None
+            and current.locked_by != expected_worker_id
+        ):
+            raise AssertionError("worker lease is no longer owned")
         self.jobs[job.id] = job
         return job
 
@@ -127,9 +139,23 @@ class InMemoryEnrichmentJobRepository:
     async def claim_next_expired(
         self,
         *,
+        worker_id: str,
         now: datetime,
+        lease_ttl: timedelta,
     ) -> ExamAnswerKeyEnrichmentJob | None:
+        del worker_id, now, lease_ttl
         return None
+
+    async def heartbeat(
+        self,
+        *,
+        job_id: UUID,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> bool:
+        del job_id, worker_id, now, lease_ttl
+        return False
 
 
 class RecordingProducer:
@@ -184,6 +210,9 @@ class RecordingArtifactStore:
             for artifact in self.stored[job_id].named_artifacts
             if artifact.artifact_key == artifact_key
         )
+
+    def delete_artifact(self, *, job_id: UUID) -> None:
+        self.stored.pop(job_id, None)
 
 
 def _actor() -> User:

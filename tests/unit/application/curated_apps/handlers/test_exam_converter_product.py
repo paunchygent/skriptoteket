@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
 )
+from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
 )
@@ -46,6 +47,25 @@ class FakeUow:
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
         return None
+
+
+def test_artifact_store_deletes_expired_job_directory(tmp_path: Path) -> None:
+    job_id = uuid4()
+    artifacts = FilesystemExamConversionArtifactStore(artifacts_root=tmp_path)
+    artifacts.store_artifact(
+        job_id=job_id,
+        artifact=ExamConversionStoredArtifact(
+            filename="bundle.zip",
+            content_type="application/zip",
+            content=b"bundle",
+            source_filename="exam.dxe",
+            source_content=b"dxe",
+        ),
+    )
+
+    artifacts.delete_artifact(job_id=job_id)
+
+    assert not (tmp_path / "exam-conversion" / str(job_id)).exists()
 
 
 class JobRepository:

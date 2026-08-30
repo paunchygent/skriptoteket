@@ -21,7 +21,7 @@ Relationships:
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -226,7 +226,13 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             source_ir_sha256=source_ir_sha256,
         )
 
-    async def fail_next_expired(self, *, now: datetime) -> ExamAnswerKeyEnrichmentJob | None:
+    async def fail_next_expired(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
         """Fail-close one RUNNING job whose worker lease expired.
 
         A crashed worker leaves its job RUNNING past the lease TTL; there is
@@ -235,7 +241,11 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         """
 
         async with self._uow:
-            job = await self._enrichment_jobs.claim_next_expired(now=now)
+            job = await self._enrichment_jobs.claim_next_expired(
+                worker_id=worker_id,
+                now=now,
+                lease_ttl=lease_ttl,
+            )
             if job is None:
                 return None
         return await self._complete_with_failure(
@@ -367,7 +377,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                     job=job,
                     status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
                     now=now,
-                )
+                ),
+                expected_worker_id=job.locked_by,
             )
 
     async def _fail(
@@ -391,7 +402,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                     status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
                     now=now,
                     last_error=last_error,
-                )
+                ),
+                expected_worker_id=job.locked_by,
             )
 
     async def _complete_with_failure(
@@ -434,7 +446,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                     status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
                     now=now,
                     last_error=last_error,
-                )
+                ),
+                expected_worker_id=job.locked_by,
             )
 
     async def _update_conversion_job(

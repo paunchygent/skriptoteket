@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -18,10 +17,7 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterUpload,
 )
 from skriptoteket.application.curated_apps.public_exam_converter_local_execution import (
-    PublicExamConverterLocalExecutor,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    public_exam_converter_store,
+    ProcessPublicExamConverterJobHandler,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
@@ -30,6 +26,11 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
     ExamNetQtiPackageWriter,
 )
 from skriptoteket.protocols.documents import PdfTextExtractionProbe
+from tests.fixtures.public_exam_converter_runtime import (
+    FakeExamConversionArtifactStore,
+    FakePublicExamConverterJobRepository,
+    FakeUnitOfWork,
+)
 
 _FIXTURE = (
     Path(__file__).parents[3]
@@ -78,15 +79,23 @@ class FixedPdfTextExtractor:
 
 @pytest.mark.asyncio
 async def test_local_executor_completes_real_dxe_without_remote_provider() -> None:
-    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
-    executor = PublicExamConverterLocalExecutor(
+    store = FakePublicExamConverterJobRepository()
+    artifacts = FakeExamConversionArtifactStore()
+    executor = ProcessPublicExamConverterJobHandler(
         store=store,
         producer=InProcessExamConversionProducer(
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
         ),
+        artifacts=artifacts,
         pdf_text_extractor=UnusedPdfTextExtractor(),
         clock=FixedClock(),
+        uow=FakeUnitOfWork(),
+    )
+    source_dxe = PublicExamConverterUpload(
+        filename=_FIXTURE.name,
+        content_type="application/octet-stream",
+        file_bytes=_FIXTURE.read_bytes(),
     )
     job = PublicExamConverterSubmittedJob(
         public_job_id=str(_JOB_ID),
@@ -95,35 +104,26 @@ async def test_local_executor_completes_real_dxe_without_remote_provider() -> No
             PublicExamConverterTarget.EXAMNET_PDF,
             PublicExamConverterTarget.QTI_PACKAGE,
         ),
-        status=PublicExamConverterJobStatus.QUEUED,
+        status=PublicExamConverterJobStatus.PROCESSING,
         source_filename=_FIXTURE.name,
         submitted_at=_NOW,
         updated_at=_NOW,
         expires_at=_NOW + timedelta(hours=1),
         correlation_id="public-local-test",
-    )
-    await store.create(job=job)
-
-    await executor.enqueue(
-        job=job,
-        source_dxe=PublicExamConverterUpload(
-            filename=_FIXTURE.name,
-            content_type="application/octet-stream",
-            file_bytes=_FIXTURE.read_bytes(),
-        ),
-        graded_result_pdf=None,
-        correlation_id="public-local-test",
+        source_dxe=source_dxe,
+        locked_by="worker-1",
+        locked_until=_NOW + timedelta(minutes=15),
     )
 
-    completed = await _wait_for_terminal(store=store)
+    completed = await executor.handle(job=job)
     assert completed.status is PublicExamConverterJobStatus.SUCCEEDED
-    assert completed.artifact is not None
     assert completed.result == {
         "conversion_metadata": {"route_key": "digiexam_dxe_to_examnet_migration_bundle"},
         "source": {"filename": _FIXTURE.name, "format": "digiexam_dxe"},
         "requested_targets": ["examnet_pdf", "qti_package"],
     }
-    assert {artifact.artifact_key for artifact in completed.artifact.named_artifacts} >= {
+    stored_artifact = artifacts.read_artifact(job_id=_JOB_ID)
+    assert {artifact.artifact_key for artifact in stored_artifact.named_artifacts} >= {
         "examnet_pdf",
         "qti_package",
         "qti_validation_report",
@@ -133,50 +133,50 @@ async def test_local_executor_completes_real_dxe_without_remote_provider() -> No
 
 @pytest.mark.asyncio
 async def test_local_executor_applies_optional_graded_result_pdf_evidence() -> None:
-    store = public_exam_converter_store.InMemoryPublicExamConverterJobStore()
-    executor = PublicExamConverterLocalExecutor(
+    store = FakePublicExamConverterJobRepository()
+    artifacts = FakeExamConversionArtifactStore()
+    executor = ProcessPublicExamConverterJobHandler(
         store=store,
         producer=InProcessExamConversionProducer(
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
         ),
+        artifacts=artifacts,
         pdf_text_extractor=FixedPdfTextExtractor(),
         clock=FixedClock(),
+        uow=FakeUnitOfWork(),
+    )
+    source_dxe = PublicExamConverterUpload(
+        filename=_FIXTURE.name,
+        content_type="application/octet-stream",
+        file_bytes=_FIXTURE.read_bytes(),
     )
     job = PublicExamConverterSubmittedJob(
         public_job_id=str(_JOB_ID),
         local_job_id=_JOB_ID,
         requested_targets=(PublicExamConverterTarget.EXAMNET_PDF,),
-        status=PublicExamConverterJobStatus.QUEUED,
+        status=PublicExamConverterJobStatus.PROCESSING,
         source_filename=_FIXTURE.name,
         submitted_at=_NOW,
         updated_at=_NOW,
         expires_at=_NOW + timedelta(hours=1),
         correlation_id="public-graded-result-test",
-    )
-    await store.create(job=job)
-
-    await executor.enqueue(
-        job=job,
-        source_dxe=PublicExamConverterUpload(
-            filename=_FIXTURE.name,
-            content_type="application/octet-stream",
-            file_bytes=_FIXTURE.read_bytes(),
-        ),
+        source_dxe=source_dxe,
         graded_result_pdf=PublicExamConverterUpload(
             filename="graded-result.pdf",
             content_type="application/pdf",
             file_bytes=b"%PDF graded result",
         ),
-        correlation_id="public-graded-result-test",
+        locked_by="worker-1",
+        locked_until=_NOW + timedelta(minutes=15),
     )
 
-    completed = await _wait_for_terminal(store=store)
+    completed = await executor.handle(job=job)
     assert completed.status is PublicExamConverterJobStatus.SUCCEEDED
-    assert completed.artifact is not None
+    stored_artifact = artifacts.read_artifact(job_id=_JOB_ID)
     source_ir = next(
         artifact
-        for artifact in completed.artifact.named_artifacts
+        for artifact in stored_artifact.named_artifacts
         if artifact.artifact_key == "source_ir_json"
     )
     source_ir_payload = json.loads(source_ir.content)
@@ -191,18 +191,3 @@ async def test_local_executor_applies_optional_graded_result_pdf_evidence() -> N
     answer_key = graded_item["answer_key"]
     assert isinstance(answer_key, dict)
     assert answer_key["provenance"] == "graded_result_pdf_correct_labels"
-
-
-async def _wait_for_terminal(
-    *,
-    store: public_exam_converter_store.InMemoryPublicExamConverterJobStore,
-) -> PublicExamConverterSubmittedJob:
-    for _attempt in range(100):
-        job = await store.get(public_job_id=str(_JOB_ID), now=_NOW)
-        if job is not None and job.status in {
-            PublicExamConverterJobStatus.SUCCEEDED,
-            PublicExamConverterJobStatus.FAILED,
-        }:
-            return job
-        await asyncio.sleep(0)
-    raise AssertionError("Local public conversion did not reach a terminal state")

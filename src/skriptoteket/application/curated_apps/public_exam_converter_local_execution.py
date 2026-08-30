@@ -1,8 +1,7 @@
-"""Bounded in-process execution for transient public Exam Converter jobs."""
+"""Worker-side execution for durable public Exam Converter jobs."""
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from dataclasses import replace
 
@@ -28,8 +27,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answer
 from skriptoteket.domain.errors import DomainError, validation_error
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.documents import PdfTextExtractorProtocol
-from skriptoteket.protocols.exam_conversion import PublicInProcessExamConverterProtocol
+from skriptoteket.protocols.exam_conversion import (
+    ExamConversionArtifactStoreProtocol,
+    PublicInProcessExamConverterProtocol,
+)
 from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 _LOCAL_FAILURE_MESSAGE = "Konverteringen kunde inte genomföras. Försök igen."
 _MANUAL_FOLLOW_UP_CODE = "public_manual_follow_up_required"
@@ -38,64 +41,41 @@ _ROUTE_KEY = "digiexam_dxe_to_examnet_migration_bundle"
 logger = logging.getLogger(__name__)
 
 
-class PublicExamConverterLocalExecutor:
-    """Run public conversions asynchronously and retain only TTL-bound local state."""
+class ProcessPublicExamConverterJobHandler:
+    """Run one claimed public job and publish its terminal state atomically."""
 
     def __init__(
         self,
         *,
         store: PublicExamConverterJobStoreProtocol,
         producer: PublicInProcessExamConverterProtocol,
+        artifacts: ExamConversionArtifactStoreProtocol,
         pdf_text_extractor: PdfTextExtractorProtocol,
         clock: ClockProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> None:
         self._store = store
         self._producer = producer
+        self._artifacts = artifacts
         self._pdf_text_extractor = pdf_text_extractor
         self._clock = clock
-        self._tasks: set[asyncio.Task[None]] = set()
+        self._uow = uow
 
-    async def enqueue(
+    async def handle(
         self,
         *,
         job: PublicExamConverterSubmittedJob,
-        source_dxe: PublicExamConverterUpload,
-        graded_result_pdf: PublicExamConverterUpload | None,
-        correlation_id: str,
-    ) -> None:
-        task = asyncio.create_task(
-            self._run(
-                job=job,
-                source_dxe=source_dxe,
-                graded_result_pdf=graded_result_pdf,
-                correlation_id=correlation_id,
-            ),
-            name=f"public-exam-converter-{job.public_job_id}",
-        )
-        self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+    ) -> PublicExamConverterSubmittedJob:
+        """Execute a job already claimed by the PostgreSQL worker."""
 
-    async def _run(
-        self,
-        *,
-        job: PublicExamConverterSubmittedJob,
-        source_dxe: PublicExamConverterUpload,
-        graded_result_pdf: PublicExamConverterUpload | None,
-        correlation_id: str,
-    ) -> None:
-        processing = replace(
-            job,
-            status=PublicExamConverterJobStatus.PROCESSING,
-            updated_at=self._clock.now(),
-        )
-        await self._store.update(job=processing)
+        source_dxe = job.source_dxe
         upload = ConversionHubUpload(
             filename=source_dxe.filename,
             content_type=source_dxe.content_type,
             file_bytes=source_dxe.file_bytes,
         )
         try:
-            answer_evidence = self._answer_evidence(graded_result_pdf)
+            answer_evidence = self._answer_evidence(job.graded_result_pdf)
             exam = parse_source_exam(upload=upload, answer_evidence=answer_evidence)
             plan = plan_answer_key_enrichment(exam)
             artifact = await self._producer.convert(
@@ -108,11 +88,11 @@ class PublicExamConverterLocalExecutor:
                     if plan.state is AnswerKeyEnrichmentPlanState.NOT_NEEDED
                     else _MANUAL_FOLLOW_UP_CODE
                 ),
-                correlation_id=correlation_id,
+                correlation_id=job.correlation_id,
             )
+            self._artifacts.store_artifact(job_id=job.local_job_id, artifact=artifact)
         except DomainError as exc:
-            await self._fail(job=processing, message=exc.message)
-            return
+            return await self._finish_failed(job=job, message=exc.message)
         except Exception as exc:
             logger.warning(
                 "Public Exam Converter local execution failed",
@@ -121,35 +101,55 @@ class PublicExamConverterLocalExecutor:
                     "error_type": type(exc).__name__,
                 },
             )
-            await self._fail(job=processing, message=_LOCAL_FAILURE_MESSAGE)
-            return
+            return await self._finish_failed(job=job, message=_LOCAL_FAILURE_MESSAGE)
 
-        await self._store.update(
-            job=replace(
-                processing,
-                status=PublicExamConverterJobStatus.SUCCEEDED,
-                updated_at=self._clock.now(),
-                artifact=artifact,
-                result={
-                    "conversion_metadata": {"route_key": _ROUTE_KEY},
-                    "source": {
-                        "filename": source_dxe.filename,
-                        "format": "digiexam_dxe",
+        async with self._uow:
+            return await self._store.update(
+                job=replace(
+                    job,
+                    status=PublicExamConverterJobStatus.SUCCEEDED,
+                    updated_at=self._clock.now(),
+                    locked_by=None,
+                    locked_until=None,
+                    result={
+                        "conversion_metadata": {"route_key": _ROUTE_KEY},
+                        "source": {
+                            "filename": source_dxe.filename,
+                            "format": "digiexam_dxe",
+                        },
+                        "requested_targets": [target.value for target in job.requested_targets],
                     },
-                    "requested_targets": [target.value for target in job.requested_targets],
-                },
+                ),
+                expected_worker_id=job.locked_by,
             )
-        )
 
-    async def _fail(self, *, job: PublicExamConverterSubmittedJob, message: str) -> None:
-        await self._store.update(
-            job=replace(
-                job,
-                status=PublicExamConverterJobStatus.FAILED,
-                updated_at=self._clock.now(),
-                error_message=message,
+    async def fail_expired(
+        self,
+        *,
+        job: PublicExamConverterSubmittedJob,
+    ) -> PublicExamConverterSubmittedJob:
+        """Fail-close a job whose processing worker lost its durable lease."""
+
+        return await self._finish_failed(job=job, message=_LOCAL_FAILURE_MESSAGE)
+
+    async def _finish_failed(
+        self,
+        *,
+        job: PublicExamConverterSubmittedJob,
+        message: str,
+    ) -> PublicExamConverterSubmittedJob:
+        async with self._uow:
+            return await self._store.update(
+                job=replace(
+                    job,
+                    status=PublicExamConverterJobStatus.FAILED,
+                    updated_at=self._clock.now(),
+                    locked_by=None,
+                    locked_until=None,
+                    error_message=message,
+                ),
+                expected_worker_id=job.locked_by,
             )
-        )
 
     def _answer_evidence(
         self,

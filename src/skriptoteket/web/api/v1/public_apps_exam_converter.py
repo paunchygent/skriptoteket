@@ -304,17 +304,6 @@ async def submit_public_exam_converter_job(
         throttle=throttle,
         helper_name=SUBMIT_HELPER_NAME,
     )
-    active_jobs = await handler.count_active_jobs()
-    if active_jobs >= settings.PUBLIC_EXAM_CONVERTER_CONCURRENCY_LIMIT:
-        raise DomainError(
-            code=ErrorCode.TOO_MANY_REQUESTS,
-            message="Public Exam Converter concurrency limit exceeded.",
-            details={
-                "app_id": APP_ID,
-                "capability": CAPABILITY,
-                "reason_code": "public_exam_converter_concurrency_limited",
-            },
-        )
     targets = _parse_targets(targets_json=targets_json)
     source = await _read_upload(
         upload=source_dxe,
@@ -361,6 +350,7 @@ async def submit_public_exam_converter_job(
             targets=targets,
             correlation_id=correlation_id,
             artifact_ttl_seconds=settings.PUBLIC_EXAM_CONVERTER_ARTIFACT_TTL_SECONDS,
+            concurrency_limit=settings.PUBLIC_EXAM_CONVERTER_CONCURRENCY_LIMIT,
             api_namespace=EXAM_CONVERTER_PUBLIC_API_NAMESPACE,
         ),
     )
