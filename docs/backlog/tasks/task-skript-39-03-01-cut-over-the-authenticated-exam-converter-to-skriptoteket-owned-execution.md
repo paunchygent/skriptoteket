@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-30'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: independent-reviewer
+  decided_at: '2026-08-30'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent review approved the authenticated local execution, concurrency repairs, native-lane activation, and durable provider configuration through reviewed commit 2ebbe71a with no material findings; canonical Hemma main 098f5100 then completed the authenticated HuleEdu browser-session workflow with a real unmodified MCQ .dxe through Luna enrichment, teacher review and replay, local artifact download, and Mina filer save, with zero Sir exam-conversion requests.
 task_kind: story
 acceptance_criteria:
   - An authenticated teacher completes the existing Exam Converter workflow through Skriptoteket-owned submission, jobs, review and correction state, and artifact delivery without an exam-conversion request reaching Sir Convert
@@ -96,3 +100,20 @@ request into a provider-bound synchronous operation.
 | T3  | The complete authenticated product path stops reaching Sir for exam conversion; Sir removal waits for Task 03.                                                                                                                                         |
 | T4  | Remote completion remains worker-owned and machine keys remain teacher-review proposals.                                                                                                                                                               |
 | T5  | Preserve teacher-visible behavior and domain semantics, not needless cross-service or file-pipeline complexity; prefer direct Unit-of-Work and PostgreSQL ownership.                                                                                   |
+
+## Closeout Evidence
+
+- Published main `098f5100` deployed canonically on Hemma with migration
+  `c8e4f2a6d9b1 (head)`, the native `in_process` lane, answer-key completion
+  enabled, and nonblank Luna/GLM credentials in both web and worker.
+- A genuine unmodified MCQ `.dxe` (`16c7162d…`) completed as local job
+  `8b8c837d-4bdf-4996-b652-6c6ebc0b20d1` through Luna enrichment, required
+  teacher review and replay, PDF download, and Mina filer save.
+- Browser traffic and bounded Sir container logs contained zero Sir
+  exam-conversion requests. The task-owned temporary Compose override was
+  removed after the canonical runtime was proven.
+- Retained browser evidence is under session
+  `01a04d62-c71c-721c-a43a-76384e182429` at
+  `evidence/live/TASK-SKRIPT-39-03-01/20260830T051440Z/`; bounded remote logs
+  are under
+  `/home/paunchygent/apps/skriptoteket/.artifacts/task-skript-39-03-01-canonical-20260830T050702Z/`.
