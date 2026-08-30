@@ -1,14 +1,17 @@
 ## Current
 
-- The Exam Converter frontend now reads effective gap answers through their
-  actual `{gap_id, value}` contract, so internal DigiExam gap identifiers are
-  never flattened into teacher-facing answer labels. Pending AI suggestions
-  show the proposal and Accept/Edit controls before any persisted effective-key
-  summary, and that summary stays hidden while the proposal is still pending.
-  Focused Vitest (19 tests), frontend typecheck, frontend lint, the production
-  build, and `git diff --check` passed. The user owns the production mobile
-  acceptance check; agents must not submit another `.dxe` unless the user
-  explicitly requests it.
+- Exam Converter repair main `4273c3c2` uses PostgreSQL/UoW as the public-job
+  authority and removes the web-process queue. Teacher review now persists one
+  or all valid AI suggestions through one atomic correction-session write,
+  waits for durable reprojection, and advances directly through unresolved
+  questions. The approved token UI provides equal icon actions on desktop and
+  phone, top and bottom accept/edit controls, explicit overview navigation, and
+  bulk acceptance without exposing gap identifiers. Parent verification passed:
+  19 backend tests, 58 frontend tests, lint, frontend typecheck/build, and the
+  deterministic desktop/390px Playwright journey. The PostgreSQL repository
+  suite skipped because local Docker was unavailable; that also prevented the
+  authenticated local shared-auth lane. The user owns the production mobile
+  `.dxe` acceptance check; agents must not submit one unless explicitly asked.
 - Production repair main `e9fc77de` is deployed on Hemma. It preserves
   zero/absent-point open-ended questions as manual QTI, removes internal
   DigiExam gap identifiers from model-facing cloze text, rejects exact source
