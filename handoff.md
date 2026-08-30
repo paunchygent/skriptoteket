@@ -1,5 +1,16 @@
 ## Current
 
+- Production repair main `e9fc77de` is deployed on Hemma. It preserves
+  zero/absent-point open-ended questions as manual QTI, removes internal
+  DigiExam gap identifiers from model-facing cloze text, rejects exact source
+  gap identifiers as provider answers, and atomically releases a failed Exam
+  Converter job's deterministic submission key so one fresh retry can acquire
+  it while the failed row remains historical. Focused validation passed: 22
+  QTI repair tests, 123 affected answer-key domain tests, 10 native routing
+  tests, and 3 real-PostgreSQL concurrency tests; lint and changed-file typing
+  passed. Hemma migrations and the checked-in readiness gate passed. The user
+  owns the remaining live conversion check with their original `.dxe`; agents
+  must not submit it again unless the user explicitly requests that action.
 - [TASK-SKRIPT-39-03-02](docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md)
   is `done` under the user-directed no-further-review closeout. Canonical Hemma
   main `8fe6b722` serves the declared public deep link directly and completed
@@ -165,7 +176,7 @@
 ## Facts
 
 - Session Date: 2026-08-29
-- Last Refreshed: 2026-08-29
+- Last Refreshed: 2026-08-30
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with
   `pdm run python -m scripts.historical_docs.validate_historical_docs`.
