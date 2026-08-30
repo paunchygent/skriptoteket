@@ -107,6 +107,12 @@ def test_public_app_base_url_defaults_to_canonical_launch_host() -> None:
     assert settings.PUBLIC_APP_BASE_URL == "https://skriptoteket.hule.education"
 
 
+def test_authenticated_exam_converter_defaults_to_in_process_lane() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.EXAM_CONVERTER_CONVERSION_LANE == "in_process"
+
+
 def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:
     settings = Settings.model_construct(TRUSTED_PROXY_CIDRS="127.0.0.1/32, 10.0.0.0/8,127.0.0.1/32")
 
