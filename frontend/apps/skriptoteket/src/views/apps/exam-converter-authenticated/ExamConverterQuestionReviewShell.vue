@@ -86,30 +86,32 @@ const nextQuestion = computed(() => {
   return props.projection.questions[index + 1] ?? null;
 });
 
-function firstAiSuggestedQuestion(questions: ExamConverterQuestionReviewRow[]): ExamConverterQuestionReviewRow | null {
-  return questions.find(hasUsableCompletionCandidate) ?? null;
+function firstUnresolvedAdvisoryQuestion(
+  questions: ExamConverterQuestionReviewRow[],
+): ExamConverterQuestionReviewRow | null {
+  return questions.find(isPendingAdvisoryQuestion) ?? null;
 }
 
 function defaultSelectedItemId(questions: ExamConverterQuestionReviewRow[]): string | null {
   return (
-    firstAiSuggestedQuestion(questions)?.itemId ??
+    firstUnresolvedAdvisoryQuestion(questions)?.itemId ??
     questions.find((question) => question.status === "attention")?.itemId ??
     questions[0]?.itemId ??
     null
   );
 }
 
-function nextAiSuggestedQuestionId(
+function nextUnresolvedAdvisoryQuestion(
   currentQuestion: ExamConverterQuestionReviewRow,
   questions: ExamConverterQuestionReviewRow[],
-): string | null {
+): ExamConverterQuestionReviewRow | null {
   const startIndex = questions.findIndex((question) => question.itemId === currentQuestion.itemId);
-  if (startIndex === -1) return firstAiSuggestedQuestion(questions)?.itemId ?? null;
+  if (startIndex === -1) return firstUnresolvedAdvisoryQuestion(questions);
   const orderedQuestions = [
     ...questions.slice(startIndex + 1),
     ...questions.slice(0, startIndex),
   ];
-  return orderedQuestions.find(hasUsableCompletionCandidate)?.itemId ?? null;
+  return orderedQuestions.find(isPendingAdvisoryQuestion) ?? null;
 }
 
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
@@ -161,14 +163,20 @@ function advanceAfterSavedAiPrefill(): void {
     selectedItemId.value = defaultSelectedItemId(props.projection.questions);
     return;
   }
-  if (hasUsableCompletionCandidate(savedQuestion) && savedQuestion.effectiveAnswerKey === null) {
+  if (isPendingAdvisoryQuestion(savedQuestion)) {
     return;
   }
   pendingAiAdvanceFromItemId.value = null;
-  const nextItemId = nextAiSuggestedQuestionId(savedQuestion, props.projection.questions);
-  if (nextItemId) {
-    selectedItemId.value = nextItemId;
+  const nextQuestion = nextUnresolvedAdvisoryQuestion(
+    savedQuestion,
+    props.projection.questions,
+  );
+  if (nextQuestion) {
+    selectQuestion(nextQuestion);
+    return;
   }
+  compactDetailOpen.value = false;
+  emit("aiPrefillFocused", "questions");
 }
 
 watch(
@@ -187,9 +195,12 @@ watch(
 watch(
   () => props.aiSuggestionFocusKey,
   () => {
-    const firstSuggestedQuestion = firstAiSuggestedQuestion(props.projection.questions);
-    selectedItemId.value =
-      firstSuggestedQuestion?.itemId ?? defaultSelectedItemId(props.projection.questions);
+    const firstUnresolvedQuestion = firstUnresolvedAdvisoryQuestion(props.projection.questions);
+    if (firstUnresolvedQuestion) {
+      selectQuestion(firstUnresolvedQuestion);
+      return;
+    }
+    selectedItemId.value = defaultSelectedItemId(props.projection.questions);
   },
 );
 

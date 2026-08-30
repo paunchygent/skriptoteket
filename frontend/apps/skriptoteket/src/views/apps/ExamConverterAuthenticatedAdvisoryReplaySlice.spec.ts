@@ -175,6 +175,33 @@ function pendingAdvisoryReviewItem(params: {
   });
 }
 
+function reviewedAdvisoryReviewItem(params: {
+  choiceIds: string[];
+  interactionId: string;
+  itemId: string;
+  itemType: string;
+  sequence: number;
+}) {
+  return answerKeyReviewItem({
+    choice_ids: params.choiceIds,
+    choice_interaction_ids: [params.interactionId],
+    current_key_origin: "reviewed_advisory",
+    item_id: params.itemId,
+    item_type: params.itemType,
+    message_key: "exam_converter.answer_key.reviewed_advisory_accepted",
+    reasons: ["reviewed_advisory_accepted"],
+    review_state: "review_complete",
+    sequence: params.sequence,
+    source_item_fingerprint: `sha256:${params.itemId}`,
+  });
+}
+
+function hasPersistedAnswerKeyIntent(itemId: string): boolean {
+  return correctionSessionRecorder.current().active_intents.some(
+    (intent) => intent.item_id === itemId,
+  );
+}
+
 function mockTwoPendingChoiceCandidates(): void {
   const baseDownload = gatewayMocks.downloadDigiExamMigrationArtifact.getMockImplementation();
   if (!baseDownload) {
@@ -206,25 +233,43 @@ function mockTwoPendingChoiceCandidates(): void {
         );
       }
       if (params.artifactKey === DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT) {
+        const reviewItem = hasPersistedAnswerKeyIntent("item-004")
+          ? reviewedAdvisoryReviewItem({
+              choiceIds: ["choice-3"],
+              interactionId: "choice-item-004",
+              itemId: "item-004",
+              itemType: "single_choice",
+              sequence: 4,
+            })
+          : pendingAdvisoryReviewItem({
+              choiceIds: ["choice-3"],
+              interactionId: "choice-item-004",
+              itemId: "item-004",
+              itemType: "single_choice",
+              sequence: 4,
+            });
+        const siblingReviewItem = hasPersistedAnswerKeyIntent("item-005")
+          ? reviewedAdvisoryReviewItem({
+              choiceIds: ["choice-1", "choice-2"],
+              interactionId: "choice-item-005",
+              itemId: "item-005",
+              itemType: "multiple_response",
+              sequence: 5,
+            })
+          : pendingAdvisoryReviewItem({
+              choiceIds: ["choice-1", "choice-2"],
+              interactionId: "choice-item-005",
+              itemId: "item-005",
+              itemType: "multiple_response",
+              sequence: 5,
+            });
         return Promise.resolve(
           artifactJsonBlob(
             DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
             answerKeyReviewStateReport([
               answerKeyReviewItem(),
-              pendingAdvisoryReviewItem({
-                choiceIds: ["choice-3"],
-                interactionId: "choice-item-004",
-                itemId: "item-004",
-                itemType: "single_choice",
-                sequence: 4,
-              }),
-              pendingAdvisoryReviewItem({
-                choiceIds: ["choice-1", "choice-2"],
-                interactionId: "choice-item-005",
-                itemId: "item-005",
-                itemType: "multiple_response",
-                sequence: 5,
-              }),
+              reviewItem,
+              siblingReviewItem,
               answerKeyReviewItem({
                 current_key_origin: "none",
                 item_id: "item-006",
@@ -371,6 +416,37 @@ function lossySiblingReplayResult() {
 }
 
 describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
+  it("opens the first unresolved review and advances after each persisted decision", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.get('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
+
+    const questionShell = wrapper.get('[data-test="exam-converter-question-review-shell"]');
+    expect(questionShell.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-004");
+
+    await wrapper.get('[data-test="exam-converter-accept-advisory-answer-key-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    expect(questionShell.classes()).toContain("is-compact-detail-open");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-005");
+
+    await wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]')
+      .trigger("click");
+    await wrapper.get('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(2);
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(2);
+    expect(wrapper.get('[data-test="exam-converter-question-review-shell"]').classes())
+      .not.toContain("is-compact-detail-open");
+  });
+
   it("renders untouched sibling AI suggestions when correction replay preserves them", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 

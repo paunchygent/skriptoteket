@@ -131,7 +131,12 @@ export function correctionSourceState() {
       schema_version: "exam_authoring_correction_source_state_v1",
       source_authoring_schema_version: "exam_authoring_ir_v1",
       source_state_sha256: "sha256:source-state",
-      items: [sourceReviewDecisionItem(), sourceChoiceItem(), sourceGapItem()],
+      items: [
+        sourceReviewDecisionItem(),
+        sourceChoiceItem(),
+        sourceSiblingChoiceItem(),
+        sourceGapItem(),
+      ],
     },
   };
 }
@@ -173,6 +178,31 @@ function sourceChoiceItem() {
     sequence: 4,
     source_item_fingerprint: "sha256:item-004",
     title: "Fråga 4",
+  };
+}
+
+function sourceSiblingChoiceItem() {
+  return {
+    choice_interactions: [
+      {
+        answer_key: null,
+        choices: [
+          { choice_id: "choice-1", order: 1, source_id: "1", text: "Rätt 1" },
+          { choice_id: "choice-2", order: 2, source_id: "2", text: "Rätt 2" },
+          { choice_id: "choice-3", order: 3, source_id: "3", text: "Fel" },
+        ],
+        interaction_id: "choice-item-005",
+      },
+    ],
+    gap_open_cloze_interactions: [],
+    item_id: "item-005",
+    item_type: "multiple_response",
+    max_score: 1,
+    prompt_html: null,
+    prompt_lines: ["Vilka två alternativ är korrekta?"],
+    sequence: 5,
+    source_item_fingerprint: "sha256:item-005",
+    title: "Fråga 5",
   };
 }
 
