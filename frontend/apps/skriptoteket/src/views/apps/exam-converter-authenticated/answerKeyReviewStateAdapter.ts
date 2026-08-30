@@ -64,6 +64,7 @@ const ITEM_KEYS = new Set([
 const PROVENANCE_KEYS = new Set([
   "candidate_id",
   "candidate_payload_digest",
+  "completion_report_sha256",
   "prompt_template_version",
   "provider_profile_id",
   "schema_name",
@@ -151,7 +152,9 @@ function readReasons(value: unknown): Reason[] {
   });
 }
 
-function parseProvenanceDetail(value: unknown): DigiExamAnswerKeyReviewStateItem["provenance_detail"] {
+function parseProvenanceDetail(
+  value: unknown,
+): DigiExamAnswerKeyReviewStateItem["provenance_detail"] {
   if (value === null || value === undefined) return null;
   const detail = readRecord(value, "provenance_detail");
   assertKnownKeys(detail, PROVENANCE_KEYS, "provenance_detail");
@@ -167,6 +170,10 @@ function parseProvenanceDetail(value: unknown): DigiExamAnswerKeyReviewStateItem
     candidate_payload_digest: readString(
       detail.candidate_payload_digest,
       "provenance_detail.candidate_payload_digest",
+    ),
+    completion_report_sha256: readString(
+      detail.completion_report_sha256,
+      "provenance_detail.completion_report_sha256",
     ),
     prompt_template_version: readString(
       detail.prompt_template_version,

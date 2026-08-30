@@ -34,6 +34,7 @@ import {
   applyAnswerKeyReviewStateToQuestions,
   parseAnswerKeyReviewState,
 } from "./answerKeyReviewStateAdapter";
+import { suppressesPendingCompletionCandidate } from "./digiexamIrQuestionReviewProjection";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -478,7 +479,10 @@ export function projectUnifiedCorrectionResult(params: {
       question,
     });
     const llmCandidate =
-      effectiveAnswerKey || suppressedItems.has(question.itemId) ? null : question.llmCandidate;
+      suppressesPendingCompletionCandidate(effectiveAnswerKey) ||
+      suppressedItems.has(question.itemId)
+        ? null
+        : question.llmCandidate;
     return {
       ...question,
       currentAnswerKeyProvenance:
