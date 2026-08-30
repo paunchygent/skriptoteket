@@ -1,19 +1,11 @@
 ## Current
 
-- Production main `59193f07` corrects the temporarily unavailable transcription
-  UX: the grey home card is a button that stays on `/` and raises the reusable
-  toast `Ljudtranskribering är inte tillgänglig för närvarande.`; a direct old
-  `/apps/audio-transcription` address returns home through the same message.
-  Every authenticated role can now open and submit the suggestion form, while
-  contributor-only editor/ownership routes remain restricted. The catalog now
-  presents the conversion app as `Provhantering` without transcription copy.
-  Focused checks passed (40 frontend, 13 backend, changed-file lint, frontend
-  lint/typecheck/build). Backend-wide typecheck remains at the existing ten
-  unrelated script-bank errors. The HuleEdu production bootstrap identity was
-  repaired and public-login verified; its signed-in production browser journey
-  proved both unavailable paths, the normal-user suggestion form, and catalog
-  copy. Skriptoteket web/worker are healthy; reserved Sir/GPU/STT containers
-  remain exited with restart disabled.
+- Production main `fab9412a` serves the corrected Exam Converter review flow.
+  The canonical Hemma checkout matches that published revision, Skriptoteket
+  web/worker are healthy, and public `/healthz` returns 200. The deploy applied
+  migrations and passed the seating-export readiness gate. Reserved Sir GPU and
+  STT containers remain exited and were not restarted. The user retains the
+  production `.dxe` acceptance; agents did not submit a production conversion.
 - Exam Converter uses PostgreSQL/UoW as the public-job authority and has no
   web-process queue. Teacher review persists one or all valid AI suggestions
   through the correction-session UoW, waits for durable reprojection, and advances directly
