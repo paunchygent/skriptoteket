@@ -14,6 +14,15 @@ from urllib.parse import urlparse
 from playwright.sync_api import Page, expect, sync_playwright
 from pydantic import JsonValue
 
+from scripts._exam_converter_real_dxe_responsive import (
+    assert_desktop_geometry,
+    assert_mobile_detail,
+    assert_persisted_responses,
+    assert_prefill_panel,
+    cancel_local_edit_and_assert_reset,
+    capture_correction_request,
+    selected_item_id,
+)
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_config import get_config
@@ -60,7 +69,7 @@ def _upload_and_start(page: Page, fixture: Path) -> None:
     expect(page.locator('[data-test="exam-converter-running-surface"]')).to_be_visible()
 
 
-def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int]:
+def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int, dict[str, JsonValue]]:
     prefill = page.locator('[data-test="exam-converter-ai-prefill-panel"]')
     conversion_failed = page.get_by_text(
         "Konverteringen av provet misslyckades",
@@ -80,6 +89,70 @@ def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int]:
             "The real DXE reached the question review surface without its expected AI suggestions."
         )
     expect(prefill).to_be_visible(timeout=timeout_ms)
+    responsive_evidence: dict[str, JsonValue] = {}
+    correction_request_urls: list[str] = []
+    page.on(
+        "request",
+        lambda request: capture_correction_request(request, correction_request_urls),
+    )
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    assert_prefill_panel(page)
+    expect(page.locator(".exam-converter-question-navigator")).to_be_visible()
+    expect(page.locator(".exam-converter-question-table")).not_to_be_visible()
+    page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
+    detail = page.locator('[data-test="exam-converter-selected-question-detail"]')
+    advisory_detail = page.locator('[data-test="exam-converter-advisory-review-detail"]')
+    expect(detail).to_be_visible()
+    expect(advisory_detail).to_be_visible()
+    first_item_id = selected_item_id(detail)
+    responsive_evidence.update(assert_mobile_detail(page, detail))
+    cancel_local_edit_and_assert_reset(
+        page,
+        detail,
+        correction_request_urls,
+        first_item_id,
+    )
+    responsive_evidence.update(assert_desktop_geometry(page, detail))
+
+    page.locator('[data-test="exam-converter-advisory-overview-action"]').click()
+    question_list = page.locator('[data-test="exam-converter-question-list-surface"]')
+    expect(question_list).to_be_visible()
+    table = page.locator(".exam-converter-question-table")
+    navigator = page.locator(".exam-converter-question-navigator")
+    expect(table).to_be_visible()
+    expect(navigator).not_to_be_visible()
+    candidate_row = table.locator(f'[data-test="exam-converter-question-row-{first_item_id}"]')
+    expect(candidate_row).to_be_visible()
+    expect(candidate_row.get_by_role("img", name="Förslag", exact=True)).to_be_visible()
+    candidate_row.click()
+    expect(detail).to_be_visible()
+    if selected_item_id(detail) != first_item_id:
+        raise AssertionError("The selected Förslag row opened a different question.")
+
+    individual_accept = page.locator(
+        '[data-test="exam-converter-accept-advisory-answer-key-action"]'
+    )
+    with (
+        page.expect_response(re.compile(r"/correction-session/intents(?:\?|$)")) as item_write,
+        page.expect_response(
+            re.compile(r"/artifacts/answer_key_review_state_report(?:\?|$)")
+        ) as item_projection,
+    ):
+        individual_accept.click()
+    assert_persisted_responses(
+        item_write.value,
+        item_projection.value,
+        description="Individual candidate acceptance",
+    )
+    expect(detail.or_(question_list).first).to_be_visible(timeout=timeout_ms)
+    if detail.is_visible() and selected_item_id(detail) == first_item_id:
+        raise AssertionError("Individual acceptance did not advance from the resolved item.")
+
+    if detail.is_visible():
+        page.locator('[data-test="exam-converter-advisory-overview-action"]').click()
+        expect(question_list).to_be_visible()
+    assert_prefill_panel(page)
     accept_all = page.locator('[data-test="exam-converter-accept-all-ai-prefill-action"]')
     expect(accept_all).to_be_enabled()
     with (
@@ -89,8 +162,11 @@ def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int]:
         ) as accept_projection,
     ):
         accept_all.click()
-    if not accept_write.value.ok or not accept_projection.value.ok:
-        raise AssertionError("Bulk acceptance did not persist and reproject successfully.")
+    assert_persisted_responses(
+        accept_write.value,
+        accept_projection.value,
+        description="Bulk acceptance",
+    )
     review_remaining = page.locator('[data-test="exam-converter-result-open-questions"]')
     expect(review_remaining).to_be_visible(timeout=timeout_ms)
 
@@ -112,8 +188,11 @@ def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int]:
         ) as manual_projection,
     ):
         save.click()
-    if not manual_write.value.ok or not manual_projection.value.ok:
-        raise AssertionError("Manual answer key did not persist and reproject successfully.")
+    assert_persisted_responses(
+        manual_write.value,
+        manual_projection.value,
+        description="Manual answer key",
+    )
     expect(page.locator('[data-test="exam-converter-question-list-surface"]')).to_be_visible(
         timeout=timeout_ms
     )
@@ -121,7 +200,7 @@ def _review_real_result(page: Page, *, timeout_ms: int) -> tuple[int, int]:
     reviewed_rows = page.locator(
         '[data-test="exam-converter-question-list-surface"] [data-test^="exam-converter-question-row-"]'
     )
-    return reviewed_rows.count(), gap_count
+    return reviewed_rows.count(), gap_count, responsive_evidence
 
 
 def _download_artifacts(page: Page, artifact_dir: Path) -> dict[str, JsonValue]:
@@ -198,7 +277,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             expect(page).to_have_url(re.compile(re.escape(_APP_PATH)))
             _upload_and_start(page, args.fixture)
-            question_count, manual_gap_count = _review_real_result(
+            question_count, manual_gap_count, responsive_evidence = _review_real_result(
                 page,
                 timeout_ms=args.timeout_seconds * 1_000,
             )
@@ -208,6 +287,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "authenticated_path": urlparse(page.url).path,
                     "manual_gap_count": manual_gap_count,
                     "question_count": question_count,
+                    "responsive_review": responsive_evidence,
                     "status": "ok",
                 }
             )

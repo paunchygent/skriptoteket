@@ -189,6 +189,7 @@ export function answerKeyReviewStateReport(items: Record<string, unknown>[] = []
               provenance_detail: {
                 candidate_id: "candidate-item-004",
                 candidate_payload_digest: "sha256:candidate-item-004",
+                completion_report_sha256: "sha256:completion-report",
                 prompt_template_version: "digiexam-choice-answer-key-v1",
                 provider_profile_id: "task309-llama-cpp",
                 schema_name: "digiexam_choice_answer_key_decision_v1",

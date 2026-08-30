@@ -118,14 +118,14 @@ describe("ExamConverterAuthenticatedView compact review state", () => {
       correlationId: "corr_exam_converter_review",
       jobId: "job_exam_converter_review",
     });
-    expect(wrapper.text()).toContain("Kontrollera facit");
+    expect(wrapper.text()).toContain("Föreslagna facit");
     expect(wrapper.text()).toContain("Granska");
-    expect(wrapper.text()).toContain("1 frågor att granska");
+    expect(wrapper.text()).toContain("1 att granska.");
     const reviewBand = wrapper.find('[data-test="exam-converter-ai-prefill-panel"]');
     expect(reviewBand.findComponent({ name: "IconAi" }).exists()).toBe(true);
     expect(reviewBand.findAll(".lucide-bot")).toHaveLength(0);
     const questionRows = wrapper.find('[data-test="exam-converter-question-review-shell"]');
-    expect(questionRows.text()).toContain("Granska");
+    expect(questionRows.text()).toContain("Förslag");
     expect(questionRows.text()).toContain("Klart");
     expect(questionRows.text()).toContain("Ändrat");
     expect(questionRows.findAllComponents({ name: "IconAi" }).length).toBeGreaterThan(0);

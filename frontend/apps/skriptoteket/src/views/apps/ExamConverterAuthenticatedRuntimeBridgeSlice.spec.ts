@@ -559,8 +559,9 @@ describe("ExamConverterAuthenticatedView runtime bridge slice", () => {
     await startButton(wrapper).trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Kontrollera facit");
-    expect(wrapper.text()).toContain("1 fråga saknar facit eller poäng");
+    expect(wrapper.find('[data-test="exam-converter-result-strip"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-converter-result-open-questions"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-converter-question-row-item-002"] .lucide-triangle-alert').exists()).toBe(true);
     expect(wrapper.text()).not.toContain("Sir Convert");
   });
 

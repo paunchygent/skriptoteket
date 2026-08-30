@@ -111,11 +111,11 @@ const projectionBackedResultStrip = computed<ExamConverterResultStripState | nul
   }
   return {
     ...props.resultStrip,
-    actionLabel: "Granska",
-    detail: `${count.toLocaleString("sv-SE")} att granska`,
-    nextAction: "Granska frågorna som saknar rätt svar eller facitsvar.",
+    actionLabel: "Öppna",
+    detail: `${count.toLocaleString("sv-SE")} frågor`,
+    nextAction: "Facit krävs före export.",
     status: "partial",
-    title: "Kontrollera facit",
+    title: "Facit saknas",
     tone: "warning",
   };
 });

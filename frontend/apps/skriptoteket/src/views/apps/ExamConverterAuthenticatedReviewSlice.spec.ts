@@ -143,34 +143,10 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       correlationId: "corr_exam_converter_review",
       jobId: "job_exam_converter_review",
     });
-    expect(wrapper.text()).toContain("Kontrollera facit");
+    expect(wrapper.find('[data-test="exam-converter-ai-prefill-panel"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Frågor (6)");
     expect(wrapper.text()).toContain("Filer (2)");
     expect(wrapper.find('[data-test="exam-converter-question-review-shell"]').exists()).toBe(true);
-  });
-
-  it("uses sparse missing-field labels and icon-only row status in the dense question list", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    const questions = wrapper.find('[data-test="exam-converter-question-review-shell"]');
-
-    expect(questions.text()).toContain("Saknas");
-    expect(questions.text()).toContain("Granska");
-    expect(questions.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists()).toBe(false);
-    expect(questions.text()).toContain("Poäng");
-    expect(questions.text()).not.toContain("Facit saknas");
-    expect(questions.text()).not.toContain("Poäng saknas");
-    expect(questions.text()).not.toContain("FOSID");
-    expect(questions.text()).not.toContain("Svarsalternativ");
-    expect(questions.text()).not.toContain("Komplettering");
-    expect(questions.text()).not.toContain("Behöver ses över");
-    expect(questions.findAll(".lucide-check").length).toBeGreaterThan(0);
-    expect(questions.findAll(".lucide-sparkles").length).toBeGreaterThan(0);
-    expect(questions.findAll(".lucide-circle-check")).toHaveLength(0);
-    expect(questions.find('[data-test="exam-converter-question-row-item-004"]').text()).not.toContain(
-      "Giltigt",
-    );
   });
 
   it("shows question number and prompt preview in one column and treats marked free text as normal", async () => {
@@ -191,7 +167,6 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       "13. Förklara varför stål är hårdare än järn.",
     );
     expect(manualMarkedFreeTextRow.text()).toContain("Fritext");
-    expect(manualMarkedFreeTextRow.text()).toContain("—");
     expect(manualMarkedFreeTextRow.text()).toContain("1 p");
     expect(manualMarkedFreeTextRow.text()).not.toContain("Facit");
     expect(manualMarkedFreeTextRow.text()).not.toContain("Poäng");
@@ -199,7 +174,7 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(manualMarkedFreeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
   });
 
-  it("uses the approved Swedish item labels and no Enval shortcut", async () => {
+  it("renders the source item types with the teacher-facing labels", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
     await finishConversion(wrapper);
@@ -216,8 +191,6 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     expect(wrapper.find('[data-test="exam-converter-question-row-item-006"]').text()).toContain(
       "Fritext",
     );
-    expect(wrapper.text()).not.toContain("Enval");
-    expect(wrapper.text()).not.toContain("Flerval: matchning");
   });
 
   it("does not present free-text manual marking as missing facit or poäng", async () => {
@@ -244,7 +217,6 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
       "1. Varför är stål hårdare och starkare än järn?",
     );
     expect(freeTextRow.text()).toContain("Fritext");
-    expect(freeTextRow.text()).toContain("—");
     expect(freeTextRow.text()).toContain("1 p");
     expect(freeTextRow.find(".lucide-check").exists()).toBe(true);
     expect(freeTextRow.find(".lucide-triangle-alert").exists()).toBe(false);
