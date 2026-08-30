@@ -87,7 +87,11 @@ class InMemoryConversionHubJobRepository:
             None,
         )
         if existing is not None:
-            return existing, False
+            if existing.status is not ConversionHubJobStatus.FAILED:
+                return existing, False
+            self.jobs[existing.id] = existing.model_copy(
+                update={"submission_idempotency_key": None}
+            )
         self.jobs[job.id] = job
         return job, True
 
@@ -294,6 +298,67 @@ async def test_repeated_native_submission_returns_the_existing_job() -> None:
     assert second.idempotent_replay is True
     assert len(harness.jobs.jobs) == 1
     assert len(harness.enrichment_jobs.jobs) == 1
+
+
+async def test_repeated_successful_native_submission_remains_idempotent() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=True),
+        overlay_bytes=None,
+        correlation_id="corr-first",
+        idempotency_key="successful-native-submit",
+    )
+    second = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=True),
+        overlay_bytes=None,
+        correlation_id="corr-retry",
+        idempotency_key="successful-native-submit",
+    )
+
+    assert first.status is ConversionHubJobStatus.SUCCEEDED
+    assert second.job_id == first.job_id
+    assert second.status is ConversionHubJobStatus.SUCCEEDED
+    assert second.idempotent_replay is True
+    assert harness.producer.calls == 1
+
+
+async def test_repeated_native_submission_after_failure_creates_a_fresh_attempt() -> None:
+    harness = _Harness(enrichment_enabled=True)
+    actor = _actor()
+
+    first = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-first",
+        idempotency_key="failed-native-submit",
+    )
+    failed = harness.jobs.jobs[first.job_id].model_copy(
+        update={
+            "status": ConversionHubJobStatus.FAILED,
+            "error_message": "conversion failed",
+        }
+    )
+    await harness.jobs.update(job=failed)
+
+    second = await harness.handler.handle(
+        actor=actor,
+        upload=_upload(keyed=False),
+        overlay_bytes=None,
+        correlation_id="corr-retry",
+        idempotency_key="failed-native-submit",
+    )
+
+    assert second.job_id != first.job_id
+    assert second.idempotent_replay is False
+    assert second.status is ConversionHubJobStatus.SUBMITTED
+    assert len(harness.jobs.jobs) == 2
+    assert len(harness.enrichment_jobs.jobs) == 2
+    assert harness.jobs.jobs[first.job_id].submission_idempotency_key is None
 
 
 async def test_concurrent_native_submission_enriches_only_the_acquired_job() -> None:
