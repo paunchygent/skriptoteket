@@ -388,6 +388,11 @@ def _completion_report(
     items: list[JsonValue] = []
     for item in source_exam.items:
         proposal = proposals.get(item.item_id)
+        manual_follow_up = (
+            failure_code is not None
+            and item.answer_key.provenance is DigiExamAnswerKeyProvenance.ABSENT
+            and item.item_type in _MACHINE_MARKED
+        )
         payload = (
             proposal.manual_answer_key.model_dump(mode="json")
             if proposal and proposal.manual_answer_key
@@ -408,26 +413,28 @@ def _completion_report(
                     "suggested"
                     if payload is not None
                     else "manual_follow_up_required"
-                    if failure_code is not None and item.item_type in _MACHINE_MARKED
+                    if manual_follow_up
                     else "skipped"
                 ),
-                "validation_state": "valid" if payload is not None else "skipped",
+                "validation_state": (
+                    "valid"
+                    if payload is not None
+                    else "manual_follow_up_required"
+                    if manual_follow_up
+                    else "skipped"
+                ),
                 "answer_payload": payload,
                 "backend_status": (
                     "succeeded"
                     if payload is not None
+                    else "manual_follow_up_required"
+                    if manual_follow_up and proposal_overlay is not None
                     else "failed"
-                    if failure_code is not None and item.item_type in _MACHINE_MARKED
+                    if manual_follow_up
                     else "not_requested"
                 ),
-                "backend_failure_code": (
-                    failure_code if item.item_type in _MACHINE_MARKED else None
-                ),
-                "retry_identity": (
-                    retry_identity
-                    if failure_code is not None and item.item_type in _MACHINE_MARKED
-                    else None
-                ),
+                "backend_failure_code": (failure_code if manual_follow_up else None),
+                "retry_identity": (retry_identity if manual_follow_up else None),
                 "candidate_id": f"candidate-{item.item_id}" if payload is not None else None,
                 "candidate_payload_digest": _sha256(payload_bytes) if payload is not None else None,
                 "provider_profile_id": provider_profile_id if payload is not None else None,
