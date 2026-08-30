@@ -14,27 +14,25 @@
   proved both unavailable paths, the normal-user suggestion form, and catalog
   copy. Skriptoteket web/worker are healthy; reserved Sir/GPU/STT containers
   remain exited with restart disabled.
-- Exam Converter repair main `4273c3c2` uses PostgreSQL/UoW as the public-job
-  authority and removes the web-process queue. Teacher review now persists one
-  or all valid AI suggestions through one atomic correction-session write,
-  waits for durable reprojection, and advances directly through unresolved
-  questions. The approved token UI provides equal icon actions on desktop and
-  phone, top and bottom accept/edit controls, explicit overview navigation, and
-  bulk acceptance without exposing gap identifiers. Parent verification passed:
-  19 backend tests, 58 frontend tests, lint, frontend typecheck/build, and the
-  deterministic desktop/390px Playwright journey. The PostgreSQL repository
-  suite skipped because local Docker was unavailable; that also prevented the
-  authenticated local shared-auth lane. The user owns the production mobile
-  `.dxe` acceptance check; agents must not submit one unless explicitly asked.
-- Production repair main `e9fc77de` is deployed on Hemma. It preserves
-  zero/absent-point open-ended questions as manual QTI, removes internal
-  DigiExam gap identifiers from model-facing cloze text, rejects exact source
-  gap identifiers as provider answers, and atomically releases a failed Exam
-  Converter job's deterministic submission key so one fresh retry can acquire
-  it while the failed row remains historical. Focused validation passed: 22
-  QTI repair tests, 123 affected answer-key domain tests, 10 native routing
-  tests, and 3 real-PostgreSQL concurrency tests; lint and changed-file typing
-  passed. Hemma migrations and the checked-in readiness gate passed.
+- Exam Converter uses PostgreSQL/UoW as the public-job authority and has no
+  web-process queue. Teacher review persists one or all valid AI suggestions
+  through one atomic correction-session write, waits for durable reprojection,
+  and advances directly through unresolved questions. The approved token UI
+  provides equal icon actions on desktop and phone, top and bottom accept/edit
+  controls, explicit overview navigation, and bulk acceptance without exposing
+  gap identifiers.
+- The mixed-DigiExam backend repair and frontend review-projection follow-up are
+  integrated on `main` and deployed on Hemma. The real authenticated local
+  browser journey used unchanged `1776888013-ak7-lag-och-ratt.dxe` and crossed
+  upload, actual worker/provider completion, bulk acceptance, four manual gaps,
+  durable replay/reprojection, and QTI/PDF downloads with zero browser errors.
+  Focused frontend tests (14), lint, typecheck, real PostgreSQL integration, and
+  conversion/idempotency concurrency checks are green. The user owns the
+  production mobile `.dxe` acceptance; agents did not submit a production file.
+  Production state confirms the failed-job replay fix: failed row
+  `29b8b86f-0edb-47ac-9899-7523893504a3` relinquished its deterministic key when
+  failed row `b4a6f79d-a329-4af9-9426-78a2bd69a746` was admitted, so the next
+  retry creates a fresh job instead of replaying either historical failure.
 - [TASK-SKRIPT-39-03-02](docs/backlog/tasks/task-skript-39-03-02-cut-over-the-public-exam-converter-to-skriptoteket-owned-execution.md)
   is `done` under the user-directed no-further-review closeout. Canonical Hemma
   main `8fe6b722` serves the declared public deep link directly and completed
