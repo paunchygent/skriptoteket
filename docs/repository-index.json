@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9f07abb259d2bdff57b9836cee183c2a483fb623944ba3c532730e0d197aeb4e",
+  "source_set_digest": "55624bb35aece16d8ee8350c1ca509486366e8486c3ce8c7680f7ab7f0157a24",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4217,6 +4217,25 @@
         "decided_at": "2026-08-29",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent review approved the integrated failover orchestration at 7b32ed60 as behavior-identical to the reviewed transient gate, second-lease transaction, and exhaustion hard stop; authenticated live proofs on local main 6f4baa7a then showed two Luna request failures followed by two real GLM-5.3-flash completions with four non-refundable lease rows and successful conversion, followed by a token-limit-1 typed exhaustion with zero provider calls, zero new leases, and HTTP-200 admin balance, recorded in handoff.md and retained session 01a04d62-c71c-721c-a43a-76384e182429."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-02-03",
+      "type": "task",
+      "title": "Repair partial DigiExam answer-key enrichment and prove the real integrated vertical",
+      "path": "docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
