@@ -9,7 +9,7 @@
  *   - Mounts `ExamConverterAuthenticatedView` through the authenticated review
  *     flow.
  *   - Uses compact answer-key review-state and completion-report fixtures from
- *     the Sir Convert Gateway contract.
+ *     the local Exam Converter contract.
  *   - Guards the app/script handshake after correction-session replay.
  */
 
@@ -19,10 +19,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
-} from "../../api/sirConvertGateway/contractValues";
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import {
   correctionApplyResult,

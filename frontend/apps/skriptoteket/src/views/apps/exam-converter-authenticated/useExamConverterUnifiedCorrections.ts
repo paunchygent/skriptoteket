@@ -23,7 +23,7 @@ import {
 import { replayLocalExamConversion } from "../../../api/examConverterLocal";
 import type {
   ExamAuthoringCorrectionsApplyRequest,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import type { ExamConverterRuntimeOutcome } from "./useExamConverterConversionState";
 import {
   buildItemTextPatchRequest,

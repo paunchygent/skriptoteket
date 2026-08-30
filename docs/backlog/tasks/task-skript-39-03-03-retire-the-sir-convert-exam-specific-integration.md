@@ -4,18 +4,16 @@ id: TASK-SKRIPT-39-03-03
 title: Retire the Sir Convert exam-specific integration
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-30'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- After both product lanes cut over, exam-specific Sir clients, schemas, grants, leases,
-  identifiers, settings, secrets, and fallback selection are removed while generic
-  heavy-document extraction and STT remain operational
+  - After both product lanes cut over, exam-specific Sir clients, schemas, grants, leases, identifiers, settings, secrets, and fallback selection are removed while generic heavy-document extraction and STT remain operational
 story: ST-SKRIPT-39-03
 backlog_document_profile: contract-derived
 ---
@@ -69,9 +67,9 @@ workloads.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | Retirement begins only after authenticated and public production consumers no longer use Sir exam conversion. |
-| T2 | All exam-specific clients, schemas, grants, leases, identifiers, settings, secrets, and fallback selection retire. |
-| T3 | Generic heavy-document extraction, OCR, STT, and non-exam consumers remain. |
-| T4 | Cross-repository mutations require linked authority in the repository that owns each retiring surface. |
+| ID  | Decided contract term                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------ |
+| T1  | Retirement begins only after authenticated and public production consumers no longer use Sir exam conversion.      |
+| T2  | All exam-specific clients, schemas, grants, leases, identifiers, settings, secrets, and fallback selection retire. |
+| T3  | Generic heavy-document extraction, OCR, STT, and non-exam consumers remain.                                        |
+| T4  | Cross-repository mutations require linked authority in the repository that owns each retiring surface.             |

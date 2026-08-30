@@ -44,7 +44,7 @@ from skriptoteket.application.curated_apps.handlers.document_converter_project_p
 from skriptoteket.domain.scripting.vault import VaultFileSourceKind, VaultUsage
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers.test_conversion_hub_artifact_saves import (
+from tests.fixtures.time_fixtures import (
     FixedClock,
 )
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (

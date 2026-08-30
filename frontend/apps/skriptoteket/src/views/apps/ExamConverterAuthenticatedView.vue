@@ -14,8 +14,8 @@
 
 import { computed, onMounted, ref } from "vue";
 
-import type { SirConvertTerminalResult } from "../../api/sirConvertGateway";
-import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/sirConvertGateway/contractValues";
+import type { ExamConverterTerminalResult } from "../../api/examConverterContracts";
+import { DIGIEXAM_COMPLETION_MODE_SUGGEST_MISSING_MACHINE_MARKED } from "../../api/examConverterContracts";
 import ConversionHubTranscriptHost from "./conversion-hub-transcript/ConversionHubTranscriptHost.vue";
 import ExamConverterWorkflowRailShell from "./exam-converter-authenticated/ExamConverterWorkflowRailShell.vue";
 import ExamConverterWorkspaceShell from "./exam-converter-authenticated/ExamConverterWorkspaceShell.vue";
@@ -198,7 +198,7 @@ function handleResetLocalChoices(): void {
   resetConversion();
 }
 
-function toRuntimeOutcome(result: SirConvertTerminalResult): ExamConverterRuntimeOutcome {
+function toRuntimeOutcome(result: ExamConverterTerminalResult): ExamConverterRuntimeOutcome {
   return {
     artifactCount: result.conversion_metadata.artifact_count,
     bundleStatus: result.conversion_metadata.bundle_status,
@@ -209,7 +209,7 @@ function toRuntimeOutcome(result: SirConvertTerminalResult): ExamConverterRuntim
 }
 
 async function finishRuntimeResult(
-  result: SirConvertTerminalResult,
+  result: ExamConverterTerminalResult,
   preferredMode: ExamConverterInspectionMode | null = null,
   completionReportRequired = false,
 ): Promise<void> {

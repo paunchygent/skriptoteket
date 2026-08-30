@@ -14,9 +14,6 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
 )
-from skriptoteket.application.curated_apps.exam_conversion import (
-    build_local_exam_conversion_producer_id,
-)
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
 )
@@ -219,7 +216,7 @@ async def test_replay_projects_durable_point_correction_into_local_artifacts(
         input_filename="exam.dxe",
         source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
         output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
-        upstream_job_id=build_local_exam_conversion_producer_id(job_id=job_id),
+        upstream_job_id=None,
         status=ConversionHubJobStatus.SUCCEEDED,
         created_at=now,
         updated_at=now,

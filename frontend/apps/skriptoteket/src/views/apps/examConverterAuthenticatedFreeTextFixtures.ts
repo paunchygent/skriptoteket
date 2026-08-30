@@ -2,7 +2,7 @@
  * Exam Converter authenticated free-text review fixtures.
  *
  * Domain purpose:
- *   Provide the free-text-only Sir Convert fixture used to prove AI-facit
+ *   Provide the free-text-only Exam Converter fixture used to prove AI-facit
  *   review stays quiet when automatic answer keys are not needed.
  *
  * Relationships:
@@ -29,9 +29,9 @@ import {
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_QTI_PACKAGE,
   DIGIEXAM_TARGET_READY,
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-  SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
-} from "../../api/sirConvertGateway/contractValues";
+  EXAM_CONVERTER_ARTIFACT_AVAILABLE,
+  EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
@@ -40,7 +40,7 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 
 export function mockFreeTextOnlyReviewArtifacts(
   gatewayMocks: ExamConverterGatewayMocks,
@@ -49,7 +49,7 @@ export function mockFreeTextOnlyReviewArtifacts(
     artifacts: [
       {
         artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/pdf",
         filename: "Metaller_Exam.net.pdf",
         sha256: null,
@@ -57,7 +57,7 @@ export function mockFreeTextOnlyReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_TARGET_QTI_PACKAGE,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/zip",
         filename: "Metaller_QTI.zip",
         sha256: null,
@@ -65,7 +65,7 @@ export function mockFreeTextOnlyReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/json",
         filename: "answer-key-review-state.json",
         sha256: "sha256:answer-key-review-state-free-text",
@@ -73,14 +73,14 @@ export function mockFreeTextOnlyReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/json",
         filename: "answer-key-completion-report.json",
         sha256: "sha256:completion-report-free-text",
         size_bytes: 512,
       },
     ],
-    bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
+    bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
     job_id: "job_exam_converter_review",
     source: {
       filename: "1819077059-e-metaller-och-elektrokemi-23c.dxe",

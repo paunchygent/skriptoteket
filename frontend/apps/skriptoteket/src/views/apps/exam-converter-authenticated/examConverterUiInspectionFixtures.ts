@@ -14,9 +14,9 @@
 import type {
   DigiExamItemType,
   DigiExamTargetReadinessReport,
-  SirConvertArtifactAvailability,
-  SirConvertArtifactManifest,
-} from "../../../api/sirConvertGateway";
+  ExamConverterArtifactAvailability,
+  ExamConverterArtifactManifest,
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
@@ -32,11 +32,11 @@ import {
   DIGIEXAM_TARGET_QTI_PACKAGE,
   DIGIEXAM_TARGET_READY,
   DIGIEXAM_TARGET_UNSUPPORTED_TARGET_SHAPE,
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-  SIR_CONVERT_ARTIFACT_UNAVAILABLE,
-  SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
-  SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
-} from "../../../api/sirConvertGateway/contractValues";
+  EXAM_CONVERTER_ARTIFACT_AVAILABLE,
+  EXAM_CONVERTER_ARTIFACT_UNAVAILABLE,
+  EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
+  EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
+} from "../../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
@@ -45,7 +45,7 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../../api/sirConvertGateway/schemaVersions";
+} from "../../../api/examConverterContracts";
 import {
   parseAnswerKeyCompletionReport,
   type ExamConverterAnswerKeyCompletionReport,
@@ -98,7 +98,7 @@ type FixtureOptions = {
   effectiveAnswerKeysByItem?: ExamConverterEffectiveAnswerKeyByItem | null;
   effectivePointCorrectionsByItem?: ExamConverterEffectivePointCorrectionByItem | null;
   id: ExamConverterUiInspectionFixtureId;
-  qtiAvailability: SirConvertArtifactAvailability;
+  qtiAvailability: ExamConverterArtifactAvailability;
   qtiExportEnabled: boolean;
   qtiReasonCode: string;
   qtiReadiness: DigiExamTargetReadinessReport["targets"][number]["readiness"];
@@ -360,8 +360,8 @@ function buildFixture(options: FixtureOptions): ExamConverterUiInspectionFixture
       bundleStatus:
         projection.report.attentionQuestionCount > 0 ||
         projection.report.blockedTargetFileCount > 0
-          ? SIR_CONVERT_BUNDLE_STATUS_PARTIAL
-          : SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+          ? EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL
+          : EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
       manualFollowUpCount: projection.report.attentionQuestionCount,
       manualFollowUpRequired:
         projection.report.attentionQuestionCount > 0 ||
@@ -374,7 +374,7 @@ function buildFixture(options: FixtureOptions): ExamConverterUiInspectionFixture
   };
 }
 
-function buildArtifactManifest(options: FixtureOptions): SirConvertArtifactManifest {
+function buildArtifactManifest(options: FixtureOptions): ExamConverterArtifactManifest {
   return {
     artifacts: [
       artifact(DIGIEXAM_TARGET_EXAMNET_PDF, "exam-converter-ui-inspection.pdf"),
@@ -383,7 +383,7 @@ function buildArtifactManifest(options: FixtureOptions): SirConvertArtifactManif
         unavailableCode: options.qtiExportEnabled ? undefined : options.qtiReasonCode,
       }),
     ],
-    bundle_status: SIR_CONVERT_BUNDLE_STATUS_COMPLETE,
+    bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_COMPLETE,
     job_id: `job_${options.id}`,
     manual_follow_up: {
       artifact_key: DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
@@ -420,18 +420,18 @@ function artifact(
   artifactKey: string,
   filename: string,
   options: {
-    availability?: SirConvertArtifactAvailability;
+    availability?: ExamConverterArtifactAvailability;
     unavailableCode?: string;
   } = {},
 ) {
-  const availability = options.availability ?? SIR_CONVERT_ARTIFACT_AVAILABLE;
+  const availability = options.availability ?? EXAM_CONVERTER_ARTIFACT_AVAILABLE;
   return {
     artifact_key: artifactKey,
     availability,
     content_type: artifactKey === DIGIEXAM_TARGET_QTI_PACKAGE ? "application/zip" : "application/pdf",
     filename,
-    sha256: availability === SIR_CONVERT_ARTIFACT_AVAILABLE ? `sha256:${artifactKey}` : null,
-    size_bytes: availability === SIR_CONVERT_ARTIFACT_AVAILABLE ? 128_000 : null,
+    sha256: availability === EXAM_CONVERTER_ARTIFACT_AVAILABLE ? `sha256:${artifactKey}` : null,
+    size_bytes: availability === EXAM_CONVERTER_ARTIFACT_AVAILABLE ? 128_000 : null,
     ...(options.unavailableCode ? { unavailable_code: options.unavailableCode } : {}),
   };
 }
@@ -604,7 +604,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
     activeInspectionMode: "questions",
     answerCompletionReport: completionReportForMissingFacit(),
     id: "ai-facit-review",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_UNAVAILABLE,
     qtiExportEnabled: false,
     qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
     qtiReasonCode: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
@@ -613,7 +613,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
   "complete-qti-blocked": {
     activeInspectionMode: "files",
     id: "complete-qti-blocked",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_UNAVAILABLE,
     qtiExportEnabled: false,
     qtiReadiness: DIGIEXAM_TARGET_UNSUPPORTED_TARGET_SHAPE,
     qtiReasonCode: "qti_package_export_disabled",
@@ -622,7 +622,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
   "complete-qti-ready": {
     activeInspectionMode: "questions",
     id: "complete-qti-ready",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
     qtiExportEnabled: true,
     qtiReadiness: DIGIEXAM_TARGET_READY,
     qtiReasonCode: "target_available",
@@ -631,7 +631,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
   "missing-facit": {
     activeInspectionMode: "questions",
     id: "missing-facit",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_UNAVAILABLE,
     qtiExportEnabled: false,
     qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
     qtiReasonCode: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
@@ -642,7 +642,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
     effectiveAnswerKeysByItem: persistedCorrectionAnswerKeys(),
     effectivePointCorrectionsByItem: persistedCorrectionPointCorrections(),
     id: "persisted-corrections",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
     qtiExportEnabled: true,
     qtiReadiness: DIGIEXAM_TARGET_READY,
     qtiReasonCode: "target_available",
@@ -652,7 +652,7 @@ const FIXTURE_OPTIONS: Record<ExamConverterUiInspectionFixtureId, FixtureOptions
     activeInspectionMode: "questions",
     answerCompletionReport: providerOnlyFailureCompletionReport(),
     id: "provider-only-advisory-failure",
-    qtiAvailability: SIR_CONVERT_ARTIFACT_UNAVAILABLE,
+    qtiAvailability: EXAM_CONVERTER_ARTIFACT_UNAVAILABLE,
     qtiExportEnabled: false,
     qtiReadiness: DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
     qtiReasonCode: DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,

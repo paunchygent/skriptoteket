@@ -2,7 +2,7 @@
  * DigiExam IR question review projection.
  *
  * Domain purpose:
- *   Convert one validated Sir Convert DigiExam IR item into a read-only
+ *   Convert one validated Exam Converter DigiExam IR item into a read-only
  *   teacher-facing question row for authenticated Exam Converter review.
  *
  * Relationships:
@@ -16,7 +16,7 @@ import type {
   DigiExamEffectiveAnswerKey,
   DigiExamEffectivePointCorrection,
   DigiExamItemType,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
@@ -26,7 +26,7 @@ import {
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
   DIGIEXAM_MANUAL_FOLLOW_UP_PARSER_WARNING_BLOCKS_RENDERING,
   DIGIEXAM_MANUAL_FOLLOW_UP_UNSUPPORTED_ITEM_TYPE,
-} from "../../../api/sirConvertGateway/contractValues";
+} from "../../../api/examConverterContracts";
 import type { ExamConverterLlmAnswerKeyCandidate } from "./digiexamAnswerKeyCompletionReport";
 
 export type ExamConverterMissingFieldLabel = "Facit" | "Poäng";

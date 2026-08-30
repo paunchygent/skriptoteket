@@ -24,10 +24,10 @@ import type {
   DigiExamIngestionOverlay,
   DigiExamMigrationTarget,
   ExamAuthoringCorrectionSourceStateIssueResult,
-  SirConvertJobStatus,
-  SirConvertTerminalResult,
-} from "../../../api/sirConvertGateway";
-import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "../../../api/sirConvertGateway/jobSpec";
+  ExamConverterJobStatus,
+  ExamConverterTerminalResult,
+} from "../../../api/examConverterContracts";
+import { DEFAULT_DIGIEXAM_MIGRATION_TARGETS } from "../../../api/examConverterContracts";
 
 type AuthenticatedRuntimeClient = {
   submitDigiExamMigration: typeof submitLocalExamConversion;
@@ -49,7 +49,7 @@ export type ExamConverterAuthenticatedRuntimeOptions = {
 };
 
 const DEFAULT_POLL_INTERVAL_MS = 2_000;
-const ACTIVE_JOB_STATUSES = new Set<SirConvertJobStatus>([
+const ACTIVE_JOB_STATUSES = new Set<ExamConverterJobStatus>([
   "submitted",
   "queued",
   "running",
@@ -81,11 +81,11 @@ function wait(milliseconds: number): Promise<void> {
   });
 }
 
-function isActiveJobStatus(status: SirConvertJobStatus): boolean {
+function isActiveJobStatus(status: ExamConverterJobStatus): boolean {
   return ACTIVE_JOB_STATUSES.has(status);
 }
 
-function isFailedJobStatus(status: SirConvertJobStatus): boolean {
+function isFailedJobStatus(status: ExamConverterJobStatus): boolean {
   return status === "failed" || status === "canceled" || status === "cancelled";
 }
 
@@ -129,7 +129,7 @@ async function readTerminalResult(params: {
   client: AuthenticatedRuntimeClient;
   correlationId: string;
   jobId: string;
-}): Promise<SirConvertTerminalResult> {
+}): Promise<ExamConverterTerminalResult> {
   return await params.client.getDigiExamMigrationResult({
     correlationId: params.correlationId,
     jobId: params.jobId,
@@ -169,7 +169,7 @@ export function useExamConverterAuthenticatedRuntime(
   async function pollUntilTerminal(
     submittedJob: LocalExamConversionSubmittedJob,
     runId: number,
-  ): Promise<SirConvertTerminalResult | null> {
+  ): Promise<ExamConverterTerminalResult | null> {
     let currentStatus = submittedJob.status;
 
     while (isActiveJobStatus(currentStatus)) {
@@ -203,7 +203,7 @@ export function useExamConverterAuthenticatedRuntime(
 
   async function submitAndPoll(
     submission: ExamConverterAuthenticatedRuntimeSubmission,
-  ): Promise<SirConvertTerminalResult | null> {
+  ): Promise<ExamConverterTerminalResult | null> {
     const runId = activeRunId.value + 1;
     activeRunId.value = runId;
     isRuntimeBusy.value = true;

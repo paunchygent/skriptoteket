@@ -23,13 +23,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import type {
-  SirConvertJobStatus,
-  SirConvertTerminalResult,
-} from "../../api/sirConvertGateway";
+  ExamConverterJobStatus,
+  ExamConverterTerminalResult,
+} from "../../api/examConverterContracts";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
-} from "../../api/sirConvertGateway/contractValues";
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
@@ -37,7 +37,7 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 import {
   answerKeyReviewItem,
   answerKeyReviewStateReport,
@@ -95,7 +95,7 @@ vi.mock("../../api/examConverterCorrectionSessions", async (importOriginal) => {
   };
 });
 
-function submittedJob(status: SirConvertJobStatus) {
+function submittedJob(status: ExamConverterJobStatus) {
   return {
     correlationId: "corr_exam_converter_1",
     idempotencyKey: "idem_exam_converter_1",
@@ -106,8 +106,8 @@ function submittedJob(status: SirConvertJobStatus) {
 }
 
 function terminalResult(
-  overrides: Partial<SirConvertTerminalResult["conversion_metadata"]> = {},
-): SirConvertTerminalResult {
+  overrides: Partial<ExamConverterTerminalResult["conversion_metadata"]> = {},
+): ExamConverterTerminalResult {
   return {
     artifact: {
       content_type: "application/json",

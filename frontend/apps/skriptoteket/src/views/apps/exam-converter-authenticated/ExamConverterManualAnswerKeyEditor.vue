@@ -21,7 +21,7 @@ import {
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
-} from "../../../api/sirConvertGateway/contractValues";
+} from "../../../api/examConverterContracts";
 import type {
   ExamConverterManualAnswerKeyCorrection,
 } from "./digiexamTeacherCorrectionOverlay";

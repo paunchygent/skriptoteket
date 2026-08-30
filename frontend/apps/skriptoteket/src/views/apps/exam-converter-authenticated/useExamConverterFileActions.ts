@@ -19,9 +19,9 @@ import {
   saveLocalExamConversionArtifact,
 } from "../../../api/examConverterLocal";
 import type {
-  SirConvertArtifactBlob,
-  SirConvertSavedUserFile,
-} from "../../../api/sirConvertGateway";
+  ExamConverterArtifactBlob,
+  ExamConverterSavedUserFile,
+} from "../../../api/examConverterContracts";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
 
 export type ExamConverterFileActionStatus = "idle" | "running" | "done" | "failed";
@@ -42,11 +42,11 @@ type FileActionClient = {
     contentSha256: string;
     correlationId: string;
     jobId: string;
-  }) => Promise<SirConvertArtifactBlob>;
+  }) => Promise<ExamConverterArtifactBlob>;
   saveLocalExamConversionArtifact: typeof saveLocalExamConversionArtifact;
 };
 
-type TriggerDownload = (artifact: SirConvertArtifactBlob, fallbackFilename: string) => void;
+type TriggerDownload = (artifact: ExamConverterArtifactBlob, fallbackFilename: string) => void;
 
 export type ExamConverterFileActionOptions = {
   client?: FileActionClient;
@@ -60,7 +60,7 @@ const DEFAULT_CLIENT: FileActionClient = {
 };
 
 function defaultTriggerDownload(
-  artifact: SirConvertArtifactBlob,
+  artifact: ExamConverterArtifactBlob,
   fallbackFilename: string,
 ): void {
   const objectUrl = URL.createObjectURL(artifact.blob);
@@ -75,9 +75,9 @@ function defaultTriggerDownload(
 }
 
 function withTeacherFacingFilename(
-  artifact: SirConvertArtifactBlob,
+  artifact: ExamConverterArtifactBlob,
   filename: string,
-): SirConvertArtifactBlob {
+): ExamConverterArtifactBlob {
   return {
     ...artifact,
     filename,
@@ -121,7 +121,7 @@ export function useExamConverterFileActions(
     correlationId: string;
     file: ExamConverterReviewFile;
     jobId: string;
-  }): Promise<SirConvertArtifactBlob> {
+  }): Promise<ExamConverterArtifactBlob> {
     const actionReference = params.file.artifactActionReference;
     if (!actionReference) {
       throw new Error("Exam Converter file action requires an authorized artifact reference.");
@@ -169,7 +169,7 @@ export function useExamConverterFileActions(
     correlationId: string;
     file: ExamConverterReviewFile;
     jobId: string;
-  }): Promise<SirConvertSavedUserFile | null> {
+  }): Promise<ExamConverterSavedUserFile | null> {
     fileActionStates.value = setFileActionState(fileActionStates.value, params.file.artifactKey, {
       save: "running",
     });

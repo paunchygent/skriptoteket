@@ -3,7 +3,7 @@
  *
  * Domain purpose:
  *   Prove corrected file actions keep teacher-facing target filenames while
- *   fetching bytes through replay-scoped Sir Convert artifact references.
+ *   fetching bytes through replay-scoped Exam Converter artifact references.
  *
  * Relationships:
  *   - Exercises `useExamConverterFileActions`.
@@ -16,9 +16,9 @@ import { useExamConverterFileActions } from "./useExamConverterFileActions";
 import type { ExamConverterReviewFile } from "./digiexamIrReviewParser";
 import type {
   DigiExamAnswerKeyReviewReplayArtifactReference,
-  SirConvertArtifactBlob,
-  SirConvertSavedUserFile,
-} from "../../../api/sirConvertGateway";
+  ExamConverterArtifactBlob,
+  ExamConverterSavedUserFile,
+} from "../../../api/examConverterContracts";
 
 function replayReference(): DigiExamAnswerKeyReviewReplayArtifactReference {
   return {
@@ -78,7 +78,7 @@ function originalFile(): ExamConverterReviewFile {
   };
 }
 
-function replayBlob(): SirConvertArtifactBlob {
+function replayBlob(): ExamConverterArtifactBlob {
   return {
     artifactKey: "correction_replay_qti_package",
     blob: new Blob(["qti"], { type: "application/zip" }),
@@ -152,7 +152,7 @@ describe("useExamConverterFileActions", () => {
   });
 
   it("saves corrected local bytes with the teacher-facing target filename", async () => {
-    const saved: SirConvertSavedUserFile = {
+    const saved: ExamConverterSavedUserFile = {
       source_artifact_id: "documents.conversion_hub:job-filename:qti_package",
       vault_artifact: {
         bytes: 4,

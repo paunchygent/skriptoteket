@@ -2,7 +2,7 @@
  * Exam Converter authenticated review test fixtures.
  *
  * Domain purpose:
- *   Provide compact Sir Convert gateway fixtures for IR-backed question review
+ *   Provide compact local Exam Converter fixtures for IR-backed question review
  *   tests without burying contract payloads in presentation assertions.
  *
  * Relationships:
@@ -13,9 +13,9 @@ import { flushPromises, type VueWrapper } from "@vue/test-utils";
 import type { Mock } from "vitest";
 
 import type {
-  SirConvertJobStatus,
-  SirConvertTerminalResult,
-} from "../../api/sirConvertGateway";
+  ExamConverterJobStatus,
+  ExamConverterTerminalResult,
+} from "../../api/examConverterContracts";
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
@@ -36,9 +36,9 @@ import {
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
   DIGIEXAM_TARGET_QTI_PACKAGE,
-  SIR_CONVERT_ARTIFACT_AVAILABLE,
-  SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
-} from "../../api/sirConvertGateway/contractValues";
+  EXAM_CONVERTER_ARTIFACT_AVAILABLE,
+  EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
+} from "../../api/examConverterContracts";
 import {
   DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
   DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
@@ -46,7 +46,7 @@ import {
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 
 export type ExamConverterGatewayMocks = {
   downloadDigiExamMigrationArtifact: Mock;
@@ -58,7 +58,7 @@ export type ExamConverterGatewayMocks = {
 };
 
 export function submittedJob(
-  status: SirConvertJobStatus,
+  status: ExamConverterJobStatus,
   jobId = "job_exam_converter_review",
 ) {
   return {
@@ -70,7 +70,7 @@ export function submittedJob(
   };
 }
 
-export function terminalResult(): SirConvertTerminalResult {
+export function terminalResult(): ExamConverterTerminalResult {
   return {
     artifact: {
       content_type: "application/json",
@@ -81,7 +81,7 @@ export function terminalResult(): SirConvertTerminalResult {
     conversion_metadata: {
       artifact_count: 2,
       bundle_schema_version: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-      bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
+      bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
       manual_follow_up_required: true,
       route_key: DIGIEXAM_MIGRATION_ROUTE_KEY,
       source_sha256: null,
@@ -261,7 +261,7 @@ export function mockReviewArtifacts(
     artifacts: [
       {
         artifact_key: DIGIEXAM_TARGET_EXAMNET_PDF,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/pdf",
         filename: "Ma1c_Exam.net.pdf",
         sha256: null,
@@ -269,7 +269,7 @@ export function mockReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_TARGET_QTI_PACKAGE,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/zip",
         filename: "Ma1c_QTI.zip",
         sha256: null,
@@ -277,7 +277,7 @@ export function mockReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_MANUAL_FOLLOW_UP_REPORT,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/json",
         filename: "rapport.json",
         sha256: null,
@@ -285,7 +285,7 @@ export function mockReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_REVIEW_STATE_REPORT,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/json",
         filename: "answer-key-review-state.json",
         sha256: "sha256:answer-key-review-state",
@@ -293,7 +293,7 @@ export function mockReviewArtifacts(
       },
       {
         artifact_key: DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
-        availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+        availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
         content_type: "application/json",
         filename: "answer-key-completion-report.json",
         sha256: "sha256:completion-report",
@@ -303,7 +303,7 @@ export function mockReviewArtifacts(
         ? [
             {
               artifact_key: DIGIEXAM_ARTIFACT_EFFECTIVE_IR_JSON,
-              availability: SIR_CONVERT_ARTIFACT_AVAILABLE,
+              availability: EXAM_CONVERTER_ARTIFACT_AVAILABLE,
               content_type: "application/json",
               filename: "effective-ir.json",
               sha256: "sha256:effective-ir-with-correction",
@@ -312,7 +312,7 @@ export function mockReviewArtifacts(
           ]
         : []),
     ],
-    bundle_status: SIR_CONVERT_BUNDLE_STATUS_PARTIAL,
+    bundle_status: EXAM_CONVERTER_BUNDLE_STATUS_PARTIAL,
     job_id: "job_exam_converter_review",
     source: {
       filename: "Ma1c_NationelltProv_HT25.dxe",

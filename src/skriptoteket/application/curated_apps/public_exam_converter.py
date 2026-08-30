@@ -7,8 +7,7 @@ Purpose:
 Relationships:
   - Used by `application.curated_apps.handlers.public_exam_converter_jobs`.
   - Serialized by `web/api/v1/public_apps_exam_converter.py`.
-  - Mirrors the Sir Convert DigiExam migration bundle contract while exposing
-    only Skriptoteket-owned opaque public handles to the browser.
+  - Exposes Skriptoteket-owned opaque public handles to the browser.
 """
 
 from __future__ import annotations
@@ -16,17 +15,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from typing import assert_never
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
-from skriptoteket.application.curated_apps.sir_convert_contracts import (
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
     DigiExamMigrationBundleSchemaVersion,
 )
-from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertJobStatusV2
 
 
 class PublicExamConverterTarget(StrEnum):
@@ -47,26 +44,6 @@ class PublicExamConverterJobStatus(StrEnum):
     CANCELED = "canceled"
     EXPIRED = "expired"
 
-    @classmethod
-    def from_sir_convert_status(
-        cls,
-        status: SirConvertJobStatusV2,
-    ) -> "PublicExamConverterJobStatus":
-        """Translate the retained Sir client status until Task 03 removes it."""
-
-        match status:
-            case SirConvertJobStatusV2.QUEUED:
-                return cls.QUEUED
-            case SirConvertJobStatusV2.RUNNING:
-                return cls.PROCESSING
-            case SirConvertJobStatusV2.SUCCEEDED:
-                return cls.SUCCEEDED
-            case SirConvertJobStatusV2.FAILED:
-                return cls.FAILED
-            case SirConvertJobStatusV2.CANCELED:
-                return cls.CANCELED
-        assert_never(status)
-
 
 @dataclass(frozen=True, slots=True)
 class PublicExamConverterUpload:
@@ -75,14 +52,6 @@ class PublicExamConverterUpload:
     filename: str
     content_type: str
     file_bytes: bytes
-
-
-@dataclass(frozen=True, slots=True)
-class PublicExamConverterArtifactReadLease:
-    """Retained Sir artifact lease value pending Task 03 cleanup."""
-
-    artifact_key: str
-    token: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +70,6 @@ class PublicExamConverterSubmittedJob:
     error_message: str | None = None
     artifact: ExamConversionStoredArtifact | None = None
     result: dict[str, JsonValue] | None = None
-    artifact_read_leases: tuple[PublicExamConverterArtifactReadLease, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

@@ -12,13 +12,8 @@
  */
 
 export * from "./client";
-export * from "./contractValues";
 export * from "./errors";
-export * from "./jobSpec";
-export { parseTargetReadinessReport } from "./parsers";
-export * from "./requestContext";
 export * from "./requestFingerprint";
-export * from "./saveMetadata";
 export * from "./transcriptOptions";
 export * from "./transcriptRequestContext";
 export {
@@ -28,7 +23,5 @@ export {
   parseTranscriptResult,
 } from "./transcriptParsers";
 export * from "./transcriptTypes";
-export * from "./types";
 export * from "./uploadProgress";
-export * from "./userFiles";
 export * from "./urls";

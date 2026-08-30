@@ -22,7 +22,6 @@ from pathlib import Path
 import httpx
 import pytest
 
-from skriptoteket.application.curated_apps.exam_conversion import ExamConverterConversionLane
 from tests.unit.web.exam_converter.conftest import InMemoryConversionHubJobRepository
 
 pytestmark = pytest.mark.unit
@@ -32,7 +31,7 @@ _DXE_FILENAME = "1772718003-test-samma-prov-i-digiexam.dxe"
 _BASE = "/api/v1/apps/documents.conversion_hub"
 
 
-async def test_in_process_lane_converts_and_serves_bundle_through_job_surface(
+async def test_local_conversion_converts_and_serves_bundle_through_job_surface(
     client: httpx.AsyncClient,
     auth_headers: dict[str, str],
     jobs_repository: InMemoryConversionHubJobRepository,
@@ -61,7 +60,7 @@ async def test_in_process_lane_converts_and_serves_bundle_through_job_surface(
     assert submitted["error"] is None
     job_id = submitted["job_id"]
     stored_job = jobs_repository.jobs[next(iter(jobs_repository.jobs))]
-    assert stored_job.upstream_job_id == f"local-exam:{job_id}"
+    assert stored_job.upstream_job_id is None
 
     status_response = await client.get(f"{_BASE}/jobs/{job_id}", headers=auth_headers)
     assert status_response.status_code == 200
@@ -79,7 +78,7 @@ async def test_in_process_lane_converts_and_serves_bundle_through_job_surface(
     assert qti_bytes == (_FIXTURE_DIR / "reference-qti-package.zip").read_bytes()
 
 
-async def test_in_process_lane_fails_job_when_answer_keys_are_missing(
+async def test_local_conversion_fails_job_when_answer_keys_are_missing(
     client: httpx.AsyncClient,
     auth_headers: dict[str, str],
 ) -> None:
@@ -124,38 +123,3 @@ async def test_conversion_route_requires_authentication(client: httpx.AsyncClien
     )
 
     assert response.status_code == 401
-
-
-class TestExplicitSirConvertLane:
-    @pytest.fixture
-    def lane(self) -> ExamConverterConversionLane:
-        return ExamConverterConversionLane(value="sir_convert")
-
-    async def test_conversion_route_is_disabled_on_the_sir_convert_lane(
-        self,
-        client: httpx.AsyncClient,
-        auth_headers: dict[str, str],
-        jobs_repository: InMemoryConversionHubJobRepository,
-    ) -> None:
-        response = await client.post(
-            f"{_BASE}/exam-converter/conversions",
-            headers=auth_headers,
-            data={"idempotency_key": "test-disabled-lane"},
-            files={
-                "file": (
-                    _DXE_FILENAME,
-                    (_FIXTURE_DIR / _DXE_FILENAME).read_bytes(),
-                    "application/octet-stream",
-                ),
-            },
-        )
-
-        assert response.json() == {
-            "error": {
-                "code": "VALIDATION_ERROR",
-                "message": "Den inbyggda provkonverteringen är inte aktiverad.",
-                "details": {},
-            },
-            "correlation_id": None,
-        }
-        assert jobs_repository.jobs == {}

@@ -3,7 +3,7 @@
  * Exam Converter effective answer-key summary.
  *
  * Domain purpose:
- *   Show teacher-facing answer-key values only after Sir Convert has returned
+ *   Show teacher-facing answer-key values only after Exam Converter has returned
  *   them in effective IR.
  *
  * Relationships:

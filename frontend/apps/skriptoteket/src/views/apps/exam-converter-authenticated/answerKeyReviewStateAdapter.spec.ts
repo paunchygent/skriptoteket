@@ -2,7 +2,7 @@
  * Exam Converter compact answer-key review-state behavior.
  *
  * Slice purpose:
- *   Prove Skriptoteket consumes Sir Convert's compact answer-key projection as
+ *   Prove Skriptoteket consumes the local compact answer-key projection as
  *   the only review-state authority for question rows.
  *
  * Expected behavior:

@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from skriptoteket.application.curated_apps.sir_convert_contracts import (
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
 )
 from skriptoteket.domain.curated_apps.models import (
@@ -168,12 +168,10 @@ async def test_get_public_app_capability_bootstrap_returns_active_exam_converter
         response.public_capability.authority_boundary.browser_authority
         == "opaque_public_handles_only"
     )
-    assert (
-        response.public_capability.authority_boundary.upstream_calls
-        == "server_mediated_public_conversion"
-    )
-    assert "raw_conversion_grant" in response.public_capability.authority_boundary.blocked_exposure
-    assert "direct_upstream_host" in response.public_capability.authority_boundary.blocked_exposure
+    assert response.public_capability.authority_boundary.upstream_calls == "none_local_execution"
+    assert response.public_capability.authority_boundary.blocked_exposure == [
+        "server_artifact_storage"
+    ]
     assert response.public_capability.target_vocabulary == ["examnet_pdf", "qti_package"]
     assert (
         response.public_capability.artifact_manifest_schema
@@ -219,13 +217,6 @@ def test_exam_converter_metadata_states_control_action_affordances() -> None:
             profile=CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME,
         )
     )
-    grant_ready = public_apps_api._build_exam_converter_capability_metadata(
-        capability=CuratedAppPublicCapability(
-            scope="exam_converter",
-            profile=CuratedAppPublicAccessProfile.PUBLIC_BROWSER_RUNTIME,
-            runtime_status=CuratedAppPublicRuntimeStatus.GRANT_CONTRACT_READY,
-        )
-    )
     active = public_apps_api._build_exam_converter_capability_metadata(
         capability=CuratedAppPublicCapability(
             scope="exam_converter",
@@ -236,7 +227,5 @@ def test_exam_converter_metadata_states_control_action_affordances() -> None:
 
     assert contract_only.runtime_status is CuratedAppPublicRuntimeStatus.CONTRACT_ONLY
     assert contract_only.action_affordances == []
-    assert grant_ready.runtime_status is CuratedAppPublicRuntimeStatus.GRANT_CONTRACT_READY
-    assert {affordance.enabled for affordance in grant_ready.action_affordances} == {False}
     assert active.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE
     assert {affordance.enabled for affordance in active.action_affordances} == {True}

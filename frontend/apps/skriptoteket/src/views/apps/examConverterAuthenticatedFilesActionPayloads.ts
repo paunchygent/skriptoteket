@@ -2,7 +2,7 @@
  * Exam Converter file-action test payload helpers.
  *
  * Domain purpose:
- *   Keep authenticated file-action specs focused by isolating the Sir Convert
+ *   Keep authenticated file-action specs focused by isolating the Exam Converter
  *   job, artifact, and readiness payloads used by corrected-download tests.
  *
  * Relationships:
@@ -11,17 +11,17 @@
  */
 
 import type {
-  SirConvertJobStatus,
-  SirConvertTerminalResult,
-} from "../../api/sirConvertGateway";
+  ExamConverterJobStatus,
+  ExamConverterTerminalResult,
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 
-export function submittedFilesJob(status: SirConvertJobStatus) {
+export function submittedFilesJob(status: ExamConverterJobStatus) {
   return {
     correlationId: "corr_exam_converter_files",
     idempotencyKey: "idem_exam_converter_files",
@@ -31,7 +31,7 @@ export function submittedFilesJob(status: SirConvertJobStatus) {
   };
 }
 
-export function filesTerminalResult(): SirConvertTerminalResult {
+export function filesTerminalResult(): ExamConverterTerminalResult {
   return {
     artifact: {
       content_type: "application/json",

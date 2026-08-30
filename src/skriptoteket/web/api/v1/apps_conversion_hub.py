@@ -24,14 +24,10 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubRouteV2,
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
-    RegisterExamConverterConversionHubJobRequest,
-    RegisterExamConverterConversionHubJobResult,
     build_conversion_hub_v2_job_spec,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
-    ConversionHubSirConvertArtifactSaveMetadata,
-    SaveConversionHubSirConvertArtifactCommand,
-    SaveConversionHubSirConvertArtifactResult,
+    SaveConversionHubArtifactResult,
 )
 from skriptoteket.application.curated_apps.document_converter import (
     DOCUMENT_CONVERTER_MAX_BATCH_ITEMS,
@@ -48,9 +44,6 @@ from skriptoteket.application.curated_apps.document_converter import (
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConverterConversionSubmitResult,
 )
-from skriptoteket.application.curated_apps.handlers.conversion_hub_artifact_saves import (
-    SaveConversionHubSirConvertArtifactHandler,
-)
 from skriptoteket.application.curated_apps.handlers.conversion_hub_document_converter import (
     DownloadDocumentConverterArtifactHandler,
     GetDocumentConverterJobHandler,
@@ -61,7 +54,6 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     CreateConversionHubJobsHandler,
     DownloadConversionHubArtifactHandler,
     GetConversionHubJobHandler,
-    RegisterExamConverterConversionHubJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
     CreateDocumentConverterJobsHandler,
@@ -275,37 +267,8 @@ async def submit_document_converter_job(
 
 
 @router.post(
-    "/exam-converter/artifacts/save",
-    response_model=SaveConversionHubSirConvertArtifactResult,
-)
-async def save_exam_converter_artifact(
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[SaveConversionHubSirConvertArtifactHandler],
-    metadata_json: str = Form(..., min_length=2),
-    artifact: UploadFile = File(...),
-    user: User = Depends(require_app_user_api),
-) -> SaveConversionHubSirConvertArtifactResult:
-    _require_app_access(registry=registry, user=user)
-    try:
-        metadata = ConversionHubSirConvertArtifactSaveMetadata.model_validate_json(metadata_json)
-    except Exception as exc:
-        raise validation_error("Invalid artifact metadata JSON.") from exc
-    filename = artifact.filename or metadata.saved_display_filename
-    content = await artifact.read()
-    return await handler.handle(
-        actor=user,
-        command=SaveConversionHubSirConvertArtifactCommand(
-            metadata=metadata,
-            filename=filename,
-            content_type=artifact.content_type or metadata.content_type,
-            content=content,
-        ),
-    )
-
-
-@router.post(
     "/exam-converter/jobs/{job_id}/artifacts/{artifact_key}/save",
-    response_model=SaveConversionHubSirConvertArtifactResult,
+    response_model=SaveConversionHubArtifactResult,
 )
 async def save_local_exam_converter_artifact(
     job_id: UUID,
@@ -313,23 +276,9 @@ async def save_local_exam_converter_artifact(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[SaveExamConverterLocalArtifactHandler],
     user: User = Depends(require_app_user_api),
-) -> SaveConversionHubSirConvertArtifactResult:
+) -> SaveConversionHubArtifactResult:
     _require_app_access(registry=registry, user=user)
     return await handler.handle(actor=user, job_id=job_id, artifact_key=artifact_key)
-
-
-@router.post(
-    "/exam-converter/jobs",
-    response_model=RegisterExamConverterConversionHubJobResult,
-)
-async def register_exam_converter_job(
-    register_request: RegisterExamConverterConversionHubJobRequest,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[RegisterExamConverterConversionHubJobHandler],
-    user: User = Depends(require_app_user_api),
-) -> RegisterExamConverterConversionHubJobResult:
-    _require_app_access(registry=registry, user=user)
-    return await handler.handle(actor=user, request=register_request)
 
 
 @router.post(

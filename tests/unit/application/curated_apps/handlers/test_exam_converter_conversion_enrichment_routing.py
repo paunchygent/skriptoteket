@@ -31,7 +31,6 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 )
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConversionStoredArtifact,
-    ExamConverterConversionLane,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
@@ -242,7 +241,6 @@ class _Harness:
         self.artifacts = RecordingArtifactStore()
         self.handler = CreateExamConverterConversionJobsHandler(
             jobs=self.jobs,
-            lane=ExamConverterConversionLane(value="in_process"),
             producer=self.producer,
             artifacts=self.artifacts,
             enrichment_jobs=self.enrichment_jobs,

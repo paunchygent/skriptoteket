@@ -10,7 +10,7 @@
  *   - Rendered by `ExamConverterQuestionReviewShell` for compact
  *     `review_required` advisory rows.
  *   - Emits the existing bounded manual answer-key correction shape so
- *     Sir Convert replay remains the only review-state authority.
+ *     local replay remains the only review-state authority.
  *   - Keeps advisory provenance as selected-detail context, never as list,
  *     completion, or file-readiness truth.
  */

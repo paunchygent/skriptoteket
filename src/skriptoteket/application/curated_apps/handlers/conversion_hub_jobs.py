@@ -26,14 +26,10 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
     ConversionHubSubmittedJob,
-    RegisterExamConverterConversionHubJobRequest,
-    RegisterExamConverterConversionHubJobResult,
     RegisterTranscriptConversionHubJobRequest,
     RegisterTranscriptConversionHubJobResult,
 )
-from skriptoteket.application.curated_apps.exam_conversion import (
-    is_local_exam_conversion_job,
-)
+from skriptoteket.application.curated_apps.exam_conversion import is_exam_conversion_job
 from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
@@ -195,96 +191,6 @@ class CreateConversionHubJobsHandler:
             job_id=job.id,
             status=job.status,
             error=job.error_message,
-        )
-
-
-class RegisterExamConverterConversionHubJobHandler:
-    """Register a HuleEdu Gateway Exam Converter job in the local job ledger."""
-
-    def __init__(
-        self,
-        *,
-        jobs: ConversionHubJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-    ) -> None:
-        self._jobs = jobs
-        self._uow = uow
-        self._clock = clock
-        self._id_generator = id_generator
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        request: RegisterExamConverterConversionHubJobRequest,
-    ) -> RegisterExamConverterConversionHubJobResult:
-        async with self._uow:
-            existing = await self._jobs.get_by_upstream_job_id(
-                upstream_job_id=request.upstream_job_id
-            )
-            if existing is not None:
-                if existing.owner_user_id != actor.id:
-                    raise not_found("ConversionHubJob", request.upstream_job_id)
-                return self._to_result(
-                    await self._synchronize_existing_job(job=existing, request=request)
-                )
-
-            now = self._clock.now()
-            job = await self._jobs.create(
-                job=ConversionHubJob(
-                    id=self._id_generator.new_uuid(),
-                    owner_user_id=actor.id,
-                    input_filename=request.input_filename,
-                    source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
-                    output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
-                    pdf_layout=None,
-                    upstream_job_id=request.upstream_job_id,
-                    status=request.status,
-                    correlation_id=request.correlation_id,
-                    error_message=None,
-                    created_at=now,
-                    updated_at=now,
-                )
-            )
-            return self._to_result(job)
-
-    async def _synchronize_existing_job(
-        self,
-        *,
-        job: ConversionHubJob,
-        request: RegisterExamConverterConversionHubJobRequest,
-    ) -> ConversionHubJob:
-        next_status = request.status
-        if job.status in _TERMINAL_STATUSES and next_status not in _TERMINAL_STATUSES:
-            next_status = job.status
-        if (
-            job.status is next_status
-            and job.input_filename == request.input_filename
-            and job.correlation_id == request.correlation_id
-        ):
-            return job
-
-        return await self._jobs.update(
-            job=job.model_copy(
-                update={
-                    "correlation_id": request.correlation_id,
-                    "error_message": None,
-                    "input_filename": request.input_filename,
-                    "status": next_status,
-                    "updated_at": self._clock.now(),
-                }
-            )
-        )
-
-    def _to_result(self, job: ConversionHubJob) -> RegisterExamConverterConversionHubJobResult:
-        if job.upstream_job_id is None:
-            raise validation_error("Exam Converter job is missing upstream identity.")
-        return RegisterExamConverterConversionHubJobResult(
-            job_id=job.id,
-            upstream_job_id=job.upstream_job_id,
-            status=job.status,
         )
 
 
@@ -480,16 +386,16 @@ class DownloadConversionHubArtifactHandler(_BaseConversionHubJobHandler):
             if refreshed.status is ConversionHubJobStatus.CANCELED:
                 raise validation_error("Konverteringen avbröts innan filen blev klar.")
             raise validation_error("Konverteringen är inte klar ännu.")
-        if refreshed.upstream_job_id is None:
-            raise validation_error("Konverteringen saknar nedladdningsbar artefakt.")
-
-        if is_local_exam_conversion_job(refreshed):
+        if is_exam_conversion_job(refreshed):
             local_artifact = self._exam_artifacts.read_artifact(job_id=refreshed.id)
             return (
                 local_artifact.filename,
                 local_artifact.content_type,
                 local_artifact.content,
             )
+
+        if refreshed.upstream_job_id is None:
+            raise validation_error("Konverteringen saknar nedladdningsbar artefakt.")
 
         artifact = await self._client.download_artifact(
             refreshed.upstream_job_id,

@@ -2,7 +2,7 @@
  * Exam Converter vision-backed gap-fill review fixtures.
  *
  * Domain purpose:
- *   Model the live PR-0329 handoff where Sir Convert returns a valid
+ *   Model the live PR-0329 handoff where Exam Converter returns a valid
  *   vision-backed Lucktext AI-facit candidate in the first advisory bundle and
  *   a reviewed effective IR in the second apply bundle.
  *
@@ -16,7 +16,7 @@ import {
   DIGIEXAM_ARTIFACT_TARGET_READINESS_REPORT,
   DIGIEXAM_TARGET_EXAMNET_PDF,
   DIGIEXAM_TARGET_QTI_PACKAGE,
-} from "../../api/sirConvertGateway/contractValues";
+} from "../../api/examConverterContracts";
 import {
   ANSWER_KEY_REVIEW_STATE_SCHEMA_VERSION,
   ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION,
@@ -25,7 +25,7 @@ import {
   DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
   DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
   TARGET_READINESS_REPORT_SCHEMA_VERSION,
-} from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
 import {
   artifactJsonBlob,
   type ExamConverterGatewayMocks,

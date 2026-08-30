@@ -42,7 +42,6 @@ class CuratedAppPublicAccessProfile(StrEnum):
 
 class CuratedAppPublicRuntimeStatus(StrEnum):
     CONTRACT_ONLY = "contract_only"
-    GRANT_CONTRACT_READY = "grant_contract_ready"
     ACTIVE = "active"
 
 

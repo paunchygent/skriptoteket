@@ -3,7 +3,7 @@
  *
  * Slice purpose:
  *   Prove PR-0332 teacher-owned corrections submit source-bound overlays and
- *   wait for returned Sir Convert effective state before files unlock.
+ *   wait for returned local effective state before files unlock.
  *
  * Expected behavior:
  *   Local point or answer-key drafts do not mutate question state, do not

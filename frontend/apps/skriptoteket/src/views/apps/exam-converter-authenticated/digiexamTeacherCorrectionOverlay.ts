@@ -2,13 +2,13 @@
  * DigiExam teacher correction overlay builder.
  *
  * Domain purpose:
- *   Build source-bound Sir Convert correction entries from producer-issued
+ *   Build source-bound correction entries from product-issued
  *   source state before PDF/QTI artifacts are used.
  *
  * Relationships:
  *   - Consumes question rows from the Exam Converter review projection.
  *   - Produces unified Exam Authoring correction/apply payloads for the
- *     authenticated Sir Convert Gateway client.
+ *     authenticated local Exam Converter client.
  *   - Keeps correction overlays separate from advisory AI-facit review state
  *     and export artifact readiness.
  */
@@ -18,13 +18,13 @@ import type {
   ExamAuthoringCorrectionSourceStateIssueResult,
   ExamAuthoringCorrectionsApplyRequest,
   ExamAuthoringNonMatchingCorrectionEntry,
-} from "../../../api/sirConvertGateway";
+} from "../../../api/examConverterContracts";
 import {
   DIGIEXAM_ITEM_TYPE_GAP_FILL,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
-} from "../../../api/sirConvertGateway/contractValues";
+} from "../../../api/examConverterContracts";
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,

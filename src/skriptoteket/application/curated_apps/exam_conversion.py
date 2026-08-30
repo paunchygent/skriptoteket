@@ -13,8 +13,6 @@ Relationships:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -24,20 +22,9 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobStatus,
 )
 
-LOCAL_EXAM_CONVERSION_PRODUCER_PREFIX = "local-exam:"
-
 EXAMNET_BUNDLE_QTI_PACKAGE_FILENAME = "qti-package.zip"
 EXAMNET_BUNDLE_PDF_FILENAME = "examnet-import.pdf"
 EXAMNET_BUNDLE_QTI_VALIDATION_REPORT_FILENAME = "qti-validation-report.json"
-
-ExamConverterConversionLaneValue = Literal["sir_convert", "in_process"]
-
-
-@dataclass(frozen=True)
-class ExamConverterConversionLane:
-    """Operator-configured conversion lane for the authenticated Exam Converter."""
-
-    value: ExamConverterConversionLaneValue
 
 
 class ExamConversionStoredArtifact(BaseModel):
@@ -75,15 +62,9 @@ class ExamConverterConversionSubmitResult(BaseModel):
     idempotent_replay: bool = False
 
 
-def is_local_exam_conversion_job(job: ConversionHubJob) -> bool:
-    """Return true when an Exam Converter job was produced in-process."""
-    upstream_id = job.upstream_job_id or ""
-    return upstream_id.startswith(LOCAL_EXAM_CONVERSION_PRODUCER_PREFIX)
-
-
-def build_local_exam_conversion_producer_id(*, job_id: UUID) -> str:
-    """Build the local producer identity stored on the existing job ledger."""
-    return f"{LOCAL_EXAM_CONVERSION_PRODUCER_PREFIX}{job_id}"
+def is_exam_conversion_job(job: ConversionHubJob) -> bool:
+    """Return true for the Skriptoteket-owned Exam Converter job shape."""
+    return job.source_format.value == "dxe" and job.output_format.value == "examnet_bundle"
 
 
 def build_examnet_bundle_filename(*, input_filename: str) -> str:

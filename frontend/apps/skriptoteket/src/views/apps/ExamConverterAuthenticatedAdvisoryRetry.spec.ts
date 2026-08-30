@@ -28,8 +28,8 @@ import {
 import {
   DIGIEXAM_ARTIFACT_ANSWER_KEY_COMPLETION_REPORT,
   DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE,
-} from "../../api/sirConvertGateway/contractValues";
-import { ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION } from "../../api/sirConvertGateway/schemaVersions";
+} from "../../api/examConverterContracts";
+import { ANSWER_KEY_COMPLETION_REPORT_SCHEMA_VERSION } from "../../api/examConverterContracts";
 
 const gatewayMocks = vi.hoisted(() => ({
   applyExamAuthoringCorrections: vi.fn(),

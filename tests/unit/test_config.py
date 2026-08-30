@@ -110,12 +110,6 @@ def test_public_app_base_url_defaults_to_canonical_launch_host() -> None:
     assert settings.PUBLIC_APP_BASE_URL == "https://skriptoteket.hule.education"
 
 
-def test_authenticated_exam_converter_defaults_to_in_process_lane() -> None:
-    settings = Settings(_env_file=None)
-
-    assert settings.EXAM_CONVERTER_CONVERSION_LANE == "in_process"
-
-
 def test_answer_key_completion_requires_both_provider_credentials_when_enabled() -> None:
     with pytest.raises(ValidationError, match="OPENAI_LLM_ANSWER_KEY_API_KEY"):
         Settings(

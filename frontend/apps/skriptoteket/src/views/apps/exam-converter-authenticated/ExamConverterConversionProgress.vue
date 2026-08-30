@@ -4,7 +4,7 @@
  *
  * Domain purpose:
  *   Show teacher-visible movement while an Exam Converter job is running,
- *   without claiming exact upstream ETA before Sir Convert exposes progress
+ *   without claiming exact completion timing before local execution exposes progress
  *   events.
  *
  * Relationships:

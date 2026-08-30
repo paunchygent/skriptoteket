@@ -12,7 +12,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createSirConvertGatewayClient } from "./client";
+import { createSirConvertTranscriptGatewayClient } from "./client";
 import { SirConvertGatewayError } from "./errors";
 import type { SirConvertMultipartUploadTransport } from "./multipartUploadTransport";
 
@@ -58,7 +58,7 @@ function fetchHeaders(fetcher: FetchMock, index: number): Headers {
 
 describe("Sir Convert transcript Gateway client", () => {
   const fetcher = vi.fn<typeof fetch>();
-  const client = createSirConvertGatewayClient({
+    const client = createSirConvertTranscriptGatewayClient({
     ensureCsrfToken: async () => "csrf-token",
     fetcher,
   });
@@ -128,7 +128,7 @@ describe("Sir Convert transcript Gateway client", () => {
         { headers: { "X-Idempotent-Replay": "false" } },
       );
     });
-    const uploadClient = createSirConvertGatewayClient({
+    const uploadClient = createSirConvertTranscriptGatewayClient({
       ensureCsrfToken: async () => "csrf-token",
       fetcher,
       multipartUploadTransport,

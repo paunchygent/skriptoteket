@@ -22,11 +22,11 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterTarget,
     PublicExamConverterUpload,
 )
-from skriptoteket.application.curated_apps.sir_convert_contracts import (
+from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_EFFECTIVE_EXAM_SCHEMA_VERSION,
     DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
 )
-from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
