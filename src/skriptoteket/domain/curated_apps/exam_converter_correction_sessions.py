@@ -208,19 +208,6 @@ class ExamConverterCorrectionSession(BaseModel):
 
         return self._next_version(active_intents=tuple(active.values()))
 
-    def replace_intent(
-        self,
-        *,
-        intent: SourceBoundCorrectionIntent,
-        expected_session_version: int,
-    ) -> "ExamConverterCorrectionSession":
-        """Replace or supersede one active correction intent."""
-
-        return self.replace_intents(
-            intents=(intent,),
-            expected_session_version=expected_session_version,
-        )
-
     def revert_target(
         self,
         *,

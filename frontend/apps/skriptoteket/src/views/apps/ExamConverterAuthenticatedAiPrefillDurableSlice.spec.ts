@@ -53,7 +53,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
@@ -77,7 +77,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 beforeEach(() => {
@@ -95,9 +95,9 @@ beforeEach(() => {
     status: "succeeded",
     upstream_job_id: "job_exam_converter_review",
   });
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
@@ -119,10 +119,10 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await wrapper.find('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
     await wrapper.vm.$nextTick();
 
-    expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-converter-item-title-patch-input"]')
-        .element.value,
-    ).toBe("Fråga 4");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-004");
+    expect(wrapper.get('[data-test="exam-converter-advisory-review-detail"]')
+      .attributes("data-editing")).toBe("false");
     expect(
       wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').exists(),
     ).toBe(true);
@@ -141,26 +141,26 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
     expect(
-      wrapper.find('[data-test="exam-converter-manual-choice-3"]').attributes("aria-pressed"),
+      wrapper.find('[data-test="exam-converter-advisory-edit-choice-3"]').attributes("aria-pressed"),
     ).toBe("true");
 
-    await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').trigger("click");
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-save-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({
+          intents: [expect.objectContaining({
             item_id: "item-004",
             kind: "manual_choice_answer_key",
             payload: expect.objectContaining({
               correct_choice_ids: ["choice-2"],
               submission_origin: "teacher_edited_advisory_candidate",
             }),
-          }),
+          })],
         }),
       }),
     );
@@ -181,23 +181,23 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await wrapper
       .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
-    await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').trigger("click");
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-save-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({
+          intents: [expect.objectContaining({
             item_id: "item-004",
             kind: "manual_choice_answer_key",
             payload: expect.objectContaining({
               correct_choice_ids: ["choice-2"],
               submission_origin: "teacher_edited_advisory_candidate",
             }),
-          }),
+          })],
         }),
       }),
     );
@@ -212,9 +212,9 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await wrapper
       .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
-    await wrapper.find('[data-test="exam-converter-manual-choice-2"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-2"]').trigger("click");
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-save-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
@@ -307,10 +307,10 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
 
     expect(wrapper.text()).not.toContain("Kontrollera frågorna innan du sparar eller hämtar filer.");
     expect(gatewayMocks.submitDigiExamMigration).toHaveBeenCalledTimes(1);
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({
+          intents: [expect.objectContaining({
             item_id: "item-004",
             kind: "manual_choice_answer_key",
             payload: expect.objectContaining({
@@ -322,7 +322,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
               correct_choice_ids: ["choice-3"],
               submission_origin: "accepted_advisory_candidate",
             }),
-          }),
+          })],
         }),
       }),
     );
@@ -350,10 +350,10 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     await flushPromises();
 
     expect(gatewayMocks.submitDigiExamMigration).toHaveBeenCalledTimes(1);
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({
+          intents: [expect.objectContaining({
             item_id: "item-013",
             kind: "manual_gap_open_cloze_answer_key",
             payload: expect.objectContaining({
@@ -371,7 +371,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
               ],
               submission_origin: "accepted_advisory_candidate",
             }),
-          }),
+          })],
         }),
       }),
     );
@@ -388,20 +388,20 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
     await wrapper
-      .find<HTMLInputElement>('[data-test="exam-converter-manual-gap-gap-001"]')
+      .find<HTMLInputElement>('[data-test="exam-converter-advisory-edit-gap-gap-001"]')
       .setValue("kolets kretslopp");
     await wrapper
-      .find<HTMLInputElement>('[data-test="exam-converter-manual-gap-gap-002"]')
+      .find<HTMLInputElement>('[data-test="exam-converter-advisory-edit-gap-gap-002"]')
       .setValue("fotosyntes");
     await wrapper
-      .find('[data-test="exam-converter-apply-manual-answer-key-action"]')
+      .find('[data-test="exam-converter-save-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenLastCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenLastCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({
+          intents: [expect.objectContaining({
             item_id: "item-013",
             kind: "manual_gap_open_cloze_answer_key",
             payload: expect.objectContaining({
@@ -411,7 +411,7 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
               ],
               submission_origin: "teacher_edited_advisory_candidate",
             }),
-          }),
+          })],
         }),
       }),
     );
@@ -428,26 +428,21 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
     ).toBe(true);
     expect(
       wrapper.find('[data-test="exam-converter-selected-question-ai-suggestion"]').text(),
-    ).toContain("Tidigare förslag");
+    ).toContain("Föreslaget facit");
     expect(
       wrapper.find('[data-test="exam-converter-accept-advisory-answer-key-action"]').text(),
-    ).toContain("Acceptera");
+    ).toContain("Godkänn");
     expect(
       wrapper
         .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
         .classes(),
-    ).toEqual(expect.arrayContaining(["border-action", "bg-action", "text-panel"]));
-    expect(
-      wrapper
-        .find('[data-test="exam-converter-accept-advisory-answer-key-action"]')
-        .classes(),
-    ).not.toContain("btn-primary");
+    ).toContain("btn-primary");
     expect(
       wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').text(),
     ).toContain("Ändra");
     expect(
       wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"] svg').exists(),
-    ).toBe(false);
+    ).toBe(true);
     expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
       false,
     );
@@ -456,15 +451,10 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
       .find('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
 
-    expect(wrapper.find('[data-test="exam-converter-manual-answer-key-editor"]').exists()).toBe(
-      true,
-    );
+    expect(wrapper.get('[data-test="exam-converter-advisory-review-detail"]')
+      .attributes("data-editing")).toBe("true");
     expect(
-      wrapper.find('[data-test="exam-converter-manual-choice-3"]').attributes("aria-pressed"),
+      wrapper.find('[data-test="exam-converter-advisory-edit-choice-3"]').attributes("aria-pressed"),
     ).toBe("true");
-    expect(wrapper.findAll('[data-test="exam-converter-manual-choice-ai-symbol"]')).toHaveLength(1);
-    expect(wrapper.find('[data-test="exam-converter-manual-choice-teacher-symbol"]').exists()).toBe(
-      false,
-    );
   });
 });

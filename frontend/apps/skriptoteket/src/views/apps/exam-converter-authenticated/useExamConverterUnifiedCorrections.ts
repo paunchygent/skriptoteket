@@ -16,7 +16,7 @@ import { ref, type Ref } from "vue";
 import { isApiError } from "../../../api/client";
 import {
   getExamConverterCorrectionSession,
-  upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents,
   type ExamConverterCorrectionIntentWrite,
   type ExamConverterCorrectionSessionResponse,
 } from "../../../api/examConverterCorrectionSessions";
@@ -61,6 +61,7 @@ export type ExamConverterUnifiedCorrectionOptions = {
     completionReportRequired?: boolean;
     correlationId: string;
     jobId: string;
+    preserveCurrentProjection?: boolean;
   }) => Promise<ExamConverterReviewProjection | null>;
   resetFileActions: () => void;
   reviewProjection: Ref<ExamConverterReviewProjection | null>;
@@ -112,6 +113,7 @@ export function useExamConverterUnifiedCorrections(
       completionReportRequired: false,
       correlationId: params.correlationId,
       jobId: params.jobId,
+      preserveCurrentProjection: true,
     });
     correctionProjectionFreshness.value = correctedProjection ? "fresh" : "unavailable";
     if (!correctedProjection) return false;
@@ -133,20 +135,18 @@ export function useExamConverterUnifiedCorrections(
     return true;
   }
 
-  async function upsertIntents(params: {
+  async function replaceIntents(params: {
     conversionHubJobId: string;
     intents: ExamConverterCorrectionIntentWrite[];
   }): Promise<void> {
-    for (const intent of params.intents) {
-      const session = await upsertExamConverterCorrectionIntent({
-        conversionHubJobId: params.conversionHubJobId,
-        request: {
-          expected_session_version: sessionVersion.value,
-          intent,
-        },
-      });
-      setSession(session);
-    }
+    const session = await replaceExamConverterCorrectionIntents({
+      conversionHubJobId: params.conversionHubJobId,
+      request: {
+        expected_session_version: sessionVersion.value,
+        intents: params.intents,
+      },
+    });
+    setSession(session);
   }
 
   async function applyPersistedIntents(params: {
@@ -159,7 +159,7 @@ export function useExamConverterUnifiedCorrections(
     if (!jobId || !conversionHubJobId || !correlationId || params.intents.length === 0) {
       return false;
     }
-    await upsertIntents({ conversionHubJobId, intents: params.intents });
+    await replaceIntents({ conversionHubJobId, intents: params.intents });
     return await replayAndProject({
       conversionHubJobId,
       correlationId,
@@ -244,6 +244,48 @@ export function useExamConverterUnifiedCorrections(
     );
   }
 
+  async function acceptAllAdvisoryCandidates(): Promise<boolean> {
+    const projection = options.reviewProjection.value;
+    const jobId = options.lastJobId.value;
+    if (!projection || !jobId || options.isConversionRunning.value || isCorrectionApplying.value) {
+      return false;
+    }
+    const candidates = projection.questions.flatMap((question) => {
+      const candidate = question.llmCandidate;
+      if (
+        question.answerKeyReviewState !== "review_required" ||
+        candidate?.decisionState !== "suggested" ||
+        candidate.validationState !== "valid" ||
+        candidate.answerPayload === null
+      ) {
+        return [];
+      }
+      return [{ answerKey: candidate.answerPayload, question }];
+    });
+    if (candidates.length === 0) {
+      return false;
+    }
+    options.resetFileActions();
+    isCorrectionApplying.value = true;
+    try {
+      const sourceState = await options.runtime.issueCorrectionSourceState({ jobId });
+      const intents = candidates.map(({ answerKey, question }) =>
+        intentFromCorrectionRequest(
+          buildManualAnswerKeyRequest({ answerKey, projection, question, sourceState }),
+        ),
+      );
+      return await applyPersistedIntents({ intents, projection });
+    } catch (error) {
+      console.error("Exam Converter advisory answer-key batch apply failed.", error);
+      correctionProjectionFreshness.value =
+        isApiError(error) && error.status === 409 ? "conflict" : "unavailable";
+      options.failConversion();
+      return false;
+    } finally {
+      isCorrectionApplying.value = false;
+    }
+  }
+
   function applyItemTextPatch(
     question: ExamConverterQuestionReviewRow,
     patch: ExamConverterItemTextPatchCorrection,
@@ -279,6 +321,7 @@ export function useExamConverterUnifiedCorrections(
   }
 
   return {
+    acceptAllAdvisoryCandidates,
     applyItemTextPatch,
     applyManualAnswerKey,
     applyPointCorrection,

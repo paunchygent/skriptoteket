@@ -56,7 +56,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
@@ -80,7 +80,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 beforeEach(() => {
@@ -97,9 +97,9 @@ beforeEach(() => {
     status: "succeeded",
     upstream_job_id: "job_exam_converter_review",
   });
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
@@ -119,9 +119,8 @@ describe("ExamConverterAuthenticatedView compact review state", () => {
       jobId: "job_exam_converter_review",
     });
     expect(wrapper.text()).toContain("Kontrollera facit");
-    expect(wrapper.text()).toContain("Granska facit");
-    expect(wrapper.text()).toContain("1 att granska");
-    expect(wrapper.text()).toContain("Granska frågorna som saknar rätt svar eller facitsvar.");
+    expect(wrapper.text()).toContain("Granska");
+    expect(wrapper.text()).toContain("1 frågor att granska");
     const reviewBand = wrapper.find('[data-test="exam-converter-ai-prefill-panel"]');
     expect(reviewBand.findComponent({ name: "IconAi" }).exists()).toBe(true);
     expect(reviewBand.findAll(".lucide-bot")).toHaveLength(0);
@@ -228,8 +227,8 @@ describe("ExamConverterAuthenticatedView compact review state", () => {
     await finishConversion(wrapper);
     await wrapper.find('[data-test="exam-converter-question-row-item-004"]').trigger("click");
     await wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-manual-choice-3"]').trigger("click");
-    await wrapper.find('[data-test="exam-converter-apply-manual-answer-key-action"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-advisory-edit-choice-3"]').trigger("click");
+    await wrapper.find('[data-test="exam-converter-save-advisory-answer-key-action"]').trigger("click");
     await flushPromises();
     await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
 

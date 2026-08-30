@@ -102,6 +102,7 @@ const {
   saveFile,
 } = useExamConverterFileActions();
 const {
+  acceptAllAdvisoryCandidates: handleAcceptAllAdvisoryCandidates,
   applyItemTextPatch: handleApplyItemTextPatch,
   applyManualAnswerKey: handleApplyManualAnswerKey,
   applyPointCorrection: handleApplyPointCorrection,
@@ -439,6 +440,7 @@ onMounted(async () => {
             @apply-item-text-patch="handleApplyItemTextPatch"
             @apply-manual-answer-key="handleApplyManualAnswerKey"
             @apply-point-correction="handleApplyPointCorrection"
+            @accept-all-advisory-candidates="handleAcceptAllAdvisoryCandidates"
             @download-file="handleDownloadFile"
             @files-dropped="selectDroppedFiles"
             @inspection-mode-selected="selectInspectionMode"

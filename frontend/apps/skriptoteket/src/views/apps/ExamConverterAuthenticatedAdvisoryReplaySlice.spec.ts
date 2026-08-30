@@ -63,7 +63,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
@@ -87,7 +87,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 beforeEach(() => {
@@ -105,9 +105,9 @@ beforeEach(() => {
     status: "succeeded",
     upstream_job_id: "job_exam_converter_review",
   });
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
@@ -416,6 +416,22 @@ function lossySiblingReplayResult() {
 }
 
 describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
+  it("accepts every valid AI candidate in one persisted correction-session write", async () => {
+    const wrapper = mount(ExamConverterAuthenticatedView);
+
+    await finishConversion(wrapper);
+    await wrapper.get('[data-test="exam-converter-accept-all-ai-prefill-action"]')
+      .trigger("click");
+    await flushPromises();
+
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledOnce();
+    const request = correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mock
+      .calls[0]?.[0]?.request as { intents: { item_id: string }[] } | undefined;
+    expect(request?.intents.map((intent) => intent.item_id)).toEqual(["item-004", "item-005"]);
+    expect(gatewayMocks.issueExamAuthoringCorrectionSourceState).toHaveBeenCalledOnce();
+    expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledOnce();
+  });
+
   it("opens the first unresolved review and advances after each persisted decision", async () => {
     const wrapper = mount(ExamConverterAuthenticatedView);
 
@@ -423,7 +439,7 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
     await wrapper.get('[data-test="exam-converter-open-ai-prefill-action"]').trigger("click");
 
     const questionShell = wrapper.get('[data-test="exam-converter-question-review-shell"]');
-    expect(questionShell.classes()).toContain("is-compact-detail-open");
+    expect(questionShell.classes()).toContain("is-detail-open");
     expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
       .attributes("data-selected-item-id")).toBe("item-004");
 
@@ -431,20 +447,20 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(questionShell.classes()).toContain("is-compact-detail-open");
+    expect(questionShell.classes()).toContain("is-detail-open");
     expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
       .attributes("data-selected-item-id")).toBe("item-005");
 
     await wrapper.get('[data-test="exam-converter-edit-advisory-answer-key-action"]')
       .trigger("click");
-    await wrapper.get('[data-test="exam-converter-apply-manual-answer-key-action"]')
+    await wrapper.get('[data-test="exam-converter-save-advisory-answer-key-action"]')
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(2);
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledTimes(2);
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(2);
     expect(wrapper.get('[data-test="exam-converter-question-review-shell"]').classes())
-      .not.toContain("is-compact-detail-open");
+      .not.toContain("is-detail-open");
   });
 
   it("renders untouched sibling AI suggestions when correction replay preserves them", async () => {
@@ -464,13 +480,12 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .trigger("click");
     await flushPromises();
 
-    const siblingRow = wrapper.find('[data-test="exam-converter-question-row-item-005"]');
-    expect(siblingRow.text()).toContain("Granska");
-    expect(siblingRow.text()).not.toContain("Kontrollera");
-    expect(siblingRow.text()).not.toContain("Välj minst ett rätt svar");
-    expect(siblingRow.find(".lucide-sparkles").exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-converter-selected-question-detail"]')
+      .attributes("data-selected-item-id")).toBe("item-005");
+    expect(wrapper.get('[data-test="exam-converter-selected-question-ai-suggestion"]')
+      .text()).toContain("Föreslaget facit");
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(1);
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledTimes(1);
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 
@@ -485,7 +500,7 @@ describe("ExamConverterAuthenticatedView advisory replay preservation", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(1);
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledTimes(1);
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
   });
 });

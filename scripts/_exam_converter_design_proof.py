@@ -14,6 +14,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -140,13 +141,27 @@ def prove_desktop(page: Page, artifact_dir: Path) -> list[Capture]:
     expect(page.locator('[data-test="exam-converter-workflow-rail-shell"]')).to_be_visible()
     expect(page.locator('[data-test="exam-converter-question-review-shell"]')).to_be_visible()
     expect(page.locator(".exam-converter-question-table")).to_be_visible()
-    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible()
+    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_have_count(0)
     prefill_panel = page.locator('[data-test="exam-converter-ai-prefill-panel"]')
     expect(prefill_panel).to_contain_text("Kontrollera facit")
-    expect(prefill_panel).to_contain_text("Granska frågorna som saknar rätt svar eller facitsvar.")
+    expect(prefill_panel).to_contain_text("frågor att granska")
     expect(page.locator(".lucide-bot")).to_have_count(0)
-    _assert_symbolic_step_navigation(page)
-    captures = [capture(page, artifact_dir, "desktop-questions")]
+    _assert_equal_action_widths(page, "exam-converter-ai-prefill-actions", 2)
+    captures = [capture(page, artifact_dir, "desktop-overview")]
+
+    page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
+    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible()
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "desktop-review"))
+
+    page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]').click()
+    expect(page.locator('[data-test="exam-converter-advisory-review-detail"]')).to_have_attribute(
+        "data-editing", "true"
+    )
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "desktop-edit"))
 
     page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
     _assert_files_surface(page)
@@ -166,21 +181,26 @@ def prove_phone(page: Page, artifact_dir: Path) -> list[Capture]:
     expect(page.locator('[data-test="exam-converter-question-review-shell"]')).to_be_visible()
     expect(page.locator(".exam-converter-question-table")).to_be_hidden()
     expect(page.locator(".exam-converter-question-navigator")).to_be_visible()
-    captures = [capture(page, artifact_dir, "phone-list")]
+    _assert_equal_action_widths(page, "exam-converter-ai-prefill-actions", 2)
+    captures = [capture(page, artifact_dir, "phone-overview")]
 
     page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
     review_shell = page.locator('[data-test="exam-converter-question-review-shell"]')
-    expect(review_shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    expect(review_shell).to_have_class(re.compile(r"\bis-detail-open\b"))
     expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_have_attribute(
         "data-selected-item-id", "item-001"
     )
-    captures.append(capture(page, artifact_dir, "phone-review-action"))
-    page.locator('[data-test="exam-converter-compact-back-to-questions"]').click()
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "phone-review"))
 
-    page.locator('[data-test="exam-converter-question-navigator-row-item-001"]').click()
-    expect(page.locator('[data-test="exam-converter-selected-question-detail"]')).to_be_visible()
-    expect(page.locator('[data-test="exam-converter-compact-back-to-questions"]')).to_be_visible()
-    captures.append(capture(page, artifact_dir, "phone-detail"))
+    page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]').click()
+    expect(page.locator('[data-test="exam-converter-advisory-review-detail"]')).to_have_attribute(
+        "data-editing", "true"
+    )
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "phone-edit"))
 
     page.locator('[data-test="exam-converter-inspection-tab-files"]').click()
     _assert_files_surface(page)
@@ -192,7 +212,7 @@ def prove_phone(page: Page, artifact_dir: Path) -> list[Capture]:
     return captures
 
 
-def prove_review_routing_journey(page: Page, artifact_dir: Path) -> Capture:
+def prove_review_routing_journey(page: Page, artifact_dir: Path) -> list[Capture]:
     """Exercise production review navigation in a real browser with local projections."""
     page.goto("/", wait_until="domcontentloaded")
     page.evaluate(
@@ -201,6 +221,9 @@ def prove_review_routing_journey(page: Page, artifact_dir: Path) -> Capture:
           const vue = await import('/node_modules/.vite/deps/vue.js');
           const component = (await import(
             '/@fs/WORKTREE/frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue'
+          )).default;
+          const prefill = (await import(
+            '/@fs/WORKTREE/frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterAiPrefillPanel.vue'
           )).default;
           const candidate = (itemId, sequence, correctIds) => ({
             answerPayload: { correctAlternativeIds: correctIds, kind: 'choice' },
@@ -321,11 +344,14 @@ def prove_review_routing_journey(page: Page, artifact_dir: Path) -> Capture:
                 }, 0);
               };
               return () => vue.h('div', [
-                vue.h('button', {
-                  'data-test': 'browser-open-review',
-                  onClick: () => { focusKey.value += 1; },
-                  type: 'button',
-                }, 'Granska frågor'),
+                vue.h(prefill, {
+                  disabled: applying.value,
+                  focus: 'questions',
+                  onOpenQuestions: () => { focusKey.value += 1; },
+                  reviewCount: questions.value.filter(
+                    (entry) => entry.answerKeyReviewState === 'review_required'
+                  ).length,
+                }),
                 vue.h(component, {
                   aiSuggestionFocusKey: focusKey.value,
                   isCorrectionApplying: applying.value,
@@ -340,24 +366,50 @@ def prove_review_routing_journey(page: Page, artifact_dir: Path) -> Capture:
           }).mount('#review-routing-proof');
         }""".replace("WORKTREE", str(Path.cwd()).replace("'", "\\'"))
     )
-    page.set_viewport_size({"width": 390, "height": 844})
-    page.locator('[data-test="browser-open-review"]').click()
+    page.set_viewport_size({"width": 1366, "height": 900})
+    _assert_equal_action_widths(page, "exam-converter-ai-prefill-actions", 2)
+    captures = [capture(page, artifact_dir, "local-desktop-overview")]
+    page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
     shell = page.locator('[data-test="exam-converter-question-review-shell"]')
-    expect(shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    expect(shell).to_have_class(re.compile(r"\bis-detail-open\b"))
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "local-desktop-review"))
+    page.locator('[data-test="exam-converter-advisory-overview-action"]').click()
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    _assert_equal_action_widths(page, "exam-converter-ai-prefill-actions", 2)
+    captures.append(capture(page, artifact_dir, "local-phone-overview"))
+    page.locator('[data-test="exam-converter-open-ai-prefill-action"]').click()
+    expect(shell).to_have_class(re.compile(r"\bis-detail-open\b"))
     detail = page.locator('[data-test="exam-converter-selected-question-detail"]')
     expect(detail).to_have_attribute("data-selected-item-id", "item-first")
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "local-phone-review"))
     page.locator('[data-test="exam-converter-accept-advisory-answer-key-action"]').click()
     expect(detail).to_have_attribute("data-selected-item-id", "item-second")
-    expect(shell).to_have_class(re.compile(r"\bis-compact-detail-open\b"))
+    expect(shell).to_have_class(re.compile(r"\bis-detail-open\b"))
     page.locator('[data-test="exam-converter-edit-advisory-answer-key-action"]').click()
-    page.locator('[data-test="exam-converter-apply-manual-answer-key-action"]').click()
-    expect(shell).not_to_have_class(re.compile(r"\bis-compact-detail-open\b"))
-    return capture(page, artifact_dir, "phone-review-routing-journey")
+    _assert_equal_action_widths(page, "exam-converter-review-top-actions", 3)
+    _assert_equal_action_widths(page, "exam-converter-review-bottom-actions", 2)
+    captures.append(capture(page, artifact_dir, "local-phone-edit"))
+    page.locator('[data-test="exam-converter-save-advisory-answer-key-action"]').click()
+    expect(shell).not_to_have_class(re.compile(r"\bis-detail-open\b"))
+    captures.append(capture(page, artifact_dir, "local-phone-complete"))
+    return captures
 
 
 def run_exam_converter_design_proof() -> Path:
     """Run the retained PR-0408 design proof and return the artifact directory."""
-    config = get_config(["--base-url", "http://127.0.0.1:5173", "--dotenv", ".env"])
+    config = get_config(
+        [
+            "--base-url",
+            os.environ.get("EXAM_CONVERTER_DESIGN_BASE_URL", "http://127.0.0.1:5173"),
+            "--dotenv",
+            os.environ.get("EXAM_CONVERTER_DESIGN_DOTENV", ".env"),
+        ]
+    )
     artifact_dir = run_dir()
     manifest: JsonObject = {
         "artifact_dir": str(artifact_dir),
@@ -388,7 +440,7 @@ def run_exam_converter_design_proof() -> Path:
             )
             captures = prove_desktop(page, artifact_dir)
             captures.extend(prove_phone(page, artifact_dir))
-            captures.append(prove_review_routing_journey(page, artifact_dir))
+            captures.extend(prove_review_routing_journey(page, artifact_dir))
             manifest["captures"] = captures
             manifest["status"] = "ok"
             write_manifest(artifact_dir, manifest)
@@ -403,16 +455,14 @@ def run_exam_converter_design_proof() -> Path:
     return artifact_dir
 
 
-def _assert_symbolic_step_navigation(page: Page) -> None:
-    previous_action = page.locator('[data-test="exam-converter-detail-previous-question"]')
-    next_action = page.locator('[data-test="exam-converter-detail-next-question"]')
-    if not previous_action.get_attribute("aria-label"):
-        raise AssertionError("Previous-question action is missing an accessible label.")
-    if not next_action.get_attribute("aria-label"):
-        raise AssertionError("Next-question action is missing an accessible label.")
-    step_nav_text = page.locator(".exam-converter-detail-step-nav").inner_text()
-    if "Föregående" in step_nav_text or "Nästa" in step_nav_text:
-        raise AssertionError(f"visible word labels in symbolic nav: {step_nav_text!r}")
+def _assert_equal_action_widths(page: Page, group_test_id: str, expected_count: int) -> None:
+    actions = page.locator(f'[data-test="{group_test_id}"] button')
+    expect(actions).to_have_count(expected_count)
+    widths = actions.evaluate_all(
+        "(buttons) => buttons.map((button) => Math.round(button.getBoundingClientRect().width))"
+    )
+    if len(set(widths)) != 1:
+        raise AssertionError(f"unequal action widths in {group_test_id}: {widths}")
 
 
 def _assert_files_surface(page: Page) -> None:
@@ -432,3 +482,7 @@ def main() -> int:
     artifact_dir = run_exam_converter_design_proof()
     print(f"exam-converter-design-proof: ok artifact_dir={artifact_dir}")
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

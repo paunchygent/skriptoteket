@@ -2,23 +2,24 @@
 /**
  * Exam Converter question review shell.
  *
- * Domain purpose:
- *   Render question rows and the selected-question correction editor.
+ * The shell switches between one overview and one focused question. Durable
+ * correction truth remains owned by the parent projection and persistence path.
  */
 
 import { computed, ref, toRef, watch } from "vue";
-import { ChevronLeft, ChevronRight } from "lucide-vue-next";
+
+import { IconOverview } from "../../../components/icons";
 import type {
   ExamConverterQuestionReviewRow,
   ExamConverterReviewProjection,
 } from "./digiexamIrReviewParser";
-import {
-  hasUsableCompletionCandidate,
-} from "./digiexamIrReviewParser";
+import { hasUsableCompletionCandidate } from "./digiexamIrReviewParser";
 import type { ExamConverterAiPrefillFocus } from "./useExamConverterAiPrefillFocus";
-import type { ExamConverterManualAnswerKeyCorrection } from "./digiexamTeacherCorrectionOverlay";
-import type { ExamConverterItemTextPatchCorrection } from "./digiexamTeacherCorrectionOverlay";
-import ExamConverterAdvisoryAnswerKeyPanel from "./ExamConverterAdvisoryAnswerKeyPanel.vue";
+import type {
+  ExamConverterItemTextPatchCorrection,
+  ExamConverterManualAnswerKeyCorrection,
+} from "./digiexamTeacherCorrectionOverlay";
+import ExamConverterAdvisoryReviewDetail from "./ExamConverterAdvisoryReviewDetail.vue";
 import ExamConverterEffectiveAnswerKeySummary from "./ExamConverterEffectiveAnswerKeySummary.vue";
 import ExamConverterItemTextPatchEditor from "./ExamConverterItemTextPatchEditor.vue";
 import ExamConverterManualAnswerKeyEditor from "./ExamConverterManualAnswerKeyEditor.vue";
@@ -47,100 +48,69 @@ const emit = defineEmits<{
 }>();
 
 const selectedItemId = ref<string | null>(null);
-const compactDetailOpen = ref(false);
-const pendingAiAdvanceFromItemId = ref<string | null>(null);
+const detailOpen = ref(false);
+const advisoryEditItemId = ref<string | null>(null);
+const pendingAdvanceFromItemId = ref<string | null>(null);
 const {
   canShowAnswerKeyEditor,
-  editAdvisoryAnswerKey,
   isPendingAdvisoryQuestion,
-  showAdvisoryAnswerKeyPanel,
 } = useExamConverterAdvisoryAnswerKeyMode(toRef(props, "projection"));
 
-const selectedQuestion = computed(() => {
-  return (
-    props.projection.questions.find((question) => question.itemId === selectedItemId.value) ??
-    props.projection.questions[0] ??
-    null
-  );
-});
-
-const showsAnswerKeyEditor = computed(() =>
-  selectedQuestion.value ? canShowAnswerKeyEditor(selectedQuestion.value) : false,
+const selectedQuestion = computed(() =>
+  props.projection.questions.find((question) => question.itemId === selectedItemId.value) ??
+  props.projection.questions[0] ??
+  null,
 );
 
-const selectedQuestionIndex = computed(() => {
-  const question = selectedQuestion.value;
-  if (!question) return -1;
-  return props.projection.questions.findIndex((entry) => entry.itemId === question.itemId);
-});
+const selectedQuestionIsPendingAdvisory = computed(
+  () => selectedQuestion.value ? isPendingAdvisoryQuestion(selectedQuestion.value) : false,
+);
 
-const previousQuestion = computed(() => {
-  const index = selectedQuestionIndex.value;
-  if (index <= 0) return null;
-  return props.projection.questions[index - 1] ?? null;
-});
+const showsAnswerKeyEditor = computed(
+  () => selectedQuestion.value ? canShowAnswerKeyEditor(selectedQuestion.value) : false,
+);
 
-const nextQuestion = computed(() => {
-  const index = selectedQuestionIndex.value;
-  if (index < 0) return null;
-  return props.projection.questions[index + 1] ?? null;
-});
+function isUnresolvedQuestion(question: ExamConverterQuestionReviewRow): boolean {
+  return question.answerKeyReviewState === "review_required" || question.status === "attention";
+}
 
-function firstUnresolvedAdvisoryQuestion(
+function firstUnresolvedQuestion(
   questions: ExamConverterQuestionReviewRow[],
 ): ExamConverterQuestionReviewRow | null {
-  return questions.find(isPendingAdvisoryQuestion) ?? null;
+  return questions.find(isUnresolvedQuestion) ?? null;
 }
 
 function defaultSelectedItemId(questions: ExamConverterQuestionReviewRow[]): string | null {
-  return (
-    firstUnresolvedAdvisoryQuestion(questions)?.itemId ??
-    questions.find((question) => question.status === "attention")?.itemId ??
-    questions[0]?.itemId ??
-    null
-  );
+  return firstUnresolvedQuestion(questions)?.itemId ?? questions[0]?.itemId ?? null;
 }
 
-function nextUnresolvedAdvisoryQuestion(
+function nextUnresolvedQuestion(
   currentQuestion: ExamConverterQuestionReviewRow,
   questions: ExamConverterQuestionReviewRow[],
 ): ExamConverterQuestionReviewRow | null {
   const startIndex = questions.findIndex((question) => question.itemId === currentQuestion.itemId);
-  if (startIndex === -1) return firstUnresolvedAdvisoryQuestion(questions);
-  const orderedQuestions = [
-    ...questions.slice(startIndex + 1),
-    ...questions.slice(0, startIndex),
-  ];
-  return orderedQuestions.find(isPendingAdvisoryQuestion) ?? null;
+  if (startIndex === -1) return firstUnresolvedQuestion(questions);
+  const ordered = [...questions.slice(startIndex + 1), ...questions.slice(0, startIndex)];
+  return ordered.find(isUnresolvedQuestion) ?? null;
 }
 
 function selectQuestion(question: ExamConverterQuestionReviewRow): void {
   selectedItemId.value = question.itemId;
-  compactDetailOpen.value = true;
+  advisoryEditItemId.value = null;
+  detailOpen.value = true;
   emit("aiPrefillFocused", hasUsableCompletionCandidate(question) ? "candidate" : "questions");
 }
 
-function closeCompactDetail(): void {
-  compactDetailOpen.value = false;
+function showOverview(): void {
+  detailOpen.value = false;
+  advisoryEditItemId.value = null;
+  emit("aiPrefillFocused", "questions");
 }
 
-function selectPreviousQuestion(): void {
-  if (previousQuestion.value) {
-    selectQuestion(previousQuestion.value);
-  }
-}
-
-function selectNextQuestion(): void {
-  if (nextQuestion.value) {
-    selectQuestion(nextQuestion.value);
-  }
-}
-
-function acceptAdvisoryAnswerKey(
-  question: ExamConverterQuestionReviewRow,
-  answerKey: ExamConverterManualAnswerKeyCorrection,
-): void {
-  pendingAiAdvanceFromItemId.value = question.itemId;
+function acceptAdvisory(answerKey: ExamConverterManualAnswerKeyCorrection): void {
+  const question = selectedQuestion.value;
+  if (!question) return;
+  pendingAdvanceFromItemId.value = question.itemId;
   emit("applyManualAnswerKey", question, answerKey);
 }
 
@@ -148,46 +118,38 @@ function applyManualAnswerKey(
   question: ExamConverterQuestionReviewRow,
   answerKey: ExamConverterManualAnswerKeyCorrection,
 ): void {
-  pendingAiAdvanceFromItemId.value = question.itemId;
+  pendingAdvanceFromItemId.value = question.itemId;
   emit("applyManualAnswerKey", question, answerKey);
 }
 
-function advanceAfterSavedAiPrefill(): void {
-  const pendingItemId = pendingAiAdvanceFromItemId.value;
+function advanceAfterSavedReview(): void {
+  const pendingItemId = pendingAdvanceFromItemId.value;
   if (!pendingItemId || props.isCorrectionApplying) return;
   const savedQuestion = props.projection.questions.find(
     (question) => question.itemId === pendingItemId,
   );
   if (!savedQuestion) {
-    pendingAiAdvanceFromItemId.value = null;
-    selectedItemId.value = defaultSelectedItemId(props.projection.questions);
+    pendingAdvanceFromItemId.value = null;
+    showOverview();
     return;
   }
-  if (isPendingAdvisoryQuestion(savedQuestion)) {
-    return;
-  }
-  pendingAiAdvanceFromItemId.value = null;
-  const nextQuestion = nextUnresolvedAdvisoryQuestion(
-    savedQuestion,
-    props.projection.questions,
-  );
+  if (isUnresolvedQuestion(savedQuestion)) return;
+  pendingAdvanceFromItemId.value = null;
+  advisoryEditItemId.value = null;
+  const nextQuestion = nextUnresolvedQuestion(savedQuestion, props.projection.questions);
   if (nextQuestion) {
     selectQuestion(nextQuestion);
     return;
   }
-  compactDetailOpen.value = false;
-  emit("aiPrefillFocused", "questions");
+  showOverview();
 }
 
 watch(
   () => props.projection.questions,
   (questions) => {
-    const selectedQuestionAfterUpdate = questions.find(
-      (question) => question.itemId === selectedItemId.value,
-    );
-    if (!selectedQuestionAfterUpdate) {
-      selectedItemId.value = defaultSelectedItemId(questions);
-    }
+    const selected = questions.find((question) => question.itemId === selectedItemId.value);
+    if (!selected) selectedItemId.value = defaultSelectedItemId(questions);
+    if (selected && !isPendingAdvisoryQuestion(selected)) advisoryEditItemId.value = null;
   },
   { immediate: true },
 );
@@ -195,29 +157,31 @@ watch(
 watch(
   () => props.aiSuggestionFocusKey,
   () => {
-    const firstUnresolvedQuestion = firstUnresolvedAdvisoryQuestion(props.projection.questions);
-    if (firstUnresolvedQuestion) {
-      selectQuestion(firstUnresolvedQuestion);
+    const unresolved = firstUnresolvedQuestion(props.projection.questions);
+    if (unresolved) {
+      selectQuestion(unresolved);
       return;
     }
     selectedItemId.value = defaultSelectedItemId(props.projection.questions);
+    showOverview();
   },
 );
 
 watch(
   () => [props.projection.questions, props.isCorrectionApplying] as const,
-  advanceAfterSavedAiPrefill,
+  advanceAfterSavedReview,
 );
 </script>
 
 <template>
   <section
-    class="exam-converter-question-review-shell grid min-h-0 min-w-0 flex-1 gap-5 py-5"
-    :class="{ 'is-compact-detail-open': compactDetailOpen }"
+    class="min-h-0 min-w-0 flex-1 py-5"
+    :class="{ 'is-detail-open': detailOpen }"
     data-test="exam-converter-question-review-shell"
   >
     <div
-      class="exam-converter-question-list-surface min-w-0 overflow-hidden"
+      v-if="!detailOpen"
+      class="min-w-0"
       data-test="exam-converter-question-list-surface"
     >
       <h3 class="text-base font-semibold leading-tight text-navy">
@@ -233,7 +197,7 @@ watch(
 
       <ExamConverterQuestionTable
         v-else
-        class="exam-converter-question-table mt-6"
+        class="exam-converter-question-table mt-4 hidden md:table"
         :questions="projection.questions"
         :selected-item-id="selectedQuestion?.itemId ?? null"
         @question-selected="selectQuestion"
@@ -241,74 +205,54 @@ watch(
 
       <ExamConverterQuestionNavigator
         v-if="projection.questions.length > 0"
-        class="exam-converter-question-navigator mt-4"
+        class="exam-converter-question-navigator mt-4 md:hidden"
         :questions="projection.questions"
         :selected-item-id="selectedQuestion?.itemId ?? null"
         @question-selected="selectQuestion"
       />
     </div>
 
-    <aside
-      class="exam-converter-question-detail min-w-0 border-l border-navy/35 pl-5"
+    <div
+      v-else-if="selectedQuestion"
+      class="min-w-0"
       data-test="exam-converter-selected-question-detail"
-      :data-selected-item-id="selectedQuestion?.itemId ?? ''"
+      :data-selected-item-id="selectedQuestion.itemId"
     >
-      <template v-if="selectedQuestion">
-        <div class="exam-converter-compact-detail-nav mb-4 hidden items-center justify-between gap-3 border-b border-navy/25 pb-3">
+      <ExamConverterAdvisoryReviewDetail
+        v-if="selectedQuestionIsPendingAdvisory"
+        :disabled="isCorrectionApplying"
+        :editing="advisoryEditItemId === selectedQuestion.itemId"
+        :question="selectedQuestion"
+        :question-count="projection.questions.length"
+        @accept="acceptAdvisory"
+        @cancel="advisoryEditItemId = null"
+        @edit="advisoryEditItemId = selectedQuestion.itemId"
+        @overview="showOverview"
+        @save="acceptAdvisory"
+      />
+
+      <template v-else>
+        <header class="border-b border-navy/25 pb-4">
+          <p class="text-xs font-semibold uppercase leading-tight text-navy/65">
+            Fråga {{ selectedQuestion.sequence }} av {{ projection.questions.length }}
+          </p>
+          <h3 class="mt-1 text-lg font-semibold leading-tight text-navy">
+            {{ selectedQuestion.title }}
+          </h3>
           <button
             type="button"
-            class="btn-ghost inline-flex min-w-0 items-center gap-2 shadow-none"
-            data-test="exam-converter-compact-back-to-questions"
-            @click="closeCompactDetail"
+            class="btn-ghost mt-4 inline-flex shadow-none"
+            data-test="exam-converter-detail-overview-action"
+            @click="showOverview"
           >
-            <ChevronLeft
+            <IconOverview
+              :size="16"
               class="h-4 w-4"
-              aria-hidden="true"
             />
-            Frågor
+            Översikt
           </button>
-          <div class="flex min-w-0 items-center gap-2">
-            <strong class="truncate text-sm leading-tight text-navy">
-              Fråga {{ selectedQuestion.sequence }}
-            </strong>
-            <span class="shrink-0 border border-navy/20 bg-panel px-2 py-1 text-xs font-medium leading-none text-navy/75">
-              {{ selectedQuestion.typeLabel }}
-            </span>
-          </div>
-        </div>
-        <nav
-          class="exam-converter-detail-step-nav sticky top-0 z-10 mb-4 hidden justify-end gap-2 bg-panel py-2"
-          aria-label="Frågenavigering"
-        >
-          <button
-            type="button"
-            class="btn-ghost grid h-9 w-9 place-items-center p-0 shadow-none"
-            aria-label="Föregående fråga"
-            :disabled="!previousQuestion"
-            data-test="exam-converter-detail-previous-question"
-            title="Föregående fråga"
-            @click="selectPreviousQuestion"
-          >
-            <ChevronLeft
-              class="h-4 w-4"
-              aria-hidden="true"
-            />
-          </button>
-          <button
-            type="button"
-            class="btn-ghost grid h-9 w-9 place-items-center p-0 shadow-none"
-            aria-label="Nästa fråga"
-            :disabled="!nextQuestion"
-            data-test="exam-converter-detail-next-question"
-            title="Nästa fråga"
-            @click="selectNextQuestion"
-          >
-            <ChevronRight
-              class="h-4 w-4"
-              aria-hidden="true"
-            />
-          </button>
-        </nav>
+        </header>
+
         <ExamConverterItemTextPatchEditor
           :disabled="isCorrectionApplying"
           :question="selectedQuestion"
@@ -316,17 +260,7 @@ watch(
         />
 
         <section class="mt-5 grid gap-4">
-          <ExamConverterAdvisoryAnswerKeyPanel
-            v-if="showAdvisoryAnswerKeyPanel(selectedQuestion)"
-            :disabled="isCorrectionApplying"
-            :question="selectedQuestion"
-            @accept-advisory-answer-key="acceptAdvisoryAnswerKey"
-            @edit-advisory-answer-key="editAdvisoryAnswerKey"
-          />
-          <ExamConverterEffectiveAnswerKeySummary
-            v-if="!isPendingAdvisoryQuestion(selectedQuestion)"
-            :question="selectedQuestion"
-          />
+          <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
           <ExamConverterPointCorrectionEditor
             :disabled="isCorrectionApplying"
             :question="selectedQuestion"
@@ -341,7 +275,7 @@ watch(
         </section>
 
         <section
-          v-if="selectedQuestion.alternatives.length > 0 && !hasUsableCompletionCandidate(selectedQuestion) && !showsAnswerKeyEditor"
+          v-if="selectedQuestion.alternatives.length > 0 && !showsAnswerKeyEditor"
           class="mt-7"
           data-test="exam-converter-selected-question-alternatives"
         >
@@ -354,14 +288,10 @@ watch(
               :key="alternative.id"
               class="grid grid-cols-[2rem_minmax(0,1fr)] gap-3"
             >
-              <span
-                class="inline-grid h-7 w-7 place-items-center border border-navy/25 text-xs font-semibold leading-none"
-              >
+              <span class="inline-grid h-7 w-7 place-items-center border border-navy/25 text-xs font-semibold leading-none">
                 {{ alternative.id }}
               </span>
-              <span class="leading-relaxed">
-                {{ alternative.text }}
-              </span>
+              <span class="leading-relaxed">{{ alternative.text }}</span>
             </li>
           </ol>
         </section>
@@ -376,20 +306,12 @@ watch(
           </h4>
           <dl class="mt-4 grid gap-3 text-sm">
             <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
-              <dt class="text-navy">
-                Luckor
-              </dt>
-              <dd class="text-navy">
-                {{ selectedQuestion.lucktextStructure.gapCount }}
-              </dd>
+              <dt class="text-navy">Luckor</dt>
+              <dd class="text-navy">{{ selectedQuestion.lucktextStructure.gapCount }}</dd>
             </div>
             <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
-              <dt class="text-navy">
-                Bilder
-              </dt>
-              <dd class="text-navy">
-                {{ selectedQuestion.lucktextStructure.imageCount }}
-              </dd>
+              <dt class="text-navy">Bilder</dt>
+              <dd class="text-navy">{{ selectedQuestion.lucktextStructure.imageCount }}</dd>
             </div>
           </dl>
           <div
@@ -409,83 +331,12 @@ watch(
               >
               <figcaption class="mt-2 text-xs leading-tight text-navy/70">
                 {{ image.altText }}
-                <span v-if="image.dimensionsLabel">
-                  · {{ image.dimensionsLabel }}
-                </span>
+                <span v-if="image.dimensionsLabel"> · {{ image.dimensionsLabel }}</span>
               </figcaption>
             </figure>
           </div>
         </section>
       </template>
-    </aside>
+    </div>
   </section>
 </template>
-
-<style scoped>
-.exam-converter-question-review-shell {
-  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.72fr);
-}
-
-.exam-converter-question-navigator {
-  display: none;
-}
-
-@media (max-width: 1199px) {
-  .exam-converter-question-review-shell {
-    grid-template-columns: minmax(12rem, 0.42fr) minmax(0, 1fr);
-    gap: 1rem;
-    overflow-x: visible;
-  }
-
-  .exam-converter-question-table {
-    display: none;
-  }
-
-  .exam-converter-question-navigator {
-    display: grid;
-  }
-
-  .exam-converter-question-detail {
-    padding-left: 1rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .exam-converter-question-review-shell {
-    display: block;
-    overflow-x: hidden;
-  }
-
-  .exam-converter-question-table {
-    display: none;
-  }
-
-  .exam-converter-question-navigator {
-    display: grid;
-  }
-
-  .exam-converter-question-detail {
-    border-left: 0;
-    display: none;
-    padding-left: 0;
-  }
-
-  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-question-list-surface {
-    display: none;
-  }
-
-  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-question-detail {
-    display: block;
-  }
-
-  .exam-converter-question-review-shell.is-compact-detail-open .exam-converter-compact-detail-nav {
-    display: flex;
-  }
-}
-
-@media (min-width: 1200px) {
-  .exam-converter-detail-step-nav {
-    display: flex;
-  }
-}
-</style>

@@ -1,7 +1,7 @@
 """Exam Converter correction-session API routes.
 
 Purpose:
-  Expose Skriptoteket-owned durable correction-session read, upsert, and revert
+  Expose Skriptoteket-owned durable correction-session read, replacement, and revert
   behavior for authenticated Conversion Hub Exam Converter jobs.
 
 Relationships:
@@ -16,13 +16,13 @@ from fastapi import APIRouter, Depends
 
 from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionResponse,
+    ReplaceExamConverterCorrectionIntentsRequest,
     RevertExamConverterCorrectionIntentRequest,
-    UpsertExamConverterCorrectionIntentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_converter_correction_sessions import (
     GetExamConverterCorrectionSessionHandler,
+    ReplaceExamConverterCorrectionIntentsHandler,
     RevertExamConverterCorrectionIntentHandler,
-    UpsertExamConverterCorrectionIntentHandler,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -54,11 +54,11 @@ async def get_exam_converter_correction_session(
     "/exam-converter/jobs/{job_id}/correction-session/intents",
     response_model=ExamConverterCorrectionSessionResponse,
 )
-async def upsert_exam_converter_correction_intent(
+async def replace_exam_converter_correction_intents(
     job_id: UUID,
-    request: UpsertExamConverterCorrectionIntentRequest,
+    request: ReplaceExamConverterCorrectionIntentsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[UpsertExamConverterCorrectionIntentHandler],
+    handler: FromDishka[ReplaceExamConverterCorrectionIntentsHandler],
     user: User = Depends(require_app_user_api),
 ) -> ExamConverterCorrectionSessionResponse:
     require_conversion_hub_access(registry=registry, user=user)

@@ -141,7 +141,7 @@ async def test_session_roundtrip_preserves_source_binding_and_active_intents(
     intent = _intent(binding=session.source_binding)
 
     saved = await repo.save(
-        session=session.replace_intent(intent=intent, expected_session_version=0),
+        session=session.replace_intents(intents=(intent,), expected_session_version=0),
         expected_session_version=0,
     )
 
@@ -160,8 +160,8 @@ async def test_owner_scoped_get_and_save_reject_cross_owner_access(
     repo = PostgreSQLExamConverterCorrectionSessionRepository(db_session)
     session = _new_session(owner_user_id=owner_id, conversion_hub_job_id=job_id)
     saved = await repo.save(
-        session=session.replace_intent(
-            intent=_intent(binding=session.source_binding),
+        session=session.replace_intents(
+            intents=(_intent(binding=session.source_binding),),
             expected_session_version=0,
         ),
         expected_session_version=0,
@@ -185,21 +185,21 @@ async def test_repository_rejects_stale_expected_version(db_session: AsyncSessio
     repo = PostgreSQLExamConverterCorrectionSessionRepository(db_session)
     session = _new_session(owner_user_id=owner_id, conversion_hub_job_id=job_id)
     first = await repo.save(
-        session=session.replace_intent(
-            intent=_intent(binding=session.source_binding),
+        session=session.replace_intents(
+            intents=(_intent(binding=session.source_binding),),
             expected_session_version=0,
         ),
         expected_session_version=0,
     )
     second = await repo.save(
-        session=first.replace_intent(
-            intent=_intent(binding=first.source_binding, item_id="item-002", sequence=2),
+        session=first.replace_intents(
+            intents=(_intent(binding=first.source_binding, item_id="item-002", sequence=2),),
             expected_session_version=1,
         ),
         expected_session_version=1,
     )
-    stale_update = first.replace_intent(
-        intent=_intent(binding=first.source_binding, item_id="item-003", sequence=3),
+    stale_update = first.replace_intents(
+        intents=(_intent(binding=first.source_binding, item_id="item-003", sequence=3),),
         expected_session_version=1,
     )
 
@@ -221,7 +221,7 @@ async def test_active_target_database_constraint_rejects_duplicates(
     session = _new_session(owner_user_id=owner_id, conversion_hub_job_id=job_id)
     intent = _intent(binding=session.source_binding)
     saved = await repo.save(
-        session=session.replace_intent(intent=intent, expected_session_version=0),
+        session=session.replace_intents(intents=(intent,), expected_session_version=0),
         expected_session_version=0,
     )
 
@@ -255,12 +255,12 @@ async def test_replace_and_revert_persist_current_set(db_session: AsyncSession) 
     session = _new_session(owner_user_id=owner_id, conversion_hub_job_id=job_id)
     first = _intent(binding=session.source_binding)
     saved = await repo.save(
-        session=session.replace_intent(intent=first, expected_session_version=0),
+        session=session.replace_intents(intents=(first,), expected_session_version=0),
         expected_session_version=0,
     )
     replacement = _intent(binding=saved.source_binding)
     replaced = await repo.save(
-        session=saved.replace_intent(intent=replacement, expected_session_version=1),
+        session=saved.replace_intents(intents=(replacement,), expected_session_version=1),
         expected_session_version=1,
     )
     reverted = await repo.save(

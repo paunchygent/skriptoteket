@@ -68,6 +68,7 @@ const emit = defineEmits<{
     question: ExamConverterReviewProjection["questions"][number],
     maxScore: number,
   ];
+  acceptAllAdvisoryCandidates: [];
   downloadFile: [file: ExamConverterReviewFile];
   filesDropped: [files: File[]];
   openQuestions: [];
@@ -133,6 +134,8 @@ const projectionBackedResultStrip = computed<ExamConverterResultStripState | nul
           v-if="showAiPrefillPanel && reviewProjection && projectionBackedResultStrip.status !== 'running'"
           :focus="focusedAiPrefill"
           :review-count="reviewProjection.report.attentionQuestionCount"
+          :disabled="isCorrectionApplying"
+          @accept-all-advisory-candidates="emit('acceptAllAdvisoryCandidates')"
           @open-questions="emit('openQuestions')"
         />
         <ExamConverterResultStrip

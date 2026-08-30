@@ -1376,8 +1376,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Upsert Exam Converter Correction Intent */
-        put: operations["upsert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put"];
+        /** Replace Exam Converter Correction Intents */
+        put: operations["replace_exam_converter_correction_intents_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put"];
         post?: never;
         /** Revert Exam Converter Correction Intent */
         delete: operations["revert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_delete"];
@@ -6880,6 +6880,16 @@ export interface components {
             /** Student Ids */
             student_ids: string[];
         };
+        /**
+         * ReplaceExamConverterCorrectionIntentsRequest
+         * @description Replace active correction targets through one optimistic batch write.
+         */
+        ReplaceExamConverterCorrectionIntentsRequest: {
+            /** Expected Session Version */
+            expected_session_version: number;
+            /** Intents */
+            intents: components["schemas"]["ExamConverterCorrectionIntentWrite"][];
+        };
         /** RequestChangesRequest */
         RequestChangesRequest: {
             /** Message */
@@ -8314,15 +8324,6 @@ export interface components {
             max_files: number;
             /** Max Total Bytes */
             max_total_bytes: number;
-        };
-        /**
-         * UpsertExamConverterCorrectionIntentRequest
-         * @description Upsert/replace request requiring optimistic session concurrency.
-         */
-        UpsertExamConverterCorrectionIntentRequest: {
-            /** Expected Session Version */
-            expected_session_version?: number | null;
-            intent: components["schemas"]["ExamConverterCorrectionIntentWrite"];
         };
         /**
          * User
@@ -11259,7 +11260,7 @@ export interface operations {
             };
         };
     };
-    upsert_exam_converter_correction_intent_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put: {
+    replace_exam_converter_correction_intents_api_v1_apps_documents_conversion_hub_exam_converter_jobs__job_id__correction_session_intents_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -11270,7 +11271,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpsertExamConverterCorrectionIntentRequest"];
+                "application/json": components["schemas"]["ReplaceExamConverterCorrectionIntentsRequest"];
             };
         };
         responses: {

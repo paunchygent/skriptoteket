@@ -69,7 +69,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
@@ -95,7 +95,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 function mockReviewArtifacts(): void {
@@ -319,9 +319,9 @@ beforeEach(() => {
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(correctionSessionRecorder.current()),
   );
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionRecorder.recordIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
   gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
@@ -333,7 +333,7 @@ beforeEach(() => {
 });
 
 function seedManualChoiceCorrection(): void {
-  correctionSessionRecorder.recordIntent({
+  correctionSessionRecorder.recordIntents([{
     entry_id: "corr-choice-item-004",
     item_id: "item-004",
     item_type: "single_choice",
@@ -349,7 +349,7 @@ function seedManualChoiceCorrection(): void {
     target: {
       interaction_id: "choice-item-004",
     },
-  });
+  }]);
 }
 
 function withoutReplayArtifactReferences(result: ReturnType<typeof correctionApplyResult>) {

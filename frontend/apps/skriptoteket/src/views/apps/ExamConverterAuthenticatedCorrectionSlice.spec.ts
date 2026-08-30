@@ -50,7 +50,7 @@ vi.mock("../../api/examConverterLocal", () => ({
 const correctionSessionApiMocks = vi.hoisted(() => ({
   getExamConverterCorrectionSession: vi.fn(),
   registerExamConverterConversionHubJob: vi.fn(),
-  upsertExamConverterCorrectionIntent: vi.fn(),
+  replaceExamConverterCorrectionIntents: vi.fn(),
 }));
 
 vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
@@ -73,7 +73,7 @@ vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
     correctionSessionApiMocks.registerExamConverterConversionHubJob,
-  upsertExamConverterCorrectionIntent: correctionSessionApiMocks.upsertExamConverterCorrectionIntent,
+  replaceExamConverterCorrectionIntents: correctionSessionApiMocks.replaceExamConverterCorrectionIntents,
 }));
 
 beforeEach(() => {
@@ -81,7 +81,7 @@ beforeEach(() => {
   lastCorrectionSession = emptyCorrectionSession();
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockReset();
   correctionSessionApiMocks.registerExamConverterConversionHubJob.mockReset();
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockReset();
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockReset();
   gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
@@ -101,9 +101,9 @@ beforeEach(() => {
     status: "succeeded",
     upstream_job_id: "job_exam_converter_review",
   });
-  correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockImplementation(
-    ({ request }: { request: { intent: Record<string, unknown> } }) =>
-      Promise.resolve(correctionSessionFromIntent(request.intent)),
+  correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockImplementation(
+    ({ request }: { request: { intents: Record<string, unknown>[] } }) =>
+      Promise.resolve(correctionSessionFromIntents(request.intents)),
   );
   correctionSessionApiMocks.getExamConverterCorrectionSession.mockImplementation(() =>
     Promise.resolve(lastCorrectionSession),
@@ -322,7 +322,9 @@ function targetKeyForIntent(intent: Record<string, unknown>): string {
   return `${String(intent.kind)}:${String(intent.item_id)}`;
 }
 
-function correctionSessionFromIntent(intent: Record<string, unknown>) {
+function correctionSessionFromIntents(intents: Record<string, unknown>[]) {
+  const intent = intents[0];
+  if (!intent) throw new Error("Correction-session batch must be non-empty.");
   lastCorrectionSession = {
     active_intents: [
       {
@@ -380,9 +382,9 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0]).toMatchObject({
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mock.calls[0]?.[0]).toMatchObject({
       request: {
-        intent: {
+        intents: [{
             kind: "item_text_patch",
             item_id: "item-012",
             payload: { patches: [
@@ -391,7 +393,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
                 value: "Beskriv fotosyntesens delar.",
               },
             ] },
-          },
+          }],
       },
     });
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledWith({
@@ -427,10 +429,10 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledWith(
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledWith(
       expect.objectContaining({
         request: expect.objectContaining({
-          intent: expect.objectContaining({ kind: "item_text_patch" }),
+          intents: [expect.objectContaining({ kind: "item_text_patch" })],
         }),
       }),
     );
@@ -502,12 +504,12 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     await flushPromises();
 
     const pointCorrectionIntent =
-      correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
+      correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mock.calls[0]?.[0];
     expect(pointCorrectionIntent).toMatchObject({
       conversionHubJobId: "job_exam_converter_review",
       request: {
         expected_session_version: 0,
-        intent: {
+        intents: [{
           entry_id: "corr-points-item-012",
           item_id: "item-012",
           kind: "point_correction",
@@ -516,7 +518,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
             source_state_sha256: "sha256:source-state",
           },
           source_item_fingerprint: "sha256:item-012",
-        },
+        }],
       },
     });
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledWith({
@@ -526,9 +528,6 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     expect(gatewayMocks.issueExamAuthoringCorrectionSourceState).toHaveBeenCalledWith({
       jobId: "job_exam_converter_review",
     });
-    expect(wrapper.find('[data-test="exam-converter-selected-question-detail"]').text()).not.toContain(
-      "Ändrad",
-    );
     expect(wrapper.find('[data-test="exam-converter-correction-session-status"]').exists()).toBe(
       false,
     );
@@ -576,7 +575,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
   });
 
   it("shows conflict state when the persisted session version is stale", async () => {
-    correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mockRejectedValueOnce(
+    correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mockRejectedValueOnce(
       new ApiError({
         code: "CONFLICT",
         message: "Session changed",
@@ -610,7 +609,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     await wrapper.find('[data-test="exam-converter-apply-point-correction-action"]').trigger("click");
     await flushPromises();
 
-    expect(correctionSessionApiMocks.upsertExamConverterCorrectionIntent).toHaveBeenCalledTimes(1);
+    expect(correctionSessionApiMocks.replaceExamConverterCorrectionIntents).toHaveBeenCalledTimes(1);
     expect(wrapper.find('[data-test="exam-converter-correction-session-status"]').exists()).toBe(
       false,
     );
@@ -667,16 +666,16 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     await flushPromises();
 
     const manualAnswerKeySubmit =
-      correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
+      correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mock.calls[0]?.[0];
     expect(manualAnswerKeySubmit).toMatchObject({
       request: {
-        intent: {
+        intents: [{
             kind: "manual_choice_answer_key",
             item_id: "item-004",
             item_type: "single_choice",
             payload: { correct_choice_ids: ["choice-002"] },
             source_item_fingerprint: "sha256:item-004",
-          },
+          }],
       },
     });
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
@@ -753,10 +752,10 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
     await flushPromises();
 
     const manualGapSubmit =
-      correctionSessionApiMocks.upsertExamConverterCorrectionIntent.mock.calls[0]?.[0];
+      correctionSessionApiMocks.replaceExamConverterCorrectionIntents.mock.calls[0]?.[0];
     expect(manualGapSubmit).toMatchObject({
       request: {
-        intent: {
+        intents: [{
             kind: "manual_gap_open_cloze_answer_key",
             item_id: "item-013",
             item_type: "gap_fill",
@@ -765,7 +764,7 @@ describe("ExamConverterAuthenticatedView teacher corrections", () => {
               { accepted_values: ["näringsväv"], gap_id: "gap-002" },
             ] },
             source_item_fingerprint: "sha256:item-013",
-          },
+        }],
       },
     });
     expect(gatewayMocks.replayLocalExamConversion).toHaveBeenCalledTimes(1);
