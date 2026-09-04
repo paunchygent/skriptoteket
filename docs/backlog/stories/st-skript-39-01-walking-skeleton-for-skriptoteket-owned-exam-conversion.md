@@ -77,9 +77,15 @@ curated-app API as a switchable lane.
    byte-comparable parity against the Sir Convert fixture outputs, behind
    the switchable lane, with a live functional check recorded in
    `handoff.md`.
-2. Later tasks are decomposed after the skeleton lands: fixture-corpus
-   parity breadth, lane-switch operator surface, and readiness-report
-   alignment.
+2. `TASK-SKRIPT-39-01-02`: preserve valid fractional points through the
+   neutral model and QTI, recover missing titles with the existing fallback,
+   and replace unresolved visible DigiExam images with a QTI-valid placeholder
+   plus item-bound teacher information.
+3. `TASK-SKRIPT-39-01-03`: fulfil epic term E3 by degrading unknown DigiExam
+   question types to reviewable, manually evaluated free text across PDF, QTI,
+   and the authenticated review surface.
+4. Later tasks may add fixture-corpus parity breadth, lane-switch operator
+   surfaces, or readiness-report alignment under their own accepted scope.
 
 ## Verification
 

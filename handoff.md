@@ -1,5 +1,13 @@
 ## Current
 
+- [TASK-SKRIPT-39-01-02](docs/backlog/tasks/task-skript-39-01-02-preserve-decimal-scores-and-replace-missing-digiexam-images-with-visible-placeholders.md)
+  is ready under `ST-SKRIPT-39-01`. It owns fractional points, the localized
+  missing-title fallback repair, and unresolved visible DigiExam images with
+  QTI-valid placeholders and item-bound Swedish review information.
+- [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
+  is the separate ready cross-layer slice for epic term E3: unknown DigiExam
+  types become manually evaluated free text in PDF/QTI with explicit teacher
+  review information and no provider call.
 - Production code merge `fab9412a` serves the corrected Exam Converter review flow.
   The canonical Hemma checkout follows published `main` and contains that merge;
   Skriptoteket web/worker are healthy, and public `/healthz` returns 200. The deploy applied
