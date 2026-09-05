@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a45edd72df4c5c727904004b45abe4259305d98b7c196c86f39b0320a3e8ecf4",
+  "source_set_digest": "2460d66644641f1ee323a830ad7a56e00c8b80d13eb061ae53937ae38da4f10d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4197,7 +4197,7 @@
       "type": "task",
       "title": "Degrade unknown DigiExam question types to reviewable free text",
       "path": "docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
@@ -4208,7 +4208,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User agreed to cancel this task as unnecessary after real-export discovery found only the four supported DigiExam types and the user confirmed those are the existing types. Future development should verify real-export correctness and repair demonstrated defects rather than invent unsupported types."
       }
     },
     {

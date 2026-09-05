@@ -8,7 +8,7 @@
   passed local proof; production web/worker are healthy and contain the exact
   placeholder copy. Exam.net acceptance remains with the user.
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
-  is next after Task 02 acceptance.
+  is canceled by user agreement. Next: verify real-export correctness for types 0–3 and repair demonstrated defects.
 - Production code merge `fab9412a` serves the corrected Exam Converter review flow.
   The canonical Hemma checkout follows published `main` and contains that merge;
   Skriptoteket web/worker are healthy, and public `/healthz` returns 200. The deploy applied

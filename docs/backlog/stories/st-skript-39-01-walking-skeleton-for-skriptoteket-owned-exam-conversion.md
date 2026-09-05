@@ -81,9 +81,9 @@ curated-app API as a switchable lane.
    neutral model and QTI, recover missing titles with the existing fallback,
    and replace unresolved visible DigiExam images with a QTI-valid placeholder
    plus item-bound teacher information.
-3. `TASK-SKRIPT-39-01-03`: fulfil epic term E3 by degrading unknown DigiExam
-   question types to reviewable, manually evaluated free text across PDF, QTI,
-   and the authenticated review surface.
+3. `TASK-SKRIPT-39-01-03` is canceled by user decision: real-export discovery
+   found only supported types 0–3, which the user confirmed are the existing
+   DigiExam types. No speculative unknown-type handling was implemented.
 4. `TASK-SKRIPT-39-01-04`: derive PDF and QTI artifact filenames from the
    uploaded DigiExam filename across first-pass/replay downloads and Mina filer
    saves.

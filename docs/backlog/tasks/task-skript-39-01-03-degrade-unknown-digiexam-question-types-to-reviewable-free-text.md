@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-04'
-status: ready
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User agreed to cancel this task as unnecessary after real-export discovery found only the four supported DigiExam types and the user confirmed those are the existing types. Future development should verify real-export correctness and repair demonstrated defects rather than invent unsupported types.
 task_kind: story
 acceptance_criteria:
 - Unknown DigiExam question types remain in the converted exam as reviewable free-text
@@ -69,8 +71,17 @@ makes no provider call and adds no material performance concern.
 
 ## Validation
 
-- Add one minimal synthetic unknown-type `.dxe` fixture; do not commit teacher
-  files.
+- Establish the unsupported-type case in an unchanged real DigiExam export
+  before implementing its handling. Record the source hash, observed numeric
+  type code, relevant source structure, and current conversion failure in
+  retained evidence without exposing teacher content.
+- Derive the minimal regression fixture from that observed real question,
+  preserving its actual type code and response structure. Sanitize private
+  content and record every reduction or substitution; do not commit teacher
+  files. An invented type code or altered known-type question is only a
+  defensive test and cannot establish the real-world issue.
+- If no real unsupported-type example is available, stop and request one from
+  the user rather than inventing an implementation-driving fixture.
 - Focused parser, IR, overlay/replay, fingerprint, and artifact tests prove the
   type code and warning survive while parse and target readiness remain usable.
 - Focused PDF and QTI tests prove the item is present as open/free text, is
@@ -81,11 +92,28 @@ makes no provider call and adds no material performance concern.
 - Run affected backend tests, `pdm run lint`, and `pdm run typecheck`.
 - Run affected frontend tests, `pdm run fe-type-check`, `pdm run fe-lint`, and
   `pdm run fe-build`.
-- Exercise the authenticated HuleEdu browser-session path with the synthetic
-  source and validate the generated QTI before any user-coordinated Exam.net
+- Exercise the authenticated HuleEdu browser-session path with the sanitized
+  real-export-derived fixture and validate the generated QTI before any user-coordinated Exam.net
   import check.
 - Close with `pdm run handoff-validate`, `pdm run docs-validate`, and
   `git diff --check`.
+
+## Evidence Gate — 2026-09-05
+
+Read-only discovery found no unsupported numeric question type in the two
+user-supplied exports or the four repository `.dxe` fixtures. The supplied
+Privatekonomi export contains 10 questions with types 0–3; Näringslära contains
+14 questions with types 0 and 2. Both parse successfully and are renderer-ready.
+The existing type-99 unit test is artificial defensive coverage, not evidence
+of a real unsupported question.
+
+The user confirmed that types 0–3 are the existing DigiExam types and approved
+cancellation of this speculative task. No implementation or derived fixture
+was created. The next development goal is real-export correctness across those
+four types, including PDF output and user-coordinated Exam.net QTI import
+checks; new implementation requires demonstrated defects. Discovery report:
+Pi scout run `e7824daa-450a-43ff-b8a2-96405024dd49`, retained context
+`01a06bde-e127-7042-912b-d492fb6c00de`.
 
 ## Stop Conditions
 
