@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
+from decimal import Decimal
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
@@ -202,20 +203,26 @@ def _gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
     return _split_point_values(item.max_score, len(item.text_entry_gaps))
 
 
-def _split_point_values(total: int, count: int) -> tuple[str, ...]:
-    cents_total = total * 100
-    base_cents = cents_total // count
-    extra_cents = cents_total - base_cents * count
+def _split_point_values(total: int | float, count: int) -> tuple[str, ...]:
+    decimal_total = Decimal(str(total))
+    exponent = decimal_total.as_tuple().exponent
+    decimal_places = max(2, -exponent) if isinstance(exponent, int) else 2
+    unit = Decimal(1).scaleb(-decimal_places)
+    total_units = int(decimal_total / unit)
+    while total_units < count:
+        decimal_places += 1
+        unit = Decimal(1).scaleb(-decimal_places)
+        total_units = int(decimal_total / unit)
+    base_units, extra_units = divmod(total_units, count)
     return tuple(
-        _format_cents(base_cents + (1 if index < extra_cents else 0)) for index in range(count)
+        _format_point_units(base_units + (1 if index < extra_units else 0), decimal_places)
+        for index in range(count)
     )
 
 
-def _format_cents(cents: int) -> str:
-    whole, rest = divmod(cents, 100)
-    if rest == 0:
-        return str(whole)
-    return f"{whole}.{rest:02d}".rstrip("0")
+def _format_point_units(units: int, decimal_places: int) -> str:
+    value = Decimal(units).scaleb(-decimal_places)
+    return format(value, "f").rstrip("0").rstrip(".") or "0"
 
 
 def _emits_map_response(item: ExamNetQtiItem) -> bool:

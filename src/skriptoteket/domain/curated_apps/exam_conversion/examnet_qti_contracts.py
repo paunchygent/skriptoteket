@@ -158,13 +158,13 @@ class ExamNetQtiItem:
     title: str
     interaction_type: ExamNetQtiInteractionType
     prompt_lines: tuple[str, ...]
-    max_score: int | None
+    max_score: int | float | None
     evaluation_mode: ExamNetQtiEvaluationMode = ExamNetQtiEvaluationMode.AUTOMATIC
     manual_representation: ExamNetQtiManualRepresentation = (
         ExamNetQtiManualRepresentation.NATIVE_INTERACTION
     )
     source_item_type: str | None = None
-    free_text_criterion_points: int | None = None
+    free_text_criterion_points: int | float | None = None
     choices: tuple[ExamNetQtiChoice, ...] = ()
     correct_choice_identifiers: tuple[str, ...] = ()
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = ()

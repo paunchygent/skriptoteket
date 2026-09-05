@@ -50,6 +50,8 @@ class DigiExamWarningCode(StrEnum):
     MISSING_EMBEDDED_ASSET_REFERENCE = "missing_embedded_asset_reference"
     UNUSED_EMBEDDED_ASSET_PAYLOAD = "unused_embedded_asset_payload"
     AMBIGUOUS_EMBEDDED_ASSET_BINDING = "ambiguous_embedded_asset_binding"
+    MISSING_QUESTION_TITLE = "missing_question_title"
+    MISSING_PROMPT_IMAGE = "missing_prompt_image"
 
 
 class DigiExamAnswerKeyProvenance(StrEnum):
@@ -86,7 +88,7 @@ class DigiExamSourceSpan:
 class DigiExamPointMarker:
     """Observed point marker evidence."""
 
-    points: int
+    points: int | float
     raw_text: str
     source_span: DigiExamSourceSpan
 
@@ -175,7 +177,7 @@ class DigiExamItem:
     question_id: int | None = None
     digiexam_type_code: int | None = None
     prompt_html: str | None = None
-    max_score: int | None = None
+    max_score: int | float | None = None
     alternatives: tuple[DigiExamAlternative, ...] = ()
     gaps: tuple[DigiExamGap, ...] = ()
     grading_policy: DigiExamGradingPolicy | None = None

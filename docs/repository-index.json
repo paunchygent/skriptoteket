@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1db806363d25fc5da820156b2d71e1340cab130e86d7bebf1e2a0ba80e16eb08",
+  "source_set_digest": "4a67a164f8e1bfcae9e65ebaa1f7aad207ccca5c2013715be972b97cc8927408",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4178,7 +4178,7 @@
       "type": "task",
       "title": "Preserve decimal scores and recover missing DigiExam titles and images",
       "path": "docs/backlog/tasks/task-skript-39-01-02-preserve-decimal-scores-and-replace-missing-digiexam-images-with-visible-placeholders.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [

@@ -15,6 +15,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from json import JSONDecodeError
@@ -41,6 +42,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_answer_enrich
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_embedded_assets import (
     extract_digiexam_embedded_assets,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
+    missing_question_title_message,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
     DigiExamResultPdfAnswerEvidence,
@@ -161,10 +165,24 @@ class DigiExamDxeParser:
         title = _str_value(question.get("title"))
         about = _str_value(question.get("about"))
         prompt_html = _str_value(question.get("bodyHTML"))
-        max_score = _int_value(question.get("maxScore"))
+        max_score = _point_value(question.get("maxScore"))
         type_code = _int_value(question.get("type"))
 
-        if title is None or prompt_html is None or max_score is None or type_code is None:
+        missing_title = title is None or not title.strip()
+        fallback_title = _question_header(title, index)
+        if missing_title:
+            warnings.append(
+                DigiExamWarning(
+                    code=DigiExamWarningCode.MISSING_QUESTION_TITLE,
+                    message=missing_question_title_message(
+                        question_number=index, fallback_title=fallback_title
+                    ),
+                    blocking=False,
+                    source_span=span,
+                )
+            )
+
+        if prompt_html is None or max_score is None or type_code is None:
             warnings.append(
                 _warning(
                     f"Question {index} is missing required `.dxe` fields.",
@@ -200,7 +218,7 @@ class DigiExamDxeParser:
         )
         warnings.extend(embedded_assets.warnings)
 
-        evidence_item = answer_evidence.item_for_title(title) if answer_evidence and title else None
+        evidence_item = answer_evidence.item_for_title(fallback_title) if answer_evidence else None
         dxe_correct_alternative_ids = tuple(
             alternative.id for alternative in alternatives if alternative.right
         )
@@ -235,7 +253,7 @@ class DigiExamDxeParser:
             result_gap_values=result_gap_values,
         )
         if provenance == DigiExamAnswerKeyProvenance.ABSENT:
-            warning_title = title or f"question {index}"
+            warning_title = fallback_title
             warnings.append(
                 DigiExamWarning(
                     code=DigiExamWarningCode.MISSING_ANSWER_KEY_PROVENANCE,
@@ -246,7 +264,7 @@ class DigiExamDxeParser:
             )
 
         item = DigiExamItem(
-            header=title or f"Question {index}",
+            header=fallback_title,
             item_type=item_type,
             source_span=span,
             prompt_lines=(about,) if about else (),
@@ -317,6 +335,31 @@ def _int_value(value: object) -> int | None:
     if isinstance(value, bool):
         return None
     return value if isinstance(value, int) else None
+
+
+def _point_value(value: object) -> int | float | None:
+    """Return a `.dxe` point value preserving valid positive fractionals.
+
+    Integers keep the existing acceptance policy. Floats must be finite and
+    positive so valid fractional point values pass unchanged while malformed
+    values keep the existing missing-required-field blocking behavior.
+    """
+
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and math.isfinite(value) and value > 0:
+        return value
+    return None
+
+
+def _question_header(title: str | None, index: int) -> str:
+    """Return the deterministic `Question N` fallback for a missing title."""
+
+    if title is None or not title.strip():
+        return f"Question {index}"
+    return title
 
 
 def _bool_value(value: object) -> bool | None:

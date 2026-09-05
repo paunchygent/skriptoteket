@@ -25,6 +25,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
     DigiExamExamNetPdfWarningCode,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
+    PROMPT_IMAGE_PLACEHOLDER_HTML,
+)
 
 
 def render_examnet_prompt_html(
@@ -138,11 +141,13 @@ class _PromptHtmlRenderer(HTMLParser):
         image_id = _image_id(attrs)
         if image_id is None:
             self._warnings.append(_missing_image_warning(self._item_id, "unresolved"))
+            self._parts.append(PROMPT_IMAGE_PLACEHOLDER_HTML)
             return
 
         relative_path = self._asset_paths_by_reference.get((self._item_id, image_id))
         if relative_path is None:
             self._warnings.append(_missing_image_warning(self._item_id, str(image_id)))
+            self._parts.append(PROMPT_IMAGE_PLACEHOLDER_HTML)
             return
 
         self._parts.append(
@@ -171,4 +176,5 @@ def _missing_image_warning(item_id: str, image_id: str) -> DigiExamExamNetPdfWar
         code=DigiExamExamNetPdfWarningCode.EMBEDDED_ASSET_REFERENCE_MISSING,
         message=f"Embedded image reference {image_id} cannot be resolved.",
         item_id=item_id,
+        blocking=False,
     )

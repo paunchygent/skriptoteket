@@ -259,6 +259,20 @@ watch(
           @apply-item-text-patch="(question, patch) => emit('applyItemTextPatch', question, patch)"
         />
 
+        <section
+          v-if="selectedQuestion.reviewWarnings.length > 0"
+          class="mt-5 grid gap-2 border border-navy/25 bg-canvas px-4 py-3"
+          data-test="exam-converter-selected-question-source-repair-messages"
+        >
+          <p
+            v-for="warning in selectedQuestion.reviewWarnings"
+            :key="warning.code"
+            class="text-sm leading-snug text-navy"
+          >
+            {{ warning.message }}
+          </p>
+        </section>
+
         <section class="mt-5 grid gap-4">
           <ExamConverterEffectiveAnswerKeySummary :question="selectedQuestion" />
           <ExamConverterPointCorrectionEditor

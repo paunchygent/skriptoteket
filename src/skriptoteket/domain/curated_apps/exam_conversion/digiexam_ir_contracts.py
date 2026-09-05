@@ -81,7 +81,7 @@ class DigiExamIrItem:
     source_span: DigiExamSourceSpan
     prompt_html: str | None
     prompt_lines: tuple[str, ...]
-    max_score: int | None
+    max_score: int | float | None
     digiexam_type_code: int | None
     options: tuple[str, ...]
     alternatives: tuple[DigiExamAlternative, ...]

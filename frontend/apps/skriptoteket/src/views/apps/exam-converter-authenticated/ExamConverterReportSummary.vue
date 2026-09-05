@@ -9,6 +9,8 @@
  * Relationships:
  *   - Rendered only inside the active `Rapport` inspection mode.
  *   - Uses projected action counts and AI suggestion outcome rows.
+ *   - Summarizes recoverable missing-title and missing-image questions with
+ *     their reusable Swedish teacher messages.
  *   - Does not expose raw provenance enums or service artifact names.
  */
 
@@ -30,6 +32,7 @@ function aiSuggestionOutcomeLabel(
   if (outcome === "suppressed") return "Avvisat";
   return "Kvar att granska";
 }
+
 </script>
 
 <template>
@@ -64,7 +67,38 @@ function aiSuggestionOutcomeLabel(
             <dt>Poäng saknas</dt>
             <dd>{{ report.missingPointsCount.toLocaleString("sv-SE") }}</dd>
           </div>
+          <div class="exam-converter-report-row">
+            <dt>Bilder saknas</dt>
+            <dd data-test="exam-converter-report-missing-image-count">
+              {{ report.missingImageCount.toLocaleString("sv-SE") }}
+            </dd>
+          </div>
+          <div class="exam-converter-report-row">
+            <dt>Frågetitlar saknas</dt>
+            <dd data-test="exam-converter-report-missing-title-count">
+              {{ report.missingTitleCount.toLocaleString("sv-SE") }}
+            </dd>
+          </div>
         </dl>
+
+        <ol
+          v-if="report.sourceRepairQuestions.length > 0"
+          class="mt-4 grid gap-3 border-t border-navy/15 pt-3 text-sm text-navy"
+          data-test="exam-converter-report-source-repair-questions"
+        >
+          <li
+            v-for="question in report.sourceRepairQuestions"
+            :key="question.itemId"
+            class="exam-converter-report-outcome-row grid gap-1"
+          >
+            <span class="min-w-0 font-medium">
+              {{ question.sequence }}. {{ question.title }}
+            </span>
+            <span class="min-w-0 leading-snug text-navy/75">
+              {{ question.reviewWarnings.map((warning) => warning.message).join(" ") }}
+            </span>
+          </li>
+        </ol>
       </section>
 
       <section class="border border-navy/20 bg-canvas px-4 py-4">
