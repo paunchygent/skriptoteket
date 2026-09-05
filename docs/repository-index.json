@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ceb11edbf782025df34f54b3c83d4f0d1d9dd748a012ed3bab9195b523500341",
+  "source_set_digest": "99365fed12aa5a2cf008edf586889b712ac7919da823bc05597af96546495541",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4198,6 +4198,25 @@
       "title": "Degrade unknown DigiExam question types to reviewable free text",
       "path": "docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-01-04",
+      "type": "task",
+      "title": "Preserve source filenames in Exam Converter target artifacts",
+      "path": "docs/backlog/tasks/task-skript-39-01-04-preserve-source-filenames-in-exam-converter-target-artifacts.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
