@@ -38,6 +38,7 @@ _OUTPUT_PURPOSE_LABELS = {
 }
 _COMBINED_PROJECT_PURPOSE = "Sammanslagen PDF"
 _SEPARATE_PROJECT_PURPOSE = "Separat PDF"
+_MAX_FILENAME_LENGTH = 255
 _WINDOWS_RESERVED_NAMES = {
     "CON",
     "PRN",
@@ -121,7 +122,7 @@ def build_project_preview_filename_from_stem(*, filename_stem: str) -> str:
 
 
 def disambiguate_filename(*, filename: str, existing_names: set[str]) -> str:
-    """Append a backend-owned ordinal when a saved output name already exists."""
+    """Append a bounded backend-owned ordinal when a saved output name already exists."""
     if filename not in existing_names:
         return filename
 
@@ -130,10 +131,27 @@ def disambiguate_filename(*, filename: str, existing_names: set[str]) -> str:
     suffix = path.suffix
     ordinal = 2
     while True:
-        candidate = f"{stem} ({ordinal}){suffix}"
+        ordinal_suffix = f" ({ordinal}){suffix}"
+        bounded_stem = _bound_collision_stem(
+            stem=stem,
+            max_length=_MAX_FILENAME_LENGTH - len(ordinal_suffix),
+        )
+        candidate = f"{bounded_stem}{ordinal_suffix}"
         if candidate not in existing_names:
             return candidate
         ordinal += 1
+
+
+def _bound_collision_stem(*, stem: str, max_length: int) -> str:
+    if len(stem) <= max_length:
+        return stem
+
+    source_stem, separator, purpose_label = stem.rpartition(" - ")
+    preserved_label = f"{separator}{purpose_label}" if separator else ""
+    available_source_length = max_length - len(preserved_label)
+    if source_stem and available_source_length > 0:
+        return f"{source_stem[:available_source_length]}{preserved_label}"
+    return stem[:max_length]
 
 
 def _default_protocol_filename(

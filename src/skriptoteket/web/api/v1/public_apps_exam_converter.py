@@ -41,6 +41,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
 from skriptoteket.web.api.v1.public_apps import EXAM_CONVERTER_PUBLIC_API_NAMESPACE
 from skriptoteket.web.api.v1.public_apps_support import require_public_curated_app_capability
+from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_client_ip, get_correlation_id, get_user_agent
 
@@ -470,7 +471,7 @@ async def download_public_exam_converter_artifact(
         content=artifact.content,
         media_type=artifact.content_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{artifact.filename}"',
+            "Content-Disposition": attachment_content_disposition(filename=artifact.filename),
             "Cache-Control": "no-store",
         },
     )

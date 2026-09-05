@@ -19,9 +19,14 @@ from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
+from skriptoteket.application.curated_apps.handlers.document_converter_vault_saves import (
+    DocumentConverterVaultSaveService,
+)
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
+    SaveExamConverterLocalArtifactHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionIntentKind,
     ExamConverterCorrectionSession,
@@ -30,6 +35,7 @@ from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import 
     SourceBoundCorrectionIntent,
 )
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
+from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_conversion_artifacts import (
     FilesystemExamConversionArtifactStore,
 )
@@ -38,6 +44,15 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_re
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
+)
+from tests.fixtures.time_fixtures import FixedClock
+from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
+    SequenceIdGenerator,
+)
+from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+    InMemoryVaultFileRepository,
+    InMemoryVaultStorage,
+    InMemoryVaultUsageRepository,
 )
 
 
@@ -148,7 +163,7 @@ class SourceStateResult(BaseModel):
     source_authoring_state: SourceAuthoringState
 
 
-def _upload() -> ConversionHubUpload:
+def _upload(*, filename: str = "exam.dxe") -> ConversionHubUpload:
     payload = {
         "exams": [
             {
@@ -171,7 +186,7 @@ def _upload() -> ConversionHubUpload:
         ]
     }
     return ConversionHubUpload(
-        filename="exam.dxe",
+        filename=filename,
         content_type="application/octet-stream",
         file_bytes=json.dumps(payload).encode(),
     )
@@ -246,7 +261,7 @@ async def test_replay_projects_durable_point_correction_into_local_artifacts(
         pdf_renderer=WeasyPrintExamNetPdfRenderer(),
     )
     artifacts = FilesystemExamConversionArtifactStore(artifacts_root=tmp_path)
-    upload = _upload()
+    upload = _upload(filename="Samhällskunskap.slutprov.DXE")
     artifacts.store_artifact(
         job_id=job_id,
         artifact=await producer.convert(
@@ -265,6 +280,17 @@ async def test_replay_projects_durable_point_correction_into_local_artifacts(
         artifacts=artifacts,
         uow=FakeUow(),
     )
+    first_pass_manifest = await handler.manifest(actor=actor, job_id=job_id)
+    first_pass_entries = first_pass_manifest["artifacts"]
+    assert isinstance(first_pass_entries, list)
+    first_pass_filenames = {
+        str(entry["artifact_key"]): str(entry["filename"])
+        for entry in first_pass_entries
+        if isinstance(entry, dict)
+    }
+    assert first_pass_filenames["examnet_pdf"] == ("Samhällskunskap.slutprov - Exam.net.pdf")
+    assert first_pass_filenames["qti_package"] == "Samhällskunskap.slutprov - QTI.zip"
+
     source_state = await handler.source_state(actor=actor, job_id=job_id)
     issued = SourceStateResult.model_validate(source_state)
     binding = issued.source_binding
@@ -324,9 +350,120 @@ async def test_replay_projects_durable_point_correction_into_local_artifacts(
     review_ir = artifacts.read_named_artifact(job_id=job_id, artifact_key="ir_json")
     review_ir_payload = json.loads(review_ir.content)
 
+    replay_entries = manifest["artifacts"]
+    assert isinstance(replay_entries, list)
+    replay_filenames = {
+        str(entry["artifact_key"]): str(entry["filename"])
+        for entry in replay_entries
+        if isinstance(entry, dict)
+    }
     assert manifest["job_id"] == str(job_id)
+    assert replay_filenames["examnet_pdf"] == first_pass_filenames["examnet_pdf"]
+    assert replay_filenames["qti_package"] == first_pass_filenames["qti_package"]
     assert sessions.locked_jobs == [(actor.id, job_id)]
     assert effective_payload["items"][0]["effective_point_correction"]["effective_max_score"] == 3
     assert review_ir_payload["items"][0]["max_score"] == 3
     assert review_ir_payload["items"][0]["title"] == "Teacher title"
     assert review_ir_payload["items"][0]["answer_key"]["correct_alternative_ids"] == [1]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_max_length_targets_reach_manifest_and_mina_filer_collision(
+    tmp_path: Path,
+) -> None:
+    job_id = uuid4()
+    now = datetime(2026, 9, 5, tzinfo=UTC)
+    source_filename = f"{'x' * 251}.DXE"
+    actor = User(
+        id=uuid4(),
+        email="teacher@example.test",
+        role=Role.USER,
+        auth_provider=AuthProvider.HULEEDU,
+        created_at=now,
+        updated_at=now,
+    )
+    job = ConversionHubJob(
+        id=job_id,
+        owner_user_id=actor.id,
+        input_filename=source_filename,
+        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
+        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+        upstream_job_id=None,
+        status=ConversionHubJobStatus.SUCCEEDED,
+        created_at=now,
+        updated_at=now,
+    )
+    producer = InProcessExamConversionProducer(
+        qti_writer=ExamNetQtiPackageWriter(),
+        pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+    )
+    artifacts = FilesystemExamConversionArtifactStore(artifacts_root=tmp_path)
+    artifacts.store_artifact(
+        job_id=job_id,
+        artifact=await producer.convert(
+            job_id=job_id,
+            upload=_upload(filename=source_filename),
+            overlay_bytes=None,
+            correlation_id=None,
+        ),
+    )
+    product = ExamConverterProductHandler(
+        jobs=JobRepository(job),
+        sessions=SessionRepository(),
+        proposals=ProposalRepository(),
+        producer=producer,
+        artifacts=artifacts,
+        uow=FakeUow(),
+    )
+    manifest = await product.manifest(actor=actor, job_id=job_id)
+    entries = manifest["artifacts"]
+    assert isinstance(entries, list)
+    filenames = {
+        str(entry["artifact_key"]): str(entry["filename"])
+        for entry in entries
+        if isinstance(entry, dict)
+    }
+    assert len(artifacts.read_artifact(job_id=job_id).filename) == 270
+    assert len(filenames["examnet_pdf"]) == 255
+    assert len(filenames["qti_package"]) == 255
+
+    first_pdf_id = uuid4()
+    second_pdf_id = uuid4()
+    qti_id = uuid4()
+    vault_files = InMemoryVaultFileRepository()
+    save = SaveExamConverterLocalArtifactHandler(
+        product=product,
+        vault_saves=DocumentConverterVaultSaveService(
+            vault_files=vault_files,
+            vault_usage=InMemoryVaultUsageRepository(
+                usage=VaultUsage(user_id=actor.id, bytes_total=0, updated_at=now)
+            ),
+            vault_storage=InMemoryVaultStorage(),
+            uow=FakeUow(),
+            clock=FixedClock(now),
+            id_generator=SequenceIdGenerator([first_pdf_id, second_pdf_id, qti_id]),
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=1_000_000,
+                VAULT_MAX_TOTAL_BYTES=2_000_000,
+            ),
+        ),
+    )
+
+    first_pdf = await save.handle(actor=actor, job_id=job_id, artifact_key="examnet_pdf")
+    second_pdf = await save.handle(actor=actor, job_id=job_id, artifact_key="examnet_pdf")
+    qti = await save.handle(actor=actor, job_id=job_id, artifact_key="qti_package")
+
+    assert first_pdf.vault_artifact.name == filenames["examnet_pdf"]
+    assert second_pdf.vault_artifact.name == (
+        f"{'x' * (255 - len(' - Exam.net (2).pdf'))} - Exam.net (2).pdf"
+    )
+    assert len(second_pdf.vault_artifact.name) == 255
+    assert qti.vault_artifact.name == filenames["qti_package"]
+    assert len(qti.vault_artifact.name) == 255
+    assert vault_files.files[first_pdf_id].source_artifact_id == (
+        f"documents.conversion_hub:exam-converter:{job_id}:examnet_pdf"
+    )
+    assert vault_files.files[qti_id].source_artifact_id == (
+        f"documents.conversion_hub:exam-converter:{job_id}:qti_package"
+    )

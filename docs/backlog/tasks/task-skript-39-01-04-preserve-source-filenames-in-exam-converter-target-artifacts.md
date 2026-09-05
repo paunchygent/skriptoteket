@@ -4,18 +4,16 @@ id: TASK-SKRIPT-39-01-04
 title: Preserve source filenames in Exam Converter target artifacts
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-05'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- PDF and QTI artifacts downloaded or saved to Mina filer use sanitized filenames
-  derived from the original uploaded DigiExam filename across first-pass and correction-replay
-  paths
+  - PDF and QTI artifacts downloaded or saved to Mina filer use sanitized filenames derived from the original uploaded DigiExam filename across first-pass and correction-replay paths
 story: ST-SKRIPT-39-01
 backlog_document_profile: contract-derived
 ---
@@ -82,11 +80,11 @@ provider or LLM work.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | PDF and QTI filenames preserve the sanitized upload stem and append ` - Exam.net.pdf` or ` - QTI.zip`. |
-| T2 | One backend named-artifact policy governs first-pass, replay, authenticated/public downloads, and Mina filer saves. |
-| T3 | Long names truncate only the source stem; the complete filename stays within 255 characters and keeps its fixed target suffix. |
-| T4 | Existing Vault collision disambiguation remains unchanged. |
-| T5 | Artifact identity, bytes, outer bundle naming, bundle-internal names, and QTI validation bindings remain unchanged. |
-| T6 | The change adds no provider work, I/O, database migration, or frontend filename reconstruction. |
+| ID  | Decided contract term                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ |
+| T1  | PDF and QTI filenames preserve the sanitized upload stem and append ` - Exam.net.pdf` or ` - QTI.zip`.                         |
+| T2  | One backend named-artifact policy governs first-pass, replay, authenticated/public downloads, and Mina filer saves.            |
+| T3  | Long names truncate only the source stem; the complete filename stays within 255 characters and keeps its fixed target suffix. |
+| T4  | Existing Vault collision disambiguation remains unchanged.                                                                     |
+| T5  | Artifact identity, bytes, outer bundle naming, bundle-internal names, and QTI validation bindings remain unchanged.            |
+| T6  | The change adds no provider work, I/O, database migration, or frontend filename reconstruction.                                |

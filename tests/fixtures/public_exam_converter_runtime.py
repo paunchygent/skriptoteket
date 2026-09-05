@@ -7,6 +7,8 @@ from uuid import UUID
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConversionNamedArtifact,
     ExamConversionStoredArtifact,
+    build_examnet_pdf_filename,
+    build_examnet_qti_filename,
 )
 from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterJobStatus,
@@ -195,13 +197,13 @@ def local_public_exam_artifact(
         named_artifacts=(
             ExamConversionNamedArtifact(
                 artifact_key="examnet_pdf",
-                filename="examnet-import.pdf",
+                filename=build_examnet_pdf_filename(input_filename=source_dxe.filename),
                 content_type="application/pdf",
                 content=b"%PDF fake",
             ),
             ExamConversionNamedArtifact(
                 artifact_key="qti_package",
-                filename="qti-package.zip",
+                filename=build_examnet_qti_filename(input_filename=source_dxe.filename),
                 content_type="application/zip",
                 content=b"qti package",
             ),
@@ -210,7 +212,10 @@ def local_public_exam_artifact(
                 filename="target-readiness-report.json",
                 content_type="application/json",
                 content=(
-                    b'{"targets":[{"target":"examnet_pdf","item_id":null,"export_enabled":true}]}'
+                    b'{"targets":['
+                    b'{"target":"examnet_pdf","item_id":null,"export_enabled":true},'
+                    b'{"target":"qti_package","item_id":null,"export_enabled":true}'
+                    b"]}"
                 ),
             ),
             ExamConversionNamedArtifact(

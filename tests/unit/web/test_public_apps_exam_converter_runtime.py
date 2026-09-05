@@ -263,9 +263,13 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
     client.cookies.set("ambient_session", "ignored")
     response = await client.post(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
-        data={"targets_json": '["examnet_pdf"]'},
+        data={"targets_json": '["examnet_pdf", "qti_package"]'},
         files={
-            "source_dxe": ("exam.dxe", b'{"exam": true}', "application/octet-stream"),
+            "source_dxe": (
+                "Samhällskunskap slutprov.DXE",
+                b'{"exam": true}',
+                "application/octet-stream",
+            ),
             "graded_result_pdf": ("graded-result.pdf", b"%PDF fake", "application/pdf"),
         },
         headers={"X-Correlation-ID": "53f6d262-789c-4af4-a2c2-5ff5044d452f"},
@@ -275,21 +279,20 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
     payload = response.json()
     assert payload["public_job_id"] == "4f27d43f-7c2e-4c9c-a4df-2d799f88527a"
     assert payload["status"] == "queued"
-    assert payload["requested_targets"] == ["examnet_pdf"]
+    assert payload["requested_targets"] == ["examnet_pdf", "qti_package"]
     job_id = UUID(payload["public_job_id"])
     job = runtime.store.jobs[job_id]
     source_dxe = job.source_dxe
     graded_result_pdf = job.graded_result_pdf
     assert job.local_job_id == UUID("4f27d43f-7c2e-4c9c-a4df-2d799f88527a")
-    assert job.requested_targets == (PublicExamConverterTarget.EXAMNET_PDF,)
-    assert source_dxe.filename == "exam.dxe"
+    assert job.requested_targets == tuple(PublicExamConverterTarget)
+    assert source_dxe.filename == "Samhällskunskap slutprov.DXE"
     assert graded_result_pdf is not None
     assert graded_result_pdf.filename == "graded-result.pdf"
     assert job.correlation_id == "53f6d262-789c-4af4-a2c2-5ff5044d452f"
     assert "grant_token" not in PublicExamConverterSubmittedJob.__dataclass_fields__
     assert "upstream_job_id" not in PublicExamConverterSubmittedJob.__dataclass_fields__
     await runtime.complete(job_id=job_id)
-
     status_response = await client.get(
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
         "4f27d43f-7c2e-4c9c-a4df-2d799f88527a"
@@ -306,7 +309,10 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
         "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
         "4f27d43f-7c2e-4c9c-a4df-2d799f88527a/artifacts/examnet_pdf/download"
     )
-
+    qti_response = await client.get(
+        "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/"
+        "4f27d43f-7c2e-4c9c-a4df-2d799f88527a/artifacts/qti_package/download"
+    )
     assert status_response.status_code == 200
     assert status_response.json()["status"] == "succeeded"
     assert result_response.status_code == 200
@@ -333,10 +339,21 @@ async def test_public_exam_converter_submit_poll_manifest_and_download_use_local
         "/jobs/4f27d43f-7c2e-4c9c-a4df-2d799f88527a/artifacts/examnet_pdf/download"
     )
     assert "/v2/convert" not in manifest["artifacts"][0]["download_url"]
+    assert [entry["filename"] for entry in manifest["artifacts"][:2]] == [
+        "Samhällskunskap slutprov - Exam.net.pdf",
+        "Samhällskunskap slutprov - QTI.zip",
+    ]
     assert artifact_response.status_code == 200
     assert artifact_response.headers["content-type"] == "application/pdf"
     assert artifact_response.content.startswith(b"%PDF")
+    assert artifact_response.headers["content-disposition"] == (
+        "attachment; filename*=utf-8''Samh%C3%A4llskunskap%20slutprov%20-%20Exam.net.pdf"
+    )
     assert artifact_response.headers.get("set-cookie") is None
+    assert qti_response.headers["content-disposition"] == (
+        "attachment; filename*=utf-8''Samh%C3%A4llskunskap%20slutprov%20-%20QTI.zip"
+    )
+    assert qti_response.content == b"qti package"
 
 
 @pytest.mark.asyncio

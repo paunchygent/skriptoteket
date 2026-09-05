@@ -16,6 +16,7 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJob
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
+    ExamAnswerKeyProposedOverlay,
 )
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
@@ -27,7 +28,13 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
 from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
     CreateExamConverterConversionJobsHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
+    ExamConverterProductHandler,
+)
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    ExamConverterCorrectionSession,
+)
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
@@ -202,6 +209,60 @@ class RefusingEnrichmentJobRepository:
         return False
 
 
+class EmptyCorrectionSessionRepository:
+    async def get_by_owner_and_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> ExamConverterCorrectionSession | None:
+        del owner_user_id, conversion_hub_job_id
+        return None
+
+    async def get_by_owner_and_job_for_update(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> ExamConverterCorrectionSession | None:
+        del owner_user_id, conversion_hub_job_id
+        return None
+
+    async def lock_owned_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        conversion_hub_job_id: UUID,
+    ) -> None:
+        del owner_user_id, conversion_hub_job_id
+
+    async def save(
+        self,
+        *,
+        session: ExamConverterCorrectionSession,
+        expected_session_version: int,
+    ) -> ExamConverterCorrectionSession:
+        del expected_session_version
+        return session
+
+
+class EmptyProposalRepository:
+    async def create(
+        self,
+        *,
+        proposed_overlay: ExamAnswerKeyProposedOverlay,
+    ) -> ExamAnswerKeyProposedOverlay:
+        return proposed_overlay
+
+    async def get_by_conversion_job_id(
+        self,
+        *,
+        conversion_job_id: UUID,
+    ) -> ExamAnswerKeyProposedOverlay | None:
+        del conversion_job_id
+        return None
+
+
 class _StubCuratedAppRegistry(CuratedAppRegistryProtocol):
     def __init__(self, *, app: CuratedAppDefinition) -> None:
         self._app = app
@@ -251,6 +312,20 @@ class ExamConverterConversionsApiProvider(Provider):
             uow=UnitOfWorkStub(),
             clock=self._app_clock,
             id_generator=IdGeneratorStub(),
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_converter_product_handler(self) -> ExamConverterProductHandler:
+        return ExamConverterProductHandler(
+            jobs=self._jobs,
+            sessions=EmptyCorrectionSessionRepository(),
+            proposals=EmptyProposalRepository(),
+            producer=InProcessExamConversionProducer(
+                qti_writer=ExamNetQtiPackageWriter(),
+                pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            ),
+            artifacts=self._artifacts,
+            uow=UnitOfWorkStub(),
         )
 
     @provide(scope=Scope.REQUEST)
