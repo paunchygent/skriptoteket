@@ -115,6 +115,7 @@ material performance concern.
 - The focused frontend projection suite passed 35 tests; frontend typecheck, lint, and production build passed.
 - Repository lint, documentation validation, handoff validation, and diff whitespace validation passed. Full backend typecheck remains at the unrelated existing 10-error `script_bank` baseline.
 - The authenticated local browser path converted both unchanged teacher files, accepted the existing answer-key suggestions, downloaded PDF and QTI artifacts, and validated both QTI packages. The fractional source preserved `10.5` in PDF and QTI. The bounded final question-11 proof showed the exact numbered warning, downloaded both artifacts through the authenticated API, confirmed the exact visible placeholder in PDF and QTI, and confirmed that QTI item 11 contains no unresolved image resource.
+- Merge `066d51af` is deployed on Hemma. The canonical checkout matches that commit, production web and worker are healthy, public `/healthz` returns HTTP 200, and the running web image contains the exact placeholder copy.
 - Teacher source files remain outside the repository. Exam.net import acceptance remains user-coordinated.
 
 ## Stop Conditions

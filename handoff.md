@@ -1,11 +1,11 @@
 ## Current
 
 - [TASK-SKRIPT-39-01-02](docs/backlog/tasks/task-skript-39-01-02-preserve-decimal-scores-and-replace-missing-digiexam-images-with-visible-placeholders.md)
-  is implemented and locally proven with both unchanged teacher files. It
-  preserves fractional scores and repairs missing titles/images without extra
-  provider work or invalid QTI resources. Exam.net acceptance remains with the user.
+  is published and deployed at merge `066d51af`. Both unchanged teacher files
+  passed local proof; production web/worker are healthy and contain the exact
+  placeholder copy. Exam.net acceptance remains with the user.
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
-  remains unopened until Task 02 is published.
+  is next after Task 02 acceptance.
 - Production code merge `fab9412a` serves the corrected Exam Converter review flow.
   The canonical Hemma checkout follows published `main` and contains that merge;
   Skriptoteket web/worker are healthy, and public `/healthz` returns 200. The deploy applied
