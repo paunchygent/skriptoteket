@@ -72,3 +72,11 @@ conversion; it no longer covers the exam-conversion domain.
 - Follow-up work requiring separate backlog authority: EPIC-SKRIPT-39
   stories, sir-convert-a-lot exam-lane retirement tasks, and the sidecar
   retirement.
+
+## Proposed Amendment Pointer (not accepted)
+
+- Proposed ADR-SKRIPT-0091 would narrow only the "No exam-creator
+  authoring UI is authorized" non-decision above to the native editable
+  exam workspace slice (ST-SKRIPT-39-04). Until ADR-SKRIPT-0091 is
+  accepted, that non-decision stands unchanged; every other section of
+  this ADR is unaffected.

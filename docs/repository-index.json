@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2460d66644641f1ee323a830ad7a56e00c8b80d13eb061ae53937ae38da4f10d",
+  "source_set_digest": "4e6c8a95ad785592d6f4d01565d44673636e33732403a85140a4c6c5b96dc8a9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -557,7 +557,8 @@
       ],
       "links": {
         "decisions": [
-          "ADR-SKRIPT-0090"
+          "ADR-SKRIPT-0090",
+          "ADR-SKRIPT-0091"
         ]
       },
       "closeout_review": {
@@ -2168,6 +2169,30 @@
       ],
       "links": {
         "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-04",
+      "type": "story",
+      "title": "Native editable exam workspace with DOCX-first walking skeleton",
+      "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": [
+          "ADR-SKRIPT-0090",
+          "ADR-SKRIPT-0091"
+        ]
       },
       "closeout_review": {
         "record": "inline",
@@ -4372,6 +4397,25 @@
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-01",
+      "type": "task",
+      "title": "DOCX walking skeleton: import, native edit and create, save and reopen, export",
+      "path": "docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
       "owners": [
         {
           "kind": "service",
@@ -6671,6 +6715,25 @@
         "governing": [
           "EPIC-SKRIPT-39",
           "ADR-SKRIPT-0066"
+        ]
+      }
+    },
+    {
+      "id": "ADR-SKRIPT-0091",
+      "type": "adr",
+      "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
+      "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
+      "status": "proposed",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "governing": [
+          "EPIC-SKRIPT-39",
+          "ADR-SKRIPT-0090"
         ]
       }
     },
@@ -10175,7 +10238,23 @@
         "governed_contracts": [
           "EPIC-SKRIPT-39",
           "ST-SKRIPT-39-01",
-          "ST-SKRIPT-39-02"
+          "ST-SKRIPT-39-02",
+          "ST-SKRIPT-39-04"
+        ],
+        "supersedes": [],
+        "superseded_by": null
+      },
+      {
+        "id": "ADR-SKRIPT-0091",
+        "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
+        "status": "proposed",
+        "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
+        "governing": [
+          "EPIC-SKRIPT-39"
+        ],
+        "governed_contracts": [
+          "EPIC-SKRIPT-39",
+          "ST-SKRIPT-39-04"
         ],
         "supersedes": [],
         "superseded_by": null
