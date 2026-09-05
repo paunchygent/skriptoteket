@@ -47,20 +47,6 @@ vi.mock("../../api/examConverterLocal", () => ({
   submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
 }));
 
-vi.mock("../../api/sirConvertGateway", () => ({
-  applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
-  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact:
-    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact,
-  getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-  getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
-  issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
-  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-  saveDigiExamMigrationArtifactToUserFiles:
-    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-  submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
-}));
-
 async function chooseSourceFile(wrapper: ReturnType<typeof mount>) {
   const input = wrapper.find<HTMLInputElement>(
     '[data-test="exam-converter-source-file-input"]',

@@ -16,9 +16,12 @@
   ADR-0091/story review. Verbose prior history archived to
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 - [TASK-SKRIPT-39-03-03](docs/backlog/tasks/task-skript-39-03-03-retire-the-sir-convert-exam-specific-integration.md)
-  is `in_progress`: both consumers moved (03-01/03-02 `done`), so its stop
-  condition is met; cross-repo surfaces need linked authority in the owning
-  repo. Generic Sir extraction, OCR, and STT are preserved.
+  is `in_progress`: core local retirement already landed in `4225e62f`/`0bae2fe1`.
+  Final Sol review approved remaining dead exam-mock/docstring cleanup
+  (run `fb1e0f97-38f0-4b84-b68b-193826fc03fa`); 57 frontend and 15 backend
+  tests passed, generic Sir consumers unchanged. Full typecheck retains the
+  existing 10-error script_bank baseline. Sir `TASK-SIRCON-07-04-01` and Hule
+  `TASK-HULE-01-04-13` require owning-repo reconciliation before task closeout.
 - [TASK-SKRIPT-39-03-04](docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md)
   is `ready`, blocked until 03-03 plus last-consumer-moved proof. Its
   retirement is governed by 03-04; no live deployment state is asserted

@@ -6,7 +6,7 @@
  *   idempotency keys across route-specific conversion clients.
  *
  * Relationships:
- *   - Used by DigiExam and transcript request-context builders.
+ *   - Used by the transcript request-context builder.
  *   - Keeps transport clients free of hashing and canonical serialization
  *     details.
  */

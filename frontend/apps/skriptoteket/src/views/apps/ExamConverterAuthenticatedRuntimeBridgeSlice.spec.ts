@@ -69,22 +69,6 @@ const correctionSessionApiMocks = vi.hoisted(() => ({
   registerExamConverterConversionHubJob: vi.fn(),
 }));
 
-vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
-  return {
-    ...actual,
-    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
-    downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-    getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-    getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
-    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
-    listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-    saveDigiExamMigrationArtifactToUserFiles:
-      gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-    submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
-  };
-});
-
 vi.mock("../../api/examConverterCorrectionSessions", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../api/examConverterCorrectionSessions")>();
   return {
