@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d69d6346623e80c2bb71a6ee26c14c08850a23a584112893fce181aa81fda1a0",
+  "source_set_digest": "a45edd72df4c5c727904004b45abe4259305d98b7c196c86f39b0320a3e8ecf4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4216,7 +4216,7 @@
       "type": "task",
       "title": "Preserve source filenames in Exam Converter target artifacts",
       "path": "docs/backlog/tasks/task-skript-39-01-04-preserve-source-filenames-in-exam-converter-target-artifacts.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
@@ -4227,7 +4227,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "independent-reviewer",
+        "decided_at": "2026-09-05",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent review approved the source-derived PDF/QTI naming vertical after maximum-length outer-bundle and Vault-collision repairs plus RFC 5987 download-header handling; reviewed merge 3a1b7239 was deployed to Hemma and public job fc587793-3e9a-4cb6-9ba1-915034354211 proved the exact Unicode source-derived filenames and download headers."
       }
     },
     {

@@ -1,5 +1,8 @@
 ## Current
 
+- [TASK-SKRIPT-39-01-04](docs/backlog/tasks/task-skript-39-01-04-preserve-source-filenames-in-exam-converter-target-artifacts.md)
+  is approved, merged, deployed, and production-proven at `3a1b7239`; job
+  `fc587793-3e9a-4cb6-9ba1-915034354211` proved names/headers. Proof: session `01a071b4-b080-731c-8d40-1a77373ad9e0`.
 - [TASK-SKRIPT-39-01-02](docs/backlog/tasks/task-skript-39-01-02-preserve-decimal-scores-and-replace-missing-digiexam-images-with-visible-placeholders.md)
   is published and deployed at merge `066d51af`. Both unchanged teacher files
   passed local proof; production web/worker are healthy and contain the exact

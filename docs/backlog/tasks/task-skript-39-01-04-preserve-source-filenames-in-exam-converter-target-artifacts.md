@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-05'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: independent-reviewer
+  decided_at: '2026-09-05'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent review approved the source-derived PDF/QTI naming vertical after maximum-length outer-bundle and Vault-collision repairs plus RFC 5987 download-header handling; reviewed merge 3a1b7239 was deployed to Hemma and public job fc587793-3e9a-4cb6-9ba1-915034354211 proved the exact Unicode source-derived filenames and download headers.
 task_kind: story
 acceptance_criteria:
   - PDF and QTI artifacts downloaded or saved to Mina filer use sanitized filenames derived from the original uploaded DigiExam filename across first-pass and correction-replay paths
@@ -77,6 +81,33 @@ provider or LLM work.
 - Stop if the change alters target bytes, artifact keys, outer bundle naming,
   bundle-internal entry names, or QTI validation bindings.
 - Stop if any consumer adds an independent filename rewrite.
+
+## Closeout Evidence
+
+- Implementation commit `aab1031b` was independently approved and merged to
+  `main` as `3a1b7239`.
+- Focused filename, producer/replay, authenticated/public download,
+  Content-Disposition, Mina filer save/collision, and shared naming tests passed:
+  35 tests. Repository lint, docs validation, handoff validation, and
+  `git diff --check` passed. Typecheck retained exactly the unrelated existing
+  10-error `script_bank` baseline; frontend typecheck passed.
+- Hemma deployed `3a1b72390300d97245c3cac7e174bdff0a74103f`; web and worker
+  were healthy, migrations completed, the seating-export readiness gate passed,
+  and public `/healthz` returned HTTP 200.
+- Public production job `fc587793-3e9a-4cb6-9ba1-915034354211` used a
+  disposable synthetic keyed source named `Samhällskunskap slutprov.DXE`. It
+  completed without a teacher file or provider work, exposed
+  `Samhällskunskap slutprov - Exam.net.pdf` and
+  `Samhällskunskap slutprov - QTI.zip`, and returned matching RFC 5987 download
+  headers with non-empty artifacts.
+- Retained proof lives under session
+  `01a071b4-b080-731c-8d40-1a77373ad9e0` at
+  `evidence/live/TASK-SKRIPT-39-01-04/production/`; command captures `0001`–`0006`
+  record lint, focused tests, typecheck baseline, docs/handoff validation, and
+  production proof.
+- Residual risk: the pre-existing generic outer-bundle download route still uses
+  a quoted filename header for quote-containing source names. That route and
+  bundle filename behavior are outside this PDF/QTI target-artifact contract.
 
 ## Decided Contract Terms
 
