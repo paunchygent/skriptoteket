@@ -84,7 +84,10 @@ curated-app API as a switchable lane.
 3. `TASK-SKRIPT-39-01-03`: fulfil epic term E3 by degrading unknown DigiExam
    question types to reviewable, manually evaluated free text across PDF, QTI,
    and the authenticated review surface.
-4. Later tasks may add fixture-corpus parity breadth, lane-switch operator
+4. `TASK-SKRIPT-39-01-04`: derive PDF and QTI artifact filenames from the
+   uploaded DigiExam filename across first-pass/replay downloads and Mina filer
+   saves.
+5. Later tasks may add fixture-corpus parity breadth, lane-switch operator
    surfaces, or readiness-report alignment under their own accepted scope.
 
 ## Verification

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "99365fed12aa5a2cf008edf586889b712ac7919da823bc05597af96546495541",
+  "source_set_digest": "832eb02b2288231e8c27ac32ce937142dd74958fc5c0f58642b5a06762e926a6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4216,7 +4216,7 @@
       "type": "task",
       "title": "Preserve source filenames in Exam Converter target artifacts",
       "path": "docs/backlog/tasks/task-skript-39-01-04-preserve-source-filenames-in-exam-converter-target-artifacts.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
