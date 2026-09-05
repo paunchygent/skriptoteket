@@ -141,7 +141,7 @@ class ExamConverterProductHandler:
             bundle_status=str(manifest["bundle_status"]),
             artifact_count=len(artifact.named_artifacts),
             manual_follow_up_required=required,
-            warning_count=0,
+            warning_count=_stored_warning_count(artifact),
         )
 
     async def manifest(self, *, actor: User, job_id: UUID) -> dict[str, JsonValue]:
@@ -533,6 +533,19 @@ def _validate_candidate_lineage(intent: SourceBoundCorrectionIntent) -> None:
         or candidate_digest != intent.target.candidate_payload_digest
     ):
         raise validation_error("Candidate suppression lineage no longer matches its target.")
+
+
+def _stored_warning_count(artifact: ExamConversionStoredArtifact) -> int:
+    """Return the deterministic IR manifest warning count for stored artifacts."""
+
+    for named in artifact.named_artifacts:
+        if named.artifact_key != "migration_manifest":
+            continue
+        data = json.loads(named.content)
+        count = data.get("warning_count") if isinstance(data, dict) else None
+        if isinstance(count, int):
+            return count
+    return 0
 
 
 def _json_bytes(value: JsonValue) -> bytes:

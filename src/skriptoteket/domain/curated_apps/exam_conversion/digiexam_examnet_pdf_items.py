@@ -122,7 +122,7 @@ def _render_item(
     return strategy_result.item, strategy_result.warnings
 
 
-def _points(item: DigiExamIrItem) -> int | DigiExamExamNetPdfWarning:
+def _points(item: DigiExamIrItem) -> int | float | DigiExamExamNetPdfWarning:
     if item.max_score is None:
         return DigiExamExamNetPdfWarning(
             code=DigiExamExamNetPdfWarningCode.MISSING_POINT_VALUE,
@@ -135,7 +135,7 @@ def _points(item: DigiExamIrItem) -> int | DigiExamExamNetPdfWarning:
 def _adapt_digiexam_item_to_pdf_semantics(
     *,
     item: DigiExamIrItem,
-    points: int,
+    points: int | float,
     prompt_html: str,
 ) -> PdfExamItemSemantics:
     return PdfExamItemSemantics(

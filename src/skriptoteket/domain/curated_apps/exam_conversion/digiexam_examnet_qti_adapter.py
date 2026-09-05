@@ -25,6 +25,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIntermediateExam,
     DigiExamIrItem,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
+    PROMPT_IMAGE_PLACEHOLDER_LINE,
+    unresolved_prompt_image_position_count,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiEvaluationMode,
@@ -116,7 +120,7 @@ def _choice_item(
 
 def _free_text_item(item: DigiExamIrItem) -> ExamNetQtiItem:
     base_item = _base_qti_item(item, ExamNetQtiInteractionType.FREE_TEXT)
-    if item.max_score is None or item.max_score < 1:
+    if item.max_score is None or item.max_score <= 0:
         return replace(base_item, evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED)
     return replace(base_item, free_text_criterion_points=item.max_score)
 
@@ -130,7 +134,7 @@ def _base_qti_item(
         sequence=item.sequence,
         title=item.title,
         interaction_type=interaction_type,
-        prompt_lines=_prompt_lines(item),
+        prompt_lines=_prompt_lines_with_placeholder(item),
         max_score=item.max_score,
         source_item_type=item.item_type.value,
         image_resources=tuple(
@@ -208,6 +212,19 @@ def _prompt_lines(item: DigiExamIrItem) -> tuple[str, ...]:
     parser = _TextExtractor()
     parser.feed(item.prompt_html)
     return tuple(line for line in (" ".join(parser.parts).strip(),) if line)
+
+
+def _prompt_lines_with_placeholder(item: DigiExamIrItem) -> tuple[str, ...]:
+    """Return QTI prompt lines with a visible placeholder per missing image."""
+
+    lines = _prompt_lines(item)
+    missing_count = unresolved_prompt_image_position_count(
+        item.prompt_html,
+        (asset.source_image_index for asset in item.embedded_assets),
+    )
+    if missing_count == 0:
+        return lines
+    return (*lines, *((PROMPT_IMAGE_PLACEHOLDER_LINE,) * missing_count))
 
 
 def _safe_item_identifier(value: str) -> str:

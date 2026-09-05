@@ -181,78 +181,100 @@ def test_repeated_dxe_embedded_image_references_are_valid_ordered_references() -
     }
 
 
-def test_invalid_embedded_asset_base64_fails_closed_with_typed_warning() -> None:
+@pytest.mark.parametrize("invalid_payload", ["not valid base64", "aGVsbG8="])
+def test_referenced_invalid_embedded_asset_stays_exportable_with_placeholder_warning(
+    invalid_payload: str,
+) -> None:
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
-    payload["exams"][0]["questions"][0]["images"][0] = "not valid base64"
+    payload["exams"][0]["questions"][0]["images"][0] = invalid_payload
 
     result = DigiExamDxeParser().parse_payload(payload, filename="invalid-image.dxe")
 
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
+    assert result.status == DigiExamParseStatus.SUCCESS
+    assert result.renderer_ready is True
     assert result.items[0].embedded_assets == ()
-    assert DigiExamWarningCode.INVALID_EMBEDDED_ASSET_BASE64 in {
-        warning.code for warning in result.warnings
-    }
+    image_warnings = [
+        warning
+        for warning in result.items[0].warnings
+        if warning.code == DigiExamWarningCode.MISSING_PROMPT_IMAGE
+    ]
+    assert len(image_warnings) == 1
+    assert image_warnings[0].message == (
+        "Bilden i fråga 1 saknas. Lägg till den innan du använder provet."
+    )
+    warning_codes = {warning.code for warning in result.items[0].warnings}
+    assert DigiExamWarningCode.INVALID_EMBEDDED_ASSET_BASE64 not in warning_codes
+    assert DigiExamWarningCode.UNSUPPORTED_EMBEDDED_ASSET_MEDIA not in warning_codes
 
 
-def test_unsupported_embedded_asset_media_fails_closed_with_typed_warning() -> None:
+def test_missing_embedded_asset_reference_stays_exportable_with_item_warning() -> None:
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
-    payload["exams"][0]["questions"][0]["images"][0] = "aGVsbG8="
-
-    result = DigiExamDxeParser().parse_payload(payload, filename="unsupported-image.dxe")
-
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
-    assert result.items[0].embedded_assets == ()
-    assert DigiExamWarningCode.UNSUPPORTED_EMBEDDED_ASSET_MEDIA in {
-        warning.code for warning in result.warnings
-    }
-
-
-def test_missing_embedded_asset_reference_fails_closed_with_typed_warning() -> None:
-    payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
+    payload["exams"][0]["questions"][0]["images"] = []
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="1" /></p>'
 
     result = DigiExamDxeParser().parse_payload(payload, filename="missing-image-ref.dxe")
 
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
+    assert result.status == DigiExamParseStatus.SUCCESS
+    assert result.renderer_ready is True
     assert result.items[0].embedded_asset_references == ()
-    assert DigiExamWarningCode.MISSING_EMBEDDED_ASSET_REFERENCE in {
-        warning.code for warning in result.warnings
-    }
+    assert DigiExamWarningCode.MISSING_PROMPT_IMAGE in {warning.code for warning in result.warnings}
+    image_warning = next(
+        warning
+        for warning in result.items[0].warnings
+        if warning.code == DigiExamWarningCode.MISSING_PROMPT_IMAGE
+    )
+    assert image_warning.message == (
+        "Bilden i fråga 1 saknas. Lägg till den innan du använder provet."
+    )
+    assert all(
+        not warning.blocking
+        for warning in result.warnings
+        if warning.code == DigiExamWarningCode.MISSING_PROMPT_IMAGE
+    )
 
 
-def test_empty_embedded_asset_payloads_with_body_reference_fail_closed() -> None:
+def test_empty_embedded_asset_payloads_with_body_reference_stay_exportable() -> None:
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][0]["images"] = []
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="0" /></p>'
 
     result = DigiExamDxeParser().parse_payload(payload, filename="empty-images-ref.dxe")
 
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
+    assert result.status == DigiExamParseStatus.SUCCESS
+    assert result.renderer_ready is True
     assert result.items[0].embedded_assets == ()
     assert result.items[0].embedded_asset_references == ()
-    assert DigiExamWarningCode.MISSING_EMBEDDED_ASSET_REFERENCE in {
-        warning.code for warning in result.warnings
-    }
+    assert DigiExamWarningCode.MISSING_PROMPT_IMAGE in {warning.code for warning in result.warnings}
 
 
-def test_missing_embedded_asset_payloads_with_body_reference_fail_closed() -> None:
+def test_missing_embedded_asset_payloads_with_body_reference_stay_exportable() -> None:
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
     del payload["exams"][0]["questions"][0]["images"]
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="0" /></p>'
 
     result = DigiExamDxeParser().parse_payload(payload, filename="missing-images-ref.dxe")
 
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
+    assert result.status == DigiExamParseStatus.SUCCESS
+    assert result.renderer_ready is True
     assert result.items[0].embedded_assets == ()
     assert result.items[0].embedded_asset_references == ()
-    assert DigiExamWarningCode.MISSING_EMBEDDED_ASSET_REFERENCE in {
-        warning.code for warning in result.warnings
-    }
+    assert DigiExamWarningCode.MISSING_PROMPT_IMAGE in {warning.code for warning in result.warnings}
+
+
+def test_orphan_prompt_image_position_stays_exportable_with_item_warning() -> None:
+    payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
+    payload["exams"][0]["questions"][0]["images"] = []
+    payload["exams"][0]["questions"][0]["bodyHTML"] = (
+        '<p><img class="fr-fic"/></p><p>Rests of the prompt.</p>'
+    )
+
+    result = DigiExamDxeParser().parse_payload(payload, filename="orphan-image.dxe")
+
+    assert result.status == DigiExamParseStatus.SUCCESS
+    assert result.renderer_ready is True
+    assert result.items[0].embedded_assets == ()
+    assert result.items[0].embedded_asset_references == ()
+    assert DigiExamWarningCode.MISSING_PROMPT_IMAGE in {warning.code for warning in result.warnings}
 
 
 def test_unused_embedded_asset_payload_fails_closed_with_typed_warning() -> None:

@@ -267,6 +267,50 @@ def test_live_examnet_pdf_renderer_generates_pdf_with_embedded_image() -> None:
     assert page.images
 
 
+def test_live_pdf_preserves_fractional_points_title_fallback_and_image_positions() -> None:
+    exam = _exam_from_payload(
+        {
+            "exams": [
+                {
+                    "questions": [
+                        {
+                            "id": 1,
+                            "title": " ",
+                            "about": "",
+                            "bodyHTML": (
+                                "<p>Besvara frågan.</p>"
+                                '<p><img class="fr-fic"/></p>'
+                                '<p><img data-image-id="0"/></p>'
+                            ),
+                            "images": [],
+                            "maxScore": 0.25,
+                            "type": 0,
+                        }
+                    ]
+                }
+            ]
+        },
+        filename="fractional-missing-images.dxe",
+    )
+
+    document = build_digiexam_examnet_pdf_document(exam)
+
+    assert document.status == DigiExamExamNetPdfStatus.SUCCESS
+    assert exam.items[0].title == "Question 1"
+    assert "Poängvärde: 0.25" in document.html
+    assert document.html.count("Bild saknas – lägg till bilden innan du använder provet.") == 2
+    assert not any(warning.blocking for warning in document.warnings)
+
+    pdf_bytes = WeasyPrintExamNetPdfRenderer().render_pdf(document=document)
+    reader = PdfReader(BytesIO(pdf_bytes))
+    text = " ".join(page.extract_text() for page in reader.pages)
+
+    assert pdf_bytes.startswith(b"%PDF")
+    assert "Fråga 1" in text
+    assert "Poängvärde: 0.25" in text
+    assert text.count("Bild saknas") == 2
+
+
 def _exam_from_payload(payload: object, *, filename: str) -> DigiExamIntermediateExam:
     parse_result = DigiExamDxeParser().parse_payload(payload, filename=filename)
     return build_digiexam_intermediate_exam(parse_result)

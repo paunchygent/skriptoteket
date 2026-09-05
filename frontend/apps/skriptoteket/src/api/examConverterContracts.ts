@@ -24,6 +24,8 @@ export const DIGIEXAM_ITEM_TYPE_SINGLE_CHOICE = "single_choice" as const;
 export const DIGIEXAM_ITEM_TYPE_MULTIPLE_RESPONSE = "multiple_response" as const;
 export const DIGIEXAM_ITEM_TYPE_GAP_FILL = "gap_fill" as const;
 export const DIGIEXAM_ITEM_TYPE_UNKNOWN = "unknown" as const;
+export const DIGIEXAM_WARNING_MISSING_QUESTION_TITLE = "missing_question_title" as const;
+export const DIGIEXAM_WARNING_MISSING_PROMPT_IMAGE = "missing_prompt_image" as const;
 export const DIGIEXAM_ITEM_TYPES = [
   DIGIEXAM_ITEM_TYPE_OPEN_ENDED,
   DIGIEXAM_ITEM_TYPE_MULTIPLE_CHOICE,

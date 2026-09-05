@@ -17,7 +17,6 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
-import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -27,6 +26,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
     DigiExamSourceSpan,
     DigiExamWarning,
     DigiExamWarningCode,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
+    missing_prompt_image_message,
+    prompt_image_positions,
 )
 
 
@@ -44,13 +47,6 @@ class _ImageMetadata:
     media_type: str
     width_px: int
     height_px: int
-
-
-_IMG_TAG_PATTERN = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
-_DATA_IMAGE_ID_PATTERN = re.compile(
-    r"\bdata-image-id\s*=\s*(['\"])(?P<image_id>[^'\"]+)\1",
-    re.IGNORECASE,
-)
 
 
 def extract_digiexam_embedded_assets(
@@ -80,35 +76,32 @@ def extract_digiexam_embedded_assets(
         image_count=len(image_payloads),
         source_span=source_span,
     )
-    if not image_payloads:
-        return DigiExamEmbeddedAssetParse(
-            assets=(),
-            references=(),
-            warnings=reference_warnings,
-        )
 
     warnings: list[DigiExamWarning] = []
     assets_by_index: dict[int, DigiExamEmbeddedAsset] = {}
+    referenced_indexes = frozenset(references_by_index)
     for image_index, payload in enumerate(image_payloads):
         decoded = _decode_base64(payload)
         if decoded is None:
-            warnings.append(
-                _warning(
-                    DigiExamWarningCode.INVALID_EMBEDDED_ASSET_BASE64,
-                    f"Embedded image {image_index} is not valid base64.",
-                    source_span,
+            if image_index not in referenced_indexes:
+                warnings.append(
+                    _warning(
+                        DigiExamWarningCode.INVALID_EMBEDDED_ASSET_BASE64,
+                        f"Embedded image {image_index} is not valid base64.",
+                        source_span,
+                    )
                 )
-            )
             continue
         metadata = _image_metadata(decoded)
         if metadata is None:
-            warnings.append(
-                _warning(
-                    DigiExamWarningCode.UNSUPPORTED_EMBEDDED_ASSET_MEDIA,
-                    f"Embedded image {image_index} is not a supported PNG or JPEG payload.",
-                    source_span,
+            if image_index not in referenced_indexes:
+                warnings.append(
+                    _warning(
+                        DigiExamWarningCode.UNSUPPORTED_EMBEDDED_ASSET_MEDIA,
+                        f"Embedded image {image_index} is not a supported PNG or JPEG payload.",
+                        source_span,
+                    )
                 )
-            )
             continue
         digest = hashlib.sha256(decoded).hexdigest()
         assets_by_index[image_index] = DigiExamEmbeddedAsset(
@@ -125,6 +118,22 @@ def extract_digiexam_embedded_assets(
 
     warnings.extend(reference_warnings)
 
+    missing_image_warning = _missing_prompt_image_warning(
+        prompt_html=prompt_html,
+        assets_by_index=assets_by_index,
+        question_number=item_sequence,
+        source_span=source_span,
+    )
+    if missing_image_warning is not None:
+        warnings.append(missing_image_warning)
+
+    if not assets_by_index:
+        return DigiExamEmbeddedAssetParse(
+            assets=(),
+            references=(),
+            warnings=tuple(warnings),
+        )
+
     references: list[DigiExamEmbeddedAssetReference] = []
     for reference_order, image_index in enumerate(references_by_index, start=1):
         asset = assets_by_index.get(image_index)
@@ -138,7 +147,6 @@ def extract_digiexam_embedded_assets(
             )
         )
 
-    referenced_indexes = frozenset(references_by_index)
     for image_index in range(len(image_payloads)):
         if image_index not in referenced_indexes:
             warnings.append(
@@ -244,45 +252,48 @@ def _body_html_references(
 ) -> tuple[tuple[int, ...], tuple[DigiExamWarning, ...]]:
     references: list[int] = []
     warnings: list[DigiExamWarning] = []
-    if prompt_html is None:
-        return (), ()
 
-    for tag in _IMG_TAG_PATTERN.findall(prompt_html):
-        matches = _DATA_IMAGE_ID_PATTERN.findall(tag)
-        if len(matches) > 1:
+    for position in prompt_image_positions(prompt_html):
+        if position.ambiguous:
             warnings.append(
                 _warning(
                     DigiExamWarningCode.AMBIGUOUS_EMBEDDED_ASSET_BINDING,
-                    "An embedded image tag contains multiple data-image-id bindings.",
+                    "An embedded image tag has an ambiguous data-image-id binding.",
                     source_span,
                 )
             )
             continue
-        if not matches:
+        image_index = position.reference_index
+        if image_index is None:
             continue
-        image_id = matches[0][1]
-        if not image_id.isdecimal():
-            warnings.append(
-                _warning(
-                    DigiExamWarningCode.AMBIGUOUS_EMBEDDED_ASSET_BINDING,
-                    f"Embedded image reference '{image_id}' is not a non-negative integer.",
-                    source_span,
-                )
-            )
-            continue
-        image_index = int(image_id)
         if image_index >= image_count:
-            warnings.append(
-                _warning(
-                    DigiExamWarningCode.MISSING_EMBEDDED_ASSET_REFERENCE,
-                    f"Embedded image reference {image_index} has no matching images[] payload.",
-                    source_span,
-                )
-            )
             continue
         references.append(image_index)
 
     return tuple(references), tuple(warnings)
+
+
+def _missing_prompt_image_warning(
+    *,
+    prompt_html: str | None,
+    assets_by_index: dict[int, DigiExamEmbeddedAsset],
+    question_number: int,
+    source_span: DigiExamSourceSpan,
+) -> DigiExamWarning | None:
+    """Return the item-bound non-blocking canonical warning for an unresolved prompt image."""
+
+    if not any(
+        position.reference_index not in assets_by_index
+        for position in prompt_image_positions(prompt_html)
+        if not position.ambiguous
+    ):
+        return None
+    return DigiExamWarning(
+        code=DigiExamWarningCode.MISSING_PROMPT_IMAGE,
+        message=missing_prompt_image_message(question_number=question_number),
+        blocking=False,
+        source_span=source_span,
+    )
 
 
 def _warning(

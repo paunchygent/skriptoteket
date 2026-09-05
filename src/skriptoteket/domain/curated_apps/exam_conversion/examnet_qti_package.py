@@ -13,6 +13,7 @@ Relationships:
 from __future__ import annotations
 
 import hashlib
+import math
 import re
 from typing import Literal
 from xml.etree import ElementTree
@@ -175,7 +176,7 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     if not any(line.strip() for line in item.prompt_lines):
         errors.append(f"Item {item.item_id} has no prompt text.")
     if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
-        item.max_score is None or item.max_score < 1
+        item.max_score is None or not math.isfinite(item.max_score) or item.max_score <= 0
     ):
         errors.append(f"Item {item.item_id} needs a positive point value.")
     errors.extend(_choice_errors(item))

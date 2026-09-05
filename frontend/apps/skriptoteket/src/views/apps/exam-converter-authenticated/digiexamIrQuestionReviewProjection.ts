@@ -26,6 +26,8 @@ import {
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
   DIGIEXAM_MANUAL_FOLLOW_UP_PARSER_WARNING_BLOCKS_RENDERING,
   DIGIEXAM_MANUAL_FOLLOW_UP_UNSUPPORTED_ITEM_TYPE,
+  DIGIEXAM_WARNING_MISSING_PROMPT_IMAGE,
+  DIGIEXAM_WARNING_MISSING_QUESTION_TITLE,
 } from "../../../api/examConverterContracts";
 import type { ExamConverterLlmAnswerKeyCandidate } from "./digiexamAnswerKeyCompletionReport";
 
@@ -60,6 +62,11 @@ export type ExamConverterQuestionGap = {
   label: string;
 };
 
+export type ExamConverterReviewWarning = {
+  code: string;
+  message: string;
+};
+
 export type ExamConverterQuestionReviewRow = {
   itemId: string;
   itemType: DigiExamItemType;
@@ -71,6 +78,7 @@ export type ExamConverterQuestionReviewRow = {
   pointsLabel: string;
   promptText: string;
   missingFields: ExamConverterMissingFieldLabel[];
+  reviewWarnings: ExamConverterReviewWarning[];
   status: ExamConverterQuestionReviewStatus;
   statusSymbol: ExamConverterQuestionStatusSymbol;
   answerKeyReviewOrigin: string | null;
@@ -185,6 +193,28 @@ export function isOpenResponseItemType(itemType: string): boolean {
 
 function alternativeText(alternative: DigiExamIrAlternative): string {
   return stripHtml([alternative.title, alternative.about].filter(Boolean).join(" ")).trim();
+}
+
+const REVIEW_WARNING_CODES = new Set<string>([
+  DIGIEXAM_WARNING_MISSING_QUESTION_TITLE,
+  DIGIEXAM_WARNING_MISSING_PROMPT_IMAGE,
+]);
+
+export function isReviewWarningCode(code: string | unknown): code is string {
+  return typeof code === "string" && REVIEW_WARNING_CODES.has(code);
+}
+
+function reviewWarningsForItem(item: DigiExamIrItem): ExamConverterReviewWarning[] {
+  const warnings: ExamConverterReviewWarning[] = [];
+  for (const warning of item.warnings) {
+    const code = warning.code;
+    const message = warning.message;
+    if (!isReviewWarningCode(code) || typeof message !== "string" || message.length === 0) {
+      continue;
+    }
+    warnings.push({ code, message });
+  }
+  return warnings;
 }
 
 function projectAlternatives(item: DigiExamIrItem): ExamConverterQuestionAlternative[] {
@@ -455,6 +485,7 @@ export function projectQuestionReviewRow(
     manualFollowUpMessages: resolvedFollowUps
       .map((followUp) => followUp.message)
       .filter((message) => message.length > 0),
+    reviewWarnings: reviewWarningsForItem(item),
     alternatives: projectAlternatives(item),
     gaps: projectGaps(item),
     lucktextStructure: projectLucktextStructure(item),

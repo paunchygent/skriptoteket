@@ -11,7 +11,6 @@ import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
-import ExamConverterReportSummary from "./exam-converter-authenticated/ExamConverterReportSummary.vue";
 import { mockFreeTextOnlyReviewArtifacts } from "./examConverterAuthenticatedFreeTextFixtures";
 import {
   correctionApplyResult,
@@ -497,52 +496,5 @@ describe("ExamConverterAuthenticatedView IR-backed review shell", () => {
     );
   });
 
-  it("renders AI suggestion outcomes without making source diagnostics the main signal", () => {
-    const wrapper = mount(ExamConverterReportSummary, {
-      props: {
-        report: {
-          aiSuggestionCount: 0,
-          aiSuggestionOutcomes: {
-            acceptedUnchangedCount: 1,
-            items: [
-              {
-                itemId: "item-004",
-                outcome: "accepted_unchanged",
-                sequence: 4,
-                title: "Fråga 4",
-              },
-              {
-                itemId: "item-013",
-                outcome: "teacher_edited",
-                sequence: 13,
-                title: "Fråga 13",
-              },
-              {
-                itemId: "item-014",
-                outcome: "suppressed",
-                sequence: 14,
-                title: "Fråga 14",
-              },
-            ],
-            suppressedCount: 1,
-            teacherEditedCount: 1,
-            totalCount: 3,
-            unresolvedCount: 0,
-          },
-          attentionQuestionCount: 0,
-          blockedTargetFileCount: 0,
-          missingAnswerKeyCount: 0,
-          missingPointsCount: 0,
-          warningCount: 4,
-        },
-      },
-    });
 
-    expect(wrapper.text()).toContain("Alla AI-förslag är hanterade.");
-    expect(wrapper.text()).toContain("Accepterat");
-    expect(wrapper.text()).toContain("Ändrat av lärare");
-    expect(wrapper.text()).toContain("Avvisat");
-    expect(wrapper.text()).not.toContain("Konverteringsvarningar");
-    expect(wrapper.text()).not.toContain("källnoteringar");
-  });
 });

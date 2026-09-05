@@ -108,6 +108,7 @@ function question(overrides: Partial<ExamConverterQuestionReviewRow> = {}): Exam
     },
     lucktextStructure: null,
     manualFollowUpMessages: [],
+    reviewWarnings: [],
     missingFields: ["Facit"],
     pointsLabel: "1 p",
     pointsValue: 1,

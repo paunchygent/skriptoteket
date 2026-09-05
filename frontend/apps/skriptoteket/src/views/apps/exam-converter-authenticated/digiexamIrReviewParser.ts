@@ -27,6 +27,8 @@ import {
   DIGIEXAM_ITEM_TYPES,
   DIGIEXAM_MANUAL_FOLLOW_UP_MANUAL_ANSWER_KEY_REQUIRED,
   DIGIEXAM_TARGET_NEEDS_TEACHER_ANSWER_KEY,
+  DIGIEXAM_WARNING_MISSING_PROMPT_IMAGE,
+  DIGIEXAM_WARNING_MISSING_QUESTION_TITLE,
   EXAM_CONVERTER_ARTIFACT_AVAILABLE,
 } from "../../../api/examConverterContracts";
 import {
@@ -49,6 +51,7 @@ import {
   type DigiExamIrItem,
   type DigiExamIrManualFollowUp,
   type ExamConverterQuestionReviewRow,
+  type ExamConverterReviewWarning,
 } from "./digiexamIrQuestionReviewProjection";
 import type {
   ExamConverterAnswerKeyCompletionReport,
@@ -65,6 +68,7 @@ export type {
   ExamConverterQuestionGap,
   ExamConverterQuestionReviewRow,
   ExamConverterQuestionReviewStatus,
+  ExamConverterReviewWarning,
 } from "./digiexamIrQuestionReviewProjection";
 
 export type ExamConverterInspectionMode = "questions" | "files" | "report";
@@ -126,13 +130,23 @@ export type ExamConverterAiSuggestionReport = {
   unresolvedCount: number;
 };
 
+export type ExamConverterSourceRepairQuestion = {
+  itemId: string;
+  sequence: number;
+  title: string;
+  reviewWarnings: ExamConverterReviewWarning[];
+};
+
 export type ExamConverterReportProjection = {
   attentionQuestionCount: number;
   aiSuggestionOutcomes: ExamConverterAiSuggestionReport;
   aiSuggestionCount: number;
   blockedTargetFileCount: number;
   missingAnswerKeyCount: number;
+  missingImageCount: number;
   missingPointsCount: number;
+  missingTitleCount: number;
+  sourceRepairQuestions: ExamConverterSourceRepairQuestion[];
   warningCount: number;
 };
 
@@ -626,6 +640,14 @@ export function parseExamConverterReviewProjection(params: {
   const missingDataQuestionCount = questions.filter(
     (question) => question.missingFields.length > 0,
   ).length;
+  const sourceRepairQuestions = questions
+    .filter((question) => question.reviewWarnings.length > 0)
+    .map((question) => ({
+      itemId: question.itemId,
+      sequence: question.sequence,
+      title: question.title,
+      reviewWarnings: question.reviewWarnings,
+    }));
   const validAiSuggestionCount = questions.filter(hasUsableCompletionCandidate).length;
   const compactActionableCount = countActionableAnswerKeyRows(producerReviewState);
   const hasQuestionReview = compactActionableCount > 0 || missingDataQuestionCount > 0;
@@ -650,9 +672,20 @@ export function parseExamConverterReviewProjection(params: {
       missingAnswerKeyCount: questions.filter((question) =>
         question.missingFields.includes("Facit"),
       ).length,
+      missingImageCount: questions.filter((question) =>
+        question.reviewWarnings.some(
+          (warning) => warning.code === DIGIEXAM_WARNING_MISSING_PROMPT_IMAGE,
+        ),
+      ).length,
       missingPointsCount: questions.filter((question) =>
         question.missingFields.includes("Poäng"),
       ).length,
+      missingTitleCount: questions.filter((question) =>
+        question.reviewWarnings.some(
+          (warning) => warning.code === DIGIEXAM_WARNING_MISSING_QUESTION_TITLE,
+        ),
+      ).length,
+      sourceRepairQuestions,
       warningCount: Math.max(manifest.warningCount, exam.warnings.length),
     },
     defaultMode: hasQuestionReview || validAiSuggestionCount > 0 ? "questions" : "files",

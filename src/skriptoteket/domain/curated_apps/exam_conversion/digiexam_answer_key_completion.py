@@ -37,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompt
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
     DigiExamItemType,
+    DigiExamWarningCode,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay_contracts import (
     DigiExamIngestionOverlay,
@@ -68,6 +69,12 @@ _CHOICE_ITEM_TYPES = frozenset(
         DigiExamItemType.SINGLE_CHOICE,
         DigiExamItemType.MULTIPLE_CHOICE,
         DigiExamItemType.MULTIPLE_RESPONSE,
+    }
+)
+_SOURCE_REPAIR_WARNING_CODES = frozenset(
+    {
+        DigiExamWarningCode.MISSING_PROMPT_IMAGE,
+        DigiExamWarningCode.MISSING_QUESTION_TITLE,
     }
 )
 
@@ -185,7 +192,10 @@ def item_is_enrichable(item: DigiExamIrItem) -> bool:
 
     if item.answer_key.provenance != DigiExamAnswerKeyProvenance.ABSENT:
         return False
-    if any(warning.blocking for warning in item.warnings):
+    if any(
+        warning.blocking or warning.code in _SOURCE_REPAIR_WARNING_CODES
+        for warning in item.warnings
+    ):
         return False
     if item.embedded_assets or item.embedded_asset_references:
         return False

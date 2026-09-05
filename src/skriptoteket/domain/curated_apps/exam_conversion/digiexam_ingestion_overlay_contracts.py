@@ -11,11 +11,20 @@ Relationships:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictFloat,
+    StrictInt,
+    field_validator,
+    model_validator,
+)
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import DigiExamItemType
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
@@ -200,7 +209,14 @@ class DigiExamOverlayPointCorrection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["item_points"]
-    max_score: int = Field(gt=0, strict=True)
+    max_score: Annotated[StrictInt | StrictFloat, Field(gt=0)]
+
+    @field_validator("max_score")
+    @classmethod
+    def _validate_finite_max_score(cls, value: int | float) -> int | float:
+        if not math.isfinite(value):
+            raise ValueError("max_score must be finite")
+        return value
 
 
 class DigiExamIngestionOverlayItem(BaseModel):
@@ -276,8 +292,8 @@ class DigiExamEffectivePointCorrection:
     """Applied item point correction surfaced for producer-state projection."""
 
     kind: str
-    source_max_score: int | None
-    effective_max_score: int
+    source_max_score: int | float | None
+    effective_max_score: int | float
     source_item_fingerprint: str
 
 

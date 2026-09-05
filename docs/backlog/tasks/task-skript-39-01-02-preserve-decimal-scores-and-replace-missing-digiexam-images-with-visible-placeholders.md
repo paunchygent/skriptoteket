@@ -4,20 +4,16 @@ id: TASK-SKRIPT-39-01-02
 title: Preserve decimal scores and recover missing DigiExam titles and images
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-04'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Valid decimal point values pass unchanged through the neutral exam model into QTI
-  without warnings, while a missing question title uses the existing deterministic
-  fallback and unresolved DigiExam image references produce a valid visible per-item
-  placeholder; both recoverable source defects emit simple Swedish review information
-  instead of failing the conversion
+  - Valid decimal point values pass unchanged through the neutral exam model into QTI without warnings, while a missing question title uses the existing deterministic fallback and unresolved DigiExam image references produce a valid visible per-item placeholder; both recoverable source defects emit simple Swedish review information instead of failing the conversion
 story: ST-SKRIPT-39-01
 backlog_document_profile: contract-derived
 ---
@@ -113,6 +109,14 @@ material performance concern.
 - Close documentation with `pdm run handoff-validate`,
   `pdm run docs-validate`, and `git diff --check`.
 
+## Implementation Evidence
+
+- The final focused backend suite passed 149 tests across the complete exam-conversion domain and product handlers.
+- The focused frontend projection suite passed 35 tests; frontend typecheck, lint, and production build passed.
+- Repository lint, documentation validation, handoff validation, and diff whitespace validation passed. Full backend typecheck remains at the unrelated existing 10-error `script_bank` baseline.
+- The authenticated local browser path converted both unchanged teacher files, accepted the existing answer-key suggestions, downloaded PDF and QTI artifacts, and validated both QTI packages. The fractional source preserved `10.5` in PDF and QTI. The bounded final question-11 proof showed the exact numbered warning, downloaded both artifacts through the authenticated API, confirmed the exact visible placeholder in PDF and QTI, and confirmed that QTI item 11 contains no unresolved image resource.
+- Teacher source files remain outside the repository. Exam.net import acceptance remains user-coordinated.
+
 ## Stop Conditions
 
 - Stop if any layer rounds, truncates, or silently rewrites a valid fractional
@@ -128,12 +132,12 @@ material performance concern.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | Valid positive fractional point values are preserved end to end and emit no warning. |
-| T2 | A visible prompt image position without a usable embedded image becomes a visible QTI-valid placeholder and does not fail the item or conversion. |
-| T3 | The missing-image condition remains an item-bound non-blocking warning with simple reusable Swedish teacher text and an explicit add-the-image next action. |
-| T4 | The authenticated question view shows the item message, the report summarizes affected questions, and PDF/QTI artifacts remain exportable with the placeholder. |
-| T5 | Both repairs are deterministic and provider-free; no LLM-based repair, extra provider call, or extra enrichment job is introduced. |
-| T6 | Other parser relaxations and unreferenced image-payload policy are outside this task; supplied teacher files remain uncommitted and minimal synthetic fixtures carry regression coverage. |
-| T7 | A missing or blank question title uses the existing deterministic `Question N` fallback, emits an item-bound non-blocking Swedish review warning, and does not block export. |
+| ID  | Decided contract term                                                                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | Valid positive fractional point values are preserved end to end and emit no warning.                                                                                                      |
+| T2  | A visible prompt image position without a usable embedded image becomes a visible QTI-valid placeholder and does not fail the item or conversion.                                         |
+| T3  | The missing-image condition remains an item-bound non-blocking warning with simple reusable Swedish teacher text and an explicit add-the-image next action.                               |
+| T4  | The authenticated question view shows the item message, the report summarizes affected questions, and PDF/QTI artifacts remain exportable with the placeholder.                           |
+| T5  | Both repairs are deterministic and provider-free; no LLM-based repair, extra provider call, or extra enrichment job is introduced.                                                        |
+| T6  | Other parser relaxations and unreferenced image-payload policy are outside this task; supplied teacher files remain uncommitted and minimal synthetic fixtures carry regression coverage. |
+| T7  | A missing or blank question title uses the existing deterministic `Question N` fallback, emits an item-bound non-blocking Swedish review warning, and does not block export.              |

@@ -66,7 +66,7 @@ class PdfExamItemSemantics:
     item_id: str
     sequence: int
     kind: PdfExamItemKind
-    points: int
+    points: int | float
     prompt_html: str
     source_item_type_label: str | None = None
     options: tuple[PdfExamOptionSemantics, ...] = ()
