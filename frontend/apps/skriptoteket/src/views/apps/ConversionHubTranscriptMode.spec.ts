@@ -47,22 +47,11 @@ vi.mock("../../api/examConverterLocal", () => ({
 
 vi.mock("../../api/sirConvertGateway", () => ({
   SIR_CONVERT_ARTIFACT_AVAILABLE: "available",
-  applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
   cancelTranscriptJob: gatewayMocks.cancelTranscriptJob,
-  downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-  downloadDigiExamMigrationCorrectionReplayArtifact:
-    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact,
   downloadTranscriptJson: gatewayMocks.downloadTranscriptJson,
-  getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-  getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
   getTranscriptJob: gatewayMocks.getTranscriptJob,
   getTranscriptResult: gatewayMocks.getTranscriptResult,
-  issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
-  listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
   listTranscriptArtifacts: gatewayMocks.listTranscriptArtifacts,
-  saveDigiExamMigrationArtifactToUserFiles:
-    gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-  submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
   submitTranscriptJob: gatewayMocks.submitTranscriptJob,
 }));
 

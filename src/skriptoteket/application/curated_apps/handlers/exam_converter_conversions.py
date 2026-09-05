@@ -8,9 +8,9 @@ Purpose:
 
 Relationships:
     Reuses the Conversion Hub local job ledger and the in-process Exam
-    Converter producer/artifact-store protocols. The lane switch defaults to
-    the accepted authenticated in-process cutover while retaining an explicit
-    Sir selection until that lane's governed retirement.
+    Converter producer/artifact-store protocols. Skriptoteket-owned
+    in-process execution is the single exam-conversion path; the Sir
+    exam lane retired under TASK-SKRIPT-39-03-03.
 """
 
 from __future__ import annotations

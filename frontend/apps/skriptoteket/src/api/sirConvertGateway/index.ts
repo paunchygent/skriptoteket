@@ -3,12 +3,12 @@
  *
  * Purpose:
  *   Export the small protocol-shaped pieces used by Skriptoteket's
- *   authenticated DigiExam migration flow.
+ *   authenticated transcript conversion flow.
  *
  * Relationships:
  *   - Consumers import from this folder instead of reaching into submodules.
  *   - Submodules remain split by contract, request context, transport, and
- *     save-metadata responsibilities.
+ *     parsing responsibilities.
  */
 
 export * from "./client";

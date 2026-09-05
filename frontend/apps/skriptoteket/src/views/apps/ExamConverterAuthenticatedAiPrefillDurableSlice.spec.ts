@@ -57,22 +57,6 @@ const correctionSessionApiMocks = vi.hoisted(() => ({
 }));
 const correctionSessionRecorder = createCorrectionSessionRecorder();
 
-vi.mock("../../api/sirConvertGateway", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../api/sirConvertGateway")>();
-  return {
-    ...actual,
-    applyExamAuthoringCorrections: gatewayMocks.applyExamAuthoringCorrections,
-    downloadDigiExamMigrationArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-    getDigiExamMigrationJob: gatewayMocks.getDigiExamMigrationJob,
-    getDigiExamMigrationResult: gatewayMocks.getDigiExamMigrationResult,
-    issueExamAuthoringCorrectionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
-    listDigiExamMigrationArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-    saveDigiExamMigrationArtifactToUserFiles:
-      gatewayMocks.saveDigiExamMigrationArtifactToUserFiles,
-    submitDigiExamMigration: gatewayMocks.submitDigiExamMigration,
-  };
-});
-
 vi.mock("../../api/examConverterCorrectionSessions", () => ({
   getExamConverterCorrectionSession: correctionSessionApiMocks.getExamConverterCorrectionSession,
   registerExamConverterConversionHubJob:
