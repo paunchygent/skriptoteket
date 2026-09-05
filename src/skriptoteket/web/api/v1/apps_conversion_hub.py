@@ -75,6 +75,7 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     require_conversion_hub_access,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 from skriptoteket.web.uploads import read_upload_files
@@ -377,7 +378,7 @@ async def download_exam_converter_named_artifact(
         content=artifact.content,
         media_type=artifact.content_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{artifact.filename}"',
+            "Content-Disposition": attachment_content_disposition(filename=artifact.filename),
             "Cache-Control": "no-store",
         },
     )

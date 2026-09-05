@@ -9,7 +9,11 @@ from uuid import UUID
 
 from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.exam_conversion import ExamConversionNamedArtifact
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConversionNamedArtifact,
+    build_examnet_pdf_filename,
+    build_examnet_qti_filename,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     CHOICE_PROMPT_TEMPLATE_VERSION,
     GAP_FILL_PROMPT_TEMPLATE_VERSION,
@@ -87,8 +91,18 @@ def build_review_named_artifacts(
         source_exam=source_exam,
     )
     artifacts = [
-        _named("examnet_pdf", "examnet-import.pdf", "application/pdf", pdf_bytes),
-        _named("qti_package", "qti-package.zip", "application/zip", qti_package_bytes),
+        _named(
+            "examnet_pdf",
+            build_examnet_pdf_filename(input_filename=source_exam.source_filename),
+            "application/pdf",
+            pdf_bytes,
+        ),
+        _named(
+            "qti_package",
+            build_examnet_qti_filename(input_filename=source_exam.source_filename),
+            "application/zip",
+            qti_package_bytes,
+        ),
         _named(
             "qti_validation_report",
             "qti-validation-report.json",

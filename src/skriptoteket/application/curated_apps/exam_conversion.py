@@ -21,10 +21,16 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJob,
     ConversionHubJobStatus,
 )
+from skriptoteket.domain.errors import validation_error
+from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 
 EXAMNET_BUNDLE_QTI_PACKAGE_FILENAME = "qti-package.zip"
 EXAMNET_BUNDLE_PDF_FILENAME = "examnet-import.pdf"
 EXAMNET_BUNDLE_QTI_VALIDATION_REPORT_FILENAME = "qti-validation-report.json"
+_MAX_FILENAME_LENGTH = 255
+_MAX_EXAMNET_BUNDLE_FILENAME_LENGTH = 270
+_EXAMNET_PDF_FILENAME_SUFFIX = " - Exam.net.pdf"
+_EXAMNET_QTI_FILENAME_SUFFIX = " - QTI.zip"
 
 
 class ExamConversionStoredArtifact(BaseModel):
@@ -32,7 +38,7 @@ class ExamConversionStoredArtifact(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    filename: str = Field(min_length=1, max_length=255)
+    filename: str = Field(min_length=1, max_length=_MAX_EXAMNET_BUNDLE_FILENAME_LENGTH)
     content_type: str = Field(min_length=1, max_length=255)
     content: bytes = Field(min_length=1)
     source_filename: str = Field(min_length=1, max_length=255)
@@ -71,3 +77,29 @@ def build_examnet_bundle_filename(*, input_filename: str) -> str:
     """Build the downloadable bundle filename for one converted `.dxe` upload."""
     stem = input_filename.rsplit(".", 1)[0] if "." in input_filename else input_filename
     return f"{stem}-examnet-bundle.zip"
+
+
+def build_examnet_pdf_filename(*, input_filename: str) -> str:
+    """Build a source-identifying filename for the Exam.net PDF target."""
+    return _build_examnet_target_filename(
+        input_filename=input_filename,
+        suffix=_EXAMNET_PDF_FILENAME_SUFFIX,
+    )
+
+
+def build_examnet_qti_filename(*, input_filename: str) -> str:
+    """Build a source-identifying filename for the QTI package target."""
+    return _build_examnet_target_filename(
+        input_filename=input_filename,
+        suffix=_EXAMNET_QTI_FILENAME_SUFFIX,
+    )
+
+
+def _build_examnet_target_filename(*, input_filename: str, suffix: str) -> str:
+    safe_filename = sanitize_input_filename(input_filename=input_filename)
+    source_stem = safe_filename[:-4] if safe_filename.casefold().endswith(".dxe") else safe_filename
+    if not source_stem:
+        raise validation_error("DigiExam source filename must include a stem.")
+    available_stem_length = _MAX_FILENAME_LENGTH - len(suffix)
+    bounded_stem = source_stem[:available_stem_length]
+    return sanitize_input_filename(input_filename=f"{bounded_stem}{suffix}")
