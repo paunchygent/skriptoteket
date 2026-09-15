@@ -33,6 +33,13 @@ repos:
         files: \.(sh|bash)$
         pass_filenames: true
 
+      - id: markdownlint-config-drift
+        name: Markdownlint ruleset drift
+        entry: pdm run markdownlint-config-drift-check
+        language: system
+        files: ^\.markdownlint\.json$
+        pass_filenames: false
+
       - id: docs-contract-validate
         name: Docs contract validate (placement + naming + frontmatter)
         entry: pdm run docs-validate
