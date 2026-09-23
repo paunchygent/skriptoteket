@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4e6c8a95ad785592d6f4d01565d44673636e33732403a85140a4c6c5b96dc8a9",
+  "source_set_digest": "6e2632f1dc92b9875f7e05d0390489ab9242107b74bf822d4994df7658b9c5a4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5236,6 +5236,24 @@
         "decided_at": "2026-08-30T06:33:23+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Retained terminal verification .orchestration/context/sessions/01a04755-7262-77e3-982e-fa8466918b4d/evidence/reviews/TASK-SKRIPT-REP-0032/terminal-spec-verification.md verified the implementation published on main at 3b1b1f92db35e64b9a46ae828f15c4eae6cde857"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0033",
+      "type": "task",
+      "title": "Adopt the shared design-system sync command",
+      "path": "docs/backlog/tasks/task-skript-rep-0033-adopt-the-shared-design-system-sync-command.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
