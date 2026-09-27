@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a6605430e0f0777255cffa8136332812e5afa45956fb5765d2b6735ca173e447",
+  "source_set_digest": "f2e23374e5cae593b4123774060aa5c56501852585928b41986a09d2180ff3c2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -636,6 +636,21 @@
       "path": "docs/backlog/reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md",
       "status": "changes_requested",
       "target": "TASK-SKRIPT-REP-0024",
+      "gate": "closeout",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REV-SKRIPT-EPIC-40-CLOSEOUT",
+      "type": "review",
+      "title": "Shared design-system convergence",
+      "path": "docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md",
+      "status": "changes_requested",
+      "target": "EPIC-SKRIPT-40",
       "gate": "closeout",
       "owners": [
         {

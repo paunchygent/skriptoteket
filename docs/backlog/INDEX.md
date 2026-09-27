@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | epic=40 | story=324 | task=0 | review=136
+- total | epic=40 | story=324 | task=0 | review=137
 - open | epic=18 | story=61 | task=0
 
 ## Lookup
@@ -493,6 +493,7 @@
 - review | REV-PR-0410 | [Review: PR-0410 Exam Converter correction replay artifact-set consumer](reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md) | target=none
 - review | REV-PR-0411 | [Review: PR-0411 Mina filer R2 storage migration planning](reviews/review-pr-0411-mina-filer-r2-storage-migration-planning.md) | target=none
 - review | REV-PR-0412 | [Review: PR-0412 Mina filer File Service consumer task split](reviews/review-pr-0412-mina-filer-file-service-consumer-task-split.md) | target=none
+- review | REV-SKRIPT-EPIC-40-CLOSEOUT | [Shared design-system convergence](reviews/review-epic-40-shared-design-system-convergence.md) | target=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md)
 - review | REV-SKRIPT-ST-08-27-CLOSEOUT | [Review: ST-SKRIPT-08-27 editor chat virtual file context retention + tokenizers](reviews/rev-skript-st-08-27-closeout-review-st-08-27-editor-chat-virtual-file-context-retention-tokenizers.md) | target=[ST-SKRIPT-08-27](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md)
 - review | REV-SKRIPT-TASK-REP-0006-CLOSEOUT | [Review: TASK-SKRIPT-REP-0006 implementation closeout](reviews/review-task-skript-rep-0006-implementation-closeout.md) | target=TASK-SKRIPT-REP-0006
 - review | REV-SKRIPT-TASK-REP-0024-CLOSEOUT | [Review: PR-0314 solver-owned rule marker semantics](reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md) | target=TASK-SKRIPT-REP-0024
