@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c397e01ccc8aa2e40bd737a49660653186a0cae166b9e3292bc8e54ace90b30d",
+  "source_set_digest": "66ab6aa76f5a31f2f95ba3a07dcb6476afe1db9cfc9e8e0b18df7ec633d64e3c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4509,7 +4509,7 @@
       "type": "task",
       "title": "Adopt the shared tokens, theme and logo through design-system sync",
       "path": "docs/backlog/tasks/task-skript-40-01-01-adopt-the-shared-tokens-theme-and-logo-through-design-system-sync.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
