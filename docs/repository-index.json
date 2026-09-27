@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a39e34d0773dd315c6b8fef51e4659f578eb3665025ffe97aa448c60b9fc72c3",
+  "source_set_digest": "b5abb50f1e41dc88a8819cfd3768440aa0fa0a5292909edef253737df8125d78",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -649,7 +649,7 @@
       "type": "review",
       "title": "Shared design-system convergence",
       "path": "docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md",
-      "status": "changes_requested",
+      "status": "approved",
       "target": "EPIC-SKRIPT-40",
       "gate": "closeout",
       "owners": [

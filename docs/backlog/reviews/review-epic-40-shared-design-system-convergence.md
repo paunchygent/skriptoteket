@@ -7,11 +7,11 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: changes_requested
+status: approved
 target: EPIC-SKRIPT-40
 gate: closeout
 reviewer: Independent Lead Architect (Pi)
-decided_at: '2026-09-27T23:02:37+02:00'
+decided_at: '2026-09-27T23:29:41+02:00'
 ---
 
 ## Governing Authority
@@ -88,6 +88,10 @@ No separate blocking finding is raised: this is within the task's explicit
 removal and test-update scope.
 
 ## Findings
+
+The following findings record the initial 2026-09-27T23:02:37+02:00 review.
+All six are resolved at the plan checkpoint by the bounded rereview below;
+the original evidence and required changes are retained as history.
 
 ### R1 — High: Story 1 defers dependencies required by its own adopted components
 
@@ -265,21 +269,21 @@ review authorizes no commit by the reviewer.
 
 ## Decision
 
-changes_requested
+approved
 
-R1-R3 are high severity and R4-R6 are medium severity. The overall capability
-and two-story decomposition remain sound, but the component adoption boundary
-needs contract repair before this plan supports implementation. These findings
-request changes through the owning planner; they do not overwrite accepted
-user decisions or upstream reviewer-owned results.
+The bounded rereview below supersedes the initial `changes_requested` decision
+of 2026-09-27T23:02:37+02:00. R1-R6 are resolved in the repaired contracts.
+No new material defect was found in the assigned repair diff. This approves
+the proposed-epic plan checkpoint, not implemented behavior or terminal closeout.
 
 ## Permitted Next Step
 
-The parent may reconcile the six findings with the accepted plan and owning
-upstream tasks, then request bounded rereview of changed contracts/evidence.
-Preserve the 0186 and 0187 release/HuleEdu gates and the canceled predecessor's
-acceptance carry-forward. Do not treat this review as implementation approval,
-epic closeout, or permission to remove dependency gates.
+The parent may admit and route implementation under the repaired contracts and
+accepted D19-D25. Preserve the 0186 and 0187 release/HuleEdu gates, the canceled
+predecessor's acceptance carry-forward and the agreed clean-checkpoint sequence.
+Consumer tasks remain blocked until their declared prerequisites are evidenced.
+No lifecycle transition, commit or implementation verification is performed by
+this review.
 
 ## Validation Not Run
 
@@ -295,6 +299,11 @@ the inspected checkouts. No successful implementation proof is claimed.
 new review; no other source document or production code was changed.
 
 ## Residual Risk
+
+The following notes describe the initial review's evidence boundary; the
+rereview below resolves the local-classification and inventory ambiguities and
+uses the parent's identified upstream worktree rather than the stale primary
+checkout. Actual release and implementation proof remain pending.
 
 - The supplied assignment says 0186 is in progress and 0187 ready. Both files
   in the supplied primary skill-repository checkout still read `proposed` at
@@ -318,3 +327,62 @@ new review; no other source document or production code was changed.
   shape. This record explicitly limits itself to the assigned proposed-epic
   checkpoint; a future implementation review must use its own distinct
   canonical record rather than interpreting this artifact as terminal proof.
+
+## Bounded Rereview — 2026-09-27T23:29:41+02:00
+
+**Reviewer:** Independent Lead Architect (Pi), online, assigned proposed-epic
+plan checkpoint. **Verdict:** approved. **Remaining findings:** none.
+
+Reviewed only the repair and its accepted authority:
+
+- Skriptoteket `9ae336e4..798a7e61`, with reviewed HEAD
+  `798a7e6136bc1eb9c20959487c9e66b5b6b8af53`: epic, both stories and four tasks.
+- Skill-repository worktree `../skill-repository-task-skill-rep-0186`, branch
+  `codex/task-skill-rep-0186`, diff `d9ef4d8c..31719cb3`, with reviewed HEAD
+  `31719cb3fdf18947f451adfef1f9fa38b2e7de82`: tasks 0186 and 0187.
+- Round 5 D19-D25 in the original retained plan. D19/D20/D24 carry the user's
+  U1-U3 decisions of 2026-09-27; D21-D23/D25 are admitted technical terms.
+  The user elected no numerical bundle budget. These decisions are preserved,
+  not reopened. Both worktrees were clean before this review edit.
+
+### Finding Disposition
+
+| Finding | Result | Repair evidence and assessment |
+| --- | --- | --- |
+| R1 | Resolved | Story 1 and 01-02 now adopt the complete glyph runtime, released catalog peer and explicit spinner export. 0186 owns spinner manifest/barrel publication and complete import closure for both consumers. Story 1 must build without 0187; broad migration and old-peer removal remain Story 2. D20/D25 resolve the original staging conflict. |
+| R2 | Resolved | 01-02 names every export target under `src/components/ui/shared/`, with primitives/table/barrel at the root and SFCs in `components/`. Its local composition barrel and complete value/type/test import migration preserve package-relative imports without rewriting synced bytes. D19 expressly replaces the former Vue-path term while leaving CSS/logo/mirror paths unchanged. |
+| R3 | Resolved | 0186 and 01-02 agree on optional nullable-string model, undefined slot-only behavior, empty/null hiding, escaped fallback with slot precedence, explicit dismissal, null update then dismiss, exported tone type and root attribute forwarding. Consumer tone/type/ARIA/clear-handler adaptation and focused tests cover the cited AdminTools and ChatDrawer seams without changing HuleEdu defaults. |
+| R4 | Resolved | 01-02 specifies a distinct local host adapter, a reversed copy of store state, bottom placement and id-based dismissal with unchanged timers/store/call sites. Tests cover C/B/A order, fourth-toast eviction, nonmutation, dismissal and expiry; the multi-toast staging walk remains required. |
+| R5 | Resolved | 0187 and 40-02-01 identify the eager runtime lookup and remove the per-meaning and zero-growth guarantees. Comparable production-build reports record risk with source/toolchain/lock/build context and initial/lazy sizes, not a numerical acceptance gate. This matches D23 and the user's explicit no-budget choice. |
+| R6 | Resolved | 01-01 now separates clean committed preparation, real sync/validation, restored active hook, validated-result commit and clean no-diff repeat sync. Later tasks reference the bounded manual-stage map-expansion exception; version-only refreshes keep the hook active and let sync update metadata. 0186/0187 apply equivalent source/consumer checkpoints and prohibit delivering the intermediate state. This implements the accepted D24 exception without weakening the validator or bypassing dirty-target refusal. |
+
+### Repair Integration Check
+
+No new material defect was found. The cross-repository ordering is preserved:
+0186 release plus HuleEdu evidence before consumer adoption; complete Story 1
+before Story 2; 0187 release/mapping plus HuleEdu evidence before semantic
+migration. The action-button task now explicitly removes shell/hover overrides
+and updates declaration-based tests. Story 2 stops on unclassified uses while
+permitting explicitly local icons that do not retain the removed peer; fresh
+inventory, lock cleanup and accessible-name preservation are explicit.
+
+This is contract-resolution evidence. It does not assert that the package
+release, map, hook transitions, focused tests or staging walks already exist
+or pass. The selected bootstrap exception and no-budget decision require no
+further reviewer-imposed gate. Existing delivery validation and upstream
+prerequisites still apply.
+
+### Rereview Validation
+
+`pdm run docs-validate docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md`
+passed (exit 0); retained capture
+`0003-pdm-run-docs-validate-docs-backlog-reviews-review-epic-40-shared` in session
+`01a0e4a4-436a-70d9-a907-702d84f2a091`. `git diff --check` passed. No frontend,
+package, sync or browser gates are rerun for this plan-only checkpoint.
+
+Full `pdm run docs-validate` also passed (exit 0), capture
+`0004-pdm-run-docs-validate`. It regenerated the repository index's review
+status and source digest. That command-produced delta was returned exactly to
+its pre-run state to leave only the requested review file changed. The parent
+must retain the generated index refresh when integrating this verdict. No
+commit or backlog lifecycle transition is made.
