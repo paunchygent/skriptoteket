@@ -1,0 +1,25 @@
+{
+  "exports": {
+    "action-buttons": null,
+    "auth-lifecycle": null,
+    "brand": null,
+    "dense-tool-primitives": null,
+    "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
+    "system-message": null,
+    "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
+    "toast-host": null,
+    "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
+    "ui-dense-action-button": null,
+    "ui-dense-icon-button": null,
+    "ui-dense-spinner": null,
+    "ui-dense-status-pill": null,
+    "ui-glyph": null,
+    "ui-glyphs": null,
+    "ui-segmented-toggle": null,
+    "ui-symbol": null,
+    "vue-barrel": null
+  },
+  "mirror": "frontend/apps/skriptoteket/src/design-system/huleedu-integrated",
+  "package": "huleedu-integrated-frontend-design-system",
+  "version": "0.1.22"
+}
