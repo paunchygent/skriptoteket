@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a6605430e0f0777255cffa8136332812e5afa45956fb5765d2b6735ca173e447",
+  "source_set_digest": "c397e01ccc8aa2e40bd737a49660653186a0cae166b9e3292bc8e54ace90b30d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -571,7 +571,7 @@
       "type": "epic",
       "title": "Shared design-system convergence",
       "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md",
-      "status": "proposed",
+      "status": "ready",
       "owners": [
         {
           "kind": "service",
@@ -636,6 +636,21 @@
       "path": "docs/backlog/reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md",
       "status": "changes_requested",
       "target": "TASK-SKRIPT-REP-0024",
+      "gate": "closeout",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REV-SKRIPT-EPIC-40-CLOSEOUT",
+      "type": "review",
+      "title": "Shared design-system convergence",
+      "path": "docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md",
+      "status": "approved",
+      "target": "EPIC-SKRIPT-40",
       "gate": "closeout",
       "owners": [
         {
@@ -2224,7 +2239,7 @@
       "type": "story",
       "title": "Converge tokens, components and action buttons onto the shared package",
       "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2245,7 +2260,7 @@
       "type": "story",
       "title": "Converge icons onto the shared glyph vocabulary",
       "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -4494,7 +4509,7 @@
       "type": "task",
       "title": "Adopt the shared tokens, theme and logo through design-system sync",
       "path": "docs/backlog/tasks/task-skript-40-01-01-adopt-the-shared-tokens-theme-and-logo-through-design-system-sync.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -4513,7 +4528,7 @@
       "type": "task",
       "title": "Adopt the shared dense components, SystemMessage and ToastHost",
       "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -4532,7 +4547,7 @@
       "type": "task",
       "title": "Adopt the shared action buttons",
       "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -4551,7 +4566,7 @@
       "type": "task",
       "title": "Migrate icons to the shared glyph components",
       "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-02",
       "owners": [
@@ -10551,6 +10566,13 @@
         "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md"
       },
       {
+        "id": "EPIC-SKRIPT-40",
+        "type": "epic",
+        "title": "Shared design-system convergence",
+        "status": "ready",
+        "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md"
+      },
+      {
         "id": "ST-SKRIPT-02-02",
         "type": "story",
         "title": "Admin nomination and superuser approval",
@@ -10927,6 +10949,20 @@
         "title": "Cut over the Exam Converter and retire the Sir exam lane",
         "status": "active",
         "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
+      },
+      {
+        "id": "ST-SKRIPT-40-01",
+        "type": "story",
+        "title": "Converge tokens, components and action buttons onto the shared package",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md"
+      },
+      {
+        "id": "ST-SKRIPT-40-02",
+        "type": "story",
+        "title": "Converge icons onto the shared glyph vocabulary",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md"
       }
     ]
   }
