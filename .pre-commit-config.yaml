@@ -86,3 +86,18 @@ repos:
         language: system
         files: ^frontend/apps/skriptoteket/src/.*\.(vue|ts|js)$
         pass_filenames: false
+
+      - id: design-system-validate
+        name: Shared frontend design-system validate
+        entry: pdm run design-system-validate
+        language: system
+        files: >-
+          (?x)^(design-system-map\.json|
+          frontend/apps/skriptoteket/src/design-system/huleedu-integrated/.*|
+          src/skriptoteket/web/static/css/huleedu-design-tokens\.css|
+          frontend/apps/skriptoteket/src/styles/tailwind-theme\.css|
+          frontend/apps/skriptoteket/public/logo-horizontal\.svg|
+          pyproject\.toml|
+          \.pre-commit-config\.yaml)$
+        pass_filenames: false
+        stages: [pre-commit]

@@ -1,6 +1,6 @@
 {
   "name": "@huleedu/integrated-frontend-design-system",
-  "version": "0.1.7",
+  "version": "0.1.22",
   "private": true,
   "type": "module",
   "description": "Shared HuleEdu and Skriptoteket frontend design-system runtime resources.",
@@ -10,6 +10,7 @@
     "src"
   ],
   "peerDependencies": {
+    "@lucide/vue": ">=1.47.0",
     "@vitejs/plugin-vue": ">=6.0.0",
     "tailwindcss": ">=4.0.0",
     "vue": ">=3.5.0"
