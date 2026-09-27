@@ -1,5 +1,15 @@
 ## Current
 
+- [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
+  (shared design-system convergence) is `ready` with both stories and all
+  four tasks. Plan review REV-EPIC-40 first returned changes_requested
+  (R1-R6); the contracts were repaired from user decisions U1-U3 and four
+  user-accepted architect recommendations (retained plan Round 5, D19-D25),
+  and the rereview approved (merge `b5d57178`, not yet pushed). Next:
+  TASK-SKRIPT-40-01-01 starts after skill-repository TASK-SKILL-REP-0186
+  (package 0.1.22, under review) merges; TASK-SKRIPT-40-02-01 waits on
+  TASK-SKILL-REP-0187. Retained session
+  `01a0e4a4-436a-70d9-a907-702d84f2a091`.
 - 2026-09-05 reconciliation (docs/planning only, no code): the user-approved
   native editable exam workspace is recorded in
   [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
