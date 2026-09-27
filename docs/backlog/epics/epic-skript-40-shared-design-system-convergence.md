@@ -22,45 +22,52 @@ backlog_document_profile: contract-derived
 ## Capability Contract
 
 Skriptoteket consumes the shared `huleedu-integrated` design system through
-`repository-governance-frontend-catalog design-system sync` instead of hand
-copies and local forks. Skriptoteket-local extensions that the shared package
-lacks are promoted into the package, so HuleEdu and Skriptoteket render the
-same tokens, dense components, messages, toasts, action buttons and glyphs.
+`repository-governance-frontend-catalog design-system sync`, replacing hand
+copies and local forks. Reusable local extensions are promoted into the
+package before adoption. Existing Skriptoteket features are preserved;
+existing HuleEdu call sites retain their rendering and defaults.
 
-Boundaries: the shared package lives in skill-repository
-`resources/frontend-design-system/huleedu-integrated`; package releases and
-HuleEdu syncs are skill-repository tasks. Skriptoteket owns its adoption map,
-local wrappers, call sites and the components the package does not export.
-Brand and auth-lifecycle exports stay unadopted. Non-goals: HuleEdu UI changes
-beyond syncing package versions, and new product features.
+Skill-repository owns package releases and HuleEdu syncs. Skriptoteket owns
+its root adoption map, local composition barrel, application adapters and
+call sites. Package Vue files occupy a package-shaped subtree under
+`frontend/apps/skriptoteket/src/components/ui/shared`; adopted CSS, logo and
+metadata mirror retain their existing paths. Brand and auth-lifecycle stay
+unadopted. New product features and HuleEdu UI redesign are excluded.
+
+Story 1 includes the released glyph runtime and peer needed by its shared
+components. Story 2 owns icon-meaning inventory, missing-meaning promotion,
+call-site migration and removal of `lucide-vue-next`.
 
 ## Contract Inputs
 
-- Retained plan `.orchestration/context/sessions/01a0e42e-f433-727d-a17f-f9eced6d04bc/evidence/planning/TASK-SKRIPT-REP-0033/plan.md` (decisions D1-D18).
-- Discovery `.orchestration/context/sessions/01a0e42e-f433-727d-a17f-f9eced6d04bc/discovery/design-system-adoption.md`.
-- HuleEdu adoption precedent TASK-HULE-REP-0085.
+- Accepted retained plan `.orchestration/context/sessions/01a0e42e-f433-727d-a17f-f9eced6d04bc/evidence/planning/TASK-SKRIPT-REP-0033/plan.md`, D1-D18 and admitted repair decisions D19-D25.
+- Review `docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md`, R1-R6; the review decision remains unchanged pending rereview.
+- Original adoption discovery `.orchestration/context/sessions/01a0e42e-f433-727d-a17f-f9eced6d04bc/discovery/design-system-adoption.md`.
+- Repair evidence `.orchestration/context/sessions/01a0e4a4-436a-70d9-a907-702d84f2a091/evidence/planning/EPIC-SKRIPT-40-repair/draft.md`.
+- Existing boundary precedent TASK-HULE-REP-0085; first Skriptoteket sync is the initial integrated delivery, not a separate skeleton task.
 
 ## Stories
 
-| Story           | Slice                                                                         |
-| --------------- | ----------------------------------------------------------------------------- |
-| ST-SKRIPT-40-01 | Tokens, theme, logo, dense components, SystemMessage, ToastHost, action buttons |
-| ST-SKRIPT-40-02 | Shared glyph vocabulary and icon migration off `lucide-vue-next`              |
+| Story | Slice |
+| --- | --- |
+| ST-SKRIPT-40-01 | Tokens, theme, logo, dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer. |
+| ST-SKRIPT-40-02 | Expanded shared meaning vocabulary, complete icon migration, and old Lucide dependency removal. |
 
 ## Verification
 
-- Skriptoteket's `design-system-map.json` adopts every export except `brand`
-  and `auth-lifecycle`, and a sync from skill-repository main changes no file.
-- Skriptoteket has no `lucide-vue-next` dependency and no local copies of
-  adopted package components.
-- HuleEdu runs the latest package version with its validator passing.
+- The map covers every released export; only brand and auth-lifecycle are null at epic completion. All adopted bytes match the mirror digests.
+- From a clean committed consumer checkpoint, sync against the identified clean skill-repository main release exits 0 and changes no file. The automatic validator hook is active; bootstrap checkpoints are not completion evidence.
+- No local fork of an adopted export or `lucide-vue-next` dependency remains. Explicitly classified local icons may remain when no shared meaning fits.
+- Each story passes frontend typecheck, unit tests, build and shared design-system validation, plus the relevant Hemma staging walks using the HuleEdu browser-session helpers/preflight.
+- HuleEdu is synced to each required release with design-system validation and frontend checks passing. Shared SystemMessage defaults and rich-slot rendering remain unchanged.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                           |
-| --- | --------------------------------------------------------------------------------------------------------------- |
-| D1  | Skriptoteket-local design extensions are promoted into the shared package rather than kept as local forks.     |
-| D2  | Brand and auth-lifecycle exports stay unadopted in Skriptoteket.                                              |
-| D3  | The package palette is authority; Skriptoteket accepts the 0.1.7 to current token changes.                    |
-| D4  | Adoption uses `design-system sync` and the shared `design-system validate`; no hand copying.                  |
-| D5  | Two stories: tokens, components and action buttons first; glyph vocabulary and icon migration second.        |
+| ID | Decided contract term |
+| --- | --- |
+| D1 | Reusable local extensions are promoted instead of forked. Source: retained D1/D9/D11-D15. |
+| D2 | Brand and auth-lifecycle remain unadopted. Source: retained D13. |
+| D3 | Package palette is authoritative. Source: retained D3. |
+| D4 | Adoption and drift proof use shared sync/validate and admitted clean checkpoints. Source: retained D4/D16/D24; R6. |
+| D5 | Two stories separate component delivery from semantic icon migration; prerequisite glyph runtime belongs to Story 1. Source: retained D17/D20; R1. |
+| D6 | Vue adoption uses the shared subtree and local composition barrel; other established resource paths remain. Source: retained D19; R2. |
