@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6e2632f1dc92b9875f7e05d0390489ab9242107b74bf822d4994df7658b9c5a4",
+  "source_set_digest": "a6605430e0f0777255cffa8136332812e5afa45956fb5765d2b6735ca173e447",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -560,6 +560,26 @@
           "ADR-SKRIPT-0090",
           "ADR-SKRIPT-0091"
         ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "EPIC-SKRIPT-40",
+      "type": "epic",
+      "title": "Shared design-system convergence",
+      "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md",
+      "status": "proposed",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -2193,6 +2213,48 @@
           "ADR-SKRIPT-0090",
           "ADR-SKRIPT-0091"
         ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-01",
+      "type": "story",
+      "title": "Converge tokens, components and action buttons onto the shared package",
+      "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-02",
+      "type": "story",
+      "title": "Converge icons onto the shared glyph vocabulary",
+      "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -4428,6 +4490,82 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-01-01",
+      "type": "task",
+      "title": "Adopt the shared tokens, theme and logo through design-system sync",
+      "path": "docs/backlog/tasks/task-skript-40-01-01-adopt-the-shared-tokens-theme-and-logo-through-design-system-sync.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-01-02",
+      "type": "task",
+      "title": "Adopt the shared dense components, SystemMessage and ToastHost",
+      "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-01-03",
+      "type": "task",
+      "title": "Adopt the shared action buttons",
+      "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-02-01",
+      "type": "task",
+      "title": "Migrate icons to the shared glyph components",
+      "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-REP-0001",
       "type": "task",
       "title": "Publish product context reference for external architect agents",
@@ -5243,7 +5381,7 @@
       "type": "task",
       "title": "Adopt the shared design-system sync command",
       "path": "docs/backlog/tasks/task-skript-rep-0033-adopt-the-shared-design-system-sync-command.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
