@@ -1,8 +1,10 @@
 """CLI command for the repeatable Hemma staging proof fixture.
 
 Purpose:
-    Let `pdm run hemma-dev start|reset` ensure one harmless staging tool that
-    the imported proof contributor maintains, with the contributor's draft.
+    Let `pdm run hemma-dev start|reset|fixture` ensure one harmless staging
+    tool that the imported proof contributor maintains, with the contributor's
+    draft. The command itself refuses every target except the Hemma staging
+    database, so a direct invocation cannot write to production.
 
 Relationships:
     - Reads the same sanitized HuleEdu subject export that
@@ -18,6 +20,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from sqlalchemy.engine import make_url
 
 from skriptoteket.application.catalog.handlers.assign_maintainer import AssignMaintainerHandler
 from skriptoteket.application.catalog.handlers.create_draft_tool import CreateDraftToolHandler
@@ -34,7 +37,7 @@ from skriptoteket.application.scripting.handlers.create_draft_version import (
 )
 from skriptoteket.cli._db import open_session
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
@@ -52,6 +55,10 @@ from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+
+STAGING_ENVIRONMENT = "staging"
+STAGING_DATABASE_HOST = "db"
+STAGING_DATABASE_NAME = "skriptoteket"
 
 
 def setup_staging_proof_fixture(
@@ -75,7 +82,7 @@ def setup_staging_proof_fixture(
         raise SystemExit(f"Invalid JSON in export file: {export_json}") from exc
 
     try:
-        result = asyncio.run(_setup_async(payload=payload))
+        result = asyncio.run(_setup_async(payload=payload, settings=Settings()))
     except DomainError as exc:
         failure = {
             "status": "failed",
@@ -89,9 +96,32 @@ def setup_staging_proof_fixture(
     typer.echo(format_staging_proof_fixture_summary(result))
 
 
-async def _setup_async(*, payload: object) -> StagingProofFixtureResult:
+def require_staging_target(settings: Settings) -> None:
+    """Refuse any environment or database other than the Hemma staging database.
+
+    Staging runs with `ENVIRONMENT=staging` against the `skriptoteket-dev`
+    project's own `db` service; production uses `shared-postgres`.
+    """
+    database = make_url(settings.DATABASE_URL)
+    if (
+        settings.ENVIRONMENT != STAGING_ENVIRONMENT
+        or database.host != STAGING_DATABASE_HOST
+        or database.database != STAGING_DATABASE_NAME
+    ):
+        raise DomainError(
+            code=ErrorCode.FORBIDDEN,
+            message="The staging proof fixture runs only against the Hemma staging database",
+            details={
+                "environment": settings.ENVIRONMENT,
+                "database_host": database.host,
+                "database_name": database.database,
+            },
+        )
+
+
+async def _setup_async(*, payload: object, settings: Settings) -> StagingProofFixtureResult:
+    require_staging_target(settings)
     export = parse_huleedu_subject_export(payload)
-    settings = Settings()
     async with open_session(settings) as session:
         uow = SQLAlchemyUnitOfWork(session)
         users = PostgreSQLUserRepository(session)

@@ -79,7 +79,11 @@ class StagingProofFixtureResult:
 
 
 class StagingProofFixture:
-    """Idempotently ensure the contributor-owned staging tool and draft."""
+    """Idempotently ensure the contributor-maintained staging tool and draft.
+
+    An existing tool is reused only when the proof admin owns it; any other
+    tool with the fixture slug stops the run before any write.
+    """
 
     def __init__(
         self,
@@ -132,6 +136,12 @@ class StagingProofFixture:
                     ),
                 )
                 tool = renamed.tool
+            elif tool.owner_user_id != admin.id:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="A tool with the staging proof slug is not owned by the proof admin",
+                    details={"tool_slug": tool.slug, "tool_id": str(tool.id)},
+                )
 
             assigned_maintainer = not await self._maintainers.is_maintainer(
                 tool_id=tool.id, user_id=contributor.id

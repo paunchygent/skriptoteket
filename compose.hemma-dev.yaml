@@ -1,6 +1,7 @@
 # Skriptoteket staging next to HuleEdu staging on Hemma (TASK-SKRIPT-REP-0034).
 #
-# Operate only through `pdm run hemma-dev <build|start|status|stop|reset>` from
+# Operate only through `pdm run hemma-dev <command>` (build, start, status,
+# stop, reset, fixture, install-vite-unit) from
 # /home/paunchygent/apps/skriptoteket-dev. The command pins the rootless daemon
 # (unix:///run/user/1000/docker.sock), this file, and project skriptoteket-dev.
 #

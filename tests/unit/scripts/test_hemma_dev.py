@@ -1,9 +1,12 @@
 """Unit tests for the Skriptoteket Hemma staging lifecycle command.
 
 Purpose:
-    Pin the guarded argv sequence of `pdm run hemma-dev`: database before
-    db-upgrade before web, import before fixture before the Vite unit, and a
-    reset scoped to the skriptoteket-dev project.
+    Prove the outcomes of `pdm run hemma-dev`: it refuses every target except
+    the Hemma staging checkout on the rootless daemon, stops before touching
+    containers when HuleEdu staging inputs are missing, upgrades the database
+    before web starts, applies the proof import before the fixture and the Vite
+    unit, stops on the first failure, keeps volumes on stop, and resets only
+    this project's own resources.
 
 Relationships:
     - Exercises `scripts/hemma_dev.py` with fake process and HTTP effects.
@@ -12,24 +15,52 @@ Relationships:
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
+
+import pytest
 
 from scripts import hemma_dev
 
-VITE_START = ("systemctl", "--user", "start", hemma_dev.VITE_UNIT)
-VITE_ACTIVE = ("systemctl", "--user", "is-active", "--quiet", hemma_dev.VITE_UNIT)
-VITE_STOP = ("systemctl", "--user", "stop", hemma_dev.VITE_UNIT)
-START_SEQUENCE = [
-    hemma_dev.NETWORK_CHECK,
-    hemma_dev.DB_UP,
-    hemma_dev.DB_UPGRADE,
-    hemma_dev.APP_UP,
-    hemma_dev.PROOF_IMPORT,
-    hemma_dev.PROOF_FIXTURE,
-    VITE_START,
-    VITE_ACTIVE,
-]
+ROOT = Path(__file__).resolve().parents[3]
+
+Command = tuple[str, ...]
+
+
+def is_db_up(command: Command) -> bool:
+    return "up" in command and command[-1] == "db"
+
+
+def is_db_upgrade(command: Command) -> bool:
+    return "db-upgrade" in command
+
+
+def is_app_up(command: Command) -> bool:
+    return "up" in command and "web" in command
+
+
+def is_proof_import(command: Command) -> bool:
+    return "consume-huleedu-subject-export" in command
+
+
+def is_fixture(command: Command) -> bool:
+    return "setup-staging-proof-fixture" in command
+
+
+def is_vite_start(command: Command) -> bool:
+    return command[:3] == ("systemctl", "--user", "start") and hemma_dev.VITE_UNIT in command
+
+
+def is_vite_stop(command: Command) -> bool:
+    return command[:3] == ("systemctl", "--user", "stop") and hemma_dev.VITE_UNIT in command
+
+
+def is_volume_removal(command: Command) -> bool:
+    return "down" in command and "--volumes" in command
+
+
+def is_compose(command: Command) -> bool:
+    return command[:2] == ("docker", "compose")
 
 
 class FakeHost:
@@ -38,15 +69,15 @@ class FakeHost:
         *,
         cwd: Path = hemma_dev.STAGING_CHECKOUT,
         environ: Mapping[str, str] | None = None,
-        exit_codes: Mapping[tuple[str, ...], int] | None = None,
+        fail: Callable[[Command], bool] = lambda _command: False,
         ps_output: str = "",
         http: Mapping[str, int | None] | None = None,
         existing: set[Path] | None = None,
     ) -> None:
-        self.commands: list[tuple[str, ...]] = []
+        self.commands: list[Command] = []
         self.environments: list[Mapping[str, str]] = []
         self.installed: list[tuple[Path, Path]] = []
-        self._exit_codes = dict(exit_codes or {})
+        self._fail = fail
         self._ps_output = ps_output
         self._http = dict(http or {hemma_dev.WEB_HEALTH_URL: 200, hemma_dev.VITE_URL: 200})
         self._existing = (
@@ -68,69 +99,109 @@ class FakeHost:
     def _run(self, command: Sequence[str], env: Mapping[str, str], cwd: Path) -> int:
         self.commands.append(tuple(command))
         self.environments.append(env)
-        return self._exit_codes.get(tuple(command), 0)
+        return 1 if self._fail(tuple(command)) else 0
 
     def _capture(self, command: Sequence[str], env: Mapping[str, str], cwd: Path) -> str:
         self.commands.append(tuple(command))
         return self._ps_output
 
+    def index(self, matches: Callable[[Command], bool]) -> int:
+        (position,) = [i for i, command in enumerate(self.commands) if matches(command)]
+        return position
 
-def _healthy_ps() -> str:
-    return "\n".join(
-        json.dumps({"Service": service, "State": "running", "Health": "healthy"})
-        for service in ("db", "web", "worker")
-    )
+    def ran(self, matches: Callable[[Command], bool]) -> bool:
+        return any(matches(command) for command in self.commands)
 
 
-def test_start_upgrades_database_before_web_and_imports_before_fixture_and_vite() -> None:
+def test_start_upgrades_database_before_web_and_applies_import_before_fixture_and_vite() -> None:
     fake = FakeHost()
 
     assert hemma_dev.main(["start"], host=fake.host) == 0
 
-    assert fake.commands == START_SEQUENCE
-    assert all(env["DOCKER_HOST"] == hemma_dev.ROOTLESS_DOCKER_HOST for env in fake.environments)
-    assert hemma_dev.PROOF_IMPORT[-1] == "--apply"
-
-
-def test_reset_removes_only_project_resources_then_runs_full_start() -> None:
-    fake = FakeHost()
-
-    assert hemma_dev.main(["reset"], host=fake.host) == 0
-
-    assert fake.commands == [
-        hemma_dev.NETWORK_CHECK,
-        VITE_STOP,
-        hemma_dev.RESET_STACK,
-        *START_SEQUENCE,
+    order = [
+        fake.index(step)
+        for step in (is_db_up, is_db_upgrade, is_app_up, is_proof_import, is_fixture, is_vite_start)
     ]
-    assert hemma_dev.RESET_STACK[:6] == hemma_dev.COMPOSE
-    flattened = [token for command in fake.commands for token in command]
-    assert "prune" not in flattened
-    assert ("network", "rm") not in {tuple(c[1:3]) for c in fake.commands}
+    assert order == sorted(order)
+    assert "--apply" in fake.commands[fake.index(is_proof_import)]
+    assert all(env["DOCKER_HOST"] == hemma_dev.ROOTLESS_DOCKER_HOST for env in fake.environments)
 
 
 def test_failed_db_upgrade_stops_before_web_starts() -> None:
-    fake = FakeHost(exit_codes={hemma_dev.DB_UPGRADE: 3})
+    fake = FakeHost(fail=is_db_upgrade)
 
     assert hemma_dev.main(["start"], host=fake.host) == 2
 
-    assert fake.commands == [hemma_dev.NETWORK_CHECK, hemma_dev.DB_UP, hemma_dev.DB_UPGRADE]
+    assert not fake.ran(is_app_up)
+    assert not fake.ran(is_proof_import)
+    assert not fake.ran(is_vite_start)
 
 
-def test_start_stops_when_huleedu_staging_inputs_are_missing() -> None:
+def test_failed_fixture_stops_before_the_frontend_starts() -> None:
+    fake = FakeHost(fail=is_fixture)
+
+    assert hemma_dev.main(["start"], host=fake.host) == 2
+
+    assert not fake.ran(is_vite_start)
+
+
+@pytest.mark.parametrize("action", ["start", "reset", "fixture"])
+def test_missing_huleedu_staging_inputs_stop_before_any_command(action: str) -> None:
     fake = FakeHost(existing={hemma_dev.IDENTITY_PUBLIC_KEY_HOST_PATH})
 
-    assert hemma_dev.main(["start"], host=fake.host) == 2
+    assert hemma_dev.main([action], host=fake.host) == 2
 
     assert fake.commands == []
 
 
-def test_start_stops_when_huleedu_network_is_missing() -> None:
-    fake = FakeHost(exit_codes={hemma_dev.NETWORK_CHECK: 1})
+@pytest.mark.parametrize("action", ["start", "reset", "fixture"])
+def test_missing_huleedu_network_stops_before_any_compose_command(action: str) -> None:
+    fake = FakeHost(fail=lambda command: hemma_dev.HULEEDU_NETWORK in command)
 
-    assert hemma_dev.main(["start"], host=fake.host) == 2
+    assert hemma_dev.main([action], host=fake.host) == 2
 
-    assert fake.commands == [hemma_dev.NETWORK_CHECK]
+    assert not fake.ran(is_compose)
+    assert not fake.ran(is_vite_stop)
+
+
+def test_reset_removes_only_project_volumes_then_runs_a_full_start() -> None:
+    fake = FakeHost()
+
+    assert hemma_dev.main(["reset"], host=fake.host) == 0
+
+    removal = fake.commands[fake.index(is_volume_removal)]
+    assert removal[: len(hemma_dev.COMPOSE)] == hemma_dev.COMPOSE
+    assert fake.index(is_vite_stop) < fake.index(is_volume_removal) < fake.index(is_db_up)
+    assert fake.index(is_fixture) < fake.index(is_vite_start)
+    assert not any("prune" in command for command in fake.commands)
+    assert not any(command[1:3] == ("network", "rm") for command in fake.commands)
+
+
+def test_fixture_reruns_only_the_fixture() -> None:
+    fake = FakeHost()
+
+    assert hemma_dev.main(["fixture"], host=fake.host) == 0
+
+    assert [command for command in fake.commands if is_compose(command)] == [
+        fake.commands[fake.index(is_fixture)]
+    ]
+
+
+def test_stop_stops_the_frontend_and_keeps_volumes() -> None:
+    fake = FakeHost()
+
+    assert hemma_dev.main(["stop"], host=fake.host) == 0
+
+    assert fake.ran(is_vite_stop)
+    assert not fake.ran(is_volume_removal)
+
+
+def test_failed_frontend_dependency_install_stops_the_build() -> None:
+    fake = FakeHost(fail=lambda _command: True)
+
+    assert hemma_dev.main(["build"], host=fake.host) == 2
+
+    assert len(fake.commands) == 1
 
 
 def test_refuses_production_and_other_checkouts() -> None:
@@ -151,41 +222,27 @@ def test_refuses_compose_and_docker_overrides() -> None:
         assert fake.commands == []
 
 
-def test_build_installs_frontend_dependencies_and_builds_web_and_runner() -> None:
-    fake = FakeHost()
-
-    assert hemma_dev.main(["build"], host=fake.host) == 0
-
-    assert fake.commands == [hemma_dev.BUILD_FRONTEND_DEPENDENCIES, hemma_dev.BUILD_IMAGES]
-
-
-def test_stop_stops_vite_then_containers_without_removing_volumes() -> None:
-    fake = FakeHost()
-
-    assert hemma_dev.main(["stop"], host=fake.host) == 0
-
-    assert fake.commands == [VITE_STOP, hemma_dev.STOP_STACK]
-
-
-def test_install_vite_unit_copies_versioned_unit_and_enables_it() -> None:
+def test_install_vite_unit_installs_the_versioned_unit_and_enables_it() -> None:
     fake = FakeHost()
 
     assert hemma_dev.main(["install-vite-unit"], host=fake.host) == 0
 
-    assert fake.installed == [
-        (
-            hemma_dev.STAGING_CHECKOUT / "systemd" / hemma_dev.VITE_UNIT,
-            hemma_dev.VITE_UNIT_DESTINATION,
-        )
-    ]
-    assert fake.commands == [
-        ("systemctl", "--user", "daemon-reload"),
-        ("systemctl", "--user", "enable", hemma_dev.VITE_UNIT),
-    ]
+    ((source, destination),) = fake.installed
+    assert (ROOT / source.relative_to(hemma_dev.STAGING_CHECKOUT)).is_file()
+    assert destination.name == hemma_dev.VITE_UNIT
+    assert destination.parent == Path.home() / ".config" / "systemd" / "user"
+    assert fake.ran(lambda command: "enable" in command and hemma_dev.VITE_UNIT in command)
+
+
+def _ps(health: Mapping[str, str]) -> str:
+    return "\n".join(
+        json.dumps({"Service": service, "State": "running", "Health": state})
+        for service, state in health.items()
+    )
 
 
 def test_status_is_healthy_when_services_web_and_frontend_are_healthy(capsys) -> None:
-    fake = FakeHost(ps_output=_healthy_ps())
+    fake = FakeHost(ps_output=_ps({"db": "healthy", "web": "healthy", "worker": "healthy"}))
 
     assert hemma_dev.main(["status"], host=fake.host) == 0
 
@@ -193,12 +250,9 @@ def test_status_is_healthy_when_services_web_and_frontend_are_healthy(capsys) ->
 
 
 def test_status_is_unhealthy_when_worker_or_frontend_is_down(capsys) -> None:
-    ps_output = "\n".join(
-        json.dumps({"Service": service, "State": "running", "Health": health})
-        for service, health in (("db", "healthy"), ("web", "healthy"), ("worker", "unhealthy"))
-    )
     fake = FakeHost(
-        ps_output=ps_output, http={hemma_dev.WEB_HEALTH_URL: 200, hemma_dev.VITE_URL: None}
+        ps_output=_ps({"db": "healthy", "web": "healthy", "worker": "unhealthy"}),
+        http={hemma_dev.WEB_HEALTH_URL: 200, hemma_dev.VITE_URL: None},
     )
 
     assert hemma_dev.main(["status"], host=fake.host) == 1
@@ -206,6 +260,14 @@ def test_status_is_unhealthy_when_worker_or_frontend_is_down(capsys) -> None:
     output = capsys.readouterr().out
     assert "worker: unhealthy" in output
     assert "skriptoteket-dev staging: unhealthy" in output
+
+
+def test_status_is_unhealthy_when_a_service_is_missing(capsys) -> None:
+    fake = FakeHost(ps_output=_ps({"db": "healthy", "web": "healthy"}))
+
+    assert hemma_dev.main(["status"], host=fake.host) == 1
+
+    assert "worker: missing" in capsys.readouterr().out
 
 
 def test_service_health_accepts_json_array_output() -> None:

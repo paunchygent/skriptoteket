@@ -165,7 +165,9 @@ catalog and scripting handlers:
   `Staging-provkörningen är klar.`
 
 The step is idempotent: a repeat run reuses the tool, the maintainer, and the
-contributor's draft. It stops if the draft head was created by another user.
+contributor's draft. It reuses an existing `staging-provverktyg` tool only when
+`skriptoteket-proof-admin` owns it, and stops without writes if another user
+owns a tool with that slug or created its draft head.
 It never acquires the draft lock; the walk locks the draft in the editor.
 
 Rerun only the fixture (for example after the contributor's draft was
@@ -173,10 +175,14 @@ published or replaced):
 
 ```bash
 cd /home/paunchygent/apps/skriptoteket-dev
-DOCKER_HOST=unix:///run/user/1000/docker.sock docker compose -f compose.hemma-dev.yaml -p skriptoteket-dev \
-  run --rm --no-deps web pdm run setup-staging-proof-fixture \
-  --export-json /run/huleedu/proof-identities/subject-export.json
+pdm run hemma-dev fixture
 ```
+
+`setup-staging-proof-fixture` also guards itself: it exits with status 1
+before opening a database session unless `ENVIRONMENT=staging` and
+`DATABASE_URL` points at database `skriptoteket` on host `db` (the
+`skriptoteket-dev` database service). It never writes to production, which
+uses `shared-postgres`.
 
 For a clean fixture, run `pdm run hemma-dev reset`.
 

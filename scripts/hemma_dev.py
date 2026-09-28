@@ -1,11 +1,12 @@
 """Operate Skriptoteket staging on Hemma beside HuleEdu staging.
 
-`pdm run hemma-dev <build|start|status|stop|reset|install-vite-unit>` runs only
+`pdm run hemma-dev <build|start|status|stop|reset|fixture|install-vite-unit>` runs only
 from the Hemma staging checkout and drives the rootless Docker daemon, the
 `compose.hemma-dev.yaml` project `skriptoteket-dev`, and the Skriptoteket Vite
 user unit. Start and reset bring up the database, apply `db-upgrade`, start
 web and worker, import the HuleEdu staging proof subjects with `--apply`, ensure
-the staging proof fixture, and then start the Vite unit.
+the staging proof fixture, and then start the Vite unit. `fixture` reruns only
+the staging proof fixture against the running stack.
 """
 
 from __future__ import annotations
@@ -220,6 +221,10 @@ class Lifecycle:
         self._run(("systemctl", "--user", "is-active", "--quiet", VITE_UNIT))
         self._wait_for(VITE_URL, accept=lambda status: status < 500)
 
+    def fixture(self) -> None:
+        self.preflight()
+        self._run(PROOF_FIXTURE)
+
     def stop(self) -> None:
         self._run(("systemctl", "--user", "stop", VITE_UNIT))
         self._run(STOP_STACK)
@@ -326,6 +331,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("status", "Report web, worker, database, and frontend health."),
         ("stop", "Stop the Vite unit and the skriptoteket-dev containers."),
         ("reset", "Remove skriptoteket-dev containers and volumes, then start."),
+        ("fixture", "Rerun only the staging proof fixture against the running stack."),
         ("install-vite-unit", "Install and enable the Skriptoteket Vite user unit."),
     ):
         subparsers.add_parser(name, help=summary)
@@ -345,6 +351,7 @@ def main(argv: Sequence[str] | None = None, *, host: Host | None = None) -> int:
             "start": lifecycle.start,
             "stop": lifecycle.stop,
             "reset": lifecycle.reset,
+            "fixture": lifecycle.fixture,
             "install-vite-unit": lifecycle.install_vite_unit,
         }[args.command]()
     except HemmaDevError as exc:
