@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c397e01ccc8aa2e40bd737a49660653186a0cae166b9e3292bc8e54ace90b30d",
+  "source_set_digest": "3325119ff417fdf081848fdad365bac25612de8918903df9f012c1699a2e70c2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5397,6 +5397,24 @@
       "title": "Adopt the shared design-system sync command",
       "path": "docs/backlog/tasks/task-skript-rep-0033-adopt-the-shared-design-system-sync-command.md",
       "status": "canceled",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0034",
+      "type": "task",
+      "title": "Stand up Skriptoteket staging on Hemma next to HuleEdu staging",
+      "path": "docs/backlog/tasks/task-skript-rep-0034-stand-up-skriptoteket-staging-on-hemma-next-to-huleedu-staging.md",
+      "status": "proposed",
       "task_kind": "repository",
       "owners": [
         {
