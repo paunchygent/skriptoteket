@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9bda582f7105f7ab755f7e1e1a748031d4567f814d583ebef7ad36539ed6efe2",
+  "source_set_digest": "33f8082e5d96e6c78789246138589d180c0ca03e7d756910955975e23feb5067",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5414,7 +5414,7 @@
       "type": "task",
       "title": "Stand up Skriptoteket staging on Hemma next to HuleEdu staging",
       "path": "docs/backlog/tasks/task-skript-rep-0034-stand-up-skriptoteket-staging-on-hemma-next-to-huleedu-staging.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
