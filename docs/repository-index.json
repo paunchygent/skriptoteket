@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3a9ff564c694184722bef284e63e68a777c268756b847c03869537f5bdd28d5e",
+  "source_set_digest": "651affd20da8c8b0bc8bff6da675c6c14fdc842ca4f11057acddf9636672158f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5424,7 +5424,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-09-28T09:14:08+02:00",
+        "approval_evidence": ".orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md"
       }
     },
     {
