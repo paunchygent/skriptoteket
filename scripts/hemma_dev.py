@@ -88,27 +88,32 @@ APP_UP: tuple[str, ...] = (
     "web",
     "worker",
 )
-PROOF_IMPORT: tuple[str, ...] = (
+# Run Skriptoteket CLI commands in a one-off web container the way the
+# production worker does. The pdm script entries set PYTHONPATH=src, which
+# replaces pdm's __pypackages__ loader path inside the image.
+WEB_CLI: tuple[str, ...] = (
     *COMPOSE,
     "run",
     "--rm",
     "--no-deps",
+    "-e",
+    "PYTHONPATH=/app/src",
     "web",
     "pdm",
     "run",
+    "python",
+    "-m",
+    "skriptoteket.cli",
+)
+PROOF_IMPORT: tuple[str, ...] = (
+    *WEB_CLI,
     "consume-huleedu-subject-export",
     "--export-json",
     PROOF_EXPORT_CONTAINER_PATH,
     "--apply",
 )
 PROOF_FIXTURE: tuple[str, ...] = (
-    *COMPOSE,
-    "run",
-    "--rm",
-    "--no-deps",
-    "web",
-    "pdm",
-    "run",
+    *WEB_CLI,
     "setup-staging-proof-fixture",
     "--export-json",
     PROOF_EXPORT_CONTAINER_PATH,

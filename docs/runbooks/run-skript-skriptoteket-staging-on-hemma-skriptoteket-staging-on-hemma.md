@@ -90,9 +90,12 @@ container root the socket owner. They share the project volumes
    ```
 
 3. Select the PDM interpreter for the lifecycle command (it uses only the
-   standard library):
+   standard library). A non-login shell such as `ssh hemma '<command>'` has no
+   `pdm` on `PATH`, so prefix `/home/paunchygent/.local/bin` first in every
+   such session:
 
    ```bash
+   export PATH=/home/paunchygent/.local/bin:$PATH
    pdm use -f /home/paunchygent/.local/share/pdm/python/cpython@3.14.2/bin/python3
    ```
 
