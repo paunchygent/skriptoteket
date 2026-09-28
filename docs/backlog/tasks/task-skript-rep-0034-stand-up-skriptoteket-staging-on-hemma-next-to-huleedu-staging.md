@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-28'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-code-review
+  decided_at: '2026-09-28T09:14:08+02:00'
+  approval_evidence: .orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md
 task_kind: repository
 acceptance_criteria:
   - A skriptoteket-dev compose project on Hemma's rootless daemon runs its own Postgres, web, worker, and runner image; web answers as skriptoteket-web on huleedu-dev_hule-network, publishes only on 127.0.0.1:18000, and trusts the HuleEdu staging identity key; web and worker share artifact storage at matching paths

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "33f8082e5d96e6c78789246138589d180c0ca03e7d756910955975e23feb5067",
+  "source_set_digest": "651affd20da8c8b0bc8bff6da675c6c14fdc842ca4f11057acddf9636672158f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5414,7 +5414,7 @@
       "type": "task",
       "title": "Stand up Skriptoteket staging on Hemma next to HuleEdu staging",
       "path": "docs/backlog/tasks/task-skript-rep-0034-stand-up-skriptoteket-staging-on-hemma-next-to-huleedu-staging.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
@@ -5424,7 +5424,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-09-28T09:14:08+02:00",
+        "approval_evidence": ".orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md"
       }
     },
     {
@@ -9495,6 +9498,19 @@
       ],
       "retired_ids": [
         "RUN-user-management"
+      ]
+    },
+    {
+      "id": "RUN-SKRIPT-skriptoteket-staging-on-hemma",
+      "type": "runbook",
+      "title": "Skriptoteket staging on Hemma",
+      "path": "docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md",
+      "status": "draft",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     }
   ],

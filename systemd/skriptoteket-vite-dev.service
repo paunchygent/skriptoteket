@@ -1,0 +1,31 @@
+# Skriptoteket staging SPA on Hemma (TASK-SKRIPT-REP-0034).
+# Install with `pdm run hemma-dev install-vite-unit` from
+# /home/paunchygent/apps/skriptoteket-dev; `hemma-dev start|stop` manage it.
+# Browser origin on the Mac: http://127.0.0.1:15173 (shared tunnel -> 127.0.0.1:5173).
+[Unit]
+Description=Skriptoteket Vite staging server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/paunchygent/apps/skriptoteket-dev/frontend
+Environment=PATH=/home/paunchygent/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=VITE_DEV_HOST=127.0.0.1
+Environment=VITE_DEV_PORT=5173
+# Protected /api goes through the HuleEdu staging Gateway, which signs identity.
+Environment=VITE_DEV_PROXY_TARGET=http://127.0.0.1:18080
+# Public API, share, and static routes go straight to skriptoteket-dev web.
+Environment=VITE_DEV_BACKEND_PROXY_TARGET=http://127.0.0.1:18000
+Environment=VITE_DEV_PUBLIC_API_PROXY_TARGET=http://127.0.0.1:18000
+# The browser calls HuleEdu auth directly; the Mac reaches the staging Gateway
+# only through HuleEdu Vite on the tunnelled 15174 port, whose /api proxy
+# strips the prefix.
+Environment=VITE_HULEEDU_AUTH_BASE_URL=http://127.0.0.1:15174/api
+Environment=VITE_HULEEDU_AUTH_ENTRY_URL=http://127.0.0.1:15174/api/auth/login
+ExecStart=/home/paunchygent/.local/bin/pnpm --filter @skriptoteket/spa dev
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
