@@ -519,6 +519,9 @@ handoff-validate = "python -m scripts.check_agent_doc_budgets"
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
 hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
 hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --script scripts/hemma_deploy_and_verify_share_previews.sh"
+
+# Hemma staging (rootless project skriptoteket-dev beside HuleEdu staging)
+hemma-dev = "python -m scripts.hemma_dev"
 check-migration-test-coverage = "python -m scripts.check_migration_test_coverage"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
@@ -544,6 +547,7 @@ db-upgrade = "alembic upgrade head"
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 consume-huleedu-subject-export = { cmd = "python -m skriptoteket.cli consume-huleedu-subject-export", env = { PYTHONPATH = "src" } }
+setup-staging-proof-fixture = { cmd = "python -m skriptoteket.cli setup-staging-proof-fixture", env = { PYTHONPATH = "src" } }
 auth-edge-bootstrap-preflight = { cmd = "python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
 send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }

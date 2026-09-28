@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2b124a5b699cd49d61a308135bf4caffcc69ebfde9feddda536dbf30d243b709",
+  "source_set_digest": "748c7ad52d1997f01398d6079d7f4e779a27c19e4c34e97baf2fde36d2c615e7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9495,6 +9495,19 @@
       ],
       "retired_ids": [
         "RUN-user-management"
+      ]
+    },
+    {
+      "id": "RUN-SKRIPT-skriptoteket-staging-on-hemma",
+      "type": "runbook",
+      "title": "Skriptoteket staging on Hemma",
+      "path": "docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md",
+      "status": "draft",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     }
   ],
