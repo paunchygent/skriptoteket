@@ -7,13 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-28'
-status: in_progress
+status: done
 closeout_review:
   record: inline
   status: approved
   reviewer: ruthless-code-review
   decided_at: '2026-09-28T09:27:39+02:00'
-  approval_evidence: .orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: '.orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md; merged to main as f62bdb92; phase 2 Hemma acceptance (fast-forward, start with import --apply and fixture, healthy status, Mac tunnel 15173, repeat start, reset) in captures 0052-0065 of that root; parent in-app walk at http://127.0.0.1:15173: proof contributor signed in through HuleEdu staging, ran staging-provverktyg in the editor sandbox (LYCKADES, Staging-provkörningen är klar.), and the pre-recorded 101-character display-name save showed the failure toast Visningsnamn får vara max 100 tecken with no change written and the page usable.'
 task_kind: repository
 acceptance_criteria:
   - A skriptoteket-dev compose project on Hemma's rootless daemon runs its own Postgres, web, worker, and runner image; web answers as skriptoteket-web on huleedu-dev_hule-network, publishes only on 127.0.0.1:18000, and trusts the HuleEdu staging identity key; web and worker share artifact storage at matching paths
