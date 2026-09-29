@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | runbook=19
+- total | runbook=20
 
 ## Lookup
 
@@ -27,6 +27,7 @@
 - runbook | RUN-SKRIPT-runbook-script-bank-seeding-repo-db | system=skriptoteket | summary=Runbook: Script bank seeding (repo → DB) | [Runbook: Script bank seeding (repo → DB)](run-skript-runbook-script-bank-seeding-repo-db-runbook-script-bank-seeding-repo-db.md)
 - runbook | RUN-SKRIPT-runbook-testing-pytest-vitest-playwright | system=skriptoteket-dev | summary=Runbook: Testing (Pytest + Vitest + Playwright) | [Runbook: Testing (Pytest + Vitest + Playwright)](run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md)
 - runbook | RUN-SKRIPT-runbook-user-and-local-role-management | system=skriptoteket-identity | summary=Use this runbook when you need to: - Bootstrap a new deployment with the first Superuser. - Inspect or repair Skriptoteket-local users, identity projections, and roles. - Grant or revoke app-local roles. **Context:**… | [Runbook: User and Local Role Management](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md)
+- runbook | RUN-SKRIPT-skriptoteket-staging-on-hemma | system=hemma.hule.education | summary=Operate the skriptoteket-dev staging stack beside HuleEdu staging on Hemma and reach it from the Mac tunnel | [Skriptoteket staging on Hemma](run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md)
 
 ## Backlog Backlinks
 
@@ -49,6 +50,7 @@
 - RUN-SKRIPT-runbook-script-bank-seeding-repo-db | [Runbook: Script bank seeding (repo → DB)](run-skript-runbook-script-bank-seeding-repo-db-runbook-script-bank-seeding-repo-db.md) | backlog=none
 - RUN-SKRIPT-runbook-testing-pytest-vitest-playwright | [Runbook: Testing (Pytest + Vitest + Playwright)](run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md) | backlog=none
 - RUN-SKRIPT-runbook-user-and-local-role-management | [Runbook: User and Local Role Management](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md) | backlog=none
+- RUN-SKRIPT-skriptoteket-staging-on-hemma | [Skriptoteket staging on Hemma](run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md) | backlog=none
 
 ## Peer Links
 
@@ -71,3 +73,4 @@
 - RUN-SKRIPT-runbook-script-bank-seeding-repo-db | [Runbook: Script bank seeding (repo → DB)](run-skript-runbook-script-bank-seeding-repo-db-runbook-script-bank-seeding-repo-db.md) | references=none | runbooks=none
 - RUN-SKRIPT-runbook-testing-pytest-vitest-playwright | [Runbook: Testing (Pytest + Vitest + Playwright)](run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md) | references=none | runbooks=none
 - RUN-SKRIPT-runbook-user-and-local-role-management | [Runbook: User and Local Role Management](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md) | references=none | runbooks=none
+- RUN-SKRIPT-skriptoteket-staging-on-hemma | [Skriptoteket staging on Hemma](run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md) | references=none | runbooks=none

@@ -41,6 +41,7 @@ from skriptoteket.cli.commands.prune_artifacts import prune_artifacts
 from skriptoteket.cli.commands.run_execution_worker import run_execution_worker
 from skriptoteket.cli.commands.seed_script_bank import seed_script_bank
 from skriptoteket.cli.commands.send_feedback_emails import send_feedback_emails
+from skriptoteket.cli.commands.setup_staging_proof_fixture import setup_staging_proof_fixture
 from skriptoteket.cli.commands.smoke_seating_export_readiness import (
     smoke_seating_export_readiness,
 )
@@ -52,6 +53,7 @@ app.command()(auth_edge_bootstrap_preflight)
 app.command()(bootstrap_superuser)
 app.command()(provision_user)
 app.command()(consume_huleedu_subject_export)
+app.command()(setup_staging_proof_fixture)
 app.command()(prune_artifacts)
 app.command()(cleanup_document_converter_project_previews)
 app.command()(cleanup_session_files)

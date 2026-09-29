@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ebb13721d777a44233e2142663bd957e22b87e2a6bbe1061ce89b85762ae008b",
+  "source_set_digest": "a1c1acf764632d95973839944e994951229718ad1b8489d32fda63877c69de75",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5412,6 +5412,28 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-REP-0034",
+      "type": "task",
+      "title": "Stand up Skriptoteket staging on Hemma next to HuleEdu staging",
+      "path": "docs/backlog/tasks/task-skript-rep-0034-stand-up-skriptoteket-staging-on-hemma-next-to-huleedu-staging.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-09-28T09:27:39+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md; merged to main as f62bdb92; phase 2 Hemma acceptance (fast-forward, start with import --apply and fixture, healthy status, Mac tunnel 15173, repeat start, reset) in captures 0052-0065 of that root; parent in-app walk at http://127.0.0.1:15173: proof contributor signed in through HuleEdu staging, ran staging-provverktyg in the editor sandbox (LYCKADES, Staging-provkörningen är klar.), and the pre-recorded 101-character display-name save showed the failure toast Visningsnamn får vara max 100 tecken with no change written and the page usable."
+      }
+    },
+    {
       "id": "ADR-SKRIPT-0002",
       "type": "adr",
       "title": "Backend framework: FastAPI",
@@ -9479,6 +9501,19 @@
       ],
       "retired_ids": [
         "RUN-user-management"
+      ]
+    },
+    {
+      "id": "RUN-SKRIPT-skriptoteket-staging-on-hemma",
+      "type": "runbook",
+      "title": "Skriptoteket staging on Hemma",
+      "path": "docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md",
+      "status": "draft",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     }
   ],
