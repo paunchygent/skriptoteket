@@ -316,6 +316,10 @@ resource-manifest = "frontend/apps/skriptoteket/src/design-system/huleedu-integr
 resource-package = "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/package.json"
 justified-exceptions = []
 
+[tool.repository-governance.design-system]
+map = "design-system-map.json"
+validate-command = ["pdm", "run", "design-system-validate"]
+
 [tool.repository-governance.quality]
 
 [[tool.repository-governance.quality.projects]]
@@ -498,6 +502,9 @@ fe-test.working_dir = "frontend"
 
 fe-test-watch.cmd = "pnpm --filter @skriptoteket/spa test:watch"
 fe-test-watch.working_dir = "frontend"
+
+design-system-validate.cmd = "repository-governance-frontend-catalog design-system validate --consumer-root ."
+design-system-validate.working_dir = "."
 
 fe-test-coverage.cmd = "pnpm --filter @skriptoteket/spa test:coverage"
 fe-test-coverage.working_dir = "frontend"

@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-code-review
+  decided_at: '2026-09-28T00:54:42+02:00'
 task_kind: story
 acceptance_criteria:
 - Running repository-governance-frontend-catalog design-system sync against Skriptoteket writes the package tokens, Tailwind theme and horizontal logo to their current Skriptoteket paths as named in the root design-system-map.json, with every other export null, and Skriptoteket's validate command passes
