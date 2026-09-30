@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-30'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -21,9 +21,10 @@ acceptance_criteria:
   tests or negative archaeology tests, and real-DXE PostgreSQL-backed integration
   coverage exercises the production job, enrichment, worker, review projection, and
   artifact chain with only the external provider boundary isolated.
-- The exact real DXE passes through the authenticated Docker development stack and
-  browser review flow before integration or redeployment; focused or synthetic checks
-  cannot satisfy this acceptance criterion.
+- After merge to main, the agent that owns the end-to-end proof uploads the exact real
+  DXE on Hemma staging (skriptoteket-dev) and clicks through the review flow in a real
+  browser it controls, with the configured API-model provider, before any production
+  redeployment; focused or synthetic checks cannot satisfy this acceptance criterion.
 story: ST-SKRIPT-39-02
 backlog_document_profile: contract-derived
 ---
@@ -44,7 +45,7 @@ filesystem state, compatibility path, or verification subsystem.
 Audit the touched Exam Converter tests and remove tests or proof scripts that
 only exercise fabricated UI shapes, assert trivial event emission, or assert
 that removed symbols remain absent. Replace the missing confidence with one
-real-input integration path and one real development-runtime browser path.
+real-input integration path and one real-browser click-through on Hemma staging.
 There is no additional review stage for this repair; implementation continues
 until the agreed integrated vertical is green.
 
@@ -76,10 +77,14 @@ teacher review actions -> generated artifacts`.
 The automated integration test uses the genuine unchanged DXE and real
 PostgreSQL/UoW repositories. It may isolate only the external provider network
 behind the production provider protocol; every Skriptoteket transition listed
-above must execute through production code. The live development proof uses
-the authenticated Docker/Gateway stack, the actual configured API-model
-provider, and browser interactions. Neither a fabricated request body nor a
-Vite-only fixture page qualifies.
+above must execute through production code. The live proof runs on Hemma
+staging, the rootless Docker Compose project `skriptoteket-dev` beside HuleEdu
+staging, after merge to `main`, following
+`docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`:
+the agent that owns the end-to-end proof signs in through HuleEdu staging and
+clicks through in a real browser it controls, with the actual configured
+API-model provider. Neither a fabricated request body nor a Vite-only fixture
+page qualifies.
 
 The planner remains a linear pass over the already parsed exam. The repair adds
 no extra network round trip, polling layer, or persistence authority.
@@ -89,10 +94,11 @@ no extra network round trip, polling layer, or persistence authority.
 - A real-DXE PostgreSQL-backed integration test proves admission, durable job
   and enrichment state, worker completion, partial overlay creation, preserved
   manual review state, review projection, and artifact availability.
-- An authenticated Playwright run through the Docker development stack uploads
-  the exact genuine DXE, observes durable processing, reaches the review UI,
-  exercises the agreed review controls and progression, and confirms the
-  artifacts become available. This is the end-to-end release gate.
+- After `main` is fast-forwarded on Hemma staging, the agent that owns the
+  end-to-end proof, in a real browser it controls, uploads the exact genuine
+  DXE, observes durable processing, reaches the review UI, exercises the
+  agreed review controls and progression, and confirms the artifacts become
+  available. This is the end-to-end release gate for production redeployment.
 - Audit the touched backend, frontend, and script tests. Remove low-value
   fabricated happy paths, trivial event-only assertions, duplicate synthetic
   proof pages, and negative archaeology assertions.
@@ -104,9 +110,9 @@ no extra network round trip, polling layer, or persistence authority.
 
 ## Stop Conditions
 
-- The authenticated Docker/Gateway development lane or actual remote provider
-  cannot complete the unchanged real-DXE path: do not integrate, publish, or
-  redeploy; repair the vertical or report the concrete blocker.
+- The Hemma staging click-through or actual remote provider cannot complete
+  the unchanged real-DXE path: do not redeploy production or close the task;
+  fix forward on `main` or report the concrete blocker.
 - The repair would require a second job-state authority, a filesystem queue, a
   legacy Sir processing dependency, or a compatibility fallback: stop and
   return to the accepted PostgreSQL/UoW boundary.
@@ -124,7 +130,7 @@ no extra network round trip, polling layer, or persistence authority.
 | D2 | PostgreSQL/UoW remains the single state authority. |
 | D3 | Low-value fake-shape, trivial happy-path, and negative-archaeology tests in the touched slice are removed rather than counted as proof. |
 | D4 | The unchanged real DXE and real application transitions are mandatory test inputs. |
-| D5 | The authenticated Docker development-stack browser path with the configured API provider is the end-to-end gate. |
+| D5 | The end-to-end gate is a real-browser click-through on Hemma's rootless Docker staging (`skriptoteket-dev`, beside HuleEdu staging) after merge to `main`, run by the agent that owns the end-to-end proof, with the configured API provider (user decision 2026-09-30; supersedes the local Docker development-stack Playwright gate). |
 | D6 | Focused and synthetic checks cannot establish integration or release readiness. |
 | D7 | No additional review stage is added; repair continues until the integrated vertical is green. |
 | D8 | Production DXE acceptance remains user-owned. |

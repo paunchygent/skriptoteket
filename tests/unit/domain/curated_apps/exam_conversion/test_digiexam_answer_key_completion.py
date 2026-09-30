@@ -118,6 +118,27 @@ def _open_ended_question() -> dict[str, JsonValue]:
     }
 
 
+_PNG_1X1_BASE64 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4"
+    "2mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+)
+
+
+def _asset_bearing_gap_fill_question() -> dict[str, JsonValue]:
+    return {
+        "id": 2,
+        "title": "Gap with image",
+        "about": "",
+        "bodyHTML": (
+            '<p><img data-image-id="0" class="fr-fic fr-dib"/></p><p>Fill in the missing word.</p>'
+        ),
+        "images": [_PNG_1X1_BASE64],
+        "maxScore": 2,
+        "type": 3,
+        "blanks": [{"guid": "gap-1", "validations": []}],
+    }
+
+
 def test_profile_rejects_output_budget_at_or_above_context_window() -> None:
     with pytest.raises(ValueError):
         StructuredLLMProviderProfile(
@@ -142,6 +163,19 @@ def test_source_keyed_exam_needs_no_enrichment() -> None:
 
     assert plan.state is AnswerKeyEnrichmentPlanState.NOT_NEEDED
     assert plan.unkeyed_items == ()
+
+
+def test_asset_bearing_item_does_not_block_supported_unkeyed_items() -> None:
+    exam = _exam([_unkeyed_single_choice_question(), _asset_bearing_gap_fill_question()])
+
+    plan = plan_answer_key_enrichment(exam)
+
+    assert plan.state is AnswerKeyEnrichmentPlanState.ELIGIBLE
+    assert tuple(item.item_id for item in plan.unkeyed_items) == ("item-001",)
+    assert {(follow_up.item_id, follow_up.reason) for follow_up in exam.manual_follow_ups} == {
+        ("item-001", DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED),
+        ("item-002", DigiExamIrManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED),
+    }
 
 
 def test_manual_marking_items_do_not_block_supported_unkeyed_items() -> None:

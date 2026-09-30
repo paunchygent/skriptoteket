@@ -27,9 +27,16 @@
   retirement is governed by 03-04; no live deployment state is asserted
   here. Luna/GLM plus the daily lease remain.
 - [TASK-SKRIPT-39-02-03](docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md)
-  is `ready`: item-local enrichment repair for
-  `1776888013-ak7-lag-och-ratt.dxe` with real-DXE integration plus Docker
-  browser gates. It is a required predecessor for the DOCX skeleton.
+  is `in_progress`: the item-local admission repair is already on `main` via
+  `52ccc0a2` (real-DXE plan `ELIGIBLE` for 5 supported items, asset-bearing
+  item-003 kept for manual review); the real-DXE fixture is byte-identical to
+  its source (`ab39bbee`). Two unit tests pin D1; their two test files pass
+  27 tests (independent review, Skriptoteket session
+  `01a0f227-63b9-7435-8013-5f556eaf4905`). D5 was amended 2026-09-30 by user
+  decision: the end-to-end gate is a real-browser click-through on Hemma's
+  rootless Docker staging (`skriptoteket-dev`) after merge to `main`, run by
+  the agent that owns the end-to-end proof; it has not run yet. It is a
+  required predecessor for the DOCX skeleton.
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
   stays canceled (`d48233e9`); Exam.net acceptance stays user-owned and
   proven import acceptance is not reopened. Live-proven anchors: Sir
@@ -58,12 +65,12 @@
 
 ## Facts
 
-- Session Date: 2026-09-05
-- Last Refreshed: 2026-09-05
+- Session Date: 2026-09-30
+- Last Refreshed: 2026-09-30
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
-- No code changes in this slice; no staging, commit, merge, push, branch
-  switch, or worktree change.
+- The 2026-09-30 slice adds TASK-SKRIPT-39-02-03 unit tests and a test-support
+  module, and amends its D5 gate; it changes no production code.
 - Open product questions (undecided, not silently resolved): native doc
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
