@@ -113,6 +113,7 @@
 - `EPIC-SKRIPT-37` | [Backlog product-direction inventory and app surface realignment](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | epic | active
 - `EPIC-SKRIPT-38` | [Shared governed development system cutover](../backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md) | epic | done
 - `EPIC-SKRIPT-39` | [Skriptoteket-owned exam conversion](../backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | epic | active
+- `EPIC-SKRIPT-40` | [Shared design-system convergence](../backlog/epics/epic-skript-40-shared-design-system-convergence.md) | epic | ready
 - `ST-SKRIPT-02-02` | [Admin nomination and superuser approval](../backlog/stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | story | ready
 - `ST-SKRIPT-02-06` | [Swedish school domain allowlist for registration](../backlog/stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | story | ready
 - `ST-SKRIPT-06-16` | [Backend SRP refactor of god modules](../backlog/stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | story | ready
@@ -167,3 +168,5 @@
 - `ST-SKRIPT-39-01` | [Walking skeleton for Skriptoteket-owned exam conversion](../backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | story | active
 - `ST-SKRIPT-39-02` | [Port the remote answer-key completion line with a daily token lease](../backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md) | story | done
 - `ST-SKRIPT-39-03` | [Cut over the Exam Converter and retire the Sir exam lane](../backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md) | story | active
+- `ST-SKRIPT-40-01` | [Converge tokens, components and action buttons onto the shared package](../backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | story | ready
+- `ST-SKRIPT-40-02` | [Converge icons onto the shared glyph vocabulary](../backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | story | ready

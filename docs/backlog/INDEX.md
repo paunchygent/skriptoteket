@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=39 | story=322 | task=0 | review=136
-- open | epic=18 | story=59 | task=0
+- total | epic=40 | story=324 | task=0 | review=137
+- open | epic=19 | story=61 | task=0
 
 ## Lookup
 
@@ -48,6 +48,7 @@
 - epic | EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md)
 - epic | EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md)
 - epic | EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
+- epic | EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md)
 - story | ST-01-01 | [Profession → category navigation](stories/story-01-01-profession-category-navigation.md)
 - story | ST-02-01 | [User model and identity service (MVP, testable)](stories/story-02-01-user-model-and-identity-service.md)
 - story | ST-02-03 | [Self-registration](stories/story-02-03-self-registration.md)
@@ -370,6 +371,8 @@
 - story | ST-SKRIPT-39-02 | [Port the remote answer-key completion line with a daily token lease](stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
 - story | ST-SKRIPT-39-03 | [Cut over the Exam Converter and retire the Sir exam lane](stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md)
 - story | ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md)
+- story | ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md)
+- story | ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md)
 - review | REV-EPIC-02 | [Review: Local password reset via emailed token](reviews/review-epic-02-local-password-reset-via-emailed-token.md) | target=EPIC-02, [ST-02-07](stories/story-02-07-local-password-reset-via-emailed-token.md), ADR-0078
 - review | REV-EPIC-06 | [Review: Linter Architecture Refactor](reviews/review-epic-06-linter-architecture-refactor.md) | target=EPIC-06, [ST-06-10](stories/story-06-10-context-rule-architecture.md), [ST-06-11](stories/story-06-11-quick-fix-actions.md), [ST-06-12](stories/story-06-12-lint-panel-navigation.md), [ST-06-13](stories/story-06-13-gutter-filter-polish.md), [ST-06-14](stories/story-06-14-headless-test-harness.md)
 - review | REV-EPIC-07 | [Review: ASGI correlation middleware for access-log correlation](reviews/review-epic-07-correlation-middleware-asgi.md) | target=[EPIC-07](epics/epic-07-observability-and-operations.md), [ST-07-06](stories/story-07-06-asgi-correlation-middleware.md), ADR-0061
@@ -490,6 +493,7 @@
 - review | REV-PR-0410 | [Review: PR-0410 Exam Converter correction replay artifact-set consumer](reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md) | target=none
 - review | REV-PR-0411 | [Review: PR-0411 Mina filer R2 storage migration planning](reviews/review-pr-0411-mina-filer-r2-storage-migration-planning.md) | target=none
 - review | REV-PR-0412 | [Review: PR-0412 Mina filer File Service consumer task split](reviews/review-pr-0412-mina-filer-file-service-consumer-task-split.md) | target=none
+- review | REV-SKRIPT-EPIC-40-CLOSEOUT | [Shared design-system convergence](reviews/review-epic-40-shared-design-system-convergence.md) | target=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md)
 - review | REV-SKRIPT-ST-08-27-CLOSEOUT | [Review: ST-SKRIPT-08-27 editor chat virtual file context retention + tokenizers](reviews/rev-skript-st-08-27-closeout-review-st-08-27-editor-chat-virtual-file-context-retention-tokenizers.md) | target=[ST-SKRIPT-08-27](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md)
 - review | REV-SKRIPT-TASK-REP-0006-CLOSEOUT | [Review: TASK-SKRIPT-REP-0006 implementation closeout](reviews/review-task-skript-rep-0006-implementation-closeout.md) | target=TASK-SKRIPT-REP-0006
 - review | REV-SKRIPT-TASK-REP-0024-CLOSEOUT | [Review: PR-0314 solver-owned rule marker semantics](reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md) | target=TASK-SKRIPT-REP-0024
@@ -544,6 +548,7 @@
 
 ### ready
 
+- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=ready=2 | tasks=none
 - ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
@@ -588,6 +593,8 @@
 - ST-SKRIPT-33-01 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | epic=[EPIC-SKRIPT-33](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-37-04 | [App presentation decomposition and naming reset](stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=3 | dependents=1
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
+- ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### proposed
 

@@ -31,10 +31,22 @@ No separate facts and semantics is stated in the source.
 
 To adopt this design system in another repo:
 
-1. **Copy the token pipeline** (Trace 1): Backend static CSS → Tailwind theme bridge
+1. **Adopt the token pipeline through design-system sync** (Trace 1): map the `tokens` and `tailwind-theme` exports and run sync
 2. **Adopt the styling entry** (Trace 2): Single CSS entry point with Tailwind + tokens
-3. **Import shared primitives** (Trace 3): Copy `denseToolPrimitives.ts` and dense UI components
+3. **Adopt shared primitives through design-system sync** (Trace 3): map their released export ids (for example `dense-tool-primitives`, `ui-dense-action-button`, `ui-dense-icon-button`) and run sync
 4. **Follow governance** (Trace 6): ADRs and rules define the design principles
+
+The shared package `huleedu-integrated-frontend-design-system` lives in the skill-repository at `resources/frontend-design-system/huleedu-integrated`. A consumer adopts an export by naming it in its root `design-system-map.json`: the map lists every released export id, an unadopted export is `null`, and an adopted export maps to a target path relative to the consumer root. The consumer also declares `[tool.repository-governance.design-system]` with `map` and `validate-command` in `pyproject.toml`. With the map, the targets, and the mirror `manifest.json` and `package.json` committed and clean, run from the consumer root:
+
+```bash
+pdm run repository-governance-frontend-catalog design-system sync --consumer-root . --source-root <clean skill-repository main checkout>
+```
+
+Sync refuses a dirty source package or dirty consumer paths. It writes the released bytes to each mapped target, copies `manifest.json` and `package.json` into the mirror directory, sets the map version, and runs the consumer validate command. To validate without syncing, run `pdm run design-system-validate`, which wraps `repository-governance-frontend-catalog design-system validate --consumer-root .` and also runs as a pre-commit hook.
+
+Because that hook validates the map against the committed mirror, a commit that adds a newly mapped export fails until sync has run. A map expansion therefore uses the bounded checkpoint from TASK-SKRIPT-40-01-01: the checkpoint commit moves only the `design-system-validate` hook to the `manual` stage alongside the new map, sync runs against the clean map, and the validated result commit restores the hook to `pre-commit`. A version-only refresh keeps the hook active and lets sync update the version.
+
+Skriptoteket adopts `tokens` → `src/skriptoteket/web/static/css/huleedu-design-tokens.css`, `tailwind-theme` → `frontend/apps/skriptoteket/src/styles/tailwind-theme.css`, and `skriptoteket-logo-horizontal` → `frontend/apps/skriptoteket/public/logo-horizontal.svg`. Its mirror is `frontend/apps/skriptoteket/src/design-system/huleedu-integrated`. Adopted targets are never edited by hand; changes land in the shared package and arrive through sync.
 
 ### Source: Trace Map
 
@@ -96,13 +108,15 @@ Tailwind 4 Theme Bridge
 
 ### Trace 1 Adoption Steps
 
-1. **Copy `huleedu-design-tokens.css`** from Skriptoteket backend to your repo's static assets
+1. **Map `tokens` and `tailwind-theme`** to target paths in `design-system-map.json` and commit the map
 
-2. **Create `tokens.css`** that imports the backend file
+2. **Run design-system sync** from the consumer root to write the released token and theme files to those targets
 
-3. **Create `tailwind-theme.css`** with `@theme inline` block mapping tokens to Tailwind vars
+3. **Confirm the adoption** with `pdm run design-system-validate`
 
-4. **Never modify `huleedu-design-tokens.css` directly** - it's the shared source of truth
+4. **Create `tokens.css`** that imports the backend file
+
+5. **Never modify `huleedu-design-tokens.css` or any other adopted target directly** - changes land in the shared package and arrive through sync
 
 ---
 
@@ -212,9 +226,9 @@ Shared UI Export Surface
 
 ### Trace 3 Adoption Steps
 
-1. **Copy `denseToolPrimitives.ts`** to your repo's UI components directory
+1. **Map the `dense-tool-primitives` export** to a target path in your UI components directory in `design-system-map.json`
 
-2. **Copy the dense UI components**: `UiDenseActionButton.vue`, `UiDenseIconButton.vue`, etc.
+2. **Map the dense UI component exports** `ui-dense-action-button` and `ui-dense-icon-button` to target paths, commit the map, and run design-system sync
 
 3. **Create a shared UI index** that exports all primitives
 
@@ -278,9 +292,9 @@ Toast Component (ToastHost.vue) [4h]
 
 ### Trace 4 Adoption Steps
 
-1. **Copy toast CSS primitives** from `main.css` to your entry CSS
+1. **Map the `toast-host` export** (and `system-message` where needed) to target paths in `design-system-map.json` and commit the map
 
-2. **Copy `ToastHost.vue`** component to your UI components
+2. **Run design-system sync** to write the released toast files to those targets
 
 3. **Mount `<ToastHost />`** in your root App component
 
@@ -332,9 +346,9 @@ Workspace Integration
 
 ### Trace 5 Adoption Steps
 
-1. **Copy `DENSE_SEGMENTED_SHELL_CLASS`** from `denseToolPrimitives.ts`
+1. **Map the `dense-tool-primitives` export**, which provides `DENSE_SEGMENTED_SHELL_CLASS`, in `design-system-map.json`
 
-2. **Copy `UiSegmentedToggle.vue`** component to your UI components
+2. **Map the `ui-segmented-toggle` export**, commit the map, and run design-system sync
 
 3. **Use the segmented toggle** for mode switchers in your workspaces
 

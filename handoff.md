@@ -1,5 +1,15 @@
 ## Current
 
+- [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
+  is `ready`. TASK-SKRIPT-40-01-01 has an approved implementation review
+  (`bda00b6a`) and adopts design-system metadata 0.1.23 through package
+  sync. Current main was merged before integration.
+  The adopted CSS and logo bytes did not change in this refresh. The task
+  remains `in_progress`: this integration does not establish its required
+  Hemma staging screen walk. Integration and cleanup evidence:
+  HuleEdu retained session `01a0eef4-0059-7e04-a805-0991592709a1`.
+  TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Planning session:
+  `01a0e4a4-436a-70d9-a907-702d84f2a091`.
 - 2026-09-05 reconciliation (docs/planning only, no code): the user-approved
   native editable exam workspace is recorded in
   [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)

@@ -19,13 +19,13 @@
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS - Core Brand Palette
      ───────────────────────────────────────────────────────────────────────── */
-  --huleedu-paper: #FAFAF6;         /* Light warm canvas background */
+  --huleedu-paper: #FEFEFC;         /* Subtle warm canvas background */
   --huleedu-canvas: var(--huleedu-paper);
   --huleedu-modal: var(--huleedu-canvas); /* Opaque canvas-toned modal/dialog shell */
-  --huleedu-panel: rgba(250, 250, 246, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
-  --huleedu-panel-muted: rgba(250, 250, 246, 0.38);
+  --huleedu-panel: rgba(254, 254, 252, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
+  --huleedu-panel-muted: rgba(254, 254, 252, 0.38);
   --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
-  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent + transient failure toast */
+  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent only */
   --huleedu-action: #3F7F78;        /* Verdigris Teal: functional action/selection */
   --huleedu-critical: #4D1521;      /* Burgundy family: destructive/critical decisions */
   --huleedu-burgundy: var(--huleedu-critical); /* Deprecated compatibility alias */
@@ -52,6 +52,7 @@
   --huleedu-navy-02: rgba(8, 43, 76, 0.02);
   --huleedu-navy-05: rgba(8, 43, 76, 0.05);
   --huleedu-navy-10: rgba(8, 43, 76, 0.1);
+  --huleedu-navy-15: rgba(8, 43, 76, 0.15);
   --huleedu-navy-20: rgba(8, 43, 76, 0.2);
   --huleedu-navy-30: rgba(8, 43, 76, 0.3);
   --huleedu-navy-40: rgba(8, 43, 76, 0.4);
@@ -83,15 +84,36 @@
   --huleedu-burgundy-30: var(--huleedu-critical-30);
   --huleedu-burgundy-40: var(--huleedu-critical-40);
 
-  --huleedu-canvas-15: rgba(250, 250, 246, 0.15);
-  --huleedu-canvas-30: rgba(250, 250, 246, 0.3);
-  --huleedu-canvas-50: rgba(250, 250, 246, 0.5);
-  --huleedu-canvas-80: rgba(250, 250, 246, 0.8);
+  --huleedu-canvas-15: rgba(254, 254, 252, 0.15);
+  --huleedu-canvas-30: rgba(254, 254, 252, 0.3);
+  --huleedu-canvas-50: rgba(254, 254, 252, 0.5);
+  --huleedu-canvas-80: rgba(254, 254, 252, 0.8);
 
   /* Semantic colors */
   --huleedu-success: #059669;       /* emerald-600 */
   --huleedu-warning: #D97706;       /* amber-600 */
   --huleedu-error: #DC2626;         /* red-600 */
+
+  --huleedu-success-10: rgba(5, 150, 105, 0.1);
+  --huleedu-success-15: rgba(5, 150, 105, 0.15);
+  --huleedu-success-45: rgba(5, 150, 105, 0.45);
+  --huleedu-success-50: rgba(5, 150, 105, 0.5);
+  --huleedu-warning-15: rgba(217, 119, 6, 0.15);
+  --huleedu-warning-20: rgba(217, 119, 6, 0.2);
+  --huleedu-warning-50: rgba(217, 119, 6, 0.5);
+  --huleedu-warning-60: rgba(217, 119, 6, 0.6);
+  --huleedu-error-10: rgba(220, 38, 38, 0.1);
+  --huleedu-error-15: rgba(220, 38, 38, 0.15);
+  --huleedu-error-40: rgba(220, 38, 38, 0.4);
+  --huleedu-error-45: rgba(220, 38, 38, 0.45);
+
+  /* Strong solid shades: status glyphs on translucent (frosted) surfaces only.
+     Each keeps its base OKLCH hue at lightness ~0.39 (chroma reduced only to stay
+     in sRGB), so it reaches 3:1 against the darkest frosted surface (128,151,181)
+     and against the lightest one over white. Text keeps the base colour roles. */
+  --huleedu-success-strong: #025137; /* 3.14:1 darkest frosted, 9.40:1 white */
+  --huleedu-warning-strong: #6D3800; /* 3.16:1 darkest frosted, 9.48:1 white */
+  --huleedu-action-strong: #02504A;  /* 3.12:1 darkest frosted, 9.34:1 white */
 
   /* ─────────────────────────────────────────────────────────────────────────
      TYPOGRAPHY
@@ -134,6 +156,33 @@
   --huleedu-leading-relaxed: 1.625;      /* Body text */
   --huleedu-leading-loose: 2;            /* Essay/content */
 
+  /* Type roles for interface workspaces. Screen CSS consumes a role's size
+     and weight together instead of combining raw scale values.
+     page-title: page or mode title.
+     section-title: panel section title.
+     nested-title: nested section or document level-1 heading.
+     field-label: form field label.
+     control-value: selected option and entered field text.
+     supporting: supporting body text or summary value.
+     helper: helper text or metadata.
+     title-leading / body-leading: line height for title and body roles. */
+  --huleedu-type-page-title-size: var(--huleedu-text-xl);
+  --huleedu-type-page-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-section-title-size: var(--huleedu-text-lg);
+  --huleedu-type-section-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-nested-title-size: var(--huleedu-text-base);
+  --huleedu-type-nested-title-weight: var(--huleedu-font-medium);
+  --huleedu-type-field-label-size: var(--huleedu-text-sm);
+  --huleedu-type-field-label-weight: var(--huleedu-font-medium);
+  --huleedu-type-control-value-size: 0.8125rem; /* 13px */
+  --huleedu-type-control-value-weight: var(--huleedu-font-normal);
+  --huleedu-type-supporting-size: var(--huleedu-text-sm);
+  --huleedu-type-supporting-weight: var(--huleedu-font-normal);
+  --huleedu-type-helper-size: var(--huleedu-text-xs);
+  --huleedu-type-helper-weight: var(--huleedu-font-normal);
+  --huleedu-type-title-leading: var(--huleedu-leading-snug);
+  --huleedu-type-body-leading: var(--huleedu-leading-normal);
+
   /* ─────────────────────────────────────────────────────────────────────────
      SPACING (4px base scale)
      ───────────────────────────────────────────────────────────────────────── */
@@ -153,6 +202,33 @@
   --huleedu-space-16: 4rem;         /* 64px */
   --huleedu-space-20: 5rem;         /* 80px */
 
+  /* Shared action-control geometry: keep the touch/default target intact. */
+  --huleedu-action-control-height: 2.75rem; /* 44px */
+
+  /* Compact workbench roles. Opt in by surface; do not shrink touch controls. */
+  --huleedu-workbench-control-height: 1.75rem; /* 28px */
+  --huleedu-workbench-control-text: var(--huleedu-text-xs);
+  --huleedu-workbench-control-weight: var(--huleedu-font-medium);
+  --huleedu-workbench-control-padding-inline: var(--huleedu-space-2-5);
+  --huleedu-workbench-control-gap: var(--huleedu-space-2);
+  --huleedu-workbench-control-radius: 0.3125rem; /* 5px */
+  --huleedu-workbench-control-border: var(--huleedu-navy-20);
+  --huleedu-workbench-icon-size: var(--huleedu-space-4);
+  --huleedu-navigation-icon-size: var(--huleedu-space-5);
+  --huleedu-font-page-title: var(--huleedu-font-serif);
+  --huleedu-font-interface: var(--huleedu-font-sans);
+  --huleedu-product-identity-text: var(--huleedu-text-sm);
+  --huleedu-product-identity-weight: var(--huleedu-font-medium);
+  --huleedu-product-identity-color: var(--huleedu-navy-70);
+  --huleedu-surface-content: #FFFFFF;
+  --huleedu-surface-divider: var(--huleedu-navy-10);
+  --huleedu-panel-border: var(--huleedu-navy-15);
+  --huleedu-panel-radius: var(--huleedu-radius-lg);
+  --huleedu-link-color: var(--huleedu-action);
+  --huleedu-link-weight: var(--huleedu-font-medium);
+  --huleedu-link-underline-offset: var(--huleedu-space-0-5);
+  --huleedu-scrollbar-thumb: var(--huleedu-action-30);
+
   /* ─────────────────────────────────────────────────────────────────────────
      BORDERS & RADIUS
      ───────────────────────────────────────────────────────────────────────── */
@@ -169,7 +245,7 @@
   --huleedu-radius-full: 9999px;    /* Pills, dots */
 
   /* ─────────────────────────────────────────────────────────────────────────
-     SHADOWS (Brutalist style)
+     LEGACY DECORATIVE SHADOWS (not workbench defaults)
      ───────────────────────────────────────────────────────────────────────── */
   --huleedu-shadow-brutal: 6px 6px 0px 0px var(--huleedu-navy);
   --huleedu-shadow-brutal-sm: 4px 4px 0px 0px var(--huleedu-navy);

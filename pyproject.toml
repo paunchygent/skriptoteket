@@ -82,7 +82,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@ea0a003bfdd710c00e0bd10c4b18db44c6e4b12f#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@1abb78f21661951bd6359f4dcdc0bade1b0b9c35#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -316,6 +316,10 @@ resource-manifest = "frontend/apps/skriptoteket/src/design-system/huleedu-integr
 resource-package = "frontend/apps/skriptoteket/src/design-system/huleedu-integrated/package.json"
 justified-exceptions = []
 
+[tool.repository-governance.design-system]
+map = "design-system-map.json"
+validate-command = ["pdm", "run", "design-system-validate"]
+
 [tool.repository-governance.quality]
 
 [[tool.repository-governance.quality.projects]]
@@ -431,6 +435,8 @@ check-md-all = "check-md-all"
 # repository-governance:bindings:end
 # repository-governance:auxiliary-bindings:start
 archive-documents = "repository-governance-archive-documents"
+markdownlint-config-sync = "markdownlint-config-sync"
+markdownlint-config-drift-check = "markdownlint-config-drift-check"
 run-hemma = "repository-governance-run-hemma --repo-root ${PDM_PROJECT_ROOT}"
 staleness-audit = "repository-governance-staleness-audit --repo-root ${PDM_PROJECT_ROOT}"
 publish-main = "repository-governance-publish-main --repository-root ${PDM_PROJECT_ROOT}"
@@ -497,6 +503,9 @@ fe-test.working_dir = "frontend"
 fe-test-watch.cmd = "pnpm --filter @skriptoteket/spa test:watch"
 fe-test-watch.working_dir = "frontend"
 
+design-system-validate.cmd = "repository-governance-frontend-catalog design-system validate --consumer-root ."
+design-system-validate.working_dir = "."
+
 fe-test-coverage.cmd = "pnpm --filter @skriptoteket/spa test:coverage"
 fe-test-coverage.working_dir = "frontend"
 
@@ -517,6 +526,9 @@ handoff-validate = "python -m scripts.check_agent_doc_budgets"
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
 hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
 hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --script scripts/hemma_deploy_and_verify_share_previews.sh"
+
+# Hemma staging (rootless project skriptoteket-dev beside HuleEdu staging)
+hemma-dev = "python -m scripts.hemma_dev"
 check-migration-test-coverage = "python -m scripts.check_migration_test_coverage"
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
@@ -542,6 +554,7 @@ db-upgrade = "alembic upgrade head"
 bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", env = { PYTHONPATH = "src" } }
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 consume-huleedu-subject-export = { cmd = "python -m skriptoteket.cli consume-huleedu-subject-export", env = { PYTHONPATH = "src" } }
+setup-staging-proof-fixture = { cmd = "python -m skriptoteket.cli setup-staging-proof-fixture", env = { PYTHONPATH = "src" } }
 auth-edge-bootstrap-preflight = { cmd = "python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
 send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }

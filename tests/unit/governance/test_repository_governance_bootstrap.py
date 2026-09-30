@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import importlib.metadata
+import json
 import re
 import tomllib
 from pathlib import Path
 
+import yaml
 from repository_governance.routine.bindings import (
     AUXILIARY_BINDINGS,
     ROUTINE_BINDINGS,
@@ -74,6 +76,10 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
         ),
         "justified-exceptions": [],
     }
+    assert facts["design-system"] == {
+        "map": "design-system-map.json",
+        "validate-command": ["pdm", "run", "design-system-validate"],
+    }
     quality = facts["quality"]
     assert quality["cohorts"] == [
         {
@@ -132,3 +138,43 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
     assert scripts["test-parallel"] == "python -m scripts.run_pytest_with_native_libs -n auto"
     assert scripts["hemma-deploy"] == "bash ./scripts/hemma_deploy_start.sh"
     assert scripts["dev-stack"] == "python -m scripts.dev_stack"
+
+
+def test_design_system_validation_runs_automatically_on_protected_paths() -> None:
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["tool"]["pdm"]["scripts"]["design-system-validate"] == {
+        "cmd": "repository-governance-frontend-catalog design-system validate --consumer-root .",
+        "working_dir": ".",
+    }
+
+    config = yaml.safe_load((ROOT / ".pre-commit-config.yaml").read_text(encoding="utf-8"))
+    assert "pre-commit" in config["default_install_hook_types"]
+    hooks = [hook for repo in config["repos"] for hook in repo["hooks"]]
+    hook = next(hook for hook in hooks if hook["id"] == "design-system-validate")
+    assert hook["entry"] == "pdm run design-system-validate"
+    assert hook["pass_filenames"] is False
+    assert hook["stages"] == ["pre-commit"]
+
+    design_map = json.loads((ROOT / "design-system-map.json").read_text(encoding="utf-8"))
+    assert design_map["package"] == "huleedu-integrated-frontend-design-system"
+    adopted = {export: path for export, path in design_map["exports"].items() if path is not None}
+    assert adopted == {
+        "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
+        "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
+        "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
+    }
+    mirror = design_map["mirror"]
+    assert mirror == "frontend/apps/skriptoteket/src/design-system/huleedu-integrated"
+    assert not (ROOT / mirror / "manifest.schema.json").exists()
+
+    pattern = re.compile(hook["files"], re.VERBOSE)
+    protected = [
+        "design-system-map.json",
+        f"{mirror}/manifest.json",
+        f"{mirror}/package.json",
+        *adopted.values(),
+        "pyproject.toml",
+        ".pre-commit-config.yaml",
+    ]
+    for path in protected:
+        assert pattern.search(path), path

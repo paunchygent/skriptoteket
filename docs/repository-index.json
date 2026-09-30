@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "11f02d5bee1ff40e4b512d9a0e9e1e50a471bc3bc0fcd5d1b95ac1d959d3bbdd",
+  "source_set_digest": "dbdc504e686f68da5042b4aa425e9de0d6cd44058de13aa23cb25648e7fa04a2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -567,6 +567,26 @@
       }
     },
     {
+      "id": "EPIC-SKRIPT-40",
+      "type": "epic",
+      "title": "Shared design-system convergence",
+      "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md",
+      "status": "ready",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "REV-SKRIPT-ST-08-27-CLOSEOUT",
       "type": "review",
       "title": "Review: ST-SKRIPT-08-27 editor chat virtual file context retention + tokenizers",
@@ -616,6 +636,21 @@
       "path": "docs/backlog/reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics.md",
       "status": "changes_requested",
       "target": "TASK-SKRIPT-REP-0024",
+      "gate": "closeout",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REV-SKRIPT-EPIC-40-CLOSEOUT",
+      "type": "review",
+      "title": "Shared design-system convergence",
+      "path": "docs/backlog/reviews/review-epic-40-shared-design-system-convergence.md",
+      "status": "approved",
+      "target": "EPIC-SKRIPT-40",
       "gate": "closeout",
       "owners": [
         {
@@ -2193,6 +2228,48 @@
           "ADR-SKRIPT-0090",
           "ADR-SKRIPT-0091"
         ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-01",
+      "type": "story",
+      "title": "Converge tokens, components and action buttons onto the shared package",
+      "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-02",
+      "type": "story",
+      "title": "Converge icons onto the shared glyph vocabulary",
+      "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -4428,6 +4505,84 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-01-01",
+      "type": "task",
+      "title": "Adopt the shared tokens, theme and logo through design-system sync",
+      "path": "docs/backlog/tasks/task-skript-40-01-01-adopt-the-shared-tokens-theme-and-logo-through-design-system-sync.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-09-28T00:54:42+02:00"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-01-02",
+      "type": "task",
+      "title": "Adopt the shared dense components, SystemMessage and ToastHost",
+      "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-01-03",
+      "type": "task",
+      "title": "Adopt the shared action buttons",
+      "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-02-01",
+      "type": "task",
+      "title": "Migrate icons to the shared glyph components",
+      "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-REP-0001",
       "type": "task",
       "title": "Publish product context reference for external architect agents",
@@ -5236,6 +5391,46 @@
         "decided_at": "2026-08-30T06:33:23+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Retained terminal verification .orchestration/context/sessions/01a04755-7262-77e3-982e-fa8466918b4d/evidence/reviews/TASK-SKRIPT-REP-0032/terminal-spec-verification.md verified the implementation published on main at 3b1b1f92db35e64b9a46ae828f15c4eae6cde857"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0033",
+      "type": "task",
+      "title": "Adopt the shared design-system sync command",
+      "path": "docs/backlog/tasks/task-skript-rep-0033-adopt-the-shared-design-system-sync-command.md",
+      "status": "canceled",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0034",
+      "type": "task",
+      "title": "Stand up Skriptoteket staging on Hemma next to HuleEdu staging",
+      "path": "docs/backlog/tasks/task-skript-rep-0034-stand-up-skriptoteket-staging-on-hemma-next-to-huleedu-staging.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-09-28T09:27:39+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/sessions/01a0e51f-20f9-76fd-9425-b0ffa4866168/evidence/reviews/TASK-SKRIPT-REP-0034/phase-1-code-review.md; merged to main as f62bdb92; phase 2 Hemma acceptance (fast-forward, start with import --apply and fixture, healthy status, Mac tunnel 15173, repeat start, reset) in captures 0052-0065 of that root; parent in-app walk at http://127.0.0.1:15173: proof contributor signed in through HuleEdu staging, ran staging-provverktyg in the editor sandbox (LYCKADES, Staging-provkörningen är klar.), and the pre-recorded 101-character display-name save showed the failure toast Visningsnamn får vara max 100 tecken with no change written and the page usable."
       }
     },
     {
@@ -9307,6 +9502,19 @@
       "retired_ids": [
         "RUN-user-management"
       ]
+    },
+    {
+      "id": "RUN-SKRIPT-skriptoteket-staging-on-hemma",
+      "type": "runbook",
+      "title": "Skriptoteket staging on Hemma",
+      "path": "docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md",
+      "status": "draft",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
     }
   ],
   "decision_index": {
@@ -10395,6 +10603,13 @@
         "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md"
       },
       {
+        "id": "EPIC-SKRIPT-40",
+        "type": "epic",
+        "title": "Shared design-system convergence",
+        "status": "ready",
+        "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md"
+      },
+      {
         "id": "ST-SKRIPT-02-02",
         "type": "story",
         "title": "Admin nomination and superuser approval",
@@ -10771,6 +10986,20 @@
         "title": "Cut over the Exam Converter and retire the Sir exam lane",
         "status": "active",
         "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
+      },
+      {
+        "id": "ST-SKRIPT-40-01",
+        "type": "story",
+        "title": "Converge tokens, components and action buttons onto the shared package",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md"
+      },
+      {
+        "id": "ST-SKRIPT-40-02",
+        "type": "story",
+        "title": "Converge icons onto the shared glyph vocabulary",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md"
       }
     ]
   }

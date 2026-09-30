@@ -1,0 +1,153 @@
+# Skriptoteket staging next to HuleEdu staging on Hemma (TASK-SKRIPT-REP-0034).
+#
+# Operate only through `pdm run hemma-dev <command>` (build, start, status,
+# stop, reset, fixture, install-vite-unit) from
+# /home/paunchygent/apps/skriptoteket-dev. The command pins the rootless daemon
+# (unix:///run/user/1000/docker.sock), this file, and project skriptoteket-dev.
+#
+# Prerequisites on Hemma:
+# - HuleEdu staging (project huleedu-dev) owns the external network
+#   huleedu-dev_hule-network; its Gateway routes /api to skriptoteket-web:8000.
+# - The untracked checkout `.env` sets SKRIPTOTEKET_DEV_DB_PASSWORD.
+# - Runbook: docs/runbooks/ (Skriptoteket staging on Hemma).
+
+---
+name: skriptoteket-dev
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skriptoteket
+      POSTGRES_USER: skriptoteket
+      POSTGRES_PASSWORD: ${SKRIPTOTEKET_DEV_DB_PASSWORD:?required}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skriptoteket -d skriptoteket"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: skriptoteket-dev-web:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: &app-environment
+      DATABASE_URL: "postgresql+asyncpg://skriptoteket:\
+        ${SKRIPTOTEKET_DEV_DB_PASSWORD:?required}@db:5432/skriptoteket"
+      ENVIRONMENT: staging
+      COOKIE_SECURE: "false"
+      PUBLIC_APP_BASE_URL: http://127.0.0.1:15173
+      DOCKER_HOST: unix:///run/user/1000/docker.sock
+      RUNNER_IMAGE: skriptoteket-dev-runner:latest
+      RUNNER_QUEUE_ENABLED: "true"
+      ARTIFACTS_ROOT: /app/.artifacts
+      VAULT_ROOT: /var/lib/skriptoteket/vault
+      OTEL_TRACING_ENABLED: "false"
+      HEALTHZ_SMTP_CHECK_ENABLED: "false"
+      # HuleEdu staging Gateway signed internal identity verification.
+      HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH: /run/huleedu/identity-key.pem
+      HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID: gateway-identity-rs256-v1
+      HULEEDU_INTERNAL_IDENTITY_ISSUER: api_gateway_service
+      HULEEDU_INTERNAL_IDENTITY_AUDIENCE: skriptoteket
+    ports:
+      - "127.0.0.1:18000:8000"
+    volumes:
+      - /run/user/1000/docker.sock:/run/user/1000/docker.sock:ro
+      - artifacts_data:/app/.artifacts
+      - vault_data:/var/lib/skriptoteket/vault
+      # Only the public key; the staging key directory also holds the
+      # Gateway private key.
+      - type: bind
+        source: "/home/paunchygent/apps/huleedu-dev/secrets/local-runtime/\
+          internal-identity/gateway-internal-identity-public-key.pem"
+        target: /run/huleedu/identity-key.pem
+        read_only: true
+      # HuleEdu staging proof-subject export, consumed by `hemma-dev start`.
+      - type: bind
+        source: "/home/paunchygent/apps/huleedu-dev/output/\
+          skriptoteket-proof-identities"
+        target: /run/huleedu/proof-identities
+        read_only: true
+    networks:
+      default:
+      huleedu-dev-hule-network:
+        aliases:
+          - skriptoteket-web
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; \
+          urllib.request.urlopen('http://localhost:8000/healthz')"
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  worker:
+    image: skriptoteket-dev-web:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-environment
+      SERVICE_NAME: skriptoteket-worker
+      PYTHONPATH: /app/src
+    command:
+      - pdm
+      - run
+      - python
+      - -m
+      - skriptoteket.cli
+      - run-execution-worker
+      - --queue
+      - default
+    volumes:
+      - /run/user/1000/docker.sock:/run/user/1000/docker.sock:ro
+      - artifacts_data:/app/.artifacts
+      - vault_data:/var/lib/skriptoteket/vault
+    networks:
+      - default
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "PYTHONPATH=/app/__pypackages__/3.13/lib:/app/src python -m \
+          skriptoteket.cli.commands.healthcheck_execution_worker_fast"
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Built into the rootless daemon's image store; web and worker start runner
+  # containers through the Docker API.
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
+    image: skriptoteket-dev-runner:latest
+    profiles:
+      - build-only
+
+networks:
+  default:
+  huleedu-dev-hule-network:
+    name: huleedu-dev_hule-network
+    external: true
+
+volumes:
+  db_data:
+  artifacts_data:
+  vault_data:
