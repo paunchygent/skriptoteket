@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-30'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-09-30T19:50:24+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer (Pi invocation 81328779) approved retirement 4225e62f/0bae2fe1 and cleanup 9c26b1bc/9dc63d4d with no findings. Linked Sir TASK-SIRCON-07-04-01 and HuleEdu TASK-HULE-01-04-13 closed approved. Authenticated path proven by staging click-through; public path proven by review and tests only, closed on that evidence by user decision 2026-09-30; generic Sir runtime is offline by user decision, so its health is proven by Sir service/speech/operations checks at ee14c6da. Retained session 01a0f34a-1687-7480-a408-a0daee5f1d73 evidence/reviews/TASK-SKRIPT-39-03-03-independent-review.md.'
 task_kind: story
 acceptance_criteria:
   - After both product lanes cut over, exam-specific Sir clients, schemas, grants, leases, identifiers, settings, secrets, and fallback selection are removed while generic heavy-document extraction and STT remain operational
