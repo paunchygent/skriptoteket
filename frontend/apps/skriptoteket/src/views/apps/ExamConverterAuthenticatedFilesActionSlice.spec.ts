@@ -2,17 +2,12 @@
  * Exam Converter corrected file-action behavior.
  *
  * Slice purpose:
- *   Keep generated file actions bound to producer-authorized artifact
- *   references after durable teacher corrections are replayed.
+ *   Show teacher-facing copy for unavailable generated files and clear
+ *   corrected file state when the teacher resets local choices.
  *
  * Expected behavior:
- *   File actions stay disabled until the producer report marks a generated
- *   target exportable and provides an authorized artifact reference for the
- *   same artifact authority that drives the visible row.
- *
- * Recommended implementation shape:
- *   Keep file rows inside `Filer` and use replay-result artifact references
- *   for corrected downloads and owner-scoped user-file saves.
+ *   An unavailable file row shows readable copy, never the raw producer
+ *   reason code; resetting local choices returns to the source drop zone.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -21,7 +16,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
 import ExamConverterFilesReadinessList from "./exam-converter-authenticated/ExamConverterFilesReadinessList.vue";
 import {
-  correctionApplyResult,
   correctionSourceState,
   createCorrectionSessionRecorder,
 } from "./examConverterAuthenticatedCorrectionSessionFixtures";
@@ -46,9 +40,7 @@ import {
 } from "../../api/examConverterContracts";
 
 const gatewayMocks = vi.hoisted(() => ({
-  applyExamAuthoringCorrections: vi.fn(),
   downloadDigiExamMigrationArtifact: vi.fn(),
-  downloadDigiExamMigrationCorrectionReplayArtifact: vi.fn(),
   getDigiExamMigrationJob: vi.fn(),
   getDigiExamMigrationResult: vi.fn(),
   issueExamAuthoringCorrectionSourceState: vi.fn(),
@@ -279,9 +271,7 @@ async function finishConversion(wrapper: ReturnType<typeof mount>) {
 beforeEach(() => {
   correctionSessionRecorder.reset();
   for (const mock of Object.values(correctionSessionApiMocks)) mock.mockReset();
-  gatewayMocks.applyExamAuthoringCorrections.mockReset();
   gatewayMocks.downloadDigiExamMigrationArtifact.mockReset();
-  gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockReset();
   gatewayMocks.getDigiExamMigrationJob.mockReset();
   gatewayMocks.getDigiExamMigrationResult.mockReset();
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockReset();
@@ -306,11 +296,6 @@ beforeEach(() => {
       Promise.resolve(correctionSessionRecorder.recordIntents(request.intents)),
   );
   gatewayMocks.issueExamAuthoringCorrectionSourceState.mockResolvedValue(correctionSourceState());
-  gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(correctionApplyResult());
-  gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockImplementation(
-    ({ artifactKey }: { artifactKey: string }) =>
-      Promise.resolve(fileArtifactBlob(artifactKey, `${artifactKey}.bin`, "application/octet-stream")),
-  );
   mockReviewArtifacts();
 });
 
@@ -332,19 +317,6 @@ function seedManualChoiceCorrection(): void {
       interaction_id: "choice-item-004",
     },
   }]);
-}
-
-function withoutReplayArtifactReferences(result: ReturnType<typeof correctionApplyResult>) {
-  return {
-    ...result,
-    answer_key_review_state: {
-      ...result.answer_key_review_state,
-      items: result.answer_key_review_state.items.map((item) => ({
-        ...item,
-        replay_artifact_references: [],
-      })),
-    },
-  };
 }
 
 describe("ExamConverterAuthenticatedView corrected file actions", () => {
@@ -380,94 +352,6 @@ describe("ExamConverterAuthenticatedView corrected file actions", () => {
     );
     expect(wrapper.text()).not.toContain("Orsak:");
     expect(wrapper.text()).not.toContain("unsupported_target_shape");
-  });
-
-  it("keeps replayed file actions disabled when replay gives no artifact reference", async () => {
-    const replayResult = correctionApplyResult();
-    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(
-      withoutReplayArtifactReferences(replayResult),
-    );
-    seedManualChoiceCorrection();
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-
-    const downloadBefore = wrapper.find(
-      '[data-test="exam-converter-download-file-examnet_pdf"]',
-    );
-    const saveBefore = wrapper.find('[data-test="exam-converter-save-file-examnet_pdf"]');
-    expect(downloadBefore.attributes("disabled")).toBeDefined();
-    expect(saveBefore.attributes("disabled")).toBeDefined();
-    expect(wrapper.text()).toContain("Granska facit först");
-
-    await flushPromises();
-
-    const pdfDownloadAfter = wrapper.find(
-      '[data-test="exam-converter-download-file-examnet_pdf"]',
-    );
-    const qtiDownloadAfter = wrapper.find(
-      '[data-test="exam-converter-download-file-qti_package"]',
-    );
-    const qtiSaveAfter = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-    expect(wrapper.text()).toContain("Granska facit först");
-    expect(pdfDownloadAfter.attributes("disabled")).toBeDefined();
-    expect(qtiDownloadAfter.attributes("disabled")).toBeDefined();
-    expect(qtiSaveAfter.attributes("disabled")).toBeDefined();
-  });
-
-  it("does not save a replayed generated file without a replay artifact reference", async () => {
-    const replayResult = correctionApplyResult();
-    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue(
-      withoutReplayArtifactReferences(replayResult),
-    );
-    seedManualChoiceCorrection();
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await flushPromises();
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-
-    expect(saveAction.attributes("disabled")).toBeDefined();
-    expect(gatewayMocks.saveDigiExamMigrationArtifactToUserFiles).not.toHaveBeenCalled();
-    expect(gatewayMocks.downloadDigiExamMigrationArtifact).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        artifactKey: "qti_package",
-        correlationId: "corr_exam_converter_files",
-        jobId: "job_exam_converter_files",
-      }),
-    );
-    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
-  });
-
-  it("uses a replay artifact reference when the correction replay result provides one", async () => {
-    const replayResult = correctionApplyResult();
-    gatewayMocks.applyExamAuthoringCorrections.mockResolvedValue({
-      ...replayResult,
-      target_readiness: {
-        ...replayResult.target_readiness,
-        targets: replayResult.target_readiness.targets.map((target) => ({
-          ...target,
-          artifact_key:
-            target.target === "qti_package"
-              ? "correction_replay_qti_package"
-              : "correction_replay_examnet_pdf",
-        })),
-      },
-    });
-    seedManualChoiceCorrection();
-    const wrapper = mount(ExamConverterAuthenticatedView);
-
-    await finishConversion(wrapper);
-    await flushPromises();
-    await wrapper.find('[data-test="exam-converter-inspection-tab-files"]').trigger("click");
-    gatewayMocks.downloadDigiExamMigrationArtifact.mockClear();
-    gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact.mockClear();
-
-    const saveAction = wrapper.find('[data-test="exam-converter-save-file-qti_package"]');
-    expect(saveAction.attributes("disabled")).toBeDefined();
-    expect(gatewayMocks.downloadDigiExamMigrationCorrectionReplayArtifact).not.toHaveBeenCalled();
   });
 
   it("clears corrected file state when local choices are reset", async () => {

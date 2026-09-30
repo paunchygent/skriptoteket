@@ -40,13 +40,19 @@
   is `in_progress`: the item-local admission repair is already on `main` via
   `52ccc0a2` (real-DXE plan `ELIGIBLE` for 5 supported items, asset-bearing
   item-003 kept for manual review); the real-DXE fixture is byte-identical to
-  its source (`ab39bbee`). Two unit tests pin D1; their two test files pass
-  27 tests (independent review, Skriptoteket session
-  `01a0f227-63b9-7435-8013-5f556eaf4905`). D5 was amended 2026-09-30 by user
-  decision: the end-to-end gate is a real-browser click-through on Hemma's
-  rootless Docker staging (`skriptoteket-dev`) after merge to `main`, run by
-  the agent that owns the end-to-end proof; it has not run yet. It is a
-  required predecessor for the DOCX skeleton.
+  its source (`ab39bbee`). Two unit tests pin D1. D5 was amended 2026-09-30
+  by user decision to a real-browser click-through on Hemma's rootless Docker
+  staging (`skriptoteket-dev`) after merge to `main`; staging now enables the
+  answer-key lane from its untracked `.env` with the production provider keys.
+  The D5 walk passed on 2026-09-30 at `e3ae9527`: questions 1, 2, 4, 5, 6 got
+  provider proposals, asset-bearing question 3 stayed for manual review until
+  a teacher key was saved, and the Exam.net PDF and QTI zip became
+  downloadable; the enrichment and conversion jobs `succeeded`. The real-DXE
+  PostgreSQL integration test passes (`1 passed`); three vacuous replay cases
+  in `ExamConverterAuthenticatedFilesActionSlice.spec.ts` were removed (D3).
+  Closeout review pending. Evidence: Skriptoteket session
+  `01a0f227-63b9-7435-8013-5f556eaf4905`. It is a required predecessor for
+  the DOCX skeleton.
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
   stays canceled (`d48233e9`); Exam.net acceptance stays user-owned and
   proven import acceptance is not reopened. Live-proven anchors: Sir
@@ -79,8 +85,11 @@
 - Last Refreshed: 2026-09-30
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
-- The 2026-09-30 slice adds TASK-SKRIPT-39-02-03 unit tests and a test-support
-  module, and amends its D5 gate; it changes no production code.
+- The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support
+  module, amend its D5 gate, add the staging answer-key lane configuration, and
+  remove three vacuous frontend replay tests; they change no production code.
+- Full typecheck keeps the existing 10-error baseline in three
+  `src/skriptoteket/script_bank/scripts/` demo scripts.
 - Open product questions (undecided, not silently resolved): native doc
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
