@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a1c1acf764632d95973839944e994951229718ad1b8489d32fda63877c69de75",
+  "source_set_digest": "60ebb334d69bac804b248c1ee1e8b0d0d98323f6d871d46902873054701f83f8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4389,7 +4389,7 @@
       "type": "task",
       "title": "Repair partial DigiExam answer-key enrichment and prove the real integrated vertical",
       "path": "docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-02",
       "owners": [
