@@ -22,20 +22,15 @@
   deterministic extraction plus LLM parse/enrich/repair behind teacher
   review; versioned native documents with assets and editing state in Mina
   filer; PDF/DOCX/QTI are on-demand exports only. Cleanup first (02-03 done):
-  03-03, 03-04 must finish before DOCX implementation, which also waits for
-  ADR-0091/story review. Verbose prior history archived to
+  03-03 and 03-04 are done; DOCX implementation waits for ADR-0091/story
+  review. Verbose prior history archived to
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 - [TASK-SKRIPT-39-03-03](docs/backlog/tasks/task-skript-39-03-03-retire-the-sir-convert-exam-specific-integration.md)
-  is `in_progress`: core local retirement already landed in `4225e62f`/`0bae2fe1`.
-  Final Sol review approved remaining dead exam-mock/docstring cleanup
-  (run `fb1e0f97-38f0-4b84-b68b-193826fc03fa`); 57 frontend and 15 backend
-  tests passed, generic Sir consumers unchanged. Full typecheck retains the
-  existing 10-error script_bank baseline. Sir `TASK-SIRCON-07-04-01` and Hule
-  `TASK-HULE-01-04-13` require owning-repo reconciliation before task closeout.
-- [TASK-SKRIPT-39-03-04](docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md)
-  is `ready`, blocked until 03-03 plus last-consumer-moved proof. Its
-  retirement is governed by 03-04; no live deployment state is asserted
-  here. Luna/GLM plus the daily lease remain.
+  and [TASK-SKRIPT-39-03-04](docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md)
+  are `done` (2026-09-30, independent reviews approved). Linked Sir
+  TASK-SIRCON-07-04-01/REP-0030 and Hule TASK-HULE-01-04-13/REP-0130 are done.
+  Sir Convert production and STT stay offline by user decision; the
+  Skriptoteket answer-key env keys (Luna/GLM) stay.
 - [TASK-SKRIPT-39-02-03](docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md)
   is `done` (Pi closeout rereview approved `e877170d`): the item-local admission repair is already on `main` via
   `52ccc0a2` (real-DXE plan `ELIGIBLE` for 5 supported items, asset-bearing
@@ -94,5 +89,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next executable task: finish TASK-SKRIPT-39-03-03, then 03-04,
-  then review ADR-0091/ST-SKRIPT-39-04 before TASK-SKRIPT-39-04-01.
+- Next executable task: review ADR-0091/ST-SKRIPT-39-04 before
+  TASK-SKRIPT-39-04-01.
