@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "81eab53d1e17bbbe44159bba432430afd19b65b9d6c0579aa477c357d1e36b13",
+  "source_set_digest": "af2572d67ac2f532dd3209bf6f6e9ed6778c8221a9dedddfb4f65778ebcde109",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4479,7 +4479,7 @@
       "type": "task",
       "title": "Retire the Hemma Qwen answer-key sidecar",
       "path": "docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
       "owners": [
@@ -4490,7 +4490,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-09-30T23:25:05+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent cross-repository ruthless-reviewer (Pi invocation f958cf85) approved with no findings: Sir TASK-SIRCON-REP-0030 (closed 06a56572), Sir docs via TASK-SIRCON-07-04-01 (ee14c6da), HuleEdu TASK-HULE-REP-0130 (20645e56e). Parent Hemma audit found no answer-key container, image, QWEN key or sidecar reference, and removed 10 unused SIR_CONVERT_A_LOT_STRUCTURED_LLM_* keys by user approval. Authenticated Luna/GLM lane proven by the D5 staging click-through; no new post-merge staging walk. Retained session 01a0f34a-1687-7480-a408-a0daee5f1d73 evidence/reviews/TASK-SKRIPT-39-03-04-review.md and evidence/hemma-answer-key-config-audit-2026-09-30.md."
       }
     },
     {

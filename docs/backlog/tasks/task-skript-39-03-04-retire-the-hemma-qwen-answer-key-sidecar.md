@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-30'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-09-30T23:25:05+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent cross-repository ruthless-reviewer (Pi invocation f958cf85) approved with no findings: Sir TASK-SIRCON-REP-0030 (closed 06a56572), Sir docs via TASK-SIRCON-07-04-01 (ee14c6da), HuleEdu TASK-HULE-REP-0130 (20645e56e). Parent Hemma audit found no answer-key container, image, QWEN key or sidecar reference, and removed 10 unused SIR_CONVERT_A_LOT_STRUCTURED_LLM_* keys by user approval. Authenticated Luna/GLM lane proven by the D5 staging click-through; no new post-merge staging walk. Retained session 01a0f34a-1687-7480-a408-a0daee5f1d73 evidence/reviews/TASK-SKRIPT-39-03-04-review.md and evidence/hemma-answer-key-config-audit-2026-09-30.md.'
 task_kind: story
 acceptance_criteria:
 - The authenticated answer-key workflow remains operational through the Luna and GLM
