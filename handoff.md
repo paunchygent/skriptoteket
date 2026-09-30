@@ -21,7 +21,7 @@
   Direction: DOCX upload first, digital PDF second, OCR deferred;
   deterministic extraction plus LLM parse/enrich/repair behind teacher
   review; versioned native documents with assets and editing state in Mina
-  filer; PDF/DOCX/QTI are on-demand exports only. Cleanup first: 02-03,
+  filer; PDF/DOCX/QTI are on-demand exports only. Cleanup first (02-03 done):
   03-03, 03-04 must finish before DOCX implementation, which also waits for
   ADR-0091/story review. Verbose prior history archived to
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -37,7 +37,7 @@
   retirement is governed by 03-04; no live deployment state is asserted
   here. Luna/GLM plus the daily lease remain.
 - [TASK-SKRIPT-39-02-03](docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md)
-  is `in_progress`: the item-local admission repair is already on `main` via
+  is `done` (Pi closeout rereview approved `e877170d`): the item-local admission repair is already on `main` via
   `52ccc0a2` (real-DXE plan `ELIGIBLE` for 5 supported items, asset-bearing
   item-003 kept for manual review); the real-DXE fixture is byte-identical to
   its source (`ab39bbee`). Two unit tests pin D1. D5 was amended 2026-09-30
@@ -50,7 +50,7 @@
   downloadable; the enrichment and conversion jobs `succeeded`. The real-DXE
   PostgreSQL integration test passes (`1 passed`); three vacuous replay cases
   in `ExamConverterAuthenticatedFilesActionSlice.spec.ts` were removed (D3).
-  Closeout review pending. Evidence: Skriptoteket session
+  Evidence: Skriptoteket session
   `01a0f227-63b9-7435-8013-5f556eaf4905`. It is a required predecessor for
   the DOCX skeleton.
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
@@ -94,5 +94,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next executable task: finish TASK-SKRIPT-39-03-03, then 03-04 (and 02-03),
+- Next executable task: finish TASK-SKRIPT-39-03-03, then 03-04,
   then review ADR-0091/ST-SKRIPT-39-04 before TASK-SKRIPT-39-04-01.

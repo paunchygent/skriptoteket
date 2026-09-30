@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-08-30'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-09-30'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer closeout rereview approved e3ae9527..e877170d after the three closeout-review findings (vacuous replay spec cases, stale handoff, missing lint/typing/build/frontend evidence) were resolved; the real-DXE PostgreSQL integration test passed (1 passed), and the D5 real-browser click-through on Hemma staging skriptoteket-dev at e3ae9527 gave provider proposals for questions 1, 2, 4, 5 and 6, kept asset-bearing question 3 for manual review until a teacher key was saved, and produced downloadable Exam.net PDF and QTI zip with succeeded enrichment and conversion jobs. Records under Skriptoteket session 01a0f227-63b9-7435-8013-5f556eaf4905 evidence/ (d5-staging-click-through.md, reviews/TASK-SKRIPT-39-02-03/closeout-rereview-e877170d.md).
 task_kind: story
 acceptance_criteria:
 - A real DigiExam source with both enrichable unkeyed items and an unsupported asset-bearing
