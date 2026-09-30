@@ -127,6 +127,27 @@ container root the socket owner. They share the project volumes
 The tunnel script has no source control; this runbook is the record of the
 line.
 
+### Answer-key completion lane (optional)
+
+Staging runs the Exam Converter answer-key completion lane only when the
+untracked staging `.env` sets it on. By user decision on 2026-09-30, staging
+uses the production provider keys, so staging runs are billed to the
+production OpenAI and OpenRouter accounts. Copy the keys on Hemma without
+printing them. Every write names the staging `.env` by its absolute path, so
+no command depends on the current directory and none can reach the
+production `.env`:
+
+```bash
+grep -E '^(OPENAI|OPENROUTER)_LLM_ANSWER_KEY_API_KEY=' /home/paunchygent/apps/skriptoteket/.env >> /home/paunchygent/apps/skriptoteket-dev/.env
+echo 'LLM_ANSWER_KEY_ENABLED=true' >> /home/paunchygent/apps/skriptoteket-dev/.env
+chmod 600 /home/paunchygent/apps/skriptoteket-dev/.env
+grep -oE '^[A-Z_]+=' /home/paunchygent/apps/skriptoteket-dev/.env
+```
+
+Then run `pdm run hemma-dev start` from `/home/paunchygent/apps/skriptoteket-dev`
+so `web` and `worker` pick up the values. Remove the three lines from the
+staging `.env` and start again to turn the lane off.
+
 ### Per-task walk update
 
 1. On Hemma, fast-forward to the pushed `main`:

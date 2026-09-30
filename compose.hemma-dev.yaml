@@ -60,6 +60,11 @@ services:
       HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID: gateway-identity-rs256-v1
       HULEEDU_INTERNAL_IDENTITY_ISSUER: api_gateway_service
       HULEEDU_INTERNAL_IDENTITY_AUDIENCE: skriptoteket
+      # Answer-key completion lane. Off unless the untracked staging .env sets
+      # LLM_ANSWER_KEY_ENABLED=true together with both provider keys.
+      LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
+      OPENAI_LLM_ANSWER_KEY_API_KEY: ${OPENAI_LLM_ANSWER_KEY_API_KEY:-}
+      OPENROUTER_LLM_ANSWER_KEY_API_KEY: ${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}
     ports:
       - "127.0.0.1:18000:8000"
     volumes:
