@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "771ca1256c272e6b0bbe6dc7110502354a09328d05edab216221671bcce00e80",
+  "source_set_digest": "72e1ea1b62e5e358768b1d2e165242aa701ad8fe42c505af58cbd8d2825fc3a6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4475,7 +4475,7 @@
       "type": "task",
       "title": "Retire the Hemma Qwen answer-key sidecar",
       "path": "docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-03",
       "owners": [
