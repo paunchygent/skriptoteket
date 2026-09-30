@@ -7,10 +7,26 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-08-30'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: spec-verifier
+  decided_at: '2026-10-01T00:04:58+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: >-
+    .orchestration/context/sessions/01a0f34a-1687-7480-a408-a0daee5f1d73/evidence/reviews/ST-SKRIPT-39-03-spec-verification.md
+    verifies the complete slice at main 0ca6a7dc: authenticated and public
+    Skriptoteket-owned execution preserves accepted behavior, exam-specific
+    Sir integration and the Qwen answer-key sidecar retire, and Luna/GLM,
+    daily-token-lease and generic Sir capability boundaries remain. Reuses
+    approved independent retirement reviews, the public task's explicit user
+    review waiver, retained tests, authenticated staging proof and the parent
+    key-name configuration audit. September 30 user decisions select public
+    post-retirement review/test proof and intentionally offline Sir/STT with
+    no live Sir proof. No fresh production walk, live GLM failover or Sir
+    runtime-health claim; backend typecheck retains its reported baseline.
+    Story lifecycle and parent reconciliation remain parent-owned.
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - Authenticated and public product workflows preserve their accepted behavior while running without Sir Convert exam-conversion calls, after which exam-specific Sir integration and the Qwen answer-key sidecar are removed without affecting generic heavy-document extraction or STT
@@ -77,6 +93,9 @@ Unit-of-Work and PostgreSQL boundary.
   Qwen answer-key sidecar is absent.
 - Frontend and route changes receive the repository-required live functional
   check; affected backend/frontend checks and docs gates pass.
+- By user decision (2026-09-30), the public lane's post-retirement proof is
+  review and tests, and the intentionally offline Sir Convert production and
+  STT receive no live check.
 
 ## Decided Contract Terms
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "af2572d67ac2f532dd3209bf6f6e9ed6778c8221a9dedddfb4f65778ebcde109",
+  "source_set_digest": "c45cfa406bce6c068723eb0015f8ec1e38b74cbec9740032bc1db23cc9ff4885",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2194,7 +2194,7 @@
       "type": "story",
       "title": "Cut over the Exam Converter and retire the Sir exam lane",
       "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2207,7 +2207,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "spec-verifier",
+        "decided_at": "2026-10-01T00:04:58+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": ".orchestration/context/sessions/01a0f34a-1687-7480-a408-a0daee5f1d73/evidence/reviews/ST-SKRIPT-39-03-spec-verification.md verifies the complete slice at main 0ca6a7dc: authenticated and public Skriptoteket-owned execution preserves accepted behavior, exam-specific Sir integration and the Qwen answer-key sidecar retire, and Luna/GLM, daily-token-lease and generic Sir capability boundaries remain. Reuses approved independent retirement reviews, the public task's explicit user review waiver, retained tests, authenticated staging proof and the parent key-name configuration audit. September 30 user decisions select public post-retirement review/test proof and intentionally offline Sir/STT with no live Sir proof. No fresh production walk, live GLM failover or Sir runtime-health claim; backend typecheck retains its reported baseline. Story lifecycle and parent reconciliation remain parent-owned."
       }
     },
     {
@@ -10996,7 +11000,7 @@
         "id": "ST-SKRIPT-39-03",
         "type": "story",
         "title": "Cut over the Exam Converter and retire the Sir exam lane",
-        "status": "active",
+        "status": "done",
         "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
       },
       {

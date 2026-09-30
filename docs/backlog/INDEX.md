@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=40 | story=324 | task=0 | review=137
-- open | epic=19 | story=61 | task=0
+- open | epic=19 | story=60 | task=0
 
 ## Lookup
 
@@ -532,7 +532,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=2, proposed=1, done=1 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, proposed=1, done=2 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -544,7 +544,6 @@
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-27-04 | [Klassrumskartan — Smart grouping v1](stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md) | epic=[EPIC-SKRIPT-27](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-39-01 | [Walking skeleton for Skriptoteket-owned exam conversion](stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-39-03 | [Cut over the Exam Converter and retire the Sir exam lane](stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 

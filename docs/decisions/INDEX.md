@@ -167,6 +167,6 @@
 - `ST-SKRIPT-38-01` | [Adopt the shared governed development system](../backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md) | story | done
 - `ST-SKRIPT-39-01` | [Walking skeleton for Skriptoteket-owned exam conversion](../backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | story | active
 - `ST-SKRIPT-39-02` | [Port the remote answer-key completion line with a daily token lease](../backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md) | story | done
-- `ST-SKRIPT-39-03` | [Cut over the Exam Converter and retire the Sir exam lane](../backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md) | story | active
+- `ST-SKRIPT-39-03` | [Cut over the Exam Converter and retire the Sir exam lane](../backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md) | story | done
 - `ST-SKRIPT-40-01` | [Converge tokens, components and action buttons onto the shared package](../backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | story | ready
 - `ST-SKRIPT-40-02` | [Converge icons onto the shared glyph vocabulary](../backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | story | ready
