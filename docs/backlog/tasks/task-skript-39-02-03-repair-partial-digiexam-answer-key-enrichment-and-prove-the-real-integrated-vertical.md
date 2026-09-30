@@ -131,6 +131,6 @@ no extra network round trip, polling layer, or persistence authority.
 | D3 | Low-value fake-shape, trivial happy-path, and negative-archaeology tests in the touched slice are removed rather than counted as proof. |
 | D4 | The unchanged real DXE and real application transitions are mandatory test inputs. |
 | D5 | The end-to-end gate is a real-browser click-through on Hemma's rootless Docker staging (`skriptoteket-dev`, beside HuleEdu staging) after merge to `main`, run by the agent that owns the end-to-end proof, with the configured API provider (user decision 2026-09-30; supersedes the local Docker development-stack Playwright gate). |
-| D6 | Focused and synthetic checks cannot establish integration or release readiness. |
+| D6 | Reviewed code may merge to `main` before the staging proof; focused and synthetic checks cannot prove the integrated vertical, close the task, or admit production redeployment, which require the D5 staging click-through. |
 | D7 | No additional review stage is added; repair continues until the integrated vertical is green. |
 | D8 | Production DXE acceptance remains user-owned. |
