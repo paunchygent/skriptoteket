@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 COMMANDS = ROOT / "src/skriptoteket/cli/commands"
@@ -186,3 +187,23 @@ def test_web_preserves_http_proxy_case_and_ignores_all_proxy(
             ["/bin/sh", str(script)], env=environment, capture_output=True, timeout=2
         )
     assert result.returncode == 0
+
+
+@pytest.mark.parametrize(
+    ("compose_name", "interval"),
+    [("compose.yaml", "30s"), ("compose.prod.yaml", "30s"), ("compose.hemma-dev.yaml", "15s")],
+)
+def test_recurring_web_checks_select_passive_liveness(compose_name: str, interval: str) -> None:
+    compose = yaml.safe_load((ROOT / compose_name).read_text())
+    assert compose["services"]["web"]["healthcheck"] == {
+        "test": [
+            "CMD",
+            "/bin/sh",
+            "/app/src/skriptoteket/cli/commands/healthcheck_web.sh",
+            "http://localhost:8000/healthz/live",
+        ],
+        "interval": interval,
+        "timeout": "10s",
+        "retries": 3,
+        "start_period": "10s",
+    }

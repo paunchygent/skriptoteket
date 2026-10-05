@@ -1,4 +1,4 @@
-"""Observability endpoints: /healthz and /metrics.
+"""Observability endpoints: /healthz/live, /healthz and /metrics.
 
 Purpose:
     Expose the public health probe and the Prometheus scrape route while
@@ -13,6 +13,7 @@ See .codex/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
 """
 
 import asyncio
+from datetime import UTC, datetime
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
@@ -32,6 +33,23 @@ from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(tags=["observability"])
+
+
+@router.get("/healthz/live", response_class=JSONResponse)
+async def healthz_live(settings: FromDishka[Settings]) -> JSONResponse:
+    """Passive process liveness for recurring container healthchecks."""
+    return JSONResponse(
+        content={
+            "service": settings.SERVICE_NAME,
+            "status": "alive",
+            "message": f"{settings.SERVICE_NAME} is alive",
+            "version": settings.APP_VERSION,
+            "environment": settings.ENVIRONMENT,
+            "checks": {"service_responsive": True},
+            "dependencies": {},
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+    )
 
 
 @router.get("/healthz", response_class=JSONResponse)
