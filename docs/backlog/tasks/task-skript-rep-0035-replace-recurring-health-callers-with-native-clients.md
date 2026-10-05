@@ -115,7 +115,16 @@ while readiness returned 503 with SQL unhealthy and SMTP degraded/default
 caller exit 1. Uvicorn lifespan was off to isolate HTTP proof from unchanged
 startup readiness; normal startup proof belongs to the published rollout.
 Receipts are .artifacts/native-health/passive-liveness-* in the task worktree.
-Parent publication and targeted rollout of this amendment remain pending.
+Parent published c282c74bf38da3c081743ddbfa623b887bd36be5 and both
+web-only rollouts completed on 2026-10-06 (local date). Full pdm serve startup
+became healthy in 12.02 seconds production and 6.45 seconds staging; both
+/healthz readiness checks returned 200. Exact image, passive argv and all timing
+matched. The next natural passive check took 25.005 ms production and
+24.596 ms staging; production's first startup probe failed inside existing
+grace before becoming healthy. Worker container IDs and the foreign staging
+.python-version remained unchanged. Terminal/rollout receipts are
+.artifacts/native-health/passive-liveness-*-rollout* and passive-*-rollout-proof.json.
+Parent owns terminal closeout.
 
 ## Stop Conditions
 
