@@ -92,10 +92,8 @@ services:
     healthcheck:
       test:
         - CMD
-        - python
-        - -c
-        - "import urllib.request; \
-          urllib.request.urlopen('http://localhost:8000/healthz')"
+        - /bin/sh
+        - /app/src/skriptoteket/cli/commands/healthcheck_web.sh
       interval: 15s
       timeout: 10s
       retries: 3
@@ -128,9 +126,9 @@ services:
       - default
     healthcheck:
       test:
-        - CMD-SHELL
-        - "PYTHONPATH=/app/__pypackages__/3.13/lib:/app/src python -m \
-          skriptoteket.cli.commands.healthcheck_execution_worker_fast"
+        - CMD
+        - /bin/sh
+        - /app/src/skriptoteket/cli/commands/healthcheck_execution_worker.sh
       interval: 15s
       timeout: 10s
       retries: 3

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "98f5174cbfdc6bc7fdfec9b8b9259e212f2d2824f6c1a2d251899db5b45cee66",
+  "source_set_digest": "76425f1fdeb0895a3548d7b8bdec5ee6071ebd6b85ef45087d16a74d828a5f02",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5454,7 +5454,7 @@
       "type": "task",
       "title": "Replace recurring health callers with native clients",
       "path": "docs/backlog/tasks/task-skript-rep-0035-replace-recurring-health-callers-with-native-clients.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
