@@ -135,6 +135,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     less \
     netcat-openbsd \
     procps \
+    postgresql-client \
     ripgrep \
     shellcheck \
     shfmt \
