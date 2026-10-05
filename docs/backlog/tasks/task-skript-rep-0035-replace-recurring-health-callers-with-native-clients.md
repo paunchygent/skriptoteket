@@ -13,7 +13,8 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Native callers preserve web readiness and worker dependency predicates in production and staging.
+- Recurring native web callers use passive /healthz/live process liveness; /healthz retains SQL and conditional SMTP readiness for explicit checks.
+- Worker dependency predicates and all health timing remain unchanged in production and staging.
 - Focused failure proof and actual image tools, runtime configuration and client cost are recorded.
 backlog_document_profile: contract-derived
 ---
@@ -22,7 +23,9 @@ backlog_document_profile: contract-derived
 
 Replace recurring Python callers with native clients under the user-accepted
 minimal health architecture. The parent admitted implementation on 2026-10-05.
-Preserve health claims, detection cadence, startup grace and bounded failures.
+The user accepted passive recurring web liveness and separate dependency
+readiness on 2026-10-06. Preserve worker health claims, detection cadence,
+startup grace and bounded failures.
 
 ## Contract Inputs
 
@@ -37,8 +40,11 @@ Preserve health claims, detection cadence, startup grace and bounded failures.
 ## Core Vertical And Performance
 
 Web uses curl while preserving HTTP failure, redirects, proxy behavior and
-existing Compose timeout. The readiness handler retains pooled SQL and
-configured SMTP checks.
+existing Compose timeout. Base, production and staging recurring web checks
+target passive /healthz/live, matching HuleEdu's process responsiveness pattern.
+The /healthz readiness handler retains pooled SQL and conditional configured
+SMTP checks for explicit readiness/deploy checks. No readiness scheduler, cache
+or background task is introduced.
 
 One named worker script authenticates to PostgreSQL and executes `SELECT 1`,
 validates Docker's actual `/_ping` response and creates, writes and removes
@@ -54,7 +60,10 @@ wall latency.
 
 ## Validation
 
-Focused HTTP success, failure, redirect and timeout; database authentication
+Prove /healthz/live succeeds without SQL or SMTP execution while those
+dependencies fail, and /healthz still reports each failure. Verify recurring
+Compose web targets and actual-image passive route. Preserve native caller HTTP
+success, failure, redirect and timeout semantics; database authentication
 and query failures; Docker response failure; artifact write failure and cleanup.
 Verify real image tools, runtime user, mounts, nonsecret environment, health argv
 and unchanged timing. Run affected shell/Python lint, type, tests and docs gates.
@@ -91,7 +100,22 @@ default-network `web` alias with the localhost Host header.
 
 Raw logs, terminal job receipts, failure fixtures and measurements are in
 `.artifacts/native-health/` in the admitted Hemma task worktree. Parent-owned
-publication, targeted rollout and final natural observation remain pending.
+publication and targeted rollout completed on 2026-10-05 at db9cf4bc; the
+150-second natural observation completed 19:22:05-19:24:35 UTC that day.
+These receipts prove the earlier readiness-based caller. The 2026-10-06
+passive-liveness amendment requires fresh focused and actual-image proof.
+
+Passive-liveness amendment proof on 2026-10-06 (local date): 34 focused
+tests, Ruff, ShellCheck and route mypy passed. Base/production/staging web
+health argv explicitly select /healthz/live; worker argv and all timing remain
+unchanged. Candidate skriptoteket-native-health:rep0035-passive is
+sha256:0ae40a8a34a2161d2adc5bd20885fe5e8625e1bc097ffbb28990becd632e02a0.
+An isolated actual-image server returned liveness 200/native caller exit 0
+while readiness returned 503 with SQL unhealthy and SMTP degraded/default
+caller exit 1. Uvicorn lifespan was off to isolate HTTP proof from unchanged
+startup readiness; normal startup proof belongs to the published rollout.
+Receipts are .artifacts/native-health/passive-liveness-* in the task worktree.
+Parent publication and targeted rollout of this amendment remain pending.
 
 ## Stop Conditions
 
@@ -103,7 +127,7 @@ monitoring service, service algorithm, fan/GPU or scheduling change.
 
 | ID | Decided contract term |
 | --- | --- |
-| D1 | Preserve pooled SQL and configured SMTP web readiness. |
+| D1 | Preserve pooled SQL and conditional configured SMTP at /healthz for explicit readiness checks; recurring web checks use passive /healthz/live. |
 | D2 | Native web caller preserves failure, redirects, proxy and timeout semantics. |
 | D3 | One native worker script keeps authenticated SQL, Docker response and actual artifact write. |
 | D4 | Preserve DSN prefix conversion, authentication, bounds and deployed sockets. |
@@ -112,3 +136,5 @@ monitoring service, service algorithm, fan/GPU or scheduling change.
 | D7 | Source, build, proof and rollout run on Hemma in the admitted lane. |
 | D8 | User waived additional implementation agents and review loops. |
 | D9 | Parent integrates/publishes main and coordinates final natural observation. |
+
+| D10 | User approved on 2026-10-06: add passive /healthz/live and point recurring base/production/staging web callers to it, matching HuleEdu; no readiness scheduler/cache/background thread, new flags/framework or worker/timing/fan/GPU/boot changes. |

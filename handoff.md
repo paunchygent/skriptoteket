@@ -1,5 +1,12 @@
 ## Current
 
+- TASK-SKRIPT-REP-0035 passive /healthz/live is implemented; /healthz retains readiness.
+  Owner: skill-repository parent 01a1036b; next: publish then targeted web rollout.
+  34 focused tests and image proof passed; SQL/SMTP failure still yields readiness 503.
+  Image: skriptoteket-native-health:rep0035-passive (0ae40a8a34a2).
+  Proof: task-worktree .artifacts/native-health/passive-liveness-* (2026-10-06).
+
+
 - [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
   is `ready`. TASK-SKRIPT-40-01-01 has an approved implementation review
   (`bda00b6a`) and adopts design-system metadata 0.1.23 through package

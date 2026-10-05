@@ -61,7 +61,7 @@ services:
       - db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "/bin/sh", "/app/src/skriptoteket/cli/commands/healthcheck_web.sh"]
+      test: ["CMD", "/bin/sh", "/app/src/skriptoteket/cli/commands/healthcheck_web.sh", "http://localhost:8000/healthz/live"]
       interval: 30s
       timeout: 10s
       retries: 3

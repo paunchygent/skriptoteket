@@ -152,6 +152,72 @@ async def test_healthz_uses_public_request_state_adapter(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("db_status", "smtp_status", "overall_status"),
+    [
+        ("unhealthy", "healthy", "unhealthy"),
+        ("healthy", "degraded", "degraded"),
+        ("unhealthy", "degraded", "unhealthy"),
+    ],
+)
+async def test_liveness_is_passive_while_readiness_reports_dependency_failures(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    engine: AsyncMock,
+    db_status: str,
+    smtp_status: str,
+    overall_status: str,
+) -> None:
+    database = AsyncMock(return_value=(db_status, "database unavailable"))
+    smtp = AsyncMock(return_value=(smtp_status, "smtp unavailable"))
+    monkeypatch.setattr(observability_routes, "check_database", database)
+    monkeypatch.setattr(observability_routes, "check_smtp", smtp)
+
+    response = await client.get("/healthz/live")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload == {
+        "service": "skriptoteket",
+        "status": "alive",
+        "message": "skriptoteket is alive",
+        "version": "0.2.0",
+        "environment": "test",
+        "checks": {"service_responsive": True},
+        "dependencies": {},
+        "timestamp": payload["timestamp"],
+    }
+    assert datetime.fromisoformat(payload["timestamp"]).utcoffset().total_seconds() == 0
+    database.assert_not_awaited()
+    smtp.assert_not_awaited()
+    engine.begin.assert_not_called()
+
+    readiness = await client.get("/healthz")
+
+    assert readiness.status_code == 503
+    assert readiness.json()["status"] == overall_status
+    assert readiness.json()["checks"]["dependencies_available"] is False
+    assert readiness.json()["dependencies"]["database"]["status"] == db_status
+    assert readiness.json()["dependencies"]["smtp"]["status"] == smtp_status
+    database.assert_awaited_once_with(engine)
+    smtp.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_readiness_preserves_disabled_smtp_check(
+    client: httpx.AsyncClient,
+    settings: Settings,
+) -> None:
+    settings.HEALTHZ_SMTP_CHECK_ENABLED = False
+
+    response = await client.get("/healthz")
+
+    assert response.status_code == 200
+    assert "smtp" not in response.json()["dependencies"]
+    observability_routes.check_smtp.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_metrics_uses_public_request_state_adapter(
     client: httpx.AsyncClient,
     users: AsyncMock,
