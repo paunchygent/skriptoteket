@@ -152,6 +152,13 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_product impor
     ExamConverterProductHandler,
     SaveExamConverterLocalArtifactHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
+    EnqueueExamWorkspaceEnrichmentHandler,
+    GetExamWorkspaceEnrichmentStatusHandler,
+)
 from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
     PublicExamConverterRuntimeHandler,
 )
@@ -418,6 +425,7 @@ from skriptoteket.protocols.exam_converter_correction_sessions import (
     ExamConverterCorrectionSessionRepositoryProtocol,
     ExamConverterReplayCorrectionSessionRepositoryProtocol,
 )
+from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.flunk_out_frenzy import FlunkOutFrenzyBootstrapHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.public_exam_converter import PublicExamConverterJobStoreProtocol
@@ -1927,6 +1935,9 @@ class CuratedAppsProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        workspace_codec: ExamWorkspaceContainerCodecProtocol,
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
@@ -1940,6 +1951,43 @@ class CuratedAppsProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            workspace_codec=workspace_codec,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def enqueue_exam_workspace_enrichment_handler(
+        self,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        settings: Settings,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> EnqueueExamWorkspaceEnrichmentHandler:
+        return EnqueueExamWorkspaceEnrichmentHandler(
+            enrichment_jobs=enrichment_jobs,
+            enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def exam_workspace_enrichment_status_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
+        store: ExamWorkspaceDocumentStore,
+        codec: ExamWorkspaceContainerCodecProtocol,
+    ) -> GetExamWorkspaceEnrichmentStatusHandler:
+        return GetExamWorkspaceEnrichmentStatusHandler(
+            vault_files=vault_files,
+            enrichment_jobs=enrichment_jobs,
+            proposed_overlays=proposed_overlays,
+            store=store,
+            codec=codec,
         )
 
     @provide(scope=Scope.APP)

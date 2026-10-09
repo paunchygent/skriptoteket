@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,22 +24,34 @@ from skriptoteket.infrastructure.db.base import Base
 
 class ExamAnswerKeyEnrichmentJobModel(Base):
     __tablename__ = "exam_answer_key_enrichment_jobs"
-    __table_args__ = (Index("ix_exam_answer_key_enrichment_jobs_claim", "status", "available_at"),)
+    __table_args__ = (
+        Index("ix_exam_answer_key_enrichment_jobs_claim", "status", "available_at"),
+        Index(
+            "uq_exam_answer_key_enrichment_jobs_workspace_revision",
+            "workspace_lineage_id",
+            "workspace_document_revision",
+            unique=True,
+            postgresql_where=text("workspace_lineage_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
-    conversion_job_id: Mapped[UUID] = mapped_column(
+    source_kind: Mapped[str] = mapped_column(String(32), nullable=False, server_default="dxe")
+    conversion_job_id: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("conversion_hub_jobs.id", ondelete="CASCADE"),
         unique=True,
         index=True,
-        nullable=False,
+        nullable=True,
     )
     owner_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), index=True, nullable=False)
 
     status: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
     input_filename: Mapped[str] = mapped_column(String(255), nullable=False)
-    source_dxe: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    source_dxe: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    workspace_lineage_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    workspace_document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
     retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")

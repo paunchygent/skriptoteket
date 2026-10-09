@@ -18,7 +18,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 
 class ExamAnswerKeyEnrichmentJobStatus(StrEnum):
@@ -30,17 +30,27 @@ class ExamAnswerKeyEnrichmentJobStatus(StrEnum):
     FAILED = "failed"
 
 
+class ExamAnswerKeySourceKind(StrEnum):
+    """Which source lane one enrichment job completes answer keys for."""
+
+    DXE = "dxe"
+    WORKSPACE = "workspace"
+
+
 class ExamAnswerKeyEnrichmentJob(BaseModel):
     """Persist one machine answer-key enrichment job."""
 
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     id: UUID
-    conversion_job_id: UUID
+    source_kind: ExamAnswerKeySourceKind = ExamAnswerKeySourceKind.DXE
+    conversion_job_id: UUID | None = None
     owner_user_id: UUID
     status: ExamAnswerKeyEnrichmentJobStatus
     input_filename: str = Field(min_length=1, max_length=255)
-    source_dxe: bytes = Field(min_length=1)
+    source_dxe: bytes | None = Field(default=None, min_length=1)
+    workspace_lineage_id: UUID | None = None
+    workspace_document_revision: int | None = Field(default=None, ge=1)
     retry_identity: str | None = Field(default=None, max_length=255)
 
     attempts: int = 0
@@ -55,6 +65,28 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
 
+    @model_validator(mode="after")
+    def _source_kind_invariants(self) -> ExamAnswerKeyEnrichmentJob:
+        """Check-style invariant: each source lane carries its own binding."""
+
+        if self.source_kind is ExamAnswerKeySourceKind.DXE:
+            if self.conversion_job_id is None or self.source_dxe is None:
+                raise ValueError("dxe enrichment jobs require conversion_job_id and source_dxe")
+            if (
+                self.workspace_lineage_id is not None
+                or self.workspace_document_revision is not None
+            ):
+                raise ValueError("dxe enrichment jobs carry no workspace binding")
+        else:
+            if self.workspace_lineage_id is None or self.workspace_document_revision is None:
+                raise ValueError(
+                    "workspace enrichment jobs require workspace_lineage_id and "
+                    "workspace_document_revision"
+                )
+            if self.conversion_job_id is not None or self.source_dxe is not None:
+                raise ValueError("workspace enrichment jobs carry no dxe binding")
+        return self
+
 
 class ExamAnswerKeyProposedOverlay(BaseModel):
     """Persist one machine-proposed answer-key overlay as a proposal record."""
@@ -63,8 +95,10 @@ class ExamAnswerKeyProposedOverlay(BaseModel):
 
     id: UUID
     enrichment_job_id: UUID
-    conversion_job_id: UUID
+    conversion_job_id: UUID | None = None
     owner_user_id: UUID
+    workspace_lineage_id: UUID | None = None
+    workspace_document_revision: int | None = Field(default=None, ge=1)
     source_file_sha256: str = Field(min_length=1, max_length=128)
     source_ir_sha256: str = Field(min_length=1, max_length=128)
     provider_profile_id: str = Field(min_length=1, max_length=128)
@@ -92,6 +126,35 @@ def enqueue_enrichment_job(
         status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
         input_filename=input_filename,
         source_dxe=source_dxe,
+        retry_identity=retry_identity,
+        available_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+
+
+def enqueue_workspace_enrichment_job(
+    *,
+    job_id: UUID,
+    owner_user_id: UUID,
+    input_filename: str,
+    workspace_lineage_id: UUID,
+    workspace_document_revision: int,
+    now: datetime,
+    retry_identity: str | None = None,
+) -> ExamAnswerKeyEnrichmentJob:
+    """Build one queued enrichment job for a native workspace document revision."""
+
+    return ExamAnswerKeyEnrichmentJob(
+        id=job_id,
+        source_kind=ExamAnswerKeySourceKind.WORKSPACE,
+        conversion_job_id=None,
+        owner_user_id=owner_user_id,
+        status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
+        input_filename=input_filename,
+        source_dxe=None,
+        workspace_lineage_id=workspace_lineage_id,
+        workspace_document_revision=workspace_document_revision,
         retry_identity=retry_identity,
         available_at=now,
         created_at=now,

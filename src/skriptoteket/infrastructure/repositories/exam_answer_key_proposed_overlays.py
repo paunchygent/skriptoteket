@@ -43,6 +43,8 @@ class PostgreSQLExamAnswerKeyProposedOverlayRepository(
             enrichment_job_id=proposed_overlay.enrichment_job_id,
             conversion_job_id=proposed_overlay.conversion_job_id,
             owner_user_id=proposed_overlay.owner_user_id,
+            workspace_lineage_id=proposed_overlay.workspace_lineage_id,
+            workspace_document_revision=proposed_overlay.workspace_document_revision,
             source_file_sha256=proposed_overlay.source_file_sha256,
             source_ir_sha256=proposed_overlay.source_ir_sha256,
             provider_profile_id=proposed_overlay.provider_profile_id,
@@ -62,6 +64,18 @@ class PostgreSQLExamAnswerKeyProposedOverlayRepository(
     ) -> ExamAnswerKeyProposedOverlay | None:
         stmt = select(ExamAnswerKeyProposedOverlayModel).where(
             ExamAnswerKeyProposedOverlayModel.conversion_job_id == conversion_job_id
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ExamAnswerKeyProposedOverlay.model_validate(model) if model else None
+
+    async def get_by_enrichment_job_id(
+        self,
+        *,
+        enrichment_job_id: UUID,
+    ) -> ExamAnswerKeyProposedOverlay | None:
+        stmt = select(ExamAnswerKeyProposedOverlayModel).where(
+            ExamAnswerKeyProposedOverlayModel.enrichment_job_id == enrichment_job_id
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()

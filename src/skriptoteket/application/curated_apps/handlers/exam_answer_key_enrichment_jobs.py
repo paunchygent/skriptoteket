@@ -10,6 +10,12 @@ Purpose:
     fail-closes without any provider call; it never routes to the failover.
     The web request never blocks on any of this.
 
+    The same queue carries two source lanes behind ``source_kind``: the
+    DigiExam conversion lane (unchanged) and the native exam workspace lane,
+    which loads the pinned head container from Mina filer, runs the same
+    provider-attempt and lease logic, and persists an advisory proposals
+    payload without ever calling the conversion producer.
+
 Relationships:
     Claimed by the execution worker (``workers.exam_answer_key_enrichment``);
     uses the protocol seams in ``protocols.exam_answer_key``, the per-item
@@ -20,6 +26,7 @@ Relationships:
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -32,6 +39,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeyProposedOverlay,
+    ExamAnswerKeySourceKind,
     finish_enrichment_job,
     record_enrichment_attempt,
 )
@@ -43,8 +51,11 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
 )
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
+    AnswerKeyAttemptCandidate,
     AnswerKeyProviderAttemptRunner,
     EnrichmentFailure,
+    ProviderAttempt,
+    dxe_attempt_candidate,
     lease_exhausted_message,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
@@ -59,6 +70,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_comple
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
+    StructuredLLMRequest,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
     AnswerKeyTokenLease,
@@ -75,6 +87,19 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     DigiExamIrItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
+    WorkspaceAnswerKeyCandidatePlan,
+    plan_workspace_answer_key_candidates,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
+    WorkspaceAnswerKeyProposalRecord,
+    WorkspaceAnswerKeyProposalsPayload,
+    answer_key_item_views,
+    proposal_from_model_content,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    native_exam_document_json_bytes,
+)
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
@@ -89,8 +114,10 @@ from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
 )
+from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +146,9 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        vault_files: VaultFileRepositoryProtocol | None = None,
+        vault_storage: VaultStorageProtocol | None = None,
+        workspace_codec: ExamWorkspaceContainerCodecProtocol | None = None,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._conversion_jobs = conversion_jobs
@@ -130,6 +160,9 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
+        self._vault_files = vault_files
+        self._vault_storage = vault_storage
+        self._workspace_codec = workspace_codec
         self._attempts = AnswerKeyProviderAttemptRunner(
             provider=provider,
             leases=leases,
@@ -140,10 +173,19 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         """Run one claimed enrichment job to a terminal status."""
 
+        if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
+            return await self._handle_workspace(job=job)
+        return await self._handle_dxe(job=job)
+
+    async def _handle_dxe(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
+        conversion_job_id = job.conversion_job_id
+        source_dxe = job.source_dxe
+        if conversion_job_id is None or source_dxe is None:
+            raise ValueError("DXE enrichment jobs require conversion_job_id and source_dxe.")
         upload = ConversionHubUpload(
             filename=job.input_filename,
             content_type=_DXE_CONTENT_TYPE,
-            file_bytes=job.source_dxe,
+            file_bytes=source_dxe,
         )
         try:
             exam = parse_source_exam(upload=upload)
@@ -158,15 +200,21 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             )
         route = self._provider_selector.select_route()
         candidates = plan_answer_key_candidates(
-            job_id=str(job.conversion_job_id),
+            job_id=str(conversion_job_id),
             items=plan.unkeyed_items,
             profile=route.primary,
+        )
+        attempt_candidates = tuple(
+            dxe_attempt_candidate(conversion_job_id=conversion_job_id, plan=candidate)
+            for candidate in candidates
         )
 
         try:
             job, leases_by_item = await self._record_attempt_and_reserve(
                 job=job,
-                candidates=candidates,
+                requests=tuple(
+                    (candidate.item_id, candidate.request) for candidate in attempt_candidates
+                ),
                 profile=route.primary,
             )
         except AnswerKeyTokenLeaseRefused as refusal:
@@ -180,6 +228,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         proposals, serving_profile, failure = await self._collect_proposals(
             job=job,
             candidates=candidates,
+            attempt_candidates=attempt_candidates,
             route=route,
             leases_by_item=leases_by_item,
         )
@@ -192,7 +241,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             )
 
         source_file_sha256, source_ir_sha256 = source_exam_digests(
-            file_bytes=job.source_dxe,
+            file_bytes=source_dxe,
             exam=exam,
         )
         overlay = build_machine_proposed_overlay(
@@ -202,7 +251,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         )
         try:
             artifact = await self._producer.convert(
-                job_id=job.conversion_job_id,
+                job_id=conversion_job_id,
                 upload=upload,
                 overlay_bytes=overlay_json_bytes(overlay),
                 proposal_overlay_bytes=overlay_json_bytes(overlay),
@@ -211,7 +260,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 correlation_id=None,
                 overlay_key_provenance=DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY,
             )
-            self._artifacts.store_artifact(job_id=job.conversion_job_id, artifact=artifact)
+            self._artifacts.store_artifact(job_id=conversion_job_id, artifact=artifact)
         except DomainError as exc:
             return await self._fail(
                 job=job,
@@ -225,6 +274,106 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             source_file_sha256=source_file_sha256,
             source_ir_sha256=source_ir_sha256,
         )
+
+    async def _handle_workspace(
+        self, *, job: ExamAnswerKeyEnrichmentJob
+    ) -> ExamAnswerKeyEnrichmentJob:
+        """Complete one workspace-lane job: advisory proposals, no conversion."""
+
+        if (
+            self._vault_files is None
+            or self._vault_storage is None
+            or self._workspace_codec is None
+        ):
+            return await self._fail_workspace(job=job, last_error="workspace_dependencies_missing")
+        if job.workspace_lineage_id is None or job.workspace_document_revision is None:
+            return await self._fail_workspace(job=job, last_error="workspace_binding_missing")
+        head = await self._vault_files.get_document_head(
+            user_id=job.owner_user_id,
+            document_lineage_id=job.workspace_lineage_id,
+        )
+        if head is None or head.document_version != job.workspace_document_revision:
+            return await self._fail_workspace(
+                job=job, last_error="workspace_document_revision_stale"
+            )
+        content = await self._vault_storage.read_file(user_id=job.owner_user_id, file_id=head.id)
+        try:
+            container = self._workspace_codec.parse(content=content)
+        except DomainError:
+            return await self._fail_workspace(job=job, last_error="workspace_container_invalid")
+        document = container.document
+        if (
+            document.document_id != job.workspace_lineage_id
+            or document.revision != job.workspace_document_revision
+        ):
+            return await self._fail_workspace(job=job, last_error="workspace_container_invalid")
+        views = answer_key_item_views(document)
+        if not views:
+            return await self._fail_workspace(job=job, last_error="workspace_no_enrichable_items")
+
+        route = self._provider_selector.select_route()
+        plans = plan_workspace_answer_key_candidates(
+            job_id=str(job.id),
+            views=views,
+            profile=route.primary,
+        )
+        attempt_candidates = tuple(
+            _workspace_attempt_candidate(job_id=job.id, plan=plan) for plan in plans
+        )
+        try:
+            job, leases_by_item = await self._record_attempt_and_reserve(
+                job=job,
+                requests=tuple(
+                    (candidate.item_id, candidate.request) for candidate in attempt_candidates
+                ),
+                profile=route.primary,
+            )
+        except AnswerKeyTokenLeaseRefused:
+            return await self._fail_workspace(job=job, last_error="daily_token_lease_exhausted")
+
+        records, serving_profile, failure = await self._collect_workspace_proposals(
+            job=job,
+            plans=plans,
+            attempt_candidates=attempt_candidates,
+            route=route,
+            leases_by_item=leases_by_item,
+        )
+        if failure is not None:
+            return await self._fail_workspace(job=job, last_error=failure.last_error)
+
+        payload = WorkspaceAnswerKeyProposalsPayload(
+            lineage_id=job.workspace_lineage_id,
+            document_revision=job.workspace_document_revision,
+            items=records,
+        )
+        now = self._clock.now()
+        async with self._uow:
+            await self._proposed_overlays.create(
+                proposed_overlay=ExamAnswerKeyProposedOverlay(
+                    id=self._id_generator.new_uuid(),
+                    enrichment_job_id=job.id,
+                    conversion_job_id=None,
+                    owner_user_id=job.owner_user_id,
+                    workspace_lineage_id=job.workspace_lineage_id,
+                    workspace_document_revision=job.workspace_document_revision,
+                    source_file_sha256=hashlib.sha256(content).hexdigest(),
+                    source_ir_sha256=hashlib.sha256(
+                        native_exam_document_json_bytes(document)
+                    ).hexdigest(),
+                    provider_profile_id=serving_profile.provider_id,
+                    model=serving_profile.model,
+                    overlay_json=payload.model_dump(mode="json"),
+                    created_at=now,
+                )
+            )
+            return await self._enrichment_jobs.update(
+                job=finish_enrichment_job(
+                    job=job,
+                    status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                    now=now,
+                ),
+                expected_worker_id=job.locked_by,
+            )
 
     async def fail_next_expired(
         self,
@@ -248,6 +397,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             )
             if job is None:
                 return None
+        if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
+            return await self._fail_workspace(job=job, last_error="enrichment_worker_lease_expired")
+        if job.source_dxe is None:
+            raise ValueError("DXE enrichment jobs require source_dxe.")
         return await self._complete_with_failure(
             job=job,
             upload=ConversionHubUpload(
@@ -263,7 +416,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
-        candidates: tuple[AnswerKeyCandidatePlan, ...],
+        requests: tuple[tuple[str, StructuredLLMRequest], ...],
         profile: StructuredLLMProviderProfile,
     ) -> tuple[ExamAnswerKeyEnrichmentJob, dict[str, AnswerKeyTokenLease]]:
         """Reserve every candidate's lease with the recorded attempt, atomically.
@@ -278,15 +431,15 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             updated_job = await self._enrichment_jobs.update(
                 job=record_enrichment_attempt(job=job, now=now)
             )
-            for candidate in candidates:
-                leases_by_item[candidate.item.item_id] = await self._leases.reserve(
+            for item_id, request in requests:
+                leases_by_item[item_id] = await self._leases.reserve(
                     now=now,
                     requested_tokens=requested_lease_tokens(
-                        estimated_input_tokens=candidate.request.estimated_input_tokens,
-                        max_output_tokens=candidate.request.max_output_tokens,
+                        estimated_input_tokens=request.estimated_input_tokens,
+                        max_output_tokens=request.max_output_tokens,
                     ),
                     job_id=updated_job.id,
-                    item_id=candidate.item.item_id,
+                    item_id=item_id,
                     provider_profile_id=profile.provider_id,
                 )
         return updated_job, leases_by_item
@@ -296,6 +449,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         *,
         job: ExamAnswerKeyEnrichmentJob,
         candidates: tuple[AnswerKeyCandidatePlan, ...],
+        attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
         route: AnswerKeyProviderRoute,
         leases_by_item: dict[str, AnswerKeyTokenLease],
     ) -> tuple[
@@ -305,10 +459,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     ]:
         proposals: list[tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey]] = []
         serving_profile = route.primary
-        for candidate in candidates:
+        for candidate, attempt_candidate in zip(candidates, attempt_candidates, strict=True):
             attempt = await self._attempts.attempt_with_failover(
                 job=job,
-                candidate=candidate,
+                candidate=attempt_candidate,
                 route=route,
                 primary_lease=leases_by_item[candidate.item.item_id],
             )
@@ -316,15 +470,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 return (), serving_profile, attempt
             if attempt.profile is route.failover:
                 serving_profile = route.failover
-            usable_tokens = attempt.response.usage.usable_total_tokens
-            if usable_tokens is not None:
-                now = self._clock.now()
-                async with self._uow:
-                    await self._leases.reconcile(
-                        lease_id=attempt.lease.lease_id,
-                        actual_tokens=usable_tokens,
-                        now=now,
-                    )
+            await self._reconcile_attempt_usage(attempt=attempt)
             key = manual_answer_key_from_model_content(
                 item=candidate.item,
                 content=attempt.response.content,
@@ -340,6 +486,73 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 )
             proposals.append((candidate.item, key))
         return tuple(proposals), serving_profile, None
+
+    async def _collect_workspace_proposals(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        plans: tuple[WorkspaceAnswerKeyCandidatePlan, ...],
+        attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
+        route: AnswerKeyProviderRoute,
+        leases_by_item: dict[str, AnswerKeyTokenLease],
+    ) -> tuple[
+        tuple[WorkspaceAnswerKeyProposalRecord, ...],
+        StructuredLLMProviderProfile,
+        EnrichmentFailure | None,
+    ]:
+        records: list[WorkspaceAnswerKeyProposalRecord] = []
+        serving_profile = route.primary
+        for plan, attempt_candidate in zip(plans, attempt_candidates, strict=True):
+            attempt = await self._attempts.attempt_with_failover(
+                job=job,
+                candidate=attempt_candidate,
+                route=route,
+                primary_lease=leases_by_item[plan.view.item_id],
+            )
+            if isinstance(attempt, EnrichmentFailure):
+                return (), serving_profile, attempt
+            if attempt.profile is route.failover:
+                serving_profile = route.failover
+            await self._reconcile_attempt_usage(attempt=attempt)
+            proposal = proposal_from_model_content(
+                view=plan.view,
+                content=attempt.response.content,
+            )
+            if proposal is None:
+                return (
+                    (),
+                    serving_profile,
+                    EnrichmentFailure(
+                        teacher_message=_MANUAL_COMPLETION_MESSAGE,
+                        last_error="llm_output_invalid",
+                    ),
+                )
+            records.append(
+                WorkspaceAnswerKeyProposalRecord(
+                    item_id=proposal.item_id,
+                    kind=proposal.kind,
+                    correct_choice_ids=proposal.correct_choice_ids,
+                    gap_accepted_values={
+                        gap_id: values for gap_id, values in proposal.gap_accepted_values
+                    },
+                    provider_profile_id=attempt.profile.provider_id,
+                    model=attempt.profile.model,
+                    prompt_template_version=plan.request.prompt_template_version,
+                )
+            )
+        return tuple(records), serving_profile, None
+
+    async def _reconcile_attempt_usage(self, *, attempt: ProviderAttempt) -> None:
+        usable_tokens = attempt.response.usage.usable_total_tokens
+        if usable_tokens is None:
+            return
+        now = self._clock.now()
+        async with self._uow:
+            await self._leases.reconcile(
+                lease_id=attempt.lease.lease_id,
+                actual_tokens=usable_tokens,
+                now=now,
+            )
 
     async def _succeed(
         self,
@@ -366,12 +579,13 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                     created_at=now,
                 )
             )
-            await self._update_conversion_job(
-                conversion_job_id=job.conversion_job_id,
-                status=ConversionHubJobStatus.SUCCEEDED,
-                error_message=None,
-                now=now,
-            )
+            if job.conversion_job_id is not None:
+                await self._update_conversion_job(
+                    conversion_job_id=job.conversion_job_id,
+                    status=ConversionHubJobStatus.SUCCEEDED,
+                    error_message=None,
+                    now=now,
+                )
             return await self._enrichment_jobs.update(
                 job=finish_enrichment_job(
                     job=job,
@@ -390,12 +604,33 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     ) -> ExamAnswerKeyEnrichmentJob:
         now = self._clock.now()
         async with self._uow:
-            await self._update_conversion_job(
-                conversion_job_id=job.conversion_job_id,
-                status=ConversionHubJobStatus.FAILED,
-                error_message=teacher_message,
-                now=now,
+            if job.conversion_job_id is not None:
+                await self._update_conversion_job(
+                    conversion_job_id=job.conversion_job_id,
+                    status=ConversionHubJobStatus.FAILED,
+                    error_message=teacher_message,
+                    now=now,
+                )
+            return await self._enrichment_jobs.update(
+                job=finish_enrichment_job(
+                    job=job,
+                    status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                    now=now,
+                    last_error=last_error,
+                ),
+                expected_worker_id=job.locked_by,
             )
+
+    async def _fail_workspace(
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        last_error: str,
+    ) -> ExamAnswerKeyEnrichmentJob:
+        """Finish one workspace-lane job as FAILED; no conversion to update."""
+
+        now = self._clock.now()
+        async with self._uow:
             return await self._enrichment_jobs.update(
                 job=finish_enrichment_job(
                     job=job,
@@ -416,6 +651,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     ) -> ExamAnswerKeyEnrichmentJob:
         """Publish deterministic artifacts and typed manual-follow-up state."""
 
+        if job.conversion_job_id is None:
+            raise ValueError("DXE enrichment jobs require conversion_job_id.")
         try:
             artifact = await self._producer.convert(
                 job_id=job.conversion_job_id,
@@ -474,3 +711,26 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
                 }
             )
         )
+
+
+def _workspace_attempt_candidate(
+    *,
+    job_id: UUID,
+    plan: WorkspaceAnswerKeyCandidatePlan,
+) -> AnswerKeyAttemptCandidate:
+    """Wrap one workspace candidate plan with its failover request rebuild."""
+
+    view = plan.view
+
+    def build(profile: StructuredLLMProviderProfile) -> StructuredLLMRequest:
+        return plan_workspace_answer_key_candidates(
+            job_id=str(job_id),
+            views=(view,),
+            profile=profile,
+        )[0].request
+
+    return AnswerKeyAttemptCandidate(
+        item_id=view.item_id,
+        request=plan.request,
+        build_request_for_profile=build,
+    )
