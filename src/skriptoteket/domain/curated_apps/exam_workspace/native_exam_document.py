@@ -27,7 +27,7 @@ from pydantic import (
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION = "native_exam_document_v1"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v1"] = "native_exam_document_v1"
 
 _ITEM_ID_PATTERN = r"^item_[0-9]{3,4}$"
 _CHOICE_ID_PATTERN = r"^choice_[0-9]{3}$"
@@ -179,9 +179,7 @@ class NativeExamDocumentOrigin(BaseModel):
     def _import_requires_source(self) -> "NativeExamDocumentOrigin":
         if self.kind == "docx_import":
             if not self.source_filename or not self.source_sha256:
-                raise ValueError(
-                    "docx_import origin requires source_filename and source_sha256"
-                )
+                raise ValueError("docx_import origin requires source_filename and source_sha256")
         return self
 
 
@@ -252,9 +250,7 @@ class NativeExamItem(BaseModel):
         if key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE:
             raise ValueError("keyed item kinds cannot use not_applicable origin")
 
-        has_key_data = bool(key.correct_choice_ids) or any(
-            gap.accepted_values for gap in self.gaps
-        )
+        has_key_data = bool(key.correct_choice_ids) or any(gap.accepted_values for gap in self.gaps)
         if key.origin is NativeAnswerKeyOrigin.ABSENT:
             if has_key_data:
                 raise ValueError("absent answer key must not carry key data")
@@ -274,9 +270,7 @@ class NativeExamItem(BaseModel):
                 raise ValueError("gap_fill items key gaps, not choices")
             for gap in self.gaps:
                 if not gap.accepted_values:
-                    raise ValueError(
-                        f"gap {gap.gap_id} needs accepted values for a keyed item"
-                    )
+                    raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []
@@ -318,9 +312,7 @@ class NativeExamItem(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v1"] = (
-        NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
-    )
+    schema_version: Literal["native_exam_document_v1"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str = Field(min_length=1)
@@ -377,8 +369,7 @@ class NativeExamDocument(BaseModel):
                 details={"item_id": item.item_id},
             )
         items = tuple(
-            item if candidate.item_id == item.item_id else candidate
-            for candidate in self.items
+            item if candidate.item_id == item.item_id else candidate for candidate in self.items
         )
         return self.model_copy(update={"items": items})
 
@@ -420,9 +411,7 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     blockers: list[NativeExportBlocker] = []
     for item in document.items:
         if item.review.state is NativeItemReviewState.REVIEW_REQUIRED:
-            blockers.append(
-                NativeExportBlocker(item_id=item.item_id, reason="review_required")
-            )
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="review_required"))
         if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
             blockers.append(
                 NativeExportBlocker(
@@ -431,9 +420,7 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
                 )
             )
         if item.points is None:
-            blockers.append(
-                NativeExportBlocker(item_id=item.item_id, reason="missing_points")
-            )
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)
 
 
@@ -445,9 +432,9 @@ def item_has_trusted_key(item: NativeExamItem) -> bool:
 
 def native_exam_document_json_bytes(document: NativeExamDocument) -> bytes:
     payload = document.model_dump(mode="json")
-    return json.dumps(
-        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
 
 
 def parse_native_exam_document(data: bytes) -> NativeExamDocument:
