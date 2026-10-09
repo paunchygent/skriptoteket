@@ -19,6 +19,7 @@ from skriptoteket.di.classroom_planner_rosters import ClassroomPlannerRosterProv
 from skriptoteket.di.classroom_planner_smart_rules import ClassroomPlannerSmartRuleProvider
 from skriptoteket.di.curated_apps import CuratedAppsProvider
 from skriptoteket.di.editor import EditorProvider
+from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.identity import IdentityProvider
 from skriptoteket.di.infrastructure import (
@@ -40,6 +41,7 @@ __all__ = [
     "ClassroomPlannerSmartRuleProvider",
     "CuratedAppsProvider",
     "EditorProvider",
+    "ExamWorkspaceProvider",
     "FavoritesProvider",
     "IdentityProvider",
     "InfrastructureCuratedAppsProvider",
@@ -74,6 +76,7 @@ def create_container(settings: Settings):
         CatalogProvider(),
         FavoritesProvider(),
         EditorProvider(),
+        ExamWorkspaceProvider(),
         LlmProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
