@@ -87,6 +87,14 @@ ADR-SKRIPT-0091.
 - Retained planning record: sir-convert-a-lot session
   `01a048d5-69f7-7394-93dd-8ff91af608cd`,
   `evidence/planning/TASK-SIRCON-REP-0029/plan.md`.
+- Authoritative empirical Exam.net QTI contract (2026-10-09): the HuleEduOS
+  repository owns the proven native QTI 3.0 contract and probe evidence —
+  `.codex/skills/examnet-qti-import/references/examnet-qti3-contract.md`,
+  the probe ledger
+  `docs/reference/ref-eduos-general-exam-net-import-probe-ledger-exam-net-import-probe-ledger.md`,
+  and the producer `scripts/converters/produce_examnet_qti.py` (probe
+  rounds V1-V44, live imports 2026-09-25/26). The Exam.net import dialog
+  states QTI 3.0 native, with QTI 2.1/2.2 packages converted automatically.
 - 2026-09-05 user-approved workspace scope: native editable exam workspace
   (DOCX first, digital PDF second, OCR deferred; deterministic extraction
   plus LLM parsing/enrichment/repair behind teacher review; versioned Mina
@@ -99,8 +107,9 @@ ADR-SKRIPT-0091.
 
 Sequenced with explicit dependencies: stories 1-3 complete first; the
 workspace skeleton (story 4) follows cleanup; DOCX breadth (story 5) and
-digital PDF (story 6) build on the skeleton; QTI import (story 7) is last
-and not on the critical path.
+digital PDF (story 6) build on the skeleton; the QTI 3.0 export convergence
+(story 8) runs after story 5 and before story 7; QTI import (story 7)
+closes the epic and is not on the critical path.
 
 1. Walking skeleton: the `.dxe` to authoring-IR to Exam.net QTI-plus-PDF
    bundle runs end to end inside the Skriptoteket backend as a switchable
@@ -125,6 +134,13 @@ and not on the critical path.
    scanned-PDF product route.
 7. QTI import: a reader for the proven subset into the authoring IR, making
    export-import-export round-trip a writer regression gate.
+8. QTI 3.0 native export convergence (user-decided 2026-10-09; sequenced
+   after story 5 and before story 7): the product exporter adopts the
+   empirically proven native QTI 3.0 Exam.net contract from the HuleEduOS
+   `examnet-qti-import` skill, porting the proven shapes (inline choice,
+   ordering, grid/matching layouts, mapping-based scoring). The QTI 2.1
+   writer remains the parity/regression baseline until cutover, because
+   QTI 2.1 import rides Exam.net's beta auto-conversion layer.
 
 ## Verification
 
@@ -183,3 +199,5 @@ and not on the critical path.
 | E10 | Ingestion order is DOCX upload first, then digital PDF with embedded text; OCR/scanned PDFs are deferred. |
 | E11 | DOCX workspace implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done, preserving generic Sir extraction, OCR, and STT. |
 | E12 | The empirical Exam.net contract is preserved as-is; no new importer research and no unsupported DigiExam types are authorized. |
+| E13 | The product QTI exporter converges on the native QTI 3.0 Exam.net contract proven in HuleEduOS, in a dedicated slice (story 8) sequenced after story 5 and before story 7; the QTI 2.1 writer stays as the parity/regression baseline until cutover (user decision 2026-10-09). |
+| E14 | The story-5 breadth contract carries as candidates the HuleEduOS-proven teacher-grade scoring features — accepted-spelling variants under the hand-picked-misspelling rule, case-insensitive answer mappings, expected-length and letter-hint conventions — and the Exam.net-proven ordering (ordningsföljd) item type as an extension of the E3 subset (user decision 2026-10-09). |

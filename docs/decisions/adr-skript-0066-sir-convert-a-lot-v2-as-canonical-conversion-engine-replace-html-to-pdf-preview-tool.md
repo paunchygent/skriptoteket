@@ -75,3 +75,13 @@ No separate non-decisions is stated in the source.
   HTTP remaining as the fallback transport rather than the primary trusted-network contract.
 - Existing E2E and unit tests that depend on `/tools/html-to-pdf-preview/run` must migrate to the
   curated app surface.
+
+## Amendment Pointer (2026-10-09)
+
+ADR-SKRIPT-0090 (accepted) narrows this ADR: the exam-conversion domain is
+Skriptoteket-owned and no longer routes through Sir Convert-a-Lot. The
+EPIC-SKRIPT-39 cutover retired the Sir Convert exam lane and its mirrored
+schema surface, and Sir Convert production and STT are offline by user
+decision, retained only behind the generic heavy-extraction contract. The
+canonical-engine rule in this ADR now governs general document conversion
+only. Do not read this ADR without ADR-SKRIPT-0090.
