@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9a352bef4ea287c824348642fc6935f9a8aae1bb2c64c656f3dfc7f186ddf132",
+  "source_set_digest": "e1f938dd36e307aed5dcd92047472e6d75be5d6f3c4621801189683d661c7229",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2219,7 +2219,7 @@
       "type": "story",
       "title": "Native editable exam workspace with DOCX-first walking skeleton",
       "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4506,7 +4506,7 @@
       "type": "task",
       "title": "DOCX walking skeleton: import, native edit and create, save and reopen, export",
       "path": "docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -6952,7 +6952,7 @@
       "type": "adr",
       "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
       "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
-      "status": "proposed",
+      "status": "accepted",
       "owners": [
         {
           "kind": "service",
@@ -10489,7 +10489,7 @@
       {
         "id": "ADR-SKRIPT-0091",
         "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
-        "status": "proposed",
+        "status": "accepted",
         "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
         "governing": [
           "EPIC-SKRIPT-39"
@@ -11020,6 +11020,13 @@
         "title": "Cut over the Exam Converter and retire the Sir exam lane",
         "status": "done",
         "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
+      },
+      {
+        "id": "ST-SKRIPT-39-04",
+        "type": "story",
+        "title": "Native editable exam workspace with DOCX-first walking skeleton",
+        "status": "ready",
+        "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md"
       },
       {
         "id": "ST-SKRIPT-40-01",

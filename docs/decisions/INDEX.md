@@ -90,7 +90,7 @@
 - `ADR-SKRIPT-0088` | [Cloudflare R2 storage boundary for Mina filer and FileRefs](adr-skript-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md) | proposed | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0089` | [Tool slug lifecycle (draft-mutable, publish-final, post-publish immutable)](adr-skript-0089-tool-slug-lifecycle-draft-mutable-publish-final-post-publish-immutable.md) | accepted | governing=- | governed_contracts=- | supersedes=- | superseded_by=-
 - `ADR-SKRIPT-0090` | [Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction](adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md) | accepted | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39,ST-SKRIPT-39-01,ST-SKRIPT-39-02,ST-SKRIPT-39-04 | supersedes=- | superseded_by=-
-- `ADR-SKRIPT-0091` | [Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision](adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md) | proposed | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39,ST-SKRIPT-39-04 | supersedes=- | superseded_by=-
+- `ADR-SKRIPT-0091` | [Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision](adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md) | accepted | governing=EPIC-SKRIPT-39 | governed_contracts=EPIC-SKRIPT-39,ST-SKRIPT-39-04 | supersedes=- | superseded_by=-
 
 ## Historical Coverage Debt
 
@@ -168,5 +168,6 @@
 - `ST-SKRIPT-39-01` | [Walking skeleton for Skriptoteket-owned exam conversion](../backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | story | active
 - `ST-SKRIPT-39-02` | [Port the remote answer-key completion line with a daily token lease](../backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md) | story | done
 - `ST-SKRIPT-39-03` | [Cut over the Exam Converter and retire the Sir exam lane](../backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md) | story | done
+- `ST-SKRIPT-39-04` | [Native editable exam workspace with DOCX-first walking skeleton](../backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | story | ready
 - `ST-SKRIPT-40-01` | [Converge tokens, components and action buttons onto the shared package](../backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | story | ready
 - `ST-SKRIPT-40-02` | [Converge icons onto the shared glyph vocabulary](../backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | story | ready

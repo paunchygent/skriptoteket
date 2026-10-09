@@ -1,5 +1,30 @@
 ## Current
 
+- [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md)
+  is `in_progress`: the DOCX walking skeleton is implemented end to end on
+  branch `claude/exam-converter-qti-format-eyocw2` (2026-10-09). Native exam
+  document v1 persists as versioned Mina filer containers (migration
+  `7c3e9a1d4f20`, 409 revision guards per the correction-session precedent);
+  the deterministic extractor is proven on the real fixture
+  `grammatik_omprov_examnet_import_med_facit.docx` (8 items, 38 p, clean
+  questions review-complete, every ambiguity routed to teacher review);
+  import/reopen/save plus S4-gated QTI/PDF/DOCX exports ride the existing
+  fail-closed writers (the QTI validation-report status is now asserted);
+  the Luna/GLM answer-key lane is generalized to workspace jobs with no
+  second queue (migration `d4f8b2c6a9e1`, advisory prefill only, DXE lane
+  golden-tested unchanged); the SPA gains `/apps/exam-workspace` (37
+  Vitest specs, typecheck and eslint clean). Gates in this session's
+  container: full backend unit suite 2077 passed with 20 failures, every
+  one reproduced byte-identically on pristine origin/main (16 SPA-fallback
+  500s from the missing frontend build, two docker compose contract
+  checks, the historical-docs selector, the root-container reagent chmod
+  test) or already classified environmental (WeasyPrint nbsp glyph in the
+  exam PDF parity extraction) — zero regressions from this slice; lint,
+  docs-validate, handoff-validate, and frontend typecheck exit 0.
+  Remaining for closeout: the Docker integration lanes (migration
+  idempotency tests for 7c3e9a1d4f20 and d4f8b2c6a9e1, Postgres repo
+  coverage) and the D5 authenticated live browser walk — production
+  acceptance stays user-owned.
 - 2026-10-09 planning session (Claude): user decisions recorded in
   EPIC-SKRIPT-39 — new story 8 converges the product exporter on the proven
   native QTI 3.0 Exam.net contract (HuleEduOS `examnet-qti-import` skill,
