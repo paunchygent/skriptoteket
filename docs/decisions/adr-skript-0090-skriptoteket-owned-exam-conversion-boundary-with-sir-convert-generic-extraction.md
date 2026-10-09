@@ -73,10 +73,9 @@ conversion; it no longer covers the exam-conversion domain.
   stories, sir-convert-a-lot exam-lane retirement tasks, and the sidecar
   retirement.
 
-## Proposed Amendment Pointer (not accepted)
+## Amendment Pointer (accepted 2026-10-09)
 
-- Proposed ADR-SKRIPT-0091 would narrow only the "No exam-creator
-  authoring UI is authorized" non-decision above to the native editable
-  exam workspace slice (ST-SKRIPT-39-04). Until ADR-SKRIPT-0091 is
-  accepted, that non-decision stands unchanged; every other section of
-  this ADR is unaffected.
+- ADR-SKRIPT-0091 (accepted 2026-10-09 by user-lead decision) narrows only
+  the "No exam-creator authoring UI is authorized" non-decision above to
+  the native editable exam workspace slice (ST-SKRIPT-39-04). Every other
+  section of this ADR is unaffected.

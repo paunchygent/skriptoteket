@@ -13,7 +13,10 @@
   EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
   on sir-convert branch `claude/supersede-retired-exam-epics` pending
   merge and governed terminal closure. The HuleEduOS producer stays a
-  deliberately separate hand-tool for now (E15).
+  deliberately separate hand-tool for now (E15). ADR-SKRIPT-0091 and
+  ST-SKRIPT-39-04 were accepted by user decision 2026-10-09 (user-closure
+  gate): ADR-0091 is `accepted`, the story and TASK-SKRIPT-39-04-01 are
+  `ready`, and the DOCX walking skeleton is unblocked.
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
@@ -110,5 +113,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next executable task: review ADR-0091/ST-SKRIPT-39-04 before
-  TASK-SKRIPT-39-04-01.
+- Next executable task: implement TASK-SKRIPT-39-04-01 (DOCX walking
+  skeleton); the ADR-0091/ST-SKRIPT-39-04 review was accepted 2026-10-09.
