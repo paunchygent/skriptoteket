@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.1"
-content_hash = "sha256:ab135e88d6d7db0839de91b01c9a881afeaa12b6d86f91d8a3c927643432f66d"
+content_hash = "sha256:9e2eeb8479bd36d448da9061ee84e9d023b785dfcdcbaf1556c61a6f07d08a3f"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -3772,12 +3772,12 @@ files = [
 
 [[package]]
 name = "repository-governance"
-version = "0.11.83"
+version = "0.11.84"
 requires_python = "<3.15,>=3.12"
 subdirectory = "packages/repository_governance"
 git = "https://github.com/paunchygent/skill-repository.git"
-ref = "f721e305957be70ef57a626e1f76bbb3c06c0916"
-revision = "f721e305957be70ef57a626e1f76bbb3c06c0916"
+ref = "305d61ca412673a87869cf022f9e5611ae3e526a"
+revision = "305d61ca412673a87869cf022f9e5611ae3e526a"
 summary = "Shared repository-governance and Docs-as-Code kernel."
 groups = ["monorepo-tools"]
 dependencies = [
