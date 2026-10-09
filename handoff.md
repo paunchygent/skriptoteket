@@ -7,9 +7,12 @@
   writer as the parity baseline until cutover (terms E13-E14); story-5
   breadth candidates add accepted-spelling variants, case-insensitive maps,
   letter hints, and the proven ordering type. ADR-SKRIPT-0066 gained an
-  ADR-0090 amendment pointer. The stale sir-convert-a-lot Exam.net QTI
-  contract reference (pre-beta, "vendor-unproven QTI 2.1") is deprecated
-  with a supersession banner pointing at the HuleEduOS contract.
+  ADR-0090 amendment pointer. Verified on current sir-convert-a-lot main:
+  the stale pre-beta QTI contract reference and the whole Sir exam domain
+  are already removed (TASK-SIRCON-07-04-01); the residual hazard was
+  EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
+  on sir-convert branch `claude/supersede-retired-exam-epics` pending
+  merge and governed terminal closure.
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
