@@ -12,7 +12,8 @@
   are already removed (TASK-SIRCON-07-04-01); the residual hazard was
   EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
   on sir-convert branch `claude/supersede-retired-exam-epics` pending
-  merge and governed terminal closure.
+  merge and governed terminal closure. The HuleEduOS producer stays a
+  deliberately separate hand-tool for now (E15).
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
