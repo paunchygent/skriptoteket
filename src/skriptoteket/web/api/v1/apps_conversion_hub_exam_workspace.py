@@ -12,7 +12,7 @@ Relationships:
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Response, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
@@ -22,6 +22,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
+    ExamWorkspaceExportTarget,
+    ExportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -62,6 +66,24 @@ async def get_exam_workspace_document(
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id)
+
+
+@router.get("/exam-workspace/documents/{lineage_id}/exports/{target}")
+async def export_exam_workspace_document(
+    lineage_id: UUID,
+    target: ExamWorkspaceExportTarget,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExportExamWorkspaceDocumentHandler],
+    user: User = Depends(require_app_user_api),
+) -> Response:
+    require_conversion_hub_access(registry=registry, user=user)
+    result = await handler.handle(actor=user, lineage_id=lineage_id, target=target)
+    safe_filename = result.filename.replace('"', "")
+    return Response(
+        content=result.content,
+        media_type=result.media_type,
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+    )
 
 
 @router.put(

@@ -15,12 +15,24 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
+    ExportExamWorkspaceDocumentHandler,
+)
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_extractor import (  # noqa: E501
     PythonDocxExamExtractor,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
+    ExamWorkspaceDocxWriter,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
+    WeasyPrintExamNetPdfRenderer,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
+    ExamNetQtiPackageWriter,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_workspace import (
@@ -91,6 +103,23 @@ class ExamWorkspaceProvider(Provider):
     ) -> GetExamWorkspaceDocumentHandler:
         """Provide the reopen handler."""
         return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
+
+    @provide(scope=Scope.REQUEST)
+    def export_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+    ) -> ExportExamWorkspaceDocumentHandler:
+        """Provide the on-demand export handler (QTI/PDF/DOCX)."""
+        return ExportExamWorkspaceDocumentHandler(
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+        )
 
     @provide(scope=Scope.REQUEST)
     def save_handler(
