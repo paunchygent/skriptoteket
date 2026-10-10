@@ -157,12 +157,12 @@ function choiceLetter(index: number): string {
           <IconNextPage :size="18" />
         </button>
       </div>
-      <h2 class="min-w-0 flex-1 text-base font-semibold leading-tight text-navy">
+      <h2 class="shrink-0 whitespace-nowrap text-base font-semibold leading-tight text-navy">
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
       </h2>
       <div
-        class="flex flex-wrap items-center gap-3"
+        class="ml-auto flex flex-wrap items-center gap-3"
         data-test="exam-workspace-review-badge"
       >
         <span

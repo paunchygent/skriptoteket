@@ -51,8 +51,10 @@ import {
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 
 const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
+const DELETE_NEXT_TO_GAP_COPY =
+  "Luckan tas inte bort med Backsteg eller Delete. Öppna luckan för att ändra svaret.";
 const EMPTY_PARAGRAPH_COPY = "Stycket måste innehålla text.";
-const POPOVER_WIDTH_PX = 288;
+const POPOVER_WIDTH_PX = 448;
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -232,7 +234,10 @@ function handleBeforeInput(paragraphIndex: number, event: InputEvent): void {
   }
   if (rangesTouchAtom(element, liveRangesFor(event), inputType)) {
     event.preventDefault();
-    statusMessage.value = ATOM_GUARD_COPY;
+    statusMessage.value =
+      inputType === "deleteContentBackward" || inputType === "deleteContentForward"
+        ? DELETE_NEXT_TO_GAP_COPY
+        : ATOM_GUARD_COPY;
     return;
   }
   if (inputType === "insertParagraph" || inputType === "insertLineBreak") {

@@ -63,6 +63,8 @@ const isClassroomPlannerRoute = computed(() => {
   );
 });
 
+const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
+
 onMounted(() => {
   void auth.bootstrap();
 });
@@ -139,7 +141,7 @@ async function onLogout(): Promise<void> {
         class="route-stage"
         :class="{
           'route-stage--editor': isEditorRoute,
-          'route-stage--workspace': isClassroomPlannerRoute,
+          'route-stage--workspace': isClassroomPlannerRoute || isExamWorkspaceRoute,
         }"
       >
         <RouterView v-slot="{ Component, route: viewRoute }">
@@ -182,7 +184,7 @@ async function onLogout(): Promise<void> {
         class="route-stage"
         :class="{
           'route-stage--editor': isEditorRoute,
-          'route-stage--workspace': isClassroomPlannerRoute,
+          'route-stage--workspace': isClassroomPlannerRoute || isExamWorkspaceRoute,
         }"
       >
         <RouterView v-slot="{ Component, route: viewRoute }">

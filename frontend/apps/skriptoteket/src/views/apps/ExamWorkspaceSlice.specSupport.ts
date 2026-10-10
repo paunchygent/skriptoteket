@@ -157,6 +157,7 @@ export function buildResponse(params: {
 export async function mountExamWorkspace(
   query: Record<string, string> = {},
   layout: ExamWorkspaceLayout = "desktop",
+  attachTo?: HTMLElement,
 ) {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -166,6 +167,7 @@ export async function mountExamWorkspace(
   await router.isReady();
   const layoutRef = ref<ExamWorkspaceLayout>(layout);
   const wrapper = mount(ExamWorkspaceView, {
+    attachTo,
     global: {
       plugins: [createTestingPinia({ createSpy: vi.fn }), router],
       provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layoutRef },

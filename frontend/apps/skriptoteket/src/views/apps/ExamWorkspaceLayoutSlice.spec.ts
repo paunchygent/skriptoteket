@@ -193,6 +193,63 @@ describe("ExamWorkspaceView two-mode layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(false);
   });
 
+  it("returns focus to the Detaljer toggle when Escape closes the tablet overlay", async () => {
+    const { wrapper } = await mountExamWorkspace({}, "tablet", document.body);
+    await importFixtureDocument(wrapper);
+    const toggle = wrapper.get('[data-test="exam-workspace-item-details-toggle"]')
+      .element as HTMLButtonElement;
+
+    // A click that does not focus its button (Safari) leaves focus on the page.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
+    const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]').element;
+    expect(document.activeElement).toBe(frame);
+
+    pressEscape(frame);
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(false);
+    expect(document.activeElement).toBe(toggle);
+    wrapper.unmount();
+  });
+
+  it("applies the overlay focus contract when a desktop drawer is resized to tablet", async () => {
+    const { layout, wrapper } = await mountExamWorkspace({}, "desktop", document.body);
+    await importFixtureDocument(wrapper);
+    const toggle = wrapper.get('[data-test="exam-workspace-item-details-toggle"]')
+      .element as HTMLButtonElement;
+    toggle.focus();
+    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
+    const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]').element;
+    expect(document.activeElement).toBe(toggle);
+
+    layout.value = "tablet";
+    await flushPromises();
+    expect(document.activeElement).toBe(frame);
+
+    pressEscape(frame);
+    await flushPromises();
+    expect(document.activeElement).toBe(toggle);
+    wrapper.unmount();
+  });
+
+  it("fills the available height without a hard-coded header offset", async () => {
+    const wrapper = await mountImported("desktop");
+    const frame = wrapper.get('[data-test="exam-workspace-frame"]');
+
+    expect(frame.classes()).toContain("flex-1");
+    expect(frame.classes().join(" ")).not.toContain("72px");
+  });
+
+  it("paints the phone question sheet with an opaque surface", async () => {
+    const wrapper = await mountImported("phone");
+    await wrapper.get('[data-test="exam-workspace-question-picker"]').trigger("click");
+
+    const classes = wrapper.get('[data-test="exam-workspace-sheet"] section').classes();
+    expect(classes).toContain("bg-modal");
+    expect(classes).not.toContain("bg-panel");
+  });
+
   it("closes the question sheet when the layout leaves phone", async () => {
     const { layout, wrapper } = await mountExamWorkspace({}, "phone");
     await importFixtureDocument(wrapper);
