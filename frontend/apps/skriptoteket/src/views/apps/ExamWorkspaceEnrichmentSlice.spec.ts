@@ -23,6 +23,7 @@ import type {
   NativeExamItem,
 } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
+import { ApiError } from "../../api/client";
 import { EXAM_WORKSPACE_ENRICHMENT_POLL_MS } from "./exam-workspace/useExamWorkspaceEnrichment";
 import {
   buildResponse,
@@ -323,6 +324,60 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-proposal-panel"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
   });
+
+  it("sends dismissed proposal ids and clears them after a successful save", async () => {
+    apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.get('[data-test="exam-workspace-proposal-dismiss"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad titel");
+
+    await saveDocument(wrapper);
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenLastCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: ["item_002"] }),
+    );
+    await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Nästa titel");
+    await saveDocument(wrapper);
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenLastCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: [] }),
+    );
+    wrapper.unmount();
+  });
+
+  it.each(["network", "conflict"])(
+    "retains dismissed proposal ids after a %s save failure for the retry",
+    async (failure) => {
+      apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
+      apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
+        failure === "conflict"
+          ? new ApiError({ code: "CONFLICT", status: 409, message: "conflict" })
+          : new Error("network"),
+      );
+      apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+      const { wrapper } = await mountExamWorkspace();
+      await importFixtureDocument(wrapper);
+      await selectItemRow(wrapper, "item_002");
+      await wrapper.get('[data-test="exam-workspace-proposal-dismiss"]').trigger("click");
+      await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad titel");
+
+      await saveDocument(wrapper);
+
+      expect(wrapper.find('[data-test="exam-workspace-proposal-panel"]').exists()).toBe(false);
+      await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Försök igen");
+      apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(3));
+      await saveDocument(wrapper);
+      expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenLastCalledWith(
+        "lineage-1",
+        expect.objectContaining({ rejectedProposalItemIds: ["item_002"] }),
+      );
+      wrapper.unmount();
+    },
+  );
 
   it("shows the server message when no proposals can be made", async () => {
     apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(

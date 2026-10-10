@@ -91,6 +91,7 @@ const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } 
   useExamWorkspaceExports(summary);
 
 const {
+  dismissedItemIds,
   dismissProposal,
   enrichmentMessage,
   isEnrichmentPending,
@@ -98,6 +99,7 @@ const {
   openProposals,
   proposalForItem,
   requestProposals,
+  resetDismissedAfterSave,
 } = useExamWorkspaceEnrichment(summary);
 
 const mode = ref<ExamWorkspaceMode>("filer");
@@ -240,6 +242,13 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
   void exportDocument(target);
 }
 
+async function handleSave(): Promise<void> {
+  const rejectedProposalItemIds = [...dismissedItemIds.value];
+  if (await saveDocument(rejectedProposalItemIds)) {
+    resetDismissedAfterSave();
+  }
+}
+
 function handleApproveProposal(itemId: string): void {
   const proposal = proposalForItem(itemId);
   if (proposal) {
@@ -320,7 +329,7 @@ function handleEditProposal(itemId: string): void {
               class="btn-cta shrink-0 shadow-none"
               :disabled="!isDirty || isBusy"
               data-test="exam-workspace-save"
-              @click="saveDocument"
+              @click="handleSave"
             >
               Spara
             </button>

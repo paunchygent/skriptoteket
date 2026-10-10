@@ -7,10 +7,22 @@
  *   flight is never dropped or rolled back to an older version.
  */
 
-import { describe, expect, it } from "vitest";
+import { createTestingPinia } from "@pinia/testing";
+import { setActivePinia } from "pinia";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
-import { mergeSavedDocuments } from "./useExamWorkspaceDocument";
+import { buildResponse } from "../ExamWorkspaceSlice.specSupport";
+import { mergeSavedDocuments, useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+
+const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
+  importExamWorkspaceDocument: vi.fn(),
+  listExamWorkspaceDocuments: vi.fn(),
+  saveExamWorkspaceDocument: vi.fn(),
+}));
+
+vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 function summary(lineageId: string, version: number): ExamWorkspaceDocumentSummary {
   return {
@@ -39,5 +51,59 @@ describe("mergeSavedDocuments", () => {
     const merged = mergeSavedDocuments([summary("exam", 2)], [summary("exam", 4)]);
 
     expect(merged).toEqual([summary("exam", 4)]);
+  });
+});
+
+describe("useExamWorkspaceDocument save outcome", () => {
+  beforeEach(() => {
+    setActivePinia(createTestingPinia({ createSpy: vi.fn }));
+    vi.clearAllMocks();
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+  });
+
+  it("returns false when there is no document or another operation is busy", async () => {
+    const document = useExamWorkspaceDocument();
+    expect(await document.saveDocument()).toBe(false);
+    await document.openDocument("lineage-1");
+    document.isBusy.value = true;
+
+    expect(await document.saveDocument(["item_002"])).toBe(false);
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+  });
+
+  it("returns true and sends an empty rejection list for no-argument callers", async () => {
+    const document = useExamWorkspaceDocument();
+    await document.openDocument("lineage-1");
+
+    expect(await document.saveDocument()).toBe(true);
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: [] }),
+    );
+  });
+
+  it("copies rejection ids before sending and returns false on a transport failure", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(new Error("network"));
+    const document = useExamWorkspaceDocument();
+    await document.openDocument("lineage-1");
+    const rejected = ["item_002"];
+    const result = document.saveDocument(rejected);
+    rejected.push("item_003");
+
+    expect(await result).toBe(false);
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: ["item_002"] }),
+    );
+  });
+
+  it("returns false without transport when item validation refuses the save", async () => {
+    const document = useExamWorkspaceDocument();
+    await document.openDocument("lineage-1");
+    document.updateItemChoiceText("item_002", "choice_a", "");
+
+    expect(await document.saveDocument()).toBe(false);
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
   });
 });

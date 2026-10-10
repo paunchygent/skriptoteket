@@ -95,6 +95,10 @@ export function useExamWorkspaceEnrichment(
     }
   }
 
+  function resetDismissedAfterSave(): void {
+    dismissedItemIds.value = [];
+  }
+
   function stopPolling(): void {
     if (pollTimer !== null) {
       clearTimeout(pollTimer);
@@ -171,12 +175,16 @@ export function useExamWorkspaceEnrichment(
 
   watch(
     () => [summary.value?.lineage_id, summary.value?.version] as const,
-    ([lineageId]) => {
+    ([lineageId], [previousLineageId]) => {
       generation += 1;
       stopPolling();
       pollFailures = 0;
       enrichmentStatus.value = null;
-      dismissedItemIds.value = [];
+      // A conflict can reload a newer revision after a failed save. Keep
+      // unsaved dismissals for this exam until the save succeeds.
+      if (lineageId !== previousLineageId) {
+        dismissedItemIds.value = [];
+      }
       if (lineageId) {
         void refreshStatus(lineageId, generation);
       }
@@ -186,6 +194,7 @@ export function useExamWorkspaceEnrichment(
   onScopeDispose(stopPolling);
 
   return {
+    dismissedItemIds,
     dismissProposal,
     enrichmentMessage,
     enrichmentStatus,
@@ -194,5 +203,6 @@ export function useExamWorkspaceEnrichment(
     openProposals,
     proposalForItem,
     requestProposals,
+    resetDismissedAfterSave,
   };
 }

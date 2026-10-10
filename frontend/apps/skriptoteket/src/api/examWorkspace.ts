@@ -58,6 +58,7 @@ export type ExamWorkspaceExportBlocker = {
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
   document: NativeExamDocument;
+  rejectedProposalItemIds?: string[];
 };
 
 function documentPath(lineageId: string): string {
@@ -89,6 +90,7 @@ export async function saveExamWorkspaceDocument(
   const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
     document: params.document,
     expected_revision: params.expectedRevision,
+    rejected_proposal_item_ids: params.rejectedProposalItemIds ?? [],
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
 }

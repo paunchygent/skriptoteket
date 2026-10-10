@@ -41,3 +41,4 @@ class SaveExamWorkspaceDocumentRequest(BaseModel):
 
     expected_revision: int = Field(ge=1)
     document: NativeExamDocument
+    rejected_proposal_item_ids: tuple[str, ...] = ()

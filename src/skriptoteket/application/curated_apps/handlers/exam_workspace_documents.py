@@ -20,9 +20,15 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentSummary,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
@@ -64,6 +70,7 @@ class ExamWorkspaceDocumentStore:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
+        proposal_carry_forward: CarryExamWorkspaceProposals,
     ) -> None:
         self._vault_files = vault_files
         self._vault_usage = vault_usage
@@ -71,6 +78,7 @@ class ExamWorkspaceDocumentStore:
         self._uow = uow
         self._clock = clock
         self._settings = settings
+        self._proposal_carry_forward = proposal_carry_forward
 
     async def save_version(
         self,
@@ -81,6 +89,9 @@ class ExamWorkspaceDocumentStore:
         content: bytes,
         lineage_id: UUID,
         version: int,
+        previous_document: NativeExamDocument | None = None,
+        document: NativeExamDocument | None = None,
+        rejected_proposal_item_ids: tuple[str, ...] = (),
     ) -> VaultFile:
         actual_bytes = len(content)
         if actual_bytes <= 0:
@@ -136,6 +147,13 @@ class ExamWorkspaceDocumentStore:
                         updated_at=now,
                     )
                 )
+                if previous_document is not None and document is not None:
+                    await self._proposal_carry_forward.carry(
+                        owner_user_id=actor.id,
+                        previous_document=previous_document,
+                        document=document,
+                        rejected_item_ids=frozenset(rejected_proposal_item_ids),
+                    )
         except IntegrityError as error:
             if stored:
                 await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
@@ -318,10 +336,15 @@ class SaveExamWorkspaceDocumentHandler:
                 },
             )
 
+        head_content = await self._store.load_version(actor=actor, vault_file=head)
+        head_container = self._codec.parse(content=head_content)
+        if (
+            head_container.document.document_id != lineage_id
+            or head_container.document.revision != request.expected_revision
+        ):
+            raise validation_error("Den sparade dokumentversionen är skadad.")
         assets_by_id: dict[str, bytes] = {}
         if document.assets:
-            head_content = await self._store.load_version(actor=actor, vault_file=head)
-            head_container = self._codec.parse(content=head_content)
             missing = {
                 asset.asset_id
                 for asset in document.assets
@@ -349,6 +372,9 @@ class SaveExamWorkspaceDocumentHandler:
             content=container_bytes,
             lineage_id=lineage_id,
             version=document.revision,
+            previous_document=head_container.document,
+            document=document,
+            rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
             document=document, summary=_summary(vault_file), notes=()
