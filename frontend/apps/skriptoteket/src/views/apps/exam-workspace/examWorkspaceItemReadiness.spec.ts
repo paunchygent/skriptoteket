@@ -4,7 +4,9 @@
  * Expected behavior:
  *   Each question reports the same reasons the server export gate refuses
  *   with (review required, unreviewed machine key, keyed question without a
- *   key, missing points) plus a partial gap key, in a stable order; ready
+ *   key, missing points) plus the states the save refuses (a partial gap
+ *   key, points not greater than zero, a choice without text), in a stable
+ *   order; ready
  *   questions report nothing and are left out of the per-item copy map.
  */
 
@@ -92,6 +94,34 @@ describe("examWorkspaceItemReadiness", () => {
 
     expect(examWorkspaceItemReadiness(item)).toEqual(["partial_gap_key"]);
   });
+
+  it("reports points that are not greater than zero, but not missing points twice", () => {
+    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([
+      "non_positive_points",
+    ]);
+    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: -2 }))).toEqual([
+      "non_positive_points",
+    ]);
+    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0.5 }))).toEqual([]);
+  });
+
+  it("reports a choice without text, and accepts whitespace as the server does", () => {
+    const empty = buildChoiceItem({
+      choices: [
+        { choice_id: "choice_a", text: "Syre" },
+        { choice_id: "choice_b", text: "" },
+      ],
+    });
+    const blank = buildChoiceItem({
+      choices: [
+        { choice_id: "choice_a", text: "Syre" },
+        { choice_id: "choice_b", text: " " },
+      ],
+    });
+
+    expect(examWorkspaceItemReadiness(empty)).toEqual(["empty_choice_text"]);
+    expect(examWorkspaceItemReadiness(blank)).toEqual([]);
+  });
 });
 
 describe("examWorkspaceReadinessByItemId", () => {
@@ -108,6 +138,20 @@ describe("examWorkspaceReadinessByItemId", () => {
 
     expect(examWorkspaceReadinessByItemId([ready, partial])).toEqual({
       item_002: [PARTIAL_GAP_KEY_GUIDANCE, "Poäng saknas."],
+    });
+  });
+
+  it("maps the save-refused states to their Swedish copy", () => {
+    const item = buildChoiceItem({
+      choices: [
+        { choice_id: "choice_a", text: "Syre" },
+        { choice_id: "choice_b", text: "" },
+      ],
+      points: 0,
+    });
+
+    expect(examWorkspaceReadinessByItemId([item])).toEqual({
+      item_001: ["Poängen måste vara större än noll.", "Ett svarsalternativ saknar text."],
     });
   });
 });

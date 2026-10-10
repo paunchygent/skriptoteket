@@ -7,24 +7,39 @@
  *   points, the question text with inline gaps, choices with the correct
  *   answer, and the mark-as-reviewed action. Previous/next and the details
  *   drawer toggle sit in the editor header so moving between questions
- *   never needs the list.
+ *   never needs the list. Points that are not greater than zero and an
+ *   empty choice text are marked invalid at the field with a Swedish hint,
+ *   because the save refuses them. While `disabled` (a save or load is
+ *   running) every edit control is disabled so no typed edit is lost;
+ *   navigation and the details toggle stay available.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
  *   - Delegates the question text and gap answers to
  *     `ExamWorkspaceBodyEditor`.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
+ *   - Reads the save rules from `examWorkspaceItemSaveRules`.
  */
+
+import { computed, useId } from "vue";
 
 import { IconCheck, IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
 
 import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import {
+  EMPTY_CHOICE_TEXT_GUIDANCE,
+  hasEmptyChoiceText,
+  hasNonPositivePoints,
+  isEmptyChoiceText,
+  NON_POSITIVE_POINTS_GUIDANCE,
+} from "./examWorkspaceItemSaveRules";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
   attentionCount: number;
   detailsOpen: boolean;
+  disabled?: boolean;
   item: NativeExamItem;
   position: number;
   showNavigation: boolean;
@@ -47,6 +62,20 @@ const emit = defineEmits<{
   updatePoints: [itemId: string, points: number | null];
   updateTitle: [itemId: string, title: string];
 }>();
+
+const pointsHintId = useId();
+const choiceHintId = useId();
+
+const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
+
+function choiceTextClass(choiceId: string, text: string): string {
+  if (isEmptyChoiceText(text)) {
+    return "border-warning";
+  }
+  return isCorrectChoice(choiceId)
+    ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
+    : "border-navy/35";
+}
 
 function handleTitleInput(event: Event): void {
   const input = event.target as HTMLInputElement;
@@ -162,6 +191,7 @@ function choiceLetter(index: number): string {
           v-if="item.review.state === 'review_required'"
           type="button"
           class="btn-ghost shadow-none"
+          :disabled="disabled"
           data-test="exam-workspace-mark-reviewed"
           @click="emit('markReviewed', item.item_id)"
         >
@@ -191,6 +221,7 @@ function choiceLetter(index: number): string {
           class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
           type="text"
           :value="item.title ?? ''"
+          :disabled="disabled"
           data-test="exam-workspace-item-title-input"
           @input="handleTitleInput"
         >
@@ -199,20 +230,31 @@ function choiceLetter(index: number): string {
         Poäng
         <input
           class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
-          :class="item.points === null ? 'border-warning' : 'border-navy/35'"
+          :class="pointsInvalid ? 'border-warning' : 'border-navy/35'"
           type="number"
           min="0"
           step="any"
           inputmode="decimal"
           :value="item.points ?? ''"
-          :aria-invalid="item.points === null ? 'true' : undefined"
+          :disabled="disabled"
+          :aria-invalid="pointsInvalid ? 'true' : undefined"
+          :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
           data-test="exam-workspace-item-points-input"
           @input="handlePointsInput"
         >
       </label>
+      <p
+        v-if="hasNonPositivePoints(item)"
+        :id="pointsHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy sm:col-span-2"
+        data-test="exam-workspace-points-hint"
+      >
+        {{ NON_POSITIVE_POINTS_GUIDANCE }}
+      </p>
     </div>
 
     <ExamWorkspaceBodyEditor
+      :disabled="disabled"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
@@ -236,6 +278,7 @@ function choiceLetter(index: number): string {
           class="h-5 w-5"
           :name="`exam-workspace-correct-${item.item_id}`"
           :checked="isCorrectChoice(choice.choice_id)"
+          :disabled="disabled"
           :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
           @change="handleSingleCorrectChoice(choice.choice_id)"
@@ -245,6 +288,7 @@ function choiceLetter(index: number): string {
           type="checkbox"
           class="h-5 w-5"
           :checked="isCorrectChoice(choice.choice_id)"
+          :disabled="disabled"
           :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
           @change="handleMultipleCorrectChoice(choice.choice_id, $event)"
@@ -255,14 +299,25 @@ function choiceLetter(index: number): string {
         >{{ choiceLetter(choiceIndex) }}</span>
         <input
           class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="isCorrectChoice(choice.choice_id) ? 'border-success shadow-[inset_4px_0_0_var(--color-success)]' : 'border-navy/35'"
+          :class="choiceTextClass(choice.choice_id, choice.text)"
           type="text"
           :value="choice.text"
+          :disabled="disabled"
+          :aria-invalid="isEmptyChoiceText(choice.text) ? 'true' : undefined"
+          :aria-describedby="isEmptyChoiceText(choice.text) ? choiceHintId : undefined"
           :aria-label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-text-${choice.choice_id}`"
           @input="handleChoiceTextInput(choice.choice_id, $event)"
         >
       </div>
+      <p
+        v-if="hasEmptyChoiceText(item)"
+        :id="choiceHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
+        data-test="exam-workspace-choice-text-hint"
+      >
+        {{ EMPTY_CHOICE_TEXT_GUIDANCE }}
+      </p>
     </fieldset>
   </section>
 </template>

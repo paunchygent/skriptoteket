@@ -7,8 +7,8 @@
  *   the teacher sees inline and when a save is refused.
  *
  * Relationships:
- *   - Pure functions consumed by `useExamWorkspaceDocument` and
- *     `ExamWorkspaceItemEditor`.
+ *   - Pure functions consumed by `examWorkspaceItemSaveRules`,
+ *     `examWorkspaceItemReadiness`, and `ExamWorkspaceBodyEditor`.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
@@ -37,10 +37,13 @@ function joinSwedishList(values: string[]): string {
   return `${values.slice(0, -1).join(", ")} och ${values[values.length - 1]}`;
 }
 
+/** "Fråga 4" for one question, "Frågorna 4 och 5" for several. */
+export function questionSubject(items: NativeExamItem[]): string {
+  return items.length === 1
+    ? `Fråga ${items[0]?.sequence}`
+    : `Frågorna ${joinSwedishList(items.map((item) => String(item.sequence)))}`;
+}
+
 export function partialGapKeyCopy(items: NativeExamItem[]): string {
-  const subject =
-    items.length === 1
-      ? `Fråga ${items[0]?.sequence}`
-      : `Frågorna ${joinSwedishList(items.map((item) => String(item.sequence)))}`;
-  return `${subject} saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`;
+  return `${questionSubject(items)} saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`;
 }

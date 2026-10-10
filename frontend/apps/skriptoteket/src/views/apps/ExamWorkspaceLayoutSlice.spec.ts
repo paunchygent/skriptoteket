@@ -6,7 +6,10 @@
  *   Redigera, save state stays in the toolbar in both modes, Filer lists the
  *   questions that stop an export and jumps to them with their details open,
  *   desktop and tablet show the question list beside the editor, and the
- *   phone makes the editor the screen behind a "Fråga N av M" picker.
+ *   phone makes the editor the screen behind a "Fråga N av M" picker. The
+ *   phone details drawer is a full-screen modal dialog and the tablet
+ *   overlay drawer closes on Escape; leaving the phone layout closes the
+ *   question sheet.
  *
  * Relationships:
  *   - Mounts `ExamWorkspaceView` through the shared slice harness with a
@@ -39,6 +42,10 @@ async function mountImported(layout: ExamWorkspaceLayout) {
   const { wrapper } = await mountExamWorkspace({}, layout);
   await importFixtureDocument(wrapper);
   return wrapper;
+}
+
+function pressEscape(target: EventTarget = document): void {
+  target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
 }
 
 function isShown(wrapper: Awaited<ReturnType<typeof mountImported>>, testId: string): boolean {
@@ -149,5 +156,55 @@ describe("ExamWorkspaceView two-mode layout", () => {
     expect(wrapper.get('[data-test="exam-workspace-question-picker"]').text()).toContain(
       "Fråga 5 av 8",
     );
+  });
+
+  it("shows the phone details drawer as a full-screen modal dialog that Escape closes", async () => {
+    const wrapper = await mountImported("phone");
+
+    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
+
+    const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]');
+    expect(frame.attributes("role")).toBe("dialog");
+    expect(frame.attributes("aria-modal")).toBe("true");
+    const titleId = frame.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    expect(wrapper.get(`[id="${titleId}"]`).text()).toContain("Detaljer – fråga 1");
+    expect(frame.classes()).toContain("fixed");
+
+    pressEscape();
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(false);
+  });
+
+  it("closes the tablet overlay drawer on Escape from inside it, not from the editor", async () => {
+    const wrapper = await mountImported("tablet");
+
+    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
+    const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]');
+    expect(frame.attributes("role")).toBeUndefined();
+
+    pressEscape(wrapper.get('[data-test="exam-workspace-item-title-input"]').element);
+    await flushPromises();
+    expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(true);
+
+    pressEscape(wrapper.get('[data-test="exam-workspace-item-drawer-close"]').element);
+    await flushPromises();
+    expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(false);
+  });
+
+  it("closes the question sheet when the layout leaves phone", async () => {
+    const { layout, wrapper } = await mountExamWorkspace({}, "phone");
+    await importFixtureDocument(wrapper);
+
+    await wrapper.get('[data-test="exam-workspace-question-picker"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-workspace-sheet"]').exists()).toBe(true);
+
+    layout.value = "tablet";
+    await flushPromises();
+    layout.value = "phone";
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-sheet"]').exists()).toBe(false);
   });
 });

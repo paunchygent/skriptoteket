@@ -1,19 +1,23 @@
 <script setup lang="ts">
 /**
- * Phone bottom sheet for the exam workspace.
+ * Phone bottom sheet for the exam workspace question list.
  *
  * Domain purpose:
- *   Show the question list or the question details over the phone editor
- *   without leaving it (ST-29 sheet pattern). Closes on the backdrop, the
- *   close button, or Escape, and returns focus to the opener.
+ *   Show every question over the phone editor without leaving it (ST-29
+ *   sheet pattern). The sheet is a modal dialog: focus moves into it on
+ *   open, Tab stays inside it, the backdrop, the close button, and Escape
+ *   close it, and focus returns to the element that opened it.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView` only in the phone layout.
+ *   - Rendered by `ExamWorkspaceView` only in the phone layout, holding the
+ *     question list behind the "Fråga N av M" picker.
+ *   - Keyboard and focus handling comes from `useExamWorkspaceDialogFocus`.
  */
 
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { ref } from "vue";
 
 import { IconX } from "../../../components/icons";
+import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
 
 defineProps<{
   title: string;
@@ -24,23 +28,11 @@ const emit = defineEmits<{
 }>();
 
 const panel = ref<HTMLElement | null>(null);
-let opener: HTMLElement | null = null;
 
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
-    emit("close");
-  }
-}
-
-onMounted(() => {
-  opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  document.addEventListener("keydown", handleKeydown);
-  void nextTick(() => panel.value?.focus());
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", handleKeydown);
-  opener?.focus();
+useExamWorkspaceDialogFocus(panel, {
+  modal: () => true,
+  onClose: () => emit("close"),
+  takesFocus: () => true,
 });
 </script>
 

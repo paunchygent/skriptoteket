@@ -7,7 +7,10 @@
  *   rebuilding the DOM the teacher is typing in. Removing a gap or image is
  *   refused: the paragraph is restored and a Swedish status line explains
  *   why. Activating a gap chip opens an input that commits accepted answers
- *   on `change`, and chip labels follow the gap's accepted answers in place.
+ *   once on Enter, `change` or leaving the popover, and discards them on
+ *   Escape. Chip labels follow the gap's accepted answers in place and live
+ *   in a `data-label` attribute, so they are never part of the text. While
+ *   disabled, nothing is editable and an open popover closes uncommitted.
  */
 
 import { mount } from "@vue/test-utils";
@@ -70,16 +73,21 @@ describe("ExamWorkspaceBodyEditor", () => {
     expect(first.attributes("contenteditable")).not.toBe("false");
 
     const filledChip = wrapper.get('[data-test="exam-workspace-body-gap-0-1"]');
-    expect(filledChip.text()).toBe("100");
+    expect(filledChip.attributes("data-label")).toBe("100");
+    expect(filledChip.text()).toBe("");
     expect(filledChip.attributes("data-gap-id")).toBe("gap_001");
     expect(filledChip.attributes("contenteditable")).toBe("false");
     expect(filledChip.attributes("role")).toBe("button");
 
     const emptyChip = wrapper.get('[data-test="exam-workspace-body-gap-0-3"]');
-    expect(emptyChip.text()).toBe("Lucka 2");
+    expect(emptyChip.attributes("data-label")).toBe("Lucka 2");
     expect(emptyChip.classes()).toContain("border-warning");
 
-    expect(wrapper.get('[data-asset-id="asset_001"]').text()).toBe("Bild");
+    const asset = wrapper.get('[data-asset-id="asset_001"]');
+    expect(asset.attributes("data-label")).toBe("Bild");
+    expect(asset.attributes("aria-label")).toBe("Bild");
+    expect(first.element.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.");
+    expect(paragraph(wrapper, 1).textContent).toBe("Se ");
     wrapper.unmount();
   });
 
@@ -257,16 +265,113 @@ describe("ExamWorkspaceBodyEditor", () => {
     wrapper.unmount();
   });
 
+  it("commits once on Enter even when the browser fires change as focus returns", async () => {
+    const wrapper = mountEditor();
+    await wrapper.get('[data-gap-id="gap_002"]').trigger("click");
+    const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_002"]')
+      .element as HTMLInputElement;
+
+    input.value = "0, noll";
+    // Chrome order: Enter closes and focuses the chip, which fires `change`
+    // synchronously on the still-attached input before Vue re-renders.
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["0", "noll"]]]);
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(document.activeElement).toBe(wrapper.get('[data-gap-id="gap_002"]').element);
+    wrapper.unmount();
+  });
+
+  it("commits when focus leaves the popover and discards on Escape", async () => {
+    const wrapper = mountEditor();
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]')
+      .element as HTMLInputElement;
+    input.value = "hundra";
+    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const reopened = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]')
+      .element as HTMLInputElement;
+    reopened.value = "kasta";
+    reopened.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    reopened.dispatchEvent(new Event("change", { bubbles: true }));
+    reopened.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("updateGapValues")).toHaveLength(1);
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("closes an open popover without committing when the editor becomes disabled", async () => {
+    const wrapper = mountEditor();
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]')
+      .element as HTMLInputElement;
+    input.value = "ändrat";
+
+    await wrapper.setProps({ disabled: true });
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(paragraph(wrapper, 0).getAttribute("contenteditable")).toBe("false");
+    expect(paragraph(wrapper, 0).getAttribute("aria-disabled")).toBe("true");
+
+    const beforeInput = new InputEvent("beforeinput", {
+      bubbles: true,
+      cancelable: true,
+      inputType: "insertText",
+      data: "x",
+    });
+    paragraph(wrapper, 0).dispatchEvent(beforeInput);
+    expect(beforeInput.defaultPrevented).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("waits for an IME composition to end before reading the paragraph", () => {
+    const wrapper = mountEditor();
+    const element = paragraph(wrapper, 0);
+    element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
+    (element.firstChild as Text).data = "Vatten kokar vid å";
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
+
+    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true }));
+    const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
+    expect((segments as unknown[])[0]).toEqual({ kind: "text", text: "Vatten kokar vid å" });
+    wrapper.unmount();
+  });
+
+  it("refuses drops into a paragraph", () => {
+    const wrapper = mountEditor();
+    const element = paragraph(wrapper, 0);
+    const dragOver = new Event("dragover", { bubbles: true, cancelable: true });
+    const drop = new Event("drop", { bubbles: true, cancelable: true });
+    element.dispatchEvent(dragOver);
+    element.dispatchEvent(drop);
+    expect(dragOver.defaultPrevented).toBe(true);
+    expect(drop.defaultPrevented).toBe(true);
+    expect(element.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.");
+    wrapper.unmount();
+  });
+
   it("opens the popover from the keyboard and not while disabled", async () => {
     const wrapper = mountEditor();
     await wrapper.get('[data-gap-id="gap_002"]').trigger("keydown", { key: "Enter" });
     expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]').exists()).toBe(true);
 
     await wrapper.setProps({ disabled: true });
-    await wrapper.get('[data-test="exam-workspace-gap-values-gap_002"]').trigger("keydown", {
-      key: "Escape",
-    });
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
     await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("keydown", { key: "Enter" });
     expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
     expect(paragraph(wrapper, 0).getAttribute("contenteditable")).toBe("false");
     wrapper.unmount();
@@ -285,7 +390,8 @@ describe("ExamWorkspaceBodyEditor", () => {
     });
 
     expect(wrapper.get('[data-gap-id="gap_002"]').element).toBe(chip);
-    expect(chip.textContent).toBe("0 / noll");
+    expect(chip.getAttribute("data-label")).toBe("0 / noll");
+    expect(chip.getAttribute("aria-label")).toBe("Lucka 2, godkända svar: 0 / noll");
     expect(chip.classList.contains("border-warning")).toBe(false);
     wrapper.unmount();
   });
@@ -293,7 +399,10 @@ describe("ExamWorkspaceBodyEditor", () => {
   it("leaves unchanged chips untouched when only the text changes", async () => {
     const item = buildGapItem();
     const wrapper = mountEditor(item);
-    const chipText = wrapper.get('[data-gap-id="gap_001"]').element.firstChild;
+    const chip = wrapper.get('[data-gap-id="gap_001"]').element;
+    const records: MutationRecord[] = [];
+    const observer = new MutationObserver((batch) => records.push(...batch));
+    observer.observe(chip, { attributeFilter: ["data-label", "aria-label", "class"] });
     const element = paragraph(wrapper, 0);
     (element.firstChild as Text).data = "Vatten kokar vid ungefär ";
     element.dispatchEvent(new Event("input", { bubbles: true }));
@@ -302,7 +411,9 @@ describe("ExamWorkspaceBodyEditor", () => {
     await wrapper.setProps({
       item: { ...item, body: [{ segments: segments as never }, item.body[1]!] },
     });
-    expect(wrapper.get('[data-gap-id="gap_001"]').element.firstChild).toBe(chipText);
+    expect(wrapper.get('[data-gap-id="gap_001"]').element).toBe(chip);
+    expect([...records, ...observer.takeRecords()]).toEqual([]);
+    observer.disconnect();
     wrapper.unmount();
   });
 

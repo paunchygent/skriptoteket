@@ -7,8 +7,9 @@
  *   text, with every gap shown as an inline chip and every image as a fixed
  *   "Bild" marker. Activating a gap chip opens a small popover where the
  *   teacher edits that gap's accepted answers. Gaps and images are the
- *   Exam.net contract, so typing, pasting, cutting, dragging or undo can
- *   never remove, add or reorder them.
+ *   Exam.net contract, so typing, pasting, cutting, dragging, dropping or
+ *   undo can never remove, add or reorder them. While `disabled` is set,
+ *   nothing can be edited and an open popover closes without committing.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
@@ -16,64 +17,42 @@
  *     (`updateItemParagraphSegments`, `updateItemGapValues`).
  *   - Paragraph DOM is built imperatively from the model so the caret stays
  *     put while the teacher types; `examWorkspaceBodySegments` converts
- *     between that DOM and model segments.
+ *     between that DOM and model segments, and `examWorkspaceBodyCaret`
+ *     guards edits that would touch an atom.
+ *   - `ExamWorkspaceGapPopover` edits one gap's accepted answers.
  */
 
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
-import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamItem, NativeExamBodySegment } from "../../../api/examWorkspace";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import {
+  insertPlainText,
+  liveRangesFor,
+  rangesTouchAtom,
+  selectionRanges,
+} from "./examWorkspaceBodyCaret";
+import {
+  applyChipState,
   ATOM_ATTRIBUTE,
-  gapChipLabel,
-  parseAcceptedValues,
+  ensureTrailingBreak,
+  gapNumberIn,
   partsFromParagraphElement,
+  refreshAtomIndexes,
+  renderParagraphElement,
   sameAtomSequence,
   segmentsFromParts,
   segmentsKey,
-  TRAILING_BREAK_ATTRIBUTE,
 } from "./examWorkspaceBodySegments";
-import type { NativeExamAtomSegment } from "./examWorkspaceBodySegments";
+import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 
 const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
 const EMPTY_PARAGRAPH_COPY = "Stycket måste innehålla text.";
-
-const CHIP_BASE_CLASSES = [
-  "mx-0.5",
-  "inline-block",
-  "cursor-pointer",
-  "select-none",
-  "border",
-  "px-2",
-  "align-baseline",
-  "text-sm",
-  "font-semibold",
-  "leading-normal",
-  "text-navy",
-  "focus-visible:outline",
-  "focus-visible:outline-2",
-  "focus-visible:outline-offset-2",
-  "focus-visible:outline-action/40",
-];
-const CHIP_FILLED_CLASSES = ["border-navy/35", "bg-panel-muted"];
-const CHIP_EMPTY_CLASSES = ["border-warning", "bg-warning/10"];
-const ASSET_CLASSES = [
-  "mx-0.5",
-  "inline-block",
-  "select-none",
-  "border",
-  "border-navy/35",
-  "bg-panel-muted",
-  "px-2",
-  "align-baseline",
-  "text-sm",
-  "leading-normal",
-  "text-navy",
-];
+const POPOVER_WIDTH_PX = 288;
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -85,11 +64,10 @@ const emit = defineEmits<{
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
 }>();
 
-type OpenGap = { gapId: string; top: number; left: number };
+type OpenGap = { itemId: string; gapId: string; top: number; left: number };
 
 const editableMode = detectEditableMode();
 const editorRoot = ref<HTMLElement | null>(null);
-const popoverInput = ref<HTMLInputElement | null>(null);
 const statusMessage = ref<string | null>(null);
 const openGap = ref<OpenGap | null>(null);
 
@@ -100,7 +78,7 @@ const openGapModel = computed(() =>
     : (props.item.gaps.find((gap) => gap.gap_id === openGap.value?.gapId) ?? null),
 );
 const openGapNumber = computed(() =>
-  openGap.value === null ? 0 : gapNumber(openGap.value.gapId),
+  openGap.value === null ? 0 : gapNumberIn(props.item.gaps, openGap.value.gapId),
 );
 
 // Imperative paragraph state; deliberately not reactive.
@@ -108,6 +86,7 @@ const paragraphElements: (HTMLElement | null)[] = [];
 const renderedKeys: (string | undefined)[] = [];
 let renderedItemId: string | null = null;
 let openChip: HTMLElement | null = null;
+let composingIndex: number | null = null;
 
 function detectEditableMode(): "plaintext-only" | "true" {
   if (typeof document === "undefined") {
@@ -129,102 +108,13 @@ function setParagraphElement(
   paragraphElements[paragraphIndex] = element instanceof HTMLElement ? element : null;
 }
 
-function gapNumber(gapId: string): number {
-  return props.item.gaps.findIndex((gap) => gap.gap_id === gapId) + 1;
-}
-
-function applyChipState(chip: HTMLElement): void {
-  const gapId = chip.getAttribute("data-gap-id") ?? "";
-  const gap = props.item.gaps.find((candidate) => candidate.gap_id === gapId);
-  const number = gapNumber(gapId);
-  const label = gapChipLabel(gap, number);
-  const isEmpty = !gap || gap.accepted_values.length === 0;
-  const warningShown = chip.classList.contains(CHIP_EMPTY_CLASSES[0]!);
-  const filledShown = chip.classList.contains(CHIP_FILLED_CLASSES[0]!);
-  if (chip.textContent === label && (isEmpty ? warningShown : filledShown)) {
-    // Unchanged: leave the chip's text node alone so a nearby caret stays put.
-    return;
-  }
-  chip.textContent = label;
-  chip.setAttribute(
-    "aria-label",
-    isEmpty
-      ? `Lucka ${number}, saknar godkända svar`
-      : `Lucka ${number}, godkända svar: ${label}`,
-  );
-  chip.classList.remove(...(isEmpty ? CHIP_FILLED_CLASSES : CHIP_EMPTY_CLASSES));
-  chip.classList.add(...(isEmpty ? CHIP_EMPTY_CLASSES : CHIP_FILLED_CLASSES));
-}
-
-function createAtomElement(segment: NativeExamAtomSegment): HTMLElement {
-  const element = document.createElement("span");
-  element.setAttribute("contenteditable", "false");
-  if (segment.kind === "gap") {
-    element.setAttribute(ATOM_ATTRIBUTE, "gap");
-    element.setAttribute("data-gap-id", segment.gap_id);
-    element.setAttribute("role", "button");
-    element.setAttribute("tabindex", "0");
-    element.setAttribute("aria-haspopup", "dialog");
-    element.setAttribute("aria-expanded", "false");
-    element.classList.add(...CHIP_BASE_CLASSES);
-    applyChipState(element);
-  } else {
-    element.setAttribute(ATOM_ATTRIBUTE, "asset");
-    element.setAttribute("data-asset-id", segment.asset_id);
-    element.classList.add(...ASSET_CLASSES);
-    element.textContent = "Bild";
-  }
-  return element;
-}
-
-function createTrailingBreak(): HTMLElement {
-  const sentinel = document.createElement("br");
-  sentinel.setAttribute(TRAILING_BREAK_ATTRIBUTE, "");
-  return sentinel;
-}
-
-function ensureTrailingBreak(element: HTMLElement): void {
-  const last = element.lastChild;
-  if (last instanceof HTMLElement && last.hasAttribute(TRAILING_BREAK_ATTRIBUTE)) {
-    return;
-  }
-  element.querySelectorAll(`[${TRAILING_BREAK_ATTRIBUTE}]`).forEach((stale) => stale.remove());
-  element.appendChild(createTrailingBreak());
-}
-
-/** Keep chip `data-test` indexes aligned with the paragraph's current segments. */
-function refreshAtomIndexes(
-  element: HTMLElement,
-  paragraphIndex: number,
-  segments: NativeExamBodySegment[],
-): void {
-  const atoms = Array.from(element.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}]`));
-  let atomPosition = 0;
-  segments.forEach((segment, segmentIndex) => {
-    if (segment.kind === "text") {
-      return;
-    }
-    const atom = atoms[atomPosition];
-    atomPosition += 1;
-    if (atom && segment.kind === "gap") {
-      atom.setAttribute(
-        "data-test",
-        `exam-workspace-body-gap-${paragraphIndex}-${segmentIndex}`,
-      );
-    }
-  });
-}
-
 function renderParagraph(paragraphIndex: number): void {
   const element = paragraphElements[paragraphIndex];
   const paragraph = props.item.body[paragraphIndex];
   if (!element || !paragraph) {
     return;
   }
-  const nodes: Node[] = paragraph.segments.map((segment) =>
-    segment.kind === "text" ? document.createTextNode(segment.text) : createAtomElement(segment),
-  );
-  element.replaceChildren(...nodes, createTrailingBreak());
+  renderParagraphElement(element, paragraph.segments, props.item.gaps);
   refreshAtomIndexes(element, paragraphIndex, paragraph.segments);
   renderedKeys[paragraphIndex] = segmentsKey(paragraph.segments);
 }
@@ -235,9 +125,14 @@ function syncParagraphs(): void {
   if (itemChanged) {
     closePopover(false);
     statusMessage.value = null;
+    composingIndex = null;
   }
   renderedKeys.length = props.item.body.length;
   props.item.body.forEach((paragraph, paragraphIndex) => {
+    if (paragraphIndex === composingIndex) {
+      // Rebuilding under an active IME composition would break it.
+      return;
+    }
     if (itemChanged || renderedKeys[paragraphIndex] !== segmentsKey(paragraph.segments)) {
       renderParagraph(paragraphIndex);
     }
@@ -247,14 +142,26 @@ function syncParagraphs(): void {
 function refreshChips(): void {
   editorRoot.value
     ?.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}="gap"]`)
-    .forEach(applyChipState);
+    .forEach((chip) => applyChipState(chip, props.item.gaps));
 }
 
 onMounted(syncParagraphs);
 watch(() => [props.item.item_id, props.item.body] as const, syncParagraphs, { flush: "post" });
 watch(() => props.item.gaps, refreshChips, { deep: true, flush: "post" });
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled) {
+      closePopover(false);
+    }
+  },
+);
 
-function handleParagraphInput(paragraphIndex: number): void {
+function handleParagraphInput(paragraphIndex: number, event?: Event): void {
+  if (paragraphIndex === composingIndex || (event instanceof InputEvent && event.isComposing)) {
+    // Serialized on `compositionend`.
+    return;
+  }
   const element = paragraphElements[paragraphIndex];
   const paragraph = props.item.body[paragraphIndex];
   if (!element || !paragraph) {
@@ -281,9 +188,18 @@ function handleParagraphInput(paragraphIndex: number): void {
   emit("updateParagraphSegments", props.item.item_id, paragraphIndex, segments);
 }
 
+function handleCompositionStart(paragraphIndex: number): void {
+  composingIndex = paragraphIndex;
+}
+
+function handleCompositionEnd(paragraphIndex: number): void {
+  composingIndex = null;
+  handleParagraphInput(paragraphIndex);
+}
+
 function handleParagraphFocusOut(paragraphIndex: number): void {
   const element = paragraphElements[paragraphIndex];
-  if (!element) {
+  if (!element || paragraphIndex === composingIndex) {
     return;
   }
   // An emptied paragraph was never emitted; restore the saved text.
@@ -293,112 +209,11 @@ function handleParagraphFocusOut(paragraphIndex: number): void {
   }
 }
 
-function atomElementsIn(element: HTMLElement): HTMLElement[] {
-  return Array.from(element.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}]`));
-}
-
-function isAtomNode(node: Node | null): boolean {
-  return node instanceof HTMLElement && node.hasAttribute(ATOM_ATTRIBUTE);
-}
-
-function isEmptyTextNode(node: Node | null): boolean {
-  return node !== null && node.nodeType === Node.TEXT_NODE && (node.textContent ?? "").length === 0;
-}
-
-/** Whether a collapsed caret sits directly beside an atom in the delete direction. */
-function caretBesideAtom(
-  root: HTMLElement,
-  container: Node,
-  offset: number,
-  backward: boolean,
-): boolean {
-  let neighbour: Node | null;
-  if (container.nodeType === Node.TEXT_NODE) {
-    const length = container.textContent?.length ?? 0;
-    if (backward ? offset > 0 : offset < length) {
-      return false;
-    }
-    let current: Node = container;
-    neighbour = backward ? current.previousSibling : current.nextSibling;
-    while (!neighbour && current.parentNode && current.parentNode !== root) {
-      current = current.parentNode;
-      neighbour = backward ? current.previousSibling : current.nextSibling;
-    }
-  } else {
-    neighbour = backward
-      ? (container.childNodes[offset - 1] ?? null)
-      : (container.childNodes[offset] ?? null);
-  }
-  while (isEmptyTextNode(neighbour)) {
-    neighbour = backward ? neighbour!.previousSibling : neighbour!.nextSibling;
-  }
-  return isAtomNode(neighbour);
-}
-
-function liveRangesFor(event: InputEvent): Range[] {
-  const targetRanges = typeof event.getTargetRanges === "function" ? event.getTargetRanges() : [];
-  const ranges: Range[] = [];
-  for (const staticRange of targetRanges) {
-    try {
-      const range = document.createRange();
-      range.setStart(staticRange.startContainer, staticRange.startOffset);
-      range.setEnd(staticRange.endContainer, staticRange.endOffset);
-      ranges.push(range);
-    } catch {
-      // A target range outside the document cannot touch our atoms.
-    }
-  }
-  if (ranges.length > 0) {
-    return ranges;
-  }
-  return selectionRanges();
-}
-
-function selectionRanges(): Range[] {
-  const selection = window.getSelection();
-  if (!selection) {
-    return [];
-  }
-  const ranges: Range[] = [];
-  for (let index = 0; index < selection.rangeCount; index += 1) {
-    ranges.push(selection.getRangeAt(index));
-  }
-  return ranges;
-}
-
-function rangesTouchAtom(root: HTMLElement, ranges: Range[], inputType: string | null): boolean {
-  const atoms = atomElementsIn(root);
-  if (atoms.length === 0) {
-    return false;
-  }
-  return ranges.some((range) => {
-    if (!range.collapsed) {
-      return atoms.some((atom) => range.intersectsNode(atom));
-    }
-    if (inputType !== null && inputType.startsWith("delete")) {
-      const backward = inputType.includes("Backward");
-      return caretBesideAtom(root, range.startContainer, range.startOffset, backward);
-    }
-    return false;
-  });
-}
-
-function insertPlainText(paragraphIndex: number, text: string): void {
+function insertTextAtCaret(paragraphIndex: number, text: string): void {
   const element = paragraphElements[paragraphIndex];
-  const range = selectionRanges()[0];
-  if (!element || !range || !element.contains(range.commonAncestorContainer)) {
-    return;
+  if (element && insertPlainText(element, text)) {
+    handleParagraphInput(paragraphIndex);
   }
-  range.deleteContents();
-  const textNode = document.createTextNode(text);
-  range.insertNode(textNode);
-  const selection = window.getSelection();
-  const caret = document.createRange();
-  caret.setStartAfter(textNode);
-  caret.collapse(true);
-  selection?.removeAllRanges();
-  selection?.addRange(caret);
-  handleParagraphInput(paragraphIndex);
 }
 
 function handleBeforeInput(paragraphIndex: number, event: InputEvent): void {
@@ -422,7 +237,7 @@ function handleBeforeInput(paragraphIndex: number, event: InputEvent): void {
   }
   if (inputType === "insertParagraph" || inputType === "insertLineBreak") {
     event.preventDefault();
-    insertPlainText(paragraphIndex, "\n");
+    insertTextAtCaret(paragraphIndex, "\n");
   }
 }
 
@@ -438,7 +253,7 @@ function handlePaste(paragraphIndex: number, event: ClipboardEvent): void {
   }
   const text = event.clipboardData?.getData("text/plain") ?? "";
   if (text.length > 0) {
-    insertPlainText(paragraphIndex, text.replace(/\r\n?/g, "\n"));
+    insertTextAtCaret(paragraphIndex, text.replace(/\r\n?/g, "\n"));
   }
 }
 
@@ -454,6 +269,14 @@ function handleDragStart(event: DragEvent): void {
   const target = event.target;
   if (target instanceof Element && target.closest(`[${ATOM_ATTRIBUTE}]`)) {
     event.preventDefault();
+  }
+}
+
+/** Refuse drops so dragged HTML, chips or images never enter a paragraph. */
+function handleDragOver(event: DragEvent): void {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "none";
   }
 }
 
@@ -488,18 +311,18 @@ function openPopover(chip: HTMLElement): void {
   openChip = chip;
   chip.setAttribute("aria-expanded", "true");
   openGap.value = {
+    itemId: props.item.item_id,
     gapId,
     top: chipRect.bottom - rootRect.top + 4,
-    // Keep the 18rem popover inside the editor when the chip sits near the right edge.
-    left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - 288)),
+    // Keep the popover inside the editor when the chip sits near the right edge.
+    left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
   };
-  void nextTick(() => {
-    popoverInput.value?.focus();
-    popoverInput.value?.select();
-  });
 }
 
 function closePopover(returnFocus: boolean): void {
+  if (openGap.value === null) {
+    return;
+  }
   const chip = openChip;
   openChip = null;
   openGap.value = null;
@@ -509,32 +332,11 @@ function closePopover(returnFocus: boolean): void {
   }
 }
 
-function handleGapValuesChange(gapId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateGapValues", props.item.item_id, gapId, parseAcceptedValues(input.value));
-}
-
-function handlePopoverKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape") {
-    event.preventDefault();
-    // Discard the uncommitted text so leaving the input does not commit it.
-    const input = event.target as HTMLInputElement;
-    input.value = openGapModel.value?.accepted_values.join(", ") ?? "";
-    closePopover(true);
-  } else if (event.key === "Enter") {
-    event.preventDefault();
-    // Moving focus to the chip blurs the input, which commits through `change`.
-    closePopover(true);
-  }
-}
-
-function handlePopoverFocusOut(event: FocusEvent): void {
-  const next = event.relatedTarget;
-  const popover = event.currentTarget as HTMLElement;
-  if (next instanceof Node && popover.contains(next)) {
+function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]): void {
+  if (props.disabled) {
     return;
   }
-  closePopover(false);
+  emit("updateGapValues", itemId, gapId, acceptedValues);
 }
 </script>
 
@@ -564,42 +366,30 @@ function handlePopoverFocusOut(event: FocusEvent): void {
         spellcheck="true"
         lang="sv"
         @beforeinput="handleBeforeInput(paragraphIndex, $event as InputEvent)"
-        @input="handleParagraphInput(paragraphIndex)"
+        @input="handleParagraphInput(paragraphIndex, $event)"
+        @compositionstart="handleCompositionStart(paragraphIndex)"
+        @compositionend="handleCompositionEnd(paragraphIndex)"
         @paste="handlePaste(paragraphIndex, $event)"
         @click="handleParagraphClick"
         @keydown="handleParagraphKeydown"
         @dragstart="handleDragStart"
+        @dragover="handleDragOver"
+        @drop.prevent
         @focusout="handleParagraphFocusOut(paragraphIndex)"
       />
 
-      <div
+      <ExamWorkspaceGapPopover
         v-if="openGap"
-        class="absolute z-10 grid w-72 max-w-full gap-2 border border-navy bg-panel p-3 shadow-[4px_4px_0_0_rgba(0,0,0,0.15)]"
-        :style="{ top: `${openGap.top}px`, left: `${openGap.left}px` }"
-        role="dialog"
-        :aria-label="`Godkända svar för lucka ${openGapNumber}`"
-        data-test="exam-workspace-gap-popover"
-        @focusout="handlePopoverFocusOut"
-      >
-        <label class="grid gap-1 text-xs font-semibold text-navy/80">
-          Lucka {{ openGapNumber }} – godkända svar (kommaseparerade)
-          <input
-            ref="popoverInput"
-            class="min-h-10 w-full border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
-            type="text"
-            :value="openGapModel?.accepted_values.join(', ') ?? ''"
-            :data-test="`exam-workspace-gap-values-${openGap.gapId}`"
-            @change="handleGapValuesChange(openGap.gapId, $event)"
-            @keydown="handlePopoverKeydown"
-          >
-        </label>
-        <span
-          v-if="openGapModel?.hint"
-          class="text-[11px] leading-snug text-navy/65"
-        >
-          Ledtråd: {{ openGapModel.hint }}
-        </span>
-      </div>
+        :key="`${openGap.itemId}:${openGap.gapId}`"
+        :item-id="openGap.itemId"
+        :gap-id="openGap.gapId"
+        :gap-number="openGapNumber"
+        :gap="openGapModel"
+        :top="openGap.top"
+        :left="openGap.left"
+        @commit="handleGapCommit"
+        @close="closePopover"
+      />
     </div>
 
     <p
@@ -628,3 +418,10 @@ function handlePopoverFocusOut(event: FocusEvent): void {
     </p>
   </fieldset>
 </template>
+
+<style scoped>
+/* Atom labels are CSS-generated so copied or dragged text never contains them. */
+:deep([data-atom][data-label])::before {
+  content: attr(data-label);
+}
+</style>
