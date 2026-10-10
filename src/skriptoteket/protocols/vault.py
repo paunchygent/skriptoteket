@@ -49,6 +49,20 @@ class VaultFileRepositoryProtocol(Protocol):
         limit: int,
     ) -> list[VaultFile]: ...
 
+    async def get_document_head(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+    ) -> VaultFile | None: ...
+
+    async def list_document_heads(
+        self,
+        *,
+        user_id: UUID,
+        source_artifact_prefix: str,
+    ) -> list[VaultFile]: ...
+
     async def create(self, *, file: VaultFile) -> VaultFile: ...
 
     async def update(self, *, file: VaultFile) -> VaultFile: ...

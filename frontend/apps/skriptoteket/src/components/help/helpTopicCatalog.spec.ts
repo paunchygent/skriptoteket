@@ -43,6 +43,7 @@ describe("help topic catalog", () => {
     expect(resolveHelpTopic("auth-provisioning-required")).toBe("provisioning_required");
     expect(resolveHelpTopic("my-runs")).toBe("my_runs");
     expect(resolveHelpTopic("exam-converter-authenticated")).toBe("conversion_tools");
+    expect(resolveHelpTopic("exam-workspace")).toBe("conversion_tools");
     expect(resolveHelpTopic("audio-transcription-authenticated")).toBe("conversion_tools");
     expect(resolveHelpTopic("document-converter-authenticated")).toBe("conversion_tools");
     expect(resolveHelpTopic("exam-converter-ui-inspection-fixture")).toBeNull();

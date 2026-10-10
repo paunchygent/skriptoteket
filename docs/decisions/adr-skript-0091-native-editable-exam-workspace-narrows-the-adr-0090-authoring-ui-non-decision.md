@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-05'
-status: proposed
+status: accepted
 deciders:
 - user-lead
 links:
@@ -84,8 +84,10 @@ here:
 
 - EPIC-SKRIPT-39 records the workspace scope and sequencing terms; ST-SKRIPT-39-04
   and TASK-SKRIPT-39-04-01 carry the DOCX walking skeleton.
-- This ADR is `proposed`: workspace implementation waits for its review plus
-  the ST-SKRIPT-39-04 review and the cleanup gates above.
+- Accepted 2026-10-09 by user-lead decision (user-closure gate, recorded in
+  the 2026-10-09 planning session). The cleanup gates (TASK-SKRIPT-39-02-03,
+  TASK-SKRIPT-39-03-03, TASK-SKRIPT-39-03-04) completed by 2026-09-30, so
+  workspace implementation under ST-SKRIPT-39-04 is unblocked.
 - Retirement of the Qwen sidecar is governed by TASK-SKRIPT-39-03-04 and of
   the Sir exam lane by TASK-SKRIPT-39-03-03; no live deployment state is
   asserted here.

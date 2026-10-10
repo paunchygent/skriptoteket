@@ -1437,6 +1437,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Exam Workspace Documents */
+        get: operations["list_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_documents_get"];
+        put?: never;
+        /** Import Exam Workspace Document */
+        post: operations["import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace Document */
+        get: operations["get_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__get"];
+        /** Save Exam Workspace Document */
+        put: operations["save_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/enrichment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Exam Workspace Enrichment
+         * @description Read enrichment status and proposals for the head revision.
+         */
+        get: operations["get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get"];
+        put?: never;
+        /**
+         * Start Exam Workspace Enrichment
+         * @description Start enrichment for the head revision, idempotent per revision.
+         */
+        post: operations["start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/exports/{target}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Exam Workspace Document */
+        get: operations["export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -3159,6 +3236,11 @@ export interface components {
             /** File */
             file: string;
         };
+        /** Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post */
+        Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post: {
+            /** File */
+            file: string;
+        };
         /** Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post */
         Body_import_preview_api_v1_apps_classroom_group_seating_studio_rosters_import_preview_post: {
             /** File */
@@ -4851,6 +4933,96 @@ export interface components {
             /** Warning Count */
             warning_count: number;
         };
+        /**
+         * ExamWorkspaceAnswerKeyProposalItem
+         * @description One advisory prefill proposal with its provider candidate lineage.
+         */
+        ExamWorkspaceAnswerKeyProposalItem: {
+            /** Item Id */
+            item_id: string;
+            /** Model */
+            model: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            proposed_item: components["schemas"]["NativeExamItem-Output"];
+            /** Provider Profile Id */
+            provider_profile_id: string;
+        };
+        /**
+         * ExamWorkspaceDocumentListResponse
+         * @description The actor's workspace documents, one head version per lineage.
+         */
+        ExamWorkspaceDocumentListResponse: {
+            /**
+             * Documents
+             * @default []
+             */
+            documents: components["schemas"]["ExamWorkspaceDocumentSummary"][];
+        };
+        /** ExamWorkspaceDocumentResponse */
+        ExamWorkspaceDocumentResponse: {
+            document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            summary: components["schemas"]["ExamWorkspaceDocumentSummary"];
+        };
+        /** ExamWorkspaceDocumentSummary */
+        ExamWorkspaceDocumentSummary: {
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /**
+             * Vault File Id
+             * Format: uuid
+             */
+            vault_file_id: string;
+            /** Version */
+            version: number;
+        };
+        /**
+         * ExamWorkspaceEnrichmentState
+         * @description Teacher-facing state of the enrichment lane for one head revision.
+         * @enum {string}
+         */
+        ExamWorkspaceEnrichmentState: "not_requested" | "not_eligible" | "queued" | "running" | "succeeded" | "failed";
+        /**
+         * ExamWorkspaceEnrichmentStatusResponse
+         * @description Status plus advisory proposals for one document head revision.
+         */
+        ExamWorkspaceEnrichmentStatusResponse: {
+            /** Document Revision */
+            document_revision: number;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Message */
+            message?: string | null;
+            /**
+             * Proposals
+             * @default []
+             */
+            proposals: components["schemas"]["ExamWorkspaceAnswerKeyProposalItem"][];
+            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
+        };
+        /**
+         * ExamWorkspaceExportTarget
+         * @enum {string}
+         */
+        ExamWorkspaceExportTarget: "qti" | "pdf" | "docx";
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
             /** App Id */
@@ -5670,6 +5842,253 @@ export interface components {
             summary: string | null;
             /** Title */
             title: string;
+        };
+        /** NativeAnswerKey */
+        NativeAnswerKey: {
+            /**
+             * Correct Choice Ids
+             * @default []
+             */
+            correct_choice_ids: string[];
+            origin: components["schemas"]["NativeAnswerKeyOrigin"];
+        };
+        /**
+         * NativeAnswerKeyOrigin
+         * @description Provenance vocabulary aligned with the exam-conversion review states.
+         * @enum {string}
+         */
+        NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        /** NativeAssetSegment */
+        NativeAssetSegment: {
+            /** Asset Id */
+            asset_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "asset";
+        };
+        /** NativeChoice */
+        NativeChoice: {
+            /** Choice Id */
+            choice_id: string;
+            /** Text */
+            text: string;
+        };
+        /** NativeExamAsset */
+        NativeExamAsset: {
+            /** Asset Id */
+            asset_id: string;
+            /** Byte Length */
+            byte_length: number;
+            /** Height */
+            height?: number | null;
+            /**
+             * Media Type
+             * @enum {string}
+             */
+            media_type: "image/png" | "image/jpeg";
+            /** Sha256 */
+            sha256: string;
+            /** Width */
+            width?: number | null;
+        };
+        /** NativeExamDocument */
+        "NativeExamDocument-Input": {
+            /**
+             * Assets
+             * @default []
+             */
+            assets: components["schemas"]["NativeExamAsset"][];
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /**
+             * Instructions
+             * @default []
+             */
+            instructions: string[];
+            /** Items */
+            items: components["schemas"]["NativeExamItem-Input"][];
+            origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /** Revision */
+            revision: number;
+            /**
+             * Schema Version
+             * @default native_exam_document_v1
+             * @constant
+             */
+            schema_version: "native_exam_document_v1";
+            /** Title */
+            title: string;
+        };
+        /** NativeExamDocument */
+        "NativeExamDocument-Output": {
+            /**
+             * Assets
+             * @default []
+             */
+            assets: components["schemas"]["NativeExamAsset"][];
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /**
+             * Instructions
+             * @default []
+             */
+            instructions: string[];
+            /** Items */
+            items: components["schemas"]["NativeExamItem-Output"][];
+            origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /** Revision */
+            revision: number;
+            /**
+             * Schema Version
+             * @default native_exam_document_v1
+             * @constant
+             */
+            schema_version: "native_exam_document_v1";
+            /** Title */
+            title: string;
+        };
+        /** NativeExamDocumentOrigin */
+        NativeExamDocumentOrigin: {
+            /** Extractor Version */
+            extractor_version?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "docx_import" | "created";
+            /** Source Filename */
+            source_filename?: string | null;
+            /** Source Sha256 */
+            source_sha256?: string | null;
+        };
+        /** NativeExamItem */
+        "NativeExamItem-Input": {
+            answer_key: components["schemas"]["NativeAnswerKey"];
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /**
+             * Choices
+             * @default []
+             */
+            choices: components["schemas"]["NativeChoice"][];
+            /**
+             * Gaps
+             * @default []
+             */
+            gaps: components["schemas"]["NativeGap"][];
+            /** Item Id */
+            item_id: string;
+            kind: components["schemas"]["NativeExamItemKind"];
+            /** Points */
+            points?: number | null;
+            review: components["schemas"]["NativeItemReview"];
+            /** Sequence */
+            sequence: number;
+            /** Source Anchor */
+            source_anchor?: string | null;
+            /** Title */
+            title?: string | null;
+        };
+        /** NativeExamItem */
+        "NativeExamItem-Output": {
+            answer_key: components["schemas"]["NativeAnswerKey"];
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /**
+             * Choices
+             * @default []
+             */
+            choices: components["schemas"]["NativeChoice"][];
+            /**
+             * Gaps
+             * @default []
+             */
+            gaps: components["schemas"]["NativeGap"][];
+            /** Item Id */
+            item_id: string;
+            kind: components["schemas"]["NativeExamItemKind"];
+            /** Points */
+            points?: number | null;
+            review: components["schemas"]["NativeItemReview"];
+            /** Sequence */
+            sequence: number;
+            /** Source Anchor */
+            source_anchor?: string | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * NativeExamItemKind
+         * @description Writer-proven item subset (EPIC-SKRIPT-39 E3).
+         * @enum {string}
+         */
+        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill";
+        /** NativeGap */
+        NativeGap: {
+            /**
+             * Accepted Values
+             * @default []
+             */
+            accepted_values: string[];
+            /** Gap Id */
+            gap_id: string;
+            /** Hint */
+            hint?: string | null;
+        };
+        /** NativeGapSegment */
+        NativeGapSegment: {
+            /** Gap Id */
+            gap_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "gap";
+        };
+        /** NativeItemReview */
+        NativeItemReview: {
+            /** Confidence */
+            confidence?: number | null;
+            parse_origin: components["schemas"]["NativeParseOrigin"];
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: string[];
+            state: components["schemas"]["NativeItemReviewState"];
+        };
+        /**
+         * NativeItemReviewState
+         * @enum {string}
+         */
+        NativeItemReviewState: "review_required" | "review_complete";
+        /** NativeParagraph */
+        NativeParagraph: {
+            /** Segments */
+            segments: (components["schemas"]["NativeTextSegment"] | components["schemas"]["NativeGapSegment"] | components["schemas"]["NativeAssetSegment"])[];
+        };
+        /**
+         * NativeParseOrigin
+         * @enum {string}
+         */
+        NativeParseOrigin: "deterministic" | "llm_parsed" | "teacher_created";
+        /** NativeTextSegment */
+        NativeTextSegment: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "text";
+            /** Text */
+            text: string;
         };
         /**
          * OutputFileSummary
@@ -7254,6 +7673,12 @@ export interface components {
             source_code: string;
             /** Usage Instructions */
             usage_instructions?: string | null;
+        };
+        /** SaveExamWorkspaceDocumentRequest */
+        SaveExamWorkspaceDocumentRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Expected Revision */
+            expected_revision: number;
         };
         /** SaveResult */
         SaveResult: {
@@ -11414,6 +11839,219 @@ export interface operations {
                     "application/json": {
                         [key: string]: components["schemas"]["JsonValue"];
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentListResponse"];
+                };
+            };
+        };
+    };
+    import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveExamWorkspaceDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                target: components["schemas"]["ExamWorkspaceExportTarget"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

@@ -101,6 +101,26 @@ class InMemoryVaultFileRepository:
         del cutoff, limit
         return []
 
+    async def get_document_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> VaultFile | None:
+        heads = await self.list_document_heads(user_id=user_id, source_artifact_prefix="")
+        return next((h for h in heads if h.document_lineage_id == document_lineage_id), None)
+
+    async def list_document_heads(
+        self, *, user_id: UUID, source_artifact_prefix: str
+    ) -> list[VaultFile]:
+        # Ascending version order, so each lineage keeps its highest version.
+        heads = {
+            file.document_lineage_id: file
+            for file in sorted(self.files.values(), key=lambda file: file.document_version or 0)
+            if file.user_id == user_id
+            and file.document_lineage_id is not None
+            and file.deleted_at is None
+            and (file.source_artifact_id or "").startswith(source_artifact_prefix)
+        }
+        return sorted(heads.values(), key=lambda file: (file.created_at, file.id), reverse=True)
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         self.files[file.id] = file
         return file

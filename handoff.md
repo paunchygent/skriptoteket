@@ -1,5 +1,48 @@
 ## Current
 
+- [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md)
+  is `in_progress` on local branch `claude/task-skript-39-04-01` (not on
+  `main`; the cloud work existed only on remote branch
+  `claude/exam-converter-qti-format-eyocw2`). 2026-10-10 (Claude) added the
+  frontend closure: server-gated QTI/PDF/DOCX downloads with Swedish
+  per-item 422 blockers, answer-key proposal panel (prefill only; approve
+  sets `reviewed_advisory` and keeps parse review), reopen via
+  `GET .../exam-workspace/documents` (head per lineage) and `?document=`,
+  generated OpenAPI types, Vitest slices; plus 5 Postgres integration tests
+  and passing migration tests for `7c3e9a1d4f20`/`d4f8b2c6a9e1`. Gates: fe
+  vitest/typecheck/lint/build green; ruff clean; mypy 12 baseline errors;
+  9 unit failures all reproduced on origin/main. Review: changes
+  requested twice, repairs `28bd7255`/`833cf53e`/`30e9798f`; final
+  rereview approved for integration 2026-10-10; merged to local `main`.
+  Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/`.
+  Owner: Claude session. Blocker for D5 live walk: the HuleEdu
+  auth-integration lane cannot start because `minio-init` pins
+  `quay.io/minio/mc@sha256:a7fe…`, which now returns 401; user decides
+  between re-pinning in HuleEdu or a Hemma staging walk after merge (the
+  39-02-03 precedent). `LLM_ANSWER_KEY_ENABLED` is off locally. User
+  gates: proposal carry-over across saves (proposals are per revision and
+  vanish on save); D5 acceptance; terminal closure.
+- [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
+  is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
+  proposed->ready. Follow-up: Mina filer keeps every workspace version
+  visible by user choice; head-only listing is a later task.
+- 2026-10-09 planning session (Claude): user decisions recorded in
+  EPIC-SKRIPT-39 — new story 8 converges the product exporter on the proven
+  native QTI 3.0 Exam.net contract (HuleEduOS `examnet-qti-import` skill,
+  probe rounds V1-V44) after story 5 and before story 7, with the QTI 2.1
+  writer as the parity baseline until cutover (terms E13-E14); story-5
+  breadth candidates add accepted-spelling variants, case-insensitive maps,
+  letter hints, and the proven ordering type. ADR-SKRIPT-0066 gained an
+  ADR-0090 amendment pointer. Verified on current sir-convert-a-lot main:
+  the stale pre-beta QTI contract reference and the whole Sir exam domain
+  are already removed (TASK-SIRCON-07-04-01); the residual hazard was
+  EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
+  on sir-convert branch `claude/supersede-retired-exam-epics` pending
+  merge and governed terminal closure. The HuleEduOS producer stays a
+  deliberately separate hand-tool for now (E15). ADR-SKRIPT-0091 and
+  ST-SKRIPT-39-04 were accepted by user decision 2026-10-09 (user-closure
+  gate): ADR-0091 is `accepted`, the story and TASK-SKRIPT-39-04-01 are
+  `ready`, and the DOCX walking skeleton is unblocked.
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
@@ -75,6 +118,12 @@
 
 ## Recent
 
+- 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
+  EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
+  on migrating both epics to the contract-derived profile with open child
+  stories (user decision pending; ST-SIRCON-07-01 still states the old QTI
+  2.1 claim).
+
 - 2026-09-05: reconciled EPIC-39/ADR-0090 with the approved workspace scope
   via scaffolder-created ADR-0091, ST-39-04, and TASK-39-04-01 (all
   `proposed`); `pdm run docs-validate` green; `git diff --check` clean.
@@ -83,8 +132,8 @@
 
 ## Facts
 
-- Session Date: 2026-09-30
-- Last Refreshed: 2026-09-30
+- Session Date: 2026-10-10
+- Last Refreshed: 2026-10-10
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support
@@ -96,5 +145,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next executable task: review ADR-0091/ST-SKRIPT-39-04 before
-  TASK-SKRIPT-39-04-01.
+- Next: finish TASK-SKRIPT-39-04-01 (rereview, integrate to `main`, D5
+  live walk); the ADR-0091/ST-SKRIPT-39-04 review was accepted 2026-10-09.

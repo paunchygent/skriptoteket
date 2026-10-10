@@ -38,11 +38,14 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
     async def create(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         model = ExamAnswerKeyEnrichmentJobModel(
             id=job.id,
+            source_kind=job.source_kind.value,
             conversion_job_id=job.conversion_job_id,
             owner_user_id=job.owner_user_id,
             status=job.status.value,
             input_filename=job.input_filename,
             source_dxe=job.source_dxe,
+            workspace_lineage_id=job.workspace_lineage_id,
+            workspace_document_revision=job.workspace_document_revision,
             retry_identity=job.retry_identity,
             attempts=job.attempts,
             max_attempts=job.max_attempts,
@@ -90,6 +93,23 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
 
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    async def get_by_workspace_revision(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+            ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
+            ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
+            ExamAnswerKeyEnrichmentJobModel.workspace_document_revision
+            == workspace_document_revision,
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
         return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
     async def claim_next(

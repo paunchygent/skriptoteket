@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9a352bef4ea287c824348642fc6935f9a8aae1bb2c64c656f3dfc7f186ddf132",
+  "source_set_digest": "b289f0cbdb1be63bd0bc5195df6682056b7290ab3786e90ca9c7987f719bfcb4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2219,7 +2219,7 @@
       "type": "story",
       "title": "Native editable exam workspace with DOCX-first walking skeleton",
       "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4506,7 +4506,7 @@
       "type": "task",
       "title": "DOCX walking skeleton: import, native edit and create, save and reopen, export",
       "path": "docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5455,6 +5455,24 @@
       "title": "Replace recurring health callers with native clients",
       "path": "docs/backlog/tasks/task-skript-rep-0035-replace-recurring-health-callers-with-native-clients.md",
       "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0036",
+      "type": "task",
+      "title": "Resolve Mina filer app-export labels from the app id prefix",
+      "path": "docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md",
+      "status": "proposed",
       "task_kind": "repository",
       "owners": [
         {
@@ -6952,7 +6970,7 @@
       "type": "adr",
       "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
       "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
-      "status": "proposed",
+      "status": "accepted",
       "owners": [
         {
           "kind": "service",
@@ -10489,7 +10507,7 @@
       {
         "id": "ADR-SKRIPT-0091",
         "title": "Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision",
-        "status": "proposed",
+        "status": "accepted",
         "path": "docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md",
         "governing": [
           "EPIC-SKRIPT-39"
@@ -10500,540 +10518,6 @@
         ],
         "supersedes": [],
         "superseded_by": null
-      }
-    ],
-    "historical_coverage_debt": [
-      {
-        "id": "EPIC-SKRIPT-02",
-        "type": "epic",
-        "title": "Identity and access control (RBAC)",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-02-identity-and-access-control-rbac.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-06",
-        "type": "epic",
-        "title": "Quality and test coverage",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-06-quality-and-test-coverage.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-08",
-        "type": "epic",
-        "title": "Contextual help (Hjälp) and onboarding",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-09",
-        "type": "epic",
-        "title": "Security hardening for production deployment",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-09-security-hardening-for-production-deployment.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-11",
-        "type": "epic",
-        "title": "Full Vue/Vite SPA migration",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-11-full-vue-vite-spa-migration.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-14",
-        "type": "epic",
-        "title": "Admin tool authoring (draft-first workflow)",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-15",
-        "type": "epic",
-        "title": "User Profile & Settings",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-15-user-profile-settings.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-16",
-        "type": "epic",
-        "title": "Catalog discovery and personalization",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-16-catalog-discovery-and-personalization.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-19",
-        "type": "epic",
-        "title": "Runner I/O + file references foundations",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-19-runner-i-o-file-references-foundations.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-21",
-        "type": "epic",
-        "title": "Curated app: Conversion Hub (Sir Convert-a-Lot v2)",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-25",
-        "type": "epic",
-        "title": "Curated app family: competitive games foundations and Flunk-Out Frenzy",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-26",
-        "type": "epic",
-        "title": "Klassrumskartan — explicit exports and class-list import",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-27",
-        "type": "epic",
-        "title": "Klassrumskartan smart assignment v1",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-29",
-        "type": "epic",
-        "title": "Klassrumskartan — desktop-first workspace overhaul",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-33",
-        "type": "epic",
-        "title": "Flunk-Out Frenzy physical carrier foundations and cut-over governance",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-35",
-        "type": "epic",
-        "title": "Launch SEO and search indexing readiness",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-37",
-        "type": "epic",
-        "title": "Backlog product-direction inventory and app surface realignment",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-38",
-        "type": "epic",
-        "title": "Shared governed development system cutover",
-        "status": "done",
-        "path": "docs/backlog/epics/epic-skript-38-shared-governed-development-system-cutover.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-39",
-        "type": "epic",
-        "title": "Skriptoteket-owned exam conversion",
-        "status": "active",
-        "path": "docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md"
-      },
-      {
-        "id": "EPIC-SKRIPT-40",
-        "type": "epic",
-        "title": "Shared design-system convergence",
-        "status": "ready",
-        "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md"
-      },
-      {
-        "id": "ST-SKRIPT-02-02",
-        "type": "story",
-        "title": "Admin nomination and superuser approval",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-02-02-admin-nomination-and-superuser-approval.md"
-      },
-      {
-        "id": "ST-SKRIPT-02-06",
-        "type": "story",
-        "title": "Swedish school domain allowlist for registration",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md"
-      },
-      {
-        "id": "ST-SKRIPT-06-16",
-        "type": "story",
-        "title": "Backend SRP refactor of god modules",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-04",
-        "type": "story",
-        "title": "Catalog help (browse + run)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-04-catalog-help-browse-run.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-05",
-        "type": "story",
-        "title": "Tool results + downloads help",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-05-tool-results-downloads-help.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-06",
-        "type": "story",
-        "title": "Contributor help (Mina verktyg + Föreslå skript)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-06-contributor-help-mina-verktyg-f-resl-skript.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-07",
-        "type": "story",
-        "title": "Admin help (Förslag + Verktyg)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-07-admin-help-f-rslag-verktyg.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-08",
-        "type": "story",
-        "title": "Script editor help (overview + versioning)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-08-script-editor-help-overview-versioning.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-09",
-        "type": "story",
-        "title": "Script editor help (test runner + run result)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-09-script-editor-help-test-runner-run-result.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-17",
-        "type": "story",
-        "title": "Tabby edit suggestions + prompt A/B evaluation",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-17-tabby-edit-suggestions-prompt-a-b-evaluation.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-27",
-        "type": "story",
-        "title": "Research: editor chat virtual file context retention + tokenizer budgets",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md"
-      },
-      {
-        "id": "ST-SKRIPT-08-35",
-        "type": "story",
-        "title": "Help completion: route coverage, behavior hardening, and copy signoff",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-08-35-help-completion-route-coverage-behavior-hardening-and-copy-signoff.md"
-      },
-      {
-        "id": "ST-SKRIPT-09-05",
-        "type": "story",
-        "title": "Content-Security-Policy for Vue/Vite SPA",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-09-05-content-security-policy-for-vue-vite-spa.md"
-      },
-      {
-        "id": "ST-SKRIPT-09-07",
-        "type": "story",
-        "title": "Public-edge app/runtime hardening",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-09-07-public-edge-app-runtime-hardening.md"
-      },
-      {
-        "id": "ST-SKRIPT-09-08",
-        "type": "story",
-        "title": "Hemma edge observability and reserved-host lockdown",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-09-08-hemma-edge-observability-and-reserved-host-lockdown.md"
-      },
-      {
-        "id": "ST-SKRIPT-11-26",
-        "type": "story",
-        "title": "HuleEdu palette token refresh and semantic color split",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-22",
-        "type": "story",
-        "title": "Tool run UX: conventions for progress + input file references",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-22-tool-run-ux-conventions-for-progress-input-file-references.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-29",
-        "type": "story",
-        "title": "Editor: Pro mode combined bundle view (tool.py + schemas)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-29-editor-pro-mode-combined-bundle-view-tool-py-schemas.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-32",
-        "type": "story",
-        "title": "Editor: cohesion pass (panel language + input selectors across modes)",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-33",
-        "type": "story",
-        "title": "Script bank curation + group generator tool",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-33-script-bank-curation-group-generator-tool.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-34",
-        "type": "story",
-        "title": "Settings suggestions from tool runs",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-34-settings-suggestions-from-tool-runs.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-35",
-        "type": "story",
-        "title": "Tool datasets: per-user CRUD + picker",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-35-tool-datasets-per-user-crud-picker.md"
-      },
-      {
-        "id": "ST-SKRIPT-14-39",
-        "type": "story",
-        "title": "Cloudflare R2-backed Mina filer storage migration",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md"
-      },
-      {
-        "id": "ST-SKRIPT-16-08",
-        "type": "story",
-        "title": "Catalog cleanup: curated-apps-only filter + final EPIC-16 review",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-16-08-catalog-cleanup-curated-apps-only-filter-final-epic-16-review.md"
-      },
-      {
-        "id": "ST-SKRIPT-19-07",
-        "type": "story",
-        "title": "Story 003c: Skriptoteket thin adapter parity + scientific PDF workload validation",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-19-07-story-003c-skriptoteket-thin-adapter-parity-scientific-pdf-workload-validation.md"
-      },
-      {
-        "id": "ST-SKRIPT-20-01",
-        "type": "story",
-        "title": "Curated app: Reagent Prep Chef (v1)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-20-01-curated-app-reagent-prep-chef-v1.md"
-      },
-      {
-        "id": "ST-SKRIPT-20-02",
-        "type": "story",
-        "title": "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-20-02-curated-app-reagent-prep-chef-riskbed-mning-dokumentation-v1.md"
-      },
-      {
-        "id": "ST-SKRIPT-20-03",
-        "type": "story",
-        "title": "Curated app: Reagent Prep Chef — SDS corpus gap fill (markdown-first)",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-20-03-curated-app-reagent-prep-chef-sds-corpus-gap-fill-markdown-first.md"
-      },
-      {
-        "id": "ST-SKRIPT-21-02",
-        "type": "story",
-        "title": "Migration: retire html-to-pdf-preview + update tests",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-21-02-migration-retire-html-to-pdf-preview-update-tests.md"
-      },
-      {
-        "id": "ST-SKRIPT-21-03",
-        "type": "story",
-        "title": "Exam converter public and authenticated artifact lanes",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-21-03-exam-converter-public-and-authenticated-artifact-lanes.md"
-      },
-      {
-        "id": "ST-SKRIPT-21-04",
-        "type": "story",
-        "title": "Exam Converter durable teacher correction sessions",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-21-04-exam-converter-durable-teacher-correction-sessions.md"
-      },
-      {
-        "id": "ST-SKRIPT-21-10",
-        "type": "story",
-        "title": "Exam Converter source-only intake and export-owned formats",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-21-10-exam-converter-source-only-intake-and-export-owned-formats.md"
-      },
-      {
-        "id": "ST-SKRIPT-22-01",
-        "type": "story",
-        "title": "Textbook corpus cleanup pipeline and manual restoration workflow",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md"
-      },
-      {
-        "id": "ST-SKRIPT-25-03",
-        "type": "story",
-        "title": "Competitive play lightweight score submission and typed leaderboards",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-25-03-competitive-play-lightweight-score-submission-and-typed-leaderboards.md"
-      },
-      {
-        "id": "ST-SKRIPT-25-04",
-        "type": "story",
-        "title": "Competitive play lightweight leaderboard hardening and ruleset scoping",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-25-04-competitive-play-lightweight-leaderboard-hardening-and-ruleset-scoping.md"
-      },
-      {
-        "id": "ST-SKRIPT-25-06",
-        "type": "story",
-        "title": "Flunk-Out Frenzy VPW donor topology and table-spec rebuild",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md"
-      },
-      {
-        "id": "ST-SKRIPT-26-02",
-        "type": "story",
-        "title": "Klassrumskartan — Class-list import from file with teacher preview and confirmation",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-26-02-klassrumskartan-class-list-import-from-file-with-teacher-preview-and-confirmation.md"
-      },
-      {
-        "id": "ST-SKRIPT-26-04",
-        "type": "story",
-        "title": "Klassrumskartan — Grouping PDF export",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-26-04-klassrumskartan-grouping-pdf-export.md"
-      },
-      {
-        "id": "ST-SKRIPT-26-06",
-        "type": "story",
-        "title": "Klassrumskartan shareable HTML/CSS export links",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-26-06-klassrumskartan-shareable-html-css-export-links.md"
-      },
-      {
-        "id": "ST-SKRIPT-26-07",
-        "type": "story",
-        "title": "Klassrumskartan share-link Teams preview thumbnails",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md"
-      },
-      {
-        "id": "ST-SKRIPT-26-08",
-        "type": "story",
-        "title": "Klassrumskartan shared print PDF visual parity",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-26-08-klassrumskartan-shared-print-pdf-visual-parity.md"
-      },
-      {
-        "id": "ST-SKRIPT-27-04",
-        "type": "story",
-        "title": "Klassrumskartan — Smart grouping v1",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md"
-      },
-      {
-        "id": "ST-SKRIPT-27-05",
-        "type": "story",
-        "title": "Klassrumskartan — Smart explanations and rerun messaging",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-27-05-klassrumskartan-smart-explanations-and-rerun-messaging.md"
-      },
-      {
-        "id": "ST-SKRIPT-27-09",
-        "type": "story",
-        "title": "Klassrumskartan: fixed-seat rules and classroom-view-first rule authoring",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first-rule-authoring.md"
-      },
-      {
-        "id": "ST-SKRIPT-29-08",
-        "type": "story",
-        "title": "Klassrumskartan — Shared custom tooltip system and global hover contract",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md"
-      },
-      {
-        "id": "ST-SKRIPT-29-11",
-        "type": "story",
-        "title": "Klassrumskartan — Shared site/app dense-control primitive tightening",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md"
-      },
-      {
-        "id": "ST-SKRIPT-29-12",
-        "type": "story",
-        "title": "Klassrumskartan — Canonical symbol language and discoverability contract completion",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md"
-      },
-      {
-        "id": "ST-SKRIPT-33-01",
-        "type": "story",
-        "title": "Flunk-Out Frenzy physical carrier foundations and cut-over governance",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md"
-      },
-      {
-        "id": "ST-SKRIPT-37-04",
-        "type": "story",
-        "title": "App presentation decomposition and naming reset",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md"
-      },
-      {
-        "id": "ST-SKRIPT-37-05",
-        "type": "story",
-        "title": "Cross-app save/export file naming protocol",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md"
-      },
-      {
-        "id": "ST-SKRIPT-38-01",
-        "type": "story",
-        "title": "Adopt the shared governed development system",
-        "status": "done",
-        "path": "docs/backlog/stories/st-skript-38-01-adopt-the-shared-governed-development-system.md"
-      },
-      {
-        "id": "ST-SKRIPT-39-01",
-        "type": "story",
-        "title": "Walking skeleton for Skriptoteket-owned exam conversion",
-        "status": "active",
-        "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md"
-      },
-      {
-        "id": "ST-SKRIPT-39-02",
-        "type": "story",
-        "title": "Port the remote answer-key completion line with a daily token lease",
-        "status": "done",
-        "path": "docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md"
-      },
-      {
-        "id": "ST-SKRIPT-39-03",
-        "type": "story",
-        "title": "Cut over the Exam Converter and retire the Sir exam lane",
-        "status": "done",
-        "path": "docs/backlog/stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md"
-      },
-      {
-        "id": "ST-SKRIPT-40-01",
-        "type": "story",
-        "title": "Converge tokens, components and action buttons onto the shared package",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md"
-      },
-      {
-        "id": "ST-SKRIPT-40-02",
-        "type": "story",
-        "title": "Converge icons onto the shared glyph vocabulary",
-        "status": "ready",
-        "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md"
       }
     ]
   }

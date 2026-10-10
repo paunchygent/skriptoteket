@@ -100,6 +100,52 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         result = await self._session.execute(stmt)
         return [VaultFile.model_validate(item) for item in result.scalars().all()]
 
+    async def get_document_head(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+    ) -> VaultFile | None:
+        stmt = (
+            select(UserVaultFileModel)
+            .where(UserVaultFileModel.user_id == user_id)
+            .where(UserVaultFileModel.document_lineage_id == document_lineage_id)
+            .where(UserVaultFileModel.deleted_at.is_(None))
+            .order_by(desc(UserVaultFileModel.document_version))
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        return VaultFile.model_validate(model) if model else None
+
+    async def list_document_heads(
+        self,
+        *,
+        user_id: UUID,
+        source_artifact_prefix: str,
+    ) -> list[VaultFile]:
+        """Return the newest active version per document lineage, newest first."""
+
+        stmt = (
+            select(UserVaultFileModel)
+            .where(UserVaultFileModel.user_id == user_id)
+            .where(UserVaultFileModel.document_lineage_id.is_not(None))
+            .where(UserVaultFileModel.deleted_at.is_(None))
+            .where(
+                UserVaultFileModel.source_artifact_id.startswith(
+                    source_artifact_prefix, autoescape=True
+                )
+            )
+            .distinct(UserVaultFileModel.document_lineage_id)
+            .order_by(
+                UserVaultFileModel.document_lineage_id,
+                desc(UserVaultFileModel.document_version),
+            )
+        )
+        result = await self._session.execute(stmt)
+        heads = [VaultFile.model_validate(item) for item in result.scalars().all()]
+        return sorted(heads, key=lambda file: (file.created_at, file.id), reverse=True)
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         model = UserVaultFileModel(
             id=file.id,
@@ -109,6 +155,8 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
             source_kind=file.source_kind.value,
             source_run_id=file.source_run_id,
             source_artifact_id=file.source_artifact_id,
+            document_lineage_id=file.document_lineage_id,
+            document_version=file.document_version,
             created_at=file.created_at,
             deleted_at=file.deleted_at,
         )
@@ -127,6 +175,8 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         model.source_kind = file.source_kind.value
         model.source_run_id = file.source_run_id
         model.source_artifact_id = file.source_artifact_id
+        model.document_lineage_id = file.document_lineage_id
+        model.document_version = file.document_version
         model.created_at = file.created_at
         model.deleted_at = file.deleted_at
 

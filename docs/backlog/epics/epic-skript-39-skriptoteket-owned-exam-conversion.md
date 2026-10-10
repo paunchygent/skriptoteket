@@ -87,6 +87,14 @@ ADR-SKRIPT-0091.
 - Retained planning record: sir-convert-a-lot session
   `01a048d5-69f7-7394-93dd-8ff91af608cd`,
   `evidence/planning/TASK-SIRCON-REP-0029/plan.md`.
+- Authoritative empirical Exam.net QTI contract (2026-10-09): the HuleEduOS
+  repository owns the proven native QTI 3.0 contract and probe evidence —
+  `.codex/skills/examnet-qti-import/references/examnet-qti3-contract.md`,
+  the probe ledger
+  `docs/reference/ref-eduos-general-exam-net-import-probe-ledger-exam-net-import-probe-ledger.md`,
+  and the producer `scripts/converters/produce_examnet_qti.py` (probe
+  rounds V1-V44, live imports 2026-09-25/26). The Exam.net import dialog
+  states QTI 3.0 native, with QTI 2.1/2.2 packages converted automatically.
 - 2026-09-05 user-approved workspace scope: native editable exam workspace
   (DOCX first, digital PDF second, OCR deferred; deterministic extraction
   plus LLM parsing/enrichment/repair behind teacher review; versioned Mina
@@ -99,8 +107,9 @@ ADR-SKRIPT-0091.
 
 Sequenced with explicit dependencies: stories 1-3 complete first; the
 workspace skeleton (story 4) follows cleanup; DOCX breadth (story 5) and
-digital PDF (story 6) build on the skeleton; QTI import (story 7) is last
-and not on the critical path.
+digital PDF (story 6) build on the skeleton; the QTI 3.0 export convergence
+(story 8) runs after story 5 and before story 7; QTI import (story 7)
+closes the epic and is not on the critical path.
 
 1. Walking skeleton: the `.dxe` to authoring-IR to Exam.net QTI-plus-PDF
    bundle runs end to end inside the Skriptoteket backend as a switchable
@@ -112,10 +121,10 @@ and not on the critical path.
 3. Cutover and retirement: public and authenticated lanes switch, the Sir
    Convert exam lane and mirrored schema constants retire lane-by-lane behind
    parity proof, and the Qwen answer-key sidecar retires as governed cleanup.
-4. Native editable exam workspace (`ST-SKRIPT-39-04`, `proposed`): DOCX
-   walking skeleton (import, native edit/create, save/reopen, export),
-   gated on cleanup tasks 02-03, 03-03, and 03-04 plus ADR-0091/story
-   review.
+4. Native editable exam workspace (`ST-SKRIPT-39-04`, `ready`): DOCX
+   walking skeleton (import, native edit/create, save/reopen, export).
+   Cleanup tasks 02-03, 03-03, and 03-04 are done and the ADR-0091/story
+   review was accepted 2026-10-09, so the skeleton is unblocked.
 5. Word/DOCX ingestion breadth: deterministic-first parsing corpus with
    per-item confidence assertions and LLM remainder, on the confirmed item
    subset, building on the story-4 skeleton.
@@ -125,6 +134,13 @@ and not on the critical path.
    scanned-PDF product route.
 7. QTI import: a reader for the proven subset into the authoring IR, making
    export-import-export round-trip a writer regression gate.
+8. QTI 3.0 native export convergence (user-decided 2026-10-09; sequenced
+   after story 5 and before story 7): the product exporter adopts the
+   empirically proven native QTI 3.0 Exam.net contract from the HuleEduOS
+   `examnet-qti-import` skill, porting the proven shapes (inline choice,
+   ordering, grid/matching layouts, mapping-based scoring). The QTI 2.1
+   writer remains the parity/regression baseline until cutover, because
+   QTI 2.1 import rides Exam.net's beta auto-conversion layer.
 
 ## Verification
 
@@ -149,7 +165,7 @@ and not on the critical path.
 | Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
 | --- | --- | --- | --- | --- |
 | Port the remote answer-key completion line with a daily token lease | verified | `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md` | ST-SKRIPT-39-02 | None |
-| Native editable exam workspace DOCX walking skeleton | proposed | ST-SKRIPT-39-04, TASK-SKRIPT-39-04-01, ADR-SKRIPT-0091 | ST-SKRIPT-39-04 | Awaits ADR-0091/story review and cleanup gates (02-03, 03-03, 03-04) |
+| Native editable exam workspace DOCX walking skeleton | ready | ST-SKRIPT-39-04, TASK-SKRIPT-39-04-01, ADR-SKRIPT-0091 (accepted 2026-10-09) | ST-SKRIPT-39-04 | Cleanup gates (02-03, 03-03, 03-04) done; review accepted 2026-10-09; implementation may start |
 
 ## Current Implementation Summary
 
@@ -176,10 +192,13 @@ and not on the critical path.
 | E3  | The confirmed item contract is the supported types on the Exam.net-proven subset; no unsupported-type handling is authorized (TASK-SKRIPT-39-01-03 canceled). |
 | E4  | Ingestion is deterministic-first with LLM only for the low-confidence remainder and answer-key proposals, always behind teacher review. |
 | E5  | Heavy OCR and STT remain in Sir Convert-a-Lot behind a generic contract; the exam-specific cross-repo schema surface retires with the cutover. |
-| E6  | Teacher authoring (display/edit/create) is in scope only as the native editable exam workspace slice (ST-SKRIPT-39-04 under proposed ADR-SKRIPT-0091, narrowing ADR-SKRIPT-0090's exclusion); QTI import is this epic's final story and not on the critical path. |
+| E6  | Teacher authoring (display/edit/create) is in scope only as the native editable exam workspace slice (ST-SKRIPT-39-04 under ADR-SKRIPT-0091, accepted 2026-10-09, narrowing ADR-SKRIPT-0090's exclusion); QTI import is this epic's final story and not on the critical path. |
 | E7  | Answer-key completion is remote-API-first with the 5M-token daily lease contract carried over from TASK-SIRCON-08-01-07; the Qwen answer-key sidecar retires as governed cleanup. |
 | E8  | The native editable exam workspace is in scope: teachers display/edit existing questions and create items from scratch. |
 | E9  | Native persistence is a versioned exam document with assets and editing state in Mina filer; PDF, DOCX, and QTI are on-demand exports only. |
 | E10 | Ingestion order is DOCX upload first, then digital PDF with embedded text; OCR/scanned PDFs are deferred. |
 | E11 | DOCX workspace implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done, preserving generic Sir extraction, OCR, and STT. |
 | E12 | The empirical Exam.net contract is preserved as-is; no new importer research and no unsupported DigiExam types are authorized. |
+| E13 | The product QTI exporter converges on the native QTI 3.0 Exam.net contract proven in HuleEduOS, in a dedicated slice (story 8) sequenced after story 5 and before story 7; the QTI 2.1 writer stays as the parity/regression baseline until cutover (user decision 2026-10-09). |
+| E14 | The story-5 breadth contract carries as candidates the HuleEduOS-proven teacher-grade scoring features — accepted-spelling variants under the hand-picked-misspelling rule, case-insensitive answer mappings, expected-length and letter-hint conventions — and the Exam.net-proven ordering (ordningsföljd) item type as an extension of the E3 subset (user decision 2026-10-09). |
+| E15 | The HuleEduOS `examnet-qti-import` producer remains a deliberately separate hand-tool for now: story 8 ports its proven contract and shapes into the product exporter but creates no consumption or consolidation obligation for HuleEduOS (user decision 2026-10-09). |

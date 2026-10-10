@@ -92,6 +92,22 @@ describe("routes", () => {
     );
   });
 
+  it("adds the route-visible authenticated exam workspace before the generic app host", () => {
+    const router = createTestRouter();
+
+    const resolved = router.resolve("/apps/exam-workspace");
+    const workspaceRouteIndex = routes.findIndex(
+      (route) => route.path === "/apps/exam-workspace",
+    );
+    const genericAppRouteIndex = routes.findIndex((route) => route.path === "/apps/:appId");
+
+    expect(resolved.name).toBe("exam-workspace");
+    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(workspaceRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(workspaceRouteIndex).toBeLessThan(genericAppRouteIndex);
+    expect(String(routes[workspaceRouteIndex]?.component)).toContain("ExamWorkspaceView.vue");
+  });
+
   it("lets every authenticated role open the suggestion form", () => {
     const router = createTestRouter();
 

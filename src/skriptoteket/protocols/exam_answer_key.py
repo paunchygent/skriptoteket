@@ -103,6 +103,16 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
 
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None: ...
 
+    async def get_by_workspace_revision(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Find the one workspace-lane job pinned to a document revision."""
+        ...
+
     async def claim_next(
         self,
         *,
@@ -144,4 +154,10 @@ class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):
         self,
         *,
         conversion_job_id: UUID,
+    ) -> ExamAnswerKeyProposedOverlay | None: ...
+
+    async def get_by_enrichment_job_id(
+        self,
+        *,
+        enrichment_job_id: UUID,
     ) -> ExamAnswerKeyProposedOverlay | None: ...

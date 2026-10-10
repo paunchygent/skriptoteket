@@ -33,6 +33,8 @@ class VaultFile(BaseModel):
     source_kind: VaultFileSourceKind
     source_run_id: UUID | None = None
     source_artifact_id: str | None = None
+    document_lineage_id: UUID | None = None
+    document_version: int | None = None
     created_at: datetime
     deleted_at: datetime | None = None
 

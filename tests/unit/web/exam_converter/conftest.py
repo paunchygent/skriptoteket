@@ -178,6 +178,16 @@ class RefusingEnrichmentJobRepository:
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
+    async def get_by_workspace_revision(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        del owner_user_id, workspace_lineage_id, workspace_document_revision
+        return None
+
     async def claim_next(
         self,
         *,
@@ -260,6 +270,14 @@ class EmptyProposalRepository:
         conversion_job_id: UUID,
     ) -> ExamAnswerKeyProposedOverlay | None:
         del conversion_job_id
+        return None
+
+    async def get_by_enrichment_job_id(
+        self,
+        *,
+        enrichment_job_id: UUID,
+    ) -> ExamAnswerKeyProposedOverlay | None:
+        del enrichment_job_id
         return None
 
 

@@ -287,6 +287,16 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     async def list_expired(self, *, cutoff: datetime, limit: int) -> list[VaultFile]:
         return []
 
+    async def get_document_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> VaultFile | None:
+        raise NotImplementedError
+
+    async def list_document_heads(
+        self, *, user_id: UUID, source_artifact_prefix: str
+    ) -> list[VaultFile]:
+        raise NotImplementedError
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         self._files[file.id] = file
         return file

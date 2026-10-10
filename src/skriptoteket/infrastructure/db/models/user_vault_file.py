@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, String, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -12,6 +12,16 @@ from skriptoteket.infrastructure.db.base import Base
 
 class UserVaultFileModel(Base):
     __tablename__ = "user_vault_files"
+    __table_args__ = (
+        Index(
+            "uq_user_vault_files_document_version",
+            "user_id",
+            "document_lineage_id",
+            "document_version",
+            unique=True,
+            postgresql_where=text("document_lineage_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id: Mapped[UUID] = mapped_column(
@@ -32,6 +42,10 @@ class UserVaultFileModel(Base):
         nullable=True,
     )
     source_artifact_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    document_lineage_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), nullable=True, index=True
+    )
+    document_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

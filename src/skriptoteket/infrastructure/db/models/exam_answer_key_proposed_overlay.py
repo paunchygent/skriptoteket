@@ -17,7 +17,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -37,10 +37,12 @@ class ExamAnswerKeyProposedOverlayModel(Base):
         index=True,
         nullable=False,
     )
-    conversion_job_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), index=True, nullable=False
+    conversion_job_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), index=True, nullable=True
     )
     owner_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), index=True, nullable=False)
+    workspace_lineage_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    workspace_document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     source_file_sha256: Mapped[str] = mapped_column(String(128), nullable=False)
     source_ir_sha256: Mapped[str] = mapped_column(String(128), nullable=False)

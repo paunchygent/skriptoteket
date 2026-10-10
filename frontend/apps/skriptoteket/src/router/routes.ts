@@ -50,6 +50,12 @@ const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
     component: () => import("../views/apps/document-converter/DocumentConverterView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/apps/exam-workspace",
+    name: "exam-workspace",
+    component: () => import("../views/apps/ExamWorkspaceView.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 export const routes: RouteRecordRaw[] = [

@@ -12,12 +12,17 @@ Relationships:
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``;
     the transient-outage gate lives in
     ``domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts``.
+    Candidates are source-neutral: each carries its planned request plus a
+    builder that re-plans the same item's request for the failover profile
+    (the DigiExam lane rebuilds through ``plan_answer_key_candidates``).
 """
 
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
+from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -30,6 +35,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     AnswerKeyProviderRoute,
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
+    StructuredLLMRequest,
     StructuredLLMResponse,
     allows_answer_key_provider_failover,
 )
@@ -37,9 +43,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
     AnswerKeyTokenLease,
     AnswerKeyTokenLeaseRefused,
     requested_lease_tokens,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    DigiExamIrItem,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
@@ -51,6 +54,8 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 logger = logging.getLogger(__name__)
 
 _PROVIDER_FAILURE_MESSAGE = "Facitförslaget kunde inte hämtas just nu. Försök igen senare."
+
+RequestForProfileBuilder = Callable[[StructuredLLMProviderProfile], StructuredLLMRequest]
 
 
 @dataclass(frozen=True)
@@ -68,6 +73,38 @@ class ProviderAttempt:
     response: StructuredLLMResponse
     lease: AnswerKeyTokenLease
     profile: StructuredLLMProviderProfile
+
+
+@dataclass(frozen=True)
+class AnswerKeyAttemptCandidate:
+    """One item-local attempt: the planned request plus profile rebinding."""
+
+    item_id: str
+    request: StructuredLLMRequest
+    build_request_for_profile: RequestForProfileBuilder
+
+
+def dxe_attempt_candidate(
+    *,
+    conversion_job_id: UUID,
+    plan: AnswerKeyCandidatePlan,
+) -> AnswerKeyAttemptCandidate:
+    """Wrap one DigiExam candidate plan with its original failover rebuild."""
+
+    item = plan.item
+
+    def build(profile: StructuredLLMProviderProfile) -> StructuredLLMRequest:
+        return plan_answer_key_candidates(
+            job_id=str(conversion_job_id),
+            items=(item,),
+            profile=profile,
+        )[0].request
+
+    return AnswerKeyAttemptCandidate(
+        item_id=item.item_id,
+        request=plan.request,
+        build_request_for_profile=build,
+    )
 
 
 def lease_exhausted_message(refusal: AnswerKeyTokenLeaseRefused) -> str:
@@ -99,7 +136,7 @@ class AnswerKeyProviderAttemptRunner:
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
-        candidate: AnswerKeyCandidatePlan,
+        candidate: AnswerKeyAttemptCandidate,
         route: AnswerKeyProviderRoute,
         primary_lease: AnswerKeyTokenLease,
     ) -> ProviderAttempt | EnrichmentFailure:
@@ -111,20 +148,20 @@ class AnswerKeyProviderAttemptRunner:
                 profile=route.primary,
             )
         except StructuredLLMProviderError as exc:
-            _log_provider_failure(item_id=candidate.item.item_id, error=exc)
+            _log_provider_failure(item_id=candidate.item_id, error=exc)
             if not allows_answer_key_provider_failover(exc):
                 return EnrichmentFailure(
                     teacher_message=_PROVIDER_FAILURE_MESSAGE,
                     last_error=exc.failure_code.value,
                 )
-            return await self._attempt_failover(job=job, item=candidate.item, route=route)
+            return await self._attempt_failover(job=job, candidate=candidate, route=route)
         return ProviderAttempt(response=response, lease=primary_lease, profile=route.primary)
 
     async def _attempt_failover(
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
-        item: DigiExamIrItem,
+        candidate: AnswerKeyAttemptCandidate,
         route: AnswerKeyProviderRoute,
     ) -> ProviderAttempt | EnrichmentFailure:
         """Attempt the failover profile once with its own second lease.
@@ -135,22 +172,18 @@ class AnswerKeyProviderAttemptRunner:
         either way; leases are never refunded.
         """
 
-        candidate = plan_answer_key_candidates(
-            job_id=str(job.conversion_job_id),
-            items=(item,),
-            profile=route.failover,
-        )[0]
+        request = candidate.build_request_for_profile(route.failover)
         now = self._clock.now()
         try:
             async with self._uow:
                 lease = await self._leases.reserve(
                     now=now,
                     requested_tokens=requested_lease_tokens(
-                        estimated_input_tokens=candidate.request.estimated_input_tokens,
-                        max_output_tokens=candidate.request.max_output_tokens,
+                        estimated_input_tokens=request.estimated_input_tokens,
+                        max_output_tokens=request.max_output_tokens,
                     ),
                     job_id=job.id,
-                    item_id=item.item_id,
+                    item_id=candidate.item_id,
                     provider_profile_id=route.failover.provider_id,
                 )
         except AnswerKeyTokenLeaseRefused as refusal:
@@ -160,11 +193,11 @@ class AnswerKeyProviderAttemptRunner:
             )
         try:
             response = await self._provider.complete_structured(
-                request=candidate.request,
+                request=request,
                 profile=route.failover,
             )
         except StructuredLLMProviderError as exc:
-            _log_provider_failure(item_id=item.item_id, error=exc)
+            _log_provider_failure(item_id=candidate.item_id, error=exc)
             return EnrichmentFailure(
                 teacher_message=_PROVIDER_FAILURE_MESSAGE,
                 last_error=exc.failure_code.value,
