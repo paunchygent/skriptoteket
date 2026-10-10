@@ -86,7 +86,7 @@ _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_res
 _RETRY = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_retry_response.json")
 
 
-async def test_quiz_background_job_commits_one_source_faithful_document_and_valid_qti(
+async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
