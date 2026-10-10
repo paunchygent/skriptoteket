@@ -4,12 +4,12 @@
   is `ready` (user 2026-10-10): AI-first DOCX conversion, terms A1-A12;
   supersedes TASK-SKRIPT-39-04-03. Task 1
   [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-  is `ready` (walking skeleton on the Chapter 4 poetry quiz); implementation
-  routed to Codex. Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
+  is `in_progress` (walking skeleton on the Chapter 4 poetry quiz); Codex
+  implements on `codex/task-skript-39-05-01`. Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `ready` (user 2026-10-10): pending answer-key proposals survive a save
-  (user decision P1-P3). Backend work:
-  route to Codex.
+  is `in_progress`: pending answer-key proposals survive a save (P1-P3);
+  Codex implements on `codex/task-skript-39-04-04`, retained session
+  `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -140,4 +140,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: Codex implements TASK-SKRIPT-39-05-01; TASK-SKRIPT-39-04-04 is ready for implementation.
+- Next: review, merge and staging-walk TASK-SKRIPT-39-05-01 and 39-04-04 when Codex reports.
