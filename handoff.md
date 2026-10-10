@@ -30,11 +30,12 @@
   Retained session
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 
-- 2026-10-10 user requirements, not yet planned (major): teachers must add
-  every valid Exam.net QTI 3.0 item type in the workspace (today only free
-  text), and must choose between a standalone item and a parent with child
-  items sharing one instruction (as in the BF26 chapter 2 QTI). Next: GrillMe
-  planning under EPIC-SKRIPT-39.
+- [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
+  is `proposed` with a closed contract (P1-P13): teachers create the seven
+  Exam.net types standalone or as parent with children (Deluppgift).
+  All-types Exam.net import 2026-10-10 passed (exam 5310254, 13 tasks, 28p).
+  Retained plan `01a127b9-9597-7303-b076-e5b24e5954d2`. Next: user
+  proposed->ready; sequenced after story 8.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns

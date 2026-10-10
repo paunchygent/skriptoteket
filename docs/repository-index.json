@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2dcd098220167615661c4abde12291df3d9d97ba87560f96c5fa502239964993",
+  "source_set_digest": "7c5035a0a904786d23676bb3ae168309aef9d4c9732c4aa0fc934942d41fd4b6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2244,6 +2244,27 @@
       "title": "AI-first DOCX exam conversion with a gold-corpus eval loop",
       "path": "docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md",
       "status": "ready",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-06",
+      "type": "story",
+      "title": "Teacher authoring of every Exam.net question type with parent and child questions",
+      "path": "docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md",
+      "status": "proposed",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
