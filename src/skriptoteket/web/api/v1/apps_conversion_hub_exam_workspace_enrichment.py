@@ -16,10 +16,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    NOT_ELIGIBLE_MESSAGE,
+from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceEnrichmentState,
     ExamWorkspaceEnrichmentStatusResponse,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
+    NOT_ELIGIBLE_MESSAGE,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol

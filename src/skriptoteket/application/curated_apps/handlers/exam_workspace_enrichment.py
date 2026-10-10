@@ -18,15 +18,19 @@ Relationships:
 
 from __future__ import annotations
 
-from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     enqueue_workspace_enrichment_job,
+)
+from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceAnswerKeyProposalItem,
+    ExamWorkspaceEnrichmentState,
+    ExamWorkspaceEnrichmentStatusResponse,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
@@ -39,7 +43,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-    NativeExamItem,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
@@ -72,41 +75,6 @@ _FAILURE_MESSAGES: dict[str, str] = {
     ),
     "workspace_container_invalid": "Den sparade dokumentversionen kunde inte läsas.",
 }
-
-
-class ExamWorkspaceEnrichmentState(StrEnum):
-    """Teacher-facing state of the enrichment lane for one head revision."""
-
-    NOT_REQUESTED = "not_requested"
-    NOT_ELIGIBLE = "not_eligible"
-    QUEUED = "queued"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-
-
-class ExamWorkspaceAnswerKeyProposalItem(BaseModel):
-    """One advisory prefill proposal with its provider candidate lineage."""
-
-    model_config = ConfigDict(frozen=True)
-
-    item_id: str
-    proposed_item: NativeExamItem
-    provider_profile_id: str
-    model: str
-    prompt_template_version: str
-
-
-class ExamWorkspaceEnrichmentStatusResponse(BaseModel):
-    """Status plus advisory proposals for one document head revision."""
-
-    model_config = ConfigDict(frozen=True)
-
-    lineage_id: UUID
-    document_revision: int = Field(ge=1)
-    state: ExamWorkspaceEnrichmentState
-    message: str | None = None
-    proposals: tuple[ExamWorkspaceAnswerKeyProposalItem, ...] = ()
 
 
 def _document_not_found(lineage_id: UUID) -> DomainError:

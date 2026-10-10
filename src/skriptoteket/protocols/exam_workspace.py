@@ -1,12 +1,13 @@
 """Protocol seams for the native exam workspace (ST-SKRIPT-39-04)."""
 
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceEnrichmentStatusResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
     SaveExamWorkspaceDocumentRequest,
@@ -19,11 +20,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.identity.models import User
-
-if TYPE_CHECKING:
-    from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-        ExamWorkspaceEnrichmentStatusResponse,
-    )
 
 
 class DocxExamChunkerProtocol(Protocol):
@@ -93,4 +89,4 @@ class EnqueueExamWorkspaceEnrichmentHandlerProtocol(Protocol):
 class GetExamWorkspaceEnrichmentStatusHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, lineage_id: UUID
-    ) -> "ExamWorkspaceEnrichmentStatusResponse": ...
+    ) -> ExamWorkspaceEnrichmentStatusResponse: ...

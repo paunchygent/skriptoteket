@@ -19,12 +19,12 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
 )
+from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceEnrichmentState
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     EnqueueExamWorkspaceEnrichmentHandler,
-    ExamWorkspaceEnrichmentState,
     GetExamWorkspaceEnrichmentStatusHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
