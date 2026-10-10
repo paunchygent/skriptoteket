@@ -1,8 +1,8 @@
 """Mina filer source labels for APP_EXPORT files.
 
-Apps save exports with either a plain curated app id or an app-scoped
-artifact id shaped ``<app_id>:<app-specific parts>``. The list handler must
-resolve the app title from the prefix before the first ``:`` for every shape.
+The label is the canonical curated registry title for the app id before the
+first ``:`` in ``source_artifact_id``. Unregistered or empty prefixes get
+"App-export".
 """
 
 from __future__ import annotations
@@ -13,17 +13,9 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.application.scripting.handlers._vault_helpers import (
-    app_id_from_source_artifact_id,
-)
 from skriptoteket.application.scripting.handlers.list_vault_files import ListVaultFilesHandler
 from skriptoteket.application.scripting.vault import ListVaultFilesQuery
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.models import (
-    CuratedAppDefinition,
-    CuratedAppPlacement,
-    curated_app_tool_id,
-)
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.vault import (
     VaultFile,
@@ -31,6 +23,7 @@ from skriptoteket.domain.scripting.vault import (
     VaultListState,
     VaultUsage,
 )
+from skriptoteket.infrastructure.curated_apps.registry import InMemoryCuratedAppRegistry
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
 from skriptoteket.protocols.vault import (
@@ -40,8 +33,6 @@ from skriptoteket.protocols.vault import (
 )
 
 _NOW = datetime(2026, 10, 10, 12, 0, tzinfo=UTC)
-_APP_ID = "documents.conversion_hub"
-_APP_TITLE = "Konverteringshubben"
 
 
 class FakeUow:
@@ -49,26 +40,6 @@ class FakeUow:
         return self
 
     async def __aexit__(self, *args: object) -> None:
-        return None
-
-
-class FakeCuratedApps:
-    def __init__(self) -> None:
-        self._app = CuratedAppDefinition(
-            app_id=_APP_ID,
-            tool_id=curated_app_tool_id(app_id=_APP_ID),
-            app_version="1",
-            title=_APP_TITLE,
-            placements=[CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt")],
-        )
-
-    def list_all(self) -> list[CuratedAppDefinition]:
-        return [self._app]
-
-    def get_by_app_id(self, *, app_id: str) -> CuratedAppDefinition | None:
-        return self._app if app_id == _APP_ID else None
-
-    def get_by_tool_id(self, *, tool_id: UUID) -> CuratedAppDefinition | None:
         return None
 
 
@@ -83,7 +54,7 @@ def _actor() -> User:
     )
 
 
-def _app_export(*, user_id: UUID, source_artifact_id: str) -> VaultFile:
+def _app_export(*, user_id: UUID, source_artifact_id: str | None) -> VaultFile:
     return VaultFile(
         id=uuid4(),
         user_id=user_id,
@@ -97,7 +68,7 @@ def _app_export(*, user_id: UUID, source_artifact_id: str) -> VaultFile:
     )
 
 
-async def _label_for(source_artifact_id: str) -> str | None:
+async def _label_for(source_artifact_id: str | None) -> str | None:
     actor = _actor()
     vault_file = _app_export(user_id=actor.id, source_artifact_id=source_artifact_id)
     vault_files = AsyncMock(spec=VaultFileRepositoryProtocol)
@@ -106,16 +77,17 @@ async def _label_for(source_artifact_id: str) -> str | None:
     vault_usage.get.return_value = VaultUsage(user_id=actor.id, bytes_total=10, updated_at=_NOW)
     vault_storage = AsyncMock(spec=VaultStorageProtocol)
     vault_storage.exists_file.return_value = True
+    settings = Settings(VAULT_MAX_TOTAL_BYTES=1000, VAULT_MAX_FILE_BYTES=1000)
 
     handler = ListVaultFilesHandler(
         uow=FakeUow(),
         runs=AsyncMock(spec=ToolRunRepositoryProtocol),
         tools=AsyncMock(spec=ToolRepositoryProtocol),
-        curated_apps=FakeCuratedApps(),
+        curated_apps=InMemoryCuratedAppRegistry(settings=settings),
         vault_files=vault_files,
         vault_usage=vault_usage,
         vault_storage=vault_storage,
-        settings=Settings.model_construct(VAULT_MAX_TOTAL_BYTES=1000, VAULT_MAX_FILE_BYTES=1000),
+        settings=settings,
     )
     result = await handler.handle(
         actor=actor, query=ListVaultFilesQuery(state=VaultListState.ACTIVE)
@@ -126,35 +98,50 @@ async def _label_for(source_artifact_id: str) -> str | None:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "source_artifact_id",
+    ("source_artifact_id", "expected_title"),
     [
-        pytest.param(_APP_ID, id="plain-app-id"),
+        pytest.param("chemistry.reagent_prep_chef", "Reagensberedning", id="reagent-plain-id"),
+        pytest.param("classroom.group-seating-studio", "Klassrumskartan", id="seating-plain-id"),
         pytest.param(
-            f"{_APP_ID}:exam-converter:{uuid4()}:examnet_qti_package",
+            f"documents.conversion_hub:exam-converter:{uuid4()}:qti_package",
+            "Provhantering",
             id="exam-converter-artifact",
         ),
-        pytest.param(f"{_APP_ID}:exam-workspace:{uuid4()}:v3", id="exam-workspace-version"),
+        pytest.param(
+            f"documents.conversion_hub:exam-workspace:{uuid4()}:v3",
+            "Provhantering",
+            id="exam-workspace-version",
+        ),
+        pytest.param(
+            f"documents.conversion_hub:transcript-export:{uuid4()}:transcript_txt",
+            "Provhantering",
+            id="transcript-export",
+        ),
+        pytest.param(
+            f" documents.conversion_hub :exam-workspace:{uuid4()}:v1",
+            "Provhantering",
+            id="padded-prefix",
+        ),
     ],
 )
-async def test_app_export_label_resolves_app_title_for_every_source_shape(
-    source_artifact_id: str,
+async def test_app_export_label_is_registry_title_for_app_id_prefix(
+    source_artifact_id: str, expected_title: str
 ) -> None:
-    assert await _label_for(source_artifact_id) == _APP_TITLE
+    assert await _label_for(source_artifact_id) == expected_title
 
 
 @pytest.mark.asyncio
-async def test_unknown_app_prefix_falls_back_to_generic_label() -> None:
-    assert await _label_for("unknown.app:exam-workspace:abc:v1") == "App-export"
-
-
 @pytest.mark.parametrize(
-    ("source_artifact_id", "expected"),
+    "source_artifact_id",
     [
-        (None, ""),
-        ("", ""),
-        (" documents.conversion_hub ", _APP_ID),
-        ("documents.conversion_hub:exam-workspace:abc:v2", _APP_ID),
+        pytest.param("unknown.app:exam-workspace:abc:v1", id="unknown-prefix"),
+        pytest.param(f"document-converter:{uuid4()}:docx", id="unregistered-document-converter"),
+        pytest.param("", id="empty"),
+        pytest.param(None, id="absent"),
+        pytest.param(":exam-workspace:abc:v1", id="empty-prefix"),
     ],
 )
-def test_app_id_from_source_artifact_id(source_artifact_id: str | None, expected: str) -> None:
-    assert app_id_from_source_artifact_id(source_artifact_id) == expected
+async def test_app_export_label_falls_back_for_unregistered_or_empty_prefix(
+    source_artifact_id: str | None,
+) -> None:
+    assert await _label_for(source_artifact_id) == "App-export"
