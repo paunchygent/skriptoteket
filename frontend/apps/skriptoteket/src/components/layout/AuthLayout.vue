@@ -55,6 +55,7 @@ const isImmersiveCuratedAppRoute = computed(() => {
 const isClassroomPlannerRoute = computed(() => {
   return route.name === "app-detail" && route.params.appId === "classroom.group-seating-studio";
 });
+const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
 const prefersXlSidebarBreakpoint = computed(() => isClassroomPlannerRoute.value);
 
 const sidebarOpen = ref(false);
@@ -177,6 +178,7 @@ onBeforeUnmount(() => {
       :class="{
         'auth-main-content--editor': isEditorRoute,
         'auth-main-content--workspace': isClassroomPlannerRoute,
+        'auth-main-content--exam-workspace': isExamWorkspaceRoute,
         'auth-main-content--immersive': isImmersiveCuratedAppRoute,
       }"
     >
@@ -325,6 +327,14 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
+.auth-main-content--exam-workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--huleedu-space-4);
+  overflow-x: hidden;
+}
+
 .auth-main-content--immersive {
   padding: 0;
   overflow: hidden;
@@ -347,6 +357,10 @@ onBeforeUnmount(() => {
 @media (min-width: 768px) {
   .auth-main-content {
     padding: var(--huleedu-space-8);
+  }
+
+  .auth-main-content--exam-workspace {
+    padding: var(--huleedu-space-6);
   }
 
   .auth-main-content--immersive {

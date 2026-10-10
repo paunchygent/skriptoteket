@@ -4,7 +4,7 @@
  *
  * Domain purpose:
  *   Show every question over the phone editor without leaving it (ST-29
- *   sheet pattern). The sheet is a modal dialog: focus moves into it on
+ *   sheet pattern). The sheet is an opaque modal dialog: focus moves into it on
  *   open, Tab stays inside it, the backdrop, the close button, and Escape
  *   close it, and focus returns to the element that opened it.
  *
@@ -50,7 +50,7 @@ useExamWorkspaceDialogFocus(panel, {
     />
     <section
       ref="panel"
-      class="relative grid max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] border-t border-navy bg-panel text-navy outline-none"
+      class="relative grid max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)] border-t border-navy bg-modal text-navy outline-none"
       role="dialog"
       aria-modal="true"
       :aria-label="title"

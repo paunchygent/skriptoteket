@@ -15,26 +15,33 @@
 
 import { ATOM_ATTRIBUTE } from "./examWorkspaceBodySegments";
 
-function isAtomNode(node: Node | null): boolean {
-  return node instanceof HTMLElement && node.hasAttribute(ATOM_ATTRIBUTE);
+/** The atom kind that blocked an edit; "unknown" when the marker has no known kind. */
+export type TouchedAtomKind = "gap" | "asset" | "unknown";
+
+function atomKindOf(node: Node | null): TouchedAtomKind | null {
+  if (!(node instanceof HTMLElement) || !node.hasAttribute(ATOM_ATTRIBUTE)) {
+    return null;
+  }
+  const kind = node.getAttribute(ATOM_ATTRIBUTE);
+  return kind === "gap" || kind === "asset" ? kind : "unknown";
 }
 
 function isEmptyTextNode(node: Node | null): boolean {
   return node !== null && node.nodeType === Node.TEXT_NODE && (node.textContent ?? "").length === 0;
 }
 
-/** Whether a collapsed caret sits directly beside an atom in the delete direction. */
+/** The kind of atom a collapsed caret sits directly beside in the delete direction, or null. */
 export function caretBesideAtom(
   root: HTMLElement,
   container: Node,
   offset: number,
   backward: boolean,
-): boolean {
+): TouchedAtomKind | null {
   let neighbour: Node | null;
   if (container.nodeType === Node.TEXT_NODE) {
     const length = container.textContent?.length ?? 0;
     if (backward ? offset > 0 : offset < length) {
-      return false;
+      return null;
     }
     let current: Node = container;
     neighbour = backward ? current.previousSibling : current.nextSibling;
@@ -50,7 +57,7 @@ export function caretBesideAtom(
   while (isEmptyTextNode(neighbour)) {
     neighbour = backward ? neighbour!.previousSibling : neighbour!.nextSibling;
   }
-  return isAtomNode(neighbour);
+  return atomKindOf(neighbour);
 }
 
 /** The current document selection as live ranges. */
@@ -84,28 +91,33 @@ export function liveRangesFor(event: InputEvent): Range[] {
 }
 
 /**
- * Whether any range covers an atom in `root`, or, for a delete input type,
- * whether a collapsed caret would delete the atom beside it.
+ * The kind of the first atom in `root` that any range covers or, for a delete
+ * input type, that a collapsed caret would delete beside it; null when none.
  */
 export function rangesTouchAtom(
   root: HTMLElement,
   ranges: Range[],
   inputType: string | null,
-): boolean {
+): TouchedAtomKind | null {
   const atoms = Array.from(root.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}]`));
   if (atoms.length === 0) {
-    return false;
+    return null;
   }
-  return ranges.some((range) => {
+  for (const range of ranges) {
     if (!range.collapsed) {
-      return atoms.some((atom) => range.intersectsNode(atom));
-    }
-    if (inputType !== null && inputType.startsWith("delete")) {
+      const covered = atoms.find((atom) => range.intersectsNode(atom));
+      if (covered) {
+        return atomKindOf(covered);
+      }
+    } else if (inputType !== null && inputType.startsWith("delete")) {
       const backward = inputType.includes("Backward");
-      return caretBesideAtom(root, range.startContainer, range.startOffset, backward);
+      const beside = caretBesideAtom(root, range.startContainer, range.startOffset, backward);
+      if (beside) {
+        return beside;
+      }
     }
-    return false;
-  });
+  }
+  return null;
 }
 
 /**

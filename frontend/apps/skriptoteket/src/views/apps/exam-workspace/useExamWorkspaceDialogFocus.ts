@@ -3,8 +3,11 @@
  *
  * Domain purpose:
  *   Give the workspace's overlays one keyboard contract. When `takesFocus`
- *   holds at mount, focus moves into the panel and returns to the element
- *   that had it when the panel unmounts. Escape closes the panel: anywhere
+ *   holds, at mount or later when the layout changes, focus moves into the
+ *   panel. When the panel unmounts, focus returns to the element that had it
+ *   before, or to `fallbackFocus` when nothing in the page had focus (a
+ *   click that does not focus its button, or a focused element that is
+ *   gone). Escape closes the panel: anywhere
  *   on the page for a modal panel, only from inside the panel otherwise.
  *   A modal panel keeps Tab and Shift+Tab cycling through its own controls.
  *
@@ -13,7 +16,7 @@
  *     (modal on phone, focus and Escape on tablet, inert on desktop).
  */
 
-import { nextTick, onBeforeUnmount, onMounted } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import type { Ref } from "vue";
 
 const FOCUSABLE_SELECTOR = [
@@ -27,6 +30,7 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export type ExamWorkspaceDialogFocusOptions = {
+  fallbackFocus?: () => HTMLElement | null;
   modal: () => boolean;
   onClose: () => void;
   takesFocus: () => boolean;
@@ -83,21 +87,40 @@ export function useExamWorkspaceDialogFocus(
     }
   }
 
+  function takeFocus(): void {
+    const active = document.activeElement;
+    const usable =
+      active instanceof HTMLElement && active !== document.body && !panel.value?.contains(active);
+    opener = usable ? active : null;
+    movedFocus = true;
+    void nextTick(() => panel.value?.focus());
+  }
+
   onMounted(() => {
     panel.value?.addEventListener("keydown", handlePanelKeydown);
     document.addEventListener("keydown", handleDocumentKeydown);
     if (options.takesFocus()) {
-      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      movedFocus = true;
-      void nextTick(() => panel.value?.focus());
+      takeFocus();
     }
   });
+
+  // A layout change while the panel is open can start the focus contract.
+  watch(
+    () => options.takesFocus(),
+    (takes) => {
+      if (takes && !movedFocus) {
+        takeFocus();
+      }
+    },
+    { flush: "post" },
+  );
 
   onBeforeUnmount(() => {
     panel.value?.removeEventListener("keydown", handlePanelKeydown);
     document.removeEventListener("keydown", handleDocumentKeydown);
     if (movedFocus) {
-      opener?.focus();
+      const target = opener?.isConnected ? opener : (options.fallbackFocus?.() ?? null);
+      target?.focus();
     }
   });
 }

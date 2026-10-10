@@ -40,7 +40,10 @@ import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQu
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
-import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import {
+  examWorkspaceDisplayTitle,
+  toExamWorkspaceItemRows,
+} from "./exam-workspace/examWorkspaceRows";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
@@ -126,7 +129,7 @@ const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
       itemId: item.item_id,
       reasons: readinessByItemId.value[item.item_id] ?? [],
       sequence: item.sequence,
-      title: item.title ?? "",
+      title: examWorkspaceDisplayTitle(item.title, item.sequence),
     })),
 );
 
@@ -161,10 +164,10 @@ const enrichmentDisabled = computed(
 
 const redigeraGridClass = computed(() => {
   if (layout.value === "desktop") {
-    return "h-full grid-cols-[minmax(15rem,19rem)_minmax(0,1fr)]";
+    return "min-h-0 flex-1 grid-cols-[minmax(15rem,19rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]";
   }
   return layout.value === "tablet"
-    ? "h-full grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)]"
+    ? "min-h-0 flex-1 grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]"
     : "grid-cols-1";
 });
 
@@ -182,12 +185,13 @@ watch(
   },
 );
 
-// A waiting answer-key proposal is the next thing to decide, so the drawer
-// opens by itself for it, in place of the phone question sheet.
+// A waiting answer-key proposal is the next thing to decide, so the desktop
+// drawer opens by itself for it. Tablet and phone overlays take focus, which
+// would interrupt typing; there the count on the "Detaljer" toggle shows it.
 watch(
   () => selectedProposal.value?.item_id ?? null,
   (proposalItemId) => {
-    if (proposalItemId) {
+    if (proposalItemId && layout.value === "desktop") {
       questionSheetOpen.value = false;
       detailsOpen.value = true;
     }
@@ -256,19 +260,19 @@ function handleEditProposal(itemId: string): void {
 
 <template>
   <main
-    class="bg-canvas px-3 py-3 text-navy md:px-5 lg:px-6"
+    class="flex min-h-0 flex-1 flex-col bg-canvas text-navy"
     aria-labelledby="exam-workspace-title"
   >
     <section
-      class="mx-auto flex w-full min-w-0 max-w-[100rem] flex-col border border-navy bg-panel shadow-brutal-sm"
-      :class="isPhone ? 'min-h-[calc(100dvh-72px-1.5rem)]' : 'h-[max(35rem,calc(100dvh-72px-1.5rem))]'"
+      class="mx-auto flex w-full min-w-0 max-w-[100rem] flex-1 flex-col"
+      :class="isPhone ? undefined : 'min-h-[35rem] border border-navy bg-panel shadow-brutal-sm'"
       aria-label="Provredigering"
       :data-layout="layout"
       data-test="exam-workspace-frame"
     >
       <header
-        class="grid gap-2 border-b border-navy bg-panel px-4 py-2.5"
-        :class="isPhone ? 'sticky top-0 z-20' : undefined"
+        class="grid gap-2 border-b border-navy py-2.5"
+        :class="isPhone ? 'sticky top-0 z-20 bg-modal' : 'bg-panel px-4'"
         data-test="exam-workspace-toolbar"
       >
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -376,7 +380,7 @@ function handleEditProposal(itemId: string): void {
 
         <div
           v-show="mode === 'redigera'"
-          class="min-h-0 flex-1"
+          class="flex min-h-0 flex-1 flex-col"
           role="region"
           aria-label="Redigera"
           data-test="exam-workspace-workspace"
@@ -407,10 +411,10 @@ function handleEditProposal(itemId: string): void {
                 class="min-w-0 flex-1"
                 :class="isPhone ? undefined : 'min-h-0 overflow-y-auto'"
               >
-                <div :class="isPhone ? 'p-4' : 'mx-auto w-full max-w-[60rem] p-6'">
+                <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
                   <ExamWorkspaceItemEditor
                     v-if="selectedItem"
-                    :attention-count="selectedReadiness.length"
+                    :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
                     :details-open="detailsOpen"
                     :disabled="isBusy"
                     :item="selectedItem"

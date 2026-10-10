@@ -221,6 +221,65 @@ describe("ExamWorkspaceBodyEditor", () => {
     wrapper.unmount();
   });
 
+  it("explains that Backspace beside an image changes nothing, without mentioning gaps", async () => {
+    const wrapper = mountEditor();
+    const element = paragraph(wrapper, 1);
+    const marker = element.querySelector('[data-asset-id="asset_001"]')!;
+    const range = document.createRange();
+    range.setStartAfter(marker);
+    range.collapse(true);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const event = new InputEvent("beforeinput", {
+      bubbles: true,
+      cancelable: true,
+      inputType: "deleteContentBackward",
+    });
+    element.dispatchEvent(event);
+    await wrapper.vm.$nextTick();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-body-status"]').text()).toBe(
+      "Bilden kan inte tas bort i texten.",
+    );
+    wrapper.unmount();
+  });
+
+  it("explains why Backspace beside a gap changes nothing, until the next input", async () => {
+    const wrapper = mountEditor();
+    const element = paragraph(wrapper, 0);
+    const afterChip = element.querySelector('[data-gap-id="gap_001"]')!.nextSibling as Text;
+    const range = document.createRange();
+    range.setStart(afterChip, 0);
+    range.collapse(true);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    element.dispatchEvent(
+      new InputEvent("beforeinput", {
+        bubbles: true,
+        cancelable: true,
+        inputType: "deleteContentBackward",
+      }),
+    );
+    await wrapper.vm.$nextTick();
+
+    const status = wrapper.get('[data-test="exam-workspace-body-status"]');
+    expect(status.attributes("aria-live")).toBe("polite");
+    expect(status.text()).toBe(
+      "Luckan tas inte bort med Backsteg eller Delete. Öppna luckan för att ändra svaret.",
+    );
+
+    afterChip.data = " grader och fryser vid, ";
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="exam-workspace-body-status"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
   it("inserts Enter as a newline in the text", () => {
     const wrapper = mountEditor();
     const element = paragraph(wrapper, 0);
@@ -282,6 +341,39 @@ describe("ExamWorkspaceBodyEditor", () => {
     expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["0", "noll"]]]);
     expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
     expect(document.activeElement).toBe(wrapper.get('[data-gap-id="gap_002"]').element);
+    wrapper.unmount();
+  });
+
+  it("ignores Enter while an IME composition is active", async () => {
+    const wrapper = mountEditor();
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]')
+      .element as HTMLInputElement;
+    input.value = "hund";
+
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, isComposing: true }),
+    );
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, keyCode: 229 }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
+
+    input.value = "hundra";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
+    wrapper.unmount();
+  });
+
+  it("gives the popover room for long answers", async () => {
+    const wrapper = mountEditor();
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const popover = wrapper.get('[data-test="exam-workspace-gap-popover"]');
+    expect(popover.classes()).toContain("w-[min(28rem,100%)]");
+    expect(wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]').classes()).toContain(
+      "w-full",
+    );
     wrapper.unmount();
   });
 

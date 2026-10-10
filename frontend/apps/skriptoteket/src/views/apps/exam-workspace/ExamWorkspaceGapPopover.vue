@@ -7,6 +7,8 @@
  *   list right next to the gap chip. Enter and leaving the popover commit
  *   the answers; Escape discards them. Each commit is emitted once, even
  *   when the browser also fires `change` while focus returns to the chip.
+ *   Enter and Escape pressed while an IME composition is active belong to
+ *   the composition and are ignored.
  *
  * Relationships:
  *   - Opened by `ExamWorkspaceBodyEditor`, which keys it by item and gap so
@@ -58,6 +60,9 @@ function commit(): void {
 }
 
 function handleKeydown(event: KeyboardEvent): void {
+  if (event.isComposing || event.keyCode === 229) {
+    return;
+  }
   if (event.key === "Escape") {
     event.preventDefault();
     discarded = true;
@@ -87,14 +92,14 @@ onMounted(() => {
 
 <template>
   <div
-    class="absolute z-10 grid w-72 max-w-full gap-2 border border-navy bg-panel p-3 shadow-[4px_4px_0_0_rgba(0,0,0,0.15)]"
+    class="absolute z-10 grid w-[min(28rem,100%)] gap-2 border border-navy bg-panel p-3 shadow-[4px_4px_0_0_rgba(0,0,0,0.15)]"
     :style="{ top: `${top}px`, left: `${left}px` }"
     role="dialog"
     :aria-label="`Godkända svar för lucka ${gapNumber}`"
     data-test="exam-workspace-gap-popover"
     @focusout="handleFocusOut"
   >
-    <label class="grid gap-1 text-xs font-semibold text-navy/80">
+    <label class="grid min-w-0 gap-1 text-xs font-semibold text-navy/80">
       Lucka {{ gapNumber }} – godkända svar (kommaseparerade)
       <input
         ref="input"

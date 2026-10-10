@@ -6,14 +6,18 @@
  *   Hold the selected question's metadata outside the editor: what stops
  *   its export or save, why it needs review, the open answer-key proposal,
  *   and how the question was read from the source file. The teacher opens
- *   it from the editor's "Detaljer" toggle; the view also opens it when a
- *   proposal waits.
+ *   it from the editor's "Detaljer" toggle; the view also opens it on
+ *   desktop when a proposal waits. Parse notes read "Att granska" while the
+ *   question needs review and "Anteckningar från inläsningen" after it is
+ *   reviewed.
  *
  * Presentation by layout:
  *   - desktop: a column beside the editor; focus stays where it was.
- *   - tablet: a panel laid over the editor's right edge; focus moves into
- *     it, Escape from inside it closes it, and focus returns on close.
- *   - phone: a full-screen modal dialog; focus moves into it, Tab stays
+ *   - tablet: an opaque panel laid over the editor's right edge; focus moves
+ *     into it, Escape from inside it closes it, and focus returns to the
+ *     "Detaljer" toggle on close. Resizing between layouts while it is open
+ *     applies the layout's focus behavior at once.
+ *   - phone: an opaque full-screen modal dialog; focus moves into it, Tab stays
  *     inside it, Escape closes it, and focus returns on close.
  *
  * Relationships:
@@ -53,19 +57,27 @@ const emit = defineEmits<{
   edit: [itemId: string];
 }>();
 
+const DETAILS_TOGGLE_SELECTOR = '[data-test="exam-workspace-item-details-toggle"]';
+
+// Tablet and phone overlays use the opaque modal surface so editor text
+// never shows through; `bg-panel` is a translucent card token.
 const FRAME_CLASS: Record<ExamWorkspaceLayout, string> = {
-  desktop: "min-h-0 w-[22rem] shrink-0 overflow-y-auto border-l border-navy/20",
-  phone: "fixed inset-0 z-50 overflow-y-auto bg-panel outline-none",
+  desktop: "min-h-0 w-[clamp(18rem,24vw,22rem)] shrink-0 overflow-y-auto border-l border-navy/20",
+  phone: "fixed inset-0 z-50 overflow-y-auto bg-modal outline-none",
   tablet:
-    "absolute inset-y-0 right-0 z-10 w-[min(22rem,90%)] overflow-y-auto border-l border-navy bg-panel shadow-brutal-sm outline-none",
+    "absolute inset-y-0 right-0 z-10 w-[min(22rem,90%)] overflow-y-auto border-l border-navy bg-modal shadow-brutal-sm outline-none",
 };
 
 const frame = ref<HTMLElement | null>(null);
 const titleId = useId();
 const isModal = computed(() => props.layout === "phone");
+const reasonsHeading = computed(() =>
+  props.item.review.state === "review_required" ? "Att granska" : "Anteckningar från inläsningen",
+);
 
 useExamWorkspaceDialogFocus(frame, {
   modal: () => isModal.value,
+  fallbackFocus: () => document.querySelector<HTMLElement>(DETAILS_TOGGLE_SELECTOR),
   onClose: () => emit("close"),
   takesFocus: () => props.layout !== "desktop",
 });
@@ -82,7 +94,7 @@ useExamWorkspaceDialogFocus(frame, {
     data-test="exam-workspace-item-drawer-frame"
   >
     <aside
-      class="grid content-start gap-5 bg-panel p-4 text-navy"
+      class="grid content-start gap-5 p-4 text-navy"
       :aria-labelledby="titleId"
       data-test="exam-workspace-item-drawer"
     >
@@ -149,7 +161,7 @@ useExamWorkspaceDialogFocus(frame, {
         class="grid gap-2"
       >
         <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
-          Att granska
+          {{ reasonsHeading }}
         </h4>
         <ul
           class="grid gap-1 text-sm leading-snug text-navy/80"

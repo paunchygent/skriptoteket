@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
+  examWorkspaceDisplayTitle,
   examWorkspacePointsLabel,
   examWorkspacePromptExcerpt,
   examWorkspaceReviewReasonLabel,
@@ -134,6 +135,25 @@ describe("examWorkspaceRows", () => {
       title: "Fråga 4",
       typeLabel: "Fritext",
     });
+  });
+
+  it("drops a leading question number that repeats the item sequence", () => {
+    expect(examWorkspaceDisplayTitle("Fråga 4. Beskriv fotosyntesen", 4)).toBe(
+      "Beskriv fotosyntesen",
+    );
+    expect(examWorkspaceDisplayTitle("fråga 4: Beskriv", 4)).toBe("Beskriv");
+    expect(examWorkspaceDisplayTitle("4. Beskriv", 4)).toBe("Beskriv");
+    expect(examWorkspaceDisplayTitle("  Fråga 4  ", 4)).toBe("");
+    expect(examWorkspaceDisplayTitle("Fråga 5. Beskriv", 4)).toBe("Fråga 5. Beskriv");
+    expect(examWorkspaceDisplayTitle("Fråga 40. Beskriv", 4)).toBe("Fråga 40. Beskriv");
+    expect(examWorkspaceDisplayTitle("4.5 liter vatten", 4)).toBe("4.5 liter vatten");
+    expect(examWorkspaceDisplayTitle(null, 4)).toBe("");
+  });
+
+  it("shows the display title in a row without changing the stored title", () => {
+    const item = buildItem({ sequence: 4, title: "Fråga 4. Beskriv fotosyntesen" });
+    expect(toExamWorkspaceItemRow(item).title).toBe("Beskriv fotosyntesen");
+    expect(item.title).toBe("Fråga 4. Beskriv fotosyntesen");
   });
 
   it("maps item lists in order", () => {

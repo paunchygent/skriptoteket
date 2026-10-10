@@ -74,8 +74,8 @@ function handleDrop(event: DragEvent): void {
 
 <template>
   <div
-    class="grid content-start gap-6 p-4"
-    :class="compact ? 'grid-cols-1' : 'grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] gap-x-8 p-6'"
+    class="grid content-start gap-6"
+    :class="compact ? 'grid-cols-1 py-4' : 'grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] gap-x-8 p-6'"
   >
     <div
       class="grid content-start gap-6"
