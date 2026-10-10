@@ -184,8 +184,12 @@ class TestChoicePromptParity:
         assert workspace_payload["selection_rules"] == dxe_payload["selection_rules"]
         assert workspace_payload["output"] == dxe_payload["output"]
         assert workspace_payload["choices"] == dxe_payload["choices"]
-        assert workspace_payload["item"]["title"] == dxe_payload["item"]["title"]
-        assert workspace_payload["item"]["stem"] == dxe_payload["item"]["stem"]
+        workspace_item = workspace_payload["item"]
+        dxe_item = dxe_payload["item"]
+        assert isinstance(workspace_item, dict)
+        assert isinstance(dxe_item, dict)
+        assert workspace_item["title"] == dxe_item["title"]
+        assert workspace_item["stem"] == dxe_item["stem"]
 
     def test_choice_request_reuses_system_prompt_template_and_spec(self) -> None:
         view = answer_key_item_views(_document(_native_choice_item()))[0]
@@ -211,8 +215,12 @@ class TestGapFillPromptParity:
         assert workspace_payload["task"] == dxe_payload["task"]
         assert workspace_payload["gaps"] == dxe_payload["gaps"]
         assert workspace_payload["output"] == dxe_payload["output"]
-        assert workspace_payload["item"]["title"] == dxe_payload["item"]["title"]
-        assert workspace_payload["item"]["cloze_text"] == dxe_payload["item"]["cloze_text"]
+        workspace_item = workspace_payload["item"]
+        dxe_item = dxe_payload["item"]
+        assert isinstance(workspace_item, dict)
+        assert isinstance(dxe_item, dict)
+        assert workspace_item["title"] == dxe_item["title"]
+        assert workspace_item["cloze_text"] == dxe_item["cloze_text"]
 
     def test_gap_request_reuses_system_prompt_template_and_spec(self) -> None:
         view = answer_key_item_views(_document(_native_gap_item()))[0]

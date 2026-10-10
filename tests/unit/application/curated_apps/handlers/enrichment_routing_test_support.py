@@ -118,6 +118,22 @@ class InMemoryEnrichmentJobRepository:
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)
 
+    async def get_by_workspace_revision(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        for job in self.jobs.values():
+            if (
+                job.owner_user_id == owner_user_id
+                and job.workspace_lineage_id == workspace_lineage_id
+                and job.workspace_document_revision == workspace_document_revision
+            ):
+                return job
+        return None
+
     async def claim_next(
         self,
         *,

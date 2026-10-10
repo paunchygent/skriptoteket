@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -52,36 +52,7 @@ class FakeUow:
 
 
 class LineageVaultFileRepository(InMemoryVaultFileRepository):
-    async def get_document_head(
-        self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> VaultFile | None:
-        candidates = [
-            file
-            for file in self.files.values()
-            if file.user_id == user_id
-            and file.document_lineage_id == document_lineage_id
-            and file.deleted_at is None
-        ]
-        if not candidates:
-            return None
-        return max(candidates, key=lambda file: file.document_version or 0)
-
-    async def list_document_heads(
-        self, *, user_id: UUID, source_artifact_prefix: str
-    ) -> list[VaultFile]:
-        heads: dict[UUID, VaultFile] = {}
-        for file in self.files.values():
-            if (
-                file.user_id != user_id
-                or file.document_lineage_id is None
-                or file.deleted_at is not None
-                or not (file.source_artifact_id or "").startswith(source_artifact_prefix)
-            ):
-                continue
-            current = heads.get(file.document_lineage_id)
-            if current is None or (file.document_version or 0) > (current.document_version or 0):
-                heads[file.document_lineage_id] = file
-        return sorted(heads.values(), key=lambda file: (file.created_at, file.id), reverse=True)
+    """Adds the PostgreSQL unique (user, lineage, version) constraint to the fake."""
 
     async def create(self, *, file: VaultFile) -> VaultFile:
         if file.document_lineage_id is not None:
@@ -91,7 +62,9 @@ class LineageVaultFileRepository(InMemoryVaultFileRepository):
                     and existing.document_lineage_id == file.document_lineage_id
                     and existing.document_version == file.document_version
                 ):
-                    raise IntegrityError("duplicate version", params=None, orig=None)
+                    raise IntegrityError(
+                        "duplicate version", params=None, orig=Exception("duplicate version")
+                    )
         return await super().create(file=file)
 
 

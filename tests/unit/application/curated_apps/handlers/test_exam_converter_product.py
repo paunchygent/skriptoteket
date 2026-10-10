@@ -146,6 +146,10 @@ class ProposalRepository:
         del conversion_job_id
         return None
 
+    async def get_by_enrichment_job_id(self, *, enrichment_job_id: UUID):
+        del enrichment_job_id
+        return None
+
 
 class SourceStateItem(BaseModel):
     item_id: str

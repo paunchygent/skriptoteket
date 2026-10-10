@@ -26,6 +26,10 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
     enqueue_workspace_enrichment_job,
 )
+from skriptoteket.application.curated_apps.exam_conversion import (
+    ExamConversionStoredArtifact,
+)
+from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
@@ -34,6 +38,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
     AnswerKeyTokenLeaseState,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
+    DigiExamAnswerKeyProvenance,
+)
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    SourceBoundCorrectionIntent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
@@ -60,6 +70,10 @@ from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
 from tests.fixtures.application_fixtures import FakeUow
+from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+    InMemoryVaultFileRepository,
+    InMemoryVaultStorage,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
     FixedClock,
     InMemoryConversionHubJobRepository,
@@ -83,31 +97,26 @@ class CountingProducer:
     def __init__(self) -> None:
         self.calls = 0
 
-    async def convert(self, **kwargs: object) -> None:
+    async def convert(
+        self,
+        *,
+        job_id: UUID,
+        upload: ConversionHubUpload,
+        overlay_bytes: bytes | None,
+        proposal_overlay_bytes: bytes | None = None,
+        proposal_provider_profile_id: str | None = None,
+        proposal_model: str | None = None,
+        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
+        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
+        enrichment_failure_code: str | None = None,
+        retry_identity: str | None = None,
+        correlation_id: str | None,
+        overlay_key_provenance: DigiExamAnswerKeyProvenance = (
+            DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
+        ),
+    ) -> ExamConversionStoredArtifact:
         self.calls += 1
         raise AssertionError("Workspace enrichment must never call the conversion producer.")
-
-
-class FakeVaultFiles:
-    def __init__(self) -> None:
-        self.heads: dict[UUID, VaultFile] = {}
-
-    async def get_document_head(
-        self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> VaultFile | None:
-        head = self.heads.get(document_lineage_id)
-        if head is None or head.user_id != user_id:
-            return None
-        return head
-
-
-class FakeVaultStorage:
-    def __init__(self) -> None:
-        self.contents: dict[UUID, bytes] = {}
-
-    async def read_file(self, *, user_id: UUID, file_id: UUID) -> bytes:
-        del user_id
-        return self.contents[file_id]
 
 
 class FakeWorkspaceCodec:
@@ -171,13 +180,13 @@ class _WorkspaceHarness:
         self.provider = provider
         self.producer = CountingProducer()
         self.artifacts = RecordingArtifactStore()
-        self.vault_files = FakeVaultFiles()
-        self.vault_storage = FakeVaultStorage()
+        self.vault_files = InMemoryVaultFileRepository()
+        self.vault_storage = InMemoryVaultStorage()
         self.document = document
         self.container_bytes = b"container-bytes"
 
         head_file_id = uuid4()
-        self.vault_files.heads[document.document_id] = VaultFile(
+        self.vault_files.files[head_file_id] = VaultFile(
             id=head_file_id,
             user_id=self.owner_user_id,
             name="prov.provdokument.zip",
@@ -187,7 +196,7 @@ class _WorkspaceHarness:
             document_version=head_revision if head_revision is not None else document.revision,
             created_at=_NOW,
         )
-        self.vault_storage.contents[head_file_id] = self.container_bytes
+        self.vault_storage.stored[(self.owner_user_id, head_file_id)] = self.container_bytes
 
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
@@ -263,9 +272,11 @@ async def test_workspace_job_persists_proposals_without_calling_the_producer() -
     assert payload["document_revision"] == 1
     items = payload["items"]
     assert isinstance(items, list)
-    assert items[0]["item_id"] == "item_001"
-    assert items[0]["correct_choice_ids"] == ["choice_002"]
-    assert items[0]["prompt_template_version"] == "digiexam_choice_answer_key_prompt_v1"
+    first_item = items[0]
+    assert isinstance(first_item, dict)
+    assert first_item["item_id"] == "item_001"
+    assert first_item["correct_choice_ids"] == ["choice_002"]
+    assert first_item["prompt_template_version"] == "digiexam_choice_answer_key_prompt_v1"
 
 
 async def test_workspace_lease_refusal_fails_closed_with_zero_provider_calls() -> None:

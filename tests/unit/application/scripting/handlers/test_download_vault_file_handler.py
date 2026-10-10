@@ -71,6 +71,37 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     async def list_expired(self, *, cutoff: datetime, limit: int) -> list[VaultFile]:
         raise NotImplementedError
 
+    async def get_document_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> VaultFile | None:
+        candidates = [
+            file
+            for file in ([] if self._file is None else [self._file])
+            if file.user_id == user_id
+            and file.document_lineage_id == document_lineage_id
+            and file.deleted_at is None
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda file: file.document_version or 0)
+
+    async def list_document_heads(
+        self, *, user_id: UUID, source_artifact_prefix: str
+    ) -> list[VaultFile]:
+        heads: dict[UUID, VaultFile] = {}
+        for file in [] if self._file is None else [self._file]:
+            if (
+                file.user_id != user_id
+                or file.document_lineage_id is None
+                or file.deleted_at is not None
+                or not (file.source_artifact_id or "").startswith(source_artifact_prefix)
+            ):
+                continue
+            current = heads.get(file.document_lineage_id)
+            if current is None or (file.document_version or 0) > (current.document_version or 0):
+                heads[file.document_lineage_id] = file
+        return sorted(heads.values(), key=lambda file: (file.created_at, file.id), reverse=True)
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         raise NotImplementedError
 

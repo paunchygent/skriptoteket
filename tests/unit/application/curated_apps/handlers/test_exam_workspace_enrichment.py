@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
-    ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
@@ -28,6 +27,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     ExamWorkspaceEnrichmentState,
     GetExamWorkspaceEnrichmentStatusHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
 )
@@ -48,10 +48,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
+from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from tests.fixtures.application_fixtures import FakeUow
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
+)
+from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+    InMemoryVaultFileRepository,
+    InMemoryVaultStorage,
+    InMemoryVaultUsageRepository,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
     FixedClock,
@@ -65,58 +70,6 @@ pytestmark = pytest.mark.unit
 _NOW = datetime(2026, 8, 29, 12, 0, 0, tzinfo=UTC)
 
 
-class WorkspaceEnrichmentJobRepository(InMemoryEnrichmentJobRepository):
-    async def get_by_workspace_revision(
-        self,
-        *,
-        owner_user_id: UUID,
-        workspace_lineage_id: UUID,
-        workspace_document_revision: int,
-    ) -> ExamAnswerKeyEnrichmentJob | None:
-        for job in self.jobs.values():
-            if (
-                job.owner_user_id == owner_user_id
-                and job.workspace_lineage_id == workspace_lineage_id
-                and job.workspace_document_revision == workspace_document_revision
-            ):
-                return job
-        return None
-
-
-class WorkspaceProposedOverlayRepository(InMemoryProposedOverlayRepository):
-    async def get_by_enrichment_job_id(
-        self,
-        *,
-        enrichment_job_id: UUID,
-    ) -> ExamAnswerKeyProposedOverlay | None:
-        for record in self.records:
-            if record.enrichment_job_id == enrichment_job_id:
-                return record
-        return None
-
-
-class FakeVaultFiles:
-    def __init__(self) -> None:
-        self.heads: dict[UUID, VaultFile] = {}
-
-    async def get_document_head(
-        self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> VaultFile | None:
-        head = self.heads.get(document_lineage_id)
-        if head is None or head.user_id != user_id:
-            return None
-        return head
-
-
-class FakeVaultStorage:
-    def __init__(self) -> None:
-        self.contents: dict[UUID, bytes] = {}
-
-    async def read_file(self, *, user_id: UUID, file_id: UUID) -> bytes:
-        del user_id
-        return self.contents[file_id]
-
-
 class FakeWorkspaceCodec:
     def __init__(self, *, container: ExamWorkspaceContainerContent) -> None:
         self._container = container
@@ -127,10 +80,6 @@ class FakeWorkspaceCodec:
     def parse(self, *, content: bytes) -> ExamWorkspaceContainerContent:
         del content
         return self._container
-
-
-class StubVaultUsage:
-    """Unused by load_version; present to satisfy the store constructor."""
 
 
 def _review() -> NativeItemReview:
@@ -176,7 +125,7 @@ def _document(
 
 def _enqueue_handler(
     *,
-    enrichment_jobs: WorkspaceEnrichmentJobRepository,
+    enrichment_jobs: InMemoryEnrichmentJobRepository,
     enabled: bool = True,
 ) -> EnqueueExamWorkspaceEnrichmentHandler:
     return EnqueueExamWorkspaceEnrichmentHandler(
@@ -191,7 +140,7 @@ def _enqueue_handler(
 class TestEnqueue:
     async def test_enqueues_one_workspace_job_for_an_unkeyed_document(self) -> None:
         actor = make_actor()
-        jobs = WorkspaceEnrichmentJobRepository()
+        jobs = InMemoryEnrichmentJobRepository()
         document = _document(document_id=uuid4())
 
         created = await _enqueue_handler(enrichment_jobs=jobs).handle(
@@ -209,7 +158,7 @@ class TestEnqueue:
 
     async def test_enqueue_is_idempotent_per_lineage_and_revision(self) -> None:
         actor = make_actor()
-        jobs = WorkspaceEnrichmentJobRepository()
+        jobs = InMemoryEnrichmentJobRepository()
         document = _document(document_id=uuid4())
         handler = _enqueue_handler(enrichment_jobs=jobs)
 
@@ -222,7 +171,7 @@ class TestEnqueue:
 
     async def test_disabled_lane_and_keyed_documents_enqueue_nothing(self) -> None:
         actor = make_actor()
-        jobs = WorkspaceEnrichmentJobRepository()
+        jobs = InMemoryEnrichmentJobRepository()
 
         disabled = await _enqueue_handler(enrichment_jobs=jobs, enabled=False).handle(
             actor=actor, document=_document(document_id=uuid4())
@@ -238,12 +187,12 @@ class TestEnqueue:
 
 class _StatusHarness:
     def __init__(self, *, document: NativeExamDocument, actor_id: UUID) -> None:
-        self.enrichment_jobs = WorkspaceEnrichmentJobRepository()
-        self.proposed_overlays = WorkspaceProposedOverlayRepository()
-        self.vault_files = FakeVaultFiles()
-        self.vault_storage = FakeVaultStorage()
+        self.enrichment_jobs = InMemoryEnrichmentJobRepository()
+        self.proposed_overlays = InMemoryProposedOverlayRepository()
+        self.vault_files = InMemoryVaultFileRepository()
+        self.vault_storage = InMemoryVaultStorage()
         head_file_id = uuid4()
-        self.vault_files.heads[document.document_id] = VaultFile(
+        self.vault_files.files[head_file_id] = VaultFile(
             id=head_file_id,
             user_id=actor_id,
             name="prov.provdokument.zip",
@@ -253,14 +202,19 @@ class _StatusHarness:
             document_version=document.revision,
             created_at=_NOW,
         )
-        self.vault_storage.contents[head_file_id] = b"container"
+        self.vault_storage.stored[(actor_id, head_file_id)] = b"container"
         store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
-            vault_usage=StubVaultUsage(),
+            vault_usage=InMemoryVaultUsageRepository(
+                usage=VaultUsage(user_id=actor_id, bytes_total=0, updated_at=_NOW)
+            ),
             vault_storage=self.vault_storage,
             uow=FakeUow(),
             clock=FixedClock(_NOW),
-            settings=None,
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=5_000_000,
+                VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
         )
         self.handler = GetExamWorkspaceEnrichmentStatusHandler(
             vault_files=self.vault_files,
