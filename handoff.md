@@ -1,14 +1,14 @@
 ## Current
 
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  is `proposed`: AI-first DOCX exam conversion with a gold-corpus eval loop;
-  terms A1-A12 user-decided 2026-10-10; supersedes TASK-SKRIPT-39-04-03
-  (canceled). Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
-  Next: user proposed->ready, then scaffold task 1 (walking skeleton).
-  Backend work: route to Codex.
+  is `ready` (user 2026-10-10): AI-first DOCX conversion, terms A1-A12;
+  supersedes TASK-SKRIPT-39-04-03. Task 1
+  [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
+  is `ready` (walking skeleton on the Chapter 4 poetry quiz); implementation
+  routed to Codex. Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `proposed`: pending answer-key proposals survive a save (user decision
-  P1-P3, 2026-10-10); user owns proposed->ready. Backend work:
+  is `ready` (user 2026-10-10): pending answer-key proposals survive a save
+  (user decision P1-P3). Backend work:
   route to Codex.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
@@ -140,4 +140,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: user proposed->ready for ST-SKRIPT-39-05 and TASK-SKRIPT-39-04-04.
+- Next: Codex implements TASK-SKRIPT-39-05-01; TASK-SKRIPT-39-04-04 is ready for implementation.

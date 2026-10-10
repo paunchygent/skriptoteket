@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -86,7 +86,7 @@ convergence (story 8), and carrying answer-key proposals across saves
 
 Planned order; each task is scaffolded and contracted before work starts.
 
-1. Walking skeleton: one corpus exam runs upload -> stored DOCX ->
+1. `TASK-SKRIPT-39-05-01` walking skeleton: one corpus exam runs upload -> stored DOCX ->
    background job -> chunker -> batched AI build -> validation -> review-item
    fallback -> workspace opens -> QTI export passes validation.
 2. Gold corpus and eval loop: a gold file per corpus exam confirmed by the
