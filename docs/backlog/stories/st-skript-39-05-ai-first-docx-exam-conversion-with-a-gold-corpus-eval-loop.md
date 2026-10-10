@@ -89,7 +89,7 @@ Planned order; each task is scaffolded and contracted before work starts.
 1. `TASK-SKRIPT-39-05-01` walking skeleton: one corpus exam runs upload -> stored DOCX ->
    background job -> chunker -> batched AI build -> validation -> review-item
    fallback -> workspace opens -> QTI export passes validation.
-2. Gold corpus and eval loop: a gold file per corpus exam confirmed by the
+2. `TASK-SKRIPT-39-05-02` gold corpus and eval loop: a gold file per corpus exam confirmed by the
    user, and an eval runner that reports every item mismatch.
 3. Corpus breadth: Decisions classification, retries for failing items
    only, and general rules added only where the eval loop shows a need,
