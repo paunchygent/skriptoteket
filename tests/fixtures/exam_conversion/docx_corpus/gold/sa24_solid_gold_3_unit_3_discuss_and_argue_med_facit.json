@@ -4,7 +4,7 @@
   "source_sha256": "ba730467fe3d1c2a1dabe7c3a15c23339d4c18086af640c34e05fecb6b67d10e",
   "title": "Test Unit 3 Discuss and Argue — answer key",
   "confirmed": true,
-  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted, including these corrections from the blind second labelling: the section E and F headings removed from item prompts and the empty section E word-bank cells removed.",
   "items": [
     {
       "source_label": "Questions 1–45, Question 1",
@@ -797,7 +797,7 @@
       "source_label": "E Choose the words, Question a",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nMy aunt is a great believer in Chinese [___] medicines.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMy aunt is a great believer in Chinese [___] medicines.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -814,7 +814,7 @@
       "source_label": "E Choose the words, Question b",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nMany celebrities become [___] on cocaine and other drugs.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMany celebrities become [___] on cocaine and other drugs.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -831,7 +831,7 @@
       "source_label": "E Choose the words, Question c",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nThe operation was only [___] successful.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nThe operation was only [___] successful.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -849,7 +849,7 @@
       "source_label": "E Choose the words, Question d",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nBusiness is [___] at the moment. Our profits are up 25% on last year.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nBusiness is [___] at the moment. Our profits are up 25% on last year.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -866,7 +866,7 @@
       "source_label": "E Choose the words, Question e",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nTextbook writing can be an intellectually and socially [___] activity.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nTextbook writing can be an intellectually and socially [___] activity.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -883,7 +883,7 @@
       "source_label": "E Choose the words, Question f",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nWhen buying health products, you should only ever buy [___] brands.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nWhen buying health products, you should only ever buy [___] brands.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -901,7 +901,7 @@
       "source_label": "E Choose the words, Question g",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nHepatitis is a potentially [___] disease.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nHepatitis is a potentially [___] disease.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -918,7 +918,7 @@
       "source_label": "E Choose the words, Question h",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nSeparated from his mother when he was just an [___], the boy was brought up in a children’s home.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nSeparated from his mother when he was just an [___], the boy was brought up in a children’s home.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -935,7 +935,7 @@
       "source_label": "E Choose the words, Question i",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nAfter some [___], we’ve decided to sell our house in London and move to Scotland.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nAfter some [___], we’ve decided to sell our house in London and move to Scotland.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -953,7 +953,7 @@
       "source_label": "E Choose the words, Question j",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nMany people have fled to Europe to escape war and [___] in their own country.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMany people have fled to Europe to escape war and [___] in their own country.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -970,7 +970,7 @@
       "source_label": "E Choose the words, Question k",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \n“You can’t sit on the [___] any longer – you have to decide whose side you’re on!”",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\n“You can’t sit on the [___] any longer – you have to decide whose side you’re on!”",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -987,7 +987,7 @@
       "source_label": "E Choose the words, Question l",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nHer words left a [___] impression on me. I will never forget them.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nHer words left a [___] impression on me. I will never forget them.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1004,7 +1004,7 @@
       "source_label": "E Choose the words, Question m",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nMy grandfather died of a [___] at the age of ninety-three.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMy grandfather died of a [___] at the age of ninety-three.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1021,7 +1021,7 @@
       "source_label": "E Choose the words, Question n",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nProtein is [___] for healthy body tissues.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nProtein is [___] for healthy body tissues.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1039,7 +1039,7 @@
       "source_label": "E Choose the words, Question o",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "E Choose the words\nChoose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding | \nUnder her teacher’s [___], Ludmilla has developed into an accomplished pianist.",
+      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nUnder her teacher’s [___], Ludmilla has developed into an accomplished pianist.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1056,7 +1056,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question a",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nUsing cannabis regularly can be addictive. [___], it can lead to taking harder drugs such as heroin.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nUsing cannabis regularly can be addictive. [___], it can lead to taking harder drugs such as heroin.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1073,7 +1073,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question b",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] the government does something about the National Health Service now, things will only get worse in the future.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] the government does something about the National Health Service now, things will only get worse in the future.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1091,7 +1091,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question c",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nA lot of money has already been spent on education. A lot more, [___], will have to be spent in the future.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nA lot of money has already been spent on education. A lot more, [___], will have to be spent in the future.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1108,7 +1108,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question d",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nShe went to work in Paris as an au pair [___] improve her French.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nShe went to work in Paris as an au pair [___] improve her French.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1125,7 +1125,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question e",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] all the mistakes you’ve made, this is still a very good essay.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] all the mistakes you’ve made, this is still a very good essay.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1142,7 +1142,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question f",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nJames had too much to eat and drink last night and, [___], he had a bad night’s sleep.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nJames had too much to eat and drink last night and, [___], he had a bad night’s sleep.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1159,7 +1159,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question g",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] Tom is very good at science, his brother is absolutely hopeless.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] Tom is very good at science, his brother is absolutely hopeless.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1176,7 +1176,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question h",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“Are you in favour of fox hunting?” “No, [___], I believe it’s cruel, barbaric and should be banned!”",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“Are you in favour of fox hunting?” “No, [___], I believe it’s cruel, barbaric and should be banned!”",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1193,7 +1193,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question i",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nSoldiers are taught to be obedient – [___], to obey orders without question.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nSoldiers are taught to be obedient – [___], to obey orders without question.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1210,7 +1210,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question j",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nThere are many different ways of getting rich. You could, [___], win £1 million on the National Lottery.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nThere are many different ways of getting rich. You could, [___], win £1 million on the National Lottery.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1227,7 +1227,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question k",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“[___], I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“[___], I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1244,7 +1244,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question l",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nWhen a dog ran across the street, the car in front of us stopped suddenly, [___] causing a collision.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nWhen a dog ran across the street, the car in front of us stopped suddenly, [___] causing a collision.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1261,7 +1261,7 @@
       "source_label": "F Advanced Vocabulary Revision: Linking words, Question m",
       "kind": "gap_fill",
       "points": 1,
-      "prompt": "F Advanced Vocabulary Revision: Linking words\nComplete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] had the Prime Minister started his speech when some of the audience started booing loudly.",
+      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] had the Prime Minister started his speech when some of the audience started booing loudly.",
       "choices": [],
       "correct_choices": [],
       "gaps": [
@@ -1276,6 +1276,6 @@
     }
   ],
   "notes": [
-    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. User confirmation is pending."
+    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. The user confirmed the file on 2026-10-10, including the corrections from the blind second labelling."
   ]
 }
