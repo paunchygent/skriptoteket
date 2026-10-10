@@ -37,5 +37,5 @@ security-sensitive and easy to regress.
 When changing LLM/AI code:
 
 - Run focused unit tests under `tests/unit/infrastructure/llm/`.
-- For end-to-end regressions, use the Playwright diagnose scripts documented in
-  `docs/runbooks/runbook-editor-ai-pipeline.md`.
+- For end-to-end regressions, walk the editor flow in a real browser session
+  per `.codex/rules/075-browser-automation.md`. Never use Playwright.

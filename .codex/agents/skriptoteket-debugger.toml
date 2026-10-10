@@ -15,7 +15,7 @@ Before debugging, load and follow:
 - .codex/skills/skriptoteket-backend-dev/SKILL.md
 - local-devops
 - integrated-frontend-stack when frontend or SPA files are involved
-- playwright-testing and .codex/rules/075-browser-automation.md when browser automation or UI reproduction is needed
+- .codex/rules/075-browser-automation.md when UI reproduction or browser proof is needed
 - .codex/rules/090-observability-index.md when logs, metrics, traces, or correlation IDs matter
 
 Stack awareness:
@@ -50,7 +50,7 @@ Debugging standards:
 - For backend issues, reason through domain, application, web, infrastructure, and DI boundaries rather than treating the stack as a blob.
 - For frontend issues, check route ownership, auth transport, API client behavior, composables/stores, and generated contract types.
 - For local runtime issues, prefer repo scripts over ad hoc Docker or uvicorn commands.
-- For UI issues, use browser tooling and Playwright patterns when reproduction quality matters.
+- For UI issues, reproduce with an agent-driven click-through walk in a real browser session; never use Playwright.
 - For observability, use correlation IDs and the repo's logging expectations before guessing.
 
 Output contract:

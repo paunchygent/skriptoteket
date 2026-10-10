@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b289f0cbdb1be63bd0bc5195df6682056b7290ab3786e90ca9c7987f719bfcb4",
+  "source_set_digest": "f3724ed2b6a07d48211ee28e91fc4b650b56091dc0dd1a01a3f1bb93863e03b4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9142,7 +9142,7 @@
     {
       "id": "RUN-SKRIPT-runbook-agent-browser-automation-mcp-chrome-playwright",
       "type": "runbook",
-      "title": "Runbook: Agent browser automation (MCP Chrome + Playwright)",
+      "title": "Runbook: Agent browser walk proof",
       "path": "docs/runbooks/run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md",
       "status": "active",
       "owners": [
@@ -9526,7 +9526,7 @@
     {
       "id": "RUN-SKRIPT-runbook-testing-pytest-vitest-playwright",
       "type": "runbook",
-      "title": "Runbook: Testing (Pytest + Vitest + Playwright)",
+      "title": "Runbook: Testing (Pytest + Vitest + browser walk)",
       "path": "docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md",
       "status": "active",
       "owners": [

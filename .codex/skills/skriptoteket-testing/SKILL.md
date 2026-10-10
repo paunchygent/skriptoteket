@@ -1,6 +1,6 @@
 ---
 name: skriptoteket-testing
-description: Repo-local testing router for Skriptoteket. Use when planning, writing, reviewing, or running tests in this repo, including pytest backend tests, integration tests, migration tests, frontend Vitest lane selection, Playwright/browser proof routing, fixtures, smoke scripts, and close-out verification.
+description: Repo-local testing router for Skriptoteket. Use when planning, writing, reviewing, or running tests in this repo, including pytest backend tests, integration tests, migration tests, frontend Vitest lane selection, browser-walk proof routing, fixtures, smoke scripts, and close-out verification.
 ---
 
 # Skriptoteket Testing
@@ -35,8 +35,9 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
   `tests/fixtures/` modules.
 - A test that requires broad monkeypatching usually signals the production
   boundary needs a protocol, DI seam, or smaller module.
-- Browser/protected-API proof must use the HuleEdu browser-session ceremony and
-  repo helpers. Raw Vite inspection is not authenticated proof.
+- Browser/protected-API proof is an agent-driven click-through walk in a real
+  browser session that signs in through the HuleEdu browser-session ceremony.
+  Never use Playwright. Raw Vite inspection is not authenticated proof.
 - Migration tests must prove idempotency with the Docker/Testcontainers lane.
 
 ## Reference Router
@@ -45,7 +46,7 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
 | ------------------------------------------------------------------ | ----------------------------------- |
 | Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`      |
 | Frontend Vitest/component tests                                    | `references/frontend-vitest.md`     |
-| Browser automation, screenshots, authenticated UI proof            | `references/browser-automation.md`  |
+| Browser walk, screenshots, authenticated UI proof                  | `references/browser-automation.md`  |
 | Alembic migrations and schema drift                                | `references/migrations.md`          |
 | Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md` |
 
@@ -56,8 +57,9 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
   and `pdm run fe-lint`; add `pdm run fe-build` for shipped UI surfaces.
 - Migration change: docker-marked migration test plus the documented dev DB
   upgrade lane.
-- Browser-visible change: live browser proof through the appropriate local
-  stack; authenticated paths use HuleEdu Gateway, not local shortcuts.
+- Browser-visible change: click-through walk in a real browser session on the
+  appropriate stack (integrated proof on Hemma staging); authenticated paths
+  use HuleEdu Gateway, not local shortcuts.
 - Docs or skill surface change: `pdm run skills-validate` when skills changed,
   `pdm run docs-validate` when docs or docs routing changed, and
   `git diff --check`.

@@ -47,7 +47,7 @@ Key implementation files:
 - Backend handler: `src/skriptoteket/application/editor/completion_handler.py`
 - Web API: `src/skriptoteket/web/api/v1/editor/completions.py`
 - Frontend composable: `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts`
-- Diagnose script (Playwright): `scripts/diagnose_ghost_text.py`
+- Historical Playwright diagnose script (not a proof lane): `scripts/diagnose_ghost_text.py`
 
 ### Editor chat
 
@@ -74,7 +74,7 @@ Key implementation files:
 - Preview/apply orchestration: `src/skriptoteket/application/editor/edit_ops_preview_handler.py`
 - Unified diff normalization: `src/skriptoteket/infrastructure/editor/unified_diff/normalize.py`
 - Unified diff apply/matching: `src/skriptoteket/infrastructure/editor/unified_diff/apply_patch.py`
-- Diagnose script (Playwright): `scripts/diagnose_edit_ops.py`
+- Historical Playwright diagnose script (not a proof lane): `scripts/diagnose_edit_ops.py`
 
 ### Source: LLM routing: Responses vs Chat Completions (and local llama)
 
@@ -158,22 +158,19 @@ Relevant code:
 - Apply search/window: `src/skriptoteket/infrastructure/editor/unified_diff/apply_patch.py`
 - Preview retry with wide search: `src/skriptoteket/application/editor/edit_ops_preview_handler.py`
 
-### Source: Repro scripts (Playwright)
+### Source: Reproduce in the editor
 
-These scripts create realistic “edit holes” in the CodeMirror editor and exercise the real UI +
-API calls end-to-end. Artifacts are written under `.artifacts/`.
+Reproduce inline-completion and edit-ops problems with an agent-driven
+click-through walk of the real editor in a real browser session, per
+`.codex/rules/075-browser-automation.md`. Never use Playwright.
 
-- Inline completion:
+1. Seed the tool through the script bank and open it in the editor.
+2. Place the cursor at the anchor and delete the lines that form the edit hole.
+3. Trigger inline completion or editor chat, then capture screenshots plus the
+   network and console reads for the completion or edit-ops request.
 
-```bash
-pdm run python -m scripts.diagnose_ghost_text --tool-slug <slug> --cursor-anchor "<...>" --cursor-delete-next-lines 7
-```
-
-- Edit-ops:
-
-```bash
-pdm run python -m scripts.diagnose_edit_ops --tool-slug <slug> --cursor-anchor "<...>" --cursor-delete-next-lines 7
-```
+The `scripts/diagnose_ghost_text.py` and `scripts/diagnose_edit_ops.py`
+Playwright scripts are history, not a reproduction or proof lane.
 
 ## Expected Results
 

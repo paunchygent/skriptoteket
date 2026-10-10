@@ -15,9 +15,11 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
   `DomainError` to HTTP only at the web boundary.
 - For UI or route changes, run a live functional check and record exact
   verification in `handoff.md`.
-- Authenticated browser proof must use the HuleEdu browser-session ceremony and
-  repo helpers/preflight. Never derive auth proof from prior shell snippets,
-  direct product-backend credential POSTs, or local session-cookie shortcuts.
+- Browser proof is an agent-driven click-through walk of the real application
+  in a real browser session; never use Playwright. Authenticated walks pass the
+  repo preflight and sign in through the HuleEdu browser-session ceremony.
+  Never derive auth proof from prior shell snippets, direct product-backend
+  credential POSTs, or local session-cookie shortcuts.
 
 ## Session Start
 

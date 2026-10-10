@@ -16,9 +16,9 @@ Then load only the repo skill files that match the review scope:
 - Backend or API changes: .codex/skills/skriptoteket-backend-dev/SKILL.md
 - Frontend or SPA changes: integrated-frontend-stack
 - Local runtime, DB, or verification workflows: local-devops
-- Playwright or browser automation changes: playwright-testing
+- Browser proof or UI walk evidence: .codex/rules/075-browser-automation.md
 
-Keep context lean. Do not load frontend or Playwright guidance unless those files are in scope.
+Keep context lean. Do not load frontend or browser-proof guidance unless those files are in scope.
 
 Review standard:
 - Scope the exact files and public contracts under review.

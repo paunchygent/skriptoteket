@@ -1,7 +1,7 @@
 ---
 type: runbook
 id: RUN-SKRIPT-runbook-agent-browser-automation-mcp-chrome-playwright
-title: 'Runbook: Agent browser automation (MCP Chrome + Playwright)'
+title: 'Runbook: Agent browser walk proof'
 repository: skriptoteket
 owners:
 - kind: service
@@ -10,15 +10,18 @@ created: '2026-07-31'
 status: active
 retired_ids:
 - RUN-agent-browser-automation
-summary: 'Runbook: Agent browser automation (MCP Chrome + Playwright)'
+summary: 'Runbook: Agent browser walk proof'
 system: skriptoteket-dev
 ---
 
 ## Trigger
 
-This runbook defines the browser-launch contract for agent-driven browser work in Skriptoteket.
-It exists because Chrome-backed MCP/browser sessions can fail when multiple launches try to reuse
-the same browser profile or when automation targets a regular human browsing profile.
+This runbook defines how agents prove Skriptoteket UI and route behavior: an
+agent-driven click-through walk of the real application in a real browser
+session. Agents never use Playwright. It also defines the browser-launch rules,
+because Chrome-backed browser sessions can fail when multiple launches reuse the
+same browser profile or when automation targets a regular human browsing
+profile.
 
 ## Preconditions
 
@@ -52,14 +55,21 @@ No separate rollback is stated in the source.
 
 ### 1. Default lane selection
 
-- Use repo Playwright scripts for repeatable Skriptoteket plumbing, UI state
-  setup, smoke checks, and regression proof.
-- Use MCP Chrome/browser tools for lightweight interactive inspection, DOM/network debugging, and
-  one-off manual exploration that benefits from a live browser session.
-- Use the Codex internal browser by default for UI design, layout, and
-  affordance review.
-- Use attach mode instead of relaunching when the task explicitly depends on an already-open Chrome
-  session or its existing signed-in state.
+- Prove UI and route behavior with an agent-driven click-through walk in a real
+  browser session: the Claude built-in browser pane, the user's Chrome through
+  Claude in Chrome, or the Codex internal browser.
+- Never use Playwright: no repo Playwright scripts, no Playwright MCP, and no
+  Playwright fallback.
+- Walk integrated proof on Hemma staging at `http://127.0.0.1:15173` through
+  the Mac tunnel, per
+  `docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`.
+- Enter protected routes through the HuleEdu browser-session ceremony
+  (`/auth/login`, HuleEdu sign-in, `/auth/callback`). Never post credentials to
+  the product backend or inject session cookies.
+- Capture screenshots and accessibility-tree or DOM reads as evidence, and
+  record the origin, steps, viewport widths, and evidence in `handoff.md`.
+- Use attach mode (Claude in Chrome or Chrome DevTools MCP) when the task
+  depends on an already-open Chrome session or its existing signed-in state.
 
 ### 2. Launch isolation rules
 
@@ -67,35 +77,32 @@ No separate rollback is stated in the source.
 - Never point automation at the user's normal Chrome `User Data` directory.
 - Never share one fixed `user-data-dir` across concurrent agent/browser sessions.
 - The safe default is a unique temporary profile per session, then cleanup on close.
-- Pin Playwright MCP output files to a stable writable directory outside the repo, for example
-  `/Users/olofs_mba/.codex/playwright-mcp`.
-- Do not rely on the MCP server's current working directory for page snapshots, console logs, or related output files.
-  If cwd drifts to `/`, the server can fail with `ENOENT: no such file or directory, mkdir '/.playwright-mcp'`.
 
 ### 3. Attach mode rules
 
 - If the goal is to inspect or reuse an already-open Chrome session, attach to that browser via
   Chrome DevTools MCP / CDP instead of launching a second Chrome instance against the same profile.
-- Attach mode is for session reuse and debugging, not for default repeatable test automation.
+- Attach mode is for session reuse and debugging of the user's existing state.
 
-### 4. Repo fallback rules
+### 4. Blocked browser session
 
-- If MCP Chrome is blocked by a profile/session collision, do not fall back blindly.
-- For proof-only repo checks, switch to the repo's normal Playwright lane and say so explicitly.
-- Prefer an existing repo Playwright script under `scripts/` before inventing a one-off script.
-- If a one-off proof script is needed, keep it bounded to the current check and write artifacts
-  under `.artifacts/`.
+- If a browser session is blocked by a profile/session collision, follow the
+  recovery sequence below and walk again in a repaired or different real
+  browser session.
+- If no real browser session can reach the target, stop and report the
+  blocker. Do not substitute Playwright, scripts, or API calls and call that
+  browser proof.
 
 ### Source: Decision guide
 
 
 | Task shape | Lane |
 |---|---|
-| Repeatable Skriptoteket plumbing, UI state, or regression check | Repo Playwright |
-| Quick DOM/layout/network inspection in an isolated browser | MCP Chrome with isolated profile |
-| UI design, layout, or affordance review | Codex internal browser |
-| Reuse the user's existing Chrome state, cookies, or manual setup | Attach mode via Chrome DevTools MCP / CDP |
-| MCP Chrome blocked but the task is still only a repo proof | Repo Playwright fallback |
+| UI or route proof for a change | Click-through walk in a real browser session |
+| Integrated proof after merge to `main` | Walk on Hemma staging `http://127.0.0.1:15173` |
+| UI design, layout, or affordance review | Walk in the Claude built-in browser pane or Codex internal browser |
+| Reuse the user's existing Chrome state, cookies, or manual setup | Attach mode via Claude in Chrome or Chrome DevTools MCP |
+| Browser session blocked | Recover the session; otherwise report the blocker |
 
 ### Source: Internal Browser UI Inspection For Upload-Gated Apps
 
@@ -135,22 +142,20 @@ do not present that as live visual proof of the post-upload UI state.
 1. Check whether another agent/browser session already owns the automation profile.
 2. If the task needs isolated automation, relaunch with a unique per-session profile.
 3. If the task needs the user's live Chrome state, switch to attach mode instead of relaunching.
-4. If the task is only a repo proof, use the repo Playwright lane and keep the scope explicit.
+4. If no real browser session can reach the target, stop and report the blocker.
 
 ### Source: Repo notes
 
 
-- Existing Skriptoteket Playwright scripts already avoid depending on a shared Chrome profile and
-  are the preferred proof lane for this repo.
-- See `.codex/rules/075-browser-automation.md` for repo Playwright patterns and
-  `docs/runbooks/runbook-testing.md` for the main testing entry points.
+- Existing Skriptoteket Playwright scripts under `scripts/` are history, not a
+  proof lane. Do not run them as proof and do not add new ones.
+- See `.codex/rules/075-browser-automation.md` for the walk rules and
+  `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+  for the main testing entry points.
 
 ### Source: External references
 
 
-- Playwright `BrowserType.launch_persistent_context`: warns that browsers do not allow multiple
-  instances with the same `user_data_dir`, and warns against automating Chrome's default profile:
-  <https://playwright.dev/python/docs/api/class-browsertype>
 - Chrome remote debugging change, published 2025-03-17: separate user data directories are required
   for automated tooling against Chrome 136+:
   <https://developer.chrome.com/blog/remote-debugging-port>

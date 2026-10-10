@@ -5,279 +5,88 @@ created: 2025-12-19
 scope: "testing"
 ---
 
-# 075: Browser Automation
+# 075: Browser Walk Proof
 
 ## Defaults (REQUIRED)
 
-- REQUIRED: Use Playwright for new browser automation (Python).
-- REQUIRED: Load the `playwright-testing` skill before planning, writing, running, or reviewing Playwright work.
-- REQUIRED: Put scripts in `scripts/` and run them via `pdm run python -m scripts.<module>`.
-- REQUIRED: Write artifacts (screenshots, traces) under `.artifacts/<script-name>/`.
-- REQUIRED: Never hardcode or print credentials. Provide them via env vars or a gitignored dotenv file.
-- REQUIRED: Local dev smokes use `.env` with `BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`.
-- REQUIRED: Prod smokes use a separate gitignored dotenv (e.g. `.env.prod-smoke`) with `BASE_URL` +
-  `PLAYWRIGHT_EMAIL` / `PLAYWRIGHT_PASSWORD`, passed via `--dotenv` (or `DOTENV_PATH`).
-- REQUIRED: If a test needs a specific “demo tool/script”, do **not** create it ad hoc in the dev DB or rewrite an
-  existing demo tool’s source code. Add a dedicated entry to the **repo script bank** (`src/skriptoteket/script_bank/`)
-  and seed it to the DB before running Playwright (see “Script bank fixtures” below).
+- REQUIRED: Prove UI and route behavior with an agent-driven click-through walk
+  of the real application in a real browser session: the Claude built-in
+  browser pane, the user's Chrome through Claude in Chrome, or the Codex
+  internal browser.
+- REQUIRED: Never use Playwright. Do not run, extend, or add Playwright scripts,
+  do not use Playwright MCP, and do not fall back to Playwright when a browser
+  session fails. Repair the browser session or report the blocker.
+- REQUIRED: Never hardcode or print credentials.
 
-## Codex Quick UI Checks (REQUIRED)
+## Authentication (REQUIRED)
 
-- REQUIRED: For quick UI fixes, patches, and visual checkups inside Codex, use headed Playwright MCP Chrome before headless scripts.
-- REQUIRED: The canonical Codex Playwright MCP config is `npx -y @playwright/mcp@latest --browser chrome --isolated --output-dir /Users/olofs_mba/.codex/playwright-mcp`.
-- REQUIRED: `--isolated` is the default because Codex can leave multiple MCP sessions alive at once, and persistent Playwright Chrome profiles will then conflict.
-- REQUIRED: Always pin `--output-dir` to a stable writable path outside the repo checkout. Do not rely on the MCP server's
-  current working directory for output files, because cwd drift can make the server try to write to `/.playwright-mcp`
-  instead of the intended project-local scratch directory.
-- REQUIRED: If Playwright MCP reports `Browser is already in use ...`, do not switch to headless. First terminate lingering `playwright-mcp` launchers and Chrome processes using `~/Library/Caches/ms-playwright/mcp-chrome*`, then retry the MCP browser.
-- REQUIRED: After any live Playwright MCP browser check in Codex, close the browser/tab with the MCP tools and then terminate any leftover Playwright MCP / Playwright-launched Chrome helper processes at the OS level before continuing. Do not leave background MCP or `playwright_chromiumdev_profile*` Chrome helper processes alive after the check.
+- REQUIRED: Enter protected routes through the HuleEdu browser-session
+  ceremony: `/auth/login`, the HuleEdu sign-in, then `/auth/callback`. The old
+  `/login` route is a negative or recovery case only.
+- REQUIRED: Never post credentials directly to the product backend, never
+  inject or reuse session cookies, and never copy auth snippets from command
+  history, review artifacts, or old proof scripts.
+- REQUIRED: For protected shared-auth proof, Skriptoteket backend runs as the
+  Docker `web` service (`skriptoteket_web`, alias `skriptoteket-web` on
+  `hule-network`) so the HuleEdu Gateway `/api` proxy can reach it. Host
+  Uvicorn is not a valid backend for this lane.
 
-Canonical recovery commands:
+## Where To Walk
 
-```bash
-ps aux | rg 'playwright-mcp|@playwright/mcp|ms-playwright/mcp-chrome|Google Chrome.*ms-playwright/mcp-chrome'
-pkill -TERM -f 'playwright-mcp|@playwright/mcp@latest|playwright-mcp-server' || true
-pkill -TERM -f 'Google Chrome.*ms-playwright/mcp-chrome' || true
-```
+- Integrated proof: Hemma staging at `http://127.0.0.1:15173` through the Mac
+  tunnel, signed in with the staging proof identities, per
+  `docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`.
+- Local iteration: the local dev stack with HuleEdu auth-integration, per
+  `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+  (`pdm run dev-stack web-start` and `pdm run fe-dev-shared-auth`).
+- Public routes can be walked directly only when the route is genuinely public
+  and the proof does not claim protected-auth coverage.
+- Inspect current services and occupied ports before starting a stack.
 
-Canonical post-check cleanup commands:
+## Walk Steps (REQUIRED)
 
-```bash
-ps aux | rg 'playwright-mcp|@playwright/mcp|ms-playwright/mcp-chrome|playwright_chromiumdev_profile'
-pkill -TERM -f 'playwright-mcp|@playwright/mcp@latest|playwright-mcp-server' || true
-pkill -TERM -f 'playwright_chromiumdev_profile|Google Chrome.*mcp-chrome|Google Chrome Helper.*playwright_chromiumdev_profile' || true
-```
+1. Open the target origin in the browser session.
+2. Sign in through the HuleEdu ceremony when the route is protected.
+3. Click through the changed workflow step by step the way a teacher would.
+4. At each step that proves the change, capture a screenshot and read the
+   accessibility tree or DOM; read console and network entries when the change
+   touches requests or errors.
+5. Walk the canonical desktop width and the compact workspace width that the
+   change targets, and record both widths.
+6. Record the origin, commit, steps, viewport widths, and evidence locations in
+   `handoff.md`.
 
-- REQUIRED: If you terminate the MCP server that backs the current thread, start a fresh Codex session/thread before retrying the Playwright browser tools.
+Editor checks walk the real CodeMirror editor: confirm `.cm-editor` is
+visible, the "Testkör" button is present, and test mode opens before asserting
+editor behavior. Close autocomplete and tooltips with Escape before reading
+editor text.
 
-## Repo Smoke Scripts
+## Script Bank Fixtures (REQUIRED)
 
-- `pdm run pr-0253-auth-retirement --start-backend --start-vite` → proves the HuleEdu-owned browser-auth edge and retired local auth surface.
-- `pdm run pr-0254-auth-cutover` → proves the live local Docker cutover through HuleEdu Gateway `:8080`, HuleEdu login UI `:5174`, and Skriptoteket app-continuation `:5173`.
-- `pdm run pr-0255-auth-bootstrap --start-backend --start-vite` → proves shared-session bootstrap against the signed HuleEdu app-continuation path.
-- `pdm run pr-0252-auth-return --start-backend --start-vite` → proves protected-route return-to-origin through `/auth/login`.
+If a walk depends on a tool existing (by slug), provision the tool through the
+repo-level script bank. Do not create it ad hoc in the dev DB or rewrite an
+existing demo tool's source code.
 
-## Playwright Strategy (REQUIRED)
-
-- Maintain **one script per operational validation**; avoid overlapping flows between scripts.
-- REQUIRED: Use the Codex internal browser for small iterative UI checks, quick visual/design review, and
-  myopic one-off interaction checks. Do not add a new `scripts/playwright_pr_*.py` file for those cases.
-- REQUIRED: Add or retain Playwright scripts only for complex flows that need repeatable validation,
-  artifacts, or auditability across sessions/environments.
-- REQUIRED: New `scripts/playwright_pr_*.py` entrypoints must be explicitly justified by a governed PR/task
-  and added to the script-surface allowlist in `tests/unit/scripts/test_playwright_script_surface.py`.
-- Inspect the closest existing Playwright scripts in `scripts/` before inventing a new flow, and reuse established
-  helpers, selectors, login patterns, and artifact structure unless the new validation clearly needs something else.
-- Prefer extending existing scripts rather than adding new ones unless the flow is distinct and reusable.
-- Keep scripts passing; update selectors and steps when UI changes (no stale/aspirational flows).
-- Use `scripts._playwright_config.get_config()` for base URL + credentials.
-- REQUIRED: Login through the HuleEdu browser-session ceremony using the repo's shared helpers
-  (`scripts._playwright_auth.login_via_auth_entry`, route-specific wrappers, or retained
-  auth-cutover proof scripts). Do not reuse old command snippets, direct credential POSTs, or
-  local cookie shortcuts as authentication proof.
-- REQUIRED: Use the dedicated `/auth/login` page and its explicit redirect contract for protected-route
-  proof. The old `/login` route is a negative/recovery case only.
-- Editor/sandbox detection must be robust: `.cm-editor` visible + "Testkör" button + test mode open.
-- For sandbox session reuse, assert:
-  - `/work/input/<filename>` appears in tool outputs (from `request.json` manifest)
-  - reuse checkbox enables only after selected files are cleared
-  - session-files API returns the uploaded filename
-
-### Prod runs (recommended)
-
-Create a gitignored `.env.prod-smoke`:
+- Add or modify the tool in `src/skriptoteket/script_bank/bank.py` and its
+  source under `src/skriptoteket/script_bank/scripts/`.
+- Seed it before the walk:
 
 ```bash
-BASE_URL=https://skriptoteket.example
-PLAYWRIGHT_EMAIL=...
-PLAYWRIGHT_PASSWORD=...
-```
-
-Run:
-
-```bash
-pdm run pr-0253-auth-retirement --base-url https://skriptoteket.example --dotenv .env.prod-smoke
-pdm run pr-0255-auth-bootstrap --base-url https://skriptoteket.example --dotenv .env.prod-smoke
-```
-
-Prereqs:
-
-- Playwright installed locally: `pdm install -G dev`
-- Backend API running (dev): `pdm run dev` (default: `http://127.0.0.1:8000`)
-- `BASE_URL` should point at the **frontend** you want to test:
-  - Dev/HMR: `http://127.0.0.1:5173` with `pdm run fe-dev` (Vite proxies `/api/*` to `:8000`)
-  - Prod-style: your deployed host, or `http://127.0.0.1:8000` after `pdm run fe-install && pdm run fe-build`
-    (backend serves built SPA)
-
-## Script bank fixtures (REQUIRED)
-
-If a Playwright script depends on a tool existing (by slug), the tool must be provisioned via the repo-level script bank:
-
-- Add/modify the tool in `src/skriptoteket/script_bank/bank.py` and its source under
-  `src/skriptoteket/script_bank/scripts/`.
-- Seed locally before running Playwright:
-
-```bash
-# Ensure the tool exists (and optionally sync code/metadata if it already exists)
 pdm run seed-script-bank --slug <tool-slug>
 pdm run seed-script-bank --slug <tool-slug> --sync-code
 pdm run seed-script-bank --slug <tool-slug> --sync-metadata
 ```
-
-Rationale: avoids demo-script proliferation and prevents Playwright from polluting the dev DB by creating/re-writing
-tools on the fly (see ST-06-09).
 
 Refs:
 
 - Runbook: `docs/runbooks/runbook-script-bank-seeding.md`
 - Story: `docs/backlog/stories/story-06-09-playwright-test-isolation.md`
 
-## One-time Browser Install
+## Existing Playwright Code
 
-Playwright needs browser binaries installed locally (per Playwright version).
-
-```bash
-# Install default browsers (Chromium + Firefox + WebKit)
-pdm run playwright install
-
-# Install specific browsers
-pdm run playwright install chromium webkit firefox
-
-# Linux/CI: install browser OS dependencies too
-pdm run playwright install --with-deps
-
-# List installed browsers (across all Playwright installs)
-pdm run playwright install --list
-
-# Force reinstall (useful if cache is inconsistent)
-pdm run playwright install --force
-
-# Uninstall browsers from all Playwright installs on this machine
-pdm run playwright uninstall --all
-```
-
-Playwright-managed browser cache locations:
-
-- Windows: `%USERPROFILE%\\AppData\\Local\\ms-playwright`
-- macOS: `~/Library/Caches/ms-playwright`
-- Linux: `~/.cache/ms-playwright`
-
-To override browser download/search location, set `PLAYWRIGHT_BROWSERS_PATH=/absolute/path` for both:
-
-- `pdm run playwright install ...`
-- any script/test runs that use Playwright
-
-## macOS (Intel vs Apple Silicon)
-
-Playwright downloads different browser binaries depending on your architecture.
-
-```bash
-uname -m
-python -c "import platform; print(platform.machine())"
-# Expect: arm64 (Apple Silicon) or x86_64 (Intel)
-```
-
-If you are on Apple Silicon but see Playwright looking for `mac-x64` binaries, you are likely running an x86_64
-Python/terminal (Rosetta). Fix by using an arm64 Python/terminal and reinstalling browsers:
-
-```bash
-pdm run playwright uninstall --all
-rm -rf ~/Library/Caches/ms-playwright  # optional hard reset
-pdm run playwright install
-```
-
-## Debugging
-
-If you're running Playwright under a sandboxed agent environment (e.g. Codex CLI), browser launch may require
-explicit approval/escalation in that environment.
-
-Useful environment variables:
-
-- `PWDEBUG=1` (or `PWDEBUG=console`) opens Playwright Inspector and disables timeouts.
-- `DEBUG=pw:browser` helps debug browser launch failures.
-- `DEBUG=pw:api` enables verbose Playwright API logs.
-- `PLAYWRIGHT_NODEJS_PATH=/absolute/path/to/node` uses a pre-installed Node.js for the driver.
-- `PLAYWRIGHT_SKIP_BROWSER_GC=1` disables automatic stale-browser cleanup.
-
-If you see errors like:
-
-- `Executable doesn't exist at ...` (usually stale/partial browser install), or
-- `Abort trap: 6` / `TargetClosedError` during `webkit.launch(...)`
-
-Reset the local browser install:
-
-```bash
-pdm run playwright install --list
-pdm run playwright uninstall --all
-pdm run playwright install --force
-```
-
-## Script Pattern (sync)
-
-Prefer using `scripts._playwright_config.get_config()` so scripts share the same CLI/env/dotenv behavior
-(including `--dotenv`):
-
-```python
-from pathlib import Path
-
-from playwright.sync_api import expect, sync_playwright
-
-from scripts._playwright_auth import login_to_browse
-from scripts._playwright_config import get_config
-
-config = get_config()
-base_url = config.base_url
-email = config.email
-password = config.password
-
-artifacts_dir = Path(".artifacts/my-script")
-artifacts_dir.mkdir(parents=True, exist_ok=True)
-
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
-
-    login_to_browse(page, base_url=base_url, email=email, password=password)
-    expect(page.get_by_role("heading", name="Katalog")).to_be_visible()
-
-    page.screenshot(path=str(artifacts_dir / "home.png"), full_page=True)
-    browser.close()
-```
-
-## CodeMirror (CM6) interaction patterns (REQUIRED)
-
-- REQUIRED: Scope editor interactions to `.cm-editor .cm-content` (avoid broad `page.get_by_text(...)` that can match
-  autocomplete/tooltips instead of the editor).
-- REQUIRED: For “set the whole document”, prefer `.cm-content.fill(source)` after focusing the editor; for incremental
-  edits, use `page.keyboard.type(...)` after focus.
-- REQUIRED: Always close autocomplete/tooltips before asserting hover or editor text (`page.keyboard.press("Escape")`),
-  otherwise locators can hit `.cm-tooltip-autocomplete` instead of editor content.
-- REQUIRED: Hover tooltips are DOM-fragile; prefer coordinate-based hovering over a DOM Range inside `.cm-content` (see
-  `_hover_codemirror_text(...)` in `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py`).
-- REQUIRED: Autocomplete assertions should target `.cm-tooltip-autocomplete` presence + content; avoid exact `<li>` text
-  matching (rendered labels/details can vary).
-- REQUIRED: Lint assertions should click `.cm-lint-marker` and assert `.cm-tooltip-lint` contains the Swedish message
-  snippet; close with Escape.
-- REQUIRED: Lint updates are debounced and can lag after `.cm-content.fill(...)`; poll for the expected tooltip text
-  instead of assuming the first marker is the new diagnostic (see `_expect_any_lint_message(...)` in
-  `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`).
-- REQUIRED: If editor intelligence is dynamically loaded, the E2E must first wait for a deterministic signal that
-  extensions are active (e.g., a lint marker appears after typing invalid code) before asserting completions/hover.
-
-References:
-
-- Canonical CodeMirror E2E patterns: `scripts/playwright_st_08_10_script_editor_intelligence_e2e.py`
-- Canonical CodeMirror lint polling patterns: `scripts/playwright_st_08_11_script_editor_intelligence_phase2_e2e.py`
-- Canonical “set editor content” helper style: `scripts/playwright_st_12_02_native_pdf_output_helper_e2e.py`
-
-## Navigation Caveat
-
-SPA route changes (and any legacy HTMX-style flows) do not always trigger full navigation events.
-Prefer `page.wait_for_url(...)`, locator waits, or `expect(...)` over navigation waits.
-
-## Context7 (Docs Refresh)
-
-When updating these rules, pull current Playwright docs via Context7:
-
-- `/websites/playwright_dev_python` (installation, browsers, cache paths, env vars)
-- `/microsoft/playwright-python` (Python API reference)
+The repository still contains Playwright scripts under `scripts/`
+(`playwright_*.py`, `_playwright_*.py`, `diagnose_*.py`), their `pdm run`
+entries, the `playwright` dependency, and the script-surface test
+`tests/unit/scripts/test_playwright_script_surface.py`. They are history, not a
+proof lane: do not run them as proof and do not add new ones. Removing them
+needs a governed task.

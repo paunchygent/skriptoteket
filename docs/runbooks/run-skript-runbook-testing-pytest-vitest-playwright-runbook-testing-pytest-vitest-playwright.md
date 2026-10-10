@@ -1,7 +1,7 @@
 ---
 type: runbook
 id: RUN-SKRIPT-runbook-testing-pytest-vitest-playwright
-title: 'Runbook: Testing (Pytest + Vitest + Playwright)'
+title: 'Runbook: Testing (Pytest + Vitest + browser walk)'
 repository: skriptoteket
 owners:
 - kind: service
@@ -10,7 +10,7 @@ created: '2026-07-31'
 status: active
 retired_ids:
 - RUN-testing
-summary: 'Runbook: Testing (Pytest + Vitest + Playwright)'
+summary: 'Runbook: Testing (Pytest + Vitest + browser walk)'
 system: skriptoteket-dev
 ---
 
@@ -28,11 +28,10 @@ pdm run test
 pdm run fe-type-check
 pdm run fe-lint
 pdm run fe-test
-
-### UI smoke (Playwright)
-pdm run pr-0253-auth-retirement --start-backend --start-vite
-pdm run pr-0255-auth-bootstrap --start-backend --start-vite
 ```
+
+UI and route proof is an agent-driven click-through walk in a real browser
+session (see "UI / E2E (browser walk)" below). Agents never use Playwright.
 ### Changed-component quality
 
 For normal repository changes, use the package-owned changed-component gate:
@@ -111,8 +110,17 @@ pdm run fe-test-coverage
 - Coverage output is written under the SPA app (e.g. `frontend/apps/skriptoteket/coverage/`).
 - The canonical filtered command surface is `pdm run fe-test ...` (or `pnpm -C frontend/apps/skriptoteket test ...`), not raw `pnpm ... exec vitest ...`.
 - The SPA wrapper now normalizes both app-local targets like `src/views/apps/ClassroomPlannerEntryView.spec.ts` and repo-root targets like `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.spec.ts`.
-### UI / E2E (Playwright)
-Use Playwright for browser-level flows and regressions (never Vitest).
+### UI / E2E (browser walk)
+Prove browser-level flows and regressions with an agent-driven click-through
+walk of the real application in a real browser session: the Claude built-in
+browser pane, the user's Chrome through Claude in Chrome, or the Codex internal
+browser. Never use Playwright or Vitest for this proof. Protected routes enter
+through the HuleEdu browser-session ceremony; capture screenshots and
+accessibility-tree or DOM reads, and record the walk in `handoff.md`.
+
+Integrated proof walks Hemma staging at `http://127.0.0.1:15173` through the
+Mac tunnel, per
+`docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`.
 
 For protected shared-auth flows, run Skriptoteket through the Docker `web`
 service (`skriptoteket_web`, alias `skriptoteket-web`) so HuleEdu Gateway can
@@ -132,18 +140,13 @@ service. If public app routes return a Vite-level `500 Internal Server Error`,
 first verify that the Docker `web` service is running and reachable on
 `http://localhost:8000`.
 
-Commands:
-
-```bash
-pdm run pr-0253-auth-retirement --start-backend --start-vite
-pdm run pr-0255-auth-bootstrap --start-backend --start-vite
-pdm run pr-0252-auth-return --start-backend --start-vite
-```
+The repository's Playwright scripts (`pdm run pr-025x-*`, `ui-*-smoke`) are
+history, not a proof lane. Do not run them as proof.
 
 Reference:
 
 - `.codex/rules/075-browser-automation.md`
-- `docs/runbooks/runbook-agent-browser-automation.md`
+- `docs/runbooks/run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md`
 
 ## Preconditions
 The source record did not define a separate section for this package heading.

@@ -1,23 +1,26 @@
-# Browser Automation
+# Browser Walk Proof
 
-Use this reference for browser-visible behavior, screenshots, Playwright proof,
-and authenticated UI validation in Skriptoteket.
+Use this reference for browser-visible behavior, screenshots, and authenticated
+UI proof in Skriptoteket.
 
 ## Read First
 
-- `playwright-testing` skill
 - `.codex/rules/075-browser-automation.md`
-- `docs/runbooks/runbook-agent-browser-automation.md`
-- `docs/runbooks/runbook-testing.md`
+- `docs/runbooks/run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md`
+- `docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`
+  for integrated proof on Hemma staging
 - `local-devops` plus its Skriptoteket reference
-- For protected shared-auth proof, HuleEdu's local auth-integration lane from
-  the `local-devops` HuleEdu reference
+- For protected shared-auth proof on the local stack, HuleEdu's local
+  auth-integration lane from the `local-devops` HuleEdu reference
 
 ## Lane Rules
 
-- Use repo Playwright scripts for repeatable proof and retained artifacts.
-- Use Codex browser/MCP only for small interactive inspection and visual
-  iteration, then clean up the browser session per the browser runbook.
+- Prove UI and route behavior with an agent-driven click-through walk of the
+  real application in a real browser session: the Claude built-in browser
+  pane, the user's Chrome through Claude in Chrome, or the Codex internal
+  browser. Never use Playwright, Playwright MCP, or repo Playwright scripts.
+- Integrated proof walks Hemma staging at `http://127.0.0.1:15173` through the
+  Mac tunnel, per the staging runbook.
 - Protected Skriptoteket SPA/API proof must enter through HuleEdu Gateway and
   the browser-session ceremony. Do not use product-backend credential POSTs,
   local cookie shortcuts, or old `/login` flows.
@@ -27,10 +30,10 @@ and authenticated UI validation in Skriptoteket.
   alias. Do not run host Uvicorn for this lane: Gateway containers cannot use
   that process as `skriptoteket-web`, so app continuation will fail before the
   UI proof reaches the requested route.
-- Public routes can be checked directly only when the route is genuinely public
+- Public routes can be walked directly only when the route is genuinely public
   and the proof does not claim protected-auth coverage.
 - General Vite/Vitest frontend testing belongs to `integrated-frontend-stack`;
-  browser automation is the separate live-proof layer.
+  the browser walk is the separate live-proof layer.
 
 ## Before Starting
 
@@ -41,5 +44,6 @@ requested proof.
 
 ## Proof Output
 
-Retained scripts write artifacts under `.artifacts/<script-name>/`. For UI or
-route changes, record the exact live proof in `handoff.md`.
+Capture screenshots and accessibility-tree or DOM reads from the walk. For UI
+or route changes, record the origin, commit, steps walked, viewport widths, and
+evidence locations in `handoff.md`.

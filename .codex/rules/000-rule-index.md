@@ -35,7 +35,7 @@ scope: "all"
 ## Quality Assurance
 
 - [070-testing-standards.md](070-testing-standards.md): Testing strategies, protocol mocks, fixtures
-- [075-browser-automation.md](075-browser-automation.md): Playwright/Selenium patterns
+- [075-browser-automation.md](075-browser-automation.md): Browser walk proof (real browser session; never Playwright)
 
 ## Operations
 

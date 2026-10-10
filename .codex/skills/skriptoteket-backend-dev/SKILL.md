@@ -88,8 +88,9 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 
 - OpenAPI export: `pdm run openapi-export-v1`
 - Frontend API types: `pdm run fe-gen-api-types`
-- UI smoke (Playwright): `pdm run ui-smoke` / `pdm run ui-editor-smoke` / `pdm run ui-runtime-smoke`
-- Hot reload probe (Playwright): `pdm run ui-hmr-probe`
+- UI and route proof: agent-driven click-through walk in a real browser session per
+  `.codex/rules/075-browser-automation.md`. Never use Playwright; the `ui-*-smoke` and
+  `ui-hmr-probe` scripts are history, not a proof lane.
 - Edit-ops harnesses (ad-hoc): `python -m scripts.edit_ops_harness` and `python -m scripts.chat_edit_ops_context_probe`
 
 ## Auth and API proof boundary

@@ -20,7 +20,7 @@ Use the repo skills that match the implementation scope:
 - Backend or API work: .codex/skills/skriptoteket-backend-dev/SKILL.md
 - Frontend or SPA work: integrated-frontend-stack
 - Local verification, DB, or runtime troubleshooting: local-devops
-- Browser automation or UI verification: playwright-testing and .codex/rules/075-browser-automation.md
+- UI or route verification: .codex/rules/075-browser-automation.md (agent-driven click-through walk in a real browser session; never Playwright)
 
 Docs-as-code contract:
 - Refuse to work outside the defined PR-sliced task.
