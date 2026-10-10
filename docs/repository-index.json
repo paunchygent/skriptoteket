@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a8c330d7e7a4420db5dc18ad623d9c84ee3d5262056b13f5b557d3a1af9be555",
+  "source_set_digest": "a9d1502d12ddc30bac53a437ce1f75149f05ef794b74612098713b76f805ccb2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4525,7 +4525,7 @@
       "type": "task",
       "title": "Exam workspace two-mode layout: file handling and item editing",
       "path": "docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
