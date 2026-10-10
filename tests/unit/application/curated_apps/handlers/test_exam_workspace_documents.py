@@ -44,6 +44,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichmen
     InMemoryEnrichmentJobRepository,
     InMemoryProposedOverlayRepository,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
+    with_next_revision,
+)
 
 _FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
 _NOW = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
@@ -196,7 +199,7 @@ async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_byt
         actor=actor,
         lineage_id=imported.summary.lineage_id,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=imported.document.with_revision(2)
+            expected_revision=1, document=with_next_revision(imported.document)
         ),
     )
 
@@ -216,7 +219,9 @@ async def test_save_advances_version_and_reopens_faithfully(
     imported = await env.seed_document(actor=actor)
     document = imported.document
     edited_item = document.items[0].model_copy(update={"title": "Fråga 1 (redigerad)"})
-    edited = document.with_replaced_item(edited_item).with_revision(2)
+    edited = with_next_revision(
+        document.model_copy(update={"items": (edited_item, *document.items[1:])})
+    )
 
     saved = await env.save_handler.handle(
         actor=actor,
@@ -235,7 +240,7 @@ async def test_save_advances_version_and_reopens_faithfully(
 async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
     imported = await env.seed_document(actor=actor)
-    edited = imported.document.with_revision(2)
+    edited = with_next_revision(imported.document)
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
@@ -254,7 +259,7 @@ async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: byte
 async def test_save_rejects_wrong_document_identity(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
     imported = await env.seed_document(actor=actor)
-    foreign = imported.document.model_copy(update={"document_id": uuid4()}).with_revision(2)
+    foreign = with_next_revision(imported.document.model_copy(update={"document_id": uuid4()}))
     with pytest.raises(DomainError) as exc_info:
         await env.save_handler.handle(
             actor=actor,
@@ -305,7 +310,7 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
 
 
 def test_save_request_keeps_older_clients_compatible() -> None:
-    document = proposal_document().with_revision(2)
+    document = with_next_revision(proposal_document())
     request = SaveExamWorkspaceDocumentRequest.model_validate(
         {"expected_revision": 1, "document": document.model_dump(mode="json")}
     )

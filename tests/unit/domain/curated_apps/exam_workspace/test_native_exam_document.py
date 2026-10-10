@@ -241,41 +241,6 @@ class TestDocumentInvariants:
             NativeExamDocumentOrigin(kind="docx_import")
 
 
-class TestMutationHelpers:
-    def test_next_item_id_advances_past_highest(self) -> None:
-        document = _document(
-            _free_text_item(sequence=1, item_id="item_001"),
-            _free_text_item(sequence=2, item_id="item_007"),
-        )
-        assert document.next_item_id() == "item_008"
-
-    def test_appended_item_must_take_next_sequence(self) -> None:
-        document = _document(_free_text_item())
-        with pytest.raises(DomainError) as exc_info:
-            document.with_appended_item(_free_text_item(sequence=5, item_id="item_002"))
-        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-
-    def test_append_and_replace_round_trip(self) -> None:
-        document = _document(_free_text_item())
-        appended = document.with_appended_item(_single_choice_item(sequence=2, item_id="item_002"))
-        assert [item.item_id for item in appended.items] == ["item_001", "item_002"]
-        replacement = _single_choice_item(sequence=2, item_id="item_002", correct=("choice_001",))
-        replaced = appended.with_replaced_item(replacement)
-        assert replaced.item_by_id("item_002").answer_key.correct_choice_ids == ("choice_001",)
-
-    def test_replace_cannot_change_sequence(self) -> None:
-        document = _document(_free_text_item())
-        with pytest.raises(DomainError):
-            document.with_replaced_item(_free_text_item(sequence=2, item_id="item_001"))
-
-    def test_revision_must_advance_by_one(self) -> None:
-        document = _document(_free_text_item())
-        assert document.with_revision(2).revision == 2
-        with pytest.raises(DomainError) as exc_info:
-            document.with_revision(5)
-        assert exc_info.value.code is ErrorCode.CONFLICT
-
-
 class TestExportBlockers:
     def test_clean_document_has_no_blockers(self) -> None:
         assert native_export_blockers(_document(_gap_fill_item())) == ()

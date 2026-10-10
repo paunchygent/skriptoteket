@@ -27,6 +27,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _Env,
 )
 from tests.unit.application.curated_apps.test_exam_workspace_exports import _reviewed
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
+    with_next_revision,
+)
 
 _FIXTURE = Path(
     "tests/fixtures/exam_conversion/real_inputs/grammatik_omprov_examnet_import_med_facit.docx"
@@ -57,7 +60,7 @@ def fixture_bytes() -> bytes:
 async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
     actor = _actor()
     imported = await env.seed_document(actor=actor)
-    reviewed = _reviewed(imported.document).with_revision(2)
+    reviewed = with_next_revision(_reviewed(imported.document))
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,

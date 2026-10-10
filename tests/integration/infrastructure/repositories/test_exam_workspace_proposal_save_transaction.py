@@ -65,6 +65,9 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
 from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
     UUIDGenerator,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
+    with_next_revision,
+)
 
 pytestmark = [
     pytest.mark.integration,
@@ -126,7 +129,7 @@ async def test_workspace_save_persists_only_pending_overlay_and_preserves_previo
             workspace_lineage_id=document.document_id,
             workspace_document_revision=2,
         )
-        assert await jobs.get_by_id(job_id=job.id) == job
+        assert await jobs.get_by_id_for_update(job_id=job.id) == job
         assert await overlays.get_by_enrichment_job_id(enrichment_job_id=job.id) == overlay
         assert await storage.read_file(user_id=owner.id, file_id=original_file_id) == original_bytes
         head = await files.get_document_head(
@@ -220,7 +223,7 @@ async def test_overlay_failure_rolls_back_document_job_usage_and_storage(
                 actor=owner,
                 lineage_id=document.document_id,
                 request=SaveExamWorkspaceDocumentRequest(
-                    expected_revision=1, document=document.with_revision(2)
+                    expected_revision=1, document=with_next_revision(document)
                 ),
             )
         assert exc_info.value.code is ErrorCode.CONFLICT
@@ -233,7 +236,7 @@ async def test_overlay_failure_rolls_back_document_job_usage_and_storage(
         usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=owner.id)
         assert usage is not None and usage.bytes_total == len(original_bytes)
         assert (
-            await PostgreSQLExamAnswerKeyEnrichmentJobRepository(session).get_by_id(
+            await PostgreSQLExamAnswerKeyEnrichmentJobRepository(session).get_by_id_for_update(
                 job_id=new_job_id
             )
             is None
@@ -286,7 +289,7 @@ async def test_unreadable_overlay_fails_the_save_and_rolls_back_document_and_sto
                 actor=owner,
                 lineage_id=document.document_id,
                 request=SaveExamWorkspaceDocumentRequest(
-                    expected_revision=1, document=document.with_revision(2)
+                    expected_revision=1, document=with_next_revision(document)
                 ),
             )
 
