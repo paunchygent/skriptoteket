@@ -20,10 +20,12 @@ class ProducedSegment(_Produced):
 
     kind: Literal["text", "gap"]
     text: str | None = Field(
-        description="The source wording for a text segment; null for a gap segment."
+        description="The student-visible source wording for a text segment, without any "
+        "inline facit answer or label; null for a gap segment."
     )
     accepted_values: tuple[str, ...] = Field(
-        description="For a gap: the accepted answers from the teacher's facit. Empty for text."
+        description="For a gap: the accepted answers from the teacher's facit, including "
+        "facit written inline in the question paragraph. Empty for text."
     )
     hint: str | None = Field(description="A gap hint printed in the source, else null.")
 
@@ -64,7 +66,11 @@ class ProducedItem(_Produced):
     )
     kind: NativeExamItemKind
     title: str | None = Field(description="A question heading printed in the source, else null.")
-    body: tuple[ProducedParagraph, ...] = Field(min_length=1)
+    body: tuple[ProducedParagraph, ...] = Field(
+        min_length=1,
+        description="Student-visible question text, also for review items. Inline facit "
+        "answers go into gap accepted_values, never into text.",
+    )
     points: int | None = Field(description="Points printed in the source, else null.")
     choices: tuple[ProducedChoice, ...] = Field(
         description="Options in source order for single_choice and multiple_response; "

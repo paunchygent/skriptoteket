@@ -37,7 +37,6 @@ class DocxBuildState:
     key_anchors: set[str] = field(default_factory=set)
     claimed: set[str] = field(default_factory=set)
     reasons: dict[str, str] = field(default_factory=dict)
-    final_reviews: dict[str, str] = field(default_factory=dict)
     failures: tuple[str, ...] = ()
     events: list[DocxBuildEvent] = field(default_factory=list)
     round: int | None = None
@@ -98,12 +97,11 @@ class DocxBuildState:
 
     def result(self) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item."""
-        review_reasons = dict(self.final_reviews)
+        review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor not in review_reasons:
-                reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
-                review_reasons[chunk.anchor] = reason
-                self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
+            reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
+            review_reasons[chunk.anchor] = reason
+            self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
         return assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,

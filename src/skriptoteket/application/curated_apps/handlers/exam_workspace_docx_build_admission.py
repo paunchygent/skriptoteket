@@ -7,7 +7,10 @@ from pydantic import BaseModel, JsonValue, ValidationError
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    native_item,
+    review_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEnvelope,
     ProducedItem,
@@ -103,7 +106,7 @@ def _admit_item(
             cause = produced.review_reason or "ingen orsak angavs"
             reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
             state.record("admission", "model_review", item=index, anchors=anchors)
-            state.final_reviews.update(dict.fromkeys(anchors, reason))
+            state.accepted.append((review_item(produced, reason), anchors))
             seen.update(anchors)
             return
         try:

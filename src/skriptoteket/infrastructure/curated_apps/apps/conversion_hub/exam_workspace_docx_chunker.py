@@ -8,13 +8,41 @@ from docx.opc.exceptions import PackageNotFoundError
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.table import Table, _Cell
+from docx.text.hyperlink import Hyperlink
 from docx.text.paragraph import Paragraph
+from docx.text.run import Run
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 
-def _table_text(table: Table) -> str:
+def _marked_paragraph(paragraph: Paragraph) -> str:
+    """Paragraph text with each directly italic stretch wrapped in <i>...</i>.
+
+    Teachers write inline facit in italics. Adjacent italic runs share one tag; edge
+    whitespace stays outside it.
+    """
+    runs: list[Run] = []
+    for content in paragraph.iter_inner_content():
+        runs.extend(content.runs if isinstance(content, Hyperlink) else (content,))
+    stretches: list[tuple[bool, str]] = []
+    for run in runs:
+        italic = bool(run.italic)
+        if stretches and stretches[-1][0] == italic:
+            stretches[-1] = (italic, stretches[-1][1] + run.text)
+        else:
+            stretches.append((italic, run.text))
+    marked: list[str] = []
+    for italic, text in stretches:
+        core = text.strip()
+        if italic and core:
+            start = text.index(core)
+            text = f"{text[:start]}<i>{core}</i>{text[start + len(core) :]}"
+        marked.append(text)
+    return "".join(marked)
+
+
+def _table_text(table: Table, *, marked: bool) -> str:
     rows: list[str] = []
     has_text = False
     for row in table.rows:
@@ -24,7 +52,9 @@ def _table_text(table: Table) -> str:
             cell = _Cell(element, table)
             cells.append(
                 "\n".join(
-                    block.text if isinstance(block, Paragraph) else _table_text(block)
+                    (_marked_paragraph(block) if marked else block.text)
+                    if isinstance(block, Paragraph)
+                    else _table_text(block, marked=marked)
                     for block in cell.iter_inner_content()
                 )
             )
@@ -44,16 +74,25 @@ class PythonDocxExamChunker:
                 if isinstance(element, CT_P):
                     paragraph = Paragraph(element, document)
                     text = paragraph.text
+                    marked_text = _marked_paragraph(paragraph)
                     style_name = paragraph.style.name if paragraph.style is not None else ""
                     kind = "heading" if style_name.startswith(("Heading", "Title")) else "paragraph"
                 elif isinstance(element, CT_Tbl):
                     table = Table(element, document)
-                    text = _table_text(table)
+                    text = _table_text(table, marked=False)
+                    marked_text = _table_text(table, marked=True)
                     kind = "table"
                 else:
                     continue
                 if text.strip():
-                    chunks.append(DocxChunk(anchor=f"body:{ordinal:04d}", kind=kind, text=text))
+                    chunks.append(
+                        DocxChunk(
+                            anchor=f"body:{ordinal:04d}",
+                            kind=kind,
+                            text=text,
+                            marked_text=marked_text,
+                        )
+                    )
         except (
             PackageNotFoundError,
             zipfile.BadZipFile,

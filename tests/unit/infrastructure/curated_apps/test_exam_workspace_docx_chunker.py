@@ -37,8 +37,10 @@ def test_quiz_preserves_all_paragraphs_and_soft_break_options() -> None:
         anchor="body:0007",
         kind="paragraph",
         text="A. deep\nB. strange\nC. dignified\nD. thrifty",
+        marked_text="A. deep\nB. strange\nC. dignified\nD. thrifty",
     )
     assert chunks[5].text == "Correct answer: A. deep"
+    assert chunks[5].marked_text == "Correct answer: <i>A. deep</i>"
     assert chunks[-1].text == "Correct answer: alliteration"
 
 
@@ -60,13 +62,16 @@ def test_body_order_anchors_and_whitespace_survive_tables_and_empty_paragraphs()
     chunks = PythonDocxExamChunker().chunk(content=content)
 
     assert chunks == (
-        DocxChunk("body:0001", "heading", "  A heading  "),
-        DocxChunk("body:0003", "paragraph", "  First\nsecond\tline  "),
+        DocxChunk("body:0001", "heading", "  A heading  ", "  A heading  "),
+        DocxChunk("body:0003", "paragraph", "  First\nsecond\tline  ", "  First\nsecond\tline  "),
         DocxChunk(
-            "body:0004", "table", "  Cell\nsoft break  \nAnother paragraph | Right\nBottom | "
+            "body:0004",
+            "table",
+            "  Cell\nsoft break  \nAnother paragraph | Right\nBottom | ",
+            "  Cell\nsoft break  \nAnother paragraph | Right\nBottom | ",
         ),
-        DocxChunk("body:0005", "paragraph", "After the table"),
-        DocxChunk("body:0006", "table", "Second table"),
+        DocxChunk("body:0005", "paragraph", "After the table", "After the table"),
+        DocxChunk("body:0006", "table", "Second table", "Second table"),
     )
     assert PythonDocxExamChunker().chunk(content=content) == chunks
 
@@ -81,8 +86,46 @@ def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
     cell.paragraphs[-1].text = "After"
 
     assert PythonDocxExamChunker().chunk(content=_bytes(document)) == (
-        DocxChunk("body:0001", "table", "Before\nNested\nlines\nAfter"),
+        DocxChunk(
+            "body:0001", "table", "Before\nNested\nlines\nAfter", "Before\nNested\nlines\nAfter"
+        ),
     )
+
+
+def test_course_exam_marks_teacher_italics_only_in_model_text() -> None:
+    content = _QUIZ.with_name("svenska_2_kursavslutande_prov_med_facit.docx").read_bytes()
+    chunks = {chunk.anchor: chunk for chunk in PythonDocxExamChunker().chunk(content=content)}
+
+    assert chunks["body:0086"].text == (
+        "a) De väntar inte. är en huvudsats\n"
+        "b) I bisatsen att de inte väntar står satsadverbialet före det finita verbet."
+    )
+    assert chunks["body:0086"].marked_text == (
+        "a) <i>De väntar inte.</i> är en <i>huvudsats</i>\n"
+        "b) I bisatsen <i>att de inte väntar</i> står satsadverbialet <i>före</i> "
+        "det finita verbet."
+    )
+    assert chunks["body:0063"].marked_text.startswith(
+        "a) I ordet lekfullheten är <i>lek</i> <i>R</i>"
+    )
+
+
+def test_italic_runs_in_paragraphs_and_tables_are_marked() -> None:
+    document = Document()
+    paragraph = document.add_paragraph("Svar: ")
+    paragraph.add_run("två ").italic = True
+    paragraph.add_run("ord").italic = True
+    paragraph.add_run(" slut")
+    cell = document.add_table(rows=1, cols=1).cell(0, 0)
+    cell.paragraphs[0].add_run("Cell ")
+    cell.paragraphs[0].add_run("svar").italic = True
+
+    chunks = PythonDocxExamChunker().chunk(content=_bytes(document))
+
+    assert [(c.text, c.marked_text) for c in chunks] == [
+        ("Svar: två ord slut", "Svar: <i>två ord</i> slut"),
+        ("Cell svar", "Cell <i>svar</i>"),
+    ]
 
 
 @pytest.mark.parametrize("content", [b"", b"not a docx", b"PK\x03\x04truncated"])
