@@ -14,9 +14,9 @@ Relationships:
     Dispatched by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``,
     which also calls ``fail_expired`` for an expired worker lease. Shares
-    ``exam_answer_key_enrichment_attempts`` (attempt and lease bookkeeping)
-    with ``exam_answer_key_enrichment_workspace_lane`` and uses
-    ``exam_answer_key_provider_attempts`` for the per-item provider call.
+    ``exam_answer_key_enrichment_attempts`` (attempt and lease bookkeeping
+    and the per-item proposal loop) with
+    ``exam_answer_key_enrichment_workspace_lane``.
 """
 
 from __future__ import annotations
@@ -47,9 +47,8 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_a
     AnswerKeyAttemptLedger,
 )
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
-    AnswerKeyAttemptCandidate,
-    AnswerKeyProviderAttemptRunner,
     EnrichmentFailure,
+    ProviderAttempt,
     dxe_attempt_candidate,
     lease_exhausted_message,
 )
@@ -63,11 +62,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_comple
     plan_answer_key_enrichment,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
     AnswerKeyTokenLeaseRefused,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
@@ -115,7 +112,6 @@ class ExamAnswerKeyEnrichmentDxeLane:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        attempts: AnswerKeyProviderAttemptRunner,
         ledger: AnswerKeyAttemptLedger,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
@@ -127,7 +123,6 @@ class ExamAnswerKeyEnrichmentDxeLane:
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
-        self._attempts = attempts
         self._ledger = ledger
 
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
@@ -178,20 +173,22 @@ class ExamAnswerKeyEnrichmentDxeLane:
                 last_error="daily_token_lease_exhausted",
             )
 
-        proposals, serving_profile, failure = await self._collect_proposals(
+        collected = await self._ledger.collect_proposals(
             job=job,
-            candidates=candidates,
-            attempt_candidates=attempt_candidates,
             route=route,
+            plans=candidates,
+            attempt_candidates=attempt_candidates,
             leases_by_item=leases_by_item,
+            proposal_from=_dxe_proposal,
         )
-        if failure is not None:
+        if isinstance(collected, EnrichmentFailure):
             return await self._complete_with_failure(
                 job=job,
                 upload=upload,
-                teacher_message=failure.teacher_message,
-                last_error=failure.last_error,
+                teacher_message=collected.teacher_message,
+                last_error=collected.last_error,
             )
+        proposals, serving_profile = collected
 
         source_file_sha256, source_ir_sha256 = source_exam_digests(
             file_bytes=source_dxe,
@@ -243,49 +240,6 @@ class ExamAnswerKeyEnrichmentDxeLane:
             teacher_message=MANUAL_COMPLETION_MESSAGE,
             last_error="enrichment_worker_lease_expired",
         )
-
-    async def _collect_proposals(
-        self,
-        *,
-        job: ExamAnswerKeyEnrichmentJob,
-        candidates: tuple[AnswerKeyCandidatePlan, ...],
-        attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
-        route: AnswerKeyProviderRoute,
-        leases_by_item: dict[str, AnswerKeyTokenLease],
-    ) -> tuple[
-        tuple[tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey], ...],
-        StructuredLLMProviderProfile,
-        EnrichmentFailure | None,
-    ]:
-        proposals: list[tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey]] = []
-        serving_profile = route.primary
-        for candidate, attempt_candidate in zip(candidates, attempt_candidates, strict=True):
-            attempt = await self._attempts.attempt_with_failover(
-                job=job,
-                candidate=attempt_candidate,
-                route=route,
-                primary_lease=leases_by_item[candidate.item.item_id],
-            )
-            if isinstance(attempt, EnrichmentFailure):
-                return (), serving_profile, attempt
-            if attempt.profile is route.failover:
-                serving_profile = route.failover
-            await self._ledger.reconcile_attempt_usage(attempt=attempt)
-            key = manual_answer_key_from_model_content(
-                item=candidate.item,
-                content=attempt.response.content,
-            )
-            if key is None:
-                return (
-                    (),
-                    serving_profile,
-                    EnrichmentFailure(
-                        teacher_message=MANUAL_COMPLETION_MESSAGE,
-                        last_error="llm_output_invalid",
-                    ),
-                )
-            proposals.append((candidate.item, key))
-        return tuple(proposals), serving_profile, None
 
     async def _succeed(
         self,
@@ -424,3 +378,18 @@ class ExamAnswerKeyEnrichmentDxeLane:
                 }
             )
         )
+
+
+def _dxe_proposal(
+    candidate: AnswerKeyCandidatePlan,
+    attempt: ProviderAttempt,
+) -> tuple[DigiExamIrItem, DigiExamOverlayManualAnswerKey] | None:
+    """Turn one model answer into the item's machine-proposed manual key."""
+
+    key = manual_answer_key_from_model_content(
+        item=candidate.item,
+        content=attempt.response.content,
+    )
+    if key is None:
+        return None
+    return candidate.item, key

@@ -2,11 +2,14 @@
 
 Purpose:
     Record the enrichment attempt together with every candidate's primary
-    token lease in one Unit of Work transaction, and reconcile a served
-    attempt's lease with the tokens the provider actually used. Both source
-    lanes (DigiExam conversion and native exam workspace) run exactly this
-    bookkeeping, so it lives here once. Also holds the teacher-facing
-    message both lanes use when the model output cannot complete the key.
+    token lease in one Unit of Work transaction, then collect one proposal
+    per candidate: call the provider (with failover), reconcile the served
+    attempt's lease with the tokens the provider actually used, and let the
+    lane turn the model output into its proposal. Both source lanes
+    (DigiExam conversion and native exam workspace) run exactly this
+    bookkeeping and loop, so it lives here once. Also holds the
+    teacher-facing message both lanes use when the model output cannot
+    complete the key.
 
 Relationships:
     Constructed once by
@@ -18,14 +21,20 @@ Relationships:
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     record_enrichment_attempt,
 )
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
+    AnswerKeyAttemptCandidate,
+    AnswerKeyProviderAttemptRunner,
+    EnrichmentFailure,
     ProviderAttempt,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
 )
@@ -47,18 +56,20 @@ MANUAL_COMPLETION_MESSAGE = (
 
 
 class AnswerKeyAttemptLedger:
-    """Atomic attempt-plus-lease recording and post-call lease reconciliation."""
+    """Atomic attempt-plus-lease recording and the per-candidate proposal loop."""
 
     def __init__(
         self,
         *,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
         leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        attempts: AnswerKeyProviderAttemptRunner,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._leases = leases
+        self._attempts = attempts
         self._uow = uow
         self._clock = clock
 
@@ -94,7 +105,47 @@ class AnswerKeyAttemptLedger:
                 )
         return updated_job, leases_by_item
 
-    async def reconcile_attempt_usage(self, *, attempt: ProviderAttempt) -> None:
+    async def collect_proposals[P, R](
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        route: AnswerKeyProviderRoute,
+        plans: tuple[P, ...],
+        attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
+        leases_by_item: dict[str, AnswerKeyTokenLease],
+        proposal_from: Callable[[P, ProviderAttempt], R | None],
+    ) -> tuple[tuple[R, ...], StructuredLLMProviderProfile] | EnrichmentFailure:
+        """Collect one proposal per candidate plan, in plan order.
+
+        Returns the proposals with the profile that served them (the failover
+        once any item fell over), or the first failure: a provider failure, or
+        ``llm_output_invalid`` when ``proposal_from`` rejects the model output.
+        """
+
+        proposals: list[R] = []
+        serving_profile = route.primary
+        for plan, candidate in zip(plans, attempt_candidates, strict=True):
+            attempt = await self._attempts.attempt_with_failover(
+                job=job,
+                candidate=candidate,
+                route=route,
+                primary_lease=leases_by_item[candidate.item_id],
+            )
+            if isinstance(attempt, EnrichmentFailure):
+                return attempt
+            if attempt.profile is route.failover:
+                serving_profile = route.failover
+            await self._reconcile_attempt_usage(attempt=attempt)
+            proposal = proposal_from(plan, attempt)
+            if proposal is None:
+                return EnrichmentFailure(
+                    teacher_message=MANUAL_COMPLETION_MESSAGE,
+                    last_error="llm_output_invalid",
+                )
+            proposals.append(proposal)
+        return tuple(proposals), serving_profile
+
+    async def _reconcile_attempt_usage(self, *, attempt: ProviderAttempt) -> None:
         usable_tokens = attempt.response.usage.usable_total_tokens
         if usable_tokens is None:
             return

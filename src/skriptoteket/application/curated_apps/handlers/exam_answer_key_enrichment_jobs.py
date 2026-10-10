@@ -101,6 +101,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         ledger = AnswerKeyAttemptLedger(
             enrichment_jobs=enrichment_jobs,
             leases=leases,
+            attempts=attempts,
             uow=uow,
             clock=clock,
         )
@@ -114,7 +115,6 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             uow=uow,
             clock=clock,
             id_generator=id_generator,
-            attempts=attempts,
             ledger=ledger,
         )
         self._workspace_lane = ExamAnswerKeyEnrichmentWorkspaceLane(
@@ -124,7 +124,6 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             uow=uow,
             clock=clock,
             id_generator=id_generator,
-            attempts=attempts,
             ledger=ledger,
             vault_files=vault_files,
             vault_storage=vault_storage,
