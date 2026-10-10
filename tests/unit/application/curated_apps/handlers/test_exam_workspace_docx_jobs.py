@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
@@ -36,9 +36,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
-)
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
 )
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
@@ -73,13 +70,8 @@ class RecordedRoundsProvider(StubProvider):
         super().__init__(content=json.loads(response.read_text()), usage=StructuredLLMUsage())
 
 
-class LockingFakeJobs(InMemoryEnrichmentJobRepository):
-    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        return await self.get_by_id(job_id=job_id)
-
-
 class JobEnvironment(_Env):
-    jobs: LockingFakeJobs
+    jobs: InMemoryEnrichmentJobRepository
     actor: User
     provider: StubProvider
     importer: ImportExamWorkspaceDocumentHandler
@@ -90,7 +82,7 @@ def environment(
     *, enabled: bool = True, budget: int = 1_000_000, response: Path = _RESPONSE
 ) -> JobEnvironment:
     env = JobEnvironment()
-    env.jobs = LockingFakeJobs()
+    env.jobs = InMemoryEnrichmentJobRepository()
     env.actor = _actor()
     env.provider = RecordedRoundsProvider(response)
     env.importer = ImportExamWorkspaceDocumentHandler(
@@ -102,7 +94,7 @@ def environment(
     )
     converter = DocxAIConverter(
         provider=env.provider,
-        provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+        profile=_route().primary,
         leases=InMemoryLeaseRepository(daily_token_limit=budget),
         uow=env.store._uow,
         clock=FixedClock(_NOW),

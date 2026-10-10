@@ -105,6 +105,19 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
         return self
 
 
+class ExamWorkspaceConversionJobView(BaseModel):
+    """Status-poll projection of one enrichment job, without source bytes."""
+
+    model_config = ConfigDict(frozen=True, from_attributes=True)
+
+    id: UUID
+    owner_user_id: UUID
+    source_kind: ExamAnswerKeySourceKind
+    status: ExamAnswerKeyEnrichmentJobStatus
+    workspace_lineage_id: UUID | None
+    last_error: str | None
+
+
 class ExamAnswerKeyProposedOverlay(BaseModel):
     """Persist one machine-proposed answer-key overlay as a proposal record."""
 

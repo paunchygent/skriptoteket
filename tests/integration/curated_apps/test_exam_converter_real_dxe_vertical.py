@@ -349,7 +349,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         )
     )
     assert enrichment_job_id is not None
-    finished = await enrichment_jobs.get_by_id(job_id=enrichment_job_id)
+    finished = await enrichment_jobs.get_by_id_for_update(job_id=enrichment_job_id)
     assert finished is not None
     assert finished.source_dxe == source_bytes
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED

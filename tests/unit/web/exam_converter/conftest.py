@@ -18,6 +18,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
 )
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
@@ -176,7 +177,7 @@ class RefusingEnrichmentJobRepository:
         del expected_worker_id
         raise AssertionError("Enrichment jobs must not be updated in this lane.")
 
-    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+    async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         return None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:

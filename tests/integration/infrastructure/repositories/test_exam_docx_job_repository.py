@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
     finish_enrichment_job,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -57,6 +58,26 @@ def _job(
     )
 
 
+async def test_conversion_view_projects_the_status_columns_for_a_stored_job(
+    db_session: AsyncSession,
+) -> None:
+    jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(db_session)
+    queued = _job()
+    await jobs.create(job=queued)
+    await db_session.commit()
+    db_session.expunge_all()
+
+    assert await jobs.get_conversion_view(job_id=queued.id) == ExamWorkspaceConversionJobView(
+        id=queued.id,
+        owner_user_id=queued.owner_user_id,
+        source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
+        status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
+        workspace_lineage_id=queued.workspace_lineage_id,
+        last_error=None,
+    )
+    assert await jobs.get_conversion_view(job_id=uuid4()) is None
+
+
 @pytest.mark.parametrize(
     "terminal_status",
     [ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED, ExamAnswerKeyEnrichmentJobStatus.FAILED],
@@ -74,7 +95,7 @@ async def test_docx_bytes_survive_commit_and_are_deleted_at_terminal_state(
 
     async with session_factory() as reader:
         read_jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader)
-        fetched = await read_jobs.get_by_id(job_id=queued.id)
+        fetched = await read_jobs.get_by_id_for_update(job_id=queued.id)
         assert fetched is not None and fetched.source_docx == _DOCX
         claimed = await read_jobs.claim_next(worker_id="worker", now=_NOW, lease_ttl=_TTL)
         assert claimed is not None and claimed.source_docx == _DOCX
@@ -125,7 +146,7 @@ async def test_docx_failure_diagnostics_survive_commit_and_reload(
     await db_session.commit()
 
     async with session_factory() as reader:
-        fetched = await PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader).get_by_id(
+        fetched = await PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader).get_by_id_for_update(
             job_id=queued.id
         )
         assert fetched is not None
@@ -332,7 +353,7 @@ async def test_completion_lock_refreshes_cached_ownership_and_fences_stale_worke
         job_id=queued.id, worker_id="old-worker", now=later, lease_ttl=_TTL
     )
     assert await jobs.heartbeat(job_id=queued.id, worker_id="new-worker", now=later, lease_ttl=_TTL)
-    retained = await jobs.get_by_id(job_id=queued.id)
+    retained = await jobs.get_by_id_for_update(job_id=queued.id)
     assert retained is not None and retained.source_docx == _DOCX
     assert retained.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING
     assert await jobs.get_by_id_for_update(job_id=uuid4()) is None

@@ -24,6 +24,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
@@ -102,7 +103,9 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         expected_worker_id: str | None = None,
     ) -> ExamAnswerKeyEnrichmentJob: ...
 
-    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None: ...
+    async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
+        """Read the status-poll columns only; never loads the uploaded source bytes."""
+        ...
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         """Lock and refresh the row before publishing a worker's terminal result."""

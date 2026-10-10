@@ -33,6 +33,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
     enqueue_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
@@ -134,11 +135,16 @@ class InMemoryEnrichmentJobRepository:
         self.jobs[job.id] = job
         return job
 
-    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        return self.jobs.get(job_id)
+    async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
+        job = self.jobs.get(job_id)
+        return (
+            ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
+            if job
+            else None
+        )
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        return await self.get_by_id(job_id=job_id)
+        return self.jobs.get(job_id)
 
     async def get_by_workspace_revision(
         self,
