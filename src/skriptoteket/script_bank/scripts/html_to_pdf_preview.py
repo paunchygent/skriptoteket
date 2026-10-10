@@ -527,6 +527,11 @@ def _normalize_html_for_weasyprint(
     return normalized
 
 
+class _WeasyprintRenderOptions(TypedDict, total=False):
+    cache: dict[str, object]
+    image_cache: dict[str, object]
+
+
 def _try_weasyprint(
     *,
     source: Path,
@@ -536,7 +541,7 @@ def _try_weasyprint(
     perf_log: list[dict[str, object]] | None = None,
 ) -> str | None:
     try:
-        from weasyprint import DEFAULT_OPTIONS, HTML  # type: ignore
+        from weasyprint import DEFAULT_OPTIONS, HTML
     except Exception:
         return None
 
@@ -544,7 +549,7 @@ def _try_weasyprint(
     html_raw = source.read_text(encoding="utf-8", errors="replace")
     base_dir = source.parent.resolve()
     base_url = source.parent.resolve().as_uri() + "/"
-    render_options: dict[str, object] = {}
+    render_options: _WeasyprintRenderOptions = {}
     cache: dict[str, object] = {}
     if "cache" in DEFAULT_OPTIONS:
         render_options["cache"] = cache
@@ -653,7 +658,7 @@ def _try_pypandoc(
     orientation: str,  # noqa: ARG001
 ) -> str | None:
     try:
-        import pypandoc  # type: ignore
+        import pypandoc
     except Exception:
         return None
 

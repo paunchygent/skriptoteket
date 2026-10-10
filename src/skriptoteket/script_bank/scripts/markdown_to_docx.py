@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import shutil
 import tempfile
@@ -8,18 +10,23 @@ from skriptoteket_toolkit import read_inputs, read_settings
 
 # Optional preinstalled libs
 try:
-    import pypandoc  # type: ignore
+    import pypandoc
 except Exception:
-    pypandoc = None  # type: ignore
+    _HAS_PYPANDOC = False
+else:
+    _HAS_PYPANDOC = True
 
 try:
-    from docx import Document  # type: ignore
-    from docx.enum.style import WD_STYLE_TYPE  # type: ignore
-    from docx.oxml.ns import qn  # type: ignore
-    from docx.shared import Inches, Pt, RGBColor  # type: ignore
+    from docx import Document
+    from docx.document import Document as DocxDocument
+    from docx.enum.style import WD_STYLE_TYPE
+    from docx.oxml.ns import qn
+    from docx.shared import Inches, Pt, RGBColor
+    from docx.styles.style import BaseStyle, CharacterStyle, ParagraphStyle
 except Exception:
-    Document = None  # type: ignore
-    WD_STYLE_TYPE = None  # type: ignore
+    _HAS_DOCX = False
+else:
+    _HAS_DOCX = True
 
 
 # =========================
@@ -251,28 +258,26 @@ def _scan_input_dir_for_markdown(input_root: Path) -> list[dict]:
 # =========================
 
 
-def _ensure_style(doc: Any, name: str, style_type: Any) -> Any | None:
+def _ensure_style(doc: DocxDocument, name: str, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
     """
     Ensure a style exists in the reference doc. If it already exists, return it.
     If not, try to create it. If that fails, return None.
     """
     try:
-        _ = doc.styles[name]
-        return _
+        existing: BaseStyle = doc.styles[name]
+        return existing
     except Exception:
         pass
 
-    if WD_STYLE_TYPE is None:
-        return None
-
     try:
-        return doc.styles.add_style(name, style_type)
+        created: BaseStyle = doc.styles.add_style(name, style_type)
+        return created
     except Exception:
         return None
 
 
 def _set_style_font(
-    doc: Any,
+    doc: DocxDocument,
     style_name: str,
     *,
     font_name: str | None = None,
@@ -282,7 +287,7 @@ def _set_style_font(
     underline: bool | None = None,
 ) -> None:
     try:
-        style = doc.styles[style_name]
+        style: CharacterStyle = doc.styles[style_name]
     except Exception:
         return
 
@@ -307,7 +312,7 @@ def _set_style_font(
 
 
 def _set_style_paragraph(
-    doc: Any,
+    doc: DocxDocument,
     style_name: str,
     *,
     space_before_pt: float | None = None,
@@ -315,7 +320,7 @@ def _set_style_paragraph(
     line_spacing: float | None = None,
 ) -> None:
     try:
-        style = doc.styles[style_name]
+        style: ParagraphStyle = doc.styles[style_name]
     except Exception:
         return
 
@@ -331,8 +336,8 @@ def _set_style_paragraph(
         return
 
 
-def _apply_docx_profile_styles(doc: Any, profile: str) -> None:
-    if Document is None:
+def _apply_docx_profile_styles(doc: DocxDocument, profile: str) -> None:
+    if not _HAS_DOCX:
         return
 
     # Margins
@@ -450,18 +455,17 @@ def _make_reference_docx(profile: str, tmpdir: Path) -> Path:
     We explicitly ensure key styles exist, so Pandoc has something to map to.
     """
     ref_path = tmpdir / f"reference_{profile}.docx"
-    if Document is None:
+    if not _HAS_DOCX:
         return ref_path
 
-    doc = Document()
+    doc: DocxDocument = Document()
 
     # Ensure styles that matter for "no color" exist
-    if WD_STYLE_TYPE is not None:
-        _ensure_style(doc, "Hyperlink", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "FollowedHyperlink", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Verbatim Char", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Code", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Source Code", WD_STYLE_TYPE.PARAGRAPH)
+    _ensure_style(doc, "Hyperlink", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "FollowedHyperlink", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Verbatim Char", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Code", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Source Code", WD_STYLE_TYPE.PARAGRAPH)
 
     _apply_docx_profile_styles(doc, profile)
     doc.add_paragraph("Reference document for Pandoc DOCX styling (generated).")
@@ -475,7 +479,7 @@ def _make_reference_docx(profile: str, tmpdir: Path) -> Path:
 
 
 def _pandoc_available() -> bool:
-    if pypandoc is None:
+    if not _HAS_PYPANDOC:
         return False
     try:
         _ = pypandoc.get_pandoc_version()
@@ -487,7 +491,7 @@ def _pandoc_available() -> bool:
 def _convert_with_pandoc(
     md_path: Path, out_docx: Path, profile: str, tmpdir: Path
 ) -> tuple[bool, str]:
-    if pypandoc is None:
+    if not _HAS_PYPANDOC:
         return False, "pypandoc saknas."
 
     reference = _make_reference_docx(profile, tmpdir)
