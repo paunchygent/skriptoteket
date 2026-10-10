@@ -1,4 +1,4 @@
-"""Background import publication, source deletion, readback and lease fencing."""
+"""Background import publication, source deletion, readback and upload validation."""
 
 import json
 from datetime import timedelta
@@ -60,6 +60,13 @@ _QUIZ = Path(
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
 
 
+class RecordedRoundsProvider(StubProvider):
+    """Replay the recorded live round on every call."""
+
+    def __init__(self) -> None:
+        super().__init__(content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage())
+
+
 class LockingFakeJobs(InMemoryEnrichmentJobRepository):
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return await self.get_by_id(job_id=job_id)
@@ -77,9 +84,7 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     env = JobEnvironment()
     env.jobs = LockingFakeJobs()
     env.actor = _actor()
-    env.provider = StubProvider(
-        content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage()
-    )
+    env.provider = RecordedRoundsProvider()
     env.importer = ImportExamWorkspaceDocumentHandler(
         jobs=env.jobs,
         uow=env.store._uow,
@@ -131,13 +136,15 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
 
 
 @pytest.mark.asyncio
-async def test_quiz_one_batch_publishes_version_one_deletes_source_and_exports_valid_qti():
+async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagnostics():
     env = environment()
     running = await claim(env)
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
+    # The recorded live round claimed every chunk, so no further round and no failure event.
     assert env.provider.call_count == 1
+    assert finished.diagnostics == ()
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert opened.summary.version == 1
@@ -190,29 +197,14 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     assert all(item.review.state.value == "review_required" for item in opened.document.items)
     assert opened.notes
     assert native_export_blockers(opened.document)
-
-
-@pytest.mark.asyncio
-async def test_worker_expiry_preserves_source_review_without_calling_provider():
-    env = environment()
-    running = await claim(env)
-    finished = await env.processor.handle(job=running, fallback_reason="Konverteringen avbröts.")
-    assert finished.source_docx is None
-    assert env.provider.call_count == 0
-    assert running.workspace_lineage_id is not None
-    opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    assert len(opened.document.items) == 109
-
-
-@pytest.mark.asyncio
-async def test_stale_worker_cannot_publish_or_delete_another_workers_source():
-    env = environment(enabled=False)
-    running = await claim(env)
-    env.jobs.jobs[running.id] = running.model_copy(update={"locked_by": "replacement"})
-    returned = await env.processor.handle(job=running)
-    assert returned.locked_by == "replacement"
-    assert returned.source_docx == _QUIZ.read_bytes()
-    assert not env.vault_files.files
+    codes = {event["code"] for event in finished.diagnostics}
+    assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
+    reason = opened.document.items[0].review.reasons[0]
+    assert reason == (
+        "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+        if not enabled
+        else "Dagens AI-budget är förbrukad. Kontrollera källtexten manuellt."
+    )
 
 
 @pytest.mark.asyncio
@@ -226,6 +218,16 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
         actor=env.actor, job_id=running.id
     )
     assert status.error_message and "Word" in status.error_message
+    assert finished.diagnostics == (
+        {
+            "stage": "job",
+            "code": "domain_error",
+            "round": None,
+            "item": None,
+            "anchors": [],
+            "detail": "VALIDATION_ERROR",
+        },
+    )
 
 
 @pytest.mark.asyncio

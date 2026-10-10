@@ -1,6 +1,6 @@
 {
   "title": {
-    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
+    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz",
     "source_anchors": [
       "body:0002"
     ]
@@ -31,2121 +31,1361 @@
       ]
     }
   ],
+  "answer_key_anchors": [
+    "body:0008",
+    "body:0011",
+    "body:0014",
+    "body:0017",
+    "body:0021",
+    "body:0024",
+    "body:0027",
+    "body:0030",
+    "body:0035",
+    "body:0041",
+    "body:0047",
+    "body:0053",
+    "body:0059",
+    "body:0065",
+    "body:0071",
+    "body:0077",
+    "body:0083",
+    "body:0089",
+    "body:0095",
+    "body:0101",
+    "body:0107",
+    "body:0114",
+    "body:0120",
+    "body:0126",
+    "body:0132",
+    "body:0138",
+    "body:0144",
+    "body:0150"
+  ],
   "items": [
     {
-      "item": {
-        "item_id": "item_001",
-        "sequence": 1,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "1. His profound essay about the war impressed the whole class. What does “profound” mean here? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "deep"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "strange"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "dignified"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "thrifty"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_001"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0006",
-        "body:0007",
-        "body:0008"
+        "body:0007"
       ],
-      "question_label": "1",
-      "points_evidence": {
-        "anchor": "body:0006",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0008",
-          "text": "Correct answer: A. deep",
-          "target_id": "choice_001",
-          "value": "deep"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "deep",
+          "correct": true
+        },
+        {
+          "text": "strange",
+          "correct": false
+        },
+        {
+          "text": "dignified",
+          "correct": false
+        },
+        {
+          "text": "thrifty",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_002",
-        "sequence": 2,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "2. They live a frugal life in a small house by the lake. What does “frugal” mean here? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "mysterious"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "deep"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "thrifty"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "strange"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_003"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0009",
-        "body:0010",
-        "body:0011"
+        "body:0010"
       ],
-      "question_label": "2",
-      "points_evidence": {
-        "anchor": "body:0009",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0011",
-          "text": "Correct answer: C. thrifty",
-          "target_id": "choice_003",
-          "value": "thrifty"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "mysterious",
+          "correct": false
+        },
+        {
+          "text": "deep",
+          "correct": false
+        },
+        {
+          "text": "thrifty",
+          "correct": true
+        },
+        {
+          "text": "strange",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_003",
-        "sequence": 3,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "3. A peculiar noise woke her just after midnight. What does “peculiar” mean here? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "indescribable"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "strange"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "dignified"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "deep"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_002"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0012",
-        "body:0013",
-        "body:0014"
+        "body:0013"
       ],
-      "question_label": "3",
-      "points_evidence": {
-        "anchor": "body:0012",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0014",
-          "text": "Correct answer: B. strange",
-          "target_id": "choice_002",
-          "value": "strange"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "indescribable",
+          "correct": false
+        },
+        {
+          "text": "strange",
+          "correct": true
+        },
+        {
+          "text": "dignified",
+          "correct": false
+        },
+        {
+          "text": "deep",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_004",
-        "sequence": 4,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "4. Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "crossed from one side to the other"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "kept it as something precious"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "made it richer or better"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "refused to give up his position"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_004"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0015",
-        "body:0016",
-        "body:0017"
+        "body:0016"
       ],
-      "question_label": "4",
-      "points_evidence": {
-        "anchor": "body:0015",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0017",
-          "text": "Correct answer: D. refused to give up his position",
-          "target_id": "choice_004",
-          "value": "refused to give up his position"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "crossed from one side to the other",
+          "correct": false
+        },
+        {
+          "text": "kept it as something precious",
+          "correct": false
+        },
+        {
+          "text": "made it richer or better",
+          "correct": false
+        },
+        {
+          "text": "refused to give up his position",
+          "correct": true
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_005",
-        "sequence": 5,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "5. “The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "symbolism"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "imagery"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "metaphor"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "alliteration"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_002"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0019",
-        "body:0020",
-        "body:0021"
+        "body:0020"
       ],
-      "question_label": "5",
-      "points_evidence": {
-        "anchor": "body:0019",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0021",
-          "text": "Correct answer: B. imagery",
-          "target_id": "choice_002",
-          "value": "imagery"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "symbolism",
+          "correct": false
+        },
+        {
+          "text": "imagery",
+          "correct": true
+        },
+        {
+          "text": "metaphor",
+          "correct": false
+        },
+        {
+          "text": "alliteration",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_006",
-        "sequence": 6,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "6. “Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "imagery"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "symbolism"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "alliteration"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "metaphor"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_004"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0022",
-        "body:0023",
-        "body:0024"
+        "body:0023"
       ],
-      "question_label": "6",
-      "points_evidence": {
-        "anchor": "body:0022",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0024",
-          "text": "Correct answer: D. metaphor",
-          "target_id": "choice_004",
-          "value": "metaphor"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "imagery",
+          "correct": false
+        },
+        {
+          "text": "symbolism",
+          "correct": false
+        },
+        {
+          "text": "alliteration",
+          "correct": false
+        },
+        {
+          "text": "metaphor",
+          "correct": true
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_007",
-        "sequence": 7,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "7. In a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "theme"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "tone"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "speaker"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "style"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_003"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0025",
-        "body:0026",
-        "body:0027"
+        "body:0026"
       ],
-      "question_label": "7",
-      "points_evidence": {
-        "anchor": "body:0025",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0027",
-          "text": "Correct answer: C. speaker",
-          "target_id": "choice_003",
-          "value": "speaker"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "In a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "theme",
+          "correct": false
+        },
+        {
+          "text": "tone",
+          "correct": false
+        },
+        {
+          "text": "speaker",
+          "correct": true
+        },
+        {
+          "text": "style",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_008",
-        "sequence": 8,
-        "kind": "single_choice",
-        "title": null,
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "8. Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines? (1 point)"
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "rhyme scheme"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "rhythm"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "stanza"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "line"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_001"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0028",
-        "body:0029",
-        "body:0030"
+        "body:0029"
       ],
-      "question_label": "8",
-      "points_evidence": {
-        "anchor": "body:0028",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
         {
-          "anchor": "body:0030",
-          "text": "Correct answer: A. rhyme scheme",
-          "target_id": "choice_001",
-          "value": "rhyme scheme"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "rhyme scheme",
+          "correct": true
+        },
+        {
+          "text": "rhythm",
+          "correct": false
+        },
+        {
+          "text": "stanza",
+          "correct": false
+        },
+        {
+          "text": "line",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_009",
-        "sequence": 9,
-        "kind": "single_choice",
-        "title": "Part 2A: contemplation (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “contemplation”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_001"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0032",
         "body:0033",
-        "body:0034",
-        "body:0035"
+        "body:0034"
       ],
-      "question_label": "Part 2A: contemplation (1 point)",
-      "points_evidence": {
-        "anchor": "body:0032",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: contemplation (1 point)",
+      "body": [
         {
-          "anchor": "body:0035",
-          "text": "Correct answer: A. begrundande",
-          "target_id": "choice_001",
-          "value": "begrundande"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “contemplation”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": true
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_010",
-        "sequence": 10,
-        "kind": "single_choice",
-        "title": "Part 2A: dignified (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “dignified”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_008"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0038",
         "body:0039",
-        "body:0040",
-        "body:0041"
+        "body:0040"
       ],
-      "question_label": "Part 2A: dignified (1 point)",
-      "points_evidence": {
-        "anchor": "body:0038",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: dignified (1 point)",
+      "body": [
         {
-          "anchor": "body:0041",
-          "text": "Correct answer: H. värdig",
-          "target_id": "choice_008",
-          "value": "värdig"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “dignified”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": true
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_011",
-        "sequence": 11,
-        "kind": "single_choice",
-        "title": "Part 2A: enrich (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “enrich”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_002"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0044",
         "body:0045",
-        "body:0046",
-        "body:0047"
+        "body:0046"
       ],
-      "question_label": "Part 2A: enrich (1 point)",
-      "points_evidence": {
-        "anchor": "body:0044",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: enrich (1 point)",
+      "body": [
         {
-          "anchor": "body:0047",
-          "text": "Correct answer: B. berika",
-          "target_id": "choice_002",
-          "value": "berika"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “enrich”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": true
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_012",
-        "sequence": 12,
-        "kind": "single_choice",
-        "title": "Part 2A: ineffable (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “ineffable”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_005"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0050",
         "body:0051",
-        "body:0052",
-        "body:0053"
+        "body:0052"
       ],
-      "question_label": "Part 2A: ineffable (1 point)",
-      "points_evidence": {
-        "anchor": "body:0050",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: ineffable (1 point)",
+      "body": [
         {
-          "anchor": "body:0053",
-          "text": "Correct answer: E. obeskrivlig",
-          "target_id": "choice_005",
-          "value": "obeskrivlig"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “ineffable”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": true
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_013",
-        "sequence": 13,
-        "kind": "single_choice",
-        "title": "Part 2A: inscrutable (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “inscrutable”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_006"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0056",
         "body:0057",
-        "body:0058",
-        "body:0059"
+        "body:0058"
       ],
-      "question_label": "Part 2A: inscrutable (1 point)",
-      "points_evidence": {
-        "anchor": "body:0056",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: inscrutable (1 point)",
+      "body": [
         {
-          "anchor": "body:0059",
-          "text": "Correct answer: F. outgrundlig",
-          "target_id": "choice_006",
-          "value": "outgrundlig"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “inscrutable”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": true
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_014",
-        "sequence": 14,
-        "kind": "single_choice",
-        "title": "Part 2A: oblivion (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “oblivion”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_004"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0062",
         "body:0063",
-        "body:0064",
-        "body:0065"
+        "body:0064"
       ],
-      "question_label": "Part 2A: oblivion (1 point)",
-      "points_evidence": {
-        "anchor": "body:0062",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: oblivion (1 point)",
+      "body": [
         {
-          "anchor": "body:0065",
-          "text": "Correct answer: D. glömska",
-          "target_id": "choice_004",
-          "value": "glömska"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “oblivion”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": true
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_015",
-        "sequence": 15,
-        "kind": "single_choice",
-        "title": "Part 2A: prejudice (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the Swedish translation of “prejudice”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "begrundande"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "berika"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "fördom"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "glömska"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "obeskrivlig"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "outgrundlig"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "sparsam"
-          },
-          {
-            "choice_id": "choice_008",
-            "text": "värdig"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_003"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0068",
         "body:0069",
-        "body:0070",
-        "body:0071"
+        "body:0070"
       ],
-      "question_label": "Part 2A: prejudice (1 point)",
-      "points_evidence": {
-        "anchor": "body:0068",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: prejudice (1 point)",
+      "body": [
         {
-          "anchor": "body:0071",
-          "text": "Correct answer: C. fördom",
-          "target_id": "choice_003",
-          "value": "fördom"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “prejudice”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": true
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_016",
-        "sequence": 16,
-        "kind": "single_choice",
-        "title": "Part 2B: style (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “style”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_002"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0074",
         "body:0075",
-        "body:0076",
-        "body:0077"
+        "body:0076"
       ],
-      "question_label": "Part 2B: style (1 point)",
-      "points_evidence": {
-        "anchor": "body:0074",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: style (1 point)",
+      "body": [
         {
-          "anchor": "body:0077",
-          "text": "Correct answer: B. poet’s typical writing manner",
-          "target_id": "choice_002",
-          "value": "poet’s typical writing manner"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “style”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": true
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_017",
-        "sequence": 17,
-        "kind": "single_choice",
-        "title": "Part 2B: stanza (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “stanza”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_001"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0080",
         "body:0081",
-        "body:0082",
-        "body:0083"
+        "body:0082"
       ],
-      "question_label": "Part 2B: stanza (1 point)",
-      "points_evidence": {
-        "anchor": "body:0080",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: stanza (1 point)",
+      "body": [
         {
-          "anchor": "body:0083",
-          "text": "Correct answer: A. group of poem lines",
-          "target_id": "choice_001",
-          "value": "group of poem lines"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “stanza”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": true
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_018",
-        "sequence": 18,
-        "kind": "single_choice",
-        "title": "Part 2B: tone (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “tone”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_006"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0086",
         "body:0087",
-        "body:0088",
-        "body:0089"
+        "body:0088"
       ],
-      "question_label": "Part 2B: tone (1 point)",
-      "points_evidence": {
-        "anchor": "body:0086",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: tone (1 point)",
+      "body": [
         {
-          "anchor": "body:0089",
-          "text": "Correct answer: F. attitude toward subject",
-          "target_id": "choice_006",
-          "value": "attitude toward subject"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “tone”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": true
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_019",
-        "sequence": 19,
-        "kind": "single_choice",
-        "title": "Part 2B: rhythm (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “rhythm”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_003"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0092",
         "body:0093",
-        "body:0094",
-        "body:0095"
+        "body:0094"
       ],
-      "question_label": "Part 2B: rhythm (1 point)",
-      "points_evidence": {
-        "anchor": "body:0092",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: rhythm (1 point)",
+      "body": [
         {
-          "anchor": "body:0095",
-          "text": "Correct answer: C. beat of stressed syllables",
-          "target_id": "choice_003",
-          "value": "beat of stressed syllables"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “rhythm”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": true
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_020",
-        "sequence": 20,
-        "kind": "single_choice",
-        "title": "Part 2B: theme (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “theme”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_004"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0098",
         "body:0099",
-        "body:0100",
-        "body:0101"
+        "body:0100"
       ],
-      "question_label": "Part 2B: theme (1 point)",
-      "points_evidence": {
-        "anchor": "body:0098",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: theme (1 point)",
+      "body": [
         {
-          "anchor": "body:0101",
-          "text": "Correct answer: D. central message of poem",
-          "target_id": "choice_004",
-          "value": "central message of poem"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “theme”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": true
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_021",
-        "sequence": 21,
-        "kind": "single_choice",
-        "title": "Part 2B: symbolism (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "Select the meaning of “symbolism”."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [
-          {
-            "choice_id": "choice_001",
-            "text": "group of poem lines"
-          },
-          {
-            "choice_id": "choice_002",
-            "text": "poet’s typical writing manner"
-          },
-          {
-            "choice_id": "choice_003",
-            "text": "beat of stressed syllables"
-          },
-          {
-            "choice_id": "choice_004",
-            "text": "central message of poem"
-          },
-          {
-            "choice_id": "choice_005",
-            "text": "single row of words"
-          },
-          {
-            "choice_id": "choice_006",
-            "text": "attitude toward subject"
-          },
-          {
-            "choice_id": "choice_007",
-            "text": "use of symbols for ideas"
-          }
-        ],
-        "gaps": [],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": [
-            "choice_007"
-          ]
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0104",
         "body:0105",
-        "body:0106",
-        "body:0107"
+        "body:0106"
       ],
-      "question_label": "Part 2B: symbolism (1 point)",
-      "points_evidence": {
-        "anchor": "body:0104",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: symbolism (1 point)",
+      "body": [
         {
-          "anchor": "body:0107",
-          "text": "Correct answer: G. use of symbols for ideas",
-          "target_id": "choice_007",
-          "value": "use of symbols for ideas"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “symbolism”.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": true
         }
       ]
     },
     {
-      "item": {
-        "item_id": "item_022",
-        "sequence": 22,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 1 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": " the letters her grandmother wrote her, and she keeps them in a wooden box."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "cherish"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0111",
         "body:0112",
-        "body:0113",
-        "body:0114"
+        "body:0113"
       ],
-      "question_label": "Part 3, Question 1 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0111",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 1 (1 point)",
+      "body": [
         {
-          "anchor": "body:0114",
-          "text": "Correct answer: cherish",
-          "target_id": "gap_001",
-          "value": "cherish"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cherish"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " the letters her grandmother wrote her, and she keeps them in a wooden box.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_023",
-        "sequence": 23,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 2 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": " the desert from east to west."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "traverse"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0117",
         "body:0118",
-        "body:0119",
-        "body:0120"
+        "body:0119"
       ],
-      "question_label": "Part 3, Question 2 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0117",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 2 (1 point)",
+      "body": [
         {
-          "anchor": "body:0120",
-          "text": "Correct answer: traverse",
-          "target_id": "gap_001",
-          "value": "traverse"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "traverse"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " the desert from east to west.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_024",
-        "sequence": 24,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 3 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": " other players by mocking them."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "humiliate"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0123",
         "body:0124",
-        "body:0125",
-        "body:0126"
+        "body:0125"
       ],
-      "question_label": "Part 3, Question 3 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0123",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 3 (1 point)",
+      "body": [
         {
-          "anchor": "body:0126",
-          "text": "Correct answer: humiliate",
-          "target_id": "gap_001",
-          "value": "humiliate"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "humiliate"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " other players by mocking them.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_025",
-        "sequence": 25,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 4 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": ", the chorus changes key without warning, and everyone looks up in surprise."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "out of the blue"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0129",
         "body:0130",
-        "body:0131",
-        "body:0132"
+        "body:0131"
       ],
-      "question_label": "Part 3, Question 4 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0129",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 4 (1 point)",
+      "body": [
         {
-          "anchor": "body:0132",
-          "text": "Correct answer: out of the blue",
-          "target_id": "gap_001",
-          "value": "out of the blue"
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "out of the blue"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": ", the chorus changes key without warning, and everyone looks up in surprise.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_026",
-        "sequence": 26,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 5 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": " in the first stanza has eight syllables."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "line"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0135",
         "body:0136",
-        "body:0137",
-        "body:0138"
+        "body:0137"
       ],
-      "question_label": "Part 3, Question 5 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0135",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 5 (1 point)",
+      "body": [
         {
-          "anchor": "body:0138",
-          "text": "Correct answer: line",
-          "target_id": "gap_001",
-          "value": "line"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "line"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " in the first stanza has eight syllables.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_027",
-        "sequence": 27,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 6 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": ", are all common and concrete."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "diction"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0141",
         "body:0142",
-        "body:0143",
-        "body:0144"
+        "body:0143"
       ],
-      "question_label": "Part 3, Question 6 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0141",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 6 (1 point)",
+      "body": [
         {
-          "anchor": "body:0144",
-          "text": "Correct answer: diction",
-          "target_id": "gap_001",
-          "value": "diction"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diction"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": ", are all common and concrete.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     },
     {
-      "item": {
-        "item_id": "item_028",
-        "sequence": 28,
-        "kind": "gap_fill",
-        "title": "Part 3, Question 7 (1 point)",
-        "body": [
-          {
-            "segments": [
-              {
-                "kind": "text",
-                "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of "
-              },
-              {
-                "kind": "gap",
-                "gap_id": "gap_001"
-              },
-              {
-                "kind": "text",
-                "text": "."
-              }
-            ]
-          }
-        ],
-        "points": 1,
-        "choices": [],
-        "gaps": [
-          {
-            "gap_id": "gap_001",
-            "accepted_values": [
-              "alliteration"
-            ],
-            "hint": null
-          }
-        ],
-        "answer_key": {
-          "origin": "source_provided",
-          "correct_choice_ids": []
-        },
-        "review": {
-          "state": "review_complete",
-          "parse_origin": "llm_parsed",
-          "confidence": null,
-          "reasons": []
-        },
-        "source_anchor": null
-      },
       "source_anchors": [
         "body:0147",
         "body:0148",
-        "body:0149",
-        "body:0150"
+        "body:0149"
       ],
-      "question_label": "Part 3, Question 7 (1 point)",
-      "points_evidence": {
-        "anchor": "body:0147",
-        "text": "1 point"
-      },
-      "key_evidence": [
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3, Question 7 (1 point)",
+      "body": [
         {
-          "anchor": "body:0150",
-          "text": "Correct answer: alliteration",
-          "target_id": "gap_001",
-          "value": "alliteration"
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "alliteration"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
         }
-      ]
+      ],
+      "points": 1,
+      "choices": []
     }
   ]
 }

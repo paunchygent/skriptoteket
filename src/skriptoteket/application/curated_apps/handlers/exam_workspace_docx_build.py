@@ -1,6 +1,5 @@
 """Batched Responses construction with source validation and review fallback."""
 
-from dataclasses import replace
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
@@ -28,6 +27,8 @@ from skriptoteket.protocols.exam_answer_key import (
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
+_MAX_ROUNDS = 3
+
 
 class DocxAIConverter:
     """Coordinate at most three failed-source-only rounds into a native exam."""
@@ -49,7 +50,7 @@ class DocxAIConverter:
         selected = self._provider_selector.select_route().primary
         if selected.endpoint_kind is not StructuredLLMEndpointKind.RESPONSES:
             raise ValueError("Responses profile required")
-        return replace(selected, max_output_tokens=16384)
+        return selected
 
     async def convert(
         self,
@@ -61,41 +62,64 @@ class DocxAIConverter:
         chunks: tuple[DocxChunk, ...],
         fallback_reason: str | None = None,
     ) -> DocxBuildResult:
-        """Freeze passing items and preserve every remaining source for review."""
-        state = DocxBuildState(document_id, filename, source_sha256, chunks)
+        """Freeze converted items and keep every remaining chunk as a reasoned review item."""
+        state = DocxBuildState(job_id, document_id, filename, source_sha256, chunks)
         if fallback_reason or not self._enabled:
-            state.reason = (
-                fallback_reason or "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+            reason = fallback_reason or "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+            state.record(
+                "fallback", "lease_expired" if fallback_reason else "ai_disabled", detail=reason
             )
+            state.fail_all_pending(reason)
             return state.result()
         try:
             profile = self._select_profile()
-        except Exception:
-            state.reason = (
+        except Exception as error:
+            state.record("provider", "responses_profile_unavailable", detail=type(error).__name__)
+            state.fail_all_pending(
                 "AI-tolkningens Responses-tjänst är inte tillgänglig. "
                 "Kontrollera källtexten manuellt."
             )
             return state.result()
-        for round_number in range(1, 4):
+        for round_number in range(1, _MAX_ROUNDS + 1):
             if not state.pending:
                 break
+            state.round = round_number
             try:
                 request = build_round_request(
                     job_id=job_id,
                     round_number=round_number,
                     pending=state.pending,
+                    answer_key=tuple(c for c in chunks if c.anchor in state.key_anchors),
                     failures=state.failures,
                     profile=profile,
                 )
-                response = await self._rounds.exchange(request, profile)
+                reply = await self._rounds.exchange(request, profile)
             except DocxBuildRoundFailure as error:
-                state.reason = str(error)
+                state.record("provider", error.code, detail=error.detail)
+                state.fail_all_pending(str(error))
                 break
+            if reply.reconciliation_failure is not None:
+                state.record(
+                    "provider", "token_reconciliation_failed", detail=reply.reconciliation_failure
+                )
+            response = reply.response
             state.record_usage(response.usage)
             if response.finish_reason not in {None, "completed"}:
-                state.reason = (
+                state.record(
+                    "provider", "response_incomplete", detail=f"status={response.finish_reason}"
+                )
+                state.fail_all_pending(
                     "AI-tjänstens svar blev ofullständigt. Kontrollera källtexten manuellt."
                 )
                 break
             admit_batch(response.content, state)
+        else:
+            if state.pending:
+                state.record(
+                    "fallback",
+                    "retries_exhausted",
+                    anchors=tuple(c.anchor for c in state.pending),
+                    detail=f"{_MAX_ROUNDS} rounds",
+                )
+        state.round = None
         return state.result()

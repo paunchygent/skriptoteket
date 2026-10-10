@@ -1,48 +1,108 @@
-"""Source-bound provider contracts for batched DOCX construction."""
+"""Producer contract for batched DOCX construction and its diagnostics."""
 
 from dataclasses import dataclass
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-    NativeExamItem,
+    NativeExamItemKind,
 )
 
 
-class SourceText(BaseModel):
+class _Produced(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class ProducedSegment(_Produced):
+    """One run of student-visible text, or one blank the student fills in."""
+
+    kind: Literal["text", "gap"]
+    text: str | None = Field(
+        description="The source wording for a text segment; null for a gap segment."
+    )
+    accepted_values: tuple[str, ...] = Field(
+        description="For a gap: the accepted answers from the teacher's facit. Empty for text."
+    )
+    hint: str | None = Field(description="A gap hint printed in the source, else null.")
+
+    @model_validator(mode="after")
+    def _kind_fields(self) -> "ProducedSegment":
+        if self.kind == "text" and (self.text is None or self.accepted_values or self.hint):
+            raise ValueError("text segments carry text only")
+        if self.kind == "gap" and self.text is not None:
+            raise ValueError("gap segments carry no text")
+        return self
+
+
+class ProducedParagraph(_Produced):
+    segments: tuple[ProducedSegment, ...] = Field(min_length=1)
+
+
+class ProducedChoice(_Produced):
+    text: str = Field(
+        min_length=1, description="The option wording without its source letter or number."
+    )
+    correct: bool = Field(description="True only when the teacher's facit keys this option.")
+
+
+class ProducedItem(_Produced):
+    """One exam question as the model builds it from its source chunks."""
+
+    source_anchors: tuple[str, ...] = Field(
+        min_length=1,
+        description="Anchors of the question's own chunks: prompt, options and blanks. "
+        "Never an answer-key chunk.",
+    )
+    outcome: Literal["converted", "review"] = Field(
+        description="review when the question cannot be converted faithfully."
+    )
+    review_reason: str | None = Field(
+        description="For review: a short Swedish reason naming what blocks conversion. "
+        "Null when converted."
+    )
+    kind: NativeExamItemKind
+    title: str | None = Field(description="A question heading printed in the source, else null.")
+    body: tuple[ProducedParagraph, ...] = Field(min_length=1)
+    points: int | None = Field(description="Points printed in the source, else null.")
+    choices: tuple[ProducedChoice, ...] = Field(
+        description="Options in source order for single_choice and multiple_response; "
+        "empty otherwise."
+    )
+
+
+class ProducedMetadata(_Produced):
     text: str = Field(min_length=1)
     source_anchors: tuple[str, ...] = Field(min_length=1)
 
 
-class SourceEvidence(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-    anchor: str
-    text: str = Field(min_length=1)
+class DocxBuildEnvelope(_Produced):
+    """The strict output the provider is required to return."""
+
+    title: ProducedMetadata | None
+    instructions: tuple[ProducedMetadata, ...]
+    answer_key_anchors: tuple[str, ...] = Field(
+        description="Anchors of chunks that hold the teacher's facit or answers."
+    )
+    items: tuple[ProducedItem, ...]
 
 
-class KeyEvidence(SourceEvidence):
-    target_id: str
-    value: str = Field(min_length=1)
+DocxBuildStage = Literal["provider", "admission", "fallback", "job"]
 
 
-class DocxBuildEntry(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-    item: NativeExamItem
-    source_anchors: tuple[str, ...] = Field(min_length=1)
-    question_label: str = Field(min_length=1)
-    points_evidence: SourceEvidence | None
-    key_evidence: tuple[KeyEvidence, ...]
+class DocxBuildEvent(_Produced):
+    """One observed failure in a DOCX build, free of exam wording."""
 
+    stage: DocxBuildStage
+    code: str
+    round: int | None = None
+    item: int | None = None
+    anchors: tuple[str, ...] = ()
+    detail: str = ""
 
-class DocxBuildEnvelope(BaseModel):
-    """Provider shape; entries are validated separately at admission."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-    title: SourceText | None
-    instructions: tuple[SourceText, ...]
-    items: tuple[DocxBuildEntry, ...]
+    def as_json(self) -> dict[str, JsonValue]:
+        return self.model_dump(mode="json")
 
 
 @dataclass(frozen=True)
@@ -51,3 +111,4 @@ class DocxBuildResult:
     notes: tuple[str, ...]
     input_tokens: int | None = None
     output_tokens: int | None = None
+    events: tuple[DocxBuildEvent, ...] = ()

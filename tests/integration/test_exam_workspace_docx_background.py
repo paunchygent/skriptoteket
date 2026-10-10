@@ -1,6 +1,6 @@
-"""Real PostgreSQL upload-to-version-one proof using a stored Responses fixture.
+"""Real PostgreSQL upload-to-version-one proof replaying a recorded live Responses round.
 
-The response fixture is source-authored test data, not a live-provider capture.
+The response fixture is the output of a recorded live GPT-6 Luna run on the quiz.
 The HTTP adapter, job queue, token ledger, container storage and QTI validators
 are the production implementations.
 """
@@ -36,6 +36,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carr
     CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -57,6 +60,9 @@ from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
 )
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_conversion_profile,
 )
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
@@ -116,7 +122,7 @@ def _document_store(
     )
 
 
-async def test_quiz_background_job_commits_one_source_faithful_document_and_valid_qti(
+async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
@@ -137,7 +143,9 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
         requests.append(payload)
         assert request.url.path == "/v1/responses"
         assert payload["text"]["format"]["strict"] is True
-        assert payload["max_output_tokens"] == 16_384
+        assert payload["model"] == "gpt-6-luna"
+        assert payload["reasoning"] == {"effort": "medium"}
+        assert payload["max_output_tokens"] == 128_000
         assert "tools" not in payload
         return httpx.Response(
             200,
@@ -185,7 +193,12 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
             )
             converter = DocxAIConverter(
                 provider=provider,
-                provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+                provider_selector=FixedRouteAnswerKeyProviderSelector(
+                    route=AnswerKeyProviderRoute(
+                        primary=build_luna_docx_conversion_profile(settings),
+                        failover=_route().failover,
+                    )
+                ),
                 leases=PostgreSQLAnswerKeyTokenLeaseRepository(
                     session, daily_token_limit=1_000_000
                 ),
@@ -211,6 +224,7 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
     async with session_factory() as reader:
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
+        assert model.diagnostics == []
         vault_files = PostgreSQLUserVaultFileRepository(reader)
         store = _document_store(
             reader,
@@ -230,12 +244,22 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
             "gap_fill"
         ] * 7
         assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
-        expected = json.loads(_RESPONSE.read_text())
-        for actual, entry in zip(document.items, expected["items"], strict=True):
-            assert actual.points == entry["item"]["points"]
-            assert actual.answer_key.model_dump(mode="json") == entry["item"]["answer_key"]
-            assert actual.model_dump(mode="json")["body"] == entry["item"]["body"]
-            assert actual.model_dump(mode="json")["gaps"] == entry["item"]["gaps"]
+        assert [item.answer_key.correct_choice_ids for item in document.items[:21]] == [
+            (f"choice_{i:03d}",)
+            for i in [1, 3, 2, 4, 2, 4, 3, 1, 1, 8, 2, 5, 6, 4, 3, 2, 1, 6, 3, 4, 7]
+        ]
+        assert [item.gaps[0].accepted_values for item in document.items[21:]] == [
+            (word,)
+            for word in [
+                "cherish",
+                "traverse",
+                "humiliate",
+                "out of the blue",
+                "line",
+                "diction",
+                "alliteration",
+            ]
+        ]
         leases = (
             await reader.scalars(
                 select(ExamAnswerKeyTokenLeaseModel).where(
@@ -243,8 +267,9 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                 )
             )
         ).all()
-        assert len(leases) == 1 and leases[0].reserved_tokens > 16_384
-        assert leases[0].actual_tokens is None  # Fixture carries no invented measured usage.
+        assert len(leases) == 1 and leases[0].reserved_tokens > 128_000
+        # The replayed bodies carry no usage, so no measured tokens are invented.
+        assert all(lease.actual_tokens is None for lease in leases)
         package, report = build_native_examnet_qti_package(
             document, package_name="quiz", qti_writer=ExamNetQtiPackageWriter()
         )

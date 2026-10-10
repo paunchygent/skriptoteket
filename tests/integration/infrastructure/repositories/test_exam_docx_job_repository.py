@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
+from pydantic import JsonValue
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -13,6 +14,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
+    finish_enrichment_job,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
@@ -93,6 +95,58 @@ async def test_docx_bytes_survive_commit_and_are_deleted_at_terminal_state(
         assert model is not None
         assert model.status == terminal_status.value
         assert model.source_docx is None
+
+
+async def test_docx_failure_diagnostics_survive_commit_and_reload(
+    db_session: AsyncSession,
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(db_session)
+    queued = await jobs.create(job=_job())
+    assert queued.diagnostics == ()
+    diagnostics: tuple[dict[str, JsonValue], ...] = (
+        {
+            "stage": "admission",
+            "code": "native_contract_invalid",
+            "round": 1,
+            "item": 0,
+            "anchors": ["body:0006"],
+            "detail": "x",
+        },
+    )
+    finished = finish_enrichment_job(
+        job=queued,
+        status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
+        now=_NOW,
+        last_error="conversion failed",
+        diagnostics=diagnostics,
+    ).model_copy(update={"source_docx": None})
+    await jobs.update(job=finished)
+    await db_session.commit()
+
+    async with session_factory() as reader:
+        fetched = await PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader).get_by_id(
+            job_id=queued.id
+        )
+        assert fetched is not None
+        assert fetched.diagnostics == diagnostics
+        assert fetched.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+        assert fetched.source_docx is None
+        assert (
+            finish_enrichment_job(
+                job=fetched, status=ExamAnswerKeyEnrichmentJobStatus.FAILED, now=_NOW
+            ).diagnostics
+            == diagnostics
+        )
+        assert (
+            finish_enrichment_job(
+                job=fetched,
+                status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                now=_NOW,
+                diagnostics=(),
+            ).diagnostics
+            == ()
+        )
 
 
 async def test_import_and_enrichment_coexist_at_revision_one_and_lookup_is_lane_specific(
