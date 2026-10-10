@@ -397,7 +397,9 @@ class SaveExamWorkspaceDocumentHandler:
 
         container_bytes = self._codec.build(
             content=ExamWorkspaceContainerContent(
-                document=document, assets_by_id=assets_by_id, notes=()
+                document=document,
+                assets_by_id=assets_by_id,
+                notes=head_container.notes,
             )
         )
         vault_file = await self._store.save_version(
@@ -412,5 +414,5 @@ class SaveExamWorkspaceDocumentHandler:
             rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(vault_file), notes=()
+            document=document, summary=_summary(vault_file), notes=head_container.notes
         )
