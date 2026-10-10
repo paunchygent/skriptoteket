@@ -1,12 +1,17 @@
 """Batched failed-only retries, leases, measured usage and graceful fallbacks."""
 
+import io
 import json
+import zipfile
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
 
+from skriptoteket.application.curated_apps.exam_workspace_exports import (
+    build_native_examnet_qti_package,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
@@ -27,6 +32,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeItemReviewState,
+    native_export_blockers,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
+    ExamNetQtiPackageWriter,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
@@ -326,6 +335,31 @@ async def test_metadata_passes_are_excluded_from_retry_and_unclaimed_text_remain
             "k1",
             "unclaimed",
         ]
+
+
+@pytest.mark.parametrize("field", ["title", "instructions"])
+async def test_facit_bound_metadata_is_rejected_and_item_keeps_reusable_key(field):
+    converter, provider, _, _, _ = ports()
+    facit = choice_source()[2].text
+    metadata = {"text": facit, "source_anchors": ["k1"]}
+    provider.complete_structured.return_value = response(
+        [choice_entry().model_dump(mode="json")],
+        **{field: metadata if field == "title" else [metadata]},
+    )
+    result = await convert(converter)
+    assert provider.complete_structured.await_count == 1
+    assert result.document.title == "test.docx"
+    assert result.document.instructions == ()
+    assert [item.source_anchor for item in result.document.items] == ["q1"]
+    assert result.document.items[0].review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert result.notes == (facit,)
+    assert native_export_blockers(result.document) == ()
+    package, report = build_native_examnet_qti_package(
+        result.document, package_name="probe", qti_writer=ExamNetQtiPackageWriter()
+    )
+    assert json.loads(report)["package_status"] == "passed"
+    with zipfile.ZipFile(io.BytesIO(package)) as archive:
+        assert not [name for name in archive.namelist() if facit.encode() in archive.read(name)]
 
 
 async def test_wrong_endpoint_never_calls_provider_or_reserves_lease():

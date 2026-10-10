@@ -30,6 +30,8 @@ def _metadata_candidates(
             metadata = SourceText.model_validate_json(json.dumps(value), strict=True)
             if not set(metadata.source_anchors) <= pending_anchors:
                 raise ValueError("Metadata references frozen source")
+            if set(metadata.source_anchors) & state.key_anchors:
+                raise ValueError("Metadata references answer-key evidence")
             validate_source_text(metadata, state.chunks)
             valid.append(metadata)
         except (ValueError, ValidationError):
@@ -51,11 +53,7 @@ def _admit_metadata(
     metadata = (*state.instructions, *((state.title,) if state.title else ()))
     for chunk in state.pending:
         texts = [value.text for value in metadata if chunk.anchor in value.source_anchors]
-        if (
-            chunk.anchor not in state.key_anchors
-            and texts
-            and normalize_text(" ".join(texts)) == normalize_text(chunk.text)
-        ):
+        if texts and normalize_text(" ".join(texts)) == normalize_text(chunk.text):
             state.claimed.add(chunk.anchor)
 
 
