@@ -93,11 +93,16 @@ class DocxAIConverter:
                     failures=state.failures,
                     profile=profile,
                 )
-                response = await self._rounds.exchange(request, profile)
+                reply = await self._rounds.exchange(request, profile)
             except DocxBuildRoundFailure as error:
                 state.record("provider", error.code, detail=error.detail)
                 state.fail_all_pending(str(error))
                 break
+            if reply.reconciliation_failure is not None:
+                state.record(
+                    "provider", "token_reconciliation_failed", detail=reply.reconciliation_failure
+                )
+            response = reply.response
             state.record_usage(response.usage)
             if response.finish_reason not in {None, "completed"}:
                 state.record(

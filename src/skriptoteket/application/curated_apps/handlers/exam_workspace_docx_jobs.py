@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import hashlib
-import logging
 from pathlib import PurePosixPath
 
+import structlog
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -30,13 +30,14 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _Diagnostics = tuple[dict[str, JsonValue], ...]
 
 
-def _job_failure(code: str, detail: str) -> _Diagnostics:
-    return (DocxBuildEvent(stage="job", code=code, detail=detail).as_json(),)
+def _job_failure(code: str, detail: str, observed: _Diagnostics = ()) -> _Diagnostics:
+    """Append the terminal job failure to the conversion events already observed."""
+    return (*observed, DocxBuildEvent(stage="job", code=code, detail=detail).as_json())
 
 
 class ProcessExamWorkspaceDocxJobHandler:
@@ -70,6 +71,7 @@ class ProcessExamWorkspaceDocxJobHandler:
     ) -> ExamAnswerKeyEnrichmentJob:
         if job.source_docx is None or job.workspace_lineage_id is None:
             raise ValueError("Unfinished DOCX jobs require their source and lineage.")
+        observed: _Diagnostics = ()
         try:
             actor = await self._users.get_by_id(job.owner_user_id)
             if actor is None:
@@ -87,6 +89,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                 chunks=chunks,
                 fallback_reason=fallback_reason,
             )
+            observed = tuple(event.as_json() for event in result.events)
             content = self._codec.build(
                 content=ExamWorkspaceContainerContent(
                     document=result.document,
@@ -111,33 +114,29 @@ class ProcessExamWorkspaceDocxJobHandler:
                     job=current,
                     status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
                     now=self._clock.now(),
-                    diagnostics=tuple(event.as_json() for event in result.events),
+                    diagnostics=observed,
                 ).model_copy(update={"source_docx": None})
                 updated = await self._jobs.update(job=finished, expected_worker_id=job.locked_by)
             logger.info(
                 "DOCX conversion job succeeded",
-                extra={
-                    "job_id": str(job.id),
-                    "items": len(result.document.items),
-                    "review_items": sum(
-                        bool(item.review.reasons) for item in result.document.items
-                    ),
-                    "failure_events": len(result.events),
-                    "input_tokens": result.input_tokens,
-                    "output_tokens": result.output_tokens,
-                },
+                job_id=str(job.id),
+                items=len(result.document.items),
+                review_items=sum(bool(item.review.reasons) for item in result.document.items),
+                failure_events=len(result.events),
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
             )
             return updated
         except DomainError as error:
             return await self._fail(
-                job, error.message, _job_failure("domain_error", error.code.value)
+                job, error.message, _job_failure("domain_error", error.code.value, observed)
             )
         except Exception as error:
-            logger.exception("DOCX conversion job crashed", extra={"job_id": str(job.id)})
+            logger.exception("DOCX conversion job crashed", job_id=str(job.id))
             return await self._fail(
                 job,
                 "Konverteringen stoppades av ett oväntat fel. Försök igen eller kontakta support.",
-                _job_failure("unexpected_error", type(error).__name__),
+                _job_failure("unexpected_error", type(error).__name__, observed),
             )
 
     def _owns(
@@ -156,7 +155,9 @@ class ProcessExamWorkspaceDocxJobHandler:
     ) -> ExamAnswerKeyEnrichmentJob:
         logger.warning(
             "DOCX conversion job failed",
-            extra={"job_id": str(job.id), "last_error": message, "diagnostics": diagnostics},
+            job_id=str(job.id),
+            last_error=message,
+            diagnostics=diagnostics,
         )
         async with self._uow:
             current = await self._jobs.get_by_id_for_update(job_id=job.id)

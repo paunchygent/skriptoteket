@@ -1,8 +1,9 @@
 """Accepted items, chunk roles, observed failures and usage for one DOCX build."""
 
-import logging
 from dataclasses import dataclass, field
 from uuid import UUID
+
+import structlog
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
@@ -16,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 NO_ITEM_REASON = "AI-tolkningen gav ingen fråga eller rubrik för källstycket."
 
@@ -74,10 +75,7 @@ class DocxBuildState:
             }
         )
         self.events.append(event)
-        logger.warning(
-            "DOCX build failure observed",
-            extra={"job_id": str(self.job_id), **event.as_json()},
-        )
+        logger.warning("DOCX build failure observed", job_id=str(self.job_id), **event.as_json())
 
     def fail_chunks(self, anchors: tuple[str, ...] | set[str], reason: str) -> None:
         for anchor in anchors:

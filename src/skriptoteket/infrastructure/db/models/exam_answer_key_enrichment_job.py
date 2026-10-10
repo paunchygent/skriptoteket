@@ -13,9 +13,9 @@ Relationships:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from uuid import UUID, uuid4
 
+from pydantic import JsonValue
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -73,7 +73,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     locked_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    diagnostics: Mapped[list[dict[str, Any]]] = mapped_column(
+    diagnostics: Mapped[list[dict[str, JsonValue]]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
 
