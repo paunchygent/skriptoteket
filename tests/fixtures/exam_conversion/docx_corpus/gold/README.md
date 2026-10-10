@@ -4,7 +4,8 @@ TASK-SKRIPT-39-05-02 G1-G3 owns these source-authored gold files. Each JSON file
 was read from its DOCX and embedded facit, independently of the converter.
 `source_sha256` binds the file to the checked source bytes. The user confirmed all eight
 files on 2026-10-10; each carries `confirmed: true` and a `confirmation_note`
-recording that decision. A later change to a gold file needs a new user
+recording that decision. The same day the user accepted corrections from a blind
+second labelling to the English 1, poetry and Solid Gold 3 files. A later change to a gold file needs a new user
 confirmation. Unresolved `teacher_questions` prevent confirmation and produce comparison mismatches.
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`).
@@ -16,12 +17,15 @@ files are the A7 acceptance evidence.
 
 One source-numbered question is one gold item, including all of its subparts.
 The poetry quiz's separately labelled Part 2 and Part 3 questions are separate
-items. Question numbering and point labels become metadata. Section instructions,
-word banks, letter hints and relevant reading passages stay in prompts. Choice
+items. Question numbering and point labels become metadata. Section headings are
+not part of item prompts; an item's own heading text, such as poetry
+“Part 2A: contemplation”, stays. Section instructions, word banks, letter hints
+and relevant reading passages stay in prompts. Choice
 options live in `choices`; correct answers never enter student-visible text.
 `[___]` marks each response gap in order. A separate response line duplicating
 an in-sentence gap is omitted. Matching items preserve the original table
-text in the prompt and state the correct directed pairs in `pairs`.
+text in the prompt and state the correct directed pairs in `pairs`. Table rows in
+prompts drop empty cells, including blank matching answer cells.
 
 Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
