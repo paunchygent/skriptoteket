@@ -1,8 +1,8 @@
 ## Current
 
 - [TASK-SKRIPT-39-04-03](docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md)
-  is `proposed`: one gap per DOCX answer label (walk finding W9, merged
-  value "vid skolan Satsdel: adverbial"). F2-F3 reopened 2026-10-10 (import model under discussion); user owns
+  is `proposed`: AI item interpretation at DOCX import (walk finding W9, merged
+  value "vid skolan Satsdel: adverbial"). Terms F1-F9 user-decided 2026-10-10 (Decisions API first); user owns
   proposed->ready. Backend work: route to Codex.
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `proposed`: pending answer-key proposals survive a save (user decision

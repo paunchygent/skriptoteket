@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e65a5bcb2df9c0137dd942ee7a7575a8d25c6e3b925947756f633cc4461c1424",
+  "source_set_digest": "177b972927cc1908a512662e2eaa00fa6596a72d9e5f455988845040332637bc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4546,7 +4546,7 @@
     {
       "id": "TASK-SKRIPT-39-04-03",
       "type": "task",
-      "title": "Split multiple DOCX answer labels into separate gaps",
+      "title": "AI item interpretation at DOCX import",
       "path": "docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md",
       "status": "proposed",
       "task_kind": "story",
