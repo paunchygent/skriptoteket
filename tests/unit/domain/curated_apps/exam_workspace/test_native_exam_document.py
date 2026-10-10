@@ -33,9 +33,7 @@ def _review(
     parse_origin: NativeParseOrigin = NativeParseOrigin.DETERMINISTIC,
     confidence: float | None = 0.9,
 ) -> NativeItemReview:
-    return NativeItemReview(
-        state=state, parse_origin=parse_origin, confidence=confidence
-    )
+    return NativeItemReview(state=state, parse_origin=parse_origin, confidence=confidence)
 
 
 def _paragraph(text: str) -> NativeParagraph:
@@ -127,9 +125,9 @@ class TestSerializationRoundTrip:
 
     def test_serialization_is_deterministic(self) -> None:
         document = _document(_free_text_item())
-        assert native_exam_document_json_bytes(
+        assert native_exam_document_json_bytes(document) == native_exam_document_json_bytes(
             document
-        ) == native_exam_document_json_bytes(document)
+        )
 
     def test_invalid_json_raises_domain_error(self) -> None:
         with pytest.raises(DomainError) as exc_info:
@@ -173,9 +171,7 @@ class TestItemInvariants:
 
     def test_keyed_gap_fill_requires_accepted_values_per_gap(self) -> None:
         with pytest.raises(ValidationError, match="needs accepted values"):
-            _gap_fill_item(
-                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED, accepted=()
-            )
+            _gap_fill_item(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED, accepted=())
 
     def test_free_text_requires_not_applicable_origin(self) -> None:
         with pytest.raises(ValidationError, match="not_applicable"):
@@ -197,9 +193,7 @@ class TestItemInvariants:
                 body=(_paragraph("Ingen lucka här."),),
                 points=1,
                 gaps=(NativeGap(gap_id="gap_001", accepted_values=("x",)),),
-                answer_key=NativeAnswerKey(
-                    origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED
-                ),
+                answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
                 review=_review(),
             )
 
@@ -209,14 +203,8 @@ class TestItemInvariants:
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
-                body=(
-                    NativeParagraph(
-                        segments=(NativeGapSegment(gap_id="gap_001"),)
-                    ),
-                ),
-                answer_key=NativeAnswerKey(
-                    origin=NativeAnswerKeyOrigin.NOT_APPLICABLE
-                ),
+                body=(NativeParagraph(segments=(NativeGapSegment(gap_id="gap_001"),)),),
+                answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 review=_review(),
             )
 
@@ -228,9 +216,7 @@ class TestItemInvariants:
                 kind=NativeExamItemKind.FREE_TEXT,
                 body=(_paragraph("Fråga"),),
                 points=0,
-                answer_key=NativeAnswerKey(
-                    origin=NativeAnswerKeyOrigin.NOT_APPLICABLE
-                ),
+                answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 review=_review(),
             )
 
@@ -266,31 +252,21 @@ class TestMutationHelpers:
     def test_appended_item_must_take_next_sequence(self) -> None:
         document = _document(_free_text_item())
         with pytest.raises(DomainError) as exc_info:
-            document.with_appended_item(
-                _free_text_item(sequence=5, item_id="item_002")
-            )
+            document.with_appended_item(_free_text_item(sequence=5, item_id="item_002"))
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_append_and_replace_round_trip(self) -> None:
         document = _document(_free_text_item())
-        appended = document.with_appended_item(
-            _single_choice_item(sequence=2, item_id="item_002")
-        )
+        appended = document.with_appended_item(_single_choice_item(sequence=2, item_id="item_002"))
         assert [item.item_id for item in appended.items] == ["item_001", "item_002"]
-        replacement = _single_choice_item(
-            sequence=2, item_id="item_002", correct=("choice_001",)
-        )
+        replacement = _single_choice_item(sequence=2, item_id="item_002", correct=("choice_001",))
         replaced = appended.with_replaced_item(replacement)
-        assert replaced.item_by_id("item_002").answer_key.correct_choice_ids == (
-            "choice_001",
-        )
+        assert replaced.item_by_id("item_002").answer_key.correct_choice_ids == ("choice_001",)
 
     def test_replace_cannot_change_sequence(self) -> None:
         document = _document(_free_text_item())
         with pytest.raises(DomainError):
-            document.with_replaced_item(
-                _free_text_item(sequence=2, item_id="item_001")
-            )
+            document.with_replaced_item(_free_text_item(sequence=2, item_id="item_001"))
 
     def test_revision_must_advance_by_one(self) -> None:
         document = _document(_free_text_item())
@@ -314,23 +290,15 @@ class TestExportBlockers:
                 )
             }
         )
-        reasons = {
-            blocker.reason for blocker in native_export_blockers(_document(item))
-        }
+        reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "review_required" in reasons
 
     def test_machine_proposed_key_blocks_export(self) -> None:
-        item = _single_choice_item(
-            origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        )
-        reasons = {
-            blocker.reason for blocker in native_export_blockers(_document(item))
-        }
+        item = _single_choice_item(origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED)
+        reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "machine_proposed_key_unreviewed" in reasons
 
     def test_missing_points_blocks_export(self) -> None:
         item = _free_text_item().model_copy(update={"points": None})
-        reasons = {
-            blocker.reason for blocker in native_export_blockers(_document(item))
-        }
+        reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "missing_points" in reasons
