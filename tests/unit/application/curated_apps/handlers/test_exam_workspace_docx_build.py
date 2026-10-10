@@ -19,7 +19,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ro
     build_round_request,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMEndpointKind,
     StructuredLLMProviderProfile,
     StructuredLLMResponse,
@@ -45,7 +44,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
 )
@@ -71,12 +69,7 @@ def ports():
     primary = StructuredLLMProviderProfile(
         "primary", "model", StructuredLLMEndpointKind.RESPONSES, True, 128000, 4096
     )
-    backup = StructuredLLMProviderProfile(
-        "backup", "other", StructuredLLMEndpointKind.CHAT_COMPLETIONS, True, 128000, 4096
-    )
-    selector = Mock(spec=AnswerKeyProviderSelectorProtocol)
-    selector.select_route.return_value = AnswerKeyProviderRoute(primary, backup)
-    converter = DocxAIConverter(provider, selector, leases, uow, clock, True)
+    converter = DocxAIConverter(provider, primary, leases, uow, clock, True)
     return converter, provider
 
 

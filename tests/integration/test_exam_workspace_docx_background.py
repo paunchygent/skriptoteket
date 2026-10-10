@@ -36,9 +36,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carr
     CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -55,9 +52,6 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -88,7 +82,6 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import _route
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 _QUIZ = Path(
@@ -193,12 +186,7 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
             )
             converter = DocxAIConverter(
                 provider=provider,
-                provider_selector=FixedRouteAnswerKeyProviderSelector(
-                    route=AnswerKeyProviderRoute(
-                        primary=build_luna_docx_conversion_profile(settings),
-                        failover=_route().failover,
-                    )
-                ),
+                profile=build_luna_docx_conversion_profile(settings),
                 leases=PostgreSQLAnswerKeyTokenLeaseRepository(
                     session, daily_token_limit=1_000_000
                 ),

@@ -28,9 +28,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carr
     CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -46,14 +43,8 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_re
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_docx_conversion_profile,
-)
-from skriptoteket.infrastructure.llm.openrouter.answer_key_profiles import (
-    build_glm_failover_answer_key_profile,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
@@ -95,12 +86,7 @@ class ExamWorkspaceProvider(Provider):
     ) -> DocxAIConverter:
         return DocxAIConverter(
             provider=provider,
-            provider_selector=FixedRouteAnswerKeyProviderSelector(
-                route=AnswerKeyProviderRoute(
-                    primary=build_luna_docx_conversion_profile(settings),
-                    failover=build_glm_failover_answer_key_profile(settings),
-                )
-            ),
+            profile=build_luna_docx_conversion_profile(settings),
             leases=leases,
             uow=uow,
             clock=clock,
