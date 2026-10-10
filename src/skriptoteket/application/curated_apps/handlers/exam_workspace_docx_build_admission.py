@@ -105,7 +105,7 @@ def _admit_item(
         if produced.outcome == "review":
             cause = produced.review_reason or "ingen orsak angavs"
             reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
-            state.record("admission", "model_review", item=index, anchors=anchors)
+            state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
             state.accepted.append((review_item(produced, reason), anchors))
             seen.update(anchors)
             return

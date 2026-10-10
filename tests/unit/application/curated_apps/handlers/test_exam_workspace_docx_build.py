@@ -5,12 +5,12 @@ import json
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
 
+from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
@@ -163,10 +163,9 @@ def _student_texts(document: NativeExamDocument) -> list[str]:
     return [" ".join(text.split()) for text in texts]
 
 
-def _gold(exam: str) -> list[dict[str, Any]]:
-    items: list[dict[str, Any]] = json.loads(
-        (_FIXTURES / f"docx_corpus/gold/{exam}.json").read_text()
-    )["items"]
+def _gold(exam: str) -> tuple[GoldItem, ...]:
+    path = _FIXTURES / f"docx_corpus/gold/{exam}.json"
+    items: tuple[GoldItem, ...] = GoldExam.model_validate_json(path.read_bytes()).items
     return items
 
 
@@ -174,11 +173,11 @@ def _inline_facit(exam: str) -> set[str]:
     """Gold blank preceded by its source word, filled with the gold answer: 'lek R'."""
     leaks: set[str] = set()
     for item in _gold(exam):
-        parts = item["prompt"].split("[___]")
-        for before, gap in zip(parts, item.get("gaps", []), strict=False):
+        parts = item.prompt.split("[___]")
+        for before, gap in zip(parts, item.gaps, strict=False):
             words = before.split()
             if words:
-                leaks.update(f"{words[-1]} {value}" for value in gap["accepted_values"])
+                leaks.update(f"{words[-1]} {value}" for value in gap.accepted_values)
     return leaks
 
 
@@ -201,6 +200,21 @@ def _assert_no_facit(
 
 
 _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
+
+
+def _assert_review_events_carry_reasons(result: DocxBuildResult) -> list[str]:
+    """Each model review yields one event whose detail is the review item's own reason."""
+    reviews = [e for e in result.events if e.code == "model_review"]
+    reviewed = {
+        i.source_anchor: i.review.reasons
+        for i in result.document.items
+        if i.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    }
+    assert len(reviews) == len(reviewed)
+    for event in reviews:
+        assert event.detail.startswith("AI-tolkningen markerade frågan för granskning: ")
+        assert reviewed[event.anchors[0]] == (event.detail,)
+    return [e.detail for e in reviews]
 
 
 def _assert_no_italic_tags(document: NativeExamDocument) -> None:
@@ -229,7 +243,7 @@ async def test_recorded_english_matching_reviews_stay_one_item_each_without_faci
         for n, i in enumerate(items)
         if i.review.state is not NativeItemReviewState.REVIEW_COMPLETE
     ]
-    assert reviewed == [n for n, g in enumerate(gold) if g["kind"] == "matching"] == [24, 25, 26]
+    assert reviewed == [n for n, g in enumerate(gold) if g.kind == "matching"] == [24, 25, 26]
     for n in reviewed:
         assert items[n].review.reasons == (
             "AI-tolkningen markerade frågan för granskning: Matchningsuppgift med tre "
@@ -239,6 +253,7 @@ async def test_recorded_english_matching_reviews_stay_one_item_each_without_faci
             s.text for p in items[n].body for s in p.segments if isinstance(s, NativeTextSegment)
         ]
         assert any("Write the letter of the matching option." in text for text in body)
+    assert len(_assert_review_events_carry_reasons(result)) == 3
     _assert_no_facit(result, chunks, exam, *responses)
 
 
@@ -255,7 +270,7 @@ def _assert_course_exam_order(result: DocxBuildResult, chunks: list[DocxChunk]) 
     titled = [(n, i.title) for n, i in enumerate(items) if i.title]
     assert titled
     for n, title in titled:
-        assert title.startswith(f"{gold[n]['source_label']}.")
+        assert title.startswith(f"{gold[n].source_label}.")
 
 
 async def test_recorded_course_exam_review_outcomes_stay_one_item_per_question():
@@ -270,6 +285,11 @@ async def test_recorded_course_exam_review_outcomes_stay_one_item_per_question()
     ]
     assert [n for n, _ in reviewed] == [15, 16, 17, 18, 19]
     assert [t.split(".")[0] for _, t in reviewed if t] == [f"Fråga {k}" for k in range(16, 21)]
+    prefix = "AI-tolkningen markerade frågan för granskning: "
+    assert _assert_review_events_carry_reasons(result) == [
+        *[f"{prefix}Uppgiftens svarssätt framgår inte av källtexten."] * 4,
+        f"{prefix}Uppgiften saknar instruktion om hur påståendena ska besvaras.",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -318,11 +338,11 @@ async def test_recorded_course_exam_keeps_inline_facit_out_of_student_text():
             for segment in paragraph.segments
             if isinstance(segment, NativeTextSegment)
         )
-        assert item.kind.value == gold["kind"] == "gap_fill"
+        assert item.kind.value == gold.kind == "gap_fill"
         assert [list(g.accepted_values) for g in item.gaps] == [
-            g["accepted_values"] for g in gold["gaps"]
+            list(g.accepted_values) for g in gold.gaps
         ]
-        for line in gold["prompt"].split("\n")[1:]:
+        for line in gold.prompt.split("\n")[1:]:
             for fragment in line.split("[___]"):
                 assert " ".join(fragment.split()) in body
 
