@@ -4,9 +4,9 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
-from skriptoteket_toolkit import read_inputs, read_settings
+from skriptoteket_toolkit import JsonValue, read_inputs, read_settings
 
 # Optional preinstalled libs
 try:
@@ -29,14 +29,21 @@ else:
     _HAS_DOCX = True
 
 
+class MarkdownFile(TypedDict):
+    path: Path
+    name: str
+
+
 # =========================
 # Contract v2 payload helper
 # =========================
 
 
 def contract_v2(
-    outputs: list[dict], next_actions: list[dict] | None = None, state: Any = None
-) -> dict:
+    outputs: list[dict[str, object]],
+    next_actions: list[dict[str, object]] | None = None,
+    state: JsonValue = None,
+) -> dict[str, object]:
     return {"outputs": outputs, "next_actions": next_actions or [], "state": state}
 
 
@@ -45,20 +52,22 @@ def contract_v2(
 # =========================
 
 
-def o_markdown(markdown: str) -> dict:
+def o_markdown(markdown: str) -> dict[str, object]:
     return {"kind": "markdown", "markdown": markdown}
 
 
-def o_notice(level: str, message: str) -> dict:
+def o_notice(level: str, message: str) -> dict[str, object]:
     return {"kind": "notice", "level": level, "message": message}
 
 
-def o_json(title: str, value: Any) -> dict:
+def o_json(title: str, value: JsonValue) -> dict[str, object]:
     return {"kind": "json", "title": title, "value": value}
 
 
-def o_table(title: str | None, columns: list[dict], rows: list[dict]) -> dict:
-    payload: dict = {"kind": "table", "columns": columns, "rows": rows}
+def o_table(
+    title: str | None, columns: list[dict[str, str]], rows: list[dict[str, str]]
+) -> dict[str, object]:
+    payload: dict[str, object] = {"kind": "table", "columns": columns, "rows": rows}
     if title:
         payload["title"] = title
     return payload
@@ -99,11 +108,11 @@ def _profile_desc(profile: str) -> str:
 # =========================
 
 
-def _load_settings_from_memory() -> tuple[dict, str]:
+def _load_settings_from_memory() -> tuple[dict[str, JsonValue], str]:
     return (read_settings(), "SKRIPTOTEKET_MEMORY_PATH")
 
 
-def _load_inputs_from_env() -> tuple[dict, str]:
+def _load_inputs_from_env() -> tuple[dict[str, JsonValue], str]:
     return (read_inputs(), "request.json")
 
 
@@ -112,13 +121,13 @@ def _load_inputs_from_env() -> tuple[dict, str]:
 # =========================
 
 
-def _unwrap_value(v: Any) -> Any:
+def _unwrap_value(v: object) -> object:
     if isinstance(v, dict) and "value" in v:
         return v.get("value")
     return v
 
 
-def _as_bool(v: Any, default: bool = False) -> bool:
+def _as_bool(v: object, default: bool = False) -> bool:
     v = _unwrap_value(v)
     if isinstance(v, bool):
         return v
@@ -133,12 +142,12 @@ def _as_bool(v: Any, default: bool = False) -> bool:
     return default
 
 
-def _as_str(v: Any, default: str = "") -> str:
+def _as_str(v: object, default: str = "") -> str:
     v = _unwrap_value(v)
     return v if isinstance(v, str) else default
 
 
-def _coerce_profile(v: Any, default: str) -> str:
+def _coerce_profile(v: object, default: str) -> str:
     s = _as_str(v, default).strip()
     if s in {"use_default", "default", ""}:
         return default
@@ -147,7 +156,7 @@ def _coerce_profile(v: Any, default: str) -> str:
     return default
 
 
-def _coerce_scope(v: Any, default: str) -> str:
+def _coerce_scope(v: object, default: str) -> str:
     s = _as_str(v, default).strip()
     if s in {SCOPE_FIRST, SCOPE_ALL}:
         return s
@@ -159,7 +168,7 @@ def _coerce_scope(v: Any, default: str) -> str:
 # =========================
 
 
-def _mk_file(path: Path, name: str | None = None) -> dict:
+def _mk_file(path: Path, name: str | None = None) -> MarkdownFile:
     return {"path": path, "name": name or path.name}
 
 
@@ -190,15 +199,15 @@ def _human_size(num_bytes: int) -> str:
     return f"{n:.1f} TB"
 
 
-def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
+def _normalize_markdown_files(input_root: Path, value: object) -> list[MarkdownFile]:
     value = _unwrap_value(value)
 
-    def one(v: Any) -> list[dict]:
+    def one(v: object) -> list[MarkdownFile]:
         v = _unwrap_value(v)
         if v is None:
             return []
         if isinstance(v, list):
-            out: list[dict] = []
+            out: list[MarkdownFile] = []
             for it in v:
                 out.extend(one(it))
             return out
@@ -229,7 +238,7 @@ def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
     files = one(value)
 
     seen: set[str] = set()
-    uniq: list[dict] = []
+    uniq: list[MarkdownFile] = []
     for f in files:
         p = f.get("path")
         if not isinstance(p, Path):
@@ -242,7 +251,7 @@ def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
     return uniq
 
 
-def _scan_input_dir_for_markdown(input_root: Path) -> list[dict]:
+def _scan_input_dir_for_markdown(input_root: Path) -> list[MarkdownFile]:
     if not input_root.exists():
         return []
     candidates: list[Path] = []
@@ -530,8 +539,8 @@ def _convert_with_pandoc(
 # =========================
 
 
-def run_tool(input_dir: str, output_dir: str) -> dict:
-    outputs: list[dict] = []
+def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
+    outputs: list[dict[str, object]] = []
 
     input_root = Path(input_dir)
     out_root = Path(output_dir)
@@ -587,7 +596,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         )
 
     # --- Resolve files ---
-    files: list[dict] = []
+    files: list[MarkdownFile] = []
     if "markdown_files" in inputs:
         files = _normalize_markdown_files(input_root, inputs.get("markdown_files"))
     if not files:
@@ -618,13 +627,13 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         )
     )
 
-    results: list[dict] = []
+    results: list[dict[str, str]] = []
     notes: list[str] = []
 
     with tempfile.TemporaryDirectory(prefix="md2docx_") as td:
         tmpdir = Path(td)
 
-        def convert_one(src: dict, profile: str, suffix: str) -> None:
+        def convert_one(src: MarkdownFile, profile: str, suffix: str) -> None:
             src_path: Path = src["path"]
             src_name = str(src.get("name") or src_path.name)
 
