@@ -67,8 +67,13 @@ def build_examnet_qti_package_plan(
     *,
     package_name: str,
     items: tuple[ExamNetQtiItem, ...],
+    assessment_title: str | None = None,
 ) -> ExamNetQtiPackagePlan:
-    """Build a deterministic QTI package plan for the supplied items."""
+    """Build a deterministic QTI package plan for the supplied items.
+
+    ``assessment_title`` names the assessment test and its section; a missing or
+    blank value falls back to ``package_name``.
+    """
 
     manual_follow_ups = _manual_follow_ups(items)
     blocking_errors = _blocking_errors(items)
@@ -96,7 +101,9 @@ def build_examnet_qti_package_plan(
         )
         image_files_by_item_id[item.item_id] = image_files
 
-    assessment_file = _assessment_test_file(package_name=package_name, items=ordered_items)
+    assessment_file = _assessment_test_file(
+        title=(assessment_title or "").strip() or package_name, items=ordered_items
+    )
     manifest = _manifest_file(
         item_files=tuple(item_files),
         image_files_by_item_id=image_files_by_item_id,
@@ -339,11 +346,11 @@ def _item_xml_path(item: ExamNetQtiItem) -> str:
 
 def _assessment_test_file(
     *,
-    package_name: str,
+    title: str,
     items: tuple[ExamNetQtiItem, ...],
 ) -> ExamNetQtiPackageFile:
     payload = serialize_qti_assessment_test(
-        package_name=package_name,
+        title=title,
         item_ids=tuple(item.item_id for item in items),
     )
     return _package_file(

@@ -15,7 +15,7 @@
 import type { NativeExamItem } from "../../../api/examWorkspace";
 
 export const PARTIAL_GAP_KEY_GUIDANCE =
-  "Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.";
+  "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
 
 function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";

@@ -17,6 +17,35 @@ import type {
   NativeExamReviewState,
 } from "../../../api/examWorkspace";
 
+const REVIEW_REASON_LABELS: Record<string, string> = {
+  long_answer_key:
+    "Facit är längre än vanligt – kontrollera att det bara innehåller svaret.",
+  machine_proposed_answer_key:
+    "Facit är ett maskinellt förslag – kontrollera det innan du godkänner.",
+  missing_points: "Poäng saknas – ange poäng för frågan.",
+  multiple_answer_labels_detected:
+    "Flera svarsetiketter hittades på samma rad – kontrollera att luckorna blev rätt.",
+  no_question_structure_detected:
+    "Ingen frågestruktur hittades – kontrollera att frågorna har tolkats rätt.",
+  partial_answer_keys_detected:
+    "Bara några delfrågor hade facit i källfilen, så frågan blev fritext utan facit.",
+  sublines_without_answer_keys:
+    "Delfrågorna saknade facit i källfilen, så frågan blev fritext utan facit.",
+};
+
+const SNAKE_CASE_CODE = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
+
+export function examWorkspaceReviewReasonLabel(reason: string): string {
+  const known = REVIEW_REASON_LABELS[reason];
+  if (known !== undefined) {
+    return known;
+  }
+  if (SNAKE_CASE_CODE.test(reason)) {
+    return "Kontrollera frågan – tolkningen är osäker.";
+  }
+  return reason;
+}
+
 export type ExamWorkspaceItemRow = {
   itemId: string;
   sequence: number;
@@ -87,7 +116,7 @@ export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemR
     itemId: item.item_id,
     pointsLabel: examWorkspacePointsLabel(item.points ?? null),
     promptExcerpt: examWorkspacePromptExcerpt(item),
-    reviewReasons: item.review.reasons,
+    reviewReasons: item.review.reasons.map(examWorkspaceReviewReasonLabel),
     reviewRequired: item.review.state === "review_required",
     sequence: item.sequence,
     statusLabel: examWorkspaceReviewStatusLabel(item.review.state),

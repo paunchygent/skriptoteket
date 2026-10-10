@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -91,18 +91,9 @@ drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
 
 ## Stop Conditions
 
-- Do not begin before the user closes the open decisions below and moves the
-  task from `proposed` to `ready`.
 - Stop if a change would weaken the Exam.net contract or the export gate.
 - Stop if the layout requires a third standing panel on desktop.
 - Production acceptance remains user-owned.
-
-Open decisions (user-owned, not yet closed):
-
-- Gap-fill editing: one flowing text with inline gap markers and their
-  accepted answers beside them, or one text field plus a compact gap table.
-- Phone item selector: a bottom-sheet list with status (ST-29 pattern) or a
-  native dropdown.
 
 ## Decided Contract Terms
 
@@ -114,3 +105,5 @@ Open decisions (user-owned, not yet closed):
 | L4 | Desktop-first; tablet and phone receive their own reduced layouts, with the phone editor as its own screen behind an item selector (user decision 2026-10-10). |
 | L5 | The editor cannot produce items that break the Exam.net contract; Exam.net accepting the test as the teacher expects is the final gate (user decision 2026-10-10). |
 | L6 | The browser walk judges user-friendliness at every review viewport (user decision 2026-10-10). |
+| L7 | Gap-fill items are edited as one continuous question text with each gap as an inline chip; activating a chip edits that gap's accepted answers in place (user decision 2026-10-10). |
+| L8 | On phones, the Redigera toolbar shows "Fråga N av M" with previous/next; the label opens a bottom-sheet list of every question with type, points and review status (ST-29 pattern) (user decision 2026-10-10). |

@@ -71,6 +71,9 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.MULTIPLE_RESPONSE: PdfExamItemKind.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
 }
+# Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
+# already blocks keyed items without a key before export. An unkeyed keyed item
+# must never be exported; Exam.net would drop or mis-handle it.
 _UNKEYED_ORIGINS = frozenset({NativeAnswerKeyOrigin.ABSENT, NativeAnswerKeyOrigin.NOT_APPLICABLE})
 
 

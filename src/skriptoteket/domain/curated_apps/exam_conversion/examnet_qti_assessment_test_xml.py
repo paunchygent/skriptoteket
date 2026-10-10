@@ -27,7 +27,7 @@ EXAMNET_QTI_TEST_RESOURCE_TYPE = "imsqti_test_xmlv2p1"
 
 def serialize_qti_assessment_test(
     *,
-    package_name: str,
+    title: str,
     item_ids: tuple[str, ...],
 ) -> bytes:
     """Serialize the package assessmentTest to UTF-8 XML bytes."""
@@ -38,7 +38,7 @@ def serialize_qti_assessment_test(
         _qti("assessmentTest"),
         {
             "identifier": "examnet_qti_test",
-            "title": package_name,
+            "title": title,
             _xsi("schemaLocation"): QTI_SCHEMA_LOCATION,
         },
     )
@@ -56,7 +56,7 @@ def serialize_qti_assessment_test(
         _qti("assessmentSection"),
         {
             "identifier": "section_001",
-            "title": package_name,
+            "title": title,
             "visible": "true",
         },
     )

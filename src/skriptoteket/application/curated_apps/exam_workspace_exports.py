@@ -57,7 +57,9 @@ def build_native_examnet_qti_package(
         )
 
     items = native_exam_to_examnet_qti_items(document, assets_by_id=assets_by_id)
-    plan = build_examnet_qti_package_plan(package_name=package_name, items=items)
+    plan = build_examnet_qti_package_plan(
+        package_name=package_name, items=items, assessment_title=document.title
+    )
     if plan.status is not ExamNetQtiPackageStatus.PASSED:
         raise DomainError(
             code=ErrorCode.VALIDATION_ERROR,

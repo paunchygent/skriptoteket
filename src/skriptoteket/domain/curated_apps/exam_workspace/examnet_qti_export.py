@@ -101,6 +101,9 @@ def _free_text_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQ
 
 
 def _choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:
+    # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
+    # already blocks keyed items without a key before export. An unkeyed keyed
+    # item must never be exported; Exam.net would drop or mis-handle it.
     correct_ids: tuple[str, ...] = ()
     if item.answer_key.origin is not NativeAnswerKeyOrigin.ABSENT:
         correct_ids = tuple(

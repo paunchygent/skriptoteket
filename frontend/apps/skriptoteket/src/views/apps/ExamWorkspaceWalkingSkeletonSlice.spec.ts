@@ -265,13 +265,13 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await gapInput.trigger("change");
 
     expect(wrapper.find('[data-test="exam-workspace-gap-key-hint"]').text()).toContain(
-      "töm alla luckor",
+      "lämna alla luckor tomma",
     );
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Fråga 4 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.",
+      "Fråga 4 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.",
     );
   });
 
@@ -293,7 +293,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Frågorna 4 och 5 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.",
+      "Frågorna 4 och 5 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.",
     );
   });
 
