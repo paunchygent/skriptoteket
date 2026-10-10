@@ -4,14 +4,20 @@
   is `ready` (user 2026-10-10): AI-first DOCX conversion, terms A1-A12;
   supersedes TASK-SKRIPT-39-04-03. Task 1
   [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-  is `in_progress`, owned by the delegated Codex implementation lead on
-  `codex/task-skript-39-05-01`. The background upload, conversion status,
-  source validation and review fallback are implemented. The fixture-backed
-  PostgreSQL quiz walk builds 28 items and 28 points in one Responses batch,
-  saves version 1, deletes the DOCX and validates QTI. Parent next: independent
-  review, local merge, then the user-assigned Hemma staging browser walk.
-  No live provider call or production acceptance yet. Plan and proof:
-  retained session `01a12706-566c-7480-acc3-427145283942`.
+  is `in_progress` on `codex/task-skript-39-05-01`. Codex repair round R1
+  (`01a12739-92a1-7d52-9827-5ddcb56df8a9`) implements complete points
+  annotations, prompt-bound question identity, reusable facit, narrow typing
+  and conversion/admission/presentation decomposition. Review at `0621a493`
+  requested these five repairs. Parent next: independent rereview, local
+  merge, then the user-assigned Hemma staging browser walk. The repaired
+  fixture-backed PostgreSQL quiz proof built 28 items/28 points in one batch,
+  saved version 1, deleted the DOCX and validated QTI (2026-10-10).
+  No live provider call or production acceptance yet. Plan, review and proof:
+  retained session `01a12706-566c-7480-acc3-427145283942`, repair report
+  `evidence/implementation/TASK-SKRIPT-39-05-01/repair-R1-report.md`.
+  Repair proof passes for 119 backend tests, PostgreSQL quiz, scoped mypy
+  and frontend lint/typecheck/build. Full frontend rerun passes 1426 tests
+  with one failure in the unchanged headless-linter harness; report has detail.
 
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `ready` (user 2026-10-10): pending answer-key proposals survive a save

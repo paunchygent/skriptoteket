@@ -136,7 +136,7 @@ async def test_only_failed_items_and_chunks_are_retried_and_ids_are_source_order
     result = await convert(converter, (*choice_source(), *choice_source(2)))
     assert provider.complete_structured.await_count == 2
     second = json.loads(provider.complete_structured.call_args.kwargs["request"].user_payload)
-    assert {c["anchor"] for c in second["chunks"]} == {"q1", "c1", "k1"}
+    assert {c["anchor"] for c in second["chunks"]} == {"q1", "c1", "k1", "k2"}
     assert second["validation_errors"]
     assert [i.source_anchor for i in result.document.items] == ["q1", "q2"]
     assert [i.item_id for i in result.document.items] == ["item_001", "item_002"]
@@ -163,7 +163,80 @@ async def test_three_round_bound_keeps_passed_item_and_every_failed_source_chunk
     assert any("Correct answer" in note for note in result.notes)
     for call in provider.complete_structured.call_args_list[1:]:
         anchors = {c["anchor"] for c in json.loads(call.kwargs["request"].user_payload)["chunks"]}
-        assert not anchors & {"q1", "c1", "k1"}
+        assert not anchors & {"q1", "c1"}
+        assert {"k1", "k2"} <= anchors
+
+
+def shared_key_source():
+    return (
+        *choice_source(1)[:2],
+        *choice_source(2)[:2],
+        DocxChunk("facit", "heading", "Answer key"),
+        DocxChunk("keys", "paragraph", "1. B\n2. B"),
+    )
+
+
+def shared_key_entry(number):
+    raw = choice_entry(number).model_dump(mode="json")
+    raw["key_evidence"][0].update(anchor="keys", text=f"{number}. B")
+    return raw
+
+
+@pytest.mark.parametrize("key_in_source_anchors", [False, True])
+async def test_shared_facit_paragraph_accepts_both_questions_in_one_batch(key_in_source_anchors):
+    converter, provider, leases, _, _ = ports()
+    entries = [shared_key_entry(1), shared_key_entry(2)]
+    if key_in_source_anchors:
+        for entry in entries:
+            entry["source_anchors"].append("keys")
+    provider.complete_structured.return_value = response(entries)
+    result = await convert(converter, shared_key_source())
+    assert provider.complete_structured.await_count == 1
+    assert leases.reserve.await_count == leases.reconcile.await_count == 1
+    assert [item.source_anchor for item in result.document.items] == ["q1", "q2"]
+    assert all(
+        item.review.state is NativeItemReviewState.REVIEW_COMPLETE for item in result.document.items
+    )
+    assert "1. B\n2. B" in result.notes
+
+
+async def test_shared_facit_survives_failed_only_retry_and_accepted_question_is_frozen():
+    converter, provider, leases, _, _ = ports()
+    bad = shared_key_entry(2)
+    bad["item"]["points"] = 9
+    attempted_rewrite = shared_key_entry(1)
+    attempted_rewrite["item"]["title"] = "Pick a colour."
+    provider.complete_structured.side_effect = [
+        response([shared_key_entry(1), bad]),
+        response([attempted_rewrite, shared_key_entry(2)]),
+    ]
+    result = await convert(converter, shared_key_source())
+    assert provider.complete_structured.await_count == 2
+    assert leases.reserve.await_count == leases.reconcile.await_count == 2
+    retry = json.loads(provider.complete_structured.call_args.kwargs["request"].user_payload)
+    assert {chunk["anchor"] for chunk in retry["chunks"]} == {"q2", "c2", "facit", "keys"}
+    assert next(chunk["text"] for chunk in retry["chunks"] if chunk["anchor"] == "keys") == (
+        "1. B\n2. B"
+    )
+    assert retry["validation_errors"]
+    assert [item.source_anchor for item in result.document.items] == ["q1", "q2"]
+    assert [item.points for item in result.document.items] == [2, 2]
+    assert result.document.items[0].title is None
+    assert all(
+        item.review.state is NativeItemReviewState.REVIEW_COMPLETE for item in result.document.items
+    )
+    assert (result.input_tokens, result.output_tokens) == (200, 100)
+
+
+async def test_consumed_question_cannot_be_reused_by_another_entry_in_same_batch():
+    converter, provider, _, _, _ = ports()
+    duplicated = shared_key_entry(1)
+    provider.complete_structured.side_effect = [
+        response([duplicated, duplicated, shared_key_entry(2)])
+    ]
+    result = await convert(converter, shared_key_source())
+    assert provider.complete_structured.await_count == 1
+    assert [item.source_anchor for item in result.document.items] == ["q1", "q2"]
 
 
 @pytest.mark.parametrize(
@@ -250,7 +323,8 @@ async def test_metadata_passes_are_excluded_from_retry_and_unclaimed_text_remain
     assert result.document.items[-1].plain_text_lines() == ("Unparsed table",)
     for call in provider.complete_structured.call_args_list[1:]:
         assert [c["anchor"] for c in json.loads(call.kwargs["request"].user_payload)["chunks"]] == [
-            "unclaimed"
+            "k1",
+            "unclaimed",
         ]
 
 

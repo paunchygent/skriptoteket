@@ -134,6 +134,58 @@ def test_rejects_invented_title_and_changed_points(field, value):
         validate_build_entry(parse_build_entry(raw), choice_source())
 
 
+@pytest.mark.parametrize("annotation", ["12 points", "1.2 points", "1,2 points"])
+def test_rejects_suffix_quote_as_source_points(annotation):
+    source = choice_source()
+    chunks = (
+        DocxChunk("q1", "paragraph", source[0].text.replace("2 points", annotation)),
+        *source[1:],
+    )
+    # Reviewer probe: retain points=2 and quote='2 points' despite a larger
+    # complete annotation in the source.
+    with pytest.raises(ValueError, match="Poängen stämmer"):
+        validate_build_entry(choice_entry(), chunks)
+
+
+@pytest.mark.parametrize(
+    "annotation,points", [("12 points", 12), ("1.2 points", 1.2), ("1,2 poäng", 1.2)]
+)
+def test_accepts_complete_source_points_annotation(annotation, points):
+    source = choice_source()
+    chunks = (
+        DocxChunk("q1", "paragraph", source[0].text.replace("2 points", annotation)),
+        *source[1:],
+    )
+    entry = choice_entry().model_copy(
+        update={
+            "item": choice_entry().item.model_copy(update={"points": points}),
+            "points_evidence": SourceEvidence(anchor="q1", text=annotation),
+        }
+    )
+    assert validate_build_entry(entry, chunks).points == points
+
+
+def test_option_label_cannot_bind_another_questions_numbered_key():
+    chunks = (
+        DocxChunk("q2", "paragraph", "2. Pick a colour. (2 points)"),
+        DocxChunk("c2", "paragraph", "1. red\n2. blue"),
+        DocxChunk("facit", "heading", "Answer key"),
+        DocxChunk("keys", "paragraph", "1. red\n2. blue"),
+    )
+    raw = choice_entry(2).model_dump(mode="json")
+    raw["question_label"] = "1"
+    raw["item"]["answer_key"]["correct_choice_ids"] = ["choice_001"]
+    raw["key_evidence"][0].update(anchor="keys", text="1. red", target_id="choice_001", value="red")
+    with pytest.raises(ValueError, match="Frågans nummer"):
+        validate_build_entry(parse_build_entry(raw), chunks)
+    raw["question_label"] = "2"
+    raw["item"]["answer_key"]["correct_choice_ids"] = ["choice_002"]
+    raw["key_evidence"][0].update(text="2. blue", target_id="choice_002", value="blue")
+    admitted = validate_build_entry(parse_build_entry(raw), chunks)
+    assert admitted.answer_key.correct_choice_ids == ("choice_002",)
+    assert admitted.answer_key.origin is NativeAnswerKeyOrigin.SOURCE_PROVIDED
+
+
 @pytest.mark.parametrize("target", ["body", "choice"])
 def test_rejects_invented_student_text(target):
     raw = choice_entry().model_dump(mode="json")

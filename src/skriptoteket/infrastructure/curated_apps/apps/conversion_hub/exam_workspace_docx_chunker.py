@@ -10,9 +10,6 @@ from docx.oxml.text.paragraph import CT_P
 from docx.table import Table, _Cell
 from docx.text.paragraph import Paragraph
 
-# lxml is an external dependency without installed type stubs.
-from lxml.etree import XMLSyntaxError  # type: ignore[import-untyped]
-
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -60,7 +57,7 @@ class PythonDocxExamChunker:
         except (
             PackageNotFoundError,
             zipfile.BadZipFile,
-            XMLSyntaxError,
+            SyntaxError,
             KeyError,
             ValueError,
             OSError,

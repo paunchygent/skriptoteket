@@ -20,10 +20,9 @@
  *     .docx files through `useExamWorkspaceSourceFile`; selects the
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
- *   - Renders `ExamWorkspaceFilesMode`, `ExamWorkspaceQuestionList` with
- *     `ExamWorkspaceItemTable`, `ExamWorkspaceItemEditor`, and
- *     `ExamWorkspaceItemDrawer`; on phones, `ExamWorkspacePhoneQuestionBar`
- *     and the question list in `ExamWorkspaceSheet`.
+ *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry.
+ *   - Files mode and the question list/editor/drawer render the workspace;
+ *     phones add a question bar and sheet.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
@@ -31,6 +30,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
+import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import ExamWorkspaceItemDrawer from "./exam-workspace/ExamWorkspaceItemDrawer.vue";
@@ -343,29 +343,12 @@ function handleEditProposal(itemId: string): void {
         />
       </header>
 
-      <div
-        v-if="conversionMessage"
-        class="grid gap-2 border-b border-navy bg-canvas px-4 py-2 text-sm leading-snug"
-        role="status"
-        aria-live="polite"
-        data-test="exam-workspace-conversion-status"
-      >
-        <p>{{ conversionMessage }}</p>
-        <template v-if="isConverting && conversionError">
-          <p class="text-error">{{ conversionError }}</p>
-          <button
-            type="button"
-            class="btn-ghost justify-self-start shadow-none"
-            data-test="exam-workspace-conversion-retry"
-            @click="retryConversionStatus"
-          >
-            Försök igen
-          </button>
-        </template>
-        <p v-else-if="!isConverting">
-          Välj provfilen igen i Filer för att försöka på nytt.
-        </p>
-      </div>
+      <ExamWorkspaceConversionStatus
+        :conversion-message="conversionMessage"
+        :conversion-error="conversionError"
+        :is-converting="isConverting"
+        @retry="retryConversionStatus"
+      />
 
       <p
         v-if="conflictNotice"
