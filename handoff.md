@@ -1,27 +1,27 @@
 ## Current
 
 - [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md)
-  is `in_progress` on local branch `claude/task-skript-39-04-01` (not on
-  `main`; the cloud work existed only on remote branch
-  `claude/exam-converter-qti-format-eyocw2`). 2026-10-10 (Claude) added the
-  frontend closure: server-gated QTI/PDF/DOCX downloads with Swedish
-  per-item 422 blockers, answer-key proposal panel (prefill only; approve
-  sets `reviewed_advisory` and keeps parse review), reopen via
-  `GET .../exam-workspace/documents` (head per lineage) and `?document=`,
-  generated OpenAPI types, Vitest slices; plus 5 Postgres integration tests
-  and passing migration tests for `7c3e9a1d4f20`/`d4f8b2c6a9e1`. Gates: fe
-  vitest/typecheck/lint/build green; ruff clean; mypy 12 baseline errors;
-  9 unit failures all reproduced on origin/main. Review: changes
-  requested twice, repairs `28bd7255`/`833cf53e`/`30e9798f`; final
-  rereview approved for integration 2026-10-10; merged to local `main`.
-  Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/`.
-  Owner: Claude session. Blocker for D5 live walk: the HuleEdu
-  auth-integration lane cannot start because `minio-init` pins
-  `quay.io/minio/mc@sha256:a7fe…`, which now returns 401; user decides
-  between re-pinning in HuleEdu or a Hemma staging walk after merge (the
-  39-02-03 precedent). `LLM_ANSWER_KEY_ENABLED` is off locally. User
-  gates: proposal carry-over across saves (proposals are per revision and
-  vanish on save); D5 acceptance; terminal closure.
+  is `in_progress`; reviewed work merged to `main` (`8b46ba8f`, pushed).
+  Supporting gates: fe vitest/typecheck/lint/build green, ruff clean, mypy
+  12 baseline errors, 9 unit failures all reproduced on origin/main; 5
+  Postgres integration tests and migration tests pass. D5 live walk
+  2026-10-10 (Claude, built-in browser, viewport 846x822) on Hemma
+  staging `http://127.0.0.1:15173` at `8b46ba8f`, signed in through the
+  HuleEdu browser-session ceremony as the staging proof user: imported
+  `grammatik_omprov_examnet_import_med_facit.docx` (8 items, 38 points, 5
+  review_required); edited Fråga 1, added Fråga 9 (2 points), marked all
+  9 Granskad, saved v2; left and reopened from "Sparade prov" with every
+  edit (40 points); QTI, PDF and DOCX exports returned 200 and all contain
+  the edits; QTI zip has imsmanifest, 9 items, correctResponse on the 7
+  gap items. Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/staging-walk/`.
+  Not proven: proposal acceptance. Every gap item in the fixture is keyed,
+  and clearing a gap's accepted values returns 422 "gap gap_001 needs
+  accepted values for a keyed item" under a generic Swedish error, so no
+  item becomes eligible. Other findings: the review reason shows the raw
+  code `long_answer_key`; the QTI test title is the filename, not the exam
+  title. Owner: Claude session. User gates: the gap-clearing fix
+  (prerequisite for the proposal step), proposal carry-over across saves,
+  D5 acceptance, terminal closure.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -145,5 +145,6 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: finish TASK-SKRIPT-39-04-01 (rereview, integrate to `main`, D5
-  live walk); the ADR-0091/ST-SKRIPT-39-04 review was accepted 2026-10-09.
+- Next: fix the gap-clearing 422 so a keyed gap can lose its key, then
+  finish the D5 proposal step on staging; ADR-0091/ST-SKRIPT-39-04 review
+  accepted 2026-10-09.
