@@ -100,7 +100,7 @@ const {
   rejectedItemIds,
   rejectProposal,
   requestProposals,
-  resetDismissedAfterSave,
+  resetProposalDecisionsAfterSave,
 } = useExamWorkspaceEnrichment(summary);
 
 const mode = ref<ExamWorkspaceMode>("filer");
@@ -246,7 +246,7 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
 async function handleSave(): Promise<void> {
   const rejectedProposalItemIds = [...rejectedItemIds.value];
   if (await saveDocument(rejectedProposalItemIds)) {
-    resetDismissedAfterSave();
+    resetProposalDecisionsAfterSave();
   }
 }
 

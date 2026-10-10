@@ -105,7 +105,7 @@ export function useExamWorkspaceEnrichment(
     }
   }
 
-  function resetDismissedAfterSave(): void {
+  function resetProposalDecisionsAfterSave(): void {
     dismissedItemIds.value = [];
     rejectedItemIds.value = [];
   }
@@ -216,6 +216,6 @@ export function useExamWorkspaceEnrichment(
     rejectedItemIds,
     rejectProposal,
     requestProposals,
-    resetDismissedAfterSave,
+    resetProposalDecisionsAfterSave,
   };
 }
