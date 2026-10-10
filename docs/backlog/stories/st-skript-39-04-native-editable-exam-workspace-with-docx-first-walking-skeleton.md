@@ -76,7 +76,13 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 1. `TASK-SKRIPT-39-04-01`: DOCX walking skeleton (import, native edit and
    create, save and reopen, export) with a genuine unchanged teacher DOCX.
-2. Later slices (unscarffolded until this story is reviewed): digital-PDF
+   Done 2026-10-10.
+2. `TASK-SKRIPT-39-04-02`: two-mode exam workspace layout (Filer and
+   Redigera). Done 2026-10-10.
+3. `TASK-SKRIPT-39-04-03`: one gap per DOCX answer label (proposed).
+4. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves
+   (proposed).
+5. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.
 

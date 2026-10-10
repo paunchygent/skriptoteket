@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User accepted the four-viewport staging walk on 2026-10-10 after independent code reviews approved every merged change.
 task_kind: story
 acceptance_criteria:
 - A teacher converts a DOCX exam into an Exam.net-ready QTI export and edits any item
@@ -109,3 +111,25 @@ drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
 | L6 | The browser walk judges user-friendliness at every review viewport (user decision 2026-10-10). |
 | L7 | Gap-fill items are edited as one continuous question text with each gap as an inline chip; activating a chip edits that gap's accepted answers in place (user decision 2026-10-10). |
 | L8 | On phones, the Redigera toolbar shows "Fråga N av M" with previous/next; the label opens a bottom-sheet list of every question with type, points and review status (ST-29 pattern) (user decision 2026-10-10). |
+
+## Closeout Evidence
+
+- Merged and pushed `main` through `acca1ee7`; Hemma staging ran
+  `acca1ee7` (healthy db, web, worker and Vite) for the final walk.
+- Walk 2026-10-10 in the built-in browser on Hemma staging through the
+  HuleEdu browser-session ceremony, on the genuine fixture
+  `grammatik_omprov_examnet_import_med_facit.docx`: import opened Redigera;
+  gap chips edited in place; points 0 refused at the field, list, drawer and
+  save; Filer readiness linked to the item; saved Version 2; the QTI zip held
+  8 items with every gap keyed ("snöboll" present).
+- Walk findings W1, W3-W8, W10-W13 and the review lows (focus steal on
+  proposal arrival, IME Enter in the gap popover) were repaired by fresh
+  agents and approved by fresh reviewers (`dfe5222f`, `353d10e2`,
+  `93067e3f`).
+- Re-walk: frame bottom 876/900 and 743/768 with no page scroll; editor
+  912px and 636px with the drawer open; tablet drawer opaque and Escape
+  returns focus to Detaljer; phone editor 358/390px with sheet picker and
+  full-screen details; Backspace beside a gap keeps it with a Swedish hint.
+- Follow-ups: W9 (a facit label merged into the accepted gap value) moves
+  to TASK-SKRIPT-39-04-03; proposal carry-over across saves moves to
+  TASK-SKRIPT-39-04-04 (both user decisions 2026-10-10).
