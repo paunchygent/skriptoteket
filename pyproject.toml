@@ -205,10 +205,7 @@ follow_imports = "skip"
 [[tool.mypy.overrides]]
 module = [
     "yaml.*",
-    "pypandoc.*",
-    "weasyprint.*",
     "pypdf.*",
-    "docx.*",
     "pandas.*",
 ]
 ignore_missing_imports = true

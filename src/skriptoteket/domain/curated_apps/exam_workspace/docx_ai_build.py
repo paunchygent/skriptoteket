@@ -27,6 +27,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeTextSegment,
 )
 
+_REVIEW_BLANK = NativeTextSegment(text="____")
+
 
 def native_item(produced: ProducedItem) -> NativeExamItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape."""
@@ -73,6 +75,40 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,
+        ),
+        source_anchor=produced.source_anchors[0],
+    )
+
+
+def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
+    """One teacher-review item for a question the model could not convert.
+
+    Gap answers and choice keys never become text; a gap shows as a blank line.
+    """
+    paragraphs = [
+        NativeParagraph(
+            segments=tuple(
+                NativeTextSegment(text=s.text or "") if s.kind == "text" else _REVIEW_BLANK
+                for s in paragraph.segments
+            )
+        )
+        for paragraph in produced.body
+    ]
+    if produced.choices:
+        lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
+        paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
+    return NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=NativeExamItemKind.FREE_TEXT,
+        title=produced.title,
+        body=tuple(paragraphs),
+        points=produced.points,
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+        review=NativeItemReview(
+            state=NativeItemReviewState.REVIEW_REQUIRED,
+            parse_origin=NativeParseOrigin.LLM_PARSED,
+            reasons=(reason,),
         ),
         source_anchor=produced.source_anchors[0],
     )
@@ -132,16 +168,18 @@ def assemble_build_result(
 ) -> DocxBuildResult:
     """Keep facit chunks as teacher notes and every unbuilt chunk as a review item."""
     if not chunks:
-        chunks = (DocxChunk("empty", "paragraph", "Dokumentet saknar läsbart innehåll."),)
+        empty = "Dokumentet saknar läsbart innehåll."
+        chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
+    items = _ordered_items(chunks, accepted, review_reasons)
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
-    notes.extend(dict.fromkeys(review_reasons[a] for a in review_reasons))
+    notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,
         title=title.text if title else filename,
         instructions=tuple(v.text for v in instructions),
-        items=_ordered_items(chunks, accepted, review_reasons),
+        items=items,
         origin=NativeExamDocumentOrigin(
             kind="docx_import",
             source_filename=filename,

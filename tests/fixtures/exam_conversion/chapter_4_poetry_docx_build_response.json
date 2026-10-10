@@ -1,6 +1,6 @@
 {
   "title": {
-    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz",
+    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
     "source_anchors": [
       "body:0002"
     ]
@@ -16,18 +16,6 @@
       "text": "Part 1",
       "source_anchors": [
         "body:0005"
-      ]
-    },
-    {
-      "text": "Read the sentence:",
-      "source_anchors": [
-        "body:0018"
-      ]
-    },
-    {
-      "text": "Word box:",
-      "source_anchors": [
-        "body:0108"
       ]
     }
   ],
@@ -228,6 +216,7 @@
     },
     {
       "source_anchors": [
+        "body:0018",
         "body:0019",
         "body:0020"
       ],
@@ -236,6 +225,16 @@
       "kind": "single_choice",
       "title": null,
       "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Read the sentence:",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        },
         {
           "segments": [
             {
@@ -363,7 +362,7 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
+              "text": "In a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
               "accepted_values": [],
               "hint": null
             }
@@ -1122,6 +1121,7 @@
     },
     {
       "source_anchors": [
+        "body:0108",
         "body:0111",
         "body:0112",
         "body:0113"
@@ -1131,6 +1131,16 @@
       "kind": "gap_fill",
       "title": "Part 3, Question 1 (1 point)",
       "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Word box:",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        },
         {
           "segments": [
             {

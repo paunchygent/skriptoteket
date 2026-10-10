@@ -31,13 +31,13 @@ class DocxBuildState:
     filename: str
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
+    known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
     claimed: set[str] = field(default_factory=set)
     reasons: dict[str, str] = field(default_factory=dict)
-    final_reviews: dict[str, str] = field(default_factory=dict)
     failures: tuple[str, ...] = ()
     events: list[DocxBuildEvent] = field(default_factory=list)
     round: int | None = None
@@ -46,13 +46,13 @@ class DocxBuildState:
     input_complete: bool = True
     output_complete: bool = True
 
+    def __post_init__(self) -> None:
+        # Chunks are fixed for the state's lifetime, so the anchor index is built once.
+        self.known_anchors = frozenset(chunk.anchor for chunk in self.chunks)
+
     @property
     def pending(self) -> tuple[DocxChunk, ...]:
         return tuple(chunk for chunk in self.chunks if chunk.anchor not in self.claimed)
-
-    @property
-    def known_anchors(self) -> set[str]:
-        return {chunk.anchor for chunk in self.chunks}
 
     def record(
         self,
@@ -98,12 +98,11 @@ class DocxBuildState:
 
     def result(self) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item."""
-        review_reasons = dict(self.final_reviews)
+        review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor not in review_reasons:
-                reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
-                review_reasons[chunk.anchor] = reason
-                self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
+            reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
+            review_reasons[chunk.anchor] = reason
+            self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
         return assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,

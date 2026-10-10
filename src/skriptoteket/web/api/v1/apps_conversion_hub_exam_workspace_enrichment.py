@@ -16,18 +16,20 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    GetExamWorkspaceDocumentHandler,
+from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceEnrichmentState,
+    ExamWorkspaceEnrichmentStatusResponse,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     NOT_ELIGIBLE_MESSAGE,
-    EnqueueExamWorkspaceEnrichmentHandler,
-    ExamWorkspaceEnrichmentState,
-    ExamWorkspaceEnrichmentStatusResponse,
-    GetExamWorkspaceEnrichmentStatusHandler,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.exam_workspace import (
+    EnqueueExamWorkspaceEnrichmentHandlerProtocol,
+    GetExamWorkspaceDocumentHandlerProtocol,
+    GetExamWorkspaceEnrichmentStatusHandlerProtocol,
+)
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
@@ -45,9 +47,9 @@ router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 async def start_exam_workspace_enrichment(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    documents: FromDishka[GetExamWorkspaceDocumentHandler],
-    enqueue: FromDishka[EnqueueExamWorkspaceEnrichmentHandler],
-    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandler],
+    documents: FromDishka[GetExamWorkspaceDocumentHandlerProtocol],
+    enqueue: FromDishka[EnqueueExamWorkspaceEnrichmentHandlerProtocol],
+    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceEnrichmentStatusResponse:
     """Start enrichment for the head revision, idempotent per revision."""
@@ -73,7 +75,7 @@ async def start_exam_workspace_enrichment(
 async def get_exam_workspace_enrichment(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandler],
+    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceEnrichmentStatusResponse:
     """Read enrichment status and proposals for the head revision."""

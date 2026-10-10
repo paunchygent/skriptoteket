@@ -6,22 +6,20 @@ Purpose:
 
 Relationships:
     - Consumes `domain.examnet_qti_contracts` items.
+    - Uses `domain.examnet_qti_item_admissibility` to block unrepresentable items.
     - Uses `domain.examnet_qti_xml` for assessment item serialization.
+    - Uses `domain.examnet_qti_manifest` for IMS manifest serialization.
     - Feeds infrastructure zip writers and validation-report assembly.
 """
 
 from __future__ import annotations
 
 import hashlib
-import math
 import re
 from typing import Literal
-from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_test_xml import (
     EXAMNET_QTI_ASSESSMENT_TEST_PATH,
-    EXAMNET_QTI_TEST_RESOURCE_IDENTIFIER,
-    EXAMNET_QTI_TEST_RESOURCE_TYPE,
     serialize_qti_assessment_test,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
@@ -36,31 +34,22 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiManualFollowUp,
-    ExamNetQtiManualFollowUpReason,
     ExamNetQtiPackageFile,
     ExamNetQtiPackagePlan,
     ExamNetQtiPackageStatus,
     ExamNetQtiTargetSupportStatus,
-    ExamNetQtiTextEntryGap,
-    ExamNetQtiUnsupportedResource,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_admissibility import (
+    IMAGE_MEDIA_TYPES,
+    blocking_errors,
+    manual_follow_ups,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import (
+    serialize_qti_manifest,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
     serialize_qti_assessment_item,
 )
-
-IMSCP_NAMESPACE = "http://www.imsglobal.org/xsd/imscp_v1p1"
-IMSCP_SCHEMA_LOCATION = (
-    "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd"
-)
-XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
-
-_SAFE_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
-_IMAGE_MEDIA_TYPES = {
-    "image/gif": ".gif",
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-}
 
 
 def build_examnet_qti_package_plan(
@@ -75,14 +64,14 @@ def build_examnet_qti_package_plan(
     blank value falls back to ``package_name``.
     """
 
-    manual_follow_ups = _manual_follow_ups(items)
-    blocking_errors = _blocking_errors(items)
-    if blocking_errors:
+    follow_ups = manual_follow_ups(items)
+    errors = blocking_errors(items)
+    if errors:
         return _blocked_plan(
             package_name=package_name,
             items=items,
-            manual_follow_ups=manual_follow_ups,
-            warnings=blocking_errors,
+            manual_follow_ups=follow_ups,
+            warnings=errors,
         )
 
     ordered_items = tuple(sorted(items, key=lambda value: value.sequence))
@@ -104,9 +93,13 @@ def build_examnet_qti_package_plan(
     assessment_file = _assessment_test_file(
         title=(assessment_title or "").strip() or package_name, items=ordered_items
     )
-    manifest = _manifest_file(
-        item_files=tuple(item_files),
-        image_files_by_item_id=image_files_by_item_id,
+    manifest = _package_file(
+        relative_path="imsmanifest.xml",
+        content_type="application/xml",
+        payload=serialize_qti_manifest(
+            item_files=tuple(item_files),
+            image_files_by_item_id=image_files_by_item_id,
+        ),
     )
     files = tuple(
         sorted(
@@ -125,7 +118,7 @@ def build_examnet_qti_package_plan(
         examnet_proof_status=_proof_status(items),
         items=items,
         files=files,
-        manual_follow_ups=manual_follow_ups,
+        manual_follow_ups=follow_ups,
         warnings=(),
     )
 
@@ -145,133 +138,6 @@ def build_blocked_examnet_qti_package_plan(
         manual_follow_ups=manual_follow_ups,
         warnings=warnings,
     )
-
-
-def _manual_follow_ups(items: tuple[ExamNetQtiItem, ...]) -> tuple[ExamNetQtiManualFollowUp, ...]:
-    follow_ups: list[ExamNetQtiManualFollowUp] = []
-    for item in items:
-        for resource in item.unsupported_resources:
-            follow_ups.append(_unsupported_resource_follow_up(item, resource))
-        if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
-            follow_ups.append(_automatic_evaluation_follow_up(item))
-            continue
-        if item.interaction_type == ExamNetQtiInteractionType.SINGLE_CHOICE:
-            if len(item.correct_choice_identifiers) != 1:
-                follow_ups.append(_manual_answer_key_follow_up(item))
-        if item.interaction_type == ExamNetQtiInteractionType.MULTIPLE_RESPONSE:
-            if not item.correct_choice_identifiers:
-                follow_ups.append(_manual_answer_key_follow_up(item))
-        if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
-            if any(not _accepted_gap_values(gap) for gap in item.text_entry_gaps):
-                follow_ups.append(_manual_answer_key_follow_up(item))
-    return tuple(follow_ups)
-
-
-def _blocking_errors(items: tuple[ExamNetQtiItem, ...]) -> tuple[str, ...]:
-    errors: list[str] = []
-    if not items:
-        errors.append("QTI package needs at least one item.")
-    for item in items:
-        errors.extend(_item_errors(item))
-    return tuple(errors)
-
-
-def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
-    errors: list[str] = []
-    if not _SAFE_IDENTIFIER_PATTERN.fullmatch(item.item_id):
-        errors.append(f"Item {item.item_id} has an unsafe QTI identifier.")
-    if not any(line.strip() for line in item.prompt_lines):
-        errors.append(f"Item {item.item_id} has no prompt text.")
-    if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
-        item.max_score is None or not math.isfinite(item.max_score) or item.max_score <= 0
-    ):
-        errors.append(f"Item {item.item_id} needs a positive point value.")
-    errors.extend(_choice_errors(item))
-    errors.extend(_gap_fill_errors(item))
-    errors.extend(_matching_errors(item))
-    errors.extend(_image_errors(item))
-    return tuple(errors)
-
-
-def _choice_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
-    if item.interaction_type not in {
-        ExamNetQtiInteractionType.SINGLE_CHOICE,
-        ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
-    }:
-        return ()
-    errors: list[str] = []
-    identifiers = tuple(choice.identifier for choice in item.choices)
-    if len(identifiers) < 2:
-        errors.append(f"Item {item.item_id} needs at least two choices.")
-    if len(set(identifiers)) != len(identifiers):
-        errors.append(f"Item {item.item_id} has duplicate choice identifiers.")
-    missing = tuple(
-        identifier
-        for identifier in item.correct_choice_identifiers
-        if identifier not in identifiers
-    )
-    if missing:
-        errors.append(f"Item {item.item_id} has answer keys for missing choices.")
-    if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
-        return tuple(errors)
-    if item.interaction_type == ExamNetQtiInteractionType.SINGLE_CHOICE:
-        if len(item.correct_choice_identifiers) != 1:
-            errors.append(f"Item {item.item_id} needs exactly one correct choice.")
-    if item.interaction_type == ExamNetQtiInteractionType.MULTIPLE_RESPONSE:
-        if not item.correct_choice_identifiers:
-            errors.append(f"Item {item.item_id} needs one or more correct choices.")
-    return tuple(errors)
-
-
-def _gap_fill_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
-    if item.interaction_type != ExamNetQtiInteractionType.GAP_FILL:
-        return ()
-    if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
-        return ()
-    errors: list[str] = []
-    if not item.text_entry_gaps:
-        errors.append(f"Item {item.item_id} needs one or more text-entry gaps.")
-        return tuple(errors)
-    identifiers = tuple(gap.response_identifier for gap in item.text_entry_gaps)
-    if len(set(identifiers)) != len(identifiers):
-        errors.append(f"Item {item.item_id} has duplicate gap response identifiers.")
-    unsafe_identifiers = tuple(
-        identifier
-        for identifier in identifiers
-        if not _SAFE_IDENTIFIER_PATTERN.fullmatch(identifier)
-    )
-    if unsafe_identifiers:
-        errors.append(f"Item {item.item_id} has unsafe gap response identifiers.")
-    if any(not _accepted_gap_values(gap) for gap in item.text_entry_gaps):
-        errors.append(f"Item {item.item_id} needs accepted values for every gap.")
-    return tuple(errors)
-
-
-def _matching_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
-    if item.interaction_type != ExamNetQtiInteractionType.MATCHING:
-        return ()
-    if not item.match_pairs:
-        return (f"Item {item.item_id} needs exact matching pairs.",)
-    if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
-        return ()
-    identifiers = tuple(
-        identifier
-        for pair in item.match_pairs
-        for identifier in (pair.left_identifier, pair.right_identifier)
-    )
-    if len(set(identifiers)) != len(identifiers):
-        return (f"Item {item.item_id} has duplicate match identifiers.",)
-    return ()
-
-
-def _image_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
-    errors: list[str] = []
-    for image in item.image_resources:
-        if image.media_type not in _IMAGE_MEDIA_TYPES:
-            errors.append(f"Item {item.item_id} has unsupported image type {image.media_type}.")
-        if not image.payload:
-            errors.append(f"Item {item.item_id} has an empty image payload.")
-    return tuple(errors)
 
 
 def _blocked_plan(
@@ -297,49 +163,6 @@ def _blocked_plan(
     )
 
 
-def _unsupported_resource_follow_up(
-    item: ExamNetQtiItem,
-    resource: ExamNetQtiUnsupportedResource,
-) -> ExamNetQtiManualFollowUp:
-    return ExamNetQtiManualFollowUp(
-        item_id=item.item_id,
-        sequence=item.sequence,
-        title=item.title,
-        reason_code=ExamNetQtiManualFollowUpReason.UNSUPPORTED_EXAMNET_QTI_RESOURCE,
-        message=(
-            f"Resursen {resource.label} ({resource.resource_type}) måste läggas till "
-            "manuellt efter import i Exam.net."
-        ),
-        affected_targets=("qti_package",),
-    )
-
-
-def _manual_answer_key_follow_up(item: ExamNetQtiItem) -> ExamNetQtiManualFollowUp:
-    return ExamNetQtiManualFollowUp(
-        item_id=item.item_id,
-        sequence=item.sequence,
-        title=item.title,
-        reason_code=ExamNetQtiManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED,
-        message="Lägg till eller kontrollera facit innan QTI-paketet används i Exam.net.",
-        affected_targets=("qti_package",),
-    )
-
-
-def _automatic_evaluation_follow_up(item: ExamNetQtiItem) -> ExamNetQtiManualFollowUp:
-    source_type = item.source_item_type or item.interaction_type.value
-    return ExamNetQtiManualFollowUp(
-        item_id=item.item_id,
-        sequence=item.sequence,
-        title=item.title,
-        reason_code=ExamNetQtiManualFollowUpReason.AUTOMATIC_EVALUATION_UNSUPPORTED,
-        message=(
-            f"Frågan exporteras som manuell QTI utan automatiskt facit "
-            f"(ursprunglig frågetyp: {source_type})."
-        ),
-        affected_targets=("qti_package",),
-    )
-
-
 def _item_xml_path(item: ExamNetQtiItem) -> str:
     return f"items/{item.item_id}.xml"
 
@@ -361,76 +184,12 @@ def _assessment_test_file(
 
 
 def _image_file(item: ExamNetQtiItem, image: ExamNetQtiImageResource) -> ExamNetQtiPackageFile:
-    extension = _IMAGE_MEDIA_TYPES[image.media_type]
+    extension = IMAGE_MEDIA_TYPES[image.media_type]
     filename = f"{item.item_id}-{_safe_path_stem(image.asset_id)}{extension}"
     return _package_file(
         relative_path=f"resources/{filename}",
         content_type=image.media_type,
         payload=image.payload,
-    )
-
-
-def _manifest_file(
-    *,
-    item_files: tuple[ExamNetQtiPackageFile, ...],
-    image_files_by_item_id: dict[str, tuple[ExamNetQtiPackageFile, ...]],
-) -> ExamNetQtiPackageFile:
-    ElementTree.register_namespace("", IMSCP_NAMESPACE)
-    ElementTree.register_namespace("xsi", XSI_NAMESPACE)
-    manifest = ElementTree.Element(
-        _cp("manifest"),
-        {
-            "identifier": "examnet_qti_package",
-            _xsi("schemaLocation"): IMSCP_SCHEMA_LOCATION,
-        },
-    )
-    metadata = ElementTree.SubElement(manifest, _cp("metadata"))
-    schema = ElementTree.SubElement(metadata, _cp("schema"))
-    schema.text = "QTIv2.1 Package"
-    schema_version = ElementTree.SubElement(metadata, _cp("schemaversion"))
-    schema_version.text = "1.0.0"
-    ElementTree.SubElement(manifest, _cp("organizations"))
-    resources = ElementTree.SubElement(manifest, _cp("resources"))
-    for item_file in item_files:
-        item_id = item_file.relative_path.removeprefix("items/").removesuffix(".xml")
-        resource = ElementTree.SubElement(
-            resources,
-            _cp("resource"),
-            {
-                "identifier": f"res_{item_id}",
-                "type": "imsqti_item_xmlv2p1",
-                "href": item_file.relative_path,
-            },
-        )
-        ElementTree.SubElement(resource, _cp("file"), {"href": item_file.relative_path})
-        for image_file in image_files_by_item_id[item_id]:
-            ElementTree.SubElement(resource, _cp("file"), {"href": image_file.relative_path})
-    test_resource = ElementTree.SubElement(
-        resources,
-        _cp("resource"),
-        {
-            "identifier": EXAMNET_QTI_TEST_RESOURCE_IDENTIFIER,
-            "type": EXAMNET_QTI_TEST_RESOURCE_TYPE,
-            "href": EXAMNET_QTI_ASSESSMENT_TEST_PATH,
-        },
-    )
-    ElementTree.SubElement(test_resource, _cp("file"), {"href": EXAMNET_QTI_ASSESSMENT_TEST_PATH})
-    for item_file in item_files:
-        item_id = item_file.relative_path.removeprefix("items/").removesuffix(".xml")
-        ElementTree.SubElement(
-            test_resource, _cp("dependency"), {"identifierref": f"res_{item_id}"}
-        )
-    ElementTree.indent(manifest, space="  ")
-    xml_text = ElementTree.tostring(
-        manifest,
-        encoding="unicode",
-        xml_declaration=False,
-        short_empty_elements=True,
-    )
-    return _package_file(
-        relative_path="imsmanifest.xml",
-        content_type="application/xml",
-        payload=f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_text}\n'.encode("utf-8"),
     )
 
 
@@ -489,18 +248,6 @@ def _proof_status(items: tuple[ExamNetQtiItem, ...]) -> ExamNetQtiExamNetProofSt
     return ExamNetQtiExamNetProofStatus.VENDOR_REPORTED_UNPROVEN
 
 
-def _accepted_gap_values(gap: ExamNetQtiTextEntryGap) -> tuple[str, ...]:
-    return tuple(value.strip() for value in gap.accepted_values if value.strip())
-
-
 def _safe_path_stem(value: str) -> str:
     safe = re.sub(r"[^A-Za-z0-9_-]+", "-", value.strip()).strip("-")
     return safe or "asset"
-
-
-def _cp(local_name: str) -> str:
-    return f"{{{IMSCP_NAMESPACE}}}{local_name}"
-
-
-def _xsi(local_name: str) -> str:
-    return f"{{{XSI_NAMESPACE}}}{local_name}"

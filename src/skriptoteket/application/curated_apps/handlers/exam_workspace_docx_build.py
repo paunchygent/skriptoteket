@@ -14,14 +14,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    StructuredLLMEndpointKind,
     StructuredLLMProviderProfile,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import DocxBuildResult
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
 )
@@ -36,21 +34,15 @@ class DocxAIConverter:
     def __init__(
         self,
         provider: AnswerKeyStructuredProviderProtocol,
-        provider_selector: AnswerKeyProviderSelectorProtocol,
+        profile: StructuredLLMProviderProfile,
         leases: AnswerKeyTokenLeaseRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         enabled: bool,
     ) -> None:
-        self._provider_selector = provider_selector
+        self._profile = profile
         self._rounds = DocxBuildRoundExchange(provider, leases, uow, clock)
         self._enabled = enabled
-
-    def _select_profile(self) -> StructuredLLMProviderProfile:
-        selected = self._provider_selector.select_route().primary
-        if selected.endpoint_kind is not StructuredLLMEndpointKind.RESPONSES:
-            raise ValueError("Responses profile required")
-        return selected
 
     async def convert(
         self,
@@ -71,15 +63,6 @@ class DocxAIConverter:
             )
             state.fail_all_pending(reason)
             return state.result()
-        try:
-            profile = self._select_profile()
-        except Exception as error:
-            state.record("provider", "responses_profile_unavailable", detail=type(error).__name__)
-            state.fail_all_pending(
-                "AI-tolkningens Responses-tjänst är inte tillgänglig. "
-                "Kontrollera källtexten manuellt."
-            )
-            return state.result()
         for round_number in range(1, _MAX_ROUNDS + 1):
             if not state.pending:
                 break
@@ -91,9 +74,9 @@ class DocxAIConverter:
                     pending=state.pending,
                     answer_key=tuple(c for c in chunks if c.anchor in state.key_anchors),
                     failures=state.failures,
-                    profile=profile,
+                    profile=self._profile,
                 )
-                reply = await self._rounds.exchange(request, profile)
+                reply = await self._rounds.exchange(request, self._profile)
             except DocxBuildRoundFailure as error:
                 state.record("provider", error.code, detail=error.detail)
                 state.fail_all_pending(str(error))

@@ -17,6 +17,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
@@ -161,7 +162,7 @@ class ExamWorkspaceDocumentStore:
                     )
         except IntegrityError as error:
             if stored:
-                await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
+                await self.discard_version_file(actor=actor, file_id=file_id)
             raise DomainError(
                 code=ErrorCode.CONFLICT,
                 message="Dokumentet sparades samtidigt i en annan flik.",
@@ -169,9 +170,12 @@ class ExamWorkspaceDocumentStore:
             ) from error
         except Exception:
             if stored:
-                await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
+                await self.discard_version_file(actor=actor, file_id=file_id)
             raise
         return vault_file
+
+    async def discard_version_file(self, *, actor: User, file_id: UUID) -> None:
+        await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
 
     async def load_version(self, *, actor: User, vault_file: VaultFile) -> bytes:
         return await self._vault_storage.read_file(user_id=actor.id, file_id=vault_file.id)
@@ -236,10 +240,12 @@ class ImportExamWorkspaceDocumentHandler:
                     updated_at=now,
                 )
             )
-        return conversion_status(job)
+        return conversion_status(
+            ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
+        )
 
 
-def conversion_status(job: ExamAnswerKeyEnrichmentJob) -> ExamWorkspaceConversionStatus:
+def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConversionStatus:
     assert job.workspace_lineage_id is not None
     return ExamWorkspaceConversionStatus(
         job_id=job.id,
@@ -258,7 +264,7 @@ class GetExamWorkspaceConversionStatusHandler:
         self._jobs = jobs
 
     async def handle(self, *, actor: User, job_id: UUID) -> ExamWorkspaceConversionStatus:
-        job = await self._jobs.get_by_id(job_id=job_id)
+        job = await self._jobs.get_conversion_view(job_id=job_id)
         if (
             job is None
             or job.owner_user_id != actor.id
@@ -397,7 +403,9 @@ class SaveExamWorkspaceDocumentHandler:
 
         container_bytes = self._codec.build(
             content=ExamWorkspaceContainerContent(
-                document=document, assets_by_id=assets_by_id, notes=()
+                document=document,
+                assets_by_id=assets_by_id,
+                notes=head_container.notes,
             )
         )
         vault_file = await self._store.save_version(
@@ -412,5 +420,5 @@ class SaveExamWorkspaceDocumentHandler:
             rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(vault_file), notes=()
+            document=document, summary=_summary(vault_file), notes=head_container.notes
         )

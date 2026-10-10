@@ -60,7 +60,7 @@ from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     UUIDGenerator,
 )
 
@@ -369,10 +369,10 @@ async def test_dxe_enrichment_jobs_are_outside_the_workspace_unique_index(
         for dxe_job in dxe_jobs:
             await repository.create(job=dxe_job)
 
-    async with session_factory() as session:
+    async with session_factory() as session, session.begin():
         repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         for dxe_job in dxe_jobs:
-            stored = await repository.get_by_id(job_id=dxe_job.id)
+            stored = await repository.get_by_id_for_update(job_id=dxe_job.id)
             assert stored is not None
             assert stored.workspace_lineage_id is None
             assert stored.workspace_document_revision is None

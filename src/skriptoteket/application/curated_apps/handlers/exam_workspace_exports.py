@@ -8,11 +8,12 @@ goes through the minimal validated writer.
 
 from __future__ import annotations
 
-from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
-
+from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceExportFile,
+    ExamWorkspaceExportTarget,
+)
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
@@ -47,20 +48,6 @@ from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 _CONTAINER_SUFFIX = ".provdokument.zip"
-
-
-class ExamWorkspaceExportTarget(StrEnum):
-    QTI = "qti"
-    PDF = "pdf"
-    DOCX = "docx"
-
-
-class ExamWorkspaceExportFile(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    filename: str
-    media_type: str
-    content: bytes
 
 
 class ExportExamWorkspaceDocumentHandler:

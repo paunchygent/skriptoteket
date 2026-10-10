@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import hashlib
-import json
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from dishka import make_async_container
-from pydantic import JsonValue
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +20,6 @@ from skriptoteket.application.curated_apps.exam_conversion_producers import (
     parse_source_exam,
 )
 from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
-    ExamConverterCorrectionIntentWrite,
     ReplaceExamConverterCorrectionIntentsRequest,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
@@ -40,28 +37,36 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     item_is_enrichable,
     plan_answer_key_enrichment,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
-    DigiExamItemType,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    DigiExamIrItem,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
-    source_item_fingerprint,
 )
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     ExamConverterCorrectionSourceBinding,
-    ExamConverterCorrectionTarget,
 )
-from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_conversion_artifacts import (
     FilesystemExamConversionArtifactStore,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
+    PythonDocxExamChunker,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
@@ -75,7 +80,6 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import
 from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
-from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
@@ -96,12 +100,24 @@ from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases impor
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
 )
+from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
+    PostgreSQLUserVaultFileRepository,
+)
+from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
+    PostgreSQLUserVaultUsageRepository,
+)
+from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.workers.exam_answer_key_enrichment import (
     process_next_answer_key_enrichment_job,
 )
 from tests.integration.curated_apps.real_dxe_vertical_support import (
     RealRequestProviderBoundary,
     WorkerProvider,
+    accepted_intent,
+    create_actor,
+    manual_intent,
+    parse_review_rows,
     provider_route,
 )
 
@@ -114,138 +130,6 @@ pytestmark = [
 _FIXTURE = Path("tests/fixtures/exam_conversion/real_inputs/1776888013-ak7-lag-och-ratt.dxe")
 _FIXTURE_SHA256 = "ab39bbee54ec9004ce733e0942caa3c4934c37f87c7d35d59c9a16eca4f3839a"
 _PARTIAL_FAILURE_CODE = "partial_enrichment_manual_follow_up_required"
-
-
-def _json_artifact(content: bytes) -> dict[str, JsonValue]:
-    decoded = json.loads(content)
-    assert isinstance(decoded, dict)
-    return decoded
-
-
-def _review_rows(content: bytes) -> dict[str, dict[str, JsonValue]]:
-    document = _json_artifact(content)
-    raw_rows = document.get("items")
-    assert isinstance(raw_rows, list)
-    rows: dict[str, dict[str, JsonValue]] = {}
-    for raw in raw_rows:
-        assert isinstance(raw, dict)
-        item_id = raw.get("item_id")
-        assert isinstance(item_id, str)
-        rows[item_id] = raw
-    return rows
-
-
-def _accepted_intent(
-    *,
-    item: DigiExamIrItem,
-    row: dict[str, JsonValue],
-    binding: ExamConverterCorrectionSourceBinding,
-) -> ExamConverterCorrectionIntentWrite:
-    answer = row["answer_payload"]
-    assert isinstance(answer, dict)
-    lineage = {
-        key: row[key]
-        for key in (
-            "candidate_id",
-            "candidate_payload_digest",
-            "prompt_template_version",
-            "provider_profile_id",
-            "schema_name",
-            "schema_version",
-        )
-    }
-    lineage.update({"completion_report_sha256": None, "validation_state": "valid"})
-    if item.item_type is DigiExamItemType.GAP_FILL:
-        kind = "manual_gap_open_cloze_answer_key"
-        interaction_id = f"gap-{item.item_id}"
-        payload = {"gap_answers": answer["gap_answers"]}
-    else:
-        kind = "manual_choice_answer_key"
-        interaction_id = f"choice-{item.item_id}"
-        raw_ids = answer["correct_alternative_ids"]
-        assert isinstance(raw_ids, list)
-        payload = {"correct_choice_ids": [f"choice-{value}" for value in raw_ids]}
-    payload.update(
-        {
-            "interaction_id": interaction_id,
-            "submission_origin": "accepted_advisory_candidate",
-            "candidate_lineage": lineage,
-        }
-    )
-    return ExamConverterCorrectionIntentWrite(
-        entry_id=f"accept-{item.item_id}",
-        source_binding=binding,
-        item_id=item.item_id,
-        sequence=item.sequence,
-        item_type=item.item_type.value,
-        source_item_fingerprint=source_item_fingerprint(item),
-        kind=kind,
-        target=ExamConverterCorrectionTarget(interaction_id=interaction_id),
-        payload=payload,
-    )
-
-
-def _manual_intent(
-    *, item: DigiExamIrItem, binding: ExamConverterCorrectionSourceBinding
-) -> ExamConverterCorrectionIntentWrite:
-    answer: dict[str, JsonValue]
-    if item.item_type is DigiExamItemType.GAP_FILL:
-        kind = "manual_gap_open_cloze_answer_key"
-        interaction_id = f"gap-{item.item_id}"
-        answer = {
-            "gap_answers": [
-                {"gap_id": gap.guid, "accepted_values": [f"Manuellt svar {index}"]}
-                for index, gap in enumerate(item.gaps, start=1)
-            ]
-        }
-    else:
-        kind = "manual_choice_answer_key"
-        interaction_id = f"choice-{item.item_id}"
-        assert item.alternatives
-        answer = {"correct_choice_ids": [f"choice-{item.alternatives[0].id}"]}
-    answer.update(
-        {
-            "interaction_id": interaction_id,
-            "submission_origin": "teacher_authored",
-            "candidate_lineage": None,
-        }
-    )
-    return ExamConverterCorrectionIntentWrite(
-        entry_id=f"manual-{item.item_id}",
-        source_binding=binding,
-        item_id=item.item_id,
-        sequence=item.sequence,
-        item_type=item.item_type.value,
-        source_item_fingerprint=source_item_fingerprint(item),
-        kind=kind,
-        target=ExamConverterCorrectionTarget(interaction_id=interaction_id),
-        payload=answer,
-    )
-
-
-async def _actor(db_session: AsyncSession) -> User:
-    now = datetime.now(UTC)
-    actor = User(
-        id=uuid4(),
-        email=f"real-dxe-{uuid4()}@example.test",
-        role=Role.USER,
-        auth_provider=AuthProvider.LOCAL,
-        created_at=now,
-        updated_at=now,
-    )
-    db_session.add(
-        UserModel(
-            id=actor.id,
-            email=actor.email,
-            password_hash="integration-only",
-            role=actor.role,
-            auth_provider=actor.auth_provider,
-            created_at=now,
-            updated_at=now,
-        )
-    )
-    await db_session.commit()
-    return actor
 
 
 async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
@@ -278,7 +162,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     assert unsupported_items
     assert frozenset(item.item_id for item in plan.unkeyed_items) == expected_provider_items
 
-    actor = await _actor(db_session)
+    actor = await create_actor(db_session)
     jobs = PostgreSQLConversionHubJobRepository(db_session)
     enrichment_jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(db_session)
     overlays = PostgreSQLExamAnswerKeyProposedOverlayRepository(db_session)
@@ -316,6 +200,43 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     )
     assert submitted.status.value == "submitted"
 
+    vault_files = PostgreSQLUserVaultFileRepository(db_session)
+    vault_storage = LocalVaultStorage(vault_root=tmp_path / "vault")
+    codec = ExamWorkspaceContainerCodec()
+    docx_handler = ProcessExamWorkspaceDocxJobHandler(
+        jobs=enrichment_jobs,
+        chunker=PythonDocxExamChunker(),
+        converter=DocxAIConverter(
+            provider=provider,
+            profile=provider_route().primary,
+            leases=leases,
+            uow=uow,
+            clock=clock,
+            enabled=True,
+        ),
+        codec=codec,
+        store=ExamWorkspaceDocumentStore(
+            vault_files=vault_files,
+            vault_usage=PostgreSQLUserVaultUsageRepository(db_session),
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=5_000_000,
+                VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
+            proposal_carry_forward=CarryExamWorkspaceProposals(
+                enrichment_jobs=enrichment_jobs,
+                proposed_overlays=overlays,
+                clock=clock,
+                id_generator=ids,
+            ),
+        ),
+        users=PostgreSQLUserRepository(db_session),
+        uow=uow,
+        clock=clock,
+        id_generator=ids,
+    )
     processor = ProcessExamAnswerKeyEnrichmentJobHandler(
         enrichment_jobs=enrichment_jobs,
         conversion_jobs=jobs,
@@ -328,6 +249,10 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         uow=uow,
         clock=clock,
         id_generator=ids,
+        vault_files=vault_files,
+        vault_storage=vault_storage,
+        workspace_codec=codec,
+        docx_handler=docx_handler,
     )
     worker_container = make_async_container(
         WorkerProvider(handler=processor, jobs=enrichment_jobs, uow=uow)
@@ -349,7 +274,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         )
     )
     assert enrichment_job_id is not None
-    finished = await enrichment_jobs.get_by_id(job_id=enrichment_job_id)
+    finished = await enrichment_jobs.get_by_id_for_update(job_id=enrichment_job_id)
     assert finished is not None
     assert finished.source_dxe == source_bytes
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
@@ -380,7 +305,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     assert initial.status == "succeeded"
     assert initial.bundle_status == "needs_review"
     assert initial.manual_follow_up_required
-    review_rows = _review_rows(
+    review_rows = parse_review_rows(
         artifacts.read_named_artifact(
             job_id=submitted.job_id,
             artifact_key="answer_key_review_state_report",
@@ -394,7 +319,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         review_rows[item.item_id]["review_state"] == "validation_required"
         for item in unsupported_items
     )
-    completion_rows = _review_rows(
+    completion_rows = parse_review_rows(
         artifacts.read_named_artifact(
             job_id=submitted.job_id,
             artifact_key="answer_key_completion_report",
@@ -420,7 +345,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         request=ReplaceExamConverterCorrectionIntentsRequest(
             expected_session_version=0,
             intents=[
-                _accepted_intent(
+                accepted_intent(
                     item=accepted_item,
                     row=completion_rows[accepted_item.item_id],
                     binding=binding,
@@ -432,7 +357,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     partial_readiness = partial_replay["readiness"]
     assert isinstance(partial_readiness, dict)
     assert partial_readiness["review_required"] is True
-    partial_rows = _review_rows(
+    partial_rows = parse_review_rows(
         artifacts.read_named_artifact(
             job_id=submitted.job_id,
             artifact_key="answer_key_review_state_report",
@@ -456,14 +381,14 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
             expected_session_version=1,
             intents=[
                 *(
-                    _accepted_intent(
+                    accepted_intent(
                         item=item,
                         row=completion_rows[item.item_id],
                         binding=binding,
                     )
                     for item in remaining_provider_items
                 ),
-                *(_manual_intent(item=item, binding=binding) for item in unsupported_items),
+                *(manual_intent(item=item, binding=binding) for item in unsupported_items),
             ],
         ),
     )
@@ -471,7 +396,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     readiness = replayed_manifest["readiness"]
     assert isinstance(readiness, dict)
     assert readiness["review_required"] is False
-    replayed_review_rows = _review_rows(
+    replayed_review_rows = parse_review_rows(
         artifacts.read_named_artifact(
             job_id=submitted.job_id,
             artifact_key="answer_key_review_state_report",

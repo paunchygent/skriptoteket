@@ -11,6 +11,7 @@ import csv
 import json
 import random
 import re
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, NotRequired, TypedDict
@@ -146,7 +147,7 @@ def _parse_roster_file(path: Path) -> tuple[list[str], str | None]:
     return (_extract_names_from_rows(rows), None)
 
 
-def _parse_saved_classes(settings: dict[str, object]) -> tuple[dict[str, list[str]], str | None]:
+def _parse_saved_classes(settings: Mapping[str, object]) -> tuple[dict[str, list[str]], str | None]:
     raw = settings.get("saved_classes_json", "")
 
     # Also look for session-promoted classes
@@ -202,13 +203,13 @@ def _parse_previous_groups(raw: str) -> tuple[list[list[str]], str | None]:
     try:
         payload = json.loads(raw)
         if isinstance(payload, list):
-            groups = []
+            json_groups: list[list[str]] = []
             for item in payload:
                 if isinstance(item, list):
                     clean_group = [str(entry).strip() for entry in item if str(entry).strip()]
                     if clean_group:
-                        groups.append(clean_group)
-            return (groups, None)
+                        json_groups.append(clean_group)
+            return (json_groups, None)
     except json.JSONDecodeError:
         pass
 
@@ -359,13 +360,18 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
     settings_raw = read_settings()
     action_id, action_input_raw, _ = get_action_parts()
 
-    inputs: dict[str, object] = inputs_raw if isinstance(inputs_raw, dict) else {}
-    settings: dict[str, object] = settings_raw if isinstance(settings_raw, dict) else {}
-    action_input: dict[str, object] = action_input_raw if isinstance(action_input_raw, dict) else {}
+    inputs: Mapping[str, object] = inputs_raw if isinstance(inputs_raw, dict) else {}
+    settings: Mapping[str, object] = settings_raw if isinstance(settings_raw, dict) else {}
+    action_input: Mapping[str, object] = (
+        action_input_raw if isinstance(action_input_raw, dict) else {}
+    )
 
     payload = action_input if action_id == "generate" else inputs
 
-    group_size = int(payload.get("group_size") or settings.get("default_group_size") or 0)
+    group_size_raw = payload.get("group_size") or settings.get("default_group_size") or 0
+    if not isinstance(group_size_raw, int | float | str):
+        raise TypeError(f"Ogiltig gruppstorlek: {group_size_raw!r}")
+    group_size = int(group_size_raw)
     if group_size < 2:
         group_size = DEFAULT_GROUP_SIZE
 
@@ -396,41 +402,43 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
 
     # --- Initial State (No Action) ---
     if action_id is None:
-        outputs: list[dict[str, object]] = []
+        initial_outputs: list[dict[str, object]] = []
         if saved_error:
-            outputs.append(_notice("warning", saved_error))
+            initial_outputs.append(_notice("warning", saved_error))
 
         has_saved = bool(saved_classes)
 
         if roster_path is not None:
-            students, roster_error = _parse_roster_file(roster_path)
-            if roster_error:
-                outputs.append(_notice("error", roster_error))
+            preview_students, preview_error = _parse_roster_file(roster_path)
+            if preview_error:
+                initial_outputs.append(_notice("error", preview_error))
             else:
-                outputs.append(
-                    _notice("info", f"Hittade {len(students)} elever i '{roster_path.name}'.")
+                initial_outputs.append(
+                    _notice(
+                        "info", f"Hittade {len(preview_students)} elever i '{roster_path.name}'."
+                    )
                 )
-                if students:
-                    preview = ", ".join(students[:10])
-                    if len(students) > 10:
+                if preview_students:
+                    preview = ", ".join(preview_students[:10])
+                    if len(preview_students) > 10:
                         preview += "..."
-                    outputs.append(_markdown(f"**Exempel på namn:** {preview}"))
+                    initial_outputs.append(_markdown(f"**Exempel på namn:** {preview}"))
         elif has_saved:
-            outputs.append(
+            initial_outputs.append(
                 _notice("info", "Inga filer uppladdade. Du kan välja en sparad klass nedan.")
             )
         else:
-            outputs.append(
+            initial_outputs.append(
                 _notice(
                     "error",
                     "Ingen klasslista hittades. Ladda upp en fil eller spara klasser i settings.",
                 )
             )
 
-        outputs.append(_markdown("Fyll i formuläret nedan och klicka **Skapa grupper**."))
+        initial_outputs.append(_markdown("Fyll i formuläret nedan och klicka **Skapa grupper**."))
 
         return {
-            "outputs": outputs,
+            "outputs": initial_outputs,
             "next_actions": _build_actions(saved_classes),
             "state_update": {"kind": "no_change"},
         }
@@ -515,7 +523,7 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
     artifact_name = f"grupper_{timestamp}.txt"
     (output_path / artifact_name).write_text("\n".join(markdown_lines), encoding="utf-8")
 
-    promotions = {}
+    promotions: dict[str, object] = {}
     # If we have new/updated classes, promote them to the session
     if class_name and (roster_path is not None or students):
         updated_classes = dict(saved_classes)

@@ -355,45 +355,6 @@ class NativeExamDocument(BaseModel):
             details={"item_id": item_id},
         )
 
-    def next_item_id(self) -> str:
-        used = {int(item.item_id.removeprefix("item_")) for item in self.items}
-        candidate = max(used, default=0) + 1
-        return f"item_{candidate:03d}"
-
-    def with_replaced_item(self, item: NativeExamItem) -> "NativeExamDocument":
-        existing = self.item_by_id(item.item_id)
-        if item.sequence != existing.sequence:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="Item sequence cannot change through replacement.",
-                details={"item_id": item.item_id},
-            )
-        items = tuple(
-            item if candidate.item_id == item.item_id else candidate for candidate in self.items
-        )
-        return self.model_copy(update={"items": items})
-
-    def with_appended_item(self, item: NativeExamItem) -> "NativeExamDocument":
-        if item.sequence != len(self.items) + 1:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="Appended items must take the next sequence.",
-                details={"item_id": item.item_id},
-            )
-        return self.model_copy(update={"items": (*self.items, item)})
-
-    def with_revision(self, revision: int) -> "NativeExamDocument":
-        if revision != self.revision + 1:
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Document revision must advance by exactly one.",
-                details={
-                    "current_revision": self.revision,
-                    "requested_revision": revision,
-                },
-            )
-        return self.model_copy(update={"revision": revision})
-
 
 class NativeExportBlocker(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")

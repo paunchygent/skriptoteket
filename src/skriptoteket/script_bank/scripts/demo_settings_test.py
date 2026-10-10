@@ -13,7 +13,7 @@ Runner contract:
 
 from __future__ import annotations
 
-from skriptoteket_toolkit import read_settings  # type: ignore[import-not-found]
+from skriptoteket_toolkit import read_settings
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict:

@@ -17,29 +17,22 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 import traceback
-from contextlib import contextmanager
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from time import perf_counter
-from typing import TypedDict, cast
+from typing import TypedDict
 from urllib.parse import unquote, urlparse
 
-from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (
+    ManifestFile,
     get_action_parts,
     list_input_files,
     read_settings,
 )
-
-
-class ManifestFile(TypedDict):
-    name: str
-    path: str
-    bytes: int
-
 
 # ─── HJÄLPFUNKTIONER ───
 
@@ -94,7 +87,7 @@ def _perf_event(
 
 
 def _select_input_files(*, input_dir: Path) -> list[ManifestFile]:
-    manifest_files = cast(list[ManifestFile], list_input_files())
+    manifest_files = list_input_files()
     if manifest_files:
         return manifest_files
 
@@ -178,20 +171,6 @@ def _wrap_pdf_html(*, html: str) -> str:
     inner = html[start:end]
     wrapped = f'<div id="__pdf_outer"><div id="__pdf_inner">{inner}</div></div>'
     return html[:start] + wrapped + html[end:]
-
-
-def _read_user_settings() -> dict[str, object]:
-    return cast(dict[str, object], read_settings())
-
-
-@contextmanager
-def _chdir(path: Path):
-    previous = Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(previous)
 
 
 # ─── PDF-KONVERTERING ───
@@ -379,13 +358,8 @@ def _resolve_local_href(*, base_dir: Path, href: str) -> Path | None:
         candidate = (base_dir / unquote(href)).resolve()
 
     base_resolved = base_dir.resolve()
-    try:
-        if not candidate.resolve().is_relative_to(base_resolved):
-            return None
-    except AttributeError:
-        # Python < 3.9 not relevant, but keep defensive
-        if not str(candidate.resolve()).startswith(str(base_resolved)):
-            return None
+    if not candidate.resolve().is_relative_to(base_resolved):
+        return None
 
     if not candidate.is_file():
         return None
@@ -526,6 +500,11 @@ def _normalize_html_for_weasyprint(
     return normalized
 
 
+class _WeasyprintRenderOptions(TypedDict, total=False):
+    cache: dict[str, object]
+    image_cache: dict[str, object]
+
+
 def _try_weasyprint(
     *,
     source: Path,
@@ -535,7 +514,7 @@ def _try_weasyprint(
     perf_log: list[dict[str, object]] | None = None,
 ) -> str | None:
     try:
-        from weasyprint import DEFAULT_OPTIONS, HTML  # type: ignore
+        from weasyprint import DEFAULT_OPTIONS, HTML
     except Exception:
         return None
 
@@ -543,7 +522,7 @@ def _try_weasyprint(
     html_raw = source.read_text(encoding="utf-8", errors="replace")
     base_dir = source.parent.resolve()
     base_url = source.parent.resolve().as_uri() + "/"
-    render_options: dict[str, object] = {}
+    render_options: _WeasyprintRenderOptions = {}
     cache: dict[str, object] = {}
     if "cache" in DEFAULT_OPTIONS:
         render_options["cache"] = cache
@@ -644,43 +623,6 @@ def _try_weasyprint(
     return "weasyprint"
 
 
-def _try_pypandoc(
-    *,
-    source: Path,
-    pdf_path: Path,
-    page_size: str,
-    orientation: str,  # noqa: ARG001
-) -> str | None:
-    try:
-        import pypandoc  # type: ignore
-    except Exception:
-        return None
-
-    # pypandoc stöder inte alla sidstorlekar direkt, men vi försöker
-    extra_args = [f"--resource-path={source.parent}"]
-    if page_size == "letter":
-        extra_args.append("-V")
-        extra_args.append("papersize=letter")
-
-    with _chdir(source.parent):
-        try:
-            pypandoc.convert_file(
-                str(source),
-                to="pdf",
-                outputfile=str(pdf_path),
-                extra_args=["--pdf-engine=weasyprint", *extra_args],
-            )
-            return "pandoc(pypandoc, weasyprint-engine)"
-        except Exception:
-            pypandoc.convert_file(
-                str(source),
-                to="pdf",
-                outputfile=str(pdf_path),
-                extra_args=extra_args,
-            )
-            return "pandoc(pypandoc)"
-
-
 # ─── STEG 1: FÖRHANDSGRANSKNING ───
 
 
@@ -697,7 +639,7 @@ def _handle_preview(*, input_files: list[ManifestFile]) -> dict[str, object]:
         }
 
     # Läs användarinställningar för standardvärden
-    settings = _read_user_settings()
+    settings = read_settings()
     default_page_size = settings.get("default_page_size", "a4")
     default_orientation = settings.get("default_orientation", "portrait")
 
@@ -785,8 +727,8 @@ def _handle_preview(*, input_files: list[ManifestFile]) -> dict[str, object]:
 def _handle_action(
     *,
     action_id: str,
-    input_data: dict[str, object],
-    state: dict[str, object],
+    input_data: Mapping[str, object],
+    state: Mapping[str, object],
     output_dir: Path,
 ) -> dict[str, object]:
     # Hantera "börja om"

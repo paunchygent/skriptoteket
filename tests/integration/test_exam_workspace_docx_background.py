@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
 )
+from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
@@ -27,6 +28,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ExamWorkspaceDocumentStore,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+    SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
@@ -36,9 +38,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carr
     CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -55,9 +54,6 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -88,7 +84,6 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import _route
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 _QUIZ = Path(
@@ -193,12 +188,7 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
             )
             converter = DocxAIConverter(
                 provider=provider,
-                provider_selector=FixedRouteAnswerKeyProviderSelector(
-                    route=AnswerKeyProviderRoute(
-                        primary=build_luna_docx_conversion_profile(settings),
-                        failover=_route().failover,
-                    )
-                ),
+                profile=build_luna_docx_conversion_profile(settings),
                 leases=PostgreSQLAnswerKeyTokenLeaseRepository(
                     session, daily_token_limit=1_000_000
                 ),
@@ -239,6 +229,7 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
         ).handle(actor=actor, lineage_id=queued.lineage_id)
         document = opened.document
         assert opened.summary.version == 1
+        assert opened.notes, "Recorded facit chunks must survive the import as teacher notes."
         assert len(document.items) == 28 and sum(item.points or 0 for item in document.items) == 28
         assert [item.kind.value for item in document.items] == ["single_choice"] * 21 + [
             "gap_fill"
@@ -274,3 +265,44 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
             document, package_name="quiz", qti_writer=ExamNetQtiPackageWriter()
         )
         assert package.startswith(b"PK") and json.loads(report)["package_status"] == "passed"
+        version_one_notes = opened.notes
+
+    # An unrelated save must carry the version-1 source notes into version 2 unchanged.
+    edited = document.model_copy(update={"revision": 2, "title": f"{document.title} - redigerad"})
+    async with session_factory() as writer:
+        save_store = _document_store(
+            writer,
+            uow=SQLAlchemyUnitOfWork(writer),
+            storage=storage,
+            clock=clock,
+            settings=settings,
+            ids=SequenceIdGenerator([uuid4() for _ in range(3)]),
+        )
+        saved = await SaveExamWorkspaceDocumentHandler(
+            vault_files=PostgreSQLUserVaultFileRepository(writer),
+            codec=codec,
+            store=save_store,
+            id_generator=SequenceIdGenerator([uuid4()]),
+        ).handle(
+            actor=actor,
+            lineage_id=queued.lineage_id,
+            request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+        )
+    assert saved.summary.version == 2
+    assert saved.notes == version_one_notes and len(saved.notes) > 0
+
+    async with session_factory() as final_reader:
+        reopened = await GetExamWorkspaceDocumentHandler(
+            vault_files=PostgreSQLUserVaultFileRepository(final_reader),
+            codec=codec,
+            store=_document_store(
+                final_reader,
+                uow=SQLAlchemyUnitOfWork(final_reader),
+                storage=storage,
+                clock=clock,
+                settings=settings,
+                ids=ids,
+            ),
+        ).handle(actor=actor, lineage_id=queued.lineage_id)
+    assert reopened.summary.version == 2 and reopened.document.revision == 2
+    assert reopened.notes == version_one_notes and len(reopened.notes) > 0

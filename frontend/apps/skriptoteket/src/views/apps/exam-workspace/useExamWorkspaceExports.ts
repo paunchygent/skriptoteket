@@ -51,21 +51,23 @@ const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
 
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
-function parseBlockers(details: unknown): ExamWorkspaceExportBlocker[] {
-  if (typeof details !== "object" || details === null) {
-    return [];
-  }
-  const blockers = (details as { blockers?: unknown }).blockers;
-  if (!Array.isArray(blockers)) {
-    return [];
-  }
-  return blockers.filter(
-    (candidate): candidate is ExamWorkspaceExportBlocker =>
-      typeof candidate === "object" &&
-      candidate !== null &&
-      typeof (candidate as { item_id?: unknown }).item_id === "string" &&
-      BLOCKER_REASONS.has(String((candidate as { reason?: unknown }).reason)),
+function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBlocker {
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    "item_id" in candidate &&
+    typeof candidate.item_id === "string" &&
+    "reason" in candidate &&
+    BLOCKER_REASONS.has(String(candidate.reason))
   );
+}
+
+function parseBlockers(details: unknown): ExamWorkspaceExportBlocker[] {
+  if (typeof details !== "object" || details === null || !("blockers" in details)) {
+    return [];
+  }
+  const { blockers } = details;
+  return Array.isArray(blockers) ? blockers.filter(isExportBlocker) : [];
 }
 
 function groupBlockers(blockers: ExamWorkspaceExportBlocker[]): Record<string, string[]> {

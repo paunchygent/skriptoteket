@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
@@ -37,11 +37,8 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from tests.fixtures.time_fixtures import FixedClock
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
     StubProvider,
@@ -58,33 +55,36 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
+_COURSE_EXAM = Path(
+    "tests/fixtures/exam_conversion/docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx"
+)
+_COURSE_RESPONSE = Path(
+    "tests/fixtures/exam_conversion/svenska_2_kursavslutande_prov_docx_build_response_v2.json"
+)
 
 
 class RecordedRoundsProvider(StubProvider):
     """Replay the recorded live round on every call."""
 
-    def __init__(self) -> None:
-        super().__init__(content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage())
-
-
-class LockingFakeJobs(InMemoryEnrichmentJobRepository):
-    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        return await self.get_by_id(job_id=job_id)
+    def __init__(self, response: Path) -> None:
+        super().__init__(content=json.loads(response.read_text()), usage=StructuredLLMUsage())
 
 
 class JobEnvironment(_Env):
-    jobs: LockingFakeJobs
+    jobs: InMemoryEnrichmentJobRepository
     actor: User
     provider: StubProvider
     importer: ImportExamWorkspaceDocumentHandler
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
+def environment(
+    *, enabled: bool = True, budget: int = 1_000_000, response: Path = _RESPONSE
+) -> JobEnvironment:
     env = JobEnvironment()
-    env.jobs = LockingFakeJobs()
+    env.jobs = InMemoryEnrichmentJobRepository()
     env.actor = _actor()
-    env.provider = RecordedRoundsProvider()
+    env.provider = RecordedRoundsProvider(response)
     env.importer = ImportExamWorkspaceDocumentHandler(
         jobs=env.jobs,
         uow=env.store._uow,
@@ -94,7 +94,7 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     )
     converter = DocxAIConverter(
         provider=env.provider,
-        provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+        profile=_route().primary,
         leases=InMemoryLeaseRepository(daily_token_limit=budget),
         uow=env.store._uow,
         clock=FixedClock(_NOW),
@@ -177,6 +177,20 @@ async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagn
     )
     assert package_bytes.startswith(b"PK")
     assert json.loads(report_bytes)["package_status"] == "passed"
+
+
+@pytest.mark.asyncio
+async def test_recorded_model_reviews_persist_their_reasons_in_job_diagnostics():
+    env = environment(response=_COURSE_RESPONSE)
+    running = await claim(env, _COURSE_EXAM.read_bytes())
+    finished = await env.processor.handle(job=running)
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert env.provider.call_count == 1
+    prefix = "AI-tolkningen markerade frågan för granskning: "
+    assert [e["detail"] for e in finished.diagnostics if e["code"] == "model_review"] == [
+        *[f"{prefix}Uppgiftens svarssätt framgår inte av källtexten."] * 4,
+        f"{prefix}Uppgiften saknar instruktion om hur påståendena ska besvaras.",
+    ]
 
 
 @pytest.mark.asyncio

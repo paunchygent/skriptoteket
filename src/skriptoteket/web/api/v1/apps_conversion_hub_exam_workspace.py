@@ -18,21 +18,19 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    GetExamWorkspaceConversionStatusHandler,
-    GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
-    ListExamWorkspaceDocumentsHandler,
-    SaveExamWorkspaceDocumentHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExamWorkspaceExportTarget,
-    ExportExamWorkspaceDocumentHandler,
+    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
+from skriptoteket.protocols.exam_workspace import (
+    ExportExamWorkspaceDocumentHandlerProtocol,
+    GetExamWorkspaceConversionStatusHandlerProtocol,
+    GetExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceDocumentHandlerProtocol,
+    ListExamWorkspaceDocumentsHandlerProtocol,
+    SaveExamWorkspaceDocumentHandlerProtocol,
+)
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
@@ -49,7 +47,7 @@ router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 )
 async def list_exam_workspace_documents(
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ListExamWorkspaceDocumentsHandler],
+    handler: FromDishka[ListExamWorkspaceDocumentsHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentListResponse:
     require_conversion_hub_access(registry=registry, user=user)
@@ -63,7 +61,7 @@ async def list_exam_workspace_documents(
 )
 async def import_exam_workspace_document(
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ImportExamWorkspaceDocumentHandler],
+    handler: FromDishka[ImportExamWorkspaceDocumentHandlerProtocol],
     file: UploadFile = File(...),
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceConversionStatus:
@@ -79,7 +77,7 @@ async def import_exam_workspace_document(
 async def get_exam_workspace_conversion_status(
     job_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[GetExamWorkspaceConversionStatusHandler],
+    handler: FromDishka[GetExamWorkspaceConversionStatusHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceConversionStatus:
     require_conversion_hub_access(registry=registry, user=user)
@@ -93,7 +91,7 @@ async def get_exam_workspace_conversion_status(
 async def get_exam_workspace_document(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[GetExamWorkspaceDocumentHandler],
+    handler: FromDishka[GetExamWorkspaceDocumentHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
@@ -105,7 +103,7 @@ async def export_exam_workspace_document(
     lineage_id: UUID,
     target: ExamWorkspaceExportTarget,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExportExamWorkspaceDocumentHandler],
+    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> Response:
     require_conversion_hub_access(registry=registry, user=user)
@@ -126,7 +124,7 @@ async def save_exam_workspace_document(
     lineage_id: UUID,
     request: SaveExamWorkspaceDocumentRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[SaveExamWorkspaceDocumentHandler],
+    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
