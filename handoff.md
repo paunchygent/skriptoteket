@@ -1,23 +1,13 @@
 ## Current
 
-- [TASK-SKRIPT-39-04-02](docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md)
-  is `in_progress` (terms L1-L8: Filer/Redigera modes, item list plus dominating
-  editor, metadata drawer, inline gap chips, phone bottom-sheet picker).
-  Implemented, reviewed (fresh re-review APPROVED) and merged to `main`
-  `acca1ee7`; Hemma staging redeployed healthy. Staging walk 2026-10-10
-  (built-in browser, HuleEdu sign-in, real grammatik_omprov DOCX):
-  import opens Redigera; chip popover edit; points 0 refused at field,
-  list, drawer and save; readiness links; save v2; QTI zip 8 items with
-  gap correctResponse ("snöboll" present). Re-walk after repairs: frame
-  bottom 876/900 and 743/768 with no page scroll; editor 912px/636px with
-  drawer open; tablet drawer opaque, Escape returns focus to Detaljer;
-  phone editor 358/390px, sheet picker, full-screen modal details;
-  Backspace by a gap keeps it and shows the Swedish hint.
-  Next action: user-closure gate (user acceptance of the walk).
-  Open user gates: proposal carry-over across saves (proposals vanish on
-  save); proposed TASK-SKRIPT-39-04-03 for the DOCX facit defect where a
-  label merges into the accepted gap value ("vid skolan Satsdel:
-  adverbial") — not scaffolded until the user agrees.
+- [TASK-SKRIPT-39-04-03](docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md)
+  is `proposed`: one gap per DOCX answer label (walk finding W9, merged
+  value "vid skolan Satsdel: adverbial"). User owns proposed->ready and
+  confirms design terms F2-F3. Backend work: route to Codex.
+- [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
+  is `proposed`: pending answer-key proposals survive a save (user decision
+  P1); user confirms staleness terms P2-P3 at proposed->ready. Backend work:
+  route to Codex.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -113,6 +103,9 @@
 
 ## Recent
 
+- 2026-10-10: TASK-SKRIPT-39-04-02 `done` by user acceptance of the
+  four-viewport staging walk (`agent-planning:user-closure-gate`); `main`
+  `acca1ee7` on staging; evidence in the task's Closeout Evidence.
 - 2026-10-10: TASK-SKRIPT-39-04-01 `done` by user D5 approval
   (`agent-planning:user-closure-gate`); walk, proposal step, gap-key fix,
   missing-key export block (DOCX included, user decision) and small items
@@ -145,4 +138,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: user closure of TASK-SKRIPT-39-04-02; decide TASK-SKRIPT-39-04-03.
+- Next: user proposed->ready for TASK-SKRIPT-39-04-03 and 39-04-04.

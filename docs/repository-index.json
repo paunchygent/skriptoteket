@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "00d37259a6c3e684b070cb13045c838dc10f1e020d3ed67427bd9817f7ab9443",
+  "source_set_digest": "ed1ab7b8c18261cfb2a5dd432c12264be47e103ca0355149e7207e068387619f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4527,7 +4527,47 @@
       "type": "task",
       "title": "Exam workspace two-mode layout: file handling and item editing",
       "path": "docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md",
-      "status": "in_progress",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User accepted the four-viewport staging walk on 2026-10-10 after independent code reviews approved every merged change."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-03",
+      "type": "task",
+      "title": "Split multiple DOCX answer labels into separate gaps",
+      "path": "docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-04",
+      "type": "task",
+      "title": "Carry pending answer-key proposals across exam workspace saves",
+      "path": "docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
