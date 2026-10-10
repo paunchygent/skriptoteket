@@ -1,6 +1,6 @@
-"""Real PostgreSQL upload-to-version-one proof using a stored Responses fixture.
+"""Real PostgreSQL upload-to-version-one proof replaying recorded live Responses rounds.
 
-The response fixture is source-authored test data, not a live-provider capture.
+The two response fixtures are the output of a recorded live provider run on the quiz.
 The HTTP adapter, job queue, token ledger, container storage and QTI validators
 are the production implementations.
 """

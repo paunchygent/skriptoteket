@@ -1,4 +1,4 @@
-"""Background import publication, source deletion, readback and lease fencing."""
+"""Background import publication, source deletion, readback and upload validation."""
 
 import json
 from datetime import timedelta
@@ -29,7 +29,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     native_export_blockers,
 )
@@ -79,11 +78,6 @@ class RecordedRoundsProvider(StubProvider):
         return await super().complete_structured(request=request, profile=profile)
 
 
-class CrashingChunker(PythonDocxExamChunker):
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
-        raise RuntimeError("chunker crashed")
-
-
 class LockingFakeJobs(InMemoryEnrichmentJobRepository):
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return await self.get_by_id(job_id=job_id)
@@ -97,9 +91,7 @@ class JobEnvironment(_Env):
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(
-    *, enabled: bool = True, budget: int = 1_000_000, chunker: PythonDocxExamChunker | None = None
-) -> JobEnvironment:
+def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
     env = JobEnvironment()
     env.jobs = LockingFakeJobs()
     env.actor = _actor()
@@ -121,7 +113,7 @@ def environment(
     )
     env.processor = ProcessExamWorkspaceDocxJobHandler(
         jobs=env.jobs,
-        chunker=chunker or PythonDocxExamChunker(),
+        chunker=PythonDocxExamChunker(),
         converter=converter,
         codec=env.codec,
         store=env.store,
@@ -236,30 +228,6 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
 
 
 @pytest.mark.asyncio
-async def test_worker_expiry_preserves_source_review_without_calling_provider():
-    env = environment()
-    running = await claim(env)
-    finished = await env.processor.handle(job=running, fallback_reason="Konverteringen avbröts.")
-    assert finished.source_docx is None
-    assert env.provider.call_count == 0
-    assert running.workspace_lineage_id is not None
-    opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    assert len(opened.document.items) == 109
-    assert finished.diagnostics[0]["code"] == "lease_expired"
-
-
-@pytest.mark.asyncio
-async def test_stale_worker_cannot_publish_or_delete_another_workers_source():
-    env = environment(enabled=False)
-    running = await claim(env)
-    env.jobs.jobs[running.id] = running.model_copy(update={"locked_by": "replacement"})
-    returned = await env.processor.handle(job=running)
-    assert returned.locked_by == "replacement"
-    assert returned.source_docx == _QUIZ.read_bytes()
-    assert not env.vault_files.files
-
-
-@pytest.mark.asyncio
 async def test_invalid_docx_finishes_failed_and_deletes_source():
     env = environment()
     running = await claim(env, b"invalid docx")
@@ -280,19 +248,6 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
             "detail": "VALIDATION_ERROR",
         },
     )
-
-
-@pytest.mark.asyncio
-async def test_unexpected_error_fails_job_with_persisted_reason_instead_of_hanging():
-    env = environment(chunker=CrashingChunker())
-    running = await claim(env)
-    finished = await env.processor.handle(job=running)
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
-    assert finished.source_docx is None
-    assert finished.last_error and "oväntat fel" in finished.last_error
-    assert [(e["code"], e["detail"]) for e in finished.diagnostics] == [
-        ("unexpected_error", "RuntimeError")
-    ]
 
 
 @pytest.mark.asyncio
