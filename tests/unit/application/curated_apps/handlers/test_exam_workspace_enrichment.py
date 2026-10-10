@@ -27,6 +27,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     ExamWorkspaceEnrichmentState,
     GetExamWorkspaceEnrichmentStatusHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
@@ -214,6 +217,12 @@ class _StatusHarness:
             settings=Settings.model_construct(
                 VAULT_MAX_FILE_BYTES=5_000_000,
                 VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
+            proposal_carry_forward=CarryExamWorkspaceProposals(
+                enrichment_jobs=self.enrichment_jobs,
+                proposed_overlays=self.proposed_overlays,
+                clock=FixedClock(_NOW),
+                id_generator=UUIDGenerator(),
             ),
         )
         self.handler = GetExamWorkspaceEnrichmentStatusHandler(

@@ -4,6 +4,7 @@
   is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
+
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
     `in_progress`: Sol rereview approved `4ac59c24` (findings R1-R6 cleared)
     and it is merged to main. Next: staging redeploy, live-provider browser
@@ -15,9 +16,10 @@
     (`review-86e495c8.md`). Next: wire the eval runner to the converter.
 
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress` on `codex/task-skript-39-04-04`: R2 repairs done; an
-  Opus agent merges main (task 1) into the branch. Next: Sol review of the
-  conflict resolution, merge, staging walk. Retained session
+  is `in_progress` and merged to main: Sol rereview approved `231a2190`
+  (R1-R4 cleared) and Sol approved the integration merge `e0746f2a`.
+  Next: staging walk (request proposals, save, approve, save, export QTI).
+  Retained session
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)

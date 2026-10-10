@@ -149,8 +149,26 @@ describe("examWorkspace transport", () => {
     expect(apiPutMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1`, {
       document,
       expected_revision: 4,
+      rejected_proposal_item_ids: [],
     });
     expect(result).toBe(response);
+  });
+
+  it("encodes rejected proposal item ids in the save request", async () => {
+    apiPutMock.mockResolvedValueOnce(buildResponse(2));
+    const document = buildDocument(2);
+
+    await saveExamWorkspaceDocument("lineage-1", {
+      document,
+      expectedRevision: 1,
+      rejectedProposalItemIds: ["item_001", "item_002"],
+    });
+
+    expect(apiPutMock).toHaveBeenLastCalledWith(`${DOCUMENTS_ROOT}/lineage-1`, {
+      document,
+      expected_revision: 1,
+      rejected_proposal_item_ids: ["item_001", "item_002"],
+    });
   });
 
   it("lists saved documents from the collection path", async () => {

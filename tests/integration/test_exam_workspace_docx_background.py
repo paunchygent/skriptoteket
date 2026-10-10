@@ -32,6 +32,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -58,6 +61,9 @@ from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider impor
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
+from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
+    PostgreSQLExamAnswerKeyProposedOverlayRepository,
+)
 from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
     PostgreSQLAnswerKeyTokenLeaseRepository,
 )
@@ -70,8 +76,8 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.infrastructure.repositories.test_exam_workspace_repositories import (
-    _create_owner,
+from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
+    create_owner,
 )
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
@@ -85,11 +91,36 @@ _QUIZ = Path(
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
 
 
+def _document_store(
+    session: AsyncSession,
+    *,
+    uow: SQLAlchemyUnitOfWork,
+    storage: LocalVaultStorage,
+    clock: FixedClock,
+    settings: Settings,
+    ids: SequenceIdGenerator,
+) -> ExamWorkspaceDocumentStore:
+    return ExamWorkspaceDocumentStore(
+        vault_files=PostgreSQLUserVaultFileRepository(session),
+        vault_usage=PostgreSQLUserVaultUsageRepository(session),
+        vault_storage=storage,
+        uow=uow,
+        clock=clock,
+        settings=settings,
+        proposal_carry_forward=CarryExamWorkspaceProposals(
+            enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
+            proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
+            clock=clock,
+            id_generator=ids,
+        ),
+    )
+
+
 async def test_quiz_background_job_commits_one_source_faithful_document_and_valid_qti(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
-    actor = await _create_owner(session_factory)
+    actor = await create_owner(session_factory)
     now = datetime.now(UTC)
     clock = FixedClock(now)
     ids = SequenceIdGenerator([uuid4() for _ in range(5)])
@@ -142,14 +173,8 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                 worker_id="quiz-worker", now=now, lease_ttl=timedelta(minutes=15)
             )
         assert running is not None and running.id == queued.job_id
-        vault_files = PostgreSQLUserVaultFileRepository(session)
-        store = ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(session),
-            vault_storage=storage,
-            uow=uow,
-            clock=clock,
-            settings=settings,
+        store = _document_store(
+            session, uow=uow, storage=storage, clock=clock, settings=settings, ids=ids
         )
         async with httpx.AsyncClient(transport=httpx.MockTransport(responses)) as client:
             provider = OpenAIAnswerKeyStructuredProvider(
@@ -187,13 +212,13 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
         vault_files = PostgreSQLUserVaultFileRepository(reader)
-        store = ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(reader),
-            vault_storage=storage,
+        store = _document_store(
+            reader,
             uow=SQLAlchemyUnitOfWork(reader),
+            storage=storage,
             clock=clock,
             settings=settings,
+            ids=ids,
         )
         opened = await GetExamWorkspaceDocumentHandler(
             vault_files=vault_files, codec=codec, store=store

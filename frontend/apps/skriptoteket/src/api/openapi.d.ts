@@ -7719,6 +7719,11 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Input"];
             /** Expected Revision */
             expected_revision: number;
+            /**
+             * Rejected Proposal Item Ids
+             * @default []
+             */
+            rejected_proposal_item_ids: string[];
         };
         /** SaveResult */
         SaveResult: {
