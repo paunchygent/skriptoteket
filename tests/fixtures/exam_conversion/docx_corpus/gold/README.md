@@ -40,9 +40,17 @@ answer of up to six characters, otherwise at most 2, over the whole answer.
 An extra answer equal to another gap's gold answer in the same item fails.
 Explicit source facit variants remain gold answers in their own right.
 
-Eval command wiring, recorded provider replay and live token reports wait for
-TASK-SKRIPT-39-05-01 to merge to main and for the parent to merge main into
-this task branch. This slice makes no converter or live-eval claim.
+`pdm run exam-conversion-eval --mode recorded --evidence-dir <dir>` converts
+every corpus DOCX with the DOCX import job's chunker and converter, compares
+each document with its gold file, prints the per-exam and per-item mismatches,
+writes `report.json` to `<dir>` and exits non-zero when any item differs.
+Recorded mode replays the recorded live responses in
+`tests/fixtures/exam_conversion/`, listed per exam in
+`scripts/exam_conversion_eval/__main__.py`. `--mode live` calls the configured
+provider, reports input and output tokens per exam and writes each round's
+response to `<dir>/recordings/` in the recorded fixture format. Live mode is a
+manual eval-loop step, not CI. A conversion crash fails the import job, so the
+report shows it as an exam that converted no items.
 
 | Source exam                 | Gold items | Points |
 | --------------------------- | ---------: | -----: |
