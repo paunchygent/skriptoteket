@@ -106,7 +106,7 @@ def saved_proposal_document(document: NativeExamDocument, scenario: str) -> Nati
     payload = document.model_dump(mode="json")
     payload["revision"] = document.revision + 1
     item = payload["items"][0]
-    if scenario in {"teacher_authored", "reviewed_advisory"}:
+    if scenario in {"teacher_authored", "reviewed_advisory", "machine_proposed"}:
         item["answer_key"] = {"origin": scenario, "correct_choice_ids": ["choice_002"]}
     elif scenario == "stale":
         item["body"][0]["segments"][0]["text"] = "A different question?"

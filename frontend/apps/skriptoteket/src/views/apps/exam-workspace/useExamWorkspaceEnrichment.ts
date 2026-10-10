@@ -45,6 +45,9 @@ export function useExamWorkspaceEnrichment(
   const enrichmentStatus = ref<ExamWorkspaceEnrichmentStatus | null>(null);
   const isRequesting = ref(false);
   const dismissedItemIds = ref<string[]>([]);
+  // Proposals the teacher explicitly rejected ("Avvisa"). Approving or moving
+  // a proposal into the editor only hides it; it is not a rejection.
+  const rejectedItemIds = ref<string[]>([]);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let generation = 0;
   // Consecutive failed status polls. The first failure of a streak shows the
@@ -95,8 +98,16 @@ export function useExamWorkspaceEnrichment(
     }
   }
 
+  function rejectProposal(itemId: string): void {
+    dismissProposal(itemId);
+    if (!rejectedItemIds.value.includes(itemId)) {
+      rejectedItemIds.value = [...rejectedItemIds.value, itemId];
+    }
+  }
+
   function resetDismissedAfterSave(): void {
     dismissedItemIds.value = [];
+    rejectedItemIds.value = [];
   }
 
   function stopPolling(): void {
@@ -181,9 +192,10 @@ export function useExamWorkspaceEnrichment(
       pollFailures = 0;
       enrichmentStatus.value = null;
       // A conflict can reload a newer revision after a failed save. Keep
-      // unsaved dismissals for this exam until the save succeeds.
+      // unsaved dismissals and rejections for this exam until the save succeeds.
       if (lineageId !== previousLineageId) {
         dismissedItemIds.value = [];
+        rejectedItemIds.value = [];
       }
       if (lineageId) {
         void refreshStatus(lineageId, generation);
@@ -194,7 +206,6 @@ export function useExamWorkspaceEnrichment(
   onScopeDispose(stopPolling);
 
   return {
-    dismissedItemIds,
     dismissProposal,
     enrichmentMessage,
     enrichmentStatus,
@@ -202,6 +213,8 @@ export function useExamWorkspaceEnrichment(
     isRequesting,
     openProposals,
     proposalForItem,
+    rejectedItemIds,
+    rejectProposal,
     requestProposals,
     resetDismissedAfterSave,
   };

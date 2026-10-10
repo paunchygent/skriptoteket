@@ -5,6 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -335,7 +336,16 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "scenario", ["pending", "rejected", "teacher_authored", "reviewed_advisory", "stale", "deleted"]
+    "scenario",
+    [
+        "pending",
+        "machine_proposed",
+        "rejected",
+        "teacher_authored",
+        "reviewed_advisory",
+        "stale",
+        "deleted",
+    ],
 )
 async def test_save_carries_only_pending_proposals(env: _Env, scenario: str) -> None:
     actor = _actor()
@@ -368,7 +378,7 @@ async def test_save_carries_only_pending_proposals(env: _Env, scenario: str) -> 
     )
     status = await status_handler.handle(actor=actor, lineage_id=document.document_id)
     assert [proposal.item_id for proposal in status.proposals] == (
-        ["item_001"] if scenario == "pending" else []
+        ["item_001"] if scenario in {"pending", "machine_proposed"} else []
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
     assert reopened.document == next_document
@@ -412,6 +422,42 @@ async def test_save_carries_only_pending_proposals(env: _Env, scenario: str) -> 
         assert (
             await status_handler.handle(actor=actor, lineage_id=document.document_id)
         ).proposals == ()
+
+
+@pytest.mark.asyncio
+async def test_unreadable_previous_overlay_fails_the_save(env: _Env) -> None:
+    actor = _actor()
+    document = proposal_document()
+    await env.store.save_version(
+        actor=actor,
+        file_id=env.ids.new_uuid(),
+        name="exam.provdokument.zip",
+        content=env.codec.build(content=ExamWorkspaceContainerContent(document=document)),
+        lineage_id=document.document_id,
+        version=1,
+    )
+    job, overlay = proposal_ledger(owner_user_id=actor.id, document=document, now=_NOW)
+    await env.enrichment_jobs.create(job=job)
+    await env.proposed_overlays.create(
+        proposed_overlay=overlay.model_copy(update={"overlay_json": {"items": "unreadable"}})
+    )
+
+    with pytest.raises(ValidationError):
+        await env.save_handler.handle(
+            actor=actor,
+            lineage_id=document.document_id,
+            request=SaveExamWorkspaceDocumentRequest(
+                expected_revision=1, document=saved_proposal_document(document, "pending")
+            ),
+        )
+    assert (
+        await env.enrichment_jobs.get_by_workspace_revision(
+            owner_user_id=actor.id,
+            workspace_lineage_id=document.document_id,
+            workspace_document_revision=2,
+        )
+        is None
+    )
 
 
 def test_save_request_keeps_older_clients_compatible() -> None:

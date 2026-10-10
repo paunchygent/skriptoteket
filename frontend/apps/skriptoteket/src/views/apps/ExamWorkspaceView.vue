@@ -91,13 +91,14 @@ const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } 
   useExamWorkspaceExports(summary);
 
 const {
-  dismissedItemIds,
   dismissProposal,
   enrichmentMessage,
   isEnrichmentPending,
   isRequesting,
   openProposals,
   proposalForItem,
+  rejectedItemIds,
+  rejectProposal,
   requestProposals,
   resetDismissedAfterSave,
 } = useExamWorkspaceEnrichment(summary);
@@ -243,7 +244,7 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
 }
 
 async function handleSave(): Promise<void> {
-  const rejectedProposalItemIds = [...dismissedItemIds.value];
+  const rejectedProposalItemIds = [...rejectedItemIds.value];
   if (await saveDocument(rejectedProposalItemIds)) {
     resetDismissedAfterSave();
   }
@@ -459,7 +460,7 @@ function handleEditProposal(itemId: string): void {
                 :server-blockers="selectedServerBlockers"
                 @approve="handleApproveProposal"
                 @close="detailsOpen = false"
-                @dismiss="dismissProposal"
+                @dismiss="rejectProposal"
                 @edit="handleEditProposal"
               />
             </div>

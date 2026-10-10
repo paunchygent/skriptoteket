@@ -8,8 +8,6 @@ The original overlay and provider provenance remain immutable.
 
 from uuid import UUID
 
-from pydantic import ValidationError
-
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
@@ -72,10 +70,7 @@ class CarryExamWorkspaceProposals:
             or overlay.workspace_document_revision != previous_document.revision
         ):
             return
-        try:
-            payload = WorkspaceAnswerKeyProposalsPayload.model_validate(overlay.overlay_json)
-        except ValidationError:
-            return
+        payload = WorkspaceAnswerKeyProposalsPayload.model_validate(overlay.overlay_json)
         records = carry_pending_proposal_records(
             previous_document=previous_document,
             document=document,

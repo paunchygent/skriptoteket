@@ -167,6 +167,17 @@ def test_trusted_key_drops_proposal(
     assert _carry(document, saved, payload) == (payload.items[1],)
 
 
+def test_untrusted_machine_proposed_key_keeps_proposal(
+    document: NativeExamDocument, payload: WorkspaceAnswerKeyProposalsPayload
+) -> None:
+    # "Redigera förslaget" places the proposal in the editor without a decision.
+    first = document.items[0].model_dump()
+    first["answer_key"] = {"origin": "machine_proposed", "correct_choice_ids": ["choice_001"]}
+    saved = _save(document, NativeExamItem.model_validate(first), document.items[1])
+
+    assert _carry(document, saved, payload) == payload.items
+
+
 @pytest.mark.parametrize("change", ["question", "title", "kind", "choice_id", "choice_text"])
 def test_answer_relevant_choice_changes_drop_proposal(
     document: NativeExamDocument, payload: WorkspaceAnswerKeyProposalsPayload, change: str
@@ -224,30 +235,6 @@ def test_lineage_or_revision_mismatch_drops_all_proposals(
         saved = saved.model_copy(update={"revision": document.revision + 2})
 
     assert _carry(document, saved, payload) == ()
-
-
-@pytest.mark.parametrize("correct", [(), ("choice_999",), ("choice_001", "choice_002")])
-def test_invalid_choice_proposal_drops_only_that_record(
-    document: NativeExamDocument,
-    payload: WorkspaceAnswerKeyProposalsPayload,
-    correct: tuple[str, ...],
-) -> None:
-    invalid = payload.items[0].model_copy(update={"correct_choice_ids": correct})
-    payload = payload.model_copy(update={"items": (invalid, payload.items[1])})
-
-    assert _carry(document, _save(document), payload) == (payload.items[1],)
-
-
-@pytest.mark.parametrize("values", [{"gap_999": ("walks",)}, {"gap_001": (" ",)}, {}])
-def test_invalid_gap_proposal_drops_only_that_record(
-    document: NativeExamDocument,
-    payload: WorkspaceAnswerKeyProposalsPayload,
-    values: dict[str, tuple[str, ...]],
-) -> None:
-    invalid = payload.items[1].model_copy(update={"gap_accepted_values": values})
-    payload = payload.model_copy(update={"items": (payload.items[0], invalid)})
-
-    assert _carry(document, _save(document), payload) == (payload.items[0],)
 
 
 def test_item_missing_from_previous_document_drops_proposal(

@@ -325,7 +325,42 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
   });
 
-  it("sends dismissed proposal ids and clears them after a successful save", async () => {
+  it("does not reject a proposal moved into the editor with Redigera förslaget", async () => {
+    apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.get('[data-test="exam-workspace-proposal-edit"]').trigger("click");
+
+    await saveDocument(wrapper);
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenLastCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: [] }),
+    );
+    expect(lastSavedItem("item_002")?.answer_key.origin).toBe("machine_proposed");
+    wrapper.unmount();
+  });
+
+  it("does not reject an approved proposal", async () => {
+    apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.get('[data-test="exam-workspace-proposal-approve"]').trigger("click");
+
+    await saveDocument(wrapper);
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenLastCalledWith(
+      "lineage-1",
+      expect.objectContaining({ rejectedProposalItemIds: [] }),
+    );
+    wrapper.unmount();
+  });
+
+  it("sends rejected proposal ids and clears them after a successful save", async () => {
     apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
     const { wrapper } = await mountExamWorkspace();
@@ -350,7 +385,7 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
   });
 
   it.each(["network", "conflict"])(
-    "retains dismissed proposal ids after a %s save failure for the retry",
+    "retains rejected proposal ids after a %s save failure for the retry",
     async (failure) => {
       apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
       apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(

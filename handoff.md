@@ -10,9 +10,11 @@
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `in_progress` (user 2026-10-10, P1-P3). Owner: Codex implementation
   lead on `codex/task-skript-39-04-04`; pending proposals carry within the
-  save transaction, with rejected IDs sent only in the save request.
-  Proof: 51 backend unit/domain, 12 PostgreSQL and 66 frontend tests passed;
-  lint, frontend typecheck/build passed. Next: parent-owned independent review.
+  save transaction; only explicit "Avvisa" rejections reach the save request.
+  Review `00e934c0` requested changes (R1-R3); repair R1 is committed on the
+  branch. Proof: 48 backend unit/domain, 13 PostgreSQL and 68 frontend tests;
+  lint, scoped typecheck, frontend typecheck/build passed. Next: parent-owned
+  independent rereview of the repair.
   Retained session:
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`. Parent excludes the Hemma walk
   from this assignment; production acceptance stays user-owned.
@@ -158,5 +160,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: independent review of TASK-SKRIPT-39-04-04 and continued implementation
+- Next: independent rereview of TASK-SKRIPT-39-04-04 repair R1 and continued implementation
   of TASK-SKRIPT-39-05-01 in its separate worktree.
