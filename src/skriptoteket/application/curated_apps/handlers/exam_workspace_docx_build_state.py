@@ -31,6 +31,7 @@ class DocxBuildState:
     filename: str
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
+    known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
@@ -45,13 +46,13 @@ class DocxBuildState:
     input_complete: bool = True
     output_complete: bool = True
 
+    def __post_init__(self) -> None:
+        # Chunks are fixed for the state's lifetime, so the anchor index is built once.
+        self.known_anchors = frozenset(chunk.anchor for chunk in self.chunks)
+
     @property
     def pending(self) -> tuple[DocxChunk, ...]:
         return tuple(chunk for chunk in self.chunks if chunk.anchor not in self.claimed)
-
-    @property
-    def known_anchors(self) -> set[str]:
-        return {chunk.anchor for chunk in self.chunks}
 
     def record(
         self,

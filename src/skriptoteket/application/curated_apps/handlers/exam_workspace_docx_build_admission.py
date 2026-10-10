@@ -1,6 +1,7 @@
 """Admit produced items through the native contract and chunk-role bookkeeping."""
 
 import json
+from collections import Counter
 
 from pydantic import BaseModel, JsonValue, ValidationError
 
@@ -51,8 +52,9 @@ def _require_anchors(anchors: tuple[str, ...], state: DocxBuildState, seen: set[
     if unknown:
         detail = f"unknown anchors {unknown}"
         raise _Rejected("anchor_unknown", detail, f"Okända källankare ({detail}).")
+    counts = Counter(anchors)
     taken = [a for a in anchors if a in state.claimed or a in state.key_anchors or a in seen] + [
-        a for a in anchors if anchors.count(a) > 1
+        a for a in anchors if counts[a] > 1
     ]
     if taken:
         detail = f"anchors already used {sorted(set(taken))}"
