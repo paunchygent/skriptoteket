@@ -83,6 +83,7 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
+_RETRY = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_retry_response.json")
 
 
 async def test_quiz_background_job_commits_one_source_faithful_document_and_valid_qti(
@@ -108,6 +109,8 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
         assert payload["text"]["format"]["strict"] is True
         assert payload["max_output_tokens"] == 16_384
         assert "tools" not in payload
+        # Recorded live rounds: round 2 claims the one chunk round 1 left unclaimed.
+        recorded = (_RESPONSE, _RETRY)[min(len(requests), 2) - 1]
         return httpx.Response(
             200,
             json={
@@ -116,7 +119,7 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                     {
                         "type": "message",
                         "content": [
-                            {"type": "output_text", "text": _RESPONSE.read_text(encoding="utf-8")}
+                            {"type": "output_text", "text": recorded.read_text(encoding="utf-8")}
                         ],
                     }
                 ],
@@ -181,11 +184,14 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
             )
             finished = await processor.handle(job=running)
         assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
-        assert finished.source_docx is None and len(requests) == 1
+        assert finished.source_docx is None and len(requests) == 2
 
     async with session_factory() as reader:
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
+        assert [(e["round"], e["code"], e["anchors"]) for e in model.diagnostics] == [
+            (1, "chunk_unclaimed", ["body:0003"])
+        ]
         vault_files = PostgreSQLUserVaultFileRepository(reader)
         store = ExamWorkspaceDocumentStore(
             vault_files=vault_files,
@@ -205,12 +211,22 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
             "gap_fill"
         ] * 7
         assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
-        expected = json.loads(_RESPONSE.read_text())
-        for actual, entry in zip(document.items, expected["items"], strict=True):
-            assert actual.points == entry["item"]["points"]
-            assert actual.answer_key.model_dump(mode="json") == entry["item"]["answer_key"]
-            assert actual.model_dump(mode="json")["body"] == entry["item"]["body"]
-            assert actual.model_dump(mode="json")["gaps"] == entry["item"]["gaps"]
+        assert [item.answer_key.correct_choice_ids for item in document.items[:21]] == [
+            (f"choice_{i:03d}",)
+            for i in [1, 3, 2, 4, 2, 4, 3, 1, 1, 8, 2, 5, 6, 4, 3, 2, 1, 6, 3, 4, 7]
+        ]
+        assert [item.gaps[0].accepted_values for item in document.items[21:]] == [
+            (word,)
+            for word in [
+                "cherish",
+                "traverse",
+                "humiliate",
+                "out of the blue",
+                "line",
+                "diction",
+                "alliteration",
+            ]
+        ]
         leases = (
             await reader.scalars(
                 select(ExamAnswerKeyTokenLeaseModel).where(
@@ -218,8 +234,9 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                 )
             )
         ).all()
-        assert len(leases) == 1 and leases[0].reserved_tokens > 16_384
-        assert leases[0].actual_tokens is None  # Fixture carries no invented measured usage.
+        assert len(leases) == 2 and all(lease.reserved_tokens > 16_384 for lease in leases)
+        # The replayed bodies carry no usage, so no measured tokens are invented.
+        assert all(lease.actual_tokens is None for lease in leases)
         package, report = build_native_examnet_qti_package(
             document, package_name="quiz", qti_writer=ExamNetQtiPackageWriter()
         )

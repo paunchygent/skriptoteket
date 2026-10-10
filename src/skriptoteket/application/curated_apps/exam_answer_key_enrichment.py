@@ -61,6 +61,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     locked_by: str | None = None
     locked_until: datetime | None = None
     last_error: str | None = None
+    diagnostics: tuple[dict[str, JsonValue], ...] = ()
 
     created_at: datetime
     updated_at: datetime
@@ -194,6 +195,7 @@ def finish_enrichment_job(
     status: ExamAnswerKeyEnrichmentJobStatus,
     now: datetime,
     last_error: str | None = None,
+    diagnostics: tuple[dict[str, JsonValue], ...] | None = None,
 ) -> ExamAnswerKeyEnrichmentJob:
     """Move one running enrichment job to a terminal status."""
 
@@ -206,6 +208,7 @@ def finish_enrichment_job(
         update={
             "status": status,
             "last_error": last_error,
+            "diagnostics": job.diagnostics if diagnostics is None else diagnostics,
             "locked_by": None,
             "locked_until": None,
             "updated_at": now,

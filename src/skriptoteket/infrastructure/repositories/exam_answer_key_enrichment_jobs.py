@@ -55,6 +55,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             locked_by=job.locked_by,
             locked_until=job.locked_until,
             last_error=job.last_error,
+            diagnostics=list(job.diagnostics),
             created_at=job.created_at,
             updated_at=job.updated_at,
             started_at=job.started_at,
@@ -87,6 +88,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model.locked_by = job.locked_by
         model.locked_until = job.locked_until
         model.last_error = job.last_error
+        model.diagnostics = list(job.diagnostics)
         model.updated_at = job.updated_at
         model.started_at = job.started_at
         model.finished_at = job.finished_at

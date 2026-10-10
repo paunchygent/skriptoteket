@@ -24,8 +24,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+    StructuredLLMRequest,
+    StructuredLLMResponse,
     StructuredLLMUsage,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     native_export_blockers,
 )
@@ -58,6 +62,26 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
+_RETRY = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_retry_response.json")
+
+
+class RecordedRoundsProvider(StubProvider):
+    """Replay the recorded live rounds in order; the last one repeats."""
+
+    def __init__(self) -> None:
+        super().__init__(content={}, usage=StructuredLLMUsage())
+        self._rounds = [json.loads(path.read_text()) for path in (_RESPONSE, _RETRY)]
+
+    async def complete_structured(
+        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> StructuredLLMResponse:
+        self._content = self._rounds[min(self.call_count, len(self._rounds) - 1)]
+        return await super().complete_structured(request=request, profile=profile)
+
+
+class CrashingChunker(PythonDocxExamChunker):
+    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+        raise RuntimeError("chunker crashed")
 
 
 class LockingFakeJobs(InMemoryEnrichmentJobRepository):
@@ -73,13 +97,13 @@ class JobEnvironment(_Env):
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
+def environment(
+    *, enabled: bool = True, budget: int = 1_000_000, chunker: PythonDocxExamChunker | None = None
+) -> JobEnvironment:
     env = JobEnvironment()
     env.jobs = LockingFakeJobs()
     env.actor = _actor()
-    env.provider = StubProvider(
-        content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage()
-    )
+    env.provider = RecordedRoundsProvider()
     env.importer = ImportExamWorkspaceDocumentHandler(
         jobs=env.jobs,
         uow=env.store._uow,
@@ -97,7 +121,7 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     )
     env.processor = ProcessExamWorkspaceDocxJobHandler(
         jobs=env.jobs,
-        chunker=PythonDocxExamChunker(),
+        chunker=chunker or PythonDocxExamChunker(),
         converter=converter,
         codec=env.codec,
         store=env.store,
@@ -131,13 +155,24 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
 
 
 @pytest.mark.asyncio
-async def test_quiz_one_batch_publishes_version_one_deletes_source_and_exports_valid_qti():
+async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagnostics():
     env = environment()
     running = await claim(env)
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
-    assert env.provider.call_count == 1
+    # The recorded live round 1 left the total-points line unclaimed; round 2 claimed it.
+    assert env.provider.call_count == 2
+    assert finished.diagnostics == (
+        {
+            "stage": "admission",
+            "code": "chunk_unclaimed",
+            "round": 1,
+            "item": None,
+            "anchors": ["body:0003"],
+            "detail": "",
+        },
+    )
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert opened.summary.version == 1
@@ -190,6 +225,14 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     assert all(item.review.state.value == "review_required" for item in opened.document.items)
     assert opened.notes
     assert native_export_blockers(opened.document)
+    codes = {event["code"] for event in finished.diagnostics}
+    assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
+    reason = opened.document.items[0].review.reasons[0]
+    assert reason == (
+        "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+        if not enabled
+        else "Dagens AI-budget är förbrukad. Kontrollera källtexten manuellt."
+    )
 
 
 @pytest.mark.asyncio
@@ -202,6 +245,7 @@ async def test_worker_expiry_preserves_source_review_without_calling_provider():
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert len(opened.document.items) == 109
+    assert finished.diagnostics[0]["code"] == "lease_expired"
 
 
 @pytest.mark.asyncio
@@ -226,6 +270,29 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
         actor=env.actor, job_id=running.id
     )
     assert status.error_message and "Word" in status.error_message
+    assert finished.diagnostics == (
+        {
+            "stage": "job",
+            "code": "domain_error",
+            "round": None,
+            "item": None,
+            "anchors": [],
+            "detail": "VALIDATION_ERROR",
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_unexpected_error_fails_job_with_persisted_reason_instead_of_hanging():
+    env = environment(chunker=CrashingChunker())
+    running = await claim(env)
+    finished = await env.processor.handle(job=running)
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.source_docx is None
+    assert finished.last_error and "oväntat fel" in finished.last_error
+    assert [(e["code"], e["detail"]) for e in finished.diagnostics] == [
+        ("unexpected_error", "RuntimeError")
+    ]
 
 
 @pytest.mark.asyncio
