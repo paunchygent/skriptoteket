@@ -11,12 +11,13 @@
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
     `in_progress`: gold and comparator approved by Sol rereview and merged;
     the user confirmed all eight gold files (314 items, 398 points) on
-    2026-10-10. Next: wire the eval runner once task 1 merges.
+    2026-10-10; blind-labelling corrections merged after Sol approval
+    (`review-86e495c8.md`). Next: wire the eval runner to the converter.
 
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress` on `codex/task-skript-39-04-04`: Opus 5.5 repairs three
-  Sol review findings (rejection semantics, test file size, silent drop).
-  Next: Sol rereview, merge, staging walk. Retained session
+  is `in_progress` on `codex/task-skript-39-04-04`: R2 repairs done; an
+  Opus agent merges main (task 1) into the branch. Next: Sol review of the
+  conflict resolution, merge, staging walk. Retained session
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
