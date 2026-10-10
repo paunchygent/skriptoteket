@@ -9,18 +9,6 @@ from pdf_helper import save_as_pdf
 from skriptoteket_toolkit import get_action_parts, read_inputs
 
 # ──────────────────────────────────────────────────────────────────────────────
-# SKRIPTOTEKET_INPUTS
-# ──────────────────────────────────────────────────────────────────────────────
-SKRIPTOTEKET_INPUTS = [
-    {
-        "name": "full_name",
-        "label": "Skriv in ditt för- och efternamn",
-        "kind": "string",
-    }
-]
-SKRIPTOTEKET_INPUT_SCHEMA = SKRIPTOTEKET_INPUTS
-
-# ──────────────────────────────────────────────────────────────────────────────
 # DATA: Yrken, Platser, Löner, Motton
 # ──────────────────────────────────────────────────────────────────────────────
 
