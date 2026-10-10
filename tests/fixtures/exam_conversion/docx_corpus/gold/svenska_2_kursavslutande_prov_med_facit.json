@@ -3,7 +3,8 @@
   "source_filename": "svenska_2_kursavslutande_prov_med_facit.docx",
   "source_sha256": "99b204dcead1b27ade6cb82da8681772a3c4920a562d9cd29d9d12135face7dd",
   "title": "Kursavslutande prov: Svenska 2",
-  "confirmed": false,
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
   "notes": [
     "Draft transcribed directly from source OOXML and inline facit; 24 source-numbered items, 36 points.",
     "Del 1 has one Fråga 1 heading over numbered questions 1-15; these remain fifteen items.",

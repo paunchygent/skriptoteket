@@ -3,10 +3,11 @@
   "source_filename": "metodprov_vetenskaplig_metod_med_facit.docx",
   "source_sha256": "b7052c50c49b47deefbc8fc338e560a256fe0abc91d9683ac019c8c48049fcf6",
   "title": "Vetenskaplig metod - metodprov — med facit",
-  "confirmed": false,
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
   "notes": [
     "Draft transcribed directly from OOXML and the full-text Rätt svar keys; 16 questions, 20 points.",
-    "Item 2 retains the literal source facit C/D but is unresolved pending a teacher decision; no alternative answer is inferred."
+    "Item 2 keeps the source facit C and D as the only correct choices (accepted decision)."
   ],
   "items": [
     {

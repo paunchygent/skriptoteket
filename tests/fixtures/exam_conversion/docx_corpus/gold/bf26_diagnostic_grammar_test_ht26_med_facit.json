@@ -3,7 +3,8 @@
   "source_filename": "bf26_diagnostic_grammar_test_ht26_med_facit.docx",
   "source_sha256": "4a675144b93f3275c3d52763e67940981b7c12a83efe166cb4501ab2eb14fc0f",
   "title": "Diagnostic Grammar Test — BF26, HT26 — answer key",
-  "confirmed": false,
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
   "items": [
     {
       "source_label": "Question 1",
@@ -1561,5 +1562,6 @@
       ],
       "teacher_questions": []
     }
-  ]
+  ],
+  "notes": []
 }
