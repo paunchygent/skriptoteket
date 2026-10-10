@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e1f938dd36e307aed5dcd92047472e6d75be5d6f3c4621801189683d661c7229",
+  "source_set_digest": "b289f0cbdb1be63bd0bc5195df6682056b7290ab3786e90ca9c7987f719bfcb4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5455,6 +5455,24 @@
       "title": "Replace recurring health callers with native clients",
       "path": "docs/backlog/tasks/task-skript-rep-0035-replace-recurring-health-callers-with-native-clients.md",
       "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0036",
+      "type": "task",
+      "title": "Resolve Mina filer app-export labels from the app id prefix",
+      "path": "docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md",
+      "status": "proposed",
       "task_kind": "repository",
       "owners": [
         {

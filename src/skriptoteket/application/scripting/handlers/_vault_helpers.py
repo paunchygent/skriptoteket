@@ -6,6 +6,19 @@ from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 
 
+def app_id_from_source_artifact_id(source_artifact_id: str | None) -> str:
+    """Return the curated app id an APP_EXPORT source artifact id belongs to.
+
+    Apps write either a plain app id or an app-scoped artifact id shaped
+    ``<app_id>:<app-specific parts>``; the app id is the part before the
+    first ``:``.
+    """
+
+    if not source_artifact_id:
+        return ""
+    return source_artifact_id.split(":", 1)[0].strip()
+
+
 def build_vault_file_info(
     *,
     vault_file: VaultFile,

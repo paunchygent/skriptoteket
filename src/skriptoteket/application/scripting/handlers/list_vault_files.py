@@ -3,6 +3,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from skriptoteket.application.scripting.handlers._vault_helpers import (
+    app_id_from_source_artifact_id,
     build_vault_file_info,
     build_vault_usage_info,
 )
@@ -137,7 +138,7 @@ class ListVaultFilesHandler(ListVaultFilesHandlerProtocol):
                 return None
 
             if item.source_kind is VaultFileSourceKind.APP_EXPORT:
-                app_id = item.source_artifact_id.strip() if item.source_artifact_id else ""
+                app_id = app_id_from_source_artifact_id(item.source_artifact_id)
                 if app_id:
                     app = self._curated_apps.get_by_app_id(app_id=app_id)
                     if app is not None:
