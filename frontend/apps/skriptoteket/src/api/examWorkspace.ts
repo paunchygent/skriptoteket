@@ -41,6 +41,7 @@ export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentLi
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceEnrichmentStatus = Schemas["ExamWorkspaceEnrichmentStatusResponse"];
+export type ExamWorkspaceConversionStatus = Schemas["ExamWorkspaceConversionStatus"];
 export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProposalItem"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
@@ -71,10 +72,18 @@ export async function listExamWorkspaceDocuments(): Promise<ExamWorkspaceDocumen
 
 export async function importExamWorkspaceDocument(
   file: File,
-): Promise<ExamWorkspaceDocumentResponse> {
+): Promise<ExamWorkspaceConversionStatus> {
   const form = new FormData();
   form.append("file", file, file.name);
-  return await apiPost<ExamWorkspaceDocumentResponse>(`${ROOT}/documents`, form);
+  return await apiPost<ExamWorkspaceConversionStatus>(`${ROOT}/documents`, form);
+}
+
+export async function getExamWorkspaceConversionStatus(
+  jobId: string,
+): Promise<ExamWorkspaceConversionStatus> {
+  return await apiGet<ExamWorkspaceConversionStatus>(
+    `${ROOT}/conversion-jobs/${encodeURIComponent(jobId)}`,
+  );
 }
 
 export async function getExamWorkspaceDocument(

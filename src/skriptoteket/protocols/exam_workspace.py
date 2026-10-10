@@ -1,25 +1,20 @@
 """Protocol seams for the native exam workspace (ST-SKRIPT-39-04)."""
 
 from typing import Protocol
-from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_extraction import (
-    DocxExtractionResult,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
 
 
-class DocxExamExtractorProtocol(Protocol):
-    """Deterministic DOCX-to-native-exam extraction behind infrastructure."""
+class DocxExamChunkerProtocol(Protocol):
+    """Segment ordered source text without interpreting exam items."""
 
-    def extract(
-        self, *, document_id: UUID, filename: str, content: bytes
-    ) -> DocxExtractionResult: ...
+    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]: ...
 
 
 class ExamWorkspaceContainerCodecProtocol(Protocol):

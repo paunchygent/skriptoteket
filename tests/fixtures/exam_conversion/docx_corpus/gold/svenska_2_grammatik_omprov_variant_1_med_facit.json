@@ -1,0 +1,231 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "svenska_2_grammatik_omprov_variant_1_med_facit.docx",
+  "source_sha256": "2cc852d8b5d5f04252d83bda5244dcf76a28e7a3cfc922d769a46337502a4e1d",
+  "title": "Omprov: grammatik och språkstrukturer — Svenska 2",
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "notes": [
+    "Draft read directly from word/document.xml and its inline facit. One item per numbered Fråga (8 items, 38 points).",
+    "Source answer labels become gap markers; facit is absent from student-visible prompts. Open analysis facit is retained only in notes."
+  ],
+  "items": [
+    {
+      "source_label": "Fråga 1",
+      "kind": "free_text",
+      "points": 6,
+      "prompt": "Dela upp orden i morfem.\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.\na) snöbollarnas\nb) skrivbarheten\nc) fotbollsspelarnas",
+      "notes": [
+        "Source facit (teacher grading): a) snöbollarnas Svar: snö (R) + boll (R) + ar (B) + na (B) + s (B)\nb) skrivbarheten Svar: skriv (R) + bar (A) + het (A) + en (B)\nc) fotbollsspelarnas Svar: fot (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)",
+        "One open response retains the morpheme segmentation and classification task; no automatic answer variants are invented."
+      ]
+    },
+    {
+      "source_label": "Fråga 2",
+      "kind": "gap_fill",
+      "points": 2,
+      "prompt": "Ange frastyp.\nSkriv NF, PF eller VF.\na) De trötta eleverna Frastyp: [___]\nb) hade väntat Frastyp: [___]\nc) på bussen Frastyp: [___]\nd) efter skolan Frastyp: [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "NF"
+          ]
+        },
+        {
+          "accepted_values": [
+            "VF"
+          ]
+        },
+        {
+          "accepted_values": [
+            "PF"
+          ]
+        },
+        {
+          "accepted_values": [
+            "PF"
+          ]
+        }
+      ]
+    },
+    {
+      "source_label": "Fråga 3",
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Skriv huvudordet i varje nominalfras.\na) de tre nya eleverna från Göteborg Huvudord: [___]\nb) min äldre systers trasiga mobiltelefon på köksbordet Huvudord: [___]\nc) alla böckerna i den nedersta hyllan Huvudord: [___]\nd) den lilla vägen genom skogen Huvudord: [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "eleverna"
+          ]
+        },
+        {
+          "accepted_values": [
+            "mobiltelefon"
+          ]
+        },
+        {
+          "accepted_values": [
+            "böckerna"
+          ]
+        },
+        {
+          "accepted_values": [
+            "vägen"
+          ]
+        }
+      ]
+    },
+    {
+      "source_label": "Fråga 4",
+      "kind": "gap_fill",
+      "points": 2,
+      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nSkriv satsdelen för den markerade delen.\na) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: [___]\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: [___]\nc) Filmen blev spännande. Markerad del: spännande Satsdel: [___]\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "adverbial",
+            "Adv"
+          ]
+        },
+        {
+          "accepted_values": [
+            "indirekt objekt",
+            "IO"
+          ]
+        },
+        {
+          "accepted_values": [
+            "predikativ",
+            "predikatsfyllnad",
+            "predikativ/predikatsfyllnad",
+            "Pf"
+          ]
+        },
+        {
+          "accepted_values": [
+            "direkt objekt",
+            "DO"
+          ]
+        }
+      ],
+      "notes": [
+        "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
+      ]
+    },
+    {
+      "source_label": "Fråga 5",
+      "kind": "free_text",
+      "points": 6,
+      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nGör satsdelsanalys av meningarna.\na) Eleverna lämnade inte sina mobiler i skåpet.\nb) Läraren gav klassen tydliga instruktioner före provet.\nc) Stämningen blev lugn efter genomgången.",
+      "notes": [
+        "Source facit (teacher grading): a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nb) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nc) Stämningen blev lugn efter genomgången. Analys: Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
+      ]
+    },
+    {
+      "source_label": "Fråga 6",
+      "kind": "gap_fill",
+      "points": 6,
+      "prompt": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.\nAnge bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.\na) Jag vet att lektionen börjar klockan tio. Bisats: att lektionen börjar klockan tio Typ: [___] Satsdel: [___]\nb) Problemet var att eleven satt längst fram. Bisats: att eleven satt längst fram Typ: [___] Satsdel: [___]\nc) När genomgången var slut började eleverna skriva. Bisats: När genomgången var slut Typ: [___] Satsdel: [___]\nd) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: eftersom läraren ville förklara uppgiften igen Typ: [___] Satsdel: [___]\ne) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: Om alla lämnar in i tid Typ: [___] Satsdel: [___]\nf) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: för att gruppen skulle hinna klart Typ: [___] Satsdel: [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "att-sats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "DO"
+          ]
+        },
+        {
+          "accepted_values": [
+            "att-sats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Pf"
+          ]
+        },
+        {
+          "accepted_values": [
+            "tidsbisats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Adv"
+          ]
+        },
+        {
+          "accepted_values": [
+            "orsaksbisats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Adv"
+          ]
+        },
+        {
+          "accepted_values": [
+            "villkorsbisats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Adv"
+          ]
+        },
+        {
+          "accepted_values": [
+            "avsiktsbisats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Adv"
+          ]
+        }
+      ]
+    },
+    {
+      "source_label": "Fråga 7",
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Analysera en komplex mening.\nMening: Att flera elever blev sjuka förklarar varför redovisningen sköts upp.\na) Skriv bisatserna. Bisats 1: [___] Bisats 2: [___]\nb) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: [___] Bisats 2 satsdel: [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Att flera elever blev sjuka"
+          ]
+        },
+        {
+          "accepted_values": [
+            "varför redovisningen sköts upp"
+          ]
+        },
+        {
+          "accepted_values": [
+            "S"
+          ]
+        },
+        {
+          "accepted_values": [
+            "DO"
+          ]
+        }
+      ]
+    },
+    {
+      "source_label": "Fråga 8",
+      "kind": "free_text",
+      "points": 8,
+      "prompt": "Läs de två texterna. De beskriver samma händelse men är skrivna i olika stil.\nText A\nIgår när vi skulle äta lunch märkte vi att det låg svinmycket vatten på golvet i bamba. Någon (tror det var Anna) sa att en diskmaskin hade börjat läcka. Karin och Pelle i köket stängde typ halva matsalen, så kön blev jättelång och vi fick vänta jättelänge innan vi kom fram och kunde äta.\nText B\nEn vattenläcka i anslutning till matsalens diskutrustning orsakade begränsad tillgång till serveringsytan under lunchen. Avspärrningen medförde längre väntetider för eleverna eftersom arbetet med läckan krävde en tillfällig reducering av kökskapaciteten vid lunchserveringen.\nJämför texternas språkliga drag.\nBeskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys.\nDu kan till exempel jämföra:\nnominaliseringar\nkonkreta och abstrakta uttryck\naktörer och perspektiv\nnominalfraser\nverb och handlingar\nformell och informell stil",
+      "notes": [
+        "Source gives an open analysis task and no model answer; teacher grading stays open."
+      ]
+    }
+  ]
+}

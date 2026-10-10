@@ -30,6 +30,7 @@ export interface EnrichmentApiMocks {
   getExamWorkspaceDocument: Mock;
   getExamWorkspaceEnrichment: Mock;
   importExamWorkspaceDocument: Mock;
+  getExamWorkspaceConversionStatus: Mock;
   listExamWorkspaceDocuments: Mock;
   saveExamWorkspaceDocument: Mock;
   startExamWorkspaceEnrichment: Mock;
@@ -97,7 +98,13 @@ export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(1));
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
+  apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+  });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(status("not_requested"));
 }

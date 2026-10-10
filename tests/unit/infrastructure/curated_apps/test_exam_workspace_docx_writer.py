@@ -25,16 +25,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    exam_workspace_docx_extractor,
     exam_workspace_docx_writer,
 )
 
-PythonDocxExamExtractor = exam_workspace_docx_extractor.PythonDocxExamExtractor
 ExamWorkspaceDocxWriter = exam_workspace_docx_writer.ExamWorkspaceDocxWriter
 
-_FIXTURE = Path(
-    "tests/fixtures/exam_conversion/real_inputs/grammatik_omprov_examnet_import_med_facit.docx"
-)
+_FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
 
 
 def _review_complete() -> NativeItemReview:
@@ -169,13 +165,11 @@ class TestDocxContent:
         assert "Lucka 1: NF / nominalfras" in texts
 
     def test_real_fixture_document_round_trips(self) -> None:
-        extracted = PythonDocxExamExtractor().extract(
-            document_id=uuid4(), filename=_FIXTURE.name, content=_FIXTURE.read_bytes()
-        )
-        content = ExamWorkspaceDocxWriter().build_docx_bytes(extracted.document)
+        document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes())
+        content = ExamWorkspaceDocxWriter().build_docx_bytes(document)
 
         ExamWorkspaceDocxWriter().validate_docx_bytes(
-            content, expected_item_count=len(extracted.document.items)
+            content, expected_item_count=len(document.items)
         )
 
 

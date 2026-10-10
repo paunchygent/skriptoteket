@@ -1,0 +1,271 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "metodprov_vetenskaplig_metod_med_facit.docx",
+  "source_sha256": "b7052c50c49b47deefbc8fc338e560a256fe0abc91d9683ac019c8c48049fcf6",
+  "title": "Vetenskaplig metod - metodprov — med facit",
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "notes": [
+    "Draft transcribed directly from OOXML and the full-text Rätt svar keys; 16 questions, 20 points.",
+    "Item 2 keeps the source facit C and D as the only correct choices (accepted decision)."
+  ],
+  "items": [
+    {
+      "source_label": "Fråga 1: Läsning på fritiden",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Läsning på fritiden\nEn grupp vill undersöka hur stor andel av skolans tvåor som har läst skönlitteratur på fritiden under den senaste veckan. Gruppen har slumpat fram 120 tvåor från en fullständig elevlista.\nVilket sätt att samla in och bearbeta information passar bäst för att besvara frågan?\nMarkera ett svar.",
+      "choices": [
+        "Låt eleverna beskriva sina bästa läsupplevelser och jämför vilka återkommande teman som finns i deras berättelser.",
+        "Låt eleverna ange om de läst skönlitteratur på fritiden senaste veckan och beräkna andelen som svarar ja.",
+        "Låt eleverna uppskatta hur viktigt de tycker att läsning är och jämför fördelningen mellan deras olika svar.",
+        "Låt eleverna ange hur många böcker de äger hemma och beräkna hur stor andel som har böcker."
+      ],
+      "correct_choices": [
+        "Låt eleverna ange om de läst skönlitteratur på fritiden senaste veckan och beräkna andelen som svarar ja."
+      ]
+    },
+    {
+      "source_label": "Fråga 2: Tidningsartiklar",
+      "kind": "multiple_response",
+      "points": 2,
+      "prompt": "Tidningsartiklar\nEn grupp undersöker 40 tidningsartiklar om ungdomars fritid. Först räknar de hur många artiklar som nämner föreningsidrott. Sedan undersöker de hur ungdomarna beskrivs i artiklarna och vilka egenskaper de tillskrivs.\nVilka två beskrivningar av undersökningen stämmer?\nMarkera två svar.",
+      "choices": [
+        "Den första delen är kvalitativ, eftersom materialet består av texter som journalister har skrivit om ungdomar.",
+        "Den andra delen är kvantitativ, eftersom samma fyrtio artiklar kan räknas och sorteras i flera olika grupper.",
+        "Den första delen är kvantitativ, eftersom gruppen räknar hur ofta ett bestämt innehåll förekommer i artiklarna.",
+        "Den andra delen är kvalitativ, eftersom gruppen tolkar hur ungdomarna framställs genom språket i de olika artiklarna."
+      ],
+      "correct_choices": [
+        "Den första delen är kvantitativ, eftersom gruppen räknar hur ofta ett bestämt innehåll förekommer i artiklarna.",
+        "Den andra delen är kvalitativ, eftersom gruppen tolkar hur ungdomarna framställs genom språket i de olika artiklarna."
+      ],
+      "notes": [
+        "Whole-item points and complete facit choice set are retained. The source gives no partial-credit or extra-selection scoring policy; none is invented.",
+        "Accepted decision: the source facit C and D are the only correct choices; alternative B stays excluded."
+      ]
+    },
+    {
+      "source_label": "Fråga 3: Statistik om extrajobb",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Statistik om extrajobb\nEn grupp vill jämföra hur vanligt extrajobb är bland gymnasieelever i tre kommuner. De hittar färdig statistik för samma år. Extrajobb har definierats på samma sätt och motsvarande elevgrupper har undersökts i alla tre kommunerna.\nVilket arbetssätt ger en egen analys som besvarar gruppens jämförelsefråga?\nMarkera ett svar.",
+      "choices": [
+        "Jämför andelarna mellan kommunerna och diskutera vilka skillnader statistiken visar i förhållande till gruppens egen frågeställning.",
+        "Sammanfatta rapporternas slutsatser med egna ord och använd sammanfattningen i stället för en egen jämförelse mellan kommunerna.",
+        "Räkna ihop antalet elever med extrajobb i kommunerna och använd totalsumman som svar på frågan om skillnader.",
+        "Byt ut statistiken mot intervjuer med några bekanta och använd deras erfarenheter för att uppskatta kommunernas olika andelar."
+      ],
+      "correct_choices": [
+        "Jämför andelarna mellan kommunerna och diskutera vilka skillnader statistiken visar i förhållande till gruppens egen frågeställning."
+      ]
+    },
+    {
+      "source_label": "Fråga 4: AI och lärande",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "AI och lärande\nEn grupp vill ta reda på om en AI-tjänst förbättrar elevernas lärande. De frågar 100 elever: ”Tycker du att du lär dig mer när du använder tjänsten?” Åttio elever svarar ja. Gruppen undersöker inte elevernas kunskaper på något annat sätt.\nVilken beskrivning stämmer bäst med vad gruppen faktiskt har fått information om?\nMarkera ett svar.",
+      "choices": [
+        "Resultatet visar elevernas faktiska lärande, eftersom de själva kan jämföra hur mycket de lär sig med olika hjälpmedel.",
+        "Resultatet visar enkätens reliabilitet, eftersom en stor majoritet av eleverna har valt samma svar på den aktuella frågan.",
+        "Resultatet visar hur representativt urvalet är, eftersom hundra elever har fått samma fråga om sina erfarenheter av AI.",
+        "Resultatet visar elevernas uppfattning om sitt lärande, eftersom enkäten frågar efter deras bedömning snarare än deras kunskaper."
+      ],
+      "correct_choices": [
+        "Resultatet visar elevernas uppfattning om sitt lärande, eftersom enkäten frågar efter deras bedömning snarare än deras kunskaper."
+      ]
+    },
+    {
+      "source_label": "Fråga 5: Resor till skolan",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Resor till skolan\nEn grupp skriver att arbetet ska undersöka hur svenska gymnasieelever tar sig till skolan. De frågar samtliga 72 tvåor på ett program på sin egen skola. Alla 72 svarar.\nVilken beskrivning skiljer rätt mellan populationen i syftet och de elever som faktiskt har undersökts?\nMarkera ett svar.",
+      "choices": [
+        "Populationen är skolans elever, eftersom det är på den egna skolan som gruppen har delat ut sin enkät.",
+        "Populationen är svenska gymnasieelever, men urvalet från ett program ger inte tillräckligt stöd för slutsatser om hela gruppen.",
+        "Populationen är de 72 tvåorna, eftersom alla som ingår i den grupp som tillfrågats också har besvarat enkäten.",
+        "Populationen är svenska gymnasieelever, och urvalet kan representera dem eftersom samtliga elever som gruppen har tillfrågat har svarat."
+      ],
+      "correct_choices": [
+        "Populationen är svenska gymnasieelever, men urvalet från ett program ger inte tillräckligt stöd för slutsatser om hela gruppen."
+      ]
+    },
+    {
+      "source_label": "Fråga 6: Besökare i biblioteket",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Besökare i biblioteket\nEn grupp vill undersöka vad alla elever på skolan tycker om skolbiblioteket. Gruppen ställer sig i biblioteket och frågar de första 100 besökarna. Samtliga tillfrågade svarar.\nVilken bedömning av urvalet är mest rimlig?\nMarkera ett svar.",
+      "choices": [
+        "Det är ett slumpmässigt urval, eftersom gruppen inte på förhand vet vilka elever som kommer att besöka biblioteket.",
+        "Det är ett representativt urval, eftersom biblioteksbesökarna har egna erfarenheter av det bibliotek som undersökningen handlar om.",
+        "Det är ett bekvämlighetsurval, eftersom gruppen frågar lättillgängliga elever och därmed riskerar att missa dem som undviker biblioteket.",
+        "Det är ett strategiskt urval som passar syftet, eftersom biblioteksbesökarna kan beskriva verksamheten mer ingående än andra elever."
+      ],
+      "correct_choices": [
+        "Det är ett bekvämlighetsurval, eftersom gruppen frågar lättillgängliga elever och därmed riskerar att missa dem som undviker biblioteket."
+      ]
+    },
+    {
+      "source_label": "Fråga 7: En enkät till hela skolan",
+      "kind": "multiple_response",
+      "points": 2,
+      "prompt": "En enkät till hela skolan\nEn skola har 900 elever. En grupp skickar en enkät om skolmaten till samtliga elever, men 180 svarar. Av de svarande är 70 procent missnöjda. Gruppen vet inte vad eleverna som avstod från att svara tycker.\nVilka två bedömningar av resultatet är försvarbara?\nMarkera två svar.",
+      "choices": [
+        "Resultatet behöver tolkas försiktigt, eftersom de som svarade kan ha andra åsikter om skolmaten än de som avstod.",
+        "Resultatet kan generaliseras till skolan, eftersom samtliga elever fick samma möjlighet att delta och besvara enkätens frågor.",
+        "Resultatet underskattar sannolikt missnöjet, eftersom de elever som avstod från att svara brukar vara mer negativa än deltagarna.",
+        "Resultatet beskriver missnöjet bland de svarande, men visar inte säkert hur stor andel av skolans elever som är missnöjda."
+      ],
+      "correct_choices": [
+        "Resultatet behöver tolkas försiktigt, eftersom de som svarade kan ha andra åsikter om skolmaten än de som avstod.",
+        "Resultatet beskriver missnöjet bland de svarande, men visar inte säkert hur stor andel av skolans elever som är missnöjda."
+      ],
+      "notes": [
+        "Whole-item points and complete facit choice set are retained. The source gives no partial-credit or extra-selection scoring policy; none is invented."
+      ]
+    },
+    {
+      "source_label": "Fråga 8: 20 eller 200 elever",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "20 eller 200 elever\nTvå grupper undersöker hur stor andel av en skolas 1 000 elever som cyklar till skolan. Båda lottar deltagare från samma fullständiga elevlista och använder samma tydliga fråga. Alla tillfrågade svarar. Den ena gruppen frågar 20 elever och den andra 200.\nVilken skillnad kan man främst förvänta sig mellan undersökningarna?\nMarkera ett svar.",
+      "choices": [
+        "Det större urvalet minskar normalt slumpens betydelse för den uppskattade andelen, när frågorna och sättet att välja deltagare är desamma.",
+        "Det större urvalet minskar normalt risken att frågan mäter fel sak, när fler elever får besvara samma fråga i enkäten.",
+        "Det mindre urvalet ger normalt mer tillförlitliga enkätsvar, eftersom varje enskild elev då får större betydelse för undersökningens samlade resultat.",
+        "Det mindre urvalet ger normalt samma säkerhet i andelen, eftersom slumpmässigt valda deltagare återspeglar populationen oavsett hur många de är."
+      ],
+      "correct_choices": [
+        "Det större urvalet minskar normalt slumpens betydelse för den uppskattade andelen, när frågorna och sättet att välja deltagare är desamma."
+      ]
+    },
+    {
+      "source_label": "Fråga 9: Samma svar sorteras olika",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Samma svar sorteras olika\nTvå elever sorterar samma 30 intervjusvar i grupperna positiv, negativ och blandad. De använder olika regler för vad blandad betyder och placerar därför samma svar i olika grupper.\nVilken förändring angriper problemet med analysens tillförlitlighet mest direkt?\nMarkera ett svar.",
+      "choices": [
+        "Samla in fler intervjusvar och fortsätt sortera materialet var för sig med de regler som var och en använder.",
+        "Välj intervjupersoner genom lottning och behåll de regler för sorteringen som var och en redan använder i analysen.",
+        "Redovisa bådas sorteringar i metoddelen och använd sedan genomsnittet av resultaten utan att ändra de olika reglerna för sorteringen.",
+        "Formulera gemensamma regler för sorteringen och pröva dem på samma intervjusvar innan ni går vidare med resten av materialet."
+      ],
+      "correct_choices": [
+        "Formulera gemensamma regler för sorteringen och pröva dem på samma intervjusvar innan ni går vidare med resten av materialet."
+      ]
+    },
+    {
+      "source_label": "Fråga 10: Att räkna lästa sidor",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Att räkna lästa sidor\nEn grupp vill jämföra hur väl elever förstår en novell. De räknar hur många sidor varje elev läser på tio minuter. Två personer kontrollräknar sidantalet oberoende av varandra och får samma resultat. Ingen undersöker hur eleverna har förstått innehållet.\nVilken bedömning skiljer rätt mellan reliabilitet och validitet i den här mätningen?\nMarkera ett svar.",
+      "choices": [
+        "Räkningen har god validitet, men låg reliabilitet eftersom elever kan läsa lika många sidor och ändå förstå olika mycket av novellen.",
+        "Räkningen har god reliabilitet och validitet, eftersom två oberoende kontrollräkningar visar att varje elevs sidantal har registrerats korrekt i undersökningen.",
+        "Räkningen verkar tillförlitlig, men antalet lästa sidor ger inte i sig ett mått på hur väl eleverna förstår innehållet i novellen.",
+        "Räkningen har låg reliabilitet och validitet, eftersom en undersökning av förståelse behöver bygga på elevernas egna beskrivningar av sin läsning."
+      ],
+      "correct_choices": [
+        "Räkningen verkar tillförlitlig, men antalet lästa sidor ger inte i sig ett mått på hur väl eleverna förstår innehållet i novellen."
+      ]
+    },
+    {
+      "source_label": "Fråga 11: Skolans introduktionsplan",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skolans introduktionsplan\nEn grupp vill ta reda på hur nya elever tas emot på en skola. De analyserar skolans introduktionsplan, där det står att varje ny elev ska erbjudas ett mentorssamtal. Gruppen skriver sedan: ”Alla nya elever får ett mentorssamtal.” Inget annat material har samlats in.\nVilken bedömning av vad planen kan belägga är mest rimlig?\nMarkera ett svar.",
+      "choices": [
+        "Planen visar vilket stöd eleverna får, eftersom dokumentet har skrivits av den skola som ansvarar för att ordna introduktionen.",
+        "Planen visar hur regelbundet stödet ges, eftersom ett skriftligt dokument gör genomförandet lika från elev till elev på skolan.",
+        "Planen ger belägg för stödets effekter, eftersom tydligt beskrivna samtal visar hur skolan förbättrar elevernas övergång till gymnasiet.",
+        "Planen visar vilket stöd skolan avser att erbjuda, men ger inte i sig belägg för vilket stöd eleverna faktiskt får."
+      ],
+      "correct_choices": [
+        "Planen visar vilket stöd skolan avser att erbjuda, men ger inte i sig belägg för vilket stöd eleverna faktiskt får."
+      ]
+    },
+    {
+      "source_label": "Fråga 12: En fråga om avfallssortering",
+      "kind": "multiple_response",
+      "points": 2,
+      "prompt": "En fråga om avfallssortering\nEn grupp vill undersöka elevernas vanor vid avfallssortering. I enkäten står: ”Visst sorterar du ditt avfall, som en ansvarsfull elev bör göra?” Eleverna skriver sina namn och lämnar svaren direkt till sin lärare.\nVilka två ändringar riktar sig mot risken att svaren påverkas av formuleringen eller av hur eleverna vill framstå?\nMarkera två svar.",
+      "choices": [
+        "Formulera frågan neutralt och be eleven ange hur ofta hen har sorterat sitt avfall under den senaste veckan.",
+        "Låt eleverna besvara enkäten utan namn och se till att läraren inte kan koppla svaren till enskilda elever.",
+        "Samla in fler svar med samma fråga och låt läraren fortsätta kontrollera vilka elever som har svarat på enkäten.",
+        "Förklara vilka sorteringsvanor skolan förväntar sig och be eleverna bedöma sina egna vanor i förhållande till skolans förväntningar."
+      ],
+      "correct_choices": [
+        "Formulera frågan neutralt och be eleven ange hur ofta hen har sorterat sitt avfall under den senaste veckan.",
+        "Låt eleverna besvara enkäten utan namn och se till att läraren inte kan koppla svaren till enskilda elever."
+      ],
+      "notes": [
+        "Whole-item points and complete facit choice set are retained. The source gives no partial-credit or extra-selection scoring policy; none is invented."
+      ]
+    },
+    {
+      "source_label": "Fråga 13: Att byta program",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Att byta program\nEn grupp vill förstå hur elever som har bytt gymnasieprogram upplevde bytet och stödet från skolan. De har tid att genomföra åtta längre intervjuer.\nVilket urval passar frågeställningen bäst?\nMarkera ett svar.",
+      "choices": [
+        "Välj åtta elever genom lottning från hela skolan, eftersom skolans samtliga elever bör ha samma chans att komma med.",
+        "Välj åtta elever som har bytt program och har olika erfarenheter, eftersom de kan berätta om det som undersöks.",
+        "Välj åtta klassrepresentanter från olika program, eftersom de kan företräda elevernas erfarenheter av hur det är att byta program.",
+        "Välj åtta elever från den egna klassen, eftersom gemensamma lärare och lokaler gör deras erfarenheter av skolan lättare att jämföra."
+      ],
+      "correct_choices": [
+        "Välj åtta elever som har bytt program och har olika erfarenheter, eftersom de kan berätta om det som undersöks."
+      ]
+    },
+    {
+      "source_label": "Fråga 14: Följdfrågor i intervjuer",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Följdfrågor i intervjuer\nTvå elever intervjuar andra elever om hur de planerar sitt skolarbete. Alla får samma öppna huvudfrågor. Följdfrågorna hjälper var och en att utveckla sina egna svar utan att intervjuaren föreslår svar. Intervjuerna spelas in och analyseras efter samma principer.\nVilken bedömning av genomförandet är mest rimlig?\nMarkera ett svar.",
+      "choices": [
+        "Följdfrågorna kan fördjupa relevanta svar, samtidigt som gemensamma huvudfrågor och tydliga principer för analysen ger struktur åt arbetet.",
+        "Följdfrågorna gör jämförelsen otillförlitlig, eftersom en tillförlitlig kvalitativ intervju kräver att alla deltagare får exakt samma frågor under samtalet.",
+        "Inspelningarna gör tolkningarna tillförlitliga, eftersom en ordagrann dokumentation säkerställer att olika undersökare förstår deltagarnas svar på samma sätt.",
+        "Huvudfrågorna gör resultatet generaliserbart, eftersom en gemensam intervjustruktur gör de intervjuade eleverna representativa för skolans elever som helhet."
+      ],
+      "correct_choices": [
+        "Följdfrågorna kan fördjupa relevanta svar, samtidigt som gemensamma huvudfrågor och tydliga principer för analysen ger struktur åt arbetet."
+      ]
+    },
+    {
+      "source_label": "Fråga 15: Att använda restiden",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Att använda restiden\nEn grupp intervjuar sex elever som valts ut därför att de har mer än en timmes resa till skolan. Fyra berättar att de ibland använder restiden till skolarbete. Gruppen överväger slutsatsen: ”Två av tre långpendlande elever använder restiden till skolarbete.”\nVilken alternativ slutsats har tydligast stöd i materialet?\nMarkera ett svar.",
+      "choices": [
+        "Långpendlande elever brukar använda restiden till skolarbete, eftersom en majoritet av de intervjuade eleverna beskriver att de gör det.",
+        "Intervjuerna ger för lite underlag för att beskriva pendlande elevers erfarenheter, eftersom gruppen bara har intervjuat sex personer om frågan.",
+        "Flera av de intervjuade använder enligt egna berättelser restiden till skolarbete, vilket ger exempel på hur pendlingen kan hanteras.",
+        "Lång pendling får elever att studera under resan, eftersom fyra av de sex intervjuade berättar att de använder tiden så."
+      ],
+      "correct_choices": [
+        "Flera av de intervjuade använder enligt egna berättelser restiden till skolarbete, vilket ger exempel på hur pendlingen kan hanteras."
+      ]
+    },
+    {
+      "source_label": "Fråga 16: Spelande och sömn",
+      "kind": "multiple_response",
+      "points": 2,
+      "prompt": "Spelande och sömn\nI en enkät uppger 240 elever hur länge de brukar spela datorspel och hur länge de brukar sova. De som uppger mer spelande uppger också kortare sömn. Gruppen har inte undersökt vad som kom först eller hur andra vanor hänger ihop med spelandet och sömnen.\nVilka två bedömningar är försvarbara utifrån undersökningen?\nMarkera två svar.",
+      "choices": [
+        "Spelandet orsakar den kortare sömnen hos eleverna, eftersom de som spelar fler timmar också rapporterar mindre tid för sömn.",
+        "Speltid och sömntid hänger samman i enkätsvaren, men jämförelsen visar inte i sig vad som orsakar den kortare sömnen.",
+        "Andra förhållanden kan bidra till sambandet, exempelvis att elever med vissa vanor på kvällen både spelar mer och sover mindre.",
+        "Den kortare sömnen orsakar det ökade spelandet, eftersom elever som sover mindre får mer tid över till att spela datorspel."
+      ],
+      "correct_choices": [
+        "Speltid och sömntid hänger samman i enkätsvaren, men jämförelsen visar inte i sig vad som orsakar den kortare sömnen.",
+        "Andra förhållanden kan bidra till sambandet, exempelvis att elever med vissa vanor på kvällen både spelar mer och sover mindre."
+      ],
+      "notes": [
+        "Whole-item points and complete facit choice set are retained. The source gives no partial-credit or extra-selection scoring policy; none is invented."
+      ]
+    }
+  ]
+}

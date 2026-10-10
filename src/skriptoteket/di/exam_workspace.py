@@ -1,6 +1,6 @@
 """DI bindings for the native exam workspace (ST-SKRIPT-39-04).
 
-A focused provider: the DOCX extractor and container codec are stateless
+A focused provider: the DOCX chunker and container codec are stateless
 app-scoped adapters; the document store and handlers are request-scoped so
 they share the request session, UoW, and vault repositories.
 """
@@ -11,10 +11,15 @@ from dishka import Provider, Scope, provide
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
+    GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
     ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
@@ -26,8 +31,8 @@ from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_extractor import (  # noqa: E501
-    PythonDocxExamExtractor,
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
+    PythonDocxExamChunker,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
@@ -40,14 +45,18 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyProviderSelectorProtocol,
+    AnswerKeyStructuredProviderProtocol,
+    AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamAnswerKeyProposedOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
-    DocxExamExtractorProtocol,
+    DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
@@ -57,12 +66,63 @@ from skriptoteket.protocols.vault import (
 
 
 class ExamWorkspaceProvider(Provider):
-    """Provide exam workspace extraction, persistence, and handlers."""
+    """Provide exam workspace conversion, persistence, and handlers."""
 
     @provide(scope=Scope.APP)
-    def docx_extractor(self) -> DocxExamExtractorProtocol:
-        """Provide the deterministic python-docx extractor."""
-        return PythonDocxExamExtractor()
+    def docx_chunker(self) -> DocxExamChunkerProtocol:
+        """Provide ordered source segmentation without item interpretation."""
+        return PythonDocxExamChunker()
+
+    @provide(scope=Scope.REQUEST)
+    def docx_converter(
+        self,
+        provider: AnswerKeyStructuredProviderProtocol,
+        provider_selector: AnswerKeyProviderSelectorProtocol,
+        leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        settings: Settings,
+    ) -> DocxAIConverter:
+        return DocxAIConverter(
+            provider=provider,
+            provider_selector=provider_selector,
+            leases=leases,
+            uow=uow,
+            clock=clock,
+            enabled=settings.LLM_ANSWER_KEY_ENABLED,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def process_docx_job(
+        self,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        chunker: DocxExamChunkerProtocol,
+        converter: DocxAIConverter,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+        users: UserRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> ProcessExamWorkspaceDocxJobHandler:
+        return ProcessExamWorkspaceDocxJobHandler(
+            jobs=jobs,
+            chunker=chunker,
+            converter=converter,
+            codec=codec,
+            store=store,
+            users=users,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def conversion_status_handler(
+        self,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ) -> GetExamWorkspaceConversionStatusHandler:
+        return GetExamWorkspaceConversionStatusHandler(jobs=jobs)
 
     @provide(scope=Scope.APP)
     def container_codec(self) -> ExamWorkspaceContainerCodecProtocol:
@@ -110,14 +170,15 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def import_handler(
         self,
-        extractor: DocxExamExtractorProtocol,
-        codec: ExamWorkspaceContainerCodecProtocol,
-        store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        settings: Settings,
         id_generator: IdGeneratorProtocol,
     ) -> ImportExamWorkspaceDocumentHandler:
         """Provide the DOCX import handler."""
         return ImportExamWorkspaceDocumentHandler(
-            extractor=extractor, codec=codec, store=store, id_generator=id_generator
+            jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
         )
 
     @provide(scope=Scope.REQUEST)

@@ -66,7 +66,9 @@ describe("useExamWorkspaceDocument save outcome", () => {
     const document = useExamWorkspaceDocument();
     expect(await document.saveDocument()).toBe(false);
     await document.openDocument("lineage-1");
-    document.isBusy.value = true;
+    apiMocks.getExamWorkspaceDocument.mockReturnValueOnce(new Promise(() => {}));
+    void document.reloadDocument();
+    expect(document.isBusy.value).toBe(true);
 
     expect(await document.saveDocument(["item_002"])).toBe(false);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();

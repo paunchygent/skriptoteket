@@ -14,6 +14,7 @@ import { describe, expect, it, vi } from "vitest";
 import { apiFetchBlobResponse, apiGet, apiPost, apiPut } from "./client";
 import {
   downloadExamWorkspaceExport,
+  getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
   getExamWorkspaceEnrichment,
   importExamWorkspaceDocument,
@@ -90,7 +91,7 @@ function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
 
 describe("examWorkspace transport", () => {
   it("imports a .docx as multipart form data with the `file` field", async () => {
-    const response = buildResponse(1);
+    const response = { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
     apiPostMock.mockResolvedValueOnce(response);
     const file = new File(["prov"], "NO_Prov_HT25.docx", {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -106,6 +107,15 @@ describe("examWorkspace transport", () => {
     expect(sentFile).toBeInstanceOf(File);
     expect((sentFile as File).name).toBe("NO_Prov_HT25.docx");
     expect(result).toBe(response);
+  });
+
+  it("reads conversion status using an encoded job id", async () => {
+    const status = { job_id: "job/1", lineage_id: "lineage-1", state: "running", error_message: null };
+    apiGetMock.mockResolvedValueOnce(status);
+    expect(await getExamWorkspaceConversionStatus("job/1")).toBe(status);
+    expect(apiGetMock).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/exam-workspace/conversion-jobs/job%2F1",
+    );
   });
 
   it("reads a document lineage by id", async () => {

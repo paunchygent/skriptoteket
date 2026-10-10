@@ -15,11 +15,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, Response, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
     ListExamWorkspaceDocumentsHandler,
@@ -56,17 +58,32 @@ async def list_exam_workspace_documents(
 
 @router.post(
     "/exam-workspace/documents",
-    response_model=ExamWorkspaceDocumentResponse,
+    response_model=ExamWorkspaceConversionStatus,
+    status_code=202,
 )
 async def import_exam_workspace_document(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ImportExamWorkspaceDocumentHandler],
     file: UploadFile = File(...),
     user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceDocumentResponse:
+) -> ExamWorkspaceConversionStatus:
     require_conversion_hub_access(registry=registry, user=user)
     content = await file.read()
     return await handler.handle(actor=user, filename=file.filename or "prov.docx", content=content)
+
+
+@router.get(
+    "/exam-workspace/conversion-jobs/{job_id}",
+    response_model=ExamWorkspaceConversionStatus,
+)
+async def get_exam_workspace_conversion_status(
+    job_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[GetExamWorkspaceConversionStatusHandler],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceConversionStatus:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user, job_id=job_id)
 
 
 @router.get(

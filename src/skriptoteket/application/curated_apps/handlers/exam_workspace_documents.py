@@ -9,12 +9,17 @@ like the correction-session precedent.
 
 from __future__ import annotations
 
-from pathlib import PurePosixPath
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 
+from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
+    ExamAnswerKeyEnrichmentJob,
+    ExamAnswerKeyEnrichmentJobStatus,
+    ExamAnswerKeySourceKind,
+)
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
@@ -35,8 +40,8 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
-    DocxExamExtractorProtocol,
     ExamWorkspaceContainerCodecProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -190,47 +195,77 @@ class ImportExamWorkspaceDocumentHandler:
     def __init__(
         self,
         *,
-        extractor: DocxExamExtractorProtocol,
-        codec: ExamWorkspaceContainerCodecProtocol,
-        store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        settings: Settings,
         id_generator: IdGeneratorProtocol,
     ) -> None:
-        self._extractor = extractor
-        self._codec = codec
-        self._store = store
+        self._jobs = jobs
+        self._uow = uow
+        self._clock = clock
+        self._settings = settings
         self._id_generator = id_generator
 
     async def handle(
         self, *, actor: User, filename: str, content: bytes
-    ) -> ExamWorkspaceDocumentResponse:
+    ) -> ExamWorkspaceConversionStatus:
         safe_name = sanitize_input_filename(input_filename=filename)
         if not safe_name.lower().endswith(".docx"):
             raise validation_error("Välj en .docx-fil.", details={"filename": safe_name})
         if not content:
             raise validation_error("Filen saknar innehåll.")
+        if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
+            raise validation_error("Word-dokumentet är större än maxstorleken för Mina filer.")
 
         document_id = self._id_generator.new_uuid()
-        extraction = self._extractor.extract(
-            document_id=document_id, filename=safe_name, content=content
-        )
-        container = ExamWorkspaceContainerContent(
-            document=extraction.document, assets_by_id={}, notes=extraction.notes
-        )
-        container_bytes = self._codec.build(content=container)
-        stem = PurePosixPath(safe_name).stem or "prov"
-        vault_file = await self._store.save_version(
-            actor=actor,
-            file_id=self._id_generator.new_uuid(),
-            name=f"{stem}.provdokument.zip",
-            content=container_bytes,
-            lineage_id=document_id,
-            version=1,
-        )
-        return ExamWorkspaceDocumentResponse(
-            document=extraction.document,
-            summary=_summary(vault_file),
-            notes=extraction.notes,
-        )
+        now = self._clock.now()
+        async with self._uow:
+            job = await self._jobs.create(
+                job=ExamAnswerKeyEnrichmentJob(
+                    id=self._id_generator.new_uuid(),
+                    source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
+                    owner_user_id=actor.id,
+                    status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
+                    input_filename=safe_name,
+                    source_docx=content,
+                    workspace_lineage_id=document_id,
+                    workspace_document_revision=1,
+                    available_at=now,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+        return conversion_status(job)
+
+
+def conversion_status(job: ExamAnswerKeyEnrichmentJob) -> ExamWorkspaceConversionStatus:
+    assert job.workspace_lineage_id is not None
+    return ExamWorkspaceConversionStatus(
+        job_id=job.id,
+        lineage_id=job.workspace_lineage_id,
+        state=job.status.value,
+        error_message=job.last_error
+        if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+        else None,
+    )
+
+
+class GetExamWorkspaceConversionStatusHandler:
+    """Read one actor-owned background conversion without exposing source bytes."""
+
+    def __init__(self, *, jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol) -> None:
+        self._jobs = jobs
+
+    async def handle(self, *, actor: User, job_id: UUID) -> ExamWorkspaceConversionStatus:
+        job = await self._jobs.get_by_id(job_id=job_id)
+        if (
+            job is None
+            or job.owner_user_id != actor.id
+            or job.source_kind is not ExamAnswerKeySourceKind.DOCX_IMPORT
+        ):
+            raise DomainError(code=ErrorCode.NOT_FOUND, message="Konverteringen finns inte.")
+        return conversion_status(job)
 
 
 class GetExamWorkspaceDocumentHandler:

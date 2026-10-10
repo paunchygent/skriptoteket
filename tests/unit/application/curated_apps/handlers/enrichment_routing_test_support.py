@@ -21,6 +21,7 @@ from skriptoteket.application.curated_apps.conversion_hub import (
 )
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
+    ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_conversion import (
     ExamConversionStoredArtifact,
@@ -118,6 +119,9 @@ class InMemoryEnrichmentJobRepository:
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)
 
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return await self.get_by_id(job_id=job_id)
+
     async def get_by_workspace_revision(
         self,
         *,
@@ -140,6 +144,7 @@ class InMemoryEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
@@ -149,8 +154,9 @@ class InMemoryEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
-        del worker_id, now, lease_ttl
+        del worker_id, now, lease_ttl, source_kind
         return None
 
     async def heartbeat(

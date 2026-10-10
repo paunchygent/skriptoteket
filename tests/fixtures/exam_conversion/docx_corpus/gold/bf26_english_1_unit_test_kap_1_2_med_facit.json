@@ -1,0 +1,936 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "bf26_english_1_unit_test_kap_1_2_med_facit.docx",
+  "source_sha256": "05c61e45660b52a4c74ee122e38d4dbe5b474eb4c0e42d1889e16d91c7daafd6",
+  "title": "BF26 English 1 Unit Test — 45 minutes — answer key",
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "items": [
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 1",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThis job requires the [___] (förmåga) to work well with other people.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "ability"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 2",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nAfter the flood, the family faced a [___] (påtvingad) move.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "forced"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 3",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe family needed time alone to [___] (sörja) after their loss.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "grieve"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 4",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nI was [___] (häpen) when I won tickets to the final.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "astonished"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 5",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nRegular breaks can [___] (lindra) stress during a busy day.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "alleviate"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 6",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe cake fell onto the floor. [___] (självfallet), nobody wanted a slice.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "needless to say"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 7",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nAfter several lessons, I am [___] (först nu) starting to understand the rules.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "only now"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 8",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nEven a little smoke can [___] (utlösa) the alarm.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "trigger"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 9",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe store sells [___] (en rad av) tools for different jobs.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "a range of"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 10",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nCars are [___] (ständigt) passing our house, even late at night.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "constantly"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 11",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nNoise can [___] (påverka) your concentration while you study.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "affect"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 12",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nYou do not need to [___] (oroa sig) about the cost; the trip is free.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "fret"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 13",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nI sent a message to [___] (lugna) my parents that I was safe.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "reassure"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 14",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe [___] (ihållande) rain kept us indoors for three days.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "persistent"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 15",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nSetting up the new computer was [___] (problemfritt); everything worked the first time.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "plain sailing"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 16",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe driver made a [___] (plötslig) stop when a dog ran into the road.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "sudden"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 17",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nWhen I pressed the button, the screen lit up [___] (ögonblickligen).",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "instantly"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 18",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe group discussed [___] (olika) ways to solve the problem.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "various"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 19",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe jacket looked thin. [___] (emellertid), it kept me warm.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "however"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 20",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nThe stain on the white shirt was [___] (märkbar) from across the room.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "noticeable"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 21",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nCan you [___] (känna igen) this song from its first few seconds?",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "recognize",
+            "recognise"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 22",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nHer [___] (återhämtningsförmåga) helped her start again after she lost her job.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "resilience"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 23",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nAfter a hard year, we hope to [___] (repa sig) and enjoy school again.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "bounce back"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary: Write the Word or Phrase, Question 24",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Vocabulary: Write the Word or Phrase\nComplete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.\nA strong fence can [___] (förhindra) animals from reaching the road.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "prevent"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary Matching, Question 1",
+      "kind": "matching",
+      "points": 3,
+      "prompt": "Vocabulary Matching\nFor each definition, select the correct word or phrase. Each correct match is worth 1 point.\nSelect the word or phrase for each definition.\nWrite the letter of the matching option.\n1. absence from school without permission | ____ | A. incarceration\n2. being kept in a prison or jail | ____ | B. truancy\n3. a feeling that someone deserves no respect | ____ | C. disdain",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [],
+      "pairs": [
+        {
+          "left": "absence from school without permission",
+          "right": "truancy"
+        },
+        {
+          "left": "being kept in a prison or jail",
+          "right": "incarceration"
+        },
+        {
+          "left": "a feeling that someone deserves no respect",
+          "right": "disdain"
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary Matching, Question 2",
+      "kind": "matching",
+      "points": 3,
+      "prompt": "Vocabulary Matching\nFor each definition, select the correct word or phrase. Each correct match is worth 1 point.\nSelect the word or phrase for each definition.\nWrite the letter of the matching option.\n1. short of something that is needed | ____ | A. evenhanded\n2. very fierce, aggressive, or violent | ____ | B. ferocious\n3. fair to both sides in a disagreement | ____ | C. deficient",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [],
+      "pairs": [
+        {
+          "left": "short of something that is needed",
+          "right": "deficient"
+        },
+        {
+          "left": "very fierce, aggressive, or violent",
+          "right": "ferocious"
+        },
+        {
+          "left": "fair to both sides in a disagreement",
+          "right": "evenhanded"
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary Matching, Question 3",
+      "kind": "matching",
+      "points": 3,
+      "prompt": "Vocabulary Matching\nFor each definition, select the correct word or phrase. Each correct match is worth 1 point.\nSelect the word or phrase for each definition.\nWrite the letter of the matching option.\n1. an untrue claim made to deceive someone | ____ | A. circumstance\n2. another person, whether a friend or a stranger | ____ | B. false pretense\n3. a condition surrounding a particular event | ____ | C. fellow man",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [],
+      "pairs": [
+        {
+          "left": "an untrue claim made to deceive someone",
+          "right": "false pretense"
+        },
+        {
+          "left": "another person, whether a friend or a stranger",
+          "right": "fellow man"
+        },
+        {
+          "left": "a condition surrounding a particular event",
+          "right": "circumstance"
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 1",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nMilan tends to boast when he meets new teammates.\n\nWhat does boast mean here?",
+      "choices": [
+        "talk warmly about others",
+        "talk proudly about himself",
+        "talk anxiously about problems"
+      ],
+      "correct_choices": [
+        "talk proudly about himself"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 2",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nLena made progress through patience and application.\n\nWhat does application mean here?",
+      "choices": [
+        "steady effort",
+        "careful planning",
+        "natural talent"
+      ],
+      "correct_choices": [
+        "steady effort"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 3",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nThe coach’s reversal on weekend training surprised the players.\n\nWhat does reversal mean here?",
+      "choices": [
+        "a change to the opposite decision",
+        "a delay before making a decision",
+        "a refusal to discuss a decision"
+      ],
+      "correct_choices": [
+        "a change to the opposite decision"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 4",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nSam seemed to recoil as he lifted the lid.\n\nWhat does recoil mean here?",
+      "choices": [
+        "hold still in place",
+        "lean forward toward something",
+        "draw back from something"
+      ],
+      "correct_choices": [
+        "draw back from something"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 5",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nBetween them, the two cousins saved $80.\n\nWhich sentence gives the meaning of between them here?",
+      "choices": [
+        "The two cousins saved $80 each.",
+        "The two cousins saved $80 altogether.",
+        "The two cousins divided $80 equally."
+      ],
+      "correct_choices": [
+        "The two cousins saved $80 altogether."
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Vocabulary in Context, Question 6",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vocabulary in Context\nRead each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.\nThe report gave a distorted picture of school life.\n\nWhat does distorted mean here?",
+      "choices": [
+        "an incomplete view",
+        "a negative view",
+        "an inaccurate view"
+      ],
+      "correct_choices": [
+        "an inaccurate view"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 1",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nWrite the full form of the bold contraction.\nWe can’t come to the meeting.\nAnswer: [___]",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "cannot"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 2",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nWrite the full form of the bold contraction.\nWe’re waiting for your reply.\nAnswer: [___]",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "we are"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 3",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nUse a form of book. Write the whole missing word.\nI borrowed three [___] from the library.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "books"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 4",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nUse a form of student. Write the whole missing word.\nBoth [___] finished their work.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "students"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 5",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nUse the present form of walk. Write the whole missing word.\nMia [___] to school every day.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "walks"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 6",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nUse the present form of play. Write the whole missing word.\nMy friends [___] soccer after school every Friday.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "play"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 7",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nThe car belongs to one teacher. Complete the sentence with a form of teacher.\nThis is the [___] car.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "teacher’s"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 8",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nThe bikes belong to three boys. Complete the sentence with a form of boy.\nThese are the [___] bikes.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "boys’"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 9",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nReplace only the bold word. Write one word.\nIts time for lunch.\nAnswer: [___]",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "it’s"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 10",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nWrite its or it’s.\nThe school changed [___] lunch menu.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "its"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 11",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nWrite most or the most.\n[___] students in our class take the bus to school.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "most"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 12",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nWrite most or the most.\nOf these three questions, this is [___] difficult one.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "the most"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 13",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nUse can and you once each to complete the statement. Write only the two missing words.\nTomorrow [___] bring your notebook.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "you can"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Grammar and Corrections, Question 14",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Grammar and Corrections\nType only the missing word or the replacement requested in each item. Do not copy the whole sentence.\nCorrect the spelling of the bold text.\nWe have alot of homework tonight.\nAnswer: [___]",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "a lot"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 1",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nYour e-mail asks the headteacher to put tests on different days. Which subject line states the purpose most clearly?",
+      "choices": [
+        "A question about test dates",
+        "Request to spread out tests",
+        "A message about school tests"
+      ],
+      "correct_choices": [
+        "Request to spread out tests"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 2",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nYou are writing a formal e-mail to Ms. Lind. Which greeting follows the class model?",
+      "choices": [
+        "Hi Ms. Lind,",
+        "Dear Sir or Madam,",
+        "Dear Ms. Lind,"
+      ],
+      "correct_choices": [
+        "Dear Ms. Lind,"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 3",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nSam Nilsson is writing a formal e-mail to Ms. Lind. Which complete closing follows the class model?",
+      "choices": [
+        "Sincerely,\nSam Nilsson",
+        "Yours faithfully,\nSam Nilsson",
+        "Yours sincerely,\nSam"
+      ],
+      "correct_choices": [
+        "Sincerely,\nSam Nilsson"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 4",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nYou ask the headteacher to move some test dates. Which sentence clearly asks for a reply?",
+      "choices": [
+        "Could you discuss the new dates with the other teachers?",
+        "Could you add the new dates to the school calendar?",
+        "Could you tell me your decision about the new dates?"
+      ],
+      "correct_choices": [
+        "Could you tell me your decision about the new dates?"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 5",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nWhich sentence uses capital letters correctly?",
+      "choices": [
+        "When I got home, I did my homework.",
+        "When i got home, I did my homework.",
+        "When I got home, i did my homework."
+      ],
+      "correct_choices": [
+        "When I got home, I did my homework."
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Language Choice, Question 6",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Language Choice\nChoose one answer for each question.\nWhich version separates the two complete sentences correctly?",
+      "choices": [
+        "The bus was late, we missed the first lesson.",
+        "The bus was late. We missed the first lesson.",
+        "The bus was late we missed the first lesson."
+      ],
+      "correct_choices": [
+        "The bus was late. We missed the first lesson."
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    }
+  ],
+  "notes": [
+    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. User confirmation is pending."
+  ]
+}

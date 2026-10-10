@@ -1,23 +1,25 @@
 ## Current
 
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  is `ready` (user 2026-10-10): AI-first DOCX conversion, terms A1-A12;
-  supersedes TASK-SKRIPT-39-04-03. Task 1
-  [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-  is `ready` (walking skeleton on the Chapter 4 poetry quiz); implementation
-  routed to Codex. Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
+  is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
+  assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
+  `01a12706-566c-7480-acc3-427145283942`.
+
+  - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
+    `in_progress`: Sol rereview approved `4ac59c24` (findings R1-R6 cleared)
+    and it is merged to main. Next: staging redeploy, live-provider browser
+    walk, token record.
+  - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
+    `in_progress`: gold and comparator approved by Sol rereview and merged;
+    the user confirmed all eight gold files (314 items, 398 points) on
+    2026-10-10. Next: wire the eval runner once task 1 merges.
 
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress` (user 2026-10-10, P1-P3). Owner: Codex implementation
-  lead on `codex/task-skript-39-04-04`; pending proposals carry within the
-  save transaction; only explicit "Avvisa" rejections reach the save request.
-  Review `00e934c0` requested changes (R1-R3); repair R1 is committed on the
-  branch. Proof: 48 backend unit/domain, 13 PostgreSQL and 68 frontend tests;
-  lint, scoped typecheck, frontend typecheck/build passed. Next: parent-owned
-  independent rereview of the repair.
-  Retained session:
-  `01a1272e-5d8f-7936-b8d4-e36567440c6d`. Parent excludes the Hemma walk
-  from this assignment; production acceptance stays user-owned.
+  is `in_progress` on `codex/task-skript-39-04-04`: Sol rereview approved
+  `231a2190` (R1-R4 cleared); main (TASK-SKRIPT-39-05-01) is merged into the
+  branch. Next: parent review of the merge resolution, merge to main, staging
+  walk. Retained session
+  `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
@@ -153,12 +155,12 @@
 - The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support
   module, amend its D5 gate, add the staging answer-key lane configuration, and
   remove three vacuous frontend replay tests; they change no production code.
-- Full typecheck reproduced the 12-error baseline in three
-  `src/skriptoteket/script_bank/scripts/` demo scripts and
-  `tests/unit/web/test_observability_routes.py` (2026-10-10).
+- Full typecheck on 2026-10-10 reports 12 errors in untouched files: three
+  `src/skriptoteket/script_bank/scripts/` demos and
+  `tests/unit/web/test_observability_routes.py`. TASK-SKRIPT-39-05-02's
+  changed-file type proof passes; retained capture `0098` in its session.
 - Open product questions (undecided, not silently resolved): native doc
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: independent rereview of TASK-SKRIPT-39-04-04 repair R1 and continued implementation
-  of TASK-SKRIPT-39-05-01 in its separate worktree.
+- Next: rereview, merge and staging-walk TASK-SKRIPT-39-05-01 and 39-04-04.
