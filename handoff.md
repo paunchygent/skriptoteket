@@ -20,16 +20,6 @@
     2026-10-10; blind-labelling corrections merged after Sol approval
     (`review-86e495c8.md`). Next: wire the eval runner to the converter.
 
-- [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress` and merged to main: Sol rereview approved `231a2190`
-  (R1-R4 cleared) and Sol approved the integration merge `e0746f2a`.
-  Staging walk passed 2026-10-10 at `929e847a` (quiz doc v3->v5): pending
-  proposal survived a save that edited another item, approve, save, QTI
-  created. Editing the same item's heading drops its proposal (title is in
-  the answer-key view). Next: user closure.
-  Retained session
-  `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
-
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
   Exam.net types standalone or as parent with children (Deluppgift).
@@ -38,8 +28,8 @@
   proposed->ready; sequenced after story 8.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
-  is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
-  proposed->ready. Follow-up: Mina filer keeps every workspace version
+  is `ready` (user decision 2026-10-11) with the fix committed (`8a0fc469`,
+  8 unit tests). Next: implementation closeout. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
 - 2026-10-09 planning session (Claude): user decisions recorded in
@@ -139,6 +129,10 @@
   entry above.
 
 ## Recent
+
+- TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
+  carried across saves; staging walk 2026-10-10 at `929e847a`, Sol `231a2190`,
+  merge `e0746f2a`.
 
 - 2026-10-10: TASK-SKRIPT-39-04-02 `done` by user acceptance of the
   four-viewport staging walk (`agent-planning:user-closure-gate`); `main`
