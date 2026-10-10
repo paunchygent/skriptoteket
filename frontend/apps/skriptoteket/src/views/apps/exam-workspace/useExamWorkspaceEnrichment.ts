@@ -125,8 +125,12 @@ export function useExamWorkspaceEnrichment(
       const status = await getExamWorkspaceEnrichment(lineageId);
       applyStatus(lineageId, pollGeneration, status);
     } catch {
-      if (pollGeneration === generation) {
-        toast.failure(STATUS_FAILURE_COPY);
+      if (pollGeneration !== generation) {
+        return;
+      }
+      toast.failure(STATUS_FAILURE_COPY);
+      if (isPending(enrichmentStatus.value)) {
+        schedulePoll(lineageId, pollGeneration);
       }
     }
   }

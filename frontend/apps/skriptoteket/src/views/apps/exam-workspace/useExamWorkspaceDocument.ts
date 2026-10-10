@@ -59,6 +59,26 @@ function nextItemId(items: NativeExamItem[]): string {
   return `item_${String(candidate).padStart(3, "0")}`;
 }
 
+/**
+ * Merge a fetched saved-document list into the entries already known locally.
+ * A local entry wins when the response lacks its lineage (for example an
+ * import that finished while the list request was in flight) or when it holds
+ * a newer version; the response supplies everything else.
+ */
+export function mergeSavedDocuments(
+  local: ExamWorkspaceDocumentSummary[],
+  fetched: ExamWorkspaceDocumentSummary[],
+): ExamWorkspaceDocumentSummary[] {
+  const localByLineage = new Map(local.map((entry) => [entry.lineage_id, entry]));
+  const fetchedLineages = new Set(fetched.map((entry) => entry.lineage_id));
+  const localOnly = local.filter((entry) => !fetchedLineages.has(entry.lineage_id));
+  const merged = fetched.map((entry) => {
+    const known = localByLineage.get(entry.lineage_id);
+    return known && known.version > entry.version ? known : entry;
+  });
+  return [...localOnly, ...merged];
+}
+
 export function useExamWorkspaceDocument() {
   const toast = useToast();
 
@@ -77,14 +97,6 @@ export function useExamWorkspaceDocument() {
       return null;
     }
     return current.items.find((item) => item.item_id === selectedItemId.value) ?? null;
-  });
-
-  const isExportReady = computed(() => {
-    const current = workspaceDocument.value;
-    if (!current || isDirty.value) {
-      return false;
-    }
-    return current.items.every((item) => item.review.state === "review_complete");
   });
 
   function applyResponse(response: ExamWorkspaceDocumentResponse): void {
@@ -126,7 +138,7 @@ export function useExamWorkspaceDocument() {
   async function loadSavedDocuments(): Promise<void> {
     try {
       const response = await listExamWorkspaceDocuments();
-      savedDocuments.value = response.documents;
+      savedDocuments.value = mergeSavedDocuments(savedDocuments.value, response.documents);
     } catch {
       toast.failure(LIST_FAILURE_COPY);
     }
@@ -314,30 +326,33 @@ export function useExamWorkspaceDocument() {
   }
 
   /**
-   * Move an advisory proposal into the editor as an unreviewed prefill.
-   * With `approve`, the teacher accepts it unchanged in the same step, which
-   * records the key as `reviewed_advisory`.
+   * Move an advisory proposal into the editor as an unreviewed prefill
+   * (`machine_proposed`, item marked `review_required`). With `approve`, the
+   * teacher accepts the key unchanged in the same step, which records it as
+   * `reviewed_advisory` and leaves the item's review state and reasons as
+   * they were: parse-confidence review still needs the explicit
+   * "mark reviewed" action.
    */
   function applyProposal(itemId: string, proposedItem: NativeExamItem, approve: boolean): void {
     patchItem(itemId, (item) => {
-      const prefilled: NativeExamItem = {
-        ...item,
-        answer_key: { ...proposedItem.answer_key, origin: "machine_proposed" },
-        gaps: item.gaps.map((gap) => {
-          const proposedGap = proposedItem.gaps.find(
-            (candidate) => candidate.gap_id === gap.gap_id,
-          );
-          return proposedGap ? { ...gap, accepted_values: proposedGap.accepted_values } : gap;
-        }),
-        review: { ...item.review, state: "review_required" },
-      };
-      if (!approve) {
-        return prefilled;
+      const gaps = item.gaps.map((gap) => {
+        const proposedGap = proposedItem.gaps.find(
+          (candidate) => candidate.gap_id === gap.gap_id,
+        );
+        return proposedGap ? { ...gap, accepted_values: proposedGap.accepted_values } : gap;
+      });
+      if (approve) {
+        return {
+          ...item,
+          answer_key: { ...proposedItem.answer_key, origin: "reviewed_advisory" },
+          gaps,
+        };
       }
       return {
-        ...prefilled,
-        answer_key: { ...prefilled.answer_key, origin: "reviewed_advisory" },
-        review: { ...prefilled.review, state: "review_complete" },
+        ...item,
+        answer_key: { ...proposedItem.answer_key, origin: "machine_proposed" },
+        gaps,
+        review: { ...item.review, state: "review_required" },
       };
     });
   }
@@ -378,7 +393,6 @@ export function useExamWorkspaceDocument() {
     importDocument,
     isBusy,
     isDirty,
-    isExportReady,
     loadSavedDocuments,
     markItemReviewed,
     notes,

@@ -8,9 +8,10 @@
  *
  * Expected behavior:
  *   Proposals never change the document on arrival. Approving unchanged
- *   saves the key as `reviewed_advisory`; adjusting it in the editor saves
- *   it as `teacher_authored`. Requests need a saved document, and polling
- *   stops when the job settles or the view unmounts.
+ *   saves the key as `reviewed_advisory` and leaves the item's review state
+ *   as it was; adjusting it in the editor saves it as `teacher_authored`.
+ *   Requests need a saved document, a failed poll retries on the next
+ *   interval, and polling stops when the job settles or the view unmounts.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -168,7 +169,7 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     );
   });
 
-  it("saves an unchanged approved proposal as reviewed_advisory", async () => {
+  it("saves an unchanged approved proposal as reviewed_advisory without completing review", async () => {
     apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
     const { wrapper } = await mountExamWorkspace();
@@ -180,7 +181,7 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-proposal-panel"]').exists()).toBe(false);
     expect(
       wrapper.find('[data-test="exam-workspace-item-status-item_002"]').text(),
-    ).toContain("Granskad");
+    ).toContain("Behöver granskas");
 
     await saveDocument(wrapper);
 
@@ -189,7 +190,42 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
       correct_choice_ids: ["choice_c"],
       origin: "reviewed_advisory",
     });
-    expect(saved?.review.state).toBe("review_complete");
+    expect(saved?.review).toEqual({
+      confidence: 0.9,
+      parse_origin: "deterministic",
+      reasons: ["facit saknas"],
+      state: "review_required",
+    });
+  });
+
+  it("keeps parse-confidence review required after approving a proposal", async () => {
+    const parseReviewResponse = buildUnkeyedResponse(1);
+    parseReviewResponse.document.items = parseReviewResponse.document.items.map((item) =>
+      item.item_id === "item_002"
+        ? {
+            ...item,
+            review: {
+              ...item.review,
+              reasons: ["sublines_without_answer_keys"],
+              state: "review_required",
+            },
+          }
+        : item,
+    );
+    apiMocks.importExamWorkspaceDocument.mockResolvedValue(parseReviewResponse);
+    apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.find('[data-test="exam-workspace-proposal-approve"]').trigger("click");
+    await saveDocument(wrapper);
+
+    const saved = lastSavedItem("item_002");
+    expect(saved?.answer_key.origin).toBe("reviewed_advisory");
+    expect(saved?.review.state).toBe("review_required");
+    expect(saved?.review.reasons).toEqual(["sublines_without_answer_keys"]);
   });
 
   it("saves an adjusted proposal as teacher_authored", async () => {
@@ -258,6 +294,37 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
     ).toBeDefined();
+  });
+
+  it("retries a failed poll on the next interval until the job settles", async () => {
+    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.getExamWorkspaceEnrichment.mockReset();
+    apiMocks.getExamWorkspaceEnrichment
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce(SUCCEEDED);
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await flushPromises();
+    expect(
+      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+    ).toBeDefined();
+
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(2);
+    expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
+      "1 facitförslag att granska.",
+    );
+    expect(wrapper.find('[data-test="exam-workspace-item-proposal-item_002"]').exists()).toBe(
+      true,
+    );
+    expect(
+      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+    ).toBeUndefined();
   });
 
   it("stops polling when the view unmounts", async () => {
