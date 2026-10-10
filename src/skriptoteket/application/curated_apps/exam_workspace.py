@@ -28,6 +28,14 @@ class ExamWorkspaceDocumentResponse(BaseModel):
     notes: tuple[str, ...] = ()
 
 
+class ExamWorkspaceDocumentListResponse(BaseModel):
+    """The actor's workspace documents, one head version per lineage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    documents: tuple[ExamWorkspaceDocumentSummary, ...] = ()
+
+
 class SaveExamWorkspaceDocumentRequest(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 

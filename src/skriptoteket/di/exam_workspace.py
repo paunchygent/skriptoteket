@@ -13,6 +13,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ExamWorkspaceDocumentStore,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
@@ -103,6 +104,13 @@ class ExamWorkspaceProvider(Provider):
     ) -> GetExamWorkspaceDocumentHandler:
         """Provide the reopen handler."""
         return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
+
+    @provide(scope=Scope.REQUEST)
+    def list_handler(
+        self, vault_files: VaultFileRepositoryProtocol
+    ) -> ListExamWorkspaceDocumentsHandler:
+        """Provide the head-version document list handler."""
+        return ListExamWorkspaceDocumentsHandler(vault_files=vault_files)
 
     @provide(scope=Scope.REQUEST)
     def export_handler(

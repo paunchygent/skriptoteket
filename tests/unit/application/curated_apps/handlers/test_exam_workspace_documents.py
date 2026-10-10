@@ -14,6 +14,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ExamWorkspaceDocumentStore,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.config import Settings
@@ -64,6 +65,23 @@ class LineageVaultFileRepository(InMemoryVaultFileRepository):
         if not candidates:
             return None
         return max(candidates, key=lambda file: file.document_version or 0)
+
+    async def list_document_heads(
+        self, *, user_id: UUID, source_artifact_prefix: str
+    ) -> list[VaultFile]:
+        heads: dict[UUID, VaultFile] = {}
+        for file in self.files.values():
+            if (
+                file.user_id != user_id
+                or file.document_lineage_id is None
+                or file.deleted_at is not None
+                or not (file.source_artifact_id or "").startswith(source_artifact_prefix)
+            ):
+                continue
+            current = heads.get(file.document_lineage_id)
+            if current is None or (file.document_version or 0) > (current.document_version or 0):
+                heads[file.document_lineage_id] = file
+        return sorted(heads.values(), key=lambda file: (file.created_at, file.id), reverse=True)
 
     async def create(self, *, file: VaultFile) -> VaultFile:
         if file.document_lineage_id is not None:
@@ -121,6 +139,7 @@ class _Env:
         self.get_handler = GetExamWorkspaceDocumentHandler(
             vault_files=self.vault_files, codec=self.codec, store=self.store
         )
+        self.list_handler = ListExamWorkspaceDocumentsHandler(vault_files=self.vault_files)
         self.save_handler = SaveExamWorkspaceDocumentHandler(
             vault_files=self.vault_files,
             codec=self.codec,
@@ -177,6 +196,28 @@ async def test_reopen_unknown_lineage_is_not_found(env: _Env) -> None:
     with pytest.raises(DomainError) as exc_info:
         await env.get_handler.handle(actor=_actor(), lineage_id=uuid4())
     assert exc_info.value.code is ErrorCode.NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_bytes: bytes) -> None:
+    actor = _actor()
+    imported = await env.import_handler.handle(
+        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
+    )
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=imported.document.with_revision(2)
+        ),
+    )
+
+    listed = await env.list_handler.handle(actor=actor)
+
+    assert [(entry.lineage_id, entry.version) for entry in listed.documents] == [
+        (imported.summary.lineage_id, 2)
+    ]
+    assert (await env.list_handler.handle(actor=_actor())).documents == ()
 
 
 @pytest.mark.asyncio

@@ -118,6 +118,34 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         model = result.scalars().first()
         return VaultFile.model_validate(model) if model else None
 
+    async def list_document_heads(
+        self,
+        *,
+        user_id: UUID,
+        source_artifact_prefix: str,
+    ) -> list[VaultFile]:
+        """Return the newest active version per document lineage, newest first."""
+
+        stmt = (
+            select(UserVaultFileModel)
+            .where(UserVaultFileModel.user_id == user_id)
+            .where(UserVaultFileModel.document_lineage_id.is_not(None))
+            .where(UserVaultFileModel.deleted_at.is_(None))
+            .where(
+                UserVaultFileModel.source_artifact_id.startswith(
+                    source_artifact_prefix, autoescape=True
+                )
+            )
+            .distinct(UserVaultFileModel.document_lineage_id)
+            .order_by(
+                UserVaultFileModel.document_lineage_id,
+                desc(UserVaultFileModel.document_version),
+            )
+        )
+        result = await self._session.execute(stmt)
+        heads = [VaultFile.model_validate(item) for item in result.scalars().all()]
+        return sorted(heads, key=lambda file: (file.created_at, file.id), reverse=True)
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         model = UserVaultFileModel(
             id=file.id,

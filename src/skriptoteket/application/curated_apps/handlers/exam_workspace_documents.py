@@ -15,6 +15,7 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
     SaveExamWorkspaceDocumentRequest,
@@ -249,6 +250,20 @@ class GetExamWorkspaceDocumentHandler:
             summary=_summary(head),
             notes=container.notes,
         )
+
+
+class ListExamWorkspaceDocumentsHandler:
+    """List the actor's workspace documents as head-version summaries."""
+
+    def __init__(self, *, vault_files: VaultFileRepositoryProtocol) -> None:
+        self._vault_files = vault_files
+
+    async def handle(self, *, actor: User) -> ExamWorkspaceDocumentListResponse:
+        heads = await self._vault_files.list_document_heads(
+            user_id=actor.id,
+            source_artifact_prefix=f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:",
+        )
+        return ExamWorkspaceDocumentListResponse(documents=tuple(_summary(head) for head in heads))
 
 
 class SaveExamWorkspaceDocumentHandler:

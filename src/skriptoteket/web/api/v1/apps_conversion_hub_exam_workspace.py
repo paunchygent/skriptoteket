@@ -1,7 +1,7 @@
 """Exam workspace API routes (ST-SKRIPT-39-04 walking skeleton).
 
 Purpose:
-  Expose DOCX import, reopen, and versioned save for the native editable
+  Expose DOCX import, document listing, reopen, and versioned save for the native editable
   exam workspace under the Conversion Hub curated app.
 
 Relationships:
@@ -15,12 +15,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, Response, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
@@ -37,6 +39,19 @@ from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
+
+
+@router.get(
+    "/exam-workspace/documents",
+    response_model=ExamWorkspaceDocumentListResponse,
+)
+async def list_exam_workspace_documents(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ListExamWorkspaceDocumentsHandler],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentListResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user)
 
 
 @router.post(
