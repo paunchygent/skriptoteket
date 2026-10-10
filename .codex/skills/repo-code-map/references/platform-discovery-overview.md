@@ -133,8 +133,8 @@ exact repository-relative paths; it does not replace them.
 `docs/templates/template-codemap.md` remains the authoring template for that
 family.
 
-Generated indexes are refreshed by `pdm run docs-sync` and enforced by
-`pdm run docs-validate`; both scan `docs/` only, so `AGENTS.md` and `.codex/`
+Generated indexes are regenerated and enforced by `pdm run docs-validate`;
+it scans `docs/` only, so `AGENTS.md` and `.codex/`
 sit outside them. Scaffold governed documents with the package-owned
 `pdm run new-task`, `new-story`, `new-epic`, `new-review`, `new-doc`; never
 author frontmatter by hand. `docs/_meta/historical-docs-contract.yaml` is the
@@ -165,7 +165,7 @@ Skriptoteket reference.
 
 `pdm run format`, `lint`, `typecheck`, `test`, and `check` for Python;
 `fe-type-check`, `fe-lint`, `fe-build`, and the Vitest lanes for the SPA;
-`docs-sync` and `docs-validate` for the `docs/` contract; `skills-validate` for
+`docs-validate` for the `docs/` contract; `skills-validate` for
 `.codex/skills/`; `handoff-validate` for `handoff.md`; `check-md` and
 `format-md` for changed markdown. `AGENTS.md` states which set a given change
 closes on; `local-devops` and its Skriptoteket reference carry the local
