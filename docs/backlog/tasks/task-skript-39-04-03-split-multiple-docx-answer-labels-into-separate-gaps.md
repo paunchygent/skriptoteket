@@ -94,5 +94,6 @@ each gap as its own chip -> QTI export holds one keyed text entry per gap`.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | F1 | Fix the merged facit value as its own task under ST-SKRIPT-39-04 (user decision 2026-10-10). |
-| F2 | Each answer label on a facit line becomes its own gap with only its own answer as accepted value (user decision 2026-10-10). |
-| F3 | A label without answer text becomes an empty gap; the item stays gap-fill and review_required, and the teacher must type the answer before saving; no guessed answers and no free-text fallback (user decision 2026-10-10). |
+| F2 | Reopened 2026-10-10: one gap per label is wrong. The fixture mixes given parts (`Markerad del: vid skolan`) with asked answers, and one asked slot can hold several accepted answers (`predikativ/predikatsfyllnad`). The import model is under discussion with the user; no implementation until it is decided. |
+| F3 | Reopened with F2 (empty-label handling depends on the new model). |
+| F4 | The gap popover gets an action that turns a wrongly created gap into fixed text (user decision 2026-10-10). |
