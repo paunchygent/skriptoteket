@@ -6,9 +6,14 @@
   `01a12706-566c-7480-acc3-427145283942`.
 
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress`: Sol rereview approved `4ac59c24` (findings R1-R6 cleared)
-    and it is merged to main. Next: staging redeploy, live-provider browser
-    walk, token record.
+    `in_progress`: producer contract, failure observability and gpt-6-luna
+    medium conversion merged (`929e847a`, Sol rereview approved `fcc094a6`).
+    Staging walk 2026-10-10 at `929e847a`: quiz job succeeded in 59 s, 28
+    items/28 points, QTI created. Live corpus eval (all eight, gpt-6-luna
+    medium): 0/8 pass A7; main causes are comparator projection (title, hint,
+    instructions), review-item fragmentation and a facit leak in review
+    fragments (`evidence/corpus-live-eval-gpt-6-luna/summary.md`). Next: user
+    triage of the eval, then task 2.
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
     `in_progress`: gold and comparator approved by Sol rereview and merged;
     the user confirmed all eight gold files (314 items, 398 points) on
@@ -18,9 +23,18 @@
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `in_progress` and merged to main: Sol rereview approved `231a2190`
   (R1-R4 cleared) and Sol approved the integration merge `e0746f2a`.
-  Next: staging walk (request proposals, save, approve, save, export QTI).
+  Staging walk passed 2026-10-10 at `929e847a` (quiz doc v3->v5): pending
+  proposal survived a save that edited another item, approve, save, QTI
+  created. Editing the same item's heading drops its proposal (title is in
+  the answer-key view). Next: user closure.
   Retained session
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
+
+- 2026-10-10 user requirements, not yet planned (major): teachers must add
+  every valid Exam.net QTI 3.0 item type in the workspace (today only free
+  text), and must choose between a standalone item and a parent with child
+  items sharing one instruction (as in the BF26 chapter 2 QTI). Next: GrillMe
+  planning under EPIC-SKRIPT-39.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
@@ -164,4 +178,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: rereview, merge and staging-walk TASK-SKRIPT-39-05-01 and 39-04-04.
+- Next: eval triage, item-type and parent/child authoring planning.
