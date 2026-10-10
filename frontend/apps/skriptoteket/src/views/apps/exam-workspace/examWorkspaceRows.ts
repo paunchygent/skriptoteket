@@ -28,8 +28,9 @@ const REVIEW_REASON_LABELS: Record<string, string> = {
   no_question_structure_detected:
     "Ingen frågestruktur hittades – kontrollera att frågorna har tolkats rätt.",
   partial_answer_keys_detected:
-    "Bara några delfrågor har facit – komplettera facit eller lämna alla utan.",
-  sublines_without_answer_keys: "Delfrågorna saknar facit – lägg till facit vid behov.",
+    "Bara några delfrågor hade facit i källfilen, så frågan blev fritext utan facit.",
+  sublines_without_answer_keys:
+    "Delfrågorna saknade facit i källfilen, så frågan blev fritext utan facit.",
 };
 
 const SNAKE_CASE_CODE = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
