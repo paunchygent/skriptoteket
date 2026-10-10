@@ -257,6 +257,7 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
         pdf_path: Path,
         page_size: str,
         orientation: str,
+        perf_log: list[dict[str, object]] | None = None,
     ) -> str | None:  # noqa: ARG001
         raise Exception(long_a)  # noqa: BLE001
 
@@ -282,6 +283,7 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
     assert error_artifact.is_file()
     artifact_text = error_artifact.read_text(encoding="utf-8")
     assert "WeasyPrint:" in artifact_text
+    assert f"WeasyPrint: {long_a}" in artifact_text
 
 
 @pytest.mark.unit
