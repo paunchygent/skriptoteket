@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4e57f065f26031bf9af69f6c478f21f83795e3fabd629a3349828e4af279ce42",
+  "source_set_digest": "4de6ac2af855ba949767e39c24b65f2b4686e12d353f73c29c8aeb2df7add5aa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4590,7 +4590,7 @@
       "type": "task",
       "title": "Carry pending answer-key proposals across exam workspace saves",
       "path": "docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
