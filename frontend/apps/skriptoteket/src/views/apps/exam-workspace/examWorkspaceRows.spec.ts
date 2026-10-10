@@ -13,6 +13,7 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
   examWorkspacePointsLabel,
   examWorkspacePromptExcerpt,
+  examWorkspaceReviewReasonLabel,
   examWorkspaceReviewStatusLabel,
   examWorkspaceTypeLabel,
   toExamWorkspaceItemRow,
@@ -90,6 +91,21 @@ describe("examWorkspaceRows", () => {
 
     expect(excerpt.length).toBeLessThanOrEqual(140);
     expect(excerpt.endsWith("…")).toBe(true);
+  });
+
+  it("maps review reason codes to Swedish text and passes prose through", () => {
+    expect(examWorkspaceReviewReasonLabel("long_answer_key")).toBe(
+      "Facit är längre än vanligt – kontrollera att det bara innehåller svaret.",
+    );
+    expect(examWorkspaceReviewReasonLabel("missing_points")).toBe(
+      "Poäng saknas – ange poäng för frågan.",
+    );
+    expect(examWorkspaceReviewReasonLabel("osäker tolkning av frågetexten")).toBe(
+      "osäker tolkning av frågetexten",
+    );
+    const fallback = examWorkspaceReviewReasonLabel("some_future_code");
+    expect(fallback).toBe("Kontrollera frågan – tolkningen är osäker.");
+    expect(fallback).not.toContain("_");
   });
 
   it("builds a complete row and falls back to a sequence title", () => {

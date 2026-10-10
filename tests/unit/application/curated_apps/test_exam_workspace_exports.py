@@ -5,6 +5,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
+from xml.etree import ElementTree
 
 import pytest
 
@@ -28,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParagraph,
     NativeParseOrigin,
     NativeTextSegment,
+    native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
@@ -138,6 +140,42 @@ class TestExportGate:
             {"item_id": "item_001", "reason": "missing_answer_key"}
         ]
 
+    def test_blank_prompt_passes_gate_but_blocks_at_planning(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.FREE_TEXT,
+            body=(NativeParagraph(segments=(NativeTextSegment(text=" "),)),),
+            points=2,
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+            review=NativeItemReview(
+                state=NativeItemReviewState.REVIEW_COMPLETE,
+                parse_origin=NativeParseOrigin.TEACHER_CREATED,
+            ),
+        )
+        document = NativeExamDocument(
+            document_id=uuid4(),
+            revision=1,
+            title="Prov med tom fråga",
+            items=(item,),
+            origin=NativeExamDocumentOrigin(kind="created"),
+        )
+        assert native_export_blockers(document) == ()
+
+        with pytest.raises(DomainError) as exc_info:
+            build_native_examnet_qti_package(
+                document,
+                package_name="prov-tom-fraga",
+                qti_writer=ExamNetQtiPackageWriter(),
+            )
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+        assert exc_info.value.message == "The QTI package plan did not pass planning checks."
+        assert exc_info.value.details == {
+            "plan_status": "blocked",
+            "warnings": ["Item item_001 has no prompt text."],
+        }
+
 
 class TestFullPackageBuild:
     @pytest.fixture(scope="class")
@@ -169,3 +207,34 @@ class TestFullPackageBuild:
         assert EXAMNET_QTI_ASSESSMENT_TEST_PATH in names
         for item in reviewed_document.items:
             assert f"items/{item.item_id}.xml" in names
+
+    def test_assessment_title_is_exam_title_not_package_name(
+        self,
+        built: tuple[bytes, bytes],
+        reviewed_document: NativeExamDocument,
+    ) -> None:
+        package_bytes, _ = built
+        with zipfile.ZipFile(BytesIO(package_bytes)) as archive:
+            root = ElementTree.fromstring(archive.read(EXAMNET_QTI_ASSESSMENT_TEST_PATH))
+            manifest = archive.read("imsmanifest.xml").decode("utf-8")
+
+        titles = {element.get("title") for element in root.iter() if element.get("title")}
+        assert titles == {reviewed_document.title}
+        assert "grammatik-omprov" not in titles
+        assert "grammatik-omprov" not in manifest
+
+    def test_blank_exam_title_falls_back_and_special_characters_are_escaped(
+        self, reviewed_document: NativeExamDocument
+    ) -> None:
+        def assessment_title(title: str) -> str | None:
+            document = reviewed_document.model_copy(update={"title": title})
+            package_bytes, _ = build_native_examnet_qti_package(
+                document, package_name="grammatik-omprov", qti_writer=ExamNetQtiPackageWriter()
+            )
+            with zipfile.ZipFile(BytesIO(package_bytes)) as archive:
+                return ElementTree.fromstring(archive.read(EXAMNET_QTI_ASSESSMENT_TEST_PATH)).get(
+                    "title"
+                )
+
+        assert assessment_title("   ") == "grammatik-omprov"
+        assert assessment_title('Prov <A> & "B"') == 'Prov <A> & "B"'

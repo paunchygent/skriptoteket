@@ -16,7 +16,7 @@ import { computed } from "vue";
 import { IconCheck, IconWarning } from "../../../components/icons";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import { examWorkspaceReviewReasonLabel, examWorkspaceTypeLabel } from "./examWorkspaceRows";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
@@ -158,7 +158,7 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
         v-for="reason in item.review.reasons"
         :key="reason"
       >
-        {{ reason }}
+        {{ examWorkspaceReviewReasonLabel(reason) }}
       </li>
     </ul>
 
