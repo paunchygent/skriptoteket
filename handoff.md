@@ -14,14 +14,21 @@
   edit (40 points); QTI, PDF and DOCX exports returned 200 and all contain
   the edits; QTI zip has imsmanifest, 9 items, correctResponse on the 7
   gap items. Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/staging-walk/`.
-  Not proven: proposal acceptance. Every gap item in the fixture is keyed,
-  and clearing a gap's accepted values returns 422 "gap gap_001 needs
-  accepted values for a keyed item" under a generic Swedish error, so no
-  item becomes eligible. Other findings: the review reason shows the raw
-  code `long_answer_key`; the QTI test title is the filename, not the exam
-  title. Owner: Claude session. User gates: the gap-clearing fix
-  (prerequisite for the proposal step), proposal carry-over across saves,
-  D5 acceptance, terminal closure.
+  Gap-key fix (`b09130ea`, `0f63670a`, `19b24b6c`, reviews approved,
+  merged `2c4dadbc`, pushed, staging redeployed): clearing every key value
+  makes the key `absent`; a partial gap key is refused at save in Swedish;
+  export blocks keyed items without a key (`missing_answer_key`, all
+  targets). Proposal step walked 2026-10-10 on staging at `2c4dadbc`:
+  partial clear on Fråga 2 refused with Swedish toast; full clear saved
+  v3; QTI export refused with "Frågan saknar facit…"; Föreslå facit
+  returned 1 proposal (NF, VF, PF, PF); approved and saved v4; QTI export
+  200 with item_002 as 4 textEntry gaps with correctResponse, 7/9 items
+  keyed. Open findings: raw review code `long_answer_key`; QTI test title
+  is the filename; reviewer minors (blocked-plan test gap, comment on
+  unreachable unkeyed QTI/PDF branches, copy "lämna alla luckor tomma");
+  DOCX export is also blocked by a missing key (user to confirm). Layout
+  redesign proposed as TASK-SKRIPT-39-04-02. Owner: Claude session. User
+  gates: D5 acceptance, terminal closure, proposal carry-over across saves.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -145,6 +152,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: fix the gap-clearing 422 so a keyed gap can lose its key, then
-  finish the D5 proposal step on staging; ADR-0091/ST-SKRIPT-39-04 review
-  accepted 2026-10-09.
+- Next: user D5 acceptance of TASK-SKRIPT-39-04-01; user closes the two
+  open decisions on TASK-SKRIPT-39-04-02 and moves it to `ready`.
