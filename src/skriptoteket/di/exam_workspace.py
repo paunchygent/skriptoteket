@@ -56,6 +56,12 @@ from skriptoteket.protocols.exam_answer_key import (
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
+    ExportExamWorkspaceDocumentHandlerProtocol,
+    GetExamWorkspaceConversionStatusHandlerProtocol,
+    GetExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceDocumentHandlerProtocol,
+    ListExamWorkspaceDocumentsHandlerProtocol,
+    SaveExamWorkspaceDocumentHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
@@ -122,7 +128,7 @@ class ExamWorkspaceProvider(Provider):
     def conversion_status_handler(
         self,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ) -> GetExamWorkspaceConversionStatusHandler:
+    ) -> GetExamWorkspaceConversionStatusHandlerProtocol:
         return GetExamWorkspaceConversionStatusHandler(jobs=jobs)
 
     @provide(scope=Scope.APP)
@@ -176,7 +182,7 @@ class ExamWorkspaceProvider(Provider):
         clock: ClockProtocol,
         settings: Settings,
         id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDocumentHandler:
+    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
         """Provide the DOCX import handler."""
         return ImportExamWorkspaceDocumentHandler(
             jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
@@ -188,14 +194,14 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-    ) -> GetExamWorkspaceDocumentHandler:
+    ) -> GetExamWorkspaceDocumentHandlerProtocol:
         """Provide the reopen handler."""
         return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
         self, vault_files: VaultFileRepositoryProtocol
-    ) -> ListExamWorkspaceDocumentsHandler:
+    ) -> ListExamWorkspaceDocumentsHandlerProtocol:
         """Provide the head-version document list handler."""
         return ListExamWorkspaceDocumentsHandler(vault_files=vault_files)
 
@@ -205,7 +211,7 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-    ) -> ExportExamWorkspaceDocumentHandler:
+    ) -> ExportExamWorkspaceDocumentHandlerProtocol:
         """Provide the on-demand export handler (QTI/PDF/DOCX)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
@@ -223,7 +229,7 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
-    ) -> SaveExamWorkspaceDocumentHandler:
+    ) -> SaveExamWorkspaceDocumentHandlerProtocol:
         """Provide the versioned save handler."""
         return SaveExamWorkspaceDocumentHandler(
             vault_files=vault_files, codec=codec, store=store, id_generator=id_generator

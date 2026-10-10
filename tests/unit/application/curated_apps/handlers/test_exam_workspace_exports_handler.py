@@ -6,10 +6,10 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceExportTarget,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
-    ExamWorkspaceExportTarget,
     ExportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode

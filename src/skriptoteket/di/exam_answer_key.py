@@ -70,7 +70,11 @@ from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
 )
-from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
+from skriptoteket.protocols.exam_workspace import (
+    EnqueueExamWorkspaceEnrichmentHandlerProtocol,
+    ExamWorkspaceContainerCodecProtocol,
+    GetExamWorkspaceEnrichmentStatusHandlerProtocol,
+)
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
@@ -185,7 +189,7 @@ class ExamAnswerKeyProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> EnqueueExamWorkspaceEnrichmentHandler:
+    ) -> EnqueueExamWorkspaceEnrichmentHandlerProtocol:
         return EnqueueExamWorkspaceEnrichmentHandler(
             enrichment_jobs=enrichment_jobs,
             enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
@@ -202,7 +206,7 @@ class ExamAnswerKeyProvider(Provider):
         proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
         store: ExamWorkspaceDocumentStore,
         codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> GetExamWorkspaceEnrichmentStatusHandler:
+    ) -> GetExamWorkspaceEnrichmentStatusHandlerProtocol:
         return GetExamWorkspaceEnrichmentStatusHandler(
             vault_files=vault_files,
             enrichment_jobs=enrichment_jobs,

@@ -1,6 +1,7 @@
 """Exam workspace application DTOs (ST-SKRIPT-39-04 walking skeleton)."""
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Literal
 from uuid import UUID
 
@@ -54,3 +55,17 @@ class SaveExamWorkspaceDocumentRequest(BaseModel):
     expected_revision: int = Field(ge=1)
     document: NativeExamDocument
     rejected_proposal_item_ids: tuple[str, ...] = ()
+
+
+class ExamWorkspaceExportTarget(StrEnum):
+    QTI = "qti"
+    PDF = "pdf"
+    DOCX = "docx"
+
+
+class ExamWorkspaceExportFile(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    filename: str
+    media_type: str
+    content: bytes
