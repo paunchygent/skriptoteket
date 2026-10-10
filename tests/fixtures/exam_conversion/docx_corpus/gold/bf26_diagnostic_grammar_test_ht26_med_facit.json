@@ -1,0 +1,1565 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "bf26_diagnostic_grammar_test_ht26_med_facit.docx",
+  "source_sha256": "4a675144b93f3275c3d52763e67940981b7c12a83efe166cb4501ab2eb14fc0f",
+  "title": "Diagnostic Grammar Test — BF26, HT26 — answer key",
+  "confirmed": false,
+  "items": [
+    {
+      "source_label": "Question 1",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe most famous bands [___] (spelar) at the festival every summer.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "play"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 2",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey looked [___] (efter) the keys everywhere but they couldn’t find them.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "for"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 3",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nAfter [___] (frukosten) we immediately left for the meeting.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "breakfast"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 4",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt [___] (snöar), so make sure you put on your boots!",
+      "gaps": [
+        {
+          "accepted_values": [
+            "is snowing",
+            "’s snowing"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 5",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nDuring the meeting of the ministers, their [___] (fruar) and one husband participated in a special programme.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "wives"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 6",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nEverything was revealed [___] (i slutet av boken).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "at the end of the book"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 7",
+      "kind": "gap_fill",
+      "points": 2,
+      "prompt": "Translate the words in brackets into English.\nShe [___] (sprang) through the park when the tree [___] (föll) on her.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "was running"
+          ]
+        },
+        {
+          "accepted_values": [
+            "fell"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 8",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Det här är) the only seats left for tonight’s performance.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "These are"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 9",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe [___] (arbetade) abroad for many years to support his family.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "worked"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 10",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe photographer [___] (lade) the photographs on the table.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "put",
+            "laid"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 11",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe [___] (studerade) physics at the University of California.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "studied"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 12",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Pojkarnas) changing room is over there to the left.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The boys’"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 13",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Barnens) toys were all over the floor.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The children’s"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 14",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe gave me [___] (en femtiodollarssedel).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a fifty-dollar bill",
+            "a fifty dollar bill",
+            "a fifty-dollar note",
+            "a fifty dollar note",
+            "a 50-dollar bill",
+            "a 50 dollar bill",
+            "a $50 bill"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 15",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey said that they [___] (skulle komma) in the early afternoon.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "would come",
+            "’d come"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 16",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHow many [___] (möss) has our cat caught today?",
+      "gaps": [
+        {
+          "accepted_values": [
+            "mice"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 17",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI [___] (hade väntat) for the train for two hours, when they announced that there would be no trains that day.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "had been waiting",
+            "had waited",
+            "’d been waiting",
+            "’d waited"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 18",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI [___] (skulle köpa) that computer if I were you.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "would buy",
+            "’d buy"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 19",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nDet slutade med att alla betalade fem dollar var. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "It ended with everyone paying five dollars each",
+            "It ended with everyone paying five dollars each.",
+            "It ended with everybody paying five dollars each",
+            "It ended with everybody paying five dollars each.",
+            "In the end everyone paid five dollars each",
+            "In the end everyone paid five dollars each.",
+            "In the end, everybody paid five dollars each",
+            "In the end, everybody paid five dollars each."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 20",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI bought [___] (de här möblerna) in the sale.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "this furniture"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 21",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Politik är) important.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Politics is"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 22",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe have [___] (planerat) to go on a trip to the Bahamas this winter.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "planned"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 23",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI bought [___] (de här) shoes really cheaply.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "these"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 24",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe was not used [___] (vid att arbeta) so late.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "to working"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 25",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI don’t want the red jumper. I prefer [___] (den blåa).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "the blue one"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 26",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Det där är) the only sweaters we have in your size.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Those are"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 27",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Historien) often repeats itself.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "History"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 28",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI was very suspicious [___] (mot) his behaviour.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "of",
+            "about"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 29",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe speaks English very [___] (dåligt).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "badly"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 30",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI would like [___] (ett råd).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "some advice",
+            "a piece of advice",
+            "a bit of advice"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 31",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nBoth [___] (de unga och de gamla) feel that they have too little influence.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "the young and the old"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 32",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI’m so tired. I [___] (har arbetat) hard all day.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "have been working",
+            "have worked",
+            "’ve been working",
+            "’ve worked"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 33",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe is [___] (den enda) who can help us in this situation.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "the only one"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 34",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI’m sure this is my [___] (pojkväns) umbrella.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "boyfriend’s"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 35",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey [___] (förlorade) the match by 1–0.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "lost"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 36",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nSoon [___] (protestanterna) will be a minority in Northern Ireland.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Protestants",
+            "the Protestants"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 37",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIf you [___] (skulle vinna) a million pounds, please let me know!",
+      "gaps": [
+        {
+          "accepted_values": [
+            "should win",
+            "were to win",
+            "happen to win",
+            "should happen to win",
+            "win",
+            "ever win"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 38",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (För tio år sedan) he wrote his first book.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Ten years ago"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 39",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Stadens) finances are in good order.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The city’s",
+            "The town’s"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 40",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt [___] (regnar) a lot in Seattle.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "rains"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 41",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (De flesta) immigrants tend to live together in the same neighbourhoods.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Most"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 42",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt is just [___] (en tio minuters) boat trip.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a ten-minute",
+            "a ten minute",
+            "a 10-minute",
+            "a 10 minute"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 43",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt was [___] (en) honour to carry the flag in the parade.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "an"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 44",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (De flesta) visitors stay in the exhibition for only half an hour.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Most"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 45",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe really should give more money to [___] (de fattiga).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "the poor"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 46",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nJohn Grisham [___] (skriver) one novel a year.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "writes"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 47",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nMany people blame [___] (samhället) when something goes wrong.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "society"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 48",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Den fem år gamla) boy got lost in the deep forest.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The five-year-old",
+            "The five year old"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 49",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nMore sun and light would be good for [___] (de flesta av oss).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "most of us"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 50",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWhere did you download [___] (de där) films?",
+      "gaps": [
+        {
+          "accepted_values": [
+            "those"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 51",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThat was [___] (en god nyhet).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "good news",
+            "a piece of good news",
+            "some good news"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 52",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Det intressanta) is that the number of users increases all the time.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The interesting thing"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 53",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe has opened [___] (en egen restaurang) in New York.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a restaurant of his own",
+            "his own restaurant"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 54",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe had dinner at the [___] (italienska) restaurant down the road.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Italian"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 55",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nOm vi hade tränat mer hade vi kanske vunnit matchen. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "If we had trained more, we might have won the match",
+            "If we had trained more, we might have won the match.",
+            "If we had trained more we might have won the match",
+            "If we had trained more we might have won the match.",
+            "If we had practised more, we might have won the match",
+            "If we had practised more, we might have won the match.",
+            "If we’d trained more, we might have won the match",
+            "If we’d trained more, we might have won the match."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 56",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (De som) work on the top floors have bought parachutes.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Those who",
+            "People who",
+            "The people who"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 57",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nRobert sade att han efter två månader hade glömt allt han hade lärt sig. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Robert said that after two months he had forgotten everything he had learned",
+            "Robert said that after two months he had forgotten everything he had learned.",
+            "Robert said that after two months he had forgotten everything he had learnt",
+            "Robert said that after two months he had forgotten everything he had learnt.",
+            "Robert said that after two months, he had forgotten everything he had learned",
+            "Robert said that after two months, he had forgotten everything he had learned.",
+            "Robert said that he had forgotten everything he had learned after two months",
+            "Robert said that he had forgotten everything he had learned after two months."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 58",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Det viktigaste) is not to lose one’s temper.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The most important thing"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 59",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt was [___] (lättare) to buy a new TV than repair the old one.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "easier"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 60",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe [___] (arbetar) long hours every day.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "works"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 61",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (De som) order immediately will get an extra bonus.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Those who",
+            "People who",
+            "The people who"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 62",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe [___] (skulle öppna) the door when she was attacked from behind.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "was going to open",
+            "was about to open",
+            "was just about to open"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 63",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nMy sister is married [___] (med) a Frenchman.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "to"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 64",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe [___] (valde) the yellow cab.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "chose"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 65",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (Pengarna är) not in my purse.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "The money is"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 66",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt turned out to be [___] (ett) UN decision that was accepted by all countries.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 67",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe always [___] (låg) in bed till late in the morning.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "lay"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 68",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt was an [___] (ovanligt) bad storm.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "unusually"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 69",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe gave him [___] (ett) youthful smile.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 70",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe moved around [___] (försiktigt) in order not to disturb anyone.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "carefully",
+            "cautiously"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 71",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe kids threw snowballs [___] (på) the passers-by.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "at"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 72",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe live in [___] (ett eget hus).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "a house of our own",
+            "our own house"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 73",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe thought she [___] (skulle bli) late for her own wedding.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "was going to be",
+            "would be",
+            "’d be"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 74",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nEvery evening, the children [___] (väntar) for their mother to come home.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "wait"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 75",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe must get more [___] (kvinnor) into politics.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "women"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 76",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nShe took the [___] (tunnaste) book she could find.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "thinnest"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 77",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe majority of visitors to this museum are [___] (amerikaner).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Americans",
+            "American"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 78",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\n[___] (De flesta av oss) left the party at midnight.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Most of us"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 79",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe elephant is [___] (ett) animal with large flapping ears and a trunk.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "an"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 80",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThe train [___] (stannade) in the middle of nowhere.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "stopped"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 81",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThere are more [___] (får) than people in Wales.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "sheep"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 82",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe think there is no reason [___] (till) such an exaggerated reaction.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "for"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 83",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThere has been an increase [___] (av) crimes committed by young people.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "in"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 84",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThere will be no admittance for [___] (dem som) arrive late.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "those who",
+            "people who"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 85",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nJohn bad om ursäkt för att han kom för sent. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "John apologized for being late",
+            "John apologized for being late.",
+            "John apologised for being late",
+            "John apologised for being late.",
+            "John apologized for arriving late",
+            "John apologized for arriving late.",
+            "John apologised for arriving late",
+            "John apologised for arriving late."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 86",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey accused him [___] (för) the robbery.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "of"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 87",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHe aimed [___] (mot) the front of the car and fired.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "at"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 88",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey can only blame [___] (sig själva).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "themselves"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 89",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey suggested that he [___] (skulle sälja) the house before prices started to drop.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "should sell",
+            "sell"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 90",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nHis grandmother is [___] (allvarligt) ill.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "seriously"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 91",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThis is [___] (en) interesting solution.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "an"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 92",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThis pack of meat smells [___] (dåligt).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "bad"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 93",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThis show is for [___] (dem som) want irreverent stand-up comedy.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "those who",
+            "people who"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 94",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nTo learn more about [___] (naturen) has always been one of my great interests.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "nature"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 95",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nTrains [___] (avgår) for the airport every half hour.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "leave",
+            "depart"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 96",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe are going to stay in our [___] (vänners) house in Wales.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "friends’"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 97",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nI have brought [___] (egen mat) today.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "my own food",
+            "food of my own"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 98",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWe arrived [___] (till) South Africa on the first of June.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "in"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 99",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nWhat are you going to do after [___] (skolan)?",
+      "gaps": [
+        {
+          "accepted_values": [
+            "school"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 100",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nIt [___] (har regnat) for weeks now. The flooding along the valley will continue.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "has been raining",
+            "has rained",
+            "’s been raining",
+            "’s rained"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 101",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nThey hadn’t met since [___] (jul).",
+      "gaps": [
+        {
+          "accepted_values": [
+            "Christmas"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 102",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nHon hade aldrig gått dit om de inte hade bett henne. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "She would never have gone there if they hadn’t asked her",
+            "She would never have gone there if they hadn’t asked her.",
+            "She would never have gone there if they had not asked her",
+            "She would never have gone there if they had not asked her.",
+            "She’d never have gone there if they hadn’t asked her",
+            "She’d never have gone there if they hadn’t asked her.",
+            "She never would have gone there if they hadn’t asked her",
+            "She never would have gone there if they hadn’t asked her."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 103",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the words in brackets into English.\nYou [___] (skulle vara) more careful about your health.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "should be",
+            "ought to be"
+          ]
+        }
+      ],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Question 104",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Translate the sentence into English.\nCathy hade till sin stora förvåning gått ut utan skor. [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "To her great surprise, Cathy had gone out without shoes",
+            "To her great surprise, Cathy had gone out without shoes.",
+            "To her great surprise Cathy had gone out without shoes",
+            "To her great surprise Cathy had gone out without shoes.",
+            "Cathy had, to her great surprise, gone out without shoes",
+            "Cathy had, to her great surprise, gone out without shoes.",
+            "To her great surprise, Cathy had gone out without any shoes",
+            "To her great surprise, Cathy had gone out without any shoes."
+          ]
+        }
+      ],
+      "teacher_questions": []
+    }
+  ]
+}

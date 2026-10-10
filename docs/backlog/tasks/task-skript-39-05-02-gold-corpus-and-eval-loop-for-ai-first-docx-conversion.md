@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-02
 title: Gold corpus and eval loop for AI-first DOCX conversion
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-10'
 status: in_progress
 closeout_review:
@@ -13,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Each of the eight corpus exams has a gold file the user has confirmed, and one eval
-  command converts every corpus exam and reports every item that differs from its
-  gold
+  - Each of the eight corpus exams has a gold file the user has confirmed, and one eval command converts every corpus exam and reports every item that differs from its gold
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -49,6 +47,13 @@ and reports each item that differs from its gold.
   - The converter may add an accepted answer that is not in gold only when
     it is a close misspelling of a gold answer within the edit distance of
     story term A10. Any other extra or missing answer is a mismatch.
+    The parent fixed the implementation bound on 2026-10-10: use
+    case-insensitive, whitespace-normalised Damerau-Levenshtein distance,
+    at most 1 for a gold answer of 6 or fewer characters and at most 2 for
+    a longer answer, including the whole string of a multi-word answer.
+    An extra answer equal to a gold answer of another gap in the same item
+    fails. Required gold answers must still be present. The bound lives in
+    one named function with constants for reuse by the converter in task 5.
 - **The eval command reports, it never fixes.** It converts every corpus
   exam through the real import pipeline. It has two modes: recorded provider
   responses for repeatable runs, and the live provider for eval-loop rounds.
@@ -73,9 +78,7 @@ and reports each item that differs from its gold.
 
 ## Core Vertical And Performance
 
-`corpus DOCX -> gold file (drafted from source, user-confirmed) -> eval
-command converts each exam through the import pipeline -> comparator ->
-per-item mismatch report and non-zero exit on any difference`.
+`corpus DOCX -> gold file (drafted from source, user-confirmed) -> eval command converts each exam through the import pipeline -> comparator -> per-item mismatch report and non-zero exit on any difference`.
 
 - A recorded-mode run of all eight exams is fast enough for a focused test
   suite. Live mode is a manual eval-loop step and is not part of CI.
@@ -104,9 +107,9 @@ per-item mismatch report and non-zero exit on any difference`.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| G1 | Gold files are drafted from the DOCX and facit, never from converter output, and are confirmed once by the user (ST-SKRIPT-39-05 A7, user decision 2026-10-10). |
-| G2 | Comparison checks kind, points, normalised prompt text, and answer sets; extra answers pass only as close misspellings within the A10 bound (ST-SKRIPT-39-05 A7 and A10, user decisions 2026-10-10). |
-| G3 | Gold expresses matching, word banks and unfit shapes per A6, so the eval reports them until later tasks pass them (ST-SKRIPT-39-05 A6, user decision 2026-10-10). |
-| G4 | The eval command runs recorded and live modes, reports every mismatch, exits non-zero on any difference, and records live token use (ST-SKRIPT-39-05 A2 and A3, user direction 2026-10-10). |
+| ID  | Decided contract term                                                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | Gold files are drafted from the DOCX and facit, never from converter output, and are confirmed once by the user (ST-SKRIPT-39-05 A7, user decision 2026-10-10).                                      |
+| G2  | Comparison checks kind, points, normalised prompt text, and answer sets; extra answers pass only as close misspellings within the A10 bound (ST-SKRIPT-39-05 A7 and A10, user decisions 2026-10-10). |
+| G3  | Gold expresses matching, word banks and unfit shapes per A6, so the eval reports them until later tasks pass them (ST-SKRIPT-39-05 A6, user decision 2026-10-10).                                    |
+| G4  | The eval command runs recorded and live modes, reports every mismatch, exits non-zero on any difference, and records live token use (ST-SKRIPT-39-05 A2 and A3, user direction 2026-10-10).          |
