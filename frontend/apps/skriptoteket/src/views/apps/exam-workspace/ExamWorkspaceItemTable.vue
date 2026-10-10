@@ -1,15 +1,17 @@
 <script setup lang="ts">
 /**
- * Exam workspace question table.
+ * Exam workspace question list.
  *
  * Domain purpose:
- *   List the exam's questions with type, points, and review status, flag
- *   questions with an open answer-key proposal, and show the per-item
+ *   List the exam's questions compactly for selection in Redigera: sequence,
+ *   title, type, points, and whether the question is ready for export. Flag
+ *   questions with an open answer-key proposal and show the per-item
  *   blockers from the server's last refused export.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView`; emits `select` with the item id and
- *     the view selects it through `useExamWorkspaceDocument`.
+ *   - Rendered by `ExamWorkspaceView` in the Redigera list panel and in the
+ *     phone question sheet; emits `select` with the item id and the view
+ *     selects it through `useExamWorkspaceDocument`.
  */
 
 import { IconCheck, IconWarning } from "../../../components/icons";
@@ -18,6 +20,7 @@ import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 defineProps<{
   exportBlockersByItemId: Record<string, string[]>;
   proposalItemIds: string[];
+  readinessByItemId: Record<string, string[]>;
   rows: ExamWorkspaceItemRow[];
   selectedItemId: string | null;
 }>();
@@ -28,99 +31,78 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="overflow-x-auto border border-navy/20 bg-canvas">
-    <table
-      class="w-full table-fixed border-collapse text-left text-sm text-navy"
-      data-test="exam-workspace-item-table"
+  <ol
+    class="grid content-start"
+    aria-label="Frågor"
+    data-test="exam-workspace-item-table"
+  >
+    <li
+      v-for="row in rows"
+      :key="row.itemId"
+      class="border-b border-navy/15"
     >
-      <thead>
-        <tr class="border-b border-navy/45">
-          <th class="px-3 py-3 font-semibold">
-            Fråga
-          </th>
-          <th class="w-32 px-2 py-3 font-semibold">
-            Typ
-          </th>
-          <th class="w-20 px-2 py-3 font-semibold">
-            Poäng
-          </th>
-          <th class="w-40 px-2 py-3 font-semibold">
-            Status
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="row in rows"
-          :key="row.itemId"
-          class="cursor-pointer border-b border-navy/15"
-          :class="row.itemId === selectedItemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'hover:bg-panel'"
-          :aria-selected="row.itemId === selectedItemId ? 'true' : 'false'"
-          :data-test="`exam-workspace-item-row-${row.itemId}`"
-          @click="emit('select', row.itemId)"
+      <button
+        type="button"
+        class="grid w-full gap-1 px-3 py-2.5 text-left text-navy"
+        :class="row.itemId === selectedItemId ? 'bg-navy/5 shadow-[inset_4px_0_0_var(--color-navy)]' : 'hover:bg-canvas'"
+        :aria-current="row.itemId === selectedItemId ? 'true' : undefined"
+        :data-test="`exam-workspace-item-row-${row.itemId}`"
+        @click="emit('select', row.itemId)"
+      >
+        <span class="flex min-w-0 items-start gap-2">
+          <span class="min-w-0 flex-1 truncate text-sm leading-snug">
+            <span class="font-semibold">{{ row.sequence }}.</span>
+            {{ row.title }}
+          </span>
+          <IconWarning
+            v-if="readinessByItemId[row.itemId]"
+            :size="16"
+            class="mt-0.5 h-4 w-4 shrink-0 text-warning"
+            aria-hidden="true"
+          />
+          <IconCheck
+            v-else
+            :size="16"
+            class="mt-0.5 h-4 w-4 shrink-0 text-success"
+            aria-hidden="true"
+          />
+        </span>
+        <span class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs leading-snug text-navy/65">
+          <span>{{ row.typeLabel }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ row.pointsLabel }}</span>
+          <span aria-hidden="true">·</span>
+          <span
+            class="font-semibold text-navy/80"
+            :title="row.reviewReasons.length > 0 ? row.reviewReasons.join(' ') : undefined"
+            :data-test="`exam-workspace-item-status-${row.itemId}`"
+          >{{ row.statusLabel }}</span>
+        </span>
+        <span
+          v-if="readinessByItemId[row.itemId] && !exportBlockersByItemId[row.itemId]"
+          class="sr-only"
+        >Behöver åtgärdas före export: {{ readinessByItemId[row.itemId]?.join(' ') }}</span>
+        <span
+          v-if="proposalItemIds.includes(row.itemId)"
+          class="text-xs font-semibold leading-snug text-action"
+          :data-test="`exam-workspace-item-proposal-${row.itemId}`"
         >
-          <td class="min-w-0 px-3 py-3 align-top">
-            <span class="block truncate">
-              <span class="font-semibold">{{ row.sequence }}.</span>
-              {{ row.title }}
-            </span>
-            <span
-              v-if="row.promptExcerpt"
-              class="mt-0.5 line-clamp-2 block text-xs text-navy/65"
-            >
-              {{ row.promptExcerpt }}
-            </span>
-          </td>
-          <td class="px-2 py-3 align-top">
-            {{ row.typeLabel }}
-          </td>
-          <td class="px-2 py-3 align-top">
-            {{ row.pointsLabel }}
-          </td>
-          <td class="px-2 py-3 align-top">
-            <span
-              class="inline-flex items-center gap-2"
-              :title="row.reviewReasons.length > 0 ? row.reviewReasons.join(' ') : undefined"
-              :data-test="`exam-workspace-item-status-${row.itemId}`"
-            >
-              <IconWarning
-                v-if="row.reviewRequired"
-                :size="18"
-                class="h-[1.125rem] w-[1.125rem] shrink-0 text-warning"
-                aria-hidden="true"
-              />
-              <IconCheck
-                v-else
-                :size="18"
-                class="h-[1.125rem] w-[1.125rem] shrink-0 text-success"
-                aria-hidden="true"
-              />
-              <span class="text-xs font-semibold leading-tight text-navy">
-                {{ row.statusLabel }}
-              </span>
-            </span>
-            <span
-              v-if="proposalItemIds.includes(row.itemId)"
-              class="mt-1 block text-xs leading-snug text-navy/70"
-              :data-test="`exam-workspace-item-proposal-${row.itemId}`"
-            >
-              Facitförslag finns
-            </span>
-            <ul
-              v-if="exportBlockersByItemId[row.itemId]"
-              class="mt-1 grid gap-0.5 text-xs leading-snug text-error"
-              :data-test="`exam-workspace-item-blockers-${row.itemId}`"
-            >
-              <li
-                v-for="blocker in exportBlockersByItemId[row.itemId]"
-                :key="blocker"
-              >
-                {{ blocker }}
-              </li>
-            </ul>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+          Facitförslag finns
+        </span>
+        <span
+          v-if="exportBlockersByItemId[row.itemId]"
+          class="grid gap-0.5 text-xs leading-snug text-error"
+          :data-test="`exam-workspace-item-blockers-${row.itemId}`"
+        >
+          <span
+            v-for="blocker in exportBlockersByItemId[row.itemId]"
+            :key="blocker"
+            class="block"
+          >
+            {{ blocker }}
+          </span>
+        </span>
+      </button>
+    </li>
+  </ol>
 </template>
