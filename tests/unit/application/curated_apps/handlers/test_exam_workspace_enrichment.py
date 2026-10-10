@@ -53,6 +53,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from tests.fixtures.application_fixtures import FakeUow
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
+    FixedClock,
+    InMemoryEnrichmentJobRepository,
+    InMemoryProposedOverlayRepository,
+    UUIDGenerator,
+)
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
 )
@@ -60,12 +66,6 @@ from tests.unit.application.curated_apps.handlers.test_document_converter_artifa
     InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
-)
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
-    FixedClock,
-    InMemoryEnrichmentJobRepository,
-    InMemoryProposedOverlayRepository,
-    UUIDGenerator,
 )
 
 pytestmark = pytest.mark.unit

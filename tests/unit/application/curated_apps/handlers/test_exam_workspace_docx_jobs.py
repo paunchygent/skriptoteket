@@ -38,7 +38,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
     ExamNetQtiPackageWriter,
 )
 from tests.fixtures.time_fixtures import FixedClock
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
     StubProvider,

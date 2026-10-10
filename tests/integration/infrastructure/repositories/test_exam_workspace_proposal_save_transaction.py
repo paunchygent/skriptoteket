@@ -59,11 +59,11 @@ from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
 )
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
+    UUIDGenerator,
+)
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
-)
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
-    UUIDGenerator,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
     with_next_revision,
