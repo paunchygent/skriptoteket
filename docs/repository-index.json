@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "47353580e9300f945db949b8dca049aeb43ea580ba85b49e7ae57ddb70988b7b",
+  "source_set_digest": "f309eb77a8b7ef0ea0a932a544ec6975eb415c5386b4530d8c88bbdaa4c5c8d5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4609,7 +4609,7 @@
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
       "path": "docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [

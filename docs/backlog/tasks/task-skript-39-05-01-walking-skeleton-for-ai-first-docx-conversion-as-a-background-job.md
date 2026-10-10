@@ -4,19 +4,16 @@ id: TASK-SKRIPT-39-05-01
 title: Walking skeleton for AI-first DOCX conversion as a background job
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-10'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Uploading the Chapter 4 poetry quiz DOCX returns at once, the workspace shows a
-  converting status, and the exam opens with AI-built items that pass the native contract,
-  where any chunk that fails after the retries is a review item holding its source
-  text, and the QTI export passes the fail-closed validators
+  - Uploading the Chapter 4 poetry quiz DOCX returns at once, the workspace shows a converting status, and the exam opens with AI-built items that pass the native contract, where any chunk that fails after the retries is a review item holding its source text, and the QTI export passes the fail-closed validators
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -84,11 +81,7 @@ quiz converts through the AI path into real items and exports to QTI.
 
 ## Core Vertical And Performance
 
-`upload DOCX -> store DOCX, queue job, respond -> worker chunks the DOCX ->
-one batched Responses build -> code validation -> failing items retried
-(max 3 rounds) -> remaining failures become review items -> version 1 saved
--> DOCX deleted -> workspace leaves "Konverterar" and opens -> QTI export
-passes validation`.
+`upload DOCX -> store DOCX, queue job, respond -> worker chunks the DOCX -> one batched Responses build -> code validation -> failing items retried (max 3 rounds) -> remaining failures become review items -> version 1 saved -> DOCX deleted -> workspace leaves "Konverterar" and opens -> QTI export passes validation`.
 
 - One build call for the whole exam is the norm. Size `max_output_tokens`
   for a full exam rather than per item, and record the measured input and
@@ -127,10 +120,10 @@ passes validation`.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| S1 | The skeleton proves the AI path on the Chapter 4 poetry quiz from the corpus (implementation choice within ST-SKRIPT-39-05, 2026-10-10). |
-| S2 | Import stores the DOCX and queues a conversion job; the workspace shows a converting status and opens when done; the DOCX is deleted when the job ends (ST-SKRIPT-39-05 A5, user decision 2026-10-10). |
-| S3 | One batched Responses strict-JSON call builds all items; only failing items are retried, at most three rounds; the Decisions API joins in task 3 (ST-SKRIPT-39-05 A2, user direction 2026-10-10). |
-| S4 | Every chunk that cannot be built, including when the provider is disabled, out of lease, or unavailable, becomes a free-text review item holding its source text with a Swedish note (ST-SKRIPT-39-05 A4, user decision 2026-10-10). |
-| S5 | Import no longer calls the rule extractor; it is removed once unused (ST-SKRIPT-39-05 A2, user direction 2026-10-10). |
+| ID  | Decided contract term                                                                                                                                                                                                                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1  | The skeleton proves the AI path on the Chapter 4 poetry quiz from the corpus (implementation choice within ST-SKRIPT-39-05, 2026-10-10).                                                                                             |
+| S2  | Import stores the DOCX and queues a conversion job; the workspace shows a converting status and opens when done; the DOCX is deleted when the job ends (ST-SKRIPT-39-05 A5, user decision 2026-10-10).                               |
+| S3  | One batched Responses strict-JSON call builds all items; only failing items are retried, at most three rounds; the Decisions API joins in task 3 (ST-SKRIPT-39-05 A2, user direction 2026-10-10).                                    |
+| S4  | Every chunk that cannot be built, including when the provider is disabled, out of lease, or unavailable, becomes a free-text review item holding its source text with a Swedish note (ST-SKRIPT-39-05 A4, user decision 2026-10-10). |
+| S5  | Import no longer calls the rule extractor; it is removed once unused (ST-SKRIPT-39-05 A2, user direction 2026-10-10).                                                                                                                |

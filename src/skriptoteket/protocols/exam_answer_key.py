@@ -23,6 +23,7 @@ from uuid import UUID
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
+    ExamAnswerKeySourceKind,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
@@ -103,6 +104,10 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
 
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None: ...
 
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        """Lock and refresh the row before publishing a worker's terminal result."""
+        ...
+
     async def get_by_workspace_revision(
         self,
         *,
@@ -119,6 +124,7 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None: ...
 
     async def claim_next_expired(
@@ -127,6 +133,7 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         """Take one RUNNING job whose worker lease expired, for fail-closing."""
         ...

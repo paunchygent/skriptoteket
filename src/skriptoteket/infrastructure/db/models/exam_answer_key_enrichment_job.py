@@ -31,7 +31,13 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
             "workspace_lineage_id",
             "workspace_document_revision",
             unique=True,
-            postgresql_where=text("workspace_lineage_id IS NOT NULL"),
+            postgresql_where=text("source_kind = 'workspace'"),
+        ),
+        Index(
+            "uq_exam_answer_key_enrichment_jobs_docx_import_lineage",
+            "workspace_lineage_id",
+            unique=True,
+            postgresql_where=text("source_kind = 'docx_import'"),
         ),
     )
 
@@ -50,6 +56,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     status: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
     input_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     source_dxe: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    source_docx: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     workspace_lineage_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     workspace_document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
     retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)

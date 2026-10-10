@@ -1,7 +1,6 @@
 """Native exam -> Exam.net PDF document plan tests (real fixture + render proof)."""
 
 from pathlib import Path
-from uuid import uuid4
 
 import pytest
 
@@ -17,18 +16,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeItemReviewState,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    exam_workspace_docx_extractor,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
 )
 
-PythonDocxExamExtractor = exam_workspace_docx_extractor.PythonDocxExamExtractor
-
-_FIXTURE = Path(
-    "tests/fixtures/exam_conversion/real_inputs/grammatik_omprov_examnet_import_med_facit.docx"
-)
+_FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
 
 
 def _reviewed(document: NativeExamDocument) -> NativeExamDocument:
@@ -56,10 +48,7 @@ def _reviewed(document: NativeExamDocument) -> NativeExamDocument:
 
 @pytest.fixture(scope="module")
 def reviewed_document() -> NativeExamDocument:
-    extracted = PythonDocxExamExtractor().extract(
-        document_id=uuid4(), filename=_FIXTURE.name, content=_FIXTURE.read_bytes()
-    )
-    return _reviewed(extracted.document)
+    return _reviewed(NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()))
 
 
 class TestPdfDocumentPlan:

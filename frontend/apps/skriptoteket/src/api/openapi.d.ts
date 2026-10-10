@@ -1437,6 +1437,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/conversion-jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace Conversion Status */
+        get: operations["get_exam_workspace_conversion_status_api_v1_apps_documents_conversion_hub_exam_workspace_conversion_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents": {
         parameters: {
             query?: never;
@@ -4947,6 +4964,29 @@ export interface components {
             proposed_item: components["schemas"]["NativeExamItem-Output"];
             /** Provider Profile Id */
             provider_profile_id: string;
+        };
+        /**
+         * ExamWorkspaceConversionStatus
+         * @description Owner-visible status of one background DOCX import.
+         */
+        ExamWorkspaceConversionStatus: {
+            /** Error Message */
+            error_message?: string | null;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "running" | "succeeded" | "failed";
         };
         /**
          * ExamWorkspaceDocumentListResponse
@@ -11852,6 +11892,37 @@ export interface operations {
             };
         };
     };
+    get_exam_workspace_conversion_status_api_v1_apps_documents_conversion_hub_exam_workspace_conversion_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceConversionStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_documents_get: {
         parameters: {
             query?: never;
@@ -11886,12 +11957,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceConversionStatus"];
                 };
             };
             /** @description Validation Error */

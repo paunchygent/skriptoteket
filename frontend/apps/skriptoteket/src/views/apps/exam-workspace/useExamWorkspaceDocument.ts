@@ -16,16 +16,18 @@
  *   - Reports outcomes through the shared toast store.
  */
 
-import { computed, ref } from "vue";
+import { computed, onScopeDispose, ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import {
+  getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
   importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamAnswerKeyOrigin,
@@ -38,6 +40,10 @@ import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
+
+export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
+const CONVERSION_MAX_POLL_MS = 30_000;
+const STATUS_FAILURE_COPY = "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 
 const IMPORT_SUCCESS_COPY = "Provet är inläst.";
 const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
@@ -96,7 +102,101 @@ export function useExamWorkspaceDocument() {
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
   const notes = ref<string[]>([]);
   const isDirty = ref(false);
-  const isBusy = ref(false);
+  const operationBusy = ref(false);
+  const conversionStatus = ref<ExamWorkspaceConversionStatus | null>(null);
+  const isConverting = ref(false);
+  const conversionError = ref<string | null>(null);
+  const isBusy = computed(() => operationBusy.value || isConverting.value);
+  let pollTimer: ReturnType<typeof setTimeout> | null = null;
+  let generation = 0;
+  let pollFailures = 0;
+  let statusRequestPending = false;
+
+  const conversionMessage = computed(() => {
+    if (isConverting.value) return "Konverterar provet …";
+    if (conversionStatus.value?.state === "failed") {
+      return conversionStatus.value.error_message ?? IMPORT_FAILURE_COPY;
+    }
+    return conversionError.value;
+  });
+
+  function stopPolling(): void {
+    if (pollTimer !== null) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function schedulePoll(pollGeneration: number): void {
+    stopPolling();
+    const delay = Math.min(
+      EXAM_WORKSPACE_CONVERSION_POLL_MS * 2 ** Math.max(0, pollFailures - 1),
+      CONVERSION_MAX_POLL_MS,
+    );
+    pollTimer = setTimeout(() => {
+      pollTimer = null;
+      void refreshConversion(pollGeneration);
+    }, delay);
+  }
+
+  async function applyConversionStatus(
+    status: ExamWorkspaceConversionStatus,
+    pollGeneration: number,
+  ): Promise<void> {
+    if (pollGeneration !== generation) return;
+    conversionStatus.value = status;
+    if (status.state === "failed") {
+      isConverting.value = false;
+      conversionError.value = null;
+      stopPolling();
+    } else if (status.state === "succeeded") {
+      const response = await getExamWorkspaceDocument(status.lineage_id);
+      if (pollGeneration !== generation) return;
+      selectedItemId.value = null;
+      applyResponse(response);
+      conflictNotice.value = null;
+      isConverting.value = false;
+      conversionError.value = null;
+      stopPolling();
+      toast.success(IMPORT_SUCCESS_COPY);
+    } else {
+      pollFailures = 0;
+      schedulePoll(pollGeneration);
+    }
+  }
+
+  async function refreshConversion(pollGeneration: number): Promise<void> {
+    const status = conversionStatus.value;
+    if (!status || statusRequestPending || !isConverting.value) return;
+    statusRequestPending = true;
+    try {
+      const next = status.state === "succeeded" || status.state === "failed"
+        ? status
+        : await getExamWorkspaceConversionStatus(status.job_id);
+      await applyConversionStatus(next, pollGeneration);
+      if (pollGeneration === generation) {
+        pollFailures = 0;
+        conversionError.value = null;
+      }
+    } catch {
+      if (pollGeneration !== generation) return;
+      conversionError.value = STATUS_FAILURE_COPY;
+      pollFailures += 1;
+      schedulePoll(pollGeneration);
+    } finally {
+      statusRequestPending = false;
+    }
+  }
+
+  function retryConversionStatus(): void {
+    stopPolling();
+    void refreshConversion(generation);
+  }
+
+  onScopeDispose(() => {
+    generation += 1;
+    stopPolling();
+  });
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
@@ -128,20 +228,24 @@ export function useExamWorkspaceDocument() {
   }
 
   async function importDocument(file: File): Promise<void> {
-    if (isBusy.value) {
-      return;
-    }
-    isBusy.value = true;
+    if (isBusy.value) return;
+    const pollGeneration = ++generation;
+    operationBusy.value = true;
+    conversionError.value = null;
+    conversionStatus.value = null;
+    pollFailures = 0;
     try {
-      const response = await requestImportExamWorkspaceDocument(file);
-      selectedItemId.value = null;
-      applyResponse(response);
-      conflictNotice.value = null;
-      toast.success(IMPORT_SUCCESS_COPY);
+      const status = await requestImportExamWorkspaceDocument(file);
+      if (pollGeneration !== generation) return;
+      isConverting.value = true;
+      conversionStatus.value = status;
+      await refreshConversion(pollGeneration);
     } catch {
+      if (pollGeneration !== generation) return;
+      conversionError.value = IMPORT_FAILURE_COPY;
       toast.failure(IMPORT_FAILURE_COPY);
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -158,7 +262,7 @@ export function useExamWorkspaceDocument() {
     if (isBusy.value) {
       return false;
     }
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await getExamWorkspaceDocument(lineageId);
       selectedItemId.value = null;
@@ -169,7 +273,7 @@ export function useExamWorkspaceDocument() {
       toast.failure(OPEN_FAILURE_COPY);
       return false;
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -195,7 +299,7 @@ export function useExamWorkspaceDocument() {
     }
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
@@ -213,7 +317,7 @@ export function useExamWorkspaceDocument() {
         toast.failure(SAVE_FAILURE_COPY);
       }
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -222,7 +326,7 @@ export function useExamWorkspaceDocument() {
     if (!currentSummary || isBusy.value) {
       return;
     }
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await getExamWorkspaceDocument(currentSummary.lineage_id);
       applyResponse(response);
@@ -231,7 +335,7 @@ export function useExamWorkspaceDocument() {
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -244,7 +348,7 @@ export function useExamWorkspaceDocument() {
     patch: (item: NativeExamItem) => NativeExamItem,
   ): void {
     const current = workspaceDocument.value;
-    if (!current) {
+    if (!current || isBusy.value) {
       return;
     }
     let changed = false;
@@ -369,7 +473,7 @@ export function useExamWorkspaceDocument() {
 
   function addItem(): void {
     const current = workspaceDocument.value;
-    if (!current) {
+    if (!current || isBusy.value) {
       return;
     }
     const itemId = nextItemId(current.items);
@@ -400,6 +504,11 @@ export function useExamWorkspaceDocument() {
     addItem,
     applyProposal,
     conflictNotice,
+    conversionError,
+    conversionMessage,
+    conversionStatus,
+    isConverting,
+    retryConversionStatus,
     importDocument,
     isBusy,
     isDirty,

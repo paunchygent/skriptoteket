@@ -58,6 +58,9 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_att
     dxe_attempt_candidate,
     lease_exhausted_message,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     AnswerKeyCandidatePlan,
     AnswerKeyEnrichmentPlanState,
@@ -149,6 +152,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         vault_files: VaultFileRepositoryProtocol | None = None,
         vault_storage: VaultStorageProtocol | None = None,
         workspace_codec: ExamWorkspaceContainerCodecProtocol | None = None,
+        docx_handler: ProcessExamWorkspaceDocxJobHandler | None = None,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._conversion_jobs = conversion_jobs
@@ -163,6 +167,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         self._vault_files = vault_files
         self._vault_storage = vault_storage
         self._workspace_codec = workspace_codec
+        self._docx_handler = docx_handler
         self._attempts = AnswerKeyProviderAttemptRunner(
             provider=provider,
             leases=leases,
@@ -173,6 +178,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         """Run one claimed enrichment job to a terminal status."""
 
+        if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
+            if self._docx_handler is None:
+                raise ValueError("DOCX job processor is not configured.")
+            return await self._docx_handler.handle(job=job)
         if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
             return await self._handle_workspace(job=job)
         return await self._handle_dxe(job=job)
@@ -381,6 +390,7 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         """Fail-close one RUNNING job whose worker lease expired.
 
@@ -390,13 +400,28 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         """
 
         async with self._uow:
-            job = await self._enrichment_jobs.claim_next_expired(
-                worker_id=worker_id,
-                now=now,
-                lease_ttl=lease_ttl,
-            )
+            if source_kind is None:
+                job = await self._enrichment_jobs.claim_next_expired(
+                    worker_id=worker_id,
+                    now=now,
+                    lease_ttl=lease_ttl,
+                )
+            else:
+                job = await self._enrichment_jobs.claim_next_expired(
+                    worker_id=worker_id,
+                    now=now,
+                    lease_ttl=lease_ttl,
+                    source_kind=source_kind,
+                )
             if job is None:
                 return None
+        if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
+            if self._docx_handler is None:
+                raise ValueError("DOCX job processor is not configured.")
+            return await self._docx_handler.handle(
+                job=job,
+                fallback_reason="Konverteringen avbröts. Kontrollera innehållet i provet.",
+            )
         if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
             return await self._fail_workspace(job=job, last_error="enrichment_worker_lease_expired")
         if job.source_dxe is None:

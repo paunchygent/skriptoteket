@@ -20,6 +20,7 @@ from uuid import UUID
 import structlog
 from dishka import AsyncContainer, Scope
 
+from skriptoteket.application.curated_apps.exam_answer_key_enrichment import ExamAnswerKeySourceKind
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
@@ -37,6 +38,7 @@ async def process_next_answer_key_enrichment_job(
     now: datetime,
     lease_ttl: timedelta,
     clock: ClockProtocol,
+    enrichment_enabled: bool = True,
 ) -> bool:
     """Advance the enrichment lane by one step; report whether one step ran.
 
@@ -47,11 +49,19 @@ async def process_next_answer_key_enrichment_job(
 
     async with container(scope=Scope.REQUEST) as request:
         handler = await request.get(ProcessExamAnswerKeyEnrichmentJobHandler)
-        expired = await handler.fail_next_expired(
-            worker_id=worker_id,
-            now=now,
-            lease_ttl=lease_ttl,
-        )
+        if enrichment_enabled:
+            expired = await handler.fail_next_expired(
+                worker_id=worker_id,
+                now=now,
+                lease_ttl=lease_ttl,
+            )
+        else:
+            expired = await handler.fail_next_expired(
+                worker_id=worker_id,
+                now=now,
+                lease_ttl=lease_ttl,
+                source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
+            )
         if expired is not None:
             logger.warning(
                 "Answer-key enrichment job fail-closed after worker lease expiry",
@@ -63,7 +73,15 @@ async def process_next_answer_key_enrichment_job(
         uow = await request.get(UnitOfWorkProtocol)
         jobs = await request.get(ExamAnswerKeyEnrichmentJobRepositoryProtocol)
         async with uow:
-            job = await jobs.claim_next(worker_id=worker_id, now=now, lease_ttl=lease_ttl)
+            if enrichment_enabled:
+                job = await jobs.claim_next(worker_id=worker_id, now=now, lease_ttl=lease_ttl)
+            else:
+                job = await jobs.claim_next(
+                    worker_id=worker_id,
+                    now=now,
+                    lease_ttl=lease_ttl,
+                    source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
+                )
         if job is None:
             return False
         logger.info(

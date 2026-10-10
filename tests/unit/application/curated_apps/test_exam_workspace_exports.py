@@ -32,18 +32,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    exam_workspace_docx_extractor,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
 
-PythonDocxExamExtractor = exam_workspace_docx_extractor.PythonDocxExamExtractor
-
-_FIXTURE = Path(
-    "tests/fixtures/exam_conversion/real_inputs/grammatik_omprov_examnet_import_med_facit.docx"
-)
+_FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
 
 
 def _reviewed(document: NativeExamDocument) -> NativeExamDocument:
@@ -71,11 +64,7 @@ def _reviewed(document: NativeExamDocument) -> NativeExamDocument:
 
 @pytest.fixture(scope="module")
 def extracted_document() -> NativeExamDocument:
-    return (
-        PythonDocxExamExtractor()
-        .extract(document_id=uuid4(), filename=_FIXTURE.name, content=_FIXTURE.read_bytes())
-        .document
-    )
+    return NativeExamDocument.model_validate_json(_FIXTURE.read_bytes())
 
 
 @pytest.fixture(scope="module")

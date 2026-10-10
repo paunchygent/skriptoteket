@@ -59,6 +59,10 @@ const {
   addItem,
   applyProposal,
   conflictNotice,
+  conversionError,
+  conversionMessage,
+  isConverting,
+  retryConversionStatus,
   importDocument,
   isBusy,
   isDirty,
@@ -237,7 +241,7 @@ onMounted(() => {
 });
 
 function handleExport(target: ExamWorkspaceExportTarget): void {
-  void exportDocument(target);
+  if (!isBusy.value) void exportDocument(target);
 }
 
 function handleApproveProposal(itemId: string): void {
@@ -338,6 +342,30 @@ function handleEditProposal(itemId: string): void {
           @previous="stepItem(-1)"
         />
       </header>
+
+      <div
+        v-if="conversionMessage"
+        class="grid gap-2 border-b border-navy bg-canvas px-4 py-2 text-sm leading-snug"
+        role="status"
+        aria-live="polite"
+        data-test="exam-workspace-conversion-status"
+      >
+        <p>{{ conversionMessage }}</p>
+        <template v-if="isConverting && conversionError">
+          <p class="text-error">{{ conversionError }}</p>
+          <button
+            type="button"
+            class="btn-ghost justify-self-start shadow-none"
+            data-test="exam-workspace-conversion-retry"
+            @click="retryConversionStatus"
+          >
+            Försök igen
+          </button>
+        </template>
+        <p v-else-if="!isConverting">
+          Välj provfilen igen i Filer för att försöka på nytt.
+        </p>
+      </div>
 
       <p
         v-if="conflictNotice"

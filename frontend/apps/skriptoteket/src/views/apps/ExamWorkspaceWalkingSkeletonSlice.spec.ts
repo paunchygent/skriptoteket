@@ -35,6 +35,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   startExamWorkspaceEnrichment: vi.fn(),
@@ -89,6 +90,9 @@ function buildTwoGapResponse(
 }
 
 beforeEach(() => {
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
@@ -101,7 +105,10 @@ beforeEach(() => {
     proposals: [],
     state: "not_requested",
   });
-  apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+  apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+  });
 });
 
 describe("ExamWorkspaceView walking skeleton slice", () => {
@@ -257,7 +264,10 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   });
 
   it("refuses to save a gap item keyed in only some gaps and says why in Swedish", async () => {
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildTwoGapResponse());
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse());
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
@@ -279,9 +289,10 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   });
 
   it("names every partially keyed gap item in the plural refusal copy", async () => {
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(
-      buildTwoGapResponse(["item_004", "item_005"]),
-    );
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse(["item_004", "item_005"]));
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 

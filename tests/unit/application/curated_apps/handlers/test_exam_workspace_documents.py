@@ -8,22 +8,22 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceDocumentResponse,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
     ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
+    _summary,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    exam_workspace_docx_extractor,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -37,9 +37,7 @@ from tests.unit.application.curated_apps.handlers.test_document_converter_artifa
     InMemoryVaultUsageRepository,
 )
 
-_FIXTURE = Path(
-    "tests/fixtures/exam_conversion/real_inputs/grammatik_omprov_examnet_import_med_facit.docx"
-)
+_FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
 _NOW = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
 
 
@@ -103,12 +101,6 @@ class _Env:
             clock=FixedClock(_NOW),
             settings=_settings(),
         )
-        self.import_handler = ImportExamWorkspaceDocumentHandler(
-            extractor=exam_workspace_docx_extractor.PythonDocxExamExtractor(),
-            codec=self.codec,
-            store=self.store,
-            id_generator=self.ids,
-        )
         self.get_handler = GetExamWorkspaceDocumentHandler(
             vault_files=self.vault_files, codec=self.codec, store=self.store
         )
@@ -119,6 +111,26 @@ class _Env:
             store=self.store,
             id_generator=self.ids,
         )
+
+    async def seed_document(self, *, actor: User) -> ExamWorkspaceDocumentResponse:
+        document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()).model_copy(
+            update={"document_id": uuid4()}
+        )
+        file = await self.store.save_version(
+            actor=actor,
+            file_id=self.ids.new_uuid(),
+            name="grammatik.provdokument.zip",
+            content=self.codec.build(
+                content=ExamWorkspaceContainerContent(
+                    document=document,
+                    assets_by_id={},
+                    notes=(),
+                )
+            ),
+            lineage_id=document.document_id,
+            version=1,
+        )
+        return ExamWorkspaceDocumentResponse(document=document, summary=_summary(file))
 
 
 @pytest.fixture()
@@ -132,11 +144,9 @@ def fixture_bytes() -> bytes:
 
 
 @pytest.mark.asyncio
-async def test_import_creates_version_one(env: _Env, fixture_bytes: bytes) -> None:
+async def test_store_creates_version_one(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    result = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    result = await env.seed_document(actor=actor)
     assert result.summary.version == 1
     assert result.summary.name.endswith(".provdokument.zip")
     assert result.document.title == "Omprov: grammatik och språkstrukturer"
@@ -147,18 +157,9 @@ async def test_import_creates_version_one(env: _Env, fixture_bytes: bytes) -> No
 
 
 @pytest.mark.asyncio
-async def test_import_rejects_non_docx(env: _Env) -> None:
-    with pytest.raises(DomainError) as exc_info:
-        await env.import_handler.handle(actor=_actor(), filename="prov.pdf", content=b"x")
-    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-
-
-@pytest.mark.asyncio
 async def test_reopen_returns_head_document(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
     assert reopened.document == imported.document
     assert reopened.summary.version == 1
@@ -174,9 +175,7 @@ async def test_reopen_unknown_lineage_is_not_found(env: _Env) -> None:
 @pytest.mark.asyncio
 async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
@@ -198,9 +197,7 @@ async def test_save_advances_version_and_reopens_faithfully(
     env: _Env, fixture_bytes: bytes
 ) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     document = imported.document
     edited_item = document.items[0].model_copy(update={"title": "Fråga 1 (redigerad)"})
     edited = document.with_replaced_item(edited_item).with_revision(2)
@@ -221,9 +218,7 @@ async def test_save_advances_version_and_reopens_faithfully(
 @pytest.mark.asyncio
 async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     edited = imported.document.with_revision(2)
     await env.save_handler.handle(
         actor=actor,
@@ -242,9 +237,7 @@ async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: byte
 @pytest.mark.asyncio
 async def test_save_rejects_wrong_document_identity(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     foreign = imported.document.model_copy(update={"document_id": uuid4()}).with_revision(2)
     with pytest.raises(DomainError) as exc_info:
         await env.save_handler.handle(
@@ -258,9 +251,7 @@ async def test_save_rejects_wrong_document_identity(env: _Env, fixture_bytes: by
 @pytest.mark.asyncio
 async def test_save_requires_revision_advance_by_one(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     with pytest.raises(DomainError) as exc_info:
         await env.save_handler.handle(
             actor=actor,
@@ -275,9 +266,7 @@ async def test_save_requires_revision_advance_by_one(env: _Env, fixture_bytes: b
 @pytest.mark.asyncio
 async def test_duplicate_version_insert_maps_to_conflict(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     with pytest.raises(DomainError) as exc_info:
         await env.store.save_version(
             actor=actor,
@@ -293,9 +282,7 @@ async def test_duplicate_version_insert_maps_to_conflict(env: _Env, fixture_byte
 @pytest.mark.asyncio
 async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes) -> None:
     owner = _actor()
-    imported = await env.import_handler.handle(
-        actor=owner, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=owner)
     with pytest.raises(DomainError) as exc_info:
         await env.get_handler.handle(actor=_actor(), lineage_id=imported.summary.lineage_id)
     assert exc_info.value.code is ErrorCode.NOT_FOUND
