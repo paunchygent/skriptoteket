@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "28b4e4e51a6476569f98a761a84ae20c4f6bc53e19bbcce16c92ee56bc01fa4b",
+  "source_set_digest": "2ae9043f55e023891fbd2c745c725f3055b844d62736fd487b424d868c55f6fa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2232,6 +2232,27 @@
           "ADR-SKRIPT-0090",
           "ADR-SKRIPT-0091"
         ]
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-05",
+      "type": "story",
+      "title": "AI-first DOCX exam conversion with a gold-corpus eval loop",
+      "path": "docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -4548,7 +4569,7 @@
       "type": "task",
       "title": "AI item interpretation at DOCX import",
       "path": "docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4559,7 +4580,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User decided 2026-10-10 (GrillMe A1) that the AI-first converter is the new story ST-SKRIPT-39-05 and that this task is superseded with a pointer; its terms F4, F6, F10 and F11 carry into that story as A11, A10, A8 and A9."
       }
     },
     {

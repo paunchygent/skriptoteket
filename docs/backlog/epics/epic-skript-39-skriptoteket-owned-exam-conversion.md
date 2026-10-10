@@ -125,9 +125,12 @@ closes the epic and is not on the critical path.
    walking skeleton (import, native edit/create, save/reopen, export).
    Cleanup tasks 02-03, 03-03, and 03-04 are done and the ADR-0091/story
    review was accepted 2026-10-09, so the skeleton is unblocked.
-5. Word/DOCX ingestion breadth: deterministic-first parsing corpus with
-   per-item confidence assertions and LLM remainder, on the confirmed item
-   subset, building on the story-4 skeleton.
+5. Word/DOCX ingestion breadth (`ST-SKRIPT-39-05`, `proposed`): AI-first
+   conversion where code only segments the DOCX into chunks and batched
+   Decisions and Responses calls build contract-validated native items,
+   proven against a user-confirmed gold corpus of eight real exams; adds a
+   matching kind. Replaces the deterministic-first framing by user decision
+   2026-10-10.
 6. PDF ingestion: digital PDFs with embedded text parse locally; scanned
    or layout-hard handling is deferred (undecided) while the Sir generic
    extraction capability is preserved as-is without selecting a

@@ -1,9 +1,11 @@
 ## Current
 
-- [TASK-SKRIPT-39-04-03](docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md)
-  is `proposed`: AI item interpretation at DOCX import (walk finding W9, merged
-  value "vid skolan Satsdel: adverbial"). Terms F1-F9 user-decided 2026-10-10 (Decisions API first); user owns
-  proposed->ready. Backend work: route to Codex.
+- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
+  is `proposed`: AI-first DOCX exam conversion with a gold-corpus eval loop;
+  terms A1-A12 user-decided 2026-10-10; supersedes TASK-SKRIPT-39-04-03
+  (canceled). Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
+  Next: user proposed->ready, then scaffold task 1 (walking skeleton).
+  Backend work: route to Codex.
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `proposed`: pending answer-key proposals survive a save (user decision
   P1-P3, 2026-10-10); user owns proposed->ready. Backend work:
@@ -138,4 +140,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: user proposed->ready for TASK-SKRIPT-39-04-03 and 39-04-04.
+- Next: user proposed->ready for ST-SKRIPT-39-05 and TASK-SKRIPT-39-04-04.

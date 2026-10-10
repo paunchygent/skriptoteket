@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=40 | story=324 | task=0 | review=137
-- open | epic=19 | story=60 | task=0
+- total | epic=40 | story=325 | task=0 | review=137
+- open | epic=19 | story=61 | task=0
 
 ## Lookup
 
@@ -371,6 +371,7 @@
 - story | ST-SKRIPT-39-02 | [Port the remote answer-key completion line with a daily token lease](stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
 - story | ST-SKRIPT-39-03 | [Cut over the Exam Converter and retire the Sir exam lane](stories/st-skript-39-03-cut-over-the-exam-converter-and-retire-the-sir-exam-lane.md)
 - story | ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md)
+- story | ST-SKRIPT-39-05 | [AI-first DOCX exam conversion with a gold-corpus eval loop](stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
 - story | ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md)
 - story | ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md)
 - review | REV-EPIC-02 | [Review: Local password reset via emailed token](reviews/review-epic-02-local-password-reset-via-emailed-token.md) | target=EPIC-02, [ST-02-07](stories/story-02-07-local-password-reset-via-emailed-token.md), ADR-0078
@@ -532,7 +533,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=1, done=2 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=1, proposed=1, done=2 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -595,6 +596,10 @@
 - ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
+
+### proposed
+
+- ST-SKRIPT-39-05 | [AI-first DOCX exam conversion with a gold-corpus eval loop](stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked
 

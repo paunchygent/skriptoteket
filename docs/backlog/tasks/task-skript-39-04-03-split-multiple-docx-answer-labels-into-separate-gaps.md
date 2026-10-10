@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: proposed
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User decided 2026-10-10 (GrillMe A1) that the AI-first converter is the new story ST-SKRIPT-39-05 and that this task is superseded with a pointer; its terms F4, F6, F10 and F11 carry into that story as A11, A10, A8 and A9.
 task_kind: story
 acceptance_criteria:
 - A DOCX exam whose items the rules cannot resolve imports export-ready without teacher
@@ -23,6 +25,9 @@ backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
+
+Superseded by ST-SKRIPT-39-05 (AI-first DOCX exam conversion), user
+decision 2026-10-10. The contract below is kept as history.
 
 Build the confidence-gated LLM remainder that ST-SKRIPT-39-04 promised for
 DOCX import. Today the import is rule-only: items the rules cannot resolve
