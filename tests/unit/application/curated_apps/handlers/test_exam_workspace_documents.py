@@ -18,6 +18,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     SaveExamWorkspaceDocumentHandler,
     _summary,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
@@ -27,6 +30,7 @@ from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from tests.fixtures.exam_workspace_proposals import proposal_document
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
@@ -35,6 +39,10 @@ from tests.unit.application.curated_apps.handlers.test_document_converter_artifa
     InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
+)
+from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
+    InMemoryEnrichmentJobRepository,
+    InMemoryProposedOverlayRepository,
 )
 
 _FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
@@ -93,6 +101,8 @@ class _Env:
         self.vault_storage = InMemoryVaultStorage()
         self.codec = ExamWorkspaceContainerCodec()
         self.ids = SequenceIdGenerator([uuid4() for _ in range(10)])
+        self.enrichment_jobs = InMemoryEnrichmentJobRepository()
+        self.proposed_overlays = InMemoryProposedOverlayRepository()
         self.store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
             vault_usage=self.vault_usage,
@@ -100,6 +110,12 @@ class _Env:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             settings=_settings(),
+            proposal_carry_forward=CarryExamWorkspaceProposals(
+                enrichment_jobs=self.enrichment_jobs,
+                proposed_overlays=self.proposed_overlays,
+                clock=FixedClock(_NOW),
+                id_generator=self.ids,
+            ),
         )
         self.get_handler = GetExamWorkspaceDocumentHandler(
             vault_files=self.vault_files, codec=self.codec, store=self.store
@@ -286,3 +302,11 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
     with pytest.raises(DomainError) as exc_info:
         await env.get_handler.handle(actor=_actor(), lineage_id=imported.summary.lineage_id)
     assert exc_info.value.code is ErrorCode.NOT_FOUND
+
+
+def test_save_request_keeps_older_clients_compatible() -> None:
+    document = proposal_document().with_revision(2)
+    request = SaveExamWorkspaceDocumentRequest.model_validate(
+        {"expected_revision": 1, "document": document.model_dump(mode="json")}
+    )
+    assert request.rejected_proposal_item_ids == ()

@@ -44,6 +44,12 @@ gold corpus.
 - **Nothing is lost.** Input that still fails after the retries becomes a
   free-text item holding its source text, marked for review with a Swedish
   note that names why. Export stays blocked until the teacher fixes it.
+- **No failure is invisible.** Every failure in the conversion path is
+  observed with its exact reason: each admission rejection per item and
+  round, provider errors, invalid or refused output, retry exhaustion,
+  review-item fallback and job failure. Each is a structured log event with
+  the job id and a reason code, and is persisted with the job outcome so it
+  can be read without log access.
 - **Conversion runs in the background.** Upload returns at once, the
   document shows a converting status and opens when done. The uploaded DOCX
   is kept until the job finishes.
@@ -126,3 +132,5 @@ Planned order; each task is scaffolded and contracted before work starts.
 | A10 | The app adds obvious misspellings of facit answers within a code-enforced edit distance, never synonyms (user decision 2026-10-10, carried from F6). |
 | A11 | The gap popover gets "Visa som text" (user decision 2026-10-10, carried from F4). |
 | A12 | The app resolves what AI and code can reasonably resolve; the teacher is asked only about the rest (user direction 2026-10-10). |
+| A13 | Every failure in the conversion path is observed with its exact reason, as a structured log event with the job id and a reason code and persisted with the job outcome; no failure is silent (user decision 2026-10-10, after the live staging walk of TASK-SKRIPT-39-05-01 failed without rejection reasons). |
+| A14 | The AI call carries the producer contract: a strict structured-output schema for the native item shapes plus the conversion rules in the instructions. The consumer parses that guaranteed output and runs only the native document contract and export validation; it does not re-verify the producer with forensic source-binding rules (user decision 2026-10-10, "producer contract, not consumer validation"). |

@@ -183,16 +183,16 @@ export function useExamWorkspaceDocument() {
     }
   }
 
-  async function saveDocument(): Promise<void> {
+  async function saveDocument(rejectedProposalItemIds: string[] = []): Promise<boolean> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || isBusy.value) {
-      return;
+      return false;
     }
     const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
     if (refusalCopy) {
       toast.failure(refusalCopy);
-      return;
+      return false;
     }
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
@@ -201,10 +201,12 @@ export function useExamWorkspaceDocument() {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
+        rejectedProposalItemIds: [...rejectedProposalItemIds],
       });
       applyResponse(response);
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
+      return true;
     } catch (error) {
       if (isApiError(error) && error.status === 409) {
         conflictNotice.value = EXAM_WORKSPACE_CONFLICT_COPY;
@@ -213,6 +215,7 @@ export function useExamWorkspaceDocument() {
       } else {
         toast.failure(SAVE_FAILURE_COPY);
       }
+      return false;
     } finally {
       operationBusy.value = false;
     }

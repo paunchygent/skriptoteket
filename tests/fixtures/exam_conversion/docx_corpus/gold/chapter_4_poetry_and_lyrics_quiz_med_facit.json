@@ -4,13 +4,13 @@
   "source_sha256": "c396eac546dae8cbdbd569ce563d85b756121b2f8b1ef1250b85c18cde6357b6",
   "title": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
   "confirmed": true,
-  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted, including these corrections from the blind second labelling: the Part 1 section heading removed from item prompts and “Read the sentence:” removed from Part 1 questions 7 and 8.",
   "items": [
     {
       "source_label": "Part 1, Question 1",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nHis profound essay about the war impressed the whole class. What does “profound” mean here?",
+      "prompt": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
       "choices": [
         "deep",
         "strange",
@@ -28,7 +28,7 @@
       "source_label": "Part 1, Question 2",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nThey live a frugal life in a small house by the lake. What does “frugal” mean here?",
+      "prompt": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
       "choices": [
         "mysterious",
         "deep",
@@ -46,7 +46,7 @@
       "source_label": "Part 1, Question 3",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nA peculiar noise woke her just after midnight. What does “peculiar” mean here?",
+      "prompt": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
       "choices": [
         "indescribable",
         "strange",
@@ -64,7 +64,7 @@
       "source_label": "Part 1, Question 4",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nEveryone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
+      "prompt": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
       "choices": [
         "crossed from one side to the other",
         "kept it as something precious",
@@ -82,7 +82,7 @@
       "source_label": "Part 1, Question 5",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nRead the sentence:\n“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
+      "prompt": "Read the sentence:\n“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
       "choices": [
         "symbolism",
         "imagery",
@@ -100,7 +100,7 @@
       "source_label": "Part 1, Question 6",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nRead the sentence:\n“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
+      "prompt": "Read the sentence:\n“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
       "choices": [
         "imagery",
         "symbolism",
@@ -118,7 +118,7 @@
       "source_label": "Part 1, Question 7",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nRead the sentence:\nIn a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
+      "prompt": "In a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
       "choices": [
         "theme",
         "tone",
@@ -136,7 +136,7 @@
       "source_label": "Part 1, Question 8",
       "kind": "single_choice",
       "points": 1,
-      "prompt": "Part 1\nRead the sentence:\nRead the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
+      "prompt": "Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
       "choices": [
         "rhyme scheme",
         "rhythm",
@@ -551,7 +551,7 @@
     }
   ],
   "notes": [
-    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. User confirmation is pending.",
+    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. The user confirmed the file on 2026-10-10, including the corrections from the blind second labelling.",
     "Part 2A and Part 2B headings are unnumbered in the source; source labels assign their ordinal position within each section.",
     "Part 3 repeats each in-sentence gap as a separate response line; only the in-sentence gap is retained."
   ]

@@ -101,7 +101,10 @@ const {
   isRequesting,
   openProposals,
   proposalForItem,
+  rejectedItemIds,
+  rejectProposal,
   requestProposals,
+  resetProposalDecisionsAfterSave,
 } = useExamWorkspaceEnrichment(summary);
 
 const mode = ref<ExamWorkspaceMode>("filer");
@@ -244,6 +247,13 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
   if (!isBusy.value) void exportDocument(target);
 }
 
+async function handleSave(): Promise<void> {
+  const rejectedProposalItemIds = [...rejectedItemIds.value];
+  if (await saveDocument(rejectedProposalItemIds)) {
+    resetProposalDecisionsAfterSave();
+  }
+}
+
 function handleApproveProposal(itemId: string): void {
   const proposal = proposalForItem(itemId);
   if (proposal) {
@@ -324,7 +334,7 @@ function handleEditProposal(itemId: string): void {
               class="btn-cta shrink-0 shadow-none"
               :disabled="!isDirty || isBusy"
               data-test="exam-workspace-save"
-              @click="saveDocument"
+              @click="handleSave"
             >
               Spara
             </button>
@@ -461,7 +471,7 @@ function handleEditProposal(itemId: string): void {
                 :server-blockers="selectedServerBlockers"
                 @approve="handleApproveProposal"
                 @close="detailsOpen = false"
-                @dismiss="dismissProposal"
+                @dismiss="rejectProposal"
                 @edit="handleEditProposal"
               />
             </div>
