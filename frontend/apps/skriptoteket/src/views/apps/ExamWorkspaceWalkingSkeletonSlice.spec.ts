@@ -51,18 +51,21 @@ function lastSavedDocument(): NativeExamDocument {
   return params.document;
 }
 
-/** Item 4 keyed in two gaps, so one gap can be cleared on its own. */
-function buildTwoGapResponse(): ExamWorkspaceDocumentResponse {
+/** The given items as gap items keyed in two gaps, so one gap can be cleared on its own. */
+function buildTwoGapResponse(
+  gapItemIds: string[] = ["item_004"],
+): ExamWorkspaceDocumentResponse {
   const response = buildResponse({ version: 1 });
   return {
     ...response,
     document: {
       ...response.document,
       items: response.document.items.map((item) =>
-        item.item_id === "item_004"
+        gapItemIds.includes(item.item_id)
           ? {
               ...item,
               answer_key: { correct_choice_ids: [], origin: "teacher_authored" },
+              kind: "gap_fill",
               body: [
                 {
                   segments: [
@@ -268,8 +271,61 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Fråga 4 saknar svar i några luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.",
+      "Fråga 4 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.",
     );
+  });
+
+  it("names every partially keyed gap item in the plural refusal copy", async () => {
+    apiMocks.importExamWorkspaceDocument.mockResolvedValue(
+      buildTwoGapResponse(["item_004", "item_005"]),
+    );
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    for (const itemId of ["item_004", "item_005"]) {
+      await selectItemRow(wrapper, itemId);
+      const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]');
+      await gapInput.setValue("");
+      await gapInput.trigger("change");
+    }
+
+    await saveDocument(wrapper);
+
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
+      "Frågorna 4 och 5 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.",
+    );
+  });
+
+  it("returns the answer key to teacher_authored when cleared key values are filled in again", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await selectItemRow(wrapper, "item_003");
+    const choiceA = wrapper.find('[data-test="exam-workspace-choice-correct-choice_a"]');
+    await choiceA.setValue(false);
+    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_b"]').setValue(false);
+    await choiceA.setValue(true);
+
+    await selectItemRow(wrapper, "item_004");
+    const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
+    await gapInput.setValue("");
+    await gapInput.trigger("change");
+    await gapInput.setValue("100");
+    await gapInput.trigger("change");
+
+    await saveDocument(wrapper);
+
+    const savedDocument = lastSavedDocument();
+    const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
+    expect(choiceItem?.answer_key).toEqual({
+      correct_choice_ids: ["choice_a"],
+      origin: "teacher_authored",
+    });
+    const gapItem = savedDocument.items.find((item) => item.item_id === "item_004");
+    expect(gapItem?.answer_key.origin).toBe("teacher_authored");
+    expect(gapItem?.gaps[0]?.accepted_values).toEqual(["100"]);
   });
 
   it("maps a stale save to Swedish conflict handling and reloads the latest version", async () => {

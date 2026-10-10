@@ -17,7 +17,10 @@ import { IconCheck, IconWarning } from "../../../components/icons";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
-import { isPartiallyKeyedGapItem } from "./useExamWorkspaceDocument";
+import {
+  isPartiallyKeyedGapItem,
+  PARTIAL_GAP_KEY_GUIDANCE,
+} from "./examWorkspaceAnswerKeyRules";
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -299,10 +302,12 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
       </label>
       <p
         v-if="hasPartialGapKey"
-        class="text-xs leading-snug text-error"
+        class="text-xs leading-snug text-navy/70"
+        role="status"
+        aria-live="polite"
         data-test="exam-workspace-gap-key-hint"
       >
-        Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.
+        {{ PARTIAL_GAP_KEY_GUIDANCE }}
       </p>
     </fieldset>
   </section>

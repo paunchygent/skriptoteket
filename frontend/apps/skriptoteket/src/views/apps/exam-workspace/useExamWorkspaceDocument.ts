@@ -31,6 +31,7 @@ import type {
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
+import { isPartiallyKeyedGapItem, partialGapKeyCopy } from "./examWorkspaceAnswerKeyRules";
 
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
@@ -47,34 +48,6 @@ const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
 /** A teacher edit keys the item only while it still carries key data. */
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
-}
-
-function hasKeyedOrigin(item: NativeExamItem): boolean {
-  return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
-}
-
-/** Keyed gap items need accepted values in every gap; the server refuses partial keys. */
-export function isPartiallyKeyedGapItem(item: NativeExamItem): boolean {
-  return (
-    item.kind === "gap_fill" &&
-    hasKeyedOrigin(item) &&
-    item.gaps.some((gap) => gap.accepted_values.length === 0)
-  );
-}
-
-function joinSwedishList(values: string[]): string {
-  if (values.length <= 1) {
-    return values.join("");
-  }
-  return `${values.slice(0, -1).join(", ")} och ${values[values.length - 1]}`;
-}
-
-export function partialGapKeyCopy(items: NativeExamItem[]): string {
-  const subject =
-    items.length === 1
-      ? `Fråga ${items[0]?.sequence}`
-      : `Frågorna ${joinSwedishList(items.map((item) => String(item.sequence)))}`;
-  return `${subject} saknar svar i några luckor. Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.`;
 }
 
 function nextItemId(items: NativeExamItem[]): string {
