@@ -28,8 +28,9 @@
   proposed->ready; sequenced after story 8.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
-  is `ready` (user decision 2026-10-11) with the fix committed (`8a0fc469`,
-  8 unit tests). Next: implementation closeout. Follow-up: Mina filer keeps every workspace version
+  is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review
+  F1 (synthetic tests) and F2 (repeated listing queries) repaired, Sol rereview
+  approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
 - 2026-10-09 planning session (Claude): user decisions recorded in
