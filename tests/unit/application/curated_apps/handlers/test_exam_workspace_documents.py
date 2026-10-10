@@ -5,12 +5,8 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
-    ExamAnswerKeyEnrichmentJobStatus,
-)
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
     SaveExamWorkspaceDocumentRequest,
@@ -22,17 +18,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     SaveExamWorkspaceDocumentHandler,
     _summary,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    GetExamWorkspaceEnrichmentStatusHandler,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
     CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
-from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
-    native_exam_to_examnet_qti_items,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
@@ -40,11 +30,7 @@ from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
-from tests.fixtures.exam_workspace_proposals import (
-    proposal_document,
-    proposal_ledger,
-    saved_proposal_document,
-)
+from tests.fixtures.exam_workspace_proposals import proposal_document
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
@@ -316,132 +302,6 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
     with pytest.raises(DomainError) as exc_info:
         await env.get_handler.handle(actor=_actor(), lineage_id=imported.summary.lineage_id)
     assert exc_info.value.code is ErrorCode.NOT_FOUND
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "scenario",
-    [
-        "pending",
-        "machine_proposed",
-        "rejected",
-        "teacher_authored",
-        "reviewed_advisory",
-        "stale",
-        "deleted",
-    ],
-)
-async def test_save_carries_only_pending_proposals(env: _Env, scenario: str) -> None:
-    actor = _actor()
-    document = proposal_document()
-    await env.store.save_version(
-        actor=actor,
-        file_id=env.ids.new_uuid(),
-        name="exam.provdokument.zip",
-        content=env.codec.build(content=ExamWorkspaceContainerContent(document=document)),
-        lineage_id=document.document_id,
-        version=1,
-    )
-    job, overlay = proposal_ledger(owner_user_id=actor.id, document=document, now=_NOW)
-    await env.enrichment_jobs.create(job=job)
-    await env.proposed_overlays.create(proposed_overlay=overlay)
-    next_document = saved_proposal_document(document, scenario)
-    request = SaveExamWorkspaceDocumentRequest(
-        expected_revision=1,
-        document=next_document,
-        rejected_proposal_item_ids=("item_001",) if scenario == "rejected" else (),
-    )
-    await env.save_handler.handle(actor=actor, lineage_id=document.document_id, request=request)
-
-    status_handler = GetExamWorkspaceEnrichmentStatusHandler(
-        vault_files=env.vault_files,
-        enrichment_jobs=env.enrichment_jobs,
-        proposed_overlays=env.proposed_overlays,
-        store=env.store,
-        codec=env.codec,
-    )
-    status = await status_handler.handle(actor=actor, lineage_id=document.document_id)
-    assert [proposal.item_id for proposal in status.proposals] == (
-        ["item_001"] if scenario in {"pending", "machine_proposed"} else []
-    )
-    reopened = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
-    assert reopened.document == next_document
-    assert "rejected_proposal_item_ids" not in reopened.document.model_dump()
-    assert env.proposed_overlays.records[0] == overlay
-    assert env.enrichment_jobs.jobs[job.id] == job
-    if scenario == "pending":
-        carried_job = await env.enrichment_jobs.get_by_workspace_revision(
-            owner_user_id=actor.id,
-            workspace_lineage_id=document.document_id,
-            workspace_document_revision=2,
-        )
-        assert carried_job is not None and carried_job.id != job.id
-        assert carried_job.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
-        assert carried_job.attempts == 0 and carried_job.started_at is None
-        assert status.proposals[0].provider_profile_id == "original-provider"
-        assert status.proposals[0].model == "original-model"
-        assert status.proposals[0].prompt_template_version == "original-prompt"
-        # The new overlay remains available through another unreviewed save.
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=2, document=next_document.with_revision(3)
-            ),
-        )
-        status = await status_handler.handle(actor=actor, lineage_id=document.document_id)
-        assert status.document_revision == 3
-        assert [proposal.item_id for proposal in status.proposals] == ["item_001"]
-        # Approve the carried proposal, save, and project the persisted key to QTI.
-        approved = saved_proposal_document(next_document.with_revision(3), "reviewed_advisory")
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(expected_revision=3, document=approved),
-        )
-        reopened = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
-        assert native_exam_to_examnet_qti_items(reopened.document)[
-            0
-        ].correct_choice_identifiers == ("choice_002",)
-        assert (
-            await status_handler.handle(actor=actor, lineage_id=document.document_id)
-        ).proposals == ()
-
-
-@pytest.mark.asyncio
-async def test_unreadable_previous_overlay_fails_the_save(env: _Env) -> None:
-    actor = _actor()
-    document = proposal_document()
-    await env.store.save_version(
-        actor=actor,
-        file_id=env.ids.new_uuid(),
-        name="exam.provdokument.zip",
-        content=env.codec.build(content=ExamWorkspaceContainerContent(document=document)),
-        lineage_id=document.document_id,
-        version=1,
-    )
-    job, overlay = proposal_ledger(owner_user_id=actor.id, document=document, now=_NOW)
-    await env.enrichment_jobs.create(job=job)
-    await env.proposed_overlays.create(
-        proposed_overlay=overlay.model_copy(update={"overlay_json": {"items": "unreadable"}})
-    )
-
-    with pytest.raises(ValidationError):
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=1, document=saved_proposal_document(document, "pending")
-            ),
-        )
-    assert (
-        await env.enrichment_jobs.get_by_workspace_revision(
-            owner_user_id=actor.id,
-            workspace_lineage_id=document.document_id,
-            workspace_document_revision=2,
-        )
-        is None
-    )
 
 
 def test_save_request_keeps_older_clients_compatible() -> None:

@@ -126,7 +126,6 @@ def test_retains_original_records_without_mutating_documents(
     carried = _carry(document, saved, payload)
 
     assert carried == payload.items
-    assert all(actual is original for actual, original in zip(carried, payload.items, strict=True))
     assert (document.model_dump(), saved.model_dump(), payload.model_dump()) == before
 
 

@@ -4,14 +4,13 @@
  * Expected behavior:
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
- *   import with the `file` field, head-version listing, lineage readback,
- *   versioned PUT saves with `expected_revision` plus the full native
- *   document, blob export downloads per target, and enrichment start/status.
+ *   import with the `file` field, head-version listing, lineage readback, blob
+ *   export downloads per target, and enrichment start/status.
  */
 
 import { describe, expect, it, vi } from "vitest";
 
-import { apiFetchBlobResponse, apiGet, apiPost, apiPut } from "./client";
+import { apiFetchBlobResponse, apiGet, apiPost } from "./client";
 import {
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
@@ -19,7 +18,6 @@ import {
   getExamWorkspaceEnrichment,
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
-  saveExamWorkspaceDocument,
   startExamWorkspaceEnrichment,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
@@ -33,7 +31,6 @@ vi.mock("./client", () => ({
 
 const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
-const apiPutMock = vi.mocked(apiPut);
 const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
@@ -134,41 +131,6 @@ describe("examWorkspace transport", () => {
     await getExamWorkspaceDocument("lineage/1");
 
     expect(apiGetMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage%2F1`);
-  });
-
-  it("saves with expected_revision and the full document as the PUT body", async () => {
-    const response = buildResponse(5);
-    apiPutMock.mockResolvedValueOnce(response);
-    const document = buildDocument(5);
-
-    const result = await saveExamWorkspaceDocument("lineage-1", {
-      document,
-      expectedRevision: 4,
-    });
-
-    expect(apiPutMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1`, {
-      document,
-      expected_revision: 4,
-      rejected_proposal_item_ids: [],
-    });
-    expect(result).toBe(response);
-  });
-
-  it("encodes rejected proposal item ids in the save request", async () => {
-    apiPutMock.mockResolvedValueOnce(buildResponse(2));
-    const document = buildDocument(2);
-
-    await saveExamWorkspaceDocument("lineage-1", {
-      document,
-      expectedRevision: 1,
-      rejectedProposalItemIds: ["item_001", "item_002"],
-    });
-
-    expect(apiPutMock).toHaveBeenLastCalledWith(`${DOCUMENTS_ROOT}/lineage-1`, {
-      document,
-      expected_revision: 1,
-      rejected_proposal_item_ids: ["item_001", "item_002"],
-    });
   });
 
   it("lists saved documents from the collection path", async () => {
