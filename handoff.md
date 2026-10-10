@@ -11,8 +11,9 @@
   generated OpenAPI types, Vitest slices; plus 5 Postgres integration tests
   and passing migration tests for `7c3e9a1d4f20`/`d4f8b2c6a9e1`. Gates: fe
   vitest/typecheck/lint/build green; ruff clean; mypy 12 baseline errors;
-  9 unit failures all reproduced on origin/main. Review: first pass
-  changes requested, repairs `28bd7255`/`833cf53e`, rereview pending.
+  9 unit failures all reproduced on origin/main. Review: changes
+  requested twice, repairs `28bd7255`/`833cf53e`/`30e9798f`; final
+  rereview approved for integration 2026-10-10; merged to local `main`.
   Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/`.
   Owner: Claude session. Blocker for D5 live walk: the HuleEdu
   auth-integration lane cannot start because `minio-init` pins
