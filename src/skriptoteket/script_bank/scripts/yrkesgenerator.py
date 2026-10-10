@@ -232,12 +232,12 @@ def _build_weighted_intervals(options: list[Career], total_slots: int) -> list[W
         raise ValueError("total_slots > 0")
 
     # Filtrera och extrahera
-    valid_opts = [o for o in options if str(o.get("title", "")).strip()]
+    valid_opts = [o for o in options if o["title"].strip()]
     if not valid_opts:
         raise ValueError("Inga giltiga yrken.")
 
-    titles = [str(o["title"]).strip() for o in valid_opts]
-    weights = [int(o.get("weight", 1)) for o in valid_opts]
+    titles = [o["title"].strip() for o in valid_opts]
+    weights = [o.get("weight", 1) for o in valid_opts]
 
     total_weight = sum(weights)
     base_sizes = [(w * total_slots) // total_weight for w in weights]

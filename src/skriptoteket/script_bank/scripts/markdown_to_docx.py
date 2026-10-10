@@ -240,10 +240,7 @@ def _normalize_markdown_files(input_root: Path, value: object) -> list[MarkdownF
     seen: set[str] = set()
     uniq: list[MarkdownFile] = []
     for f in files:
-        p = f.get("path")
-        if not isinstance(p, Path):
-            continue
-        k = str(p)
+        k = str(f["path"])
         if k in seen:
             continue
         seen.add(k)
