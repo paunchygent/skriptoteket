@@ -80,7 +80,7 @@ const emit = defineEmits<{
           <td class="px-2 py-3 align-top">
             <span
               class="inline-flex items-center gap-2"
-              :title="row.reviewReasons.length > 0 ? row.reviewReasons.join(', ') : undefined"
+              :title="row.reviewReasons.length > 0 ? row.reviewReasons.join(' ') : undefined"
               :data-test="`exam-workspace-item-status-${row.itemId}`"
             >
               <IconWarning
