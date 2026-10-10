@@ -1,7 +1,7 @@
 ## Current
 
 - [TASK-SKRIPT-39-04-02](docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md)
-  is `ready` (terms L1-L8: Filer/Redigera modes, item list plus dominating
+  is `in_progress` (terms L1-L8: Filer/Redigera modes, item list plus dominating
   editor, metadata drawer, inline gap chips, phone bottom-sheet picker).
   Next action: implement on a task branch; walk 1440x900, 1366x768,
   768x1024 and 390x844 on staging with user-friendliness as the gate.
@@ -134,4 +134,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: implement TASK-SKRIPT-39-04-02 (`ready`).
+- Next: implement TASK-SKRIPT-39-04-02 (`in_progress`).
