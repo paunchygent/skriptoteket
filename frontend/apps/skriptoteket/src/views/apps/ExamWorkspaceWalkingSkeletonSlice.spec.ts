@@ -213,6 +213,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       .setValue(true);
 
     await selectItemRow(wrapper, "item_004");
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("hundra, 100");
     await gapInput.trigger("change");
@@ -240,6 +241,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await wrapper.find('[data-test="exam-workspace-choice-correct-choice_b"]').setValue(false);
 
     await selectItemRow(wrapper, "item_004");
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("  ");
     await gapInput.trigger("change");
@@ -260,6 +262,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_004");
+    await wrapper.get('[data-gap-id="gap_002"]').trigger("click");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]');
     await gapInput.setValue("");
     await gapInput.trigger("change");
@@ -284,6 +287,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     for (const itemId of ["item_004", "item_005"]) {
       await selectItemRow(wrapper, itemId);
+      await wrapper.get('[data-gap-id="gap_002"]').trigger("click");
       const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]');
       await gapInput.setValue("");
       await gapInput.trigger("change");
@@ -309,6 +313,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await choiceA.setValue(true);
 
     await selectItemRow(wrapper, "item_004");
+    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("");
     await gapInput.trigger("change");

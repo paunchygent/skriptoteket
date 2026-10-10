@@ -108,9 +108,21 @@ export function examWorkspacePromptExcerpt(item: NativeExamItem): string {
   return `${flattened.slice(0, EXCERPT_MAX_LENGTH - 1).trimEnd()}…`;
 }
 
+/**
+ * The title as shown beside its question number. A leading "Fråga N.",
+ * "Fråga N:" or "N." that repeats the item's own sequence is dropped so the
+ * number is not shown twice; the stored title is never changed. Returns an
+ * empty string when nothing else is left.
+ */
+export function examWorkspaceDisplayTitle(title: string | null | undefined, sequence: number): string {
+  const trimmed = (title ?? "").trim();
+  const prefix = new RegExp(`^(?:fråga\\s*)?${sequence}(?:\\s*[.:]\\s+|\\s*[.:]$|$)`, "i");
+  return trimmed.replace(prefix, "").trim();
+}
+
 export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemRow {
   const title =
-    item.title && item.title.trim().length > 0 ? item.title : `Fråga ${item.sequence}`;
+    examWorkspaceDisplayTitle(item.title, item.sequence) || `Fråga ${item.sequence}`;
 
   return {
     itemId: item.item_id,

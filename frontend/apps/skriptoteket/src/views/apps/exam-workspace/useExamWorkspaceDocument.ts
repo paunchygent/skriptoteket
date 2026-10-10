@@ -4,13 +4,15 @@
  * Domain purpose:
  *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
  *   list and reopen saved documents, edit items locally with immutable
- *   updates, move advisory answer-key proposals into the editor, save
- *   versioned revisions, and recover from stale-save conflicts by reloading
+ *   updates, move advisory answer-key proposals into the editor, refuse a
+ *   save the server would reject with Swedish copy naming the questions,
+ *   save versioned revisions, and recover from stale-save conflicts by reloading
  *   the latest saved version.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView`.
  *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Checks a save against `examWorkspaceItemSaveRules` before sending it.
  *   - Reports outcomes through the shared toast store.
  */
 
@@ -27,11 +29,12 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamAnswerKeyOrigin,
+  NativeExamBodySegment,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { isPartiallyKeyedGapItem, partialGapKeyCopy } from "./examWorkspaceAnswerKeyRules";
+import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
@@ -185,9 +188,9 @@ export function useExamWorkspaceDocument() {
     if (!current || !currentSummary || isBusy.value) {
       return;
     }
-    const partiallyKeyed = current.items.filter(isPartiallyKeyedGapItem);
-    if (partiallyKeyed.length > 0) {
-      toast.failure(partialGapKeyCopy(partiallyKeyed));
+    const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
+    if (refusalCopy) {
+      toast.failure(refusalCopy);
       return;
     }
     const expectedRevision = current.revision;
@@ -270,26 +273,17 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => ({ ...item, points }));
   }
 
-  function updateItemBodyText(
+  /** Replace one paragraph's segments, as serialized by the inline body editor. */
+  function updateItemParagraphSegments(
     itemId: string,
     paragraphIndex: number,
-    segmentIndex: number,
-    text: string,
+    segments: NativeExamBodySegment[],
   ): void {
     patchItem(itemId, (item) => ({
       ...item,
-      body: item.body.map((paragraph, candidateParagraphIndex) => {
-        if (candidateParagraphIndex !== paragraphIndex) {
-          return paragraph;
-        }
-        return {
-          segments: paragraph.segments.map((segment, candidateSegmentIndex) =>
-            candidateSegmentIndex === segmentIndex && segment.kind === "text"
-              ? { ...segment, text }
-              : segment,
-          ),
-        };
-      }),
+      body: item.body.map((paragraph, candidateParagraphIndex) =>
+        candidateParagraphIndex === paragraphIndex ? { segments } : paragraph,
+      ),
     }));
   }
 
@@ -420,7 +414,7 @@ export function useExamWorkspaceDocument() {
     selectedItem,
     selectedItemId,
     summary,
-    updateItemBodyText,
+    updateItemParagraphSegments,
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,

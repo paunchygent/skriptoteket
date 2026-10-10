@@ -3,10 +3,21 @@
 - [TASK-SKRIPT-39-04-02](docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md)
   is `in_progress` (terms L1-L8: Filer/Redigera modes, item list plus dominating
   editor, metadata drawer, inline gap chips, phone bottom-sheet picker).
-  Next action: implement on a task branch; walk 1440x900, 1366x768,
-  768x1024 and 390x844 on staging with user-friendliness as the gate.
-  Open user gate: proposal carry-over across saves (proposals are per
-  revision and vanish on save).
+  Implemented, reviewed (fresh re-review APPROVED) and merged to `main`
+  `acca1ee7`; Hemma staging redeployed healthy. Staging walk 2026-10-10
+  (built-in browser, HuleEdu sign-in, real grammatik_omprov DOCX):
+  import opens Redigera; chip popover edit; points 0 refused at field,
+  list, drawer and save; readiness links; save v2; QTI zip 8 items with
+  gap correctResponse ("snöboll" present). Re-walk after repairs: frame
+  bottom 876/900 and 743/768 with no page scroll; editor 912px/636px with
+  drawer open; tablet drawer opaque, Escape returns focus to Detaljer;
+  phone editor 358/390px, sheet picker, full-screen modal details;
+  Backspace by a gap keeps it and shows the Swedish hint.
+  Next action: user-closure gate (user acceptance of the walk).
+  Open user gates: proposal carry-over across saves (proposals vanish on
+  save); proposed TASK-SKRIPT-39-04-03 for the DOCX facit defect where a
+  label merges into the accepted gap value ("vid skolan Satsdel:
+  adverbial") — not scaffolded until the user agrees.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -134,4 +145,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: implement TASK-SKRIPT-39-04-02 (`in_progress`).
+- Next: user closure of TASK-SKRIPT-39-04-02; decide TASK-SKRIPT-39-04-03.

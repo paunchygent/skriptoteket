@@ -6,14 +6,16 @@
  *   workspace slice specs (walking skeleton, exports, enrichment, reopen).
  *
  * Relationships:
- *   - Mounts `ExamWorkspaceView.vue` with Pinia and a memory router that
- *     carries the `/apps/exam-workspace` route.
+ *   - Mounts `ExamWorkspaceView.vue` with Pinia, a memory router that
+ *     carries the `/apps/exam-workspace` route, and a provided layout ref
+ *     the spec can change to move between layouts.
  *   - Each spec owns its own `api/examWorkspace` module mock.
  */
 
 import { createTestingPinia } from "@pinia/testing";
 import { flushPromises, mount } from "@vue/test-utils";
 import { vi } from "vitest";
+import { ref } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import type {
@@ -22,6 +24,10 @@ import type {
   NativeExamItem,
 } from "../../api/examWorkspace";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import {
+  EXAM_WORKSPACE_LAYOUT_KEY,
+  type ExamWorkspaceLayout,
+} from "./exam-workspace/useExamWorkspaceLayout";
 
 export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
 
@@ -148,18 +154,27 @@ export function buildResponse(params: {
   };
 }
 
-export async function mountExamWorkspace(query: Record<string, string> = {}) {
+export async function mountExamWorkspace(
+  query: Record<string, string> = {},
+  layout: ExamWorkspaceLayout = "desktop",
+  attachTo?: HTMLElement,
+) {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [{ component: { template: "<div />" }, path: EXAM_WORKSPACE_PATH }],
   });
   await router.push({ path: EXAM_WORKSPACE_PATH, query });
   await router.isReady();
+  const layoutRef = ref<ExamWorkspaceLayout>(layout);
   const wrapper = mount(ExamWorkspaceView, {
-    global: { plugins: [createTestingPinia({ createSpy: vi.fn }), router] },
+    attachTo,
+    global: {
+      plugins: [createTestingPinia({ createSpy: vi.fn }), router],
+      provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layoutRef },
+    },
   });
   await flushPromises();
-  return { router, wrapper };
+  return { layout: layoutRef, router, wrapper };
 }
 
 export type ViewWrapper = Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"];

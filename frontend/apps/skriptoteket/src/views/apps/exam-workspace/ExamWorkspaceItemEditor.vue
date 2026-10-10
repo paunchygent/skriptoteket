@@ -1,42 +1,81 @@
 <script setup lang="ts">
 /**
- * Exam workspace item detail editor.
+ * Exam workspace item editor.
  *
  * Domain purpose:
- *   Edit one native exam item: title, prompt text, points, and answer-key
- *   values, plus the mark-as-reviewed action for items that need review.
+ *   Edit one native exam item as the dominating Redigera surface: title,
+ *   points, the question text with inline gaps, choices with the correct
+ *   answer, and the mark-as-reviewed action. Previous/next and the details
+ *   drawer toggle sit in the editor header so moving between questions
+ *   never needs the list. Points that are not greater than zero and an
+ *   empty choice text are marked invalid at the field with a Swedish hint,
+ *   because the save refuses them. While `disabled` (a save or load is
+ *   running) every edit control is disabled so no typed edit is lost;
+ *   navigation and the details toggle stay available.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView` for the selected table row.
+ *   - Rendered by `ExamWorkspaceView` for the selected item.
+ *   - Delegates the question text and gap answers to
+ *     `ExamWorkspaceBodyEditor`.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
+ *   - Reads the save rules from `examWorkspaceItemSaveRules`.
  */
 
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
-import { IconCheck, IconWarning } from "../../../components/icons";
+import { IconCheck, IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
 
-import type { NativeExamItem } from "../../../api/examWorkspace";
-import { examWorkspaceReviewReasonLabel, examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
+import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 import {
-  isPartiallyKeyedGapItem,
-  PARTIAL_GAP_KEY_GUIDANCE,
-} from "./examWorkspaceAnswerKeyRules";
+  EMPTY_CHOICE_TEXT_GUIDANCE,
+  hasEmptyChoiceText,
+  hasNonPositivePoints,
+  isEmptyChoiceText,
+  NON_POSITIVE_POINTS_GUIDANCE,
+} from "./examWorkspaceItemSaveRules";
+import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
+  attentionCount: number;
+  detailsOpen: boolean;
+  disabled?: boolean;
   item: NativeExamItem;
+  position: number;
+  showNavigation: boolean;
+  total: number;
 }>();
-
-const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
 
 const emit = defineEmits<{
   markReviewed: [itemId: string];
-  updateBodyText: [itemId: string, paragraphIndex: number, segmentIndex: number, text: string];
+  next: [];
+  previous: [];
+  toggleDetails: [];
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  updateParagraphSegments: [
+    itemId: string,
+    paragraphIndex: number,
+    segments: NativeExamBodySegment[],
+  ];
   updatePoints: [itemId: string, points: number | null];
   updateTitle: [itemId: string, title: string];
 }>();
+
+const pointsHintId = useId();
+const choiceHintId = useId();
+
+const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
+
+function choiceTextClass(choiceId: string, text: string): string {
+  if (isEmptyChoiceText(text)) {
+    return "border-warning";
+  }
+  return isCorrectChoice(choiceId)
+    ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
+    : "border-navy/35";
+}
 
 function handleTitleInput(event: Event): void {
   const input = event.target as HTMLInputElement;
@@ -52,24 +91,6 @@ function handlePointsInput(event: Event): void {
   }
   const parsed = Number(raw);
   emit("updatePoints", props.item.item_id, Number.isFinite(parsed) ? parsed : null);
-}
-
-function handleBodyTextInput(
-  paragraphIndex: number,
-  segmentIndex: number,
-  event: Event,
-): void {
-  const input = event.target as HTMLTextAreaElement;
-  emit("updateBodyText", props.item.item_id, paragraphIndex, segmentIndex, input.value);
-}
-
-function handleGapValuesChange(gapId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  const acceptedValues = input.value
-    .split(",")
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
-  emit("updateGapValues", props.item.item_id, gapId, acceptedValues);
 }
 
 function handleChoiceTextInput(choiceId: string, event: Event): void {
@@ -98,21 +119,50 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
     .filter((candidateChoiceId) => selected.has(candidateChoiceId));
   emit("updateCorrectChoices", props.item.item_id, orderedChoiceIds);
 }
+
+function choiceLetter(index: number): string {
+  return String.fromCharCode(65 + index);
+}
 </script>
 
 <template>
   <section
-    class="grid gap-4 border border-navy/20 bg-canvas p-3"
+    class="grid content-start gap-5"
     :aria-label="`Redigera fråga ${item.sequence}`"
     data-test="exam-workspace-item-editor"
   >
-    <header class="flex flex-wrap items-center justify-between gap-3">
-      <h3 class="text-sm font-semibold leading-tight text-navy">
+    <header class="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div
+        v-if="showNavigation"
+        class="flex items-center"
+      >
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40"
+          aria-label="Föregående fråga"
+          :disabled="position <= 1"
+          data-test="exam-workspace-item-previous"
+          @click="emit('previous')"
+        >
+          <IconPreviousPage :size="18" />
+        </button>
+        <button
+          type="button"
+          class="-ml-px inline-flex h-9 w-9 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40"
+          aria-label="Nästa fråga"
+          :disabled="position >= total"
+          data-test="exam-workspace-item-next"
+          @click="emit('next')"
+        >
+          <IconNextPage :size="18" />
+        </button>
+      </div>
+      <h2 class="shrink-0 whitespace-nowrap text-base font-semibold leading-tight text-navy">
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
-      </h3>
+      </h2>
       <div
-        class="flex flex-wrap items-center gap-3"
+        class="ml-auto flex flex-wrap items-center gap-3"
         data-test="exam-workspace-review-badge"
       >
         <span
@@ -141,34 +191,37 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
           v-if="item.review.state === 'review_required'"
           type="button"
           class="btn-ghost shadow-none"
+          :disabled="disabled"
           data-test="exam-workspace-mark-reviewed"
           @click="emit('markReviewed', item.item_id)"
         >
           Markera som granskad
         </button>
+        <button
+          type="button"
+          class="btn-ghost shadow-none"
+          :aria-pressed="detailsOpen ? 'true' : 'false'"
+          data-test="exam-workspace-item-details-toggle"
+          @click="emit('toggleDetails')"
+        >
+          Detaljer
+          <span
+            v-if="attentionCount > 0"
+            class="ml-1 inline-flex h-5 min-w-5 items-center justify-center bg-warning px-1 text-[11px] font-bold leading-none text-navy"
+            :aria-label="`${attentionCount} att åtgärda`"
+          >{{ attentionCount }}</span>
+        </button>
       </div>
     </header>
 
-    <ul
-      v-if="item.review.state === 'review_required' && item.review.reasons.length > 0"
-      class="list-disc pl-5 text-xs leading-snug text-navy/70"
-      data-test="exam-workspace-review-reasons"
-    >
-      <li
-        v-for="reason in item.review.reasons"
-        :key="reason"
-      >
-        {{ examWorkspaceReviewReasonLabel(reason) }}
-      </li>
-    </ul>
-
-    <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
         Rubrik
         <input
           class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
           type="text"
           :value="item.title ?? ''"
+          :disabled="disabled"
           data-test="exam-workspace-item-title-input"
           @input="handleTitleInput"
         >
@@ -176,138 +229,94 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
         Poäng
         <input
-          class="min-h-10 w-28 border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
+          class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
+          :class="pointsInvalid ? 'border-warning' : 'border-navy/35'"
           type="number"
           min="0"
           step="any"
           inputmode="decimal"
           :value="item.points ?? ''"
+          :disabled="disabled"
+          :aria-invalid="pointsInvalid ? 'true' : undefined"
+          :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
           data-test="exam-workspace-item-points-input"
           @input="handlePointsInput"
         >
       </label>
+      <p
+        v-if="hasNonPositivePoints(item)"
+        :id="pointsHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy sm:col-span-2"
+        data-test="exam-workspace-points-hint"
+      >
+        {{ NON_POSITIVE_POINTS_GUIDANCE }}
+      </p>
     </div>
 
-    <fieldset class="grid gap-2 border border-navy/20 bg-panel p-3">
-      <legend class="px-1 text-xs font-semibold text-navy/80">
-        Frågetext
-      </legend>
-      <div
-        v-for="(paragraph, paragraphIndex) in item.body"
-        :key="paragraphIndex"
-        class="flex flex-wrap items-start gap-2"
-      >
-        <template
-          v-for="(segment, segmentIndex) in paragraph.segments"
-          :key="segmentIndex"
-        >
-          <textarea
-            v-if="segment.kind === 'text'"
-            class="min-h-20 min-w-[12rem] flex-1 border border-navy/35 bg-panel px-3 py-2 text-sm text-navy"
-            :value="segment.text"
-            :aria-label="`Textavsnitt ${segmentIndex + 1} i stycke ${paragraphIndex + 1}`"
-            :data-test="`exam-workspace-body-text-${paragraphIndex}-${segmentIndex}`"
-            @input="handleBodyTextInput(paragraphIndex, segmentIndex, $event)"
-          />
-          <span
-            v-else-if="segment.kind === 'gap'"
-            class="inline-flex h-10 items-center border border-navy/35 bg-panel-muted px-2 font-mono text-xs text-navy"
-            :data-test="`exam-workspace-body-gap-${paragraphIndex}-${segmentIndex}`"
-          >[___]</span>
-          <span
-            v-else
-            class="inline-flex h-10 items-center border border-navy/35 bg-panel-muted px-2 text-xs text-navy"
-          >Bild</span>
-        </template>
-      </div>
-      <p
-        v-if="item.kind === 'free_text'"
-        class="text-[11px] leading-snug text-navy/65"
-      >
-        Fritextfråga – eleven svarar med egen text.
-      </p>
-    </fieldset>
+    <ExamWorkspaceBodyEditor
+      :disabled="disabled"
+      :item="item"
+      @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
+    />
 
     <fieldset
       v-if="item.kind === 'single_choice' || item.kind === 'multiple_response'"
-      class="grid gap-2 border border-navy/20 bg-panel p-3"
+      class="grid gap-2"
     >
-      <legend class="px-1 text-xs font-semibold text-navy/80">
-        Svarsalternativ
+      <legend class="mb-2 text-xs font-semibold text-navy/80">
+        Svarsalternativ – markera {{ item.kind === 'single_choice' ? 'det rätta svaret' : 'alla rätta svar' }}
       </legend>
       <div
-        v-for="choice in item.choices"
+        v-for="(choice, choiceIndex) in item.choices"
         :key="choice.choice_id"
-        class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2"
+        class="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2"
       >
         <input
           v-if="item.kind === 'single_choice'"
           type="radio"
-          class="h-4 w-4"
+          class="h-5 w-5"
           :name="`exam-workspace-correct-${item.item_id}`"
           :checked="isCorrectChoice(choice.choice_id)"
-          :aria-label="`Rätt svar: ${choice.choice_id}`"
+          :disabled="disabled"
+          :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
           @change="handleSingleCorrectChoice(choice.choice_id)"
         >
         <input
           v-else
           type="checkbox"
-          class="h-4 w-4"
+          class="h-5 w-5"
           :checked="isCorrectChoice(choice.choice_id)"
-          :aria-label="`Rätt svar: ${choice.choice_id}`"
+          :disabled="disabled"
+          :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
           @change="handleMultipleCorrectChoice(choice.choice_id, $event)"
         >
+        <span
+          class="w-5 text-center text-sm font-semibold text-navy/70"
+          aria-hidden="true"
+        >{{ choiceLetter(choiceIndex) }}</span>
         <input
-          class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm text-navy"
+          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
+          :class="choiceTextClass(choice.choice_id, choice.text)"
           type="text"
           :value="choice.text"
-          :aria-label="`Text för svarsalternativ ${choice.choice_id}`"
+          :disabled="disabled"
+          :aria-invalid="isEmptyChoiceText(choice.text) ? 'true' : undefined"
+          :aria-describedby="isEmptyChoiceText(choice.text) ? choiceHintId : undefined"
+          :aria-label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
           :data-test="`exam-workspace-choice-text-${choice.choice_id}`"
           @input="handleChoiceTextInput(choice.choice_id, $event)"
         >
       </div>
-      <p class="text-[11px] leading-snug text-navy/65">
-        Markera rätt svar.
-      </p>
-    </fieldset>
-
-    <fieldset
-      v-if="item.kind === 'gap_fill' && item.gaps.length > 0"
-      class="grid gap-2 border border-navy/20 bg-panel p-3"
-    >
-      <legend class="px-1 text-xs font-semibold text-navy/80">
-        Luckor
-      </legend>
-      <label
-        v-for="(gap, gapIndex) in item.gaps"
-        :key="gap.gap_id"
-        class="grid gap-1 text-xs font-semibold text-navy/80"
-      >
-        Lucka {{ gapIndex + 1 }} – godkända svar (kommaseparerade)
-        <input
-          class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="gap.accepted_values.join(', ')"
-          :data-test="`exam-workspace-gap-values-${gap.gap_id}`"
-          @change="handleGapValuesChange(gap.gap_id, $event)"
-        >
-        <span
-          v-if="gap.hint"
-          class="text-[11px] font-normal leading-snug text-navy/65"
-        >
-          Ledtråd: {{ gap.hint }}
-        </span>
-      </label>
       <p
-        v-if="hasPartialGapKey"
-        class="text-xs leading-snug text-navy/70"
-        role="status"
-        aria-live="polite"
-        data-test="exam-workspace-gap-key-hint"
+        v-if="hasEmptyChoiceText(item)"
+        :id="choiceHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
+        data-test="exam-workspace-choice-text-hint"
       >
-        {{ PARTIAL_GAP_KEY_GUIDANCE }}
+        {{ EMPTY_CHOICE_TEXT_GUIDANCE }}
       </p>
     </fieldset>
   </section>

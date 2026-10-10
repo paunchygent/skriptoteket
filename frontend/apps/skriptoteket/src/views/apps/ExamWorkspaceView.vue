@@ -3,49 +3,57 @@
  * Teacher exam workspace host frame.
  *
  * Domain purpose:
- *   Provide the minimal teacher exam workspace: upload a .docx exam or
- *   reopen a saved one, review extracted questions with per-item review
- *   status, edit the selected question, review advisory answer-key
- *   proposals, save versioned revisions, and download QTI, PDF, and DOCX
- *   files from the saved version.
+ *   Convert a .docx exam into files Exam.net imports as intended, in two
+ *   modes switched in one stable toolbar: Filer (import, saved exams,
+ *   readiness, QTI/PDF/DOCX files, answer-key proposals) and Redigera
+ *   (question list plus one dominating editor, with question details in a
+ *   drawer). Save state stays in the toolbar in both modes. Desktop is the
+ *   canonical composition; tablet narrows it and overlays the drawer; phone
+ *   makes the editor the screen with a "Fråga N av M" question sheet.
  *
  * Relationships:
  *   - Mounted by the canonical `/apps/exam-workspace` route; the
- *     `?document=<lineage_id>` query opens a saved document, on load and
- *     when the query changes later.
+ *     `?document=<lineage_id>` query and the open document stay in step
+ *     through `useExamWorkspaceAddress`.
  *   - Owns state through `useExamWorkspaceDocument`,
- *     `useExamWorkspaceExports`, and `useExamWorkspaceEnrichment`; renders
- *     the rail through `ExamWorkspaceSavedDocuments`,
- *     `ExamWorkspaceExportPanel`, and `ExamWorkspaceEnrichmentPanel`, the
- *     question list through `ExamWorkspaceItemTable`, item editing through
- *     `ExamWorkspaceItemEditor`, and proposals through
- *     `ExamWorkspaceProposalPanel`.
+ *     `useExamWorkspaceExports`, and `useExamWorkspaceEnrichment`; takes
+ *     .docx files through `useExamWorkspaceSourceFile`; selects the
+ *     composition through `useExamWorkspaceLayout`; mirrors the export gate
+ *     and the save rules per question through `examWorkspaceItemReadiness`.
+ *   - Renders `ExamWorkspaceFilesMode`, `ExamWorkspaceQuestionList` with
+ *     `ExamWorkspaceItemTable`, `ExamWorkspaceItemEditor`, and
+ *     `ExamWorkspaceItemDrawer`; on phones, `ExamWorkspacePhoneQuestionBar`
+ *     and the question list in `ExamWorkspaceSheet`.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
 
-import { Upload } from "lucide-vue-next";
-
-import { UiDenseStatusPill } from "../../components/ui";
+import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
+import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
-import ExamWorkspaceEnrichmentPanel from "./exam-workspace/ExamWorkspaceEnrichmentPanel.vue";
-import ExamWorkspaceExportPanel from "./exam-workspace/ExamWorkspaceExportPanel.vue";
+import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
+import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
+import ExamWorkspaceItemDrawer from "./exam-workspace/ExamWorkspaceItemDrawer.vue";
 import ExamWorkspaceItemEditor from "./exam-workspace/ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
-import ExamWorkspaceProposalPanel from "./exam-workspace/ExamWorkspaceProposalPanel.vue";
-import ExamWorkspaceSavedDocuments from "./exam-workspace/ExamWorkspaceSavedDocuments.vue";
-import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
+import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
+import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
+import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
+import {
+  examWorkspaceDisplayTitle,
+  toExamWorkspaceItemRows,
+} from "./exam-workspace/examWorkspaceRows";
+import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
+import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
+import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
 
-const DOCX_EXTENSION = ".docx";
-const INVALID_DOCX_COPY = "Det gick inte att använda filen. Välj en .docx-fil.";
-const MULTIPLE_FILES_COPY = "Välj en provfil åt gången.";
+type ExamWorkspaceMode = "filer" | "redigera";
 
-const route = useRoute();
-const router = useRouter();
+const layout = useExamWorkspaceLayout();
 
 const {
   addItem,
@@ -65,14 +73,19 @@ const {
   selectedItem,
   selectedItemId,
   summary,
-  updateItemBodyText,
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  updateItemParagraphSegments,
   updateItemPoints,
   updateItemTitle,
   workspaceDocument,
 } = useExamWorkspaceDocument();
+
+const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+
+const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
+  useExamWorkspaceSourceFile(importDocument);
 
 const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
   useExamWorkspaceExports(summary);
@@ -87,10 +100,37 @@ const {
   requestProposals,
 } = useExamWorkspaceEnrichment(summary);
 
-const sourceFileError = ref<string | null>(null);
+const mode = ref<ExamWorkspaceMode>("filer");
+const detailsOpen = ref(false);
+const questionSheetOpen = ref(false);
 
-const itemRows = computed(() =>
-  workspaceDocument.value ? toExamWorkspaceItemRows(workspaceDocument.value.items) : [],
+const isPhone = computed(() => layout.value === "phone");
+
+const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
+  { dataTest: "exam-workspace-mode-filer", label: "Filer", value: "filer" },
+  {
+    dataTest: "exam-workspace-mode-redigera",
+    disabled: !workspaceDocument.value,
+    label: "Redigera",
+    value: "redigera",
+  },
+]);
+
+const items = computed(() => workspaceDocument.value?.items ?? []);
+
+const itemRows = computed(() => toExamWorkspaceItemRows(items.value));
+
+const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
+
+const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
+  items.value
+    .filter((item) => readinessByItemId.value[item.item_id])
+    .map((item) => ({
+      itemId: item.item_id,
+      reasons: readinessByItemId.value[item.item_id] ?? [],
+      sequence: item.sequence,
+      title: examWorkspaceDisplayTitle(item.title, item.sequence),
+    })),
 );
 
 const proposalItemIds = computed(() =>
@@ -101,60 +141,98 @@ const selectedProposal = computed(() =>
   selectedItem.value ? proposalForItem(selectedItem.value.item_id) : null,
 );
 
+const selectedPosition = computed(() => {
+  const index = items.value.findIndex((item) => item.item_id === selectedItemId.value);
+  return index + 1;
+});
+
+const selectedReadiness = computed(() =>
+  selectedItem.value ? (readinessByItemId.value[selectedItem.value.item_id] ?? []) : [],
+);
+
+const selectedServerBlockers = computed(() =>
+  selectedItem.value ? (exportBlockersByItemId.value[selectedItem.value.item_id] ?? []) : [],
+);
+
 const otherSavedDocuments = computed(() =>
   savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
 );
 
-function routeDocumentId(): string | null {
-  const value = route.query.document;
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
+const enrichmentDisabled = computed(
+  () => isDirty.value || isBusy.value || isRequesting.value || isEnrichmentPending.value,
+);
 
+const redigeraGridClass = computed(() => {
+  if (layout.value === "desktop") {
+    return "min-h-0 flex-1 grid-cols-[minmax(15rem,19rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]";
+  }
+  return layout.value === "tablet"
+    ? "min-h-0 flex-1 grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]"
+    : "grid-cols-1";
+});
+
+// A newly open exam goes into the address and starts in Redigera; closing
+// it returns to Filer.
 watch(
   () => summary.value?.lineage_id ?? null,
-  (lineageId) => {
-    if (lineageId && routeDocumentId() !== lineageId) {
-      void router.replace({ query: { ...route.query, document: lineageId } });
+  (lineageId, previousLineageId) => {
+    showDocument(lineageId);
+    if (!lineageId) {
+      mode.value = "filer";
+    } else if (lineageId !== previousLineageId) {
+      mode.value = "redigera";
     }
   },
 );
 
-// Point the address back at the open document, or drop `document` when
-// nothing is open. Both outcomes are no-ops for the address watcher below.
-function restoreDocumentAddress(): void {
-  const openLineageId = summary.value?.lineage_id ?? null;
-  const { document: _document, ...rest } = route.query;
-  void router.replace({ query: openLineageId ? { ...rest, document: openLineageId } : rest });
+// A waiting answer-key proposal is the next thing to decide, so the desktop
+// drawer opens by itself for it. Tablet and phone overlays take focus, which
+// would interrupt typing; there the count on the "Detaljer" toggle shows it.
+watch(
+  () => selectedProposal.value?.item_id ?? null,
+  (proposalItemId) => {
+    if (proposalItemId && layout.value === "desktop") {
+      questionSheetOpen.value = false;
+      detailsOpen.value = true;
+    }
+  },
+);
+
+// The question sheet exists only on phones; leaving the phone layout closes it.
+watch(isPhone, (phone) => {
+  if (!phone) {
+    questionSheetOpen.value = false;
+  }
+});
+
+function setMode(value: string): void {
+  mode.value = value === "redigera" && workspaceDocument.value ? "redigera" : "filer";
 }
 
-// Follow later address changes (back/forward or an in-app link). The query
-// already naming the open document is a no-op, which also absorbs the write
-// from the summary watcher above. With unsaved edits, or when the named
-// document does not open, the open document stays and the address is pointed
-// back at it.
-watch(
-  () => routeDocumentId(),
-  async (lineageId) => {
-    const openLineageId = summary.value?.lineage_id ?? null;
-    if (!lineageId || lineageId === openLineageId) {
-      return;
-    }
-    if (isDirty.value && openLineageId) {
-      restoreDocumentAddress();
-      return;
-    }
-    const opened = await openDocument(lineageId);
-    if (!opened && routeDocumentId() === lineageId) {
-      restoreDocumentAddress();
-    }
-  },
-);
+function selectAndClose(itemId: string): void {
+  selectItem(itemId);
+  questionSheetOpen.value = false;
+}
+
+function stepItem(offset: number): void {
+  const target = items.value[selectedPosition.value - 1 + offset];
+  if (target) {
+    selectItem(target.item_id);
+  }
+}
+
+function goToItem(itemId: string): void {
+  selectItem(itemId);
+  mode.value = "redigera";
+  detailsOpen.value = true;
+}
+
+function handleAddItem(): void {
+  addItem();
+  questionSheetOpen.value = false;
+}
 
 onMounted(() => {
-  const lineageId = routeDocumentId();
-  if (lineageId) {
-    void openDocument(lineageId);
-  }
   void loadSavedDocuments();
 });
 
@@ -175,283 +253,236 @@ function handleEditProposal(itemId: string): void {
   if (proposal) {
     applyProposal(itemId, proposal.proposed_item, false);
     dismissProposal(itemId);
+    detailsOpen.value = false;
   }
-}
-
-function isDocxFile(file: File): boolean {
-  return file.name.toLowerCase().endsWith(DOCX_EXTENSION);
-}
-
-async function handleSelectedFile(file: File): Promise<void> {
-  if (!isDocxFile(file)) {
-    sourceFileError.value = INVALID_DOCX_COPY;
-    return;
-  }
-  sourceFileError.value = null;
-  await importDocument(file);
-}
-
-function handleSourceFileInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  const [file] = Array.from(input.files ?? []);
-  if (file) {
-    void handleSelectedFile(file);
-  }
-  input.value = "";
-}
-
-function handleDrop(event: DragEvent): void {
-  const files = Array.from(event.dataTransfer?.files ?? []);
-  const docxFiles = files.filter(isDocxFile);
-  if (docxFiles.length > 1) {
-    sourceFileError.value = MULTIPLE_FILES_COPY;
-    return;
-  }
-  const [file] = docxFiles;
-  if (file) {
-    sourceFileError.value = null;
-    void importDocument(file);
-    return;
-  }
-  sourceFileError.value = INVALID_DOCX_COPY;
 }
 </script>
 
 <template>
   <main
-    class="min-h-[calc(100vh-72px)] overflow-x-hidden bg-canvas px-3 py-4 text-navy md:px-5 lg:px-6"
+    class="flex min-h-0 flex-1 flex-col bg-canvas text-navy"
     aria-labelledby="exam-workspace-title"
   >
     <section
-      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
+      class="mx-auto flex w-full min-w-0 max-w-[100rem] flex-1 flex-col"
+      :class="isPhone ? undefined : 'min-h-[35rem] border border-navy bg-panel shadow-brutal-sm'"
       aria-label="Provredigering"
+      :data-layout="layout"
       data-test="exam-workspace-frame"
     >
-      <aside
-        class="border-b border-navy/20 bg-panel p-4 xl:border-b-0 xl:border-r"
-        aria-labelledby="exam-workspace-title"
-        data-test="exam-workspace-rail"
+      <header
+        class="grid gap-2 border-b border-navy py-2.5"
+        :class="isPhone ? 'sticky top-0 z-20 bg-modal' : 'bg-panel px-4'"
+        data-test="exam-workspace-toolbar"
       >
-        <h1
-          id="exam-workspace-title"
-          class="text-base font-semibold leading-tight text-navy"
-        >
-          Provredigering
-        </h1>
-
-        <div class="mt-5 grid gap-6">
-          <section class="grid gap-2">
-            <h2 class="text-sm font-semibold leading-tight text-navy">
-              Provfil
-            </h2>
-            <label
-              class="grid cursor-pointer gap-2 border border-dashed border-navy/35 bg-panel px-3 py-4 text-center hover:bg-canvas"
-              :class="isBusy ? 'cursor-not-allowed opacity-60' : undefined"
-              data-test="exam-workspace-drop-zone"
-              @dragover.prevent
-              @drop.prevent="handleDrop"
-            >
-              <input
-                class="sr-only"
-                type="file"
-                accept=".docx"
-                :disabled="isBusy"
-                data-test="exam-workspace-source-file-input"
-                @change="handleSourceFileInput"
-              >
-              <Upload
-                class="mx-auto h-5 w-5 text-action"
-                aria-hidden="true"
-              />
-              <span class="text-sm font-medium leading-snug text-navy">
-                Välj provfil (.docx)
-              </span>
-              <span class="text-xs leading-snug text-navy/65">
-                Dra hit .docx-filen eller välj provfilen här.
-              </span>
-            </label>
-            <p
-              v-if="sourceFileError"
-              class="text-xs leading-snug text-error"
-              data-test="exam-workspace-source-file-error"
-            >
-              {{ sourceFileError }}
-            </p>
-            <p
-              v-else-if="!workspaceDocument"
-              class="text-xs leading-snug text-navy/65"
-            >
-              Ladda upp ett .docx-prov för att börja.
-            </p>
-          </section>
-
-          <ExamWorkspaceSavedDocuments
-            :documents="otherSavedDocuments"
-            :is-busy="isBusy"
-            :is-dirty="isDirty"
-            @open="openDocument"
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1
+            id="exam-workspace-title"
+            class="text-sm font-extrabold uppercase leading-none tracking-wide text-navy"
+            :class="isPhone ? 'sr-only' : undefined"
+          >
+            Provredigering
+          </h1>
+          <UiSegmentedToggle
+            :model-value="mode"
+            :options="modeOptions"
+            aria-label="Läge"
+            density="compact"
+            width="auto"
+            @update:model-value="setMode"
           />
-
-          <section
+          <div
             v-if="workspaceDocument && summary"
-            class="grid gap-2"
+            class="flex min-w-0 flex-1 items-center justify-end gap-3"
             data-test="exam-workspace-summary"
           >
-            <h2 class="text-sm font-semibold leading-tight text-navy">
-              Aktuellt prov
-            </h2>
-            <div class="grid gap-1 border border-navy/20 bg-canvas p-3">
-              <span
-                class="truncate text-sm font-medium leading-snug text-navy"
-                data-test="exam-workspace-summary-title"
-              >
-                {{ workspaceDocument.title || summary.name }}
-              </span>
-              <span
-                class="text-xs leading-snug text-navy/65"
-                data-test="exam-workspace-summary-version"
-              >
-                Version {{ summary.version }}
-              </span>
-              <UiDenseStatusPill
-                v-if="isDirty"
-                class="justify-self-start"
-                label="Osparat"
-                tone="warning"
-                data-test="exam-workspace-dirty-pill"
-              />
-            </div>
-            <div class="grid gap-2">
-              <button
-                type="button"
-                class="btn-cta justify-center shadow-none"
-                :disabled="!isDirty || isBusy"
-                data-test="exam-workspace-save"
-                @click="saveDocument"
-              >
-                Spara
-              </button>
-              <button
-                type="button"
-                class="btn-ghost justify-center shadow-none"
-                :disabled="isBusy"
-                data-test="exam-workspace-reload"
-                @click="reloadDocument"
-              >
-                Läs in på nytt
-              </button>
-            </div>
-          </section>
-
-          <ExamWorkspaceExportPanel
-            v-if="workspaceDocument"
-            :export-notice="exportNotice"
-            :exporting-target="exportingTarget"
-            :is-busy="isBusy"
-            :is-dirty="isDirty"
-            @export="handleExport"
-          />
-
-          <ExamWorkspaceEnrichmentPanel
-            v-if="workspaceDocument && summary"
-            :disabled="isDirty || isBusy || isRequesting || isEnrichmentPending"
-            :message="enrichmentMessage"
-            @request="requestProposals"
-          />
-        </div>
-      </aside>
-
-      <div
-        class="min-w-0"
-        data-test="exam-workspace-workspace"
-      >
-        <p
-          v-if="conflictNotice"
-          class="border-b border-navy bg-saffron px-4 py-2 text-xs font-semibold leading-snug"
-          data-test="exam-workspace-conflict-notice"
-        >
-          {{ conflictNotice }}
-        </p>
-
-        <section
-          v-if="workspaceDocument"
-          class="grid gap-4 p-4"
-          aria-label="Frågor"
-        >
-          <header class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-sm font-semibold leading-tight text-navy">
-              Frågor
-            </h2>
+            <span
+              class="min-w-0 truncate text-sm font-medium leading-snug text-navy"
+              :class="isPhone ? 'sr-only' : undefined"
+              data-test="exam-workspace-summary-title"
+            >
+              {{ workspaceDocument.title || summary.name }}
+            </span>
+            <span
+              class="shrink-0 text-xs leading-snug text-navy/65"
+              data-test="exam-workspace-summary-version"
+            >
+              Version {{ summary.version }}
+            </span>
+            <UiDenseStatusPill
+              v-if="isDirty"
+              label="Osparat"
+              tone="warning"
+              data-test="exam-workspace-dirty-pill"
+            />
             <button
               type="button"
-              class="btn-ghost shadow-none"
-              :disabled="isBusy"
-              data-test="exam-workspace-add-item"
-              @click="addItem"
+              class="btn-cta shrink-0 shadow-none"
+              :disabled="!isDirty || isBusy"
+              data-test="exam-workspace-save"
+              @click="saveDocument"
             >
-              Lägg till fråga
+              Spara
             </button>
-          </header>
-
-          <ul
-            v-if="notes.length > 0"
-            class="grid gap-1 text-xs leading-snug text-navy/70"
-            data-test="exam-workspace-notes"
-          >
-            <li
-              v-for="note in notes"
-              :key="note"
-            >
-              {{ note }}
-            </li>
-          </ul>
-
-          <ExamWorkspaceItemTable
-            :export-blockers-by-item-id="exportBlockersByItemId"
-            :proposal-item-ids="proposalItemIds"
-            :rows="itemRows"
-            :selected-item-id="selectedItemId"
-            @select="selectItem"
-          />
-
-          <ExamWorkspaceItemEditor
-            v-if="selectedItem"
-            :item="selectedItem"
-            @mark-reviewed="markItemReviewed"
-            @update-body-text="updateItemBodyText"
-            @update-choice-text="updateItemChoiceText"
-            @update-correct-choices="updateItemCorrectChoices"
-            @update-gap-values="updateItemGapValues"
-            @update-points="updateItemPoints"
-            @update-title="updateItemTitle"
-          />
-
-          <ExamWorkspaceProposalPanel
-            v-if="selectedItem && selectedProposal"
-            :disabled="isBusy"
-            :item="selectedItem"
-            :proposed-item="selectedProposal.proposed_item"
-            @approve="handleApproveProposal"
-            @dismiss="dismissProposal"
-            @edit="handleEditProposal"
-          />
-        </section>
-
-        <section
-          v-else
-          class="grid min-h-[20rem] place-items-center p-8 text-center"
-          data-test="exam-workspace-empty"
-        >
-          <div class="grid gap-2">
-            <h2 class="text-sm font-semibold leading-tight text-navy">
-              Inget prov är inläst
-            </h2>
-            <p class="text-xs leading-snug text-navy/65">
-              Ladda upp ett .docx-prov eller öppna ett sparat prov för att börja.
-            </p>
           </div>
-        </section>
+        </div>
+
+        <ExamWorkspacePhoneQuestionBar
+          v-if="isPhone && mode === 'redigera' && selectedItem"
+          :needs-attention="readinessEntries.length > 0"
+          :position="selectedPosition"
+          :sheet-open="questionSheetOpen"
+          :total="items.length"
+          @next="stepItem(1)"
+          @open-questions="questionSheetOpen = true"
+          @previous="stepItem(-1)"
+        />
+      </header>
+
+      <p
+        v-if="conflictNotice"
+        class="border-b border-navy bg-saffron px-4 py-2 text-xs font-semibold leading-snug"
+        data-test="exam-workspace-conflict-notice"
+      >
+        {{ conflictNotice }}
+      </p>
+
+      <div class="flex min-h-0 flex-1 flex-col">
+        <div
+          v-show="mode === 'filer'"
+          class="min-h-0 flex-1 overflow-y-auto"
+          role="region"
+          aria-label="Filer"
+          data-test="exam-workspace-rail"
+        >
+          <ExamWorkspaceFilesMode
+            :compact="isPhone"
+            :enrichment-disabled="enrichmentDisabled"
+            :enrichment-message="enrichmentMessage"
+            :export-notice="exportNotice"
+            :exporting-target="exportingTarget"
+            :has-document="workspaceDocument !== null"
+            :is-busy="isBusy"
+            :is-dirty="isDirty"
+            :notes="notes"
+            :readiness="readinessEntries"
+            :saved-documents="otherSavedDocuments"
+            :source-file-error="sourceFileError"
+            @drop-files="handleDroppedFiles"
+            @export="handleExport"
+            @go-to-item="goToItem"
+            @open="openDocument"
+            @reload="reloadDocument"
+            @request-proposals="requestProposals"
+            @select-file="handleSelectedFile"
+          />
+        </div>
+
+        <div
+          v-show="mode === 'redigera'"
+          class="flex min-h-0 flex-1 flex-col"
+          role="region"
+          aria-label="Redigera"
+          data-test="exam-workspace-workspace"
+        >
+          <div
+            v-if="workspaceDocument"
+            class="grid min-h-0"
+            :class="redigeraGridClass"
+          >
+            <ExamWorkspaceQuestionList
+              v-if="!isPhone"
+              :count="items.length"
+              :disabled="isBusy"
+              @add="handleAddItem"
+            >
+              <ExamWorkspaceItemTable
+                :export-blockers-by-item-id="exportBlockersByItemId"
+                :proposal-item-ids="proposalItemIds"
+                :readiness-by-item-id="readinessByItemId"
+                :rows="itemRows"
+                :selected-item-id="selectedItemId"
+                @select="selectItem"
+              />
+            </ExamWorkspaceQuestionList>
+
+            <div class="relative flex min-h-0 min-w-0">
+              <div
+                class="min-w-0 flex-1"
+                :class="isPhone ? undefined : 'min-h-0 overflow-y-auto'"
+              >
+                <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
+                  <ExamWorkspaceItemEditor
+                    v-if="selectedItem"
+                    :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
+                    :details-open="detailsOpen"
+                    :disabled="isBusy"
+                    :item="selectedItem"
+                    :position="selectedPosition"
+                    :show-navigation="!isPhone"
+                    :total="items.length"
+                    @mark-reviewed="markItemReviewed"
+                    @next="stepItem(1)"
+                    @previous="stepItem(-1)"
+                    @toggle-details="detailsOpen = !detailsOpen"
+                    @update-choice-text="updateItemChoiceText"
+                    @update-correct-choices="updateItemCorrectChoices"
+                    @update-gap-values="updateItemGapValues"
+                    @update-paragraph-segments="updateItemParagraphSegments"
+                    @update-points="updateItemPoints"
+                    @update-title="updateItemTitle"
+                  />
+                  <p
+                    v-else
+                    class="text-sm text-navy/65"
+                  >
+                    Välj en fråga i listan.
+                  </p>
+                </div>
+              </div>
+              <ExamWorkspaceItemDrawer
+                v-if="detailsOpen && selectedItem"
+                :disabled="isBusy"
+                :item="selectedItem"
+                :layout="layout"
+                :proposed-item="selectedProposal?.proposed_item ?? null"
+                :readiness="selectedReadiness"
+                :server-blockers="selectedServerBlockers"
+                @approve="handleApproveProposal"
+                @close="detailsOpen = false"
+                @dismiss="dismissProposal"
+                @edit="handleEditProposal"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
+
+    <ExamWorkspaceSheet
+      v-if="isPhone && questionSheetOpen && workspaceDocument"
+      title="Frågor"
+      @close="questionSheetOpen = false"
+    >
+      <ExamWorkspaceItemTable
+        :export-blockers-by-item-id="exportBlockersByItemId"
+        :proposal-item-ids="proposalItemIds"
+        :readiness-by-item-id="readinessByItemId"
+        :rows="itemRows"
+        :selected-item-id="selectedItemId"
+        @select="selectAndClose"
+      />
+      <div class="p-4">
+        <button
+          type="button"
+          class="btn-ghost w-full justify-center shadow-none"
+          :disabled="isBusy"
+          data-test="exam-workspace-phone-add-item"
+          @click="handleAddItem"
+        >
+          Ny fråga
+        </button>
+      </div>
+    </ExamWorkspaceSheet>
   </main>
 </template>
