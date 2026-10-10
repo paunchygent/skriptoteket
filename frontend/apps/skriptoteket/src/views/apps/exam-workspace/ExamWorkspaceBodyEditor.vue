@@ -54,7 +54,7 @@ import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
 const DELETE_NEXT_TO_GAP_COPY =
   "Luckan tas inte bort med Backsteg eller Delete. Öppna luckan för att ändra svaret.";
-const DELETE_NEXT_TO_IMAGE_COPY = "Bilden tas inte bort i texten.";
+const DELETE_NEXT_TO_IMAGE_COPY = "Bilden kan inte tas bort i texten.";
 const EMPTY_PARAGRAPH_COPY = "Stycket måste innehålla text.";
 const POPOVER_WIDTH_PX = 448;
 

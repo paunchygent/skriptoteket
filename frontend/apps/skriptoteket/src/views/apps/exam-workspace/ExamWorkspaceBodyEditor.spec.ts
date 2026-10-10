@@ -242,7 +242,7 @@ describe("ExamWorkspaceBodyEditor", () => {
 
     expect(event.defaultPrevented).toBe(true);
     expect(wrapper.get('[data-test="exam-workspace-body-status"]').text()).toBe(
-      "Bilden tas inte bort i texten.",
+      "Bilden kan inte tas bort i texten.",
     );
     wrapper.unmount();
   });
