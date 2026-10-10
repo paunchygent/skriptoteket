@@ -5,6 +5,9 @@ from __future__ import annotations
 import hashlib
 from pathlib import PurePosixPath
 
+import structlog
+from pydantic import JsonValue
+
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
@@ -15,6 +18,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
@@ -25,6 +29,15 @@ from skriptoteket.protocols.exam_workspace import (
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+logger = structlog.get_logger(__name__)
+
+_Diagnostics = tuple[dict[str, JsonValue], ...]
+
+
+def _job_failure(code: str, detail: str, observed: _Diagnostics = ()) -> _Diagnostics:
+    """Append the terminal job failure to the conversion events already observed."""
+    return (*observed, DocxBuildEvent(stage="job", code=code, detail=detail).as_json())
 
 
 class ProcessExamWorkspaceDocxJobHandler:
@@ -58,10 +71,15 @@ class ProcessExamWorkspaceDocxJobHandler:
     ) -> ExamAnswerKeyEnrichmentJob:
         if job.source_docx is None or job.workspace_lineage_id is None:
             raise ValueError("Unfinished DOCX jobs require their source and lineage.")
+        observed: _Diagnostics = ()
         try:
             actor = await self._users.get_by_id(job.owner_user_id)
             if actor is None:
-                return await self._fail(job, "Kontot för provdokumentet finns inte längre.")
+                return await self._fail(
+                    job,
+                    "Kontot för provdokumentet finns inte längre.",
+                    _job_failure("owner_missing", str(job.owner_user_id)),
+                )
             chunks = self._chunker.chunk(content=job.source_docx)
             result = await self._converter.convert(
                 job_id=job.id,
@@ -71,6 +89,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                 chunks=chunks,
                 fallback_reason=fallback_reason,
             )
+            observed = tuple(event.as_json() for event in result.events)
             content = self._codec.build(
                 content=ExamWorkspaceContainerContent(
                     document=result.document,
@@ -78,27 +97,57 @@ class ProcessExamWorkspaceDocxJobHandler:
                     notes=result.notes,
                 )
             )
+            file_id = self._ids.new_uuid()
             async with self._uow:
                 current = await self._jobs.get_by_id_for_update(job_id=job.id)
                 if not self._owns(current, job):
                     return current or job
                 assert current is not None
-                await self._store.save_version(
-                    actor=actor,
-                    file_id=self._ids.new_uuid(),
-                    name=f"{PurePosixPath(job.input_filename).stem}.provdokument.zip",
-                    content=content,
-                    lineage_id=job.workspace_lineage_id,
-                    version=1,
-                )
-                finished = finish_enrichment_job(
-                    job=current,
-                    status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
-                    now=self._clock.now(),
-                ).model_copy(update={"source_docx": None})
-                return await self._jobs.update(job=finished, expected_worker_id=job.locked_by)
+                try:
+                    await self._store.save_version(
+                        actor=actor,
+                        file_id=file_id,
+                        name=f"{PurePosixPath(job.input_filename).stem}.provdokument.zip",
+                        content=content,
+                        lineage_id=job.workspace_lineage_id,
+                        version=1,
+                    )
+                    finished = finish_enrichment_job(
+                        job=current,
+                        status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                        now=self._clock.now(),
+                        diagnostics=observed,
+                    ).model_copy(update={"source_docx": None})
+                    updated = await self._jobs.update(
+                        job=finished, expected_worker_id=job.locked_by
+                    )
+                except BaseException:
+                    # Any body exception, cancellation included, rolls back the publication
+                    # transaction, so a stored container has no vault row; deletion is a no-op
+                    # for an unstored file, and a commit failure never lands here.
+                    await self._store.discard_version_file(actor=actor, file_id=file_id)
+                    raise
+            logger.info(
+                "DOCX conversion job succeeded",
+                job_id=str(job.id),
+                items=len(result.document.items),
+                review_items=sum(bool(item.review.reasons) for item in result.document.items),
+                failure_events=len(result.events),
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+            )
+            return updated
         except DomainError as error:
-            return await self._fail(job, error.message)
+            return await self._fail(
+                job, error.message, _job_failure("domain_error", error.code.value, observed)
+            )
+        except Exception as error:
+            logger.exception("DOCX conversion job crashed", job_id=str(job.id))
+            return await self._fail(
+                job,
+                "Konverteringen stoppades av ett oväntat fel. Försök igen eller kontakta support.",
+                _job_failure("unexpected_error", type(error).__name__, observed),
+            )
 
     def _owns(
         self, current: ExamAnswerKeyEnrichmentJob | None, claimed: ExamAnswerKeyEnrichmentJob
@@ -112,8 +161,14 @@ class ProcessExamWorkspaceDocxJobHandler:
         )
 
     async def _fail(
-        self, job: ExamAnswerKeyEnrichmentJob, message: str
+        self, job: ExamAnswerKeyEnrichmentJob, message: str, diagnostics: _Diagnostics
     ) -> ExamAnswerKeyEnrichmentJob:
+        logger.warning(
+            "DOCX conversion job failed",
+            job_id=str(job.id),
+            last_error=message,
+            diagnostics=diagnostics,
+        )
         async with self._uow:
             current = await self._jobs.get_by_id_for_update(job_id=job.id)
             if not self._owns(current, job):
@@ -124,5 +179,6 @@ class ProcessExamWorkspaceDocxJobHandler:
                 status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
                 now=self._clock.now(),
                 last_error=message,
+                diagnostics=diagnostics,
             ).model_copy(update={"source_docx": None})
             return await self._jobs.update(job=finished, expected_worker_id=job.locked_by)

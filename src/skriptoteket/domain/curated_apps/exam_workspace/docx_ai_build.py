@@ -1,107 +1,116 @@
-"""DOCX result assembly and the stable batched-build public interface."""
+"""Map produced items to the native contract and assemble the build result."""
 
 from uuid import UUID
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_admission import (
-    validate_build_entry as validate_build_entry,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildEntry as DocxBuildEntry,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildEnvelope as DocxBuildEnvelope,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildResult as DocxBuildResult,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    KeyEvidence as KeyEvidence,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    SourceEvidence as SourceEvidence,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    SourceText as SourceText,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import (
-    docx_build_output_spec as docx_build_output_spec,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import (
-    parse_build_entry as parse_build_entry,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_source import (
-    answer_key_chunks as answer_key_chunks,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_source import (
-    normalize_text as normalize_text,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_source import (
-    validate_source_text as validate_source_text,
+    DocxBuildEvent,
+    DocxBuildResult,
+    ProducedItem,
+    ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
+    NativeChoice,
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
     NativeExamItemKind,
+    NativeGap,
+    NativeGapSegment,
     NativeItemReview,
     NativeItemReviewState,
     NativeParagraph,
     NativeParseOrigin,
+    NativeSegment,
     NativeTextSegment,
 )
 
-
-def _accounted_chunks(
-    chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
-    title: SourceText | None,
-    instructions: tuple[SourceText, ...],
-) -> tuple[set[str], list[str]]:
-    claimed = {a for _, anchors in accepted for a in anchors}
-    notes: list[str] = []
-    # Only fully accounted metadata chunks are consumed; partial ones remain reviewable.
-    for chunk in chunks:
-        metadata = [
-            v.text
-            for v in (*instructions, *((title,) if title else ()))
-            if chunk.anchor in v.source_anchors
-        ]
-        if metadata and normalize_text(" ".join(metadata)) == normalize_text(chunk.text):
-            claimed.add(chunk.anchor)
-    if accepted:
-        for chunk in answer_key_chunks(chunks):
-            claimed.add(chunk.anchor)
-            notes.append(chunk.text)
-    return claimed, notes
+_REVIEW_BLANK = NativeTextSegment(text="____")
 
 
-def _ordered_items(
-    chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
-    claimed: set[str],
-    reason: str,
-) -> tuple[NativeExamItem, ...]:
-    positions = {c.anchor: i for i, c in enumerate(chunks)}
-    ordered = [(min(positions[a] for a in anchors), item) for item, anchors in accepted]
-    for chunk in chunks:
-        if chunk.anchor not in claimed:
-            ordered.append((positions[chunk.anchor], review_chunk_item(chunk, reason)))
-    if not ordered:
-        ordered.append(
-            (
-                0,
-                review_chunk_item(
-                    DocxChunk("empty", "paragraph", "Dokumentet saknar läsbart innehåll."), reason
-                ),
+def native_item(produced: ProducedItem) -> NativeExamItem:
+    """Assign IDs and provenance; the native contract raises on any invalid shape."""
+    choices = tuple(
+        NativeChoice(choice_id=f"choice_{index:03d}", text=choice.text)
+        for index, choice in enumerate(produced.choices, start=1)
+    )
+    correct = tuple(
+        native.choice_id
+        for native, choice in zip(choices, produced.choices, strict=True)
+        if choice.correct
+    )
+    gaps: list[NativeGap] = []
+    body: list[NativeParagraph] = []
+    for paragraph in produced.body:
+        segments: list[NativeSegment] = []
+        for segment in paragraph.segments:
+            if segment.kind == "gap":
+                gap_id = f"gap_{len(gaps) + 1:03d}"
+                gaps.append(
+                    NativeGap(
+                        gap_id=gap_id, accepted_values=segment.accepted_values, hint=segment.hint
+                    )
+                )
+                segments.append(NativeGapSegment(gap_id=gap_id))
+            else:
+                segments.append(NativeTextSegment(text=segment.text or ""))
+        body.append(NativeParagraph(segments=tuple(segments)))
+    keyed = bool(correct) or any(gap.accepted_values for gap in gaps)
+    if produced.kind is NativeExamItemKind.FREE_TEXT:
+        origin = NativeAnswerKeyOrigin.NOT_APPLICABLE
+    else:
+        origin = NativeAnswerKeyOrigin.SOURCE_PROVIDED if keyed else NativeAnswerKeyOrigin.ABSENT
+    return NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=produced.kind,
+        title=produced.title,
+        body=tuple(body),
+        points=produced.points,
+        choices=choices,
+        gaps=tuple(gaps),
+        answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct),
+        review=NativeItemReview(
+            state=NativeItemReviewState.REVIEW_COMPLETE,
+            parse_origin=NativeParseOrigin.LLM_PARSED,
+        ),
+        source_anchor=produced.source_anchors[0],
+    )
+
+
+def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
+    """One teacher-review item for a question the model could not convert.
+
+    Gap answers and choice keys never become text; a gap shows as a blank line.
+    """
+    paragraphs = [
+        NativeParagraph(
+            segments=tuple(
+                NativeTextSegment(text=s.text or "") if s.kind == "text" else _REVIEW_BLANK
+                for s in paragraph.segments
             )
         )
-    ordered.sort(key=lambda pair: pair[0])
-    return tuple(
-        item.model_copy(update={"item_id": f"item_{i:03d}", "sequence": i})
-        for i, (_, item) in enumerate(ordered, start=1)
+        for paragraph in produced.body
+    ]
+    if produced.choices:
+        lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
+        paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
+    return NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=NativeExamItemKind.FREE_TEXT,
+        title=produced.title,
+        body=tuple(paragraphs),
+        points=produced.points,
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+        review=NativeItemReview(
+            state=NativeItemReviewState.REVIEW_REQUIRED,
+            parse_origin=NativeParseOrigin.LLM_PARSED,
+            reasons=(reason,),
+        ),
+        source_anchor=produced.source_anchors[0],
     )
 
 
@@ -123,6 +132,25 @@ def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
     )
 
 
+def _ordered_items(
+    chunks: tuple[DocxChunk, ...],
+    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
+    review_reasons: dict[str, str],
+) -> tuple[NativeExamItem, ...]:
+    positions = {c.anchor: i for i, c in enumerate(chunks)}
+    ordered = [(min(positions[a] for a in anchors), item) for item, anchors in accepted]
+    ordered.extend(
+        (positions[chunk.anchor], review_chunk_item(chunk, review_reasons[chunk.anchor]))
+        for chunk in chunks
+        if chunk.anchor in review_reasons
+    )
+    ordered.sort(key=lambda pair: pair[0])
+    return tuple(
+        item.model_copy(update={"item_id": f"item_{i:03d}", "sequence": i})
+        for i, (_, item) in enumerate(ordered, start=1)
+    )
+
+
 def assemble_build_result(
     *,
     document_id: UUID,
@@ -130,16 +158,22 @@ def assemble_build_result(
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...] = (),
-    title: SourceText | None = None,
-    instructions: tuple[SourceText, ...] = (),
-    reason: str,
+    review_reasons: dict[str, str],
+    key_anchors: frozenset[str] = frozenset(),
+    title: ProducedMetadata | None = None,
+    instructions: tuple[ProducedMetadata, ...] = (),
+    events: tuple[DocxBuildEvent, ...] = (),
     input_tokens: int | None = None,
     output_tokens: int | None = None,
 ) -> DocxBuildResult:
-    claimed, notes = _accounted_chunks(chunks, accepted, title, instructions)
-    items = _ordered_items(chunks, accepted, claimed, reason)
-    if any(item.review.state is NativeItemReviewState.REVIEW_REQUIRED for item in items):
-        notes.append(reason)
+    """Keep facit chunks as teacher notes and every unbuilt chunk as a review item."""
+    if not chunks:
+        empty = "Dokumentet saknar läsbart innehåll."
+        chunks = (DocxChunk("empty", "paragraph", empty, empty),)
+        review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
+    items = _ordered_items(chunks, accepted, review_reasons)
+    notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
+    notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,
@@ -150,7 +184,7 @@ def assemble_build_result(
             kind="docx_import",
             source_filename=filename,
             source_sha256=source_sha256,
-            extractor_version="docx_ai_build_v1",
+            extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens)
+    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)

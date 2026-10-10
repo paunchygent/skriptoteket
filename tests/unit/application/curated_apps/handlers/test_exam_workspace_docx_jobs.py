@@ -1,10 +1,10 @@
-"""Background import publication, source deletion, readback and lease fencing."""
+"""Background import publication, source deletion, readback and upload validation."""
 
 import json
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
@@ -37,11 +37,8 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from tests.fixtures.time_fixtures import FixedClock
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import (
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
     StubProvider,
@@ -58,28 +55,36 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
+_COURSE_EXAM = Path(
+    "tests/fixtures/exam_conversion/docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx"
+)
+_COURSE_RESPONSE = Path(
+    "tests/fixtures/exam_conversion/svenska_2_kursavslutande_prov_docx_build_response_v2.json"
+)
 
 
-class LockingFakeJobs(InMemoryEnrichmentJobRepository):
-    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        return await self.get_by_id(job_id=job_id)
+class RecordedRoundsProvider(StubProvider):
+    """Replay the recorded live round on every call."""
+
+    def __init__(self, response: Path) -> None:
+        super().__init__(content=json.loads(response.read_text()), usage=StructuredLLMUsage())
 
 
 class JobEnvironment(_Env):
-    jobs: LockingFakeJobs
+    jobs: InMemoryEnrichmentJobRepository
     actor: User
     provider: StubProvider
     importer: ImportExamWorkspaceDocumentHandler
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
+def environment(
+    *, enabled: bool = True, budget: int = 1_000_000, response: Path = _RESPONSE
+) -> JobEnvironment:
     env = JobEnvironment()
-    env.jobs = LockingFakeJobs()
+    env.jobs = InMemoryEnrichmentJobRepository()
     env.actor = _actor()
-    env.provider = StubProvider(
-        content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage()
-    )
+    env.provider = RecordedRoundsProvider(response)
     env.importer = ImportExamWorkspaceDocumentHandler(
         jobs=env.jobs,
         uow=env.store._uow,
@@ -89,7 +94,7 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     )
     converter = DocxAIConverter(
         provider=env.provider,
-        provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+        profile=_route().primary,
         leases=InMemoryLeaseRepository(daily_token_limit=budget),
         uow=env.store._uow,
         clock=FixedClock(_NOW),
@@ -131,13 +136,15 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
 
 
 @pytest.mark.asyncio
-async def test_quiz_one_batch_publishes_version_one_deletes_source_and_exports_valid_qti():
+async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagnostics():
     env = environment()
     running = await claim(env)
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
+    # The recorded live round claimed every chunk, so no further round and no failure event.
     assert env.provider.call_count == 1
+    assert finished.diagnostics == ()
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert opened.summary.version == 1
@@ -173,6 +180,20 @@ async def test_quiz_one_batch_publishes_version_one_deletes_source_and_exports_v
 
 
 @pytest.mark.asyncio
+async def test_recorded_model_reviews_persist_their_reasons_in_job_diagnostics():
+    env = environment(response=_COURSE_RESPONSE)
+    running = await claim(env, _COURSE_EXAM.read_bytes())
+    finished = await env.processor.handle(job=running)
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert env.provider.call_count == 1
+    prefix = "AI-tolkningen markerade frågan för granskning: "
+    assert [e["detail"] for e in finished.diagnostics if e["code"] == "model_review"] == [
+        *[f"{prefix}Uppgiftens svarssätt framgår inte av källtexten."] * 4,
+        f"{prefix}Uppgiften saknar instruktion om hur påståendena ska besvaras.",
+    ]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("enabled,budget", [(False, 1_000_000), (True, 1)])
 async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_docx(enabled, budget):
     env = environment(enabled=enabled, budget=budget)
@@ -190,29 +211,14 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     assert all(item.review.state.value == "review_required" for item in opened.document.items)
     assert opened.notes
     assert native_export_blockers(opened.document)
-
-
-@pytest.mark.asyncio
-async def test_worker_expiry_preserves_source_review_without_calling_provider():
-    env = environment()
-    running = await claim(env)
-    finished = await env.processor.handle(job=running, fallback_reason="Konverteringen avbröts.")
-    assert finished.source_docx is None
-    assert env.provider.call_count == 0
-    assert running.workspace_lineage_id is not None
-    opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    assert len(opened.document.items) == 109
-
-
-@pytest.mark.asyncio
-async def test_stale_worker_cannot_publish_or_delete_another_workers_source():
-    env = environment(enabled=False)
-    running = await claim(env)
-    env.jobs.jobs[running.id] = running.model_copy(update={"locked_by": "replacement"})
-    returned = await env.processor.handle(job=running)
-    assert returned.locked_by == "replacement"
-    assert returned.source_docx == _QUIZ.read_bytes()
-    assert not env.vault_files.files
+    codes = {event["code"] for event in finished.diagnostics}
+    assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
+    reason = opened.document.items[0].review.reasons[0]
+    assert reason == (
+        "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+        if not enabled
+        else "Dagens AI-budget är förbrukad. Kontrollera källtexten manuellt."
+    )
 
 
 @pytest.mark.asyncio
@@ -226,6 +232,16 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
         actor=env.actor, job_id=running.id
     )
     assert status.error_message and "Word" in status.error_message
+    assert finished.diagnostics == (
+        {
+            "stage": "job",
+            "code": "domain_error",
+            "round": None,
+            "item": None,
+            "anchors": [],
+            "detail": "VALIDATION_ERROR",
+        },
+    )
 
 
 @pytest.mark.asyncio

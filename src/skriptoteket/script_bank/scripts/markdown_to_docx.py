@@ -1,25 +1,37 @@
+from __future__ import annotations
+
 import re
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
-from skriptoteket_toolkit import read_inputs, read_settings  # type: ignore[import-not-found]
+from skriptoteket_toolkit import JsonValue, read_inputs, read_settings
 
 # Optional preinstalled libs
 try:
-    import pypandoc  # type: ignore
+    import pypandoc
 except Exception:
-    pypandoc = None  # type: ignore
+    _HAS_PYPANDOC = False
+else:
+    _HAS_PYPANDOC = True
 
 try:
-    from docx import Document  # type: ignore
-    from docx.enum.style import WD_STYLE_TYPE  # type: ignore
-    from docx.oxml.ns import qn  # type: ignore
-    from docx.shared import Inches, Pt, RGBColor  # type: ignore
+    from docx import Document
+    from docx.document import Document as DocxDocument
+    from docx.enum.style import WD_STYLE_TYPE
+    from docx.oxml.ns import qn
+    from docx.shared import Inches, Pt, RGBColor
+    from docx.styles.style import BaseStyle, CharacterStyle, ParagraphStyle
 except Exception:
-    Document = None  # type: ignore
-    WD_STYLE_TYPE = None  # type: ignore
+    _HAS_DOCX = False
+else:
+    _HAS_DOCX = True
+
+
+class MarkdownFile(TypedDict):
+    path: Path
+    name: str
 
 
 # =========================
@@ -28,8 +40,10 @@ except Exception:
 
 
 def contract_v2(
-    outputs: list[dict], next_actions: list[dict] | None = None, state: Any = None
-) -> dict:
+    outputs: list[dict[str, object]],
+    next_actions: list[dict[str, object]] | None = None,
+    state: JsonValue = None,
+) -> dict[str, object]:
     return {"outputs": outputs, "next_actions": next_actions or [], "state": state}
 
 
@@ -38,20 +52,22 @@ def contract_v2(
 # =========================
 
 
-def o_markdown(markdown: str) -> dict:
+def o_markdown(markdown: str) -> dict[str, object]:
     return {"kind": "markdown", "markdown": markdown}
 
 
-def o_notice(level: str, message: str) -> dict:
+def o_notice(level: str, message: str) -> dict[str, object]:
     return {"kind": "notice", "level": level, "message": message}
 
 
-def o_json(title: str, value: Any) -> dict:
+def o_json(title: str, value: JsonValue) -> dict[str, object]:
     return {"kind": "json", "title": title, "value": value}
 
 
-def o_table(title: str | None, columns: list[dict], rows: list[dict]) -> dict:
-    payload: dict = {"kind": "table", "columns": columns, "rows": rows}
+def o_table(
+    title: str | None, columns: list[dict[str, str]], rows: list[dict[str, str]]
+) -> dict[str, object]:
+    payload: dict[str, object] = {"kind": "table", "columns": columns, "rows": rows}
     if title:
         payload["title"] = title
     return payload
@@ -92,11 +108,11 @@ def _profile_desc(profile: str) -> str:
 # =========================
 
 
-def _load_settings_from_memory() -> tuple[dict, str]:
+def _load_settings_from_memory() -> tuple[dict[str, JsonValue], str]:
     return (read_settings(), "SKRIPTOTEKET_MEMORY_PATH")
 
 
-def _load_inputs_from_env() -> tuple[dict, str]:
+def _load_inputs_from_env() -> tuple[dict[str, JsonValue], str]:
     return (read_inputs(), "request.json")
 
 
@@ -105,13 +121,13 @@ def _load_inputs_from_env() -> tuple[dict, str]:
 # =========================
 
 
-def _unwrap_value(v: Any) -> Any:
+def _unwrap_value(v: object) -> object:
     if isinstance(v, dict) and "value" in v:
         return v.get("value")
     return v
 
 
-def _as_bool(v: Any, default: bool = False) -> bool:
+def _as_bool(v: object, default: bool = False) -> bool:
     v = _unwrap_value(v)
     if isinstance(v, bool):
         return v
@@ -126,12 +142,12 @@ def _as_bool(v: Any, default: bool = False) -> bool:
     return default
 
 
-def _as_str(v: Any, default: str = "") -> str:
+def _as_str(v: object, default: str = "") -> str:
     v = _unwrap_value(v)
     return v if isinstance(v, str) else default
 
 
-def _coerce_profile(v: Any, default: str) -> str:
+def _coerce_profile(v: object, default: str) -> str:
     s = _as_str(v, default).strip()
     if s in {"use_default", "default", ""}:
         return default
@@ -140,7 +156,7 @@ def _coerce_profile(v: Any, default: str) -> str:
     return default
 
 
-def _coerce_scope(v: Any, default: str) -> str:
+def _coerce_scope(v: object, default: str) -> str:
     s = _as_str(v, default).strip()
     if s in {SCOPE_FIRST, SCOPE_ALL}:
         return s
@@ -152,7 +168,7 @@ def _coerce_scope(v: Any, default: str) -> str:
 # =========================
 
 
-def _mk_file(path: Path, name: str | None = None) -> dict:
+def _mk_file(path: Path, name: str | None = None) -> MarkdownFile:
     return {"path": path, "name": name or path.name}
 
 
@@ -183,15 +199,15 @@ def _human_size(num_bytes: int) -> str:
     return f"{n:.1f} TB"
 
 
-def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
+def _normalize_markdown_files(input_root: Path, value: object) -> list[MarkdownFile]:
     value = _unwrap_value(value)
 
-    def one(v: Any) -> list[dict]:
+    def one(v: object) -> list[MarkdownFile]:
         v = _unwrap_value(v)
         if v is None:
             return []
         if isinstance(v, list):
-            out: list[dict] = []
+            out: list[MarkdownFile] = []
             for it in v:
                 out.extend(one(it))
             return out
@@ -222,12 +238,9 @@ def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
     files = one(value)
 
     seen: set[str] = set()
-    uniq: list[dict] = []
+    uniq: list[MarkdownFile] = []
     for f in files:
-        p = f.get("path")
-        if not isinstance(p, Path):
-            continue
-        k = str(p)
+        k = str(f["path"])
         if k in seen:
             continue
         seen.add(k)
@@ -235,7 +248,7 @@ def _normalize_markdown_files(input_root: Path, value: Any) -> list[dict]:
     return uniq
 
 
-def _scan_input_dir_for_markdown(input_root: Path) -> list[dict]:
+def _scan_input_dir_for_markdown(input_root: Path) -> list[MarkdownFile]:
     if not input_root.exists():
         return []
     candidates: list[Path] = []
@@ -251,28 +264,26 @@ def _scan_input_dir_for_markdown(input_root: Path) -> list[dict]:
 # =========================
 
 
-def _ensure_style(doc: Any, name: str, style_type: Any) -> Any | None:
+def _ensure_style(doc: DocxDocument, name: str, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
     """
     Ensure a style exists in the reference doc. If it already exists, return it.
     If not, try to create it. If that fails, return None.
     """
     try:
-        _ = doc.styles[name]
-        return _
+        existing: BaseStyle = doc.styles[name]
+        return existing
     except Exception:
         pass
 
-    if WD_STYLE_TYPE is None:
-        return None
-
     try:
-        return doc.styles.add_style(name, style_type)
+        created: BaseStyle = doc.styles.add_style(name, style_type)
+        return created
     except Exception:
         return None
 
 
 def _set_style_font(
-    doc: Any,
+    doc: DocxDocument,
     style_name: str,
     *,
     font_name: str | None = None,
@@ -282,7 +293,7 @@ def _set_style_font(
     underline: bool | None = None,
 ) -> None:
     try:
-        style = doc.styles[style_name]
+        style: CharacterStyle = doc.styles[style_name]
     except Exception:
         return
 
@@ -307,7 +318,7 @@ def _set_style_font(
 
 
 def _set_style_paragraph(
-    doc: Any,
+    doc: DocxDocument,
     style_name: str,
     *,
     space_before_pt: float | None = None,
@@ -315,7 +326,7 @@ def _set_style_paragraph(
     line_spacing: float | None = None,
 ) -> None:
     try:
-        style = doc.styles[style_name]
+        style: ParagraphStyle = doc.styles[style_name]
     except Exception:
         return
 
@@ -331,8 +342,8 @@ def _set_style_paragraph(
         return
 
 
-def _apply_docx_profile_styles(doc: Any, profile: str) -> None:
-    if Document is None:
+def _apply_docx_profile_styles(doc: DocxDocument, profile: str) -> None:
+    if not _HAS_DOCX:
         return
 
     # Margins
@@ -450,18 +461,17 @@ def _make_reference_docx(profile: str, tmpdir: Path) -> Path:
     We explicitly ensure key styles exist, so Pandoc has something to map to.
     """
     ref_path = tmpdir / f"reference_{profile}.docx"
-    if Document is None:
+    if not _HAS_DOCX:
         return ref_path
 
-    doc = Document()
+    doc: DocxDocument = Document()
 
     # Ensure styles that matter for "no color" exist
-    if WD_STYLE_TYPE is not None:
-        _ensure_style(doc, "Hyperlink", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "FollowedHyperlink", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Verbatim Char", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Code", WD_STYLE_TYPE.CHARACTER)
-        _ensure_style(doc, "Source Code", WD_STYLE_TYPE.PARAGRAPH)
+    _ensure_style(doc, "Hyperlink", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "FollowedHyperlink", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Verbatim Char", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Code", WD_STYLE_TYPE.CHARACTER)
+    _ensure_style(doc, "Source Code", WD_STYLE_TYPE.PARAGRAPH)
 
     _apply_docx_profile_styles(doc, profile)
     doc.add_paragraph("Reference document for Pandoc DOCX styling (generated).")
@@ -475,7 +485,7 @@ def _make_reference_docx(profile: str, tmpdir: Path) -> Path:
 
 
 def _pandoc_available() -> bool:
-    if pypandoc is None:
+    if not _HAS_PYPANDOC:
         return False
     try:
         _ = pypandoc.get_pandoc_version()
@@ -487,7 +497,7 @@ def _pandoc_available() -> bool:
 def _convert_with_pandoc(
     md_path: Path, out_docx: Path, profile: str, tmpdir: Path
 ) -> tuple[bool, str]:
-    if pypandoc is None:
+    if not _HAS_PYPANDOC:
         return False, "pypandoc saknas."
 
     reference = _make_reference_docx(profile, tmpdir)
@@ -526,8 +536,8 @@ def _convert_with_pandoc(
 # =========================
 
 
-def run_tool(input_dir: str, output_dir: str) -> dict:
-    outputs: list[dict] = []
+def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
+    outputs: list[dict[str, object]] = []
 
     input_root = Path(input_dir)
     out_root = Path(output_dir)
@@ -583,7 +593,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         )
 
     # --- Resolve files ---
-    files: list[dict] = []
+    files: list[MarkdownFile] = []
     if "markdown_files" in inputs:
         files = _normalize_markdown_files(input_root, inputs.get("markdown_files"))
     if not files:
@@ -614,13 +624,13 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
         )
     )
 
-    results: list[dict] = []
+    results: list[dict[str, str]] = []
     notes: list[str] = []
 
     with tempfile.TemporaryDirectory(prefix="md2docx_") as td:
         tmpdir = Path(td)
 
-        def convert_one(src: dict, profile: str, suffix: str) -> None:
+        def convert_one(src: MarkdownFile, profile: str, suffix: str) -> None:
             src_path: Path = src["path"]
             src_name = str(src.get("name") or src_path.name)
 

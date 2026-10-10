@@ -24,6 +24,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -40,16 +43,25 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_re
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_conversion_profile,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ExamAnswerKeyProposedOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
+    ExportExamWorkspaceDocumentHandlerProtocol,
+    GetExamWorkspaceConversionStatusHandlerProtocol,
+    GetExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceDocumentHandlerProtocol,
+    ListExamWorkspaceDocumentsHandlerProtocol,
+    SaveExamWorkspaceDocumentHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
@@ -73,7 +85,6 @@ class ExamWorkspaceProvider(Provider):
     def docx_converter(
         self,
         provider: AnswerKeyStructuredProviderProtocol,
-        provider_selector: AnswerKeyProviderSelectorProtocol,
         leases: AnswerKeyTokenLeaseRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
@@ -81,7 +92,7 @@ class ExamWorkspaceProvider(Provider):
     ) -> DocxAIConverter:
         return DocxAIConverter(
             provider=provider,
-            provider_selector=provider_selector,
+            profile=build_luna_docx_conversion_profile(settings),
             leases=leases,
             uow=uow,
             clock=clock,
@@ -117,13 +128,29 @@ class ExamWorkspaceProvider(Provider):
     def conversion_status_handler(
         self,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ) -> GetExamWorkspaceConversionStatusHandler:
+    ) -> GetExamWorkspaceConversionStatusHandlerProtocol:
         return GetExamWorkspaceConversionStatusHandler(jobs=jobs)
 
     @provide(scope=Scope.APP)
     def container_codec(self) -> ExamWorkspaceContainerCodecProtocol:
         """Provide the fail-closed container codec."""
         return ExamWorkspaceContainerCodec()
+
+    @provide(scope=Scope.REQUEST)
+    def proposal_carry_forward(
+        self,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CarryExamWorkspaceProposals:
+        """Provide save-time copying of pending proposals without execution."""
+        return CarryExamWorkspaceProposals(
+            enrichment_jobs=enrichment_jobs,
+            proposed_overlays=proposed_overlays,
+            clock=clock,
+            id_generator=id_generator,
+        )
 
     @provide(scope=Scope.REQUEST)
     def document_store(
@@ -134,6 +161,7 @@ class ExamWorkspaceProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
+        proposal_carry_forward: CarryExamWorkspaceProposals,
     ) -> ExamWorkspaceDocumentStore:
         """Provide the versioned Mina filer document store."""
         return ExamWorkspaceDocumentStore(
@@ -143,6 +171,7 @@ class ExamWorkspaceProvider(Provider):
             uow=uow,
             clock=clock,
             settings=settings,
+            proposal_carry_forward=proposal_carry_forward,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -153,7 +182,7 @@ class ExamWorkspaceProvider(Provider):
         clock: ClockProtocol,
         settings: Settings,
         id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDocumentHandler:
+    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
         """Provide the DOCX import handler."""
         return ImportExamWorkspaceDocumentHandler(
             jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
@@ -165,14 +194,14 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-    ) -> GetExamWorkspaceDocumentHandler:
+    ) -> GetExamWorkspaceDocumentHandlerProtocol:
         """Provide the reopen handler."""
         return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
         self, vault_files: VaultFileRepositoryProtocol
-    ) -> ListExamWorkspaceDocumentsHandler:
+    ) -> ListExamWorkspaceDocumentsHandlerProtocol:
         """Provide the head-version document list handler."""
         return ListExamWorkspaceDocumentsHandler(vault_files=vault_files)
 
@@ -182,7 +211,7 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-    ) -> ExportExamWorkspaceDocumentHandler:
+    ) -> ExportExamWorkspaceDocumentHandlerProtocol:
         """Provide the on-demand export handler (QTI/PDF/DOCX)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
@@ -200,7 +229,7 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
-    ) -> SaveExamWorkspaceDocumentHandler:
+    ) -> SaveExamWorkspaceDocumentHandlerProtocol:
         """Provide the versioned save handler."""
         return SaveExamWorkspaceDocumentHandler(
             vault_files=vault_files, codec=codec, store=store, id_generator=id_generator

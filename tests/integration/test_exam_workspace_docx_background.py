@@ -1,6 +1,6 @@
-"""Real PostgreSQL upload-to-version-one proof using a stored Responses fixture.
+"""Real PostgreSQL upload-to-version-one proof replaying a recorded live Responses round.
 
-The response fixture is source-authored test data, not a live-provider capture.
+The response fixture is the output of a recorded live GPT-6 Luna run on the quiz.
 The HTTP adapter, job queue, token ledger, container storage and QTI validators
 are the production implementations.
 """
@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
 )
+from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
@@ -27,10 +28,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ExamWorkspaceDocumentStore,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+    SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
 )
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
@@ -49,14 +54,17 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_conversion_profile,
+)
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
+    PostgreSQLExamAnswerKeyProposedOverlayRepository,
 )
 from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
     PostgreSQLAnswerKeyTokenLeaseRepository,
@@ -70,13 +78,12 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.infrastructure.repositories.test_exam_workspace_repositories import (
-    _create_owner,
+from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
+    create_owner,
 )
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichment_jobs import _route
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 _QUIZ = Path(
@@ -85,11 +92,36 @@ _QUIZ = Path(
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
 
 
-async def test_quiz_background_job_commits_one_source_faithful_document_and_valid_qti(
+def _document_store(
+    session: AsyncSession,
+    *,
+    uow: SQLAlchemyUnitOfWork,
+    storage: LocalVaultStorage,
+    clock: FixedClock,
+    settings: Settings,
+    ids: SequenceIdGenerator,
+) -> ExamWorkspaceDocumentStore:
+    return ExamWorkspaceDocumentStore(
+        vault_files=PostgreSQLUserVaultFileRepository(session),
+        vault_usage=PostgreSQLUserVaultUsageRepository(session),
+        vault_storage=storage,
+        uow=uow,
+        clock=clock,
+        settings=settings,
+        proposal_carry_forward=CarryExamWorkspaceProposals(
+            enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
+            proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
+            clock=clock,
+            id_generator=ids,
+        ),
+    )
+
+
+async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
-    actor = await _create_owner(session_factory)
+    actor = await create_owner(session_factory)
     now = datetime.now(UTC)
     clock = FixedClock(now)
     ids = SequenceIdGenerator([uuid4() for _ in range(5)])
@@ -106,7 +138,9 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
         requests.append(payload)
         assert request.url.path == "/v1/responses"
         assert payload["text"]["format"]["strict"] is True
-        assert payload["max_output_tokens"] == 16_384
+        assert payload["model"] == "gpt-6-luna"
+        assert payload["reasoning"] == {"effort": "medium"}
+        assert payload["max_output_tokens"] == 128_000
         assert "tools" not in payload
         return httpx.Response(
             200,
@@ -142,14 +176,8 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                 worker_id="quiz-worker", now=now, lease_ttl=timedelta(minutes=15)
             )
         assert running is not None and running.id == queued.job_id
-        vault_files = PostgreSQLUserVaultFileRepository(session)
-        store = ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(session),
-            vault_storage=storage,
-            uow=uow,
-            clock=clock,
-            settings=settings,
+        store = _document_store(
+            session, uow=uow, storage=storage, clock=clock, settings=settings, ids=ids
         )
         async with httpx.AsyncClient(transport=httpx.MockTransport(responses)) as client:
             provider = OpenAIAnswerKeyStructuredProvider(
@@ -160,7 +188,7 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
             )
             converter = DocxAIConverter(
                 provider=provider,
-                provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+                profile=build_luna_docx_conversion_profile(settings),
                 leases=PostgreSQLAnswerKeyTokenLeaseRepository(
                     session, daily_token_limit=1_000_000
                 ),
@@ -186,31 +214,43 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
     async with session_factory() as reader:
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
+        assert model.diagnostics == []
         vault_files = PostgreSQLUserVaultFileRepository(reader)
-        store = ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(reader),
-            vault_storage=storage,
+        store = _document_store(
+            reader,
             uow=SQLAlchemyUnitOfWork(reader),
+            storage=storage,
             clock=clock,
             settings=settings,
+            ids=ids,
         )
         opened = await GetExamWorkspaceDocumentHandler(
             vault_files=vault_files, codec=codec, store=store
         ).handle(actor=actor, lineage_id=queued.lineage_id)
         document = opened.document
         assert opened.summary.version == 1
+        assert opened.notes, "Recorded facit chunks must survive the import as teacher notes."
         assert len(document.items) == 28 and sum(item.points or 0 for item in document.items) == 28
         assert [item.kind.value for item in document.items] == ["single_choice"] * 21 + [
             "gap_fill"
         ] * 7
         assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
-        expected = json.loads(_RESPONSE.read_text())
-        for actual, entry in zip(document.items, expected["items"], strict=True):
-            assert actual.points == entry["item"]["points"]
-            assert actual.answer_key.model_dump(mode="json") == entry["item"]["answer_key"]
-            assert actual.model_dump(mode="json")["body"] == entry["item"]["body"]
-            assert actual.model_dump(mode="json")["gaps"] == entry["item"]["gaps"]
+        assert [item.answer_key.correct_choice_ids for item in document.items[:21]] == [
+            (f"choice_{i:03d}",)
+            for i in [1, 3, 2, 4, 2, 4, 3, 1, 1, 8, 2, 5, 6, 4, 3, 2, 1, 6, 3, 4, 7]
+        ]
+        assert [item.gaps[0].accepted_values for item in document.items[21:]] == [
+            (word,)
+            for word in [
+                "cherish",
+                "traverse",
+                "humiliate",
+                "out of the blue",
+                "line",
+                "diction",
+                "alliteration",
+            ]
+        ]
         leases = (
             await reader.scalars(
                 select(ExamAnswerKeyTokenLeaseModel).where(
@@ -218,9 +258,51 @@ async def test_quiz_background_job_commits_one_source_faithful_document_and_vali
                 )
             )
         ).all()
-        assert len(leases) == 1 and leases[0].reserved_tokens > 16_384
-        assert leases[0].actual_tokens is None  # Fixture carries no invented measured usage.
+        assert len(leases) == 1 and leases[0].reserved_tokens > 128_000
+        # The replayed bodies carry no usage, so no measured tokens are invented.
+        assert all(lease.actual_tokens is None for lease in leases)
         package, report = build_native_examnet_qti_package(
             document, package_name="quiz", qti_writer=ExamNetQtiPackageWriter()
         )
         assert package.startswith(b"PK") and json.loads(report)["package_status"] == "passed"
+        version_one_notes = opened.notes
+
+    # An unrelated save must carry the version-1 source notes into version 2 unchanged.
+    edited = document.model_copy(update={"revision": 2, "title": f"{document.title} - redigerad"})
+    async with session_factory() as writer:
+        save_store = _document_store(
+            writer,
+            uow=SQLAlchemyUnitOfWork(writer),
+            storage=storage,
+            clock=clock,
+            settings=settings,
+            ids=SequenceIdGenerator([uuid4() for _ in range(3)]),
+        )
+        saved = await SaveExamWorkspaceDocumentHandler(
+            vault_files=PostgreSQLUserVaultFileRepository(writer),
+            codec=codec,
+            store=save_store,
+            id_generator=SequenceIdGenerator([uuid4()]),
+        ).handle(
+            actor=actor,
+            lineage_id=queued.lineage_id,
+            request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+        )
+    assert saved.summary.version == 2
+    assert saved.notes == version_one_notes and len(saved.notes) > 0
+
+    async with session_factory() as final_reader:
+        reopened = await GetExamWorkspaceDocumentHandler(
+            vault_files=PostgreSQLUserVaultFileRepository(final_reader),
+            codec=codec,
+            store=_document_store(
+                final_reader,
+                uow=SQLAlchemyUnitOfWork(final_reader),
+                storage=storage,
+                clock=clock,
+                settings=settings,
+                ids=ids,
+            ),
+        ).handle(actor=actor, lineage_id=queued.lineage_id)
+    assert reopened.summary.version == 2 and reopened.document.revision == 2
+    assert reopened.notes == version_one_notes and len(reopened.notes) > 0

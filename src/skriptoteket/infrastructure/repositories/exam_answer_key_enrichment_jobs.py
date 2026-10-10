@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
@@ -55,6 +56,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             locked_by=job.locked_by,
             locked_until=job.locked_until,
             last_error=job.last_error,
+            diagnostics=list(job.diagnostics),
             created_at=job.created_at,
             updated_at=job.updated_at,
             started_at=job.started_at,
@@ -87,6 +89,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model.locked_by = job.locked_by
         model.locked_until = job.locked_until
         model.last_error = job.last_error
+        model.diagnostics = list(job.diagnostics)
         model.updated_at = job.updated_at
         model.started_at = job.started_at
         model.finished_at = job.finished_at
@@ -94,9 +97,21 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         await self._session.refresh(model)
         return ExamAnswerKeyEnrichmentJob.model_validate(model)
 
-    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
-        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+    async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
+        stmt = select(
+            ExamAnswerKeyEnrichmentJobModel.id,
+            ExamAnswerKeyEnrichmentJobModel.owner_user_id,
+            ExamAnswerKeyEnrichmentJobModel.source_kind,
+            ExamAnswerKeyEnrichmentJobModel.status,
+            ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
+            ExamAnswerKeyEnrichmentJobModel.last_error,
+        ).where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
+        row = (await self._session.execute(stmt)).one_or_none()
+        return (
+            ExamWorkspaceConversionJobView.model_validate(row, from_attributes=True)
+            if row
+            else None
+        )
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         stmt = (

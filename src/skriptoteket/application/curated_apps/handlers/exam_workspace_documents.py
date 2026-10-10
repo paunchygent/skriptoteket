@@ -17,6 +17,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
+    ExamWorkspaceConversionJobView,
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
@@ -25,9 +26,15 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentSummary,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
@@ -69,6 +76,7 @@ class ExamWorkspaceDocumentStore:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
+        proposal_carry_forward: CarryExamWorkspaceProposals,
     ) -> None:
         self._vault_files = vault_files
         self._vault_usage = vault_usage
@@ -76,6 +84,7 @@ class ExamWorkspaceDocumentStore:
         self._uow = uow
         self._clock = clock
         self._settings = settings
+        self._proposal_carry_forward = proposal_carry_forward
 
     async def save_version(
         self,
@@ -86,6 +95,9 @@ class ExamWorkspaceDocumentStore:
         content: bytes,
         lineage_id: UUID,
         version: int,
+        previous_document: NativeExamDocument | None = None,
+        document: NativeExamDocument | None = None,
+        rejected_proposal_item_ids: tuple[str, ...] = (),
     ) -> VaultFile:
         actual_bytes = len(content)
         if actual_bytes <= 0:
@@ -141,9 +153,16 @@ class ExamWorkspaceDocumentStore:
                         updated_at=now,
                     )
                 )
+                if previous_document is not None and document is not None:
+                    await self._proposal_carry_forward.carry(
+                        owner_user_id=actor.id,
+                        previous_document=previous_document,
+                        document=document,
+                        rejected_item_ids=frozenset(rejected_proposal_item_ids),
+                    )
         except IntegrityError as error:
             if stored:
-                await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
+                await self.discard_version_file(actor=actor, file_id=file_id)
             raise DomainError(
                 code=ErrorCode.CONFLICT,
                 message="Dokumentet sparades samtidigt i en annan flik.",
@@ -151,9 +170,12 @@ class ExamWorkspaceDocumentStore:
             ) from error
         except Exception:
             if stored:
-                await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
+                await self.discard_version_file(actor=actor, file_id=file_id)
             raise
         return vault_file
+
+    async def discard_version_file(self, *, actor: User, file_id: UUID) -> None:
+        await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
 
     async def load_version(self, *, actor: User, vault_file: VaultFile) -> bytes:
         return await self._vault_storage.read_file(user_id=actor.id, file_id=vault_file.id)
@@ -218,10 +240,12 @@ class ImportExamWorkspaceDocumentHandler:
                     updated_at=now,
                 )
             )
-        return conversion_status(job)
+        return conversion_status(
+            ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
+        )
 
 
-def conversion_status(job: ExamAnswerKeyEnrichmentJob) -> ExamWorkspaceConversionStatus:
+def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConversionStatus:
     assert job.workspace_lineage_id is not None
     return ExamWorkspaceConversionStatus(
         job_id=job.id,
@@ -240,7 +264,7 @@ class GetExamWorkspaceConversionStatusHandler:
         self._jobs = jobs
 
     async def handle(self, *, actor: User, job_id: UUID) -> ExamWorkspaceConversionStatus:
-        job = await self._jobs.get_by_id(job_id=job_id)
+        job = await self._jobs.get_conversion_view(job_id=job_id)
         if (
             job is None
             or job.owner_user_id != actor.id
@@ -353,10 +377,15 @@ class SaveExamWorkspaceDocumentHandler:
                 },
             )
 
+        head_content = await self._store.load_version(actor=actor, vault_file=head)
+        head_container = self._codec.parse(content=head_content)
+        if (
+            head_container.document.document_id != lineage_id
+            or head_container.document.revision != request.expected_revision
+        ):
+            raise validation_error("Den sparade dokumentversionen är skadad.")
         assets_by_id: dict[str, bytes] = {}
         if document.assets:
-            head_content = await self._store.load_version(actor=actor, vault_file=head)
-            head_container = self._codec.parse(content=head_content)
             missing = {
                 asset.asset_id
                 for asset in document.assets
@@ -374,7 +403,9 @@ class SaveExamWorkspaceDocumentHandler:
 
         container_bytes = self._codec.build(
             content=ExamWorkspaceContainerContent(
-                document=document, assets_by_id=assets_by_id, notes=()
+                document=document,
+                assets_by_id=assets_by_id,
+                notes=head_container.notes,
             )
         )
         vault_file = await self._store.save_version(
@@ -384,7 +415,10 @@ class SaveExamWorkspaceDocumentHandler:
             content=container_bytes,
             lineage_id=lineage_id,
             version=document.revision,
+            previous_document=head_container.document,
+            document=document,
+            rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(vault_file), notes=()
+            document=document, summary=_summary(vault_file), notes=head_container.notes
         )

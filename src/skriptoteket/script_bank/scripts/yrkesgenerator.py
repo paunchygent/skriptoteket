@@ -3,22 +3,10 @@ from __future__ import annotations
 import hashlib
 import random
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import NotRequired, TypedDict
 
 from pdf_helper import save_as_pdf
-from skriptoteket_toolkit import get_action_parts, read_inputs  # type: ignore[import-not-found]
-
-# ──────────────────────────────────────────────────────────────────────────────
-# SKRIPTOTEKET_INPUTS
-# ──────────────────────────────────────────────────────────────────────────────
-SKRIPTOTEKET_INPUTS = [
-    {
-        "name": "full_name",
-        "label": "Skriv in ditt för- och efternamn",
-        "kind": "string",
-    }
-]
-SKRIPTOTEKET_INPUT_SCHEMA = SKRIPTOTEKET_INPUTS
+from skriptoteket_toolkit import get_action_parts, read_inputs
 
 # ──────────────────────────────────────────────────────────────────────────────
 # DATA: Yrken, Platser, Löner, Motton
@@ -44,7 +32,19 @@ INTRO_PHRASES = [
     "Ryktena stämmer, du blir",
 ]
 
-CAREERS: List[Dict[str, Any]] = [
+
+class Career(TypedDict):
+    title: str
+    weight: NotRequired[int]
+
+
+class WeightedInterval(TypedDict):
+    title: str
+    start: int
+    end: int
+
+
+CAREERS: list[Career] = [
     {"title": "lärare"},
     {"title": "ingenjör"},
     {"title": "programmerare"},
@@ -214,20 +214,18 @@ def _hash_to_int(text: str) -> int:
     return int.from_bytes(digest, "big")
 
 
-def _build_weighted_intervals(
-    options: List[Dict[str, Any]], total_slots: int
-) -> List[Dict[str, Any]]:
+def _build_weighted_intervals(options: list[Career], total_slots: int) -> list[WeightedInterval]:
     """Bygger intervall för yrkesvalet."""
     if total_slots <= 0:
         raise ValueError("total_slots > 0")
 
     # Filtrera och extrahera
-    valid_opts = [o for o in options if str(o.get("title", "")).strip()]
+    valid_opts = [o for o in options if o["title"].strip()]
     if not valid_opts:
         raise ValueError("Inga giltiga yrken.")
 
-    titles = [str(o["title"]).strip() for o in valid_opts]
-    weights = [int(o.get("weight", 1)) for o in valid_opts]
+    titles = [o["title"].strip() for o in valid_opts]
+    weights = [o.get("weight", 1) for o in valid_opts]
 
     total_weight = sum(weights)
     base_sizes = [(w * total_slots) // total_weight for w in weights]
@@ -240,7 +238,7 @@ def _build_weighted_intervals(
         for i in order[:leftover]:
             base_sizes[i] += 1
 
-    intervals = []
+    intervals: list[WeightedInterval] = []
     start = 0
     for title, size in zip(titles, base_sizes):
         intervals.append({"title": title, "start": start, "end": start + size})
@@ -368,7 +366,7 @@ def _decorate_career(career: str, rng: random.Random) -> str:
     return title
 
 
-def _get_profile_details(*, seed_val: int) -> tuple[Dict[str, str], dict[str, int]]:
+def _get_profile_details(*, seed_val: int) -> tuple[dict[str, str], dict[str, int]]:
     """Genererar en fullständig profil baserat på seed."""
 
     rng = random.Random(seed_val)
@@ -562,7 +560,7 @@ def _build_diploma_html(full_name: str, profile: dict[str, str], reroll_count: i
 """
 
 
-def run_tool(input_dir: str, output_dir: str) -> dict:
+def run_tool(input_dir: str, output_dir: str) -> dict[str, object]:
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     del input_dir

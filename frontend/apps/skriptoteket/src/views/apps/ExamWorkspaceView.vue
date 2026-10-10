@@ -21,8 +21,8 @@
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
  *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry.
- *   - Files mode and the question list/editor/drawer render the workspace;
- *     phones add a question bar and sheet.
+ *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
+ *     drawer) render the workspace; phones add a question bar and sheet.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
@@ -33,11 +33,9 @@ import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
 import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
-import ExamWorkspaceItemDrawer from "./exam-workspace/ExamWorkspaceItemDrawer.vue";
-import ExamWorkspaceItemEditor from "./exam-workspace/ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
-import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
 import {
@@ -101,7 +99,10 @@ const {
   isRequesting,
   openProposals,
   proposalForItem,
+  rejectedItemIds,
+  rejectProposal,
   requestProposals,
+  resetProposalDecisionsAfterSave,
 } = useExamWorkspaceEnrichment(summary);
 
 const mode = ref<ExamWorkspaceMode>("filer");
@@ -150,14 +151,6 @@ const selectedPosition = computed(() => {
   return index + 1;
 });
 
-const selectedReadiness = computed(() =>
-  selectedItem.value ? (readinessByItemId.value[selectedItem.value.item_id] ?? []) : [],
-);
-
-const selectedServerBlockers = computed(() =>
-  selectedItem.value ? (exportBlockersByItemId.value[selectedItem.value.item_id] ?? []) : [],
-);
-
 const otherSavedDocuments = computed(() =>
   savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
 );
@@ -165,15 +158,6 @@ const otherSavedDocuments = computed(() =>
 const enrichmentDisabled = computed(
   () => isDirty.value || isBusy.value || isRequesting.value || isEnrichmentPending.value,
 );
-
-const redigeraGridClass = computed(() => {
-  if (layout.value === "desktop") {
-    return "min-h-0 flex-1 grid-cols-[minmax(15rem,19rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]";
-  }
-  return layout.value === "tablet"
-    ? "min-h-0 flex-1 grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)] grid-rows-[minmax(0,1fr)]"
-    : "grid-cols-1";
-});
 
 // A newly open exam goes into the address and starts in Redigera; closing
 // it returns to Filer.
@@ -242,6 +226,13 @@ onMounted(() => {
 
 function handleExport(target: ExamWorkspaceExportTarget): void {
   if (!isBusy.value) void exportDocument(target);
+}
+
+async function handleSave(): Promise<void> {
+  const rejectedProposalItemIds = [...rejectedItemIds.value];
+  if (await saveDocument(rejectedProposalItemIds)) {
+    resetProposalDecisionsAfterSave();
+  }
 }
 
 function handleApproveProposal(itemId: string): void {
@@ -324,7 +315,7 @@ function handleEditProposal(itemId: string): void {
               class="btn-cta shrink-0 shadow-none"
               :disabled="!isDirty || isBusy"
               data-test="exam-workspace-save"
-              @click="saveDocument"
+              @click="handleSave"
             >
               Spara
             </button>
@@ -396,76 +387,34 @@ function handleEditProposal(itemId: string): void {
           aria-label="Redigera"
           data-test="exam-workspace-workspace"
         >
-          <div
+          <ExamWorkspaceEditorPane
             v-if="workspaceDocument"
-            class="grid min-h-0"
-            :class="redigeraGridClass"
-          >
-            <ExamWorkspaceQuestionList
-              v-if="!isPhone"
-              :count="items.length"
-              :disabled="isBusy"
-              @add="handleAddItem"
-            >
-              <ExamWorkspaceItemTable
-                :export-blockers-by-item-id="exportBlockersByItemId"
-                :proposal-item-ids="proposalItemIds"
-                :readiness-by-item-id="readinessByItemId"
-                :rows="itemRows"
-                :selected-item-id="selectedItemId"
-                @select="selectItem"
-              />
-            </ExamWorkspaceQuestionList>
-
-            <div class="relative flex min-h-0 min-w-0">
-              <div
-                class="min-w-0 flex-1"
-                :class="isPhone ? undefined : 'min-h-0 overflow-y-auto'"
-              >
-                <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
-                  <ExamWorkspaceItemEditor
-                    v-if="selectedItem"
-                    :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
-                    :details-open="detailsOpen"
-                    :disabled="isBusy"
-                    :item="selectedItem"
-                    :position="selectedPosition"
-                    :show-navigation="!isPhone"
-                    :total="items.length"
-                    @mark-reviewed="markItemReviewed"
-                    @next="stepItem(1)"
-                    @previous="stepItem(-1)"
-                    @toggle-details="detailsOpen = !detailsOpen"
-                    @update-choice-text="updateItemChoiceText"
-                    @update-correct-choices="updateItemCorrectChoices"
-                    @update-gap-values="updateItemGapValues"
-                    @update-paragraph-segments="updateItemParagraphSegments"
-                    @update-points="updateItemPoints"
-                    @update-title="updateItemTitle"
-                  />
-                  <p
-                    v-else
-                    class="text-sm text-navy/65"
-                  >
-                    Välj en fråga i listan.
-                  </p>
-                </div>
-              </div>
-              <ExamWorkspaceItemDrawer
-                v-if="detailsOpen && selectedItem"
-                :disabled="isBusy"
-                :item="selectedItem"
-                :layout="layout"
-                :proposed-item="selectedProposal?.proposed_item ?? null"
-                :readiness="selectedReadiness"
-                :server-blockers="selectedServerBlockers"
-                @approve="handleApproveProposal"
-                @close="detailsOpen = false"
-                @dismiss="dismissProposal"
-                @edit="handleEditProposal"
-              />
-            </div>
-          </div>
+            v-model:details-open="detailsOpen"
+            :disabled="isBusy"
+            :export-blockers-by-item-id="exportBlockersByItemId"
+            :item-count="items.length"
+            :item-rows="itemRows"
+            :layout="layout"
+            :proposal-item-ids="proposalItemIds"
+            :readiness-by-item-id="readinessByItemId"
+            :selected-item="selectedItem"
+            :selected-item-id="selectedItemId"
+            :selected-position="selectedPosition"
+            :selected-proposal="selectedProposal"
+            @add="handleAddItem"
+            @approve-proposal="handleApproveProposal"
+            @dismiss-proposal="rejectProposal"
+            @edit-proposal="handleEditProposal"
+            @mark-reviewed="markItemReviewed"
+            @select="selectItem"
+            @step="stepItem"
+            @update-choice-text="updateItemChoiceText"
+            @update-correct-choices="updateItemCorrectChoices"
+            @update-gap-values="updateItemGapValues"
+            @update-paragraph-segments="updateItemParagraphSegments"
+            @update-points="updateItemPoints"
+            @update-title="updateItemTitle"
+          />
         </div>
       </div>
     </section>

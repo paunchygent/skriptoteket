@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from skriptoteket_toolkit import list_input_files, read_inputs  # type: ignore[import-not-found]
+from skriptoteket_toolkit import list_input_files, read_inputs
 
 
 def run_tool(input_dir: str, output_dir: str) -> dict:

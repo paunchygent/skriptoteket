@@ -260,21 +260,7 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
     ) -> str | None:  # noqa: ARG001
         raise Exception(long_a)  # noqa: BLE001
 
-    def _pypandoc_should_not_be_called(
-        *,
-        source: Path,
-        pdf_path: Path,
-        page_size: str,
-        orientation: str,
-    ) -> str | None:  # noqa: ARG001
-        raise AssertionError("_try_pypandoc must not be called")
-
     monkeypatch.setattr(html_to_pdf_preview, "_try_weasyprint", _fail_weasyprint)
-    monkeypatch.setattr(
-        html_to_pdf_preview,
-        "_try_pypandoc",
-        _pypandoc_should_not_be_called,
-    )
 
     payload = html_to_pdf_preview._handle_action(
         action_id="convert",

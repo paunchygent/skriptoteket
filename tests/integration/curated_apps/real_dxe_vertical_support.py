@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
+import json
+from datetime import UTC, datetime
+from uuid import uuid4
+
 from dishka import Provider, Scope, provide
 from pydantic import BaseModel, ConfigDict, JsonValue
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.application.curated_apps.exam_converter_correction_sessions import (
+    ExamConverterCorrectionIntentWrite,
+)
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
@@ -19,6 +27,18 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamItemType,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
+    DigiExamIrItem,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
+    source_item_fingerprint,
+)
+from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
+    ExamConverterCorrectionSourceBinding,
+    ExamConverterCorrectionTarget,
+)
+from skriptoteket.domain.identity.models import AuthProvider, Role, User
+from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
@@ -124,3 +144,135 @@ def provider_route() -> AnswerKeyProviderRoute:
             max_output_tokens=512,
         ),
     )
+
+
+def json_artifact(content: bytes) -> dict[str, JsonValue]:
+    decoded = json.loads(content)
+    assert isinstance(decoded, dict)
+    return decoded
+
+
+def parse_review_rows(content: bytes) -> dict[str, dict[str, JsonValue]]:
+    document = json_artifact(content)
+    raw_rows = document.get("items")
+    assert isinstance(raw_rows, list)
+    rows: dict[str, dict[str, JsonValue]] = {}
+    for raw in raw_rows:
+        assert isinstance(raw, dict)
+        item_id = raw.get("item_id")
+        assert isinstance(item_id, str)
+        rows[item_id] = raw
+    return rows
+
+
+def accepted_intent(
+    *,
+    item: DigiExamIrItem,
+    row: dict[str, JsonValue],
+    binding: ExamConverterCorrectionSourceBinding,
+) -> ExamConverterCorrectionIntentWrite:
+    answer = row["answer_payload"]
+    assert isinstance(answer, dict)
+    lineage = {
+        key: row[key]
+        for key in (
+            "candidate_id",
+            "candidate_payload_digest",
+            "prompt_template_version",
+            "provider_profile_id",
+            "schema_name",
+            "schema_version",
+        )
+    }
+    lineage.update({"completion_report_sha256": None, "validation_state": "valid"})
+    if item.item_type is DigiExamItemType.GAP_FILL:
+        kind = "manual_gap_open_cloze_answer_key"
+        interaction_id = f"gap-{item.item_id}"
+        payload = {"gap_answers": answer["gap_answers"]}
+    else:
+        kind = "manual_choice_answer_key"
+        interaction_id = f"choice-{item.item_id}"
+        raw_ids = answer["correct_alternative_ids"]
+        assert isinstance(raw_ids, list)
+        payload = {"correct_choice_ids": [f"choice-{value}" for value in raw_ids]}
+    payload.update(
+        {
+            "interaction_id": interaction_id,
+            "submission_origin": "accepted_advisory_candidate",
+            "candidate_lineage": lineage,
+        }
+    )
+    return ExamConverterCorrectionIntentWrite(
+        entry_id=f"accept-{item.item_id}",
+        source_binding=binding,
+        item_id=item.item_id,
+        sequence=item.sequence,
+        item_type=item.item_type.value,
+        source_item_fingerprint=source_item_fingerprint(item),
+        kind=kind,
+        target=ExamConverterCorrectionTarget(interaction_id=interaction_id),
+        payload=payload,
+    )
+
+
+def manual_intent(
+    *, item: DigiExamIrItem, binding: ExamConverterCorrectionSourceBinding
+) -> ExamConverterCorrectionIntentWrite:
+    answer: dict[str, JsonValue]
+    if item.item_type is DigiExamItemType.GAP_FILL:
+        kind = "manual_gap_open_cloze_answer_key"
+        interaction_id = f"gap-{item.item_id}"
+        answer = {
+            "gap_answers": [
+                {"gap_id": gap.guid, "accepted_values": [f"Manuellt svar {index}"]}
+                for index, gap in enumerate(item.gaps, start=1)
+            ]
+        }
+    else:
+        kind = "manual_choice_answer_key"
+        interaction_id = f"choice-{item.item_id}"
+        assert item.alternatives
+        answer = {"correct_choice_ids": [f"choice-{item.alternatives[0].id}"]}
+    answer.update(
+        {
+            "interaction_id": interaction_id,
+            "submission_origin": "teacher_authored",
+            "candidate_lineage": None,
+        }
+    )
+    return ExamConverterCorrectionIntentWrite(
+        entry_id=f"manual-{item.item_id}",
+        source_binding=binding,
+        item_id=item.item_id,
+        sequence=item.sequence,
+        item_type=item.item_type.value,
+        source_item_fingerprint=source_item_fingerprint(item),
+        kind=kind,
+        target=ExamConverterCorrectionTarget(interaction_id=interaction_id),
+        payload=answer,
+    )
+
+
+async def create_actor(db_session: AsyncSession) -> User:
+    now = datetime.now(UTC)
+    actor = User(
+        id=uuid4(),
+        email=f"real-dxe-{uuid4()}@example.test",
+        role=Role.USER,
+        auth_provider=AuthProvider.LOCAL,
+        created_at=now,
+        updated_at=now,
+    )
+    db_session.add(
+        UserModel(
+            id=actor.id,
+            email=actor.email,
+            password_hash="integration-only",
+            role=actor.role,
+            auth_provider=actor.auth_provider,
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    await db_session.commit()
+    return actor

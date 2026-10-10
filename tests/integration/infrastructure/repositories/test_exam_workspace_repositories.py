@@ -32,11 +32,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
-from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
@@ -44,6 +45,9 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
 )
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
+    PostgreSQLExamAnswerKeyProposedOverlayRepository,
 )
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -53,6 +57,12 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.time_fixtures import FixedClock
+from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
+    create_owner,
+)
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
+    UUIDGenerator,
+)
 
 pytestmark = [
     pytest.mark.integration,
@@ -61,31 +71,6 @@ pytestmark = [
 ]
 
 _WORKSPACE_PREFIX = f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:"
-
-
-async def _create_owner(session_factory: async_sessionmaker[AsyncSession]) -> User:
-    owner_id = uuid4()
-    now = datetime.now(UTC)
-    async with session_factory() as session, session.begin():
-        session.add(
-            UserModel(
-                id=owner_id,
-                email=f"exam-workspace-{owner_id}@example.test",
-                password_hash="hash",
-                role=Role.USER,
-                auth_provider=AuthProvider.LOCAL,
-                created_at=now,
-                updated_at=now,
-            )
-        )
-    return User(
-        id=owner_id,
-        email=f"exam-workspace-{owner_id}@example.test",
-        role=Role.USER,
-        auth_provider=AuthProvider.LOCAL,
-        created_at=now,
-        updated_at=now,
-    )
 
 
 def _version_file(
@@ -124,8 +109,8 @@ async def _insert_files(
 async def test_get_document_head_returns_newest_active_version_for_its_owner(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    owner = await _create_owner(session_factory)
-    stranger = await _create_owner(session_factory)
+    owner = await create_owner(session_factory)
+    stranger = await create_owner(session_factory)
     lineage_id = uuid4()
     base = datetime.now(UTC)
     files = [
@@ -167,7 +152,7 @@ async def test_get_document_head_returns_newest_active_version_for_its_owner(
 async def test_list_document_heads_returns_one_head_per_workspace_lineage(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    owner = await _create_owner(session_factory)
+    owner = await create_owner(session_factory)
     older_lineage, newer_lineage, foreign_lineage, wildcard_lineage = (
         uuid4(),
         uuid4(),
@@ -231,7 +216,7 @@ async def test_duplicate_document_version_maps_to_conflict_without_writing_a_fil
     duplicate maps to CONFLICT, no file exists for the duplicate id, and the
     first version's file, row, and usage total are intact.
     """
-    owner = await _create_owner(session_factory)
+    owner = await create_owner(session_factory)
     lineage_id = uuid4()
     storage = LocalVaultStorage(vault_root=tmp_path)
     settings = Settings.model_construct(
@@ -247,6 +232,12 @@ async def test_duplicate_document_version_maps_to_conflict_without_writing_a_fil
                 uow=SQLAlchemyUnitOfWork(session),
                 clock=FixedClock(datetime.now(UTC)),
                 settings=settings,
+                proposal_carry_forward=CarryExamWorkspaceProposals(
+                    enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
+                    proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
+                    clock=FixedClock(datetime.now(UTC)),
+                    id_generator=UUIDGenerator(),
+                ),
             )
             return await store.save_version(
                 actor=owner,
@@ -302,7 +293,7 @@ async def _create_conversion_job(
 async def test_workspace_enrichment_jobs_are_unique_per_lineage_revision(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    owner = await _create_owner(session_factory)
+    owner = await create_owner(session_factory)
     lineage_id = uuid4()
     now = datetime.now(UTC)
 
@@ -358,7 +349,7 @@ async def test_workspace_enrichment_jobs_are_unique_per_lineage_revision(
 async def test_dxe_enrichment_jobs_are_outside_the_workspace_unique_index(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    owner = await _create_owner(session_factory)
+    owner = await create_owner(session_factory)
     now = datetime.now(UTC)
     conversion_jobs = [await _create_conversion_job(session_factory, owner.id) for _ in range(2)]
 
@@ -378,10 +369,10 @@ async def test_dxe_enrichment_jobs_are_outside_the_workspace_unique_index(
         for dxe_job in dxe_jobs:
             await repository.create(job=dxe_job)
 
-    async with session_factory() as session:
+    async with session_factory() as session, session.begin():
         repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         for dxe_job in dxe_jobs:
-            stored = await repository.get_by_id(job_id=dxe_job.id)
+            stored = await repository.get_by_id_for_update(job_id=dxe_job.id)
             assert stored is not None
             assert stored.workspace_lineage_id is None
             assert stored.workspace_document_revision is None

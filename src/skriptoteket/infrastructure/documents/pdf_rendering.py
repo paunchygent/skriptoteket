@@ -39,12 +39,7 @@ def render_html_to_pdf_bytes(*, html: str, base_url: str | Path | None = None) -
     """Render HTML to PDF bytes using the shared WeasyPrint call pattern."""
     from weasyprint import HTML
 
-    html_kwargs: dict[str, object] = {"string": html}
-    if base_url is not None:
-        html_kwargs["base_url"] = str(base_url)
-    rendered_pdf = HTML(**html_kwargs).write_pdf()
-    if isinstance(rendered_pdf, bytes):
-        return rendered_pdf
-    if isinstance(rendered_pdf, bytearray):
-        return bytes(rendered_pdf)
-    raise TypeError("WeasyPrint returned a non-bytes PDF payload.")
+    return HTML(
+        string=html,
+        base_url=str(base_url) if base_url is not None else None,
+    ).write_pdf()

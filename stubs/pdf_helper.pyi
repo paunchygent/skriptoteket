@@ -1,0 +1,3 @@
+from __future__ import annotations
+
+def save_as_pdf(html: str, output_dir: str, filename: str) -> str: ...

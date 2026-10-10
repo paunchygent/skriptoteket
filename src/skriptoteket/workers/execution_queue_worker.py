@@ -5,10 +5,9 @@ import os
 import socket
 import time
 from datetime import datetime, timedelta
-from typing import cast
 
 import structlog
-from dishka import Scope
+from dishka import AsyncContainer, Scope
 
 from skriptoteket.config import Settings
 from skriptoteket.di import create_container
@@ -97,12 +96,10 @@ async def run_execution_queue_worker(
         next_reaper_at = loop.time()
 
         while True:
-            now = clock.now()
-
             if loop.time() >= next_reaper_at:
                 cleared = await _clear_stale_leases(
                     container=container,
-                    now=now,
+                    now=clock.now(),
                 )
                 if cleared:
                     logger.info(
@@ -115,7 +112,7 @@ async def run_execution_queue_worker(
             processed_public_exam = await process_next_public_exam_converter_job(
                 container=container,
                 worker_id=effective_worker_id,
-                now=now,
+                now=clock.now(),
                 lease_ttl=lease_ttl,
                 clock=clock,
             )
@@ -125,7 +122,7 @@ async def run_execution_queue_worker(
             processed_enrichment = await process_next_answer_key_enrichment_job(
                 container=container,
                 worker_id=effective_worker_id,
-                now=now,
+                now=clock.now(),
                 lease_ttl=enrichment_lease_ttl,
                 clock=clock,
                 enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
@@ -136,7 +133,7 @@ async def run_execution_queue_worker(
             claim = await _claim_next_job(
                 container=container,
                 worker_id=effective_worker_id,
-                now=now,
+                now=clock.now(),
                 lease_ttl=lease_ttl,
                 queue=normalized_queue,
             )
@@ -174,25 +171,25 @@ async def run_execution_queue_worker(
         await container.close()
 
 
-async def _clear_stale_leases(*, container, now: datetime) -> int:
+async def _clear_stale_leases(*, container: AsyncContainer, now: datetime) -> int:
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
         async with uow:
             return await jobs.clear_stale_leases(now=now)
 
 
 async def _claim_next_job(
     *,
-    container,
+    container: AsyncContainer,
     worker_id: str,
     now: datetime,
     lease_ttl: timedelta,
     queue: str,
 ) -> ToolRunJobClaim | None:
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
         async with uow:
             return await jobs.claim_next(
                 worker_id=worker_id,
