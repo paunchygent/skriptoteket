@@ -35,6 +35,7 @@ class ExamAnswerKeySourceKind(StrEnum):
 
     DXE = "dxe"
     WORKSPACE = "workspace"
+    DOCX_IMPORT = "docx_import"
 
 
 class ExamAnswerKeyEnrichmentJob(BaseModel):
@@ -49,6 +50,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     status: ExamAnswerKeyEnrichmentJobStatus
     input_filename: str = Field(min_length=1, max_length=255)
     source_dxe: bytes | None = Field(default=None, min_length=1)
+    source_docx: bytes | None = Field(default=None, min_length=1)
     workspace_lineage_id: UUID | None = None
     workspace_document_revision: int | None = Field(default=None, ge=1)
     retry_identity: str | None = Field(default=None, max_length=255)
@@ -69,6 +71,20 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     def _source_kind_invariants(self) -> ExamAnswerKeyEnrichmentJob:
         """Check-style invariant: each source lane carries its own binding."""
 
+        if self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
+            if self.workspace_lineage_id is None or self.workspace_document_revision != 1:
+                raise ValueError("docx import jobs require a version-one workspace binding")
+            if self.conversion_job_id is not None or self.source_dxe is not None:
+                raise ValueError("docx import jobs carry no dxe binding")
+            terminal = self.status in {
+                ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                ExamAnswerKeyEnrichmentJobStatus.FAILED,
+            }
+            if terminal != (self.source_docx is None):
+                raise ValueError("docx bytes exist only while conversion is unfinished")
+            return self
+        if self.source_docx is not None:
+            raise ValueError("only docx import jobs carry source_docx")
         if self.source_kind is ExamAnswerKeySourceKind.DXE:
             if self.conversion_job_id is None or self.source_dxe is None:
                 raise ValueError("dxe enrichment jobs require conversion_job_id and source_dxe")

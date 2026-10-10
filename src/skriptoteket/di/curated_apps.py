@@ -155,6 +155,9 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_product impor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     EnqueueExamWorkspaceEnrichmentHandler,
     GetExamWorkspaceEnrichmentStatusHandler,
@@ -1938,6 +1941,7 @@ class CuratedAppsProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         vault_storage: VaultStorageProtocol,
         workspace_codec: ExamWorkspaceContainerCodecProtocol,
+        docx_handler: ProcessExamWorkspaceDocxJobHandler,
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
@@ -1954,6 +1958,7 @@ class CuratedAppsProvider(Provider):
             vault_files=vault_files,
             vault_storage=vault_storage,
             workspace_codec=workspace_codec,
+            docx_handler=docx_handler,
         )
 
     @provide(scope=Scope.REQUEST)

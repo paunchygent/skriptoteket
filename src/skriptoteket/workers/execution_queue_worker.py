@@ -122,17 +122,16 @@ async def run_execution_queue_worker(
             if processed_public_exam and once:
                 return
 
-            processed_enrichment = False
-            if settings.LLM_ANSWER_KEY_ENABLED:
-                processed_enrichment = await process_next_answer_key_enrichment_job(
-                    container=container,
-                    worker_id=effective_worker_id,
-                    now=now,
-                    lease_ttl=enrichment_lease_ttl,
-                    clock=clock,
-                )
-                if processed_enrichment and once:
-                    return
+            processed_enrichment = await process_next_answer_key_enrichment_job(
+                container=container,
+                worker_id=effective_worker_id,
+                now=now,
+                lease_ttl=enrichment_lease_ttl,
+                clock=clock,
+                enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
+            )
+            if processed_enrichment and once:
+                return
 
             claim = await _claim_next_job(
                 container=container,

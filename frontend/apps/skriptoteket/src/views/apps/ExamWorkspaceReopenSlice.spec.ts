@@ -31,6 +31,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   startExamWorkspaceEnrichment: vi.fn(),
@@ -59,7 +60,13 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
+  apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+  });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
     document_revision: 1,
@@ -124,7 +131,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     await router.push({ query: { document: "lineage-2" } });
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-2");
     expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
       "Matteprov v48",
@@ -141,7 +148,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     await router.push({ query: { document: "lineage-2" } });
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledExactlyOnceWith("lineage-1");
     expect(router.currentRoute.value.query.document).toBe("lineage-1");
     expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
       "NO-prov HT25",

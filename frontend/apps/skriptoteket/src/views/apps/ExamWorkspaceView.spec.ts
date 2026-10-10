@@ -27,6 +27,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   startExamWorkspaceEnrichment: vi.fn(),
@@ -116,6 +117,9 @@ async function chooseSourceFile(wrapper: ViewWrapper, file: File) {
 }
 
 beforeEach(() => {
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
@@ -152,7 +156,10 @@ describe("ExamWorkspaceView host frame", () => {
   });
 
   it("accepts a .docx source file and shows the imported document", async () => {
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     const wrapper = mountView();
 
     await chooseSourceFile(
@@ -207,7 +214,10 @@ describe("ExamWorkspaceView host frame", () => {
   });
 
   it("imports a dropped .docx while ignoring files that cannot be used", async () => {
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     const wrapper = mountView();
 
     await wrapper.find('[data-test="exam-workspace-drop-zone"]').trigger("drop", {
@@ -225,7 +235,10 @@ describe("ExamWorkspaceView host frame", () => {
   });
 
   it("keeps the frame free of service jargon before and after import", async () => {
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     const wrapper = mountView();
 
     for (const forbiddenWord of FORBIDDEN_VISIBLE_WORDS) {

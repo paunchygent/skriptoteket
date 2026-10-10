@@ -17,6 +17,7 @@ from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJo
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
+    ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_conversion_producers import (
     InProcessExamConversionProducer,
@@ -178,6 +179,9 @@ class RefusingEnrichmentJobRepository:
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return None
+
     async def get_by_workspace_revision(
         self,
         *,
@@ -194,6 +198,7 @@ class RefusingEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 
@@ -203,6 +208,7 @@ class RefusingEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         del worker_id, now, lease_ttl
         return None

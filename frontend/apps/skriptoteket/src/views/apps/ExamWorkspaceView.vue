@@ -20,10 +20,9 @@
  *     .docx files through `useExamWorkspaceSourceFile`; selects the
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
- *   - Renders `ExamWorkspaceFilesMode`, `ExamWorkspaceQuestionList` with
- *     `ExamWorkspaceItemTable`, `ExamWorkspaceItemEditor`, and
- *     `ExamWorkspaceItemDrawer`; on phones, `ExamWorkspacePhoneQuestionBar`
- *     and the question list in `ExamWorkspaceSheet`.
+ *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry.
+ *   - Files mode and the question list/editor/drawer render the workspace;
+ *     phones add a question bar and sheet.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
@@ -31,6 +30,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
+import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import ExamWorkspaceItemDrawer from "./exam-workspace/ExamWorkspaceItemDrawer.vue";
@@ -59,6 +59,10 @@ const {
   addItem,
   applyProposal,
   conflictNotice,
+  conversionError,
+  conversionMessage,
+  isConverting,
+  retryConversionStatus,
   importDocument,
   isBusy,
   isDirty,
@@ -237,7 +241,7 @@ onMounted(() => {
 });
 
 function handleExport(target: ExamWorkspaceExportTarget): void {
-  void exportDocument(target);
+  if (!isBusy.value) void exportDocument(target);
 }
 
 function handleApproveProposal(itemId: string): void {
@@ -338,6 +342,13 @@ function handleEditProposal(itemId: string): void {
           @previous="stepItem(-1)"
         />
       </header>
+
+      <ExamWorkspaceConversionStatus
+        :conversion-message="conversionMessage"
+        :conversion-error="conversionError"
+        :is-converting="isConverting"
+        @retry="retryConversionStatus"
+      />
 
       <p
         v-if="conflictNotice"

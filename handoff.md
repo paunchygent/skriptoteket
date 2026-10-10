@@ -5,9 +5,9 @@
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress` on `codex/task-skript-39-05-01` at `4ac59c24` (R2 repair of
-    the facit-as-metadata finding); Sol rereview running. Next: merge, staging
-    redeploy, live-provider browser walk, token record.
+    `in_progress`: Sol rereview approved `4ac59c24` (findings R1-R6 cleared)
+    and it is merged to main. Next: staging redeploy, live-provider browser
+    walk, token record.
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
     `in_progress`: gold and comparator approved by Sol rereview and merged;
     the user confirmed all eight gold files (314 items, 398 points) on

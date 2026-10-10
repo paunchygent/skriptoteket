@@ -37,6 +37,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   startExamWorkspaceEnrichment: vi.fn(),
@@ -128,7 +129,13 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(1));
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
+  apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+  });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(status("not_requested"));
 });
@@ -267,7 +274,10 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
           }
         : item,
     );
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(parseReviewResponse);
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(parseReviewResponse);
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    });
     apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
     const { wrapper } = await mountExamWorkspace();

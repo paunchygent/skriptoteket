@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
+    ExamAnswerKeySourceKind,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
@@ -44,6 +45,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             status=job.status.value,
             input_filename=job.input_filename,
             source_dxe=job.source_dxe,
+            source_docx=job.source_docx,
             workspace_lineage_id=job.workspace_lineage_id,
             workspace_document_revision=job.workspace_document_revision,
             retry_identity=job.retry_identity,
@@ -78,6 +80,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
                 message="Answer-key enrichment worker lease is no longer owned.",
             )
         model.status = job.status.value
+        model.source_docx = job.source_docx
         model.attempts = job.attempts
         model.max_attempts = job.max_attempts
         model.available_at = job.available_at
@@ -95,6 +98,17 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
         return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = (
+            select(ExamAnswerKeyEnrichmentJobModel)
+            .where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
     async def get_by_workspace_revision(
         self,
         *,
@@ -103,6 +117,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         workspace_document_revision: int,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+            ExamAnswerKeyEnrichmentJobModel.source_kind == ExamAnswerKeySourceKind.WORKSPACE.value,
             ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_document_revision
@@ -118,6 +133,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         normalized_worker_id = worker_id.strip()
         if not normalized_worker_id:
@@ -137,6 +153,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             .with_for_update(skip_locked=True)
             .limit(1)
         )
+        if source_kind is not None:
+            stmt = stmt.where(ExamAnswerKeyEnrichmentJobModel.source_kind == source_kind.value)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         if model is None:
@@ -156,6 +174,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         """Take one RUNNING job whose worker lease expired, for fail-closing.
 
@@ -174,6 +193,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             .with_for_update(skip_locked=True)
             .limit(1)
         )
+        if source_kind is not None:
+            stmt = stmt.where(ExamAnswerKeyEnrichmentJobModel.source_kind == source_kind.value)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         if model is None:

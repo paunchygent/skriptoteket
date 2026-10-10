@@ -29,6 +29,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   startExamWorkspaceEnrichment: vi.fn(),
@@ -46,6 +47,9 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
+    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
     document_revision: 1,
@@ -53,7 +57,10 @@ beforeEach(() => {
     proposals: [],
     state: "not_requested",
   });
-  apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+  apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+  });
 });
 
 describe("ExamWorkspaceView save rules", () => {

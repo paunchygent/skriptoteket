@@ -56,9 +56,7 @@ def fixture_bytes() -> bytes:
 
 async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     reviewed = _reviewed(imported.document).with_revision(2)
     await env.save_handler.handle(
         actor=actor,
@@ -71,9 +69,7 @@ async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
 @pytest.mark.asyncio
 async def test_unreviewed_document_blocks_every_target(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
-    imported = await env.import_handler.handle(
-        actor=actor, filename=_FIXTURE.name, content=fixture_bytes
-    )
+    imported = await env.seed_document(actor=actor)
     handler = _export_handler(env)
     for target in ExamWorkspaceExportTarget:
         with pytest.raises(DomainError) as exc_info:

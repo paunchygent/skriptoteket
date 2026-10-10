@@ -21,7 +21,6 @@ import { computed, ref } from "vue";
 import { isApiError } from "../../../api/client";
 import {
   getExamWorkspaceDocument,
-  importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
@@ -35,12 +34,14 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+
+export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
 
 const IMPORT_SUCCESS_COPY = "Provet är inläst.";
-const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
 const SAVE_SUCCESS_COPY = "Provet är sparat.";
 const SAVE_FAILURE_COPY = "Det gick inte att spara provet. Försök igen.";
 const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
@@ -96,10 +97,28 @@ export function useExamWorkspaceDocument() {
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
   const notes = ref<string[]>([]);
   const isDirty = ref(false);
-  const isBusy = ref(false);
+  const operationBusy = ref(false);
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
+
+  const {
+    conversionError,
+    conversionMessage,
+    conversionStatus,
+    importDocument,
+    isConverting,
+    isImporting,
+    retryConversionStatus,
+  } = useExamWorkspaceConversion(() => isBusy.value, (response) => {
+    selectedItemId.value = null;
+    applyResponse(response);
+    conflictNotice.value = null;
+    toast.success(IMPORT_SUCCESS_COPY);
+  });
+  const isBusy = computed(
+    () => operationBusy.value || isImporting.value || isConverting.value,
+  );
 
   const selectedItem = computed<NativeExamItem | null>(() => {
     const current = workspaceDocument.value;
@@ -127,24 +146,6 @@ export function useExamWorkspaceDocument() {
       : (items[0]?.item_id ?? null);
   }
 
-  async function importDocument(file: File): Promise<void> {
-    if (isBusy.value) {
-      return;
-    }
-    isBusy.value = true;
-    try {
-      const response = await requestImportExamWorkspaceDocument(file);
-      selectedItemId.value = null;
-      applyResponse(response);
-      conflictNotice.value = null;
-      toast.success(IMPORT_SUCCESS_COPY);
-    } catch {
-      toast.failure(IMPORT_FAILURE_COPY);
-    } finally {
-      isBusy.value = false;
-    }
-  }
-
   async function loadSavedDocuments(): Promise<void> {
     try {
       const response = await listExamWorkspaceDocuments();
@@ -158,7 +159,7 @@ export function useExamWorkspaceDocument() {
     if (isBusy.value) {
       return false;
     }
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await getExamWorkspaceDocument(lineageId);
       selectedItemId.value = null;
@@ -169,7 +170,7 @@ export function useExamWorkspaceDocument() {
       toast.failure(OPEN_FAILURE_COPY);
       return false;
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -195,7 +196,7 @@ export function useExamWorkspaceDocument() {
     }
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
@@ -213,7 +214,7 @@ export function useExamWorkspaceDocument() {
         toast.failure(SAVE_FAILURE_COPY);
       }
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -222,7 +223,7 @@ export function useExamWorkspaceDocument() {
     if (!currentSummary || isBusy.value) {
       return;
     }
-    isBusy.value = true;
+    operationBusy.value = true;
     try {
       const response = await getExamWorkspaceDocument(currentSummary.lineage_id);
       applyResponse(response);
@@ -231,7 +232,7 @@ export function useExamWorkspaceDocument() {
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
-      isBusy.value = false;
+      operationBusy.value = false;
     }
   }
 
@@ -244,7 +245,7 @@ export function useExamWorkspaceDocument() {
     patch: (item: NativeExamItem) => NativeExamItem,
   ): void {
     const current = workspaceDocument.value;
-    if (!current) {
+    if (!current || isBusy.value) {
       return;
     }
     let changed = false;
@@ -369,7 +370,7 @@ export function useExamWorkspaceDocument() {
 
   function addItem(): void {
     const current = workspaceDocument.value;
-    if (!current) {
+    if (!current || isBusy.value) {
       return;
     }
     const itemId = nextItemId(current.items);
@@ -400,6 +401,11 @@ export function useExamWorkspaceDocument() {
     addItem,
     applyProposal,
     conflictNotice,
+    conversionError,
+    conversionMessage,
+    conversionStatus,
+    isConverting,
+    retryConversionStatus,
     importDocument,
     isBusy,
     isDirty,

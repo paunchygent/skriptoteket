@@ -32,6 +32,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeyProposedOverlay,
+    ExamAnswerKeySourceKind,
     enqueue_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
@@ -136,6 +137,9 @@ class InMemoryEnrichmentJobRepository:
     async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)
 
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return await self.get_by_id(job_id=job_id)
+
     async def get_by_workspace_revision(
         self,
         *,
@@ -158,9 +162,12 @@ class InMemoryEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         for job in self.jobs.values():
-            if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
+            if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED and (
+                source_kind is None or job.source_kind is source_kind
+            ):
                 claimed = job.model_copy(
                     update={
                         "status": ExamAnswerKeyEnrichmentJobStatus.RUNNING,
@@ -180,12 +187,14 @@ class InMemoryEnrichmentJobRepository:
         worker_id: str,
         now: datetime,
         lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
     ) -> ExamAnswerKeyEnrichmentJob | None:
         for job in self.jobs.values():
             if (
                 job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING
                 and job.locked_until is not None
                 and job.locked_until < now
+                and (source_kind is None or job.source_kind is source_kind)
             ):
                 claimed = job.model_copy(
                     update={
