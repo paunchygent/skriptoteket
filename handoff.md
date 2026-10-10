@@ -1,30 +1,30 @@
 ## Current
 
 - [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md)
-  is `in_progress`: the DOCX walking skeleton is implemented end to end on
-  branch `claude/exam-converter-qti-format-eyocw2` (2026-10-09). Native exam
-  document v1 persists as versioned Mina filer containers (migration
-  `7c3e9a1d4f20`, 409 revision guards per the correction-session precedent);
-  the deterministic extractor is proven on the real fixture
-  `grammatik_omprov_examnet_import_med_facit.docx` (8 items, 38 p, clean
-  questions review-complete, every ambiguity routed to teacher review);
-  import/reopen/save plus S4-gated QTI/PDF/DOCX exports ride the existing
-  fail-closed writers (the QTI validation-report status is now asserted);
-  the Luna/GLM answer-key lane is generalized to workspace jobs with no
-  second queue (migration `d4f8b2c6a9e1`, advisory prefill only, DXE lane
-  golden-tested unchanged); the SPA gains `/apps/exam-workspace` (37
-  Vitest specs, typecheck and eslint clean). Gates in this session's
-  container: full backend unit suite 2077 passed with 20 failures, every
-  one reproduced byte-identically on pristine origin/main (16 SPA-fallback
-  500s from the missing frontend build, two docker compose contract
-  checks, the historical-docs selector, the root-container reagent chmod
-  test) or already classified environmental (WeasyPrint nbsp glyph in the
-  exam PDF parity extraction) — zero regressions from this slice; lint,
-  docs-validate, handoff-validate, and frontend typecheck exit 0.
-  Remaining for closeout: the Docker integration lanes (migration
-  idempotency tests for 7c3e9a1d4f20 and d4f8b2c6a9e1, Postgres repo
-  coverage) and the D5 authenticated live browser walk — production
-  acceptance stays user-owned.
+  is `in_progress` on local branch `claude/task-skript-39-04-01` (not on
+  `main`; the cloud work existed only on remote branch
+  `claude/exam-converter-qti-format-eyocw2`). 2026-10-10 (Claude) added the
+  frontend closure: server-gated QTI/PDF/DOCX downloads with Swedish
+  per-item 422 blockers, answer-key proposal panel (prefill only; approve
+  sets `reviewed_advisory` and keeps parse review), reopen via
+  `GET .../exam-workspace/documents` (head per lineage) and `?document=`,
+  generated OpenAPI types, Vitest slices; plus 5 Postgres integration tests
+  and passing migration tests for `7c3e9a1d4f20`/`d4f8b2c6a9e1`. Gates: fe
+  vitest/typecheck/lint/build green; ruff clean; mypy 12 baseline errors;
+  9 unit failures all reproduced on origin/main. Review: first pass
+  changes requested, repairs `28bd7255`/`833cf53e`, rereview pending.
+  Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/`.
+  Owner: Claude session. Blocker for D5 live walk: the HuleEdu
+  auth-integration lane cannot start because `minio-init` pins
+  `quay.io/minio/mc@sha256:a7fe…`, which now returns 401; user decides
+  between re-pinning in HuleEdu or a Hemma staging walk after merge (the
+  39-02-03 precedent). `LLM_ANSWER_KEY_ENABLED` is off locally. User
+  gates: proposal carry-over across saves (proposals are per revision and
+  vanish on save); D5 acceptance; terminal closure.
+- [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
+  is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
+  proposed->ready. Follow-up: Mina filer keeps every workspace version
+  visible by user choice; head-only listing is a later task.
 - 2026-10-09 planning session (Claude): user decisions recorded in
   EPIC-SKRIPT-39 — new story 8 converges the product exporter on the proven
   native QTI 3.0 Exam.net contract (HuleEduOS `examnet-qti-import` skill,
@@ -117,6 +117,12 @@
 
 ## Recent
 
+- 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
+  EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
+  on migrating both epics to the contract-derived profile with open child
+  stories (user decision pending; ST-SIRCON-07-01 still states the old QTI
+  2.1 claim).
+
 - 2026-09-05: reconciled EPIC-39/ADR-0090 with the approved workspace scope
   via scaffolder-created ADR-0091, ST-39-04, and TASK-39-04-01 (all
   `proposed`); `pdm run docs-validate` green; `git diff --check` clean.
@@ -125,8 +131,8 @@
 
 ## Facts
 
-- Session Date: 2026-10-09
-- Last Refreshed: 2026-10-09
+- Session Date: 2026-10-10
+- Last Refreshed: 2026-10-10
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support
@@ -138,5 +144,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next executable task: implement TASK-SKRIPT-39-04-01 (DOCX walking
-  skeleton); the ADR-0091/ST-SKRIPT-39-04 review was accepted 2026-10-09.
+- Next: finish TASK-SKRIPT-39-04-01 (rereview, integrate to `main`, D5
+  live walk); the ADR-0091/ST-SKRIPT-39-04 review was accepted 2026-10-09.
