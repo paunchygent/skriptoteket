@@ -140,6 +140,27 @@ describe("ExamWorkspaceView export slice", () => {
     );
   });
 
+  it("maps a missing answer key blocker to Swedish copy on the item row", async () => {
+    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+      new ApiError({
+        code: "VALIDATION_ERROR",
+        details: { blockers: [{ item_id: "item_002", reason: "missing_answer_key" }] },
+        message: "Provet har frågor som behöver granskas före export.",
+        status: 422,
+      }),
+    );
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
+    await flushPromises();
+
+    expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+    expect(
+      wrapper.find('[data-test="exam-workspace-item-blockers-item_002"]').text(),
+    ).toContain("Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.");
+  });
+
   it("clears export blockers when a new version is saved", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({

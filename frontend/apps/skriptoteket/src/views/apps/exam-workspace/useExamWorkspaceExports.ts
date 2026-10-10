@@ -29,6 +29,7 @@ import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlockerReason, string> =
   {
     machine_proposed_key_unreviewed: "Facitförslaget är inte godkänt.",
+    missing_answer_key: "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.",
     missing_points: "Poäng saknas.",
     review_required: "Frågan behöver granskas.",
   };

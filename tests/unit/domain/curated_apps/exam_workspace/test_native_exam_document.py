@@ -298,6 +298,30 @@ class TestExportBlockers:
         reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "machine_proposed_key_unreviewed" in reasons
 
+    @pytest.mark.parametrize(
+        "kind",
+        [
+            NativeExamItemKind.SINGLE_CHOICE,
+            NativeExamItemKind.MULTIPLE_RESPONSE,
+            NativeExamItemKind.GAP_FILL,
+        ],
+    )
+    def test_absent_answer_key_on_keyed_item_blocks_export(self, kind: NativeExamItemKind) -> None:
+        if kind is NativeExamItemKind.GAP_FILL:
+            item = _gap_fill_item(origin=NativeAnswerKeyOrigin.ABSENT, accepted=())
+        else:
+            item = _single_choice_item(origin=NativeAnswerKeyOrigin.ABSENT, correct=())
+            item = NativeExamItem.model_validate({**item.model_dump(), "kind": kind})
+
+        blockers = native_export_blockers(_document(item))
+
+        assert [(blocker.item_id, blocker.reason) for blocker in blockers] == [
+            ("item_001", "missing_answer_key")
+        ]
+
+    def test_free_text_item_needs_no_answer_key(self) -> None:
+        assert native_export_blockers(_document(_free_text_item())) == ()
+
     def test_missing_points_blocks_export(self) -> None:
         item = _free_text_item().model_copy(update={"points": None})
         reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
