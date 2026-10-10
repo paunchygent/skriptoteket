@@ -68,7 +68,9 @@ drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
   filling the viewport below the app header. The page does not scroll; the
   item list scrolls internally, and the editor scrolls only when one item is
   taller than the panel. Below a minimum usable height the page falls back to
-  normal scrolling instead of squeezing panels.
+  normal scrolling instead of squeezing panels. The minimum is a 35rem
+  (560px) frame: on shorter viewports the frame keeps 35rem and the page
+  scrolls.
 - Tablet (768-1023px): the same two panels with a narrower item list; the
   metadata drawer overlays the editor; toolbar actions overflow into a menu.
 - Phone (< 768px): a reduced port. The editor is the screen, with an item

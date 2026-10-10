@@ -27,6 +27,7 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamAnswerKeyOrigin,
+  NativeExamBodySegment,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
@@ -293,6 +294,20 @@ export function useExamWorkspaceDocument() {
     }));
   }
 
+  /** Replace one paragraph's segments, as serialized by the inline body editor. */
+  function updateItemParagraphSegments(
+    itemId: string,
+    paragraphIndex: number,
+    segments: NativeExamBodySegment[],
+  ): void {
+    patchItem(itemId, (item) => ({
+      ...item,
+      body: item.body.map((paragraph, candidateParagraphIndex) =>
+        candidateParagraphIndex === paragraphIndex ? { segments } : paragraph,
+      ),
+    }));
+  }
+
   function updateItemChoiceText(itemId: string, choiceId: string, text: string): void {
     patchItem(itemId, (item) => ({
       ...item,
@@ -421,6 +436,7 @@ export function useExamWorkspaceDocument() {
     selectedItemId,
     summary,
     updateItemBodyText,
+    updateItemParagraphSegments,
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,

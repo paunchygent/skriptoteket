@@ -14,6 +14,7 @@
 import { createTestingPinia } from "@pinia/testing";
 import { flushPromises, mount } from "@vue/test-utils";
 import { vi } from "vitest";
+import { ref } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import type {
@@ -22,6 +23,10 @@ import type {
   NativeExamItem,
 } from "../../api/examWorkspace";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import {
+  EXAM_WORKSPACE_LAYOUT_KEY,
+  type ExamWorkspaceLayout,
+} from "./exam-workspace/useExamWorkspaceLayout";
 
 export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
 
@@ -148,7 +153,10 @@ export function buildResponse(params: {
   };
 }
 
-export async function mountExamWorkspace(query: Record<string, string> = {}) {
+export async function mountExamWorkspace(
+  query: Record<string, string> = {},
+  layout: ExamWorkspaceLayout = "desktop",
+) {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [{ component: { template: "<div />" }, path: EXAM_WORKSPACE_PATH }],
@@ -156,7 +164,10 @@ export async function mountExamWorkspace(query: Record<string, string> = {}) {
   await router.push({ path: EXAM_WORKSPACE_PATH, query });
   await router.isReady();
   const wrapper = mount(ExamWorkspaceView, {
-    global: { plugins: [createTestingPinia({ createSpy: vi.fn }), router] },
+    global: {
+      plugins: [createTestingPinia({ createSpy: vi.fn }), router],
+      provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: ref(layout) },
+    },
   });
   await flushPromises();
   return { router, wrapper };

@@ -1,0 +1,153 @@
+/**
+ * Exam workspace question-body segment helpers.
+ *
+ * Domain purpose:
+ *   Convert between a native exam paragraph (text, gap and asset segments)
+ *   and the inline editor's DOM, where text is free text and gaps and
+ *   assets are fixed atoms. Gaps and assets are part of the Exam.net
+ *   contract, so the editor compares atom sequences to refuse edits that
+ *   remove, add or reorder them.
+ *
+ * Relationships:
+ *   - Used by `ExamWorkspaceBodyEditor`.
+ *   - Reads shapes from `api/examWorkspace.ts`.
+ */
+
+import type { NativeExamBodySegment, NativeExamGap } from "../../../api/examWorkspace";
+
+export type NativeExamAtomSegment = Exclude<NativeExamBodySegment, { kind: "text" }>;
+
+export type BodyPart =
+  | { kind: "text"; text: string }
+  | { kind: "atom"; segment: NativeExamAtomSegment };
+
+/** Data attribute that marks a gap or asset atom element inside the editor. */
+export const ATOM_ATTRIBUTE = "data-atom";
+/** Data attribute that marks the trailing line-break sentinel the editor appends. */
+export const TRAILING_BREAK_ATTRIBUTE = "data-trailing-break";
+
+/**
+ * Build model segments from editor parts: adjacent text merges into one
+ * segment, empty text disappears, and atoms keep their identity. Text is
+ * never trimmed, because spacing around gaps is part of the question.
+ */
+export function segmentsFromParts(parts: BodyPart[]): NativeExamBodySegment[] {
+  const segments: NativeExamBodySegment[] = [];
+  for (const part of parts) {
+    if (part.kind === "atom") {
+      segments.push(part.segment);
+      continue;
+    }
+    if (part.text.length === 0) {
+      continue;
+    }
+    const previous = segments[segments.length - 1];
+    if (previous && previous.kind === "text") {
+      segments[segments.length - 1] = { kind: "text", text: previous.text + part.text };
+    } else {
+      segments.push({ kind: "text", text: part.text });
+    }
+  }
+  return segments;
+}
+
+/** Ordered identities of the gap and asset atoms in a paragraph. */
+export function atomIds(segments: NativeExamBodySegment[]): string[] {
+  return segments.flatMap((segment) => {
+    if (segment.kind === "gap") {
+      return [`gap:${segment.gap_id}`];
+    }
+    if (segment.kind === "asset") {
+      return [`asset:${segment.asset_id}`];
+    }
+    return [];
+  });
+}
+
+export function sameAtomSequence(
+  left: NativeExamBodySegment[],
+  right: NativeExamBodySegment[],
+): boolean {
+  const leftIds = atomIds(left);
+  const rightIds = atomIds(right);
+  return leftIds.length === rightIds.length && leftIds.every((id, index) => id === rightIds[index]);
+}
+
+/** Stable comparison key for a paragraph's segments. */
+export function segmentsKey(segments: NativeExamBodySegment[]): string {
+  return JSON.stringify(segments);
+}
+
+/** Chip text: the accepted answers, or "Lucka N" while the gap has none. */
+export function gapChipLabel(gap: NativeExamGap | undefined, gapNumber: number): string {
+  if (gap && gap.accepted_values.length > 0) {
+    return gap.accepted_values.join(" / ");
+  }
+  return gapNumber > 0 ? `Lucka ${gapNumber}` : "Lucka";
+}
+
+/** Comma-separated input → accepted values: split, trim, drop empty. */
+export function parseAcceptedValues(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
+function atomSegmentFromElement(element: Element): NativeExamAtomSegment | null {
+  const atom = element.getAttribute(ATOM_ATTRIBUTE);
+  if (atom === "gap") {
+    const gapId = element.getAttribute("data-gap-id");
+    return gapId ? { kind: "gap", gap_id: gapId } : null;
+  }
+  if (atom === "asset") {
+    const assetId = element.getAttribute("data-asset-id");
+    return assetId ? { kind: "asset", asset_id: assetId } : null;
+  }
+  return null;
+}
+
+function collectParts(node: Node, parts: BodyPart[]): void {
+  node.childNodes.forEach((child, index) => {
+    if (child.nodeType === Node.TEXT_NODE) {
+      parts.push({ kind: "text", text: child.textContent ?? "" });
+      return;
+    }
+    if (child.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    const element = child as Element;
+    if (element.hasAttribute(ATOM_ATTRIBUTE)) {
+      const segment = atomSegmentFromElement(element);
+      if (segment) {
+        parts.push({ kind: "atom", segment });
+      }
+      return;
+    }
+    if (element.tagName === "BR") {
+      const isTrailing =
+        element.hasAttribute(TRAILING_BREAK_ATTRIBUTE) || index === node.childNodes.length - 1;
+      if (!isTrailing) {
+        parts.push({ kind: "text", text: "\n" });
+      }
+      return;
+    }
+    if ((element.tagName === "DIV" || element.tagName === "P") && parts.length > 0) {
+      // A browser-inserted block starts a new line.
+      parts.push({ kind: "text", text: "\n" });
+    }
+    collectParts(element, parts);
+  });
+}
+
+/**
+ * Read an editor paragraph element in document order. Text nodes become
+ * text, atom elements become their segment (chip text is ignored), inner
+ * `<br>` elements become line breaks, and the trailing `<br>` sentinel is
+ * ignored.
+ */
+export function partsFromParagraphElement(element: Element): BodyPart[] {
+  const parts: BodyPart[] = [];
+  collectParts(element, parts);
+  return parts;
+}

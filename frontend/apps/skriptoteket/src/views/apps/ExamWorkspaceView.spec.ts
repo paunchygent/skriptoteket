@@ -144,7 +144,9 @@ describe("ExamWorkspaceView host frame", () => {
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Provredigering");
     expect(wrapper.text()).toContain("Välj provfil (.docx)");
-    expect(wrapper.text()).toContain("Ladda upp ett .docx-prov för att börja.");
+    expect(wrapper.text()).toContain(
+      "Ladda upp ett .docx-prov eller öppna ett sparat prov för att börja.",
+    );
     expect(wrapper.find('[data-test="exam-workspace-summary"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-item-table"]').exists()).toBe(false);
   });
