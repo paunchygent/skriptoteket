@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.exam_conversion_eval.compare import compare_exam
 from scripts.exam_conversion_eval.gold import GoldExam
 
 CORPUS = Path(__file__).resolve().parents[2] / "fixtures/exam_conversion/docx_corpus"
@@ -80,3 +81,12 @@ def test_multigap_source_questions_remain_single_items() -> None:
     )
     assert len(vocabulary.items[41].gaps) == 2
     assert vocabulary.items[41].points == 2
+
+
+@pytest.mark.parametrize("stem", SOURCE_COUNTS)
+def test_gold_compares_equal_to_itself_without_unresolved_questions(stem: str) -> None:
+    gold = GoldExam.model_validate_json((GOLD / f"{stem}.json").read_bytes())
+    comparison = compare_exam(gold, gold.items)
+    assert [item.mismatches for item in comparison.items if not item.passed] == []
+    assert comparison.passed
+    assert comparison.unconfirmed

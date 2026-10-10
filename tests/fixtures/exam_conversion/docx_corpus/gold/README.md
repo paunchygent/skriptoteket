@@ -53,8 +53,8 @@ this task branch. This draft slice makes no converter or live-eval claim.
 | Total                       |        314 |    398 |
 
 Methodology question 2, “Tidningsartiklar”, keeps the source facit C and D.
-Its `teacher_questions` asks whether B is intentionally excluded despite its
-wording about articles being counted and sorted. No alternative key is selected.
+The accepted decision keeps B excluded, so the item carries no open
+`teacher_questions`; its notes record the decision.
 Svenska 2 course questions 1–15 have an inferred one point each from the
 15-point section; the draft notes expose this inference for user confirmation.
 Whole-item points are retained throughout. Partial credit and open-response
