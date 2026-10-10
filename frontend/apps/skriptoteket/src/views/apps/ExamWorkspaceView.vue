@@ -119,22 +119,34 @@ watch(
   },
 );
 
+// Point the address back at the open document, or drop `document` when
+// nothing is open. Both outcomes are no-ops for the address watcher below.
+function restoreDocumentAddress(): void {
+  const openLineageId = summary.value?.lineage_id ?? null;
+  const { document: _document, ...rest } = route.query;
+  void router.replace({ query: openLineageId ? { ...rest, document: openLineageId } : rest });
+}
+
 // Follow later address changes (back/forward or an in-app link). The query
 // already naming the open document is a no-op, which also absorbs the write
-// from the summary watcher above. With unsaved edits the open document stays
-// and the address is pointed back at it.
+// from the summary watcher above. With unsaved edits, or when the named
+// document does not open, the open document stays and the address is pointed
+// back at it.
 watch(
   () => routeDocumentId(),
-  (lineageId) => {
+  async (lineageId) => {
     const openLineageId = summary.value?.lineage_id ?? null;
     if (!lineageId || lineageId === openLineageId) {
       return;
     }
     if (isDirty.value && openLineageId) {
-      void router.replace({ query: { ...route.query, document: openLineageId } });
+      restoreDocumentAddress();
       return;
     }
-    void openDocument(lineageId);
+    const opened = await openDocument(lineageId);
+    if (!opened && routeDocumentId() === lineageId) {
+      restoreDocumentAddress();
+    }
   },
 );
 

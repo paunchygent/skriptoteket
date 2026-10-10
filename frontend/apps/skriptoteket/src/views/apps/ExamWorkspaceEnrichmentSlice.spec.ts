@@ -10,8 +10,8 @@
  *   Proposals never change the document on arrival. Approving unchanged
  *   saves the key as `reviewed_advisory` and leaves the item's review state
  *   as it was; adjusting it in the editor saves it as `teacher_authored`.
- *   Requests need a saved document, a failed poll retries on the next
- *   interval, and polling stops when the job settles or the view unmounts.
+ *   Requests need a saved document, a failed poll retries with a doubling
+ *   delay and toasts once per failure streak, and polling stops when the job settles or the view unmounts.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -22,6 +22,7 @@ import type {
   ExamWorkspaceEnrichmentStatus,
   NativeExamItem,
 } from "../../api/examWorkspace";
+import { useToastStore } from "../../stores/toast";
 import { EXAM_WORKSPACE_ENRICHMENT_POLL_MS } from "./exam-workspace/useExamWorkspaceEnrichment";
 import {
   buildResponse,
@@ -99,6 +100,14 @@ const SUCCEEDED = status("succeeded", {
     },
   ],
 });
+
+const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
+
+function statusFailureToastCount(): number {
+  return vi
+    .mocked(useToastStore().failure)
+    .mock.calls.filter(([message]) => message === STATUS_FAILURE_COPY).length;
+}
 
 function lastSavedItem(itemId: string): NativeExamItem | undefined {
   const calls = apiMocks.saveExamWorkspaceDocument.mock.calls;
@@ -325,6 +334,52 @@ describe("ExamWorkspaceView answer-key proposal slice", () => {
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
     ).toBeUndefined();
+  });
+
+  it("shows one failure toast per failed-poll streak and keeps polling with backoff", async () => {
+    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.getExamWorkspaceEnrichment.mockReset();
+    apiMocks.getExamWorkspaceEnrichment.mockRejectedValue(new Error("network"));
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 2);
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 4);
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(3);
+    expect(statusFailureToastCount()).toBe(1);
+    expect(
+      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+    ).toBeDefined();
+
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 8);
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(4);
+    expect(statusFailureToastCount()).toBe(1);
+  });
+
+  it("shows the failure toast again after a successful poll ends the streak", async () => {
+    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.getExamWorkspaceEnrichment.mockReset();
+    apiMocks.getExamWorkspaceEnrichment
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce(status("running"))
+      .mockRejectedValueOnce(new Error("network"));
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(3);
+    expect(statusFailureToastCount()).toBe(2);
   });
 
   it("stops polling when the view unmounts", async () => {

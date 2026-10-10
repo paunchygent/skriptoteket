@@ -149,6 +149,21 @@ describe("ExamWorkspaceView reopen slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
   });
 
+  it("restores the address to the open exam when the named exam fails to open", async () => {
+    const { router, wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.getExamWorkspaceDocument.mockRejectedValue(new Error("network"));
+
+    await router.push({ query: { document: "lineage-2" } });
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-2");
+    expect(router.currentRoute.value.query.document).toBe("lineage-1");
+    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+      "NO-prov HT25",
+    );
+  });
+
   it("keeps an import that finishes while the saved list is still loading", async () => {
     let resolveList: (value: { documents: ExamWorkspaceDocumentSummary[] }) => void = () => {};
     apiMocks.listExamWorkspaceDocuments.mockReturnValue(

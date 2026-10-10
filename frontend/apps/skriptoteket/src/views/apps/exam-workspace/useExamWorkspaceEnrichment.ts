@@ -27,6 +27,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 
 export const EXAM_WORKSPACE_ENRICHMENT_POLL_MS = 3000;
+export const EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS = 30_000;
 
 const REQUEST_FAILURE_COPY = "Det gick inte att begära facitförslag. Försök igen.";
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
@@ -46,6 +47,9 @@ export function useExamWorkspaceEnrichment(
   const dismissedItemIds = ref<string[]>([]);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let generation = 0;
+  // Consecutive failed status polls. The first failure of a streak shows the
+  // toast; each further failure doubles the retry delay up to the cap.
+  let pollFailures = 0;
 
   const isEnrichmentPending = computed(() => isPending(enrichmentStatus.value));
 
@@ -98,12 +102,20 @@ export function useExamWorkspaceEnrichment(
     }
   }
 
+  function pollDelayMs(): number {
+    const backoff = 2 ** Math.max(0, pollFailures - 1);
+    return Math.min(
+      EXAM_WORKSPACE_ENRICHMENT_POLL_MS * backoff,
+      EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS,
+    );
+  }
+
   function schedulePoll(lineageId: string, pollGeneration: number): void {
     stopPolling();
     pollTimer = setTimeout(() => {
       pollTimer = null;
       void refreshStatus(lineageId, pollGeneration);
-    }, EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    }, pollDelayMs());
   }
 
   function applyStatus(
@@ -114,6 +126,7 @@ export function useExamWorkspaceEnrichment(
     if (pollGeneration !== generation) {
       return;
     }
+    pollFailures = 0;
     enrichmentStatus.value = status;
     if (isPending(status)) {
       schedulePoll(lineageId, pollGeneration);
@@ -128,7 +141,10 @@ export function useExamWorkspaceEnrichment(
       if (pollGeneration !== generation) {
         return;
       }
-      toast.failure(STATUS_FAILURE_COPY);
+      if (pollFailures === 0) {
+        toast.failure(STATUS_FAILURE_COPY);
+      }
+      pollFailures += 1;
       if (isPending(enrichmentStatus.value)) {
         schedulePoll(lineageId, pollGeneration);
       }
@@ -142,6 +158,7 @@ export function useExamWorkspaceEnrichment(
     }
     const pollGeneration = generation;
     isRequesting.value = true;
+    pollFailures = 0;
     try {
       const status = await startExamWorkspaceEnrichment(currentSummary.lineage_id);
       applyStatus(currentSummary.lineage_id, pollGeneration, status);
@@ -157,6 +174,7 @@ export function useExamWorkspaceEnrichment(
     ([lineageId]) => {
       generation += 1;
       stopPolling();
+      pollFailures = 0;
       enrichmentStatus.value = null;
       dismissedItemIds.value = [];
       if (lineageId) {
