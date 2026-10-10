@@ -1,6 +1,5 @@
 """Batched Responses construction with source validation and review fallback."""
 
-from dataclasses import replace
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
@@ -51,7 +50,7 @@ class DocxAIConverter:
         selected = self._provider_selector.select_route().primary
         if selected.endpoint_kind is not StructuredLLMEndpointKind.RESPONSES:
             raise ValueError("Responses profile required")
-        return replace(selected, max_output_tokens=16384)
+        return selected
 
     async def convert(
         self,

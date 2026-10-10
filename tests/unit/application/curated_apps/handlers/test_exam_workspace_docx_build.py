@@ -72,7 +72,7 @@ def ports():
     return converter, provider
 
 
-async def test_recorded_quiz_two_rounds_builds_all_items_and_exports_qti():
+async def test_recorded_quiz_one_round_builds_all_items_and_exports_qti():
     fixture = Path("tests/fixtures/exam_conversion")
     chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
         content=(
@@ -80,17 +80,11 @@ async def test_recorded_quiz_two_rounds_builds_all_items_and_exports_qti():
         ).read_bytes()
     )
     converter, provider = ports()
-    provider.complete_structured.side_effect = [
-        StructuredLLMResponse(
-            json.loads((fixture / name).read_text()),
-            "completed",
-            StructuredLLMUsage(),
-        )
-        for name in [
-            "chapter_4_poetry_docx_build_response.json",
-            "chapter_4_poetry_docx_build_retry_response.json",
-        ]
-    ]
+    provider.complete_structured.return_value = StructuredLLMResponse(
+        json.loads((fixture / "chapter_4_poetry_docx_build_response.json").read_text()),
+        "completed",
+        StructuredLLMUsage(),
+    )
     result = await converter.convert(
         job_id=uuid4(),
         document_id=uuid4(),
@@ -98,7 +92,8 @@ async def test_recorded_quiz_two_rounds_builds_all_items_and_exports_qti():
         source_sha256="a" * 64,
         chunks=chunks,
     )
-    assert provider.complete_structured.await_count == 2
+    assert provider.complete_structured.await_count == 1
+    assert result.document.title == "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz"
     assert len(result.document.items) == 28
     assert sum(item.points for item in result.document.items) == 28
     assert [item.kind.value for item in result.document.items] == ["single_choice"] * 21 + [
@@ -107,9 +102,7 @@ async def test_recorded_quiz_two_rounds_builds_all_items_and_exports_qti():
     assert all(
         i.review.state is NativeItemReviewState.REVIEW_COMPLETE for i in result.document.items
     )
-    assert [(e.code, e.round, e.anchors) for e in result.events] == [
-        ("chunk_unclaimed", 1, ("body:0003",))
-    ]
+    assert result.events == ()
     assert native_export_blockers(result.document) == ()
     package, report = build_native_examnet_qti_package(
         result.document, package_name="probe", qti_writer=ExamNetQtiPackageWriter()

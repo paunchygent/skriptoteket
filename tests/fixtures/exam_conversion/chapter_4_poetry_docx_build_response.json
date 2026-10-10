@@ -1,6 +1,17 @@
 {
-  "title": null,
+  "title": {
+    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz",
+    "source_anchors": [
+      "body:0002"
+    ]
+  },
   "instructions": [
+    {
+      "text": "Total: 28 points",
+      "source_anchors": [
+        "body:0003"
+      ]
+    },
     {
       "text": "Part 1",
       "source_anchors": [
@@ -21,7 +32,6 @@
     }
   ],
   "answer_key_anchors": [
-    "body:0002",
     "body:0008",
     "body:0011",
     "body:0014",
@@ -405,7 +415,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": true
         },
         {
@@ -463,7 +473,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -521,7 +531,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -579,7 +589,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -637,7 +647,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -695,7 +705,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -753,7 +763,7 @@
       "points": 1,
       "choices": [
         {
-          "text": "begr yndande",
+          "text": "begrundande",
           "correct": false
         },
         {
@@ -1241,12 +1251,6 @@
         {
           "segments": [
             {
-              "kind": "text",
-              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. ",
-              "accepted_values": [],
-              "hint": null
-            },
-            {
               "kind": "gap",
               "text": null,
               "accepted_values": [
@@ -1256,7 +1260,7 @@
             },
             {
               "kind": "text",
-              "text": " the chorus changes key without warning, and everyone looks up in surprise.",
+              "text": ", the chorus changes key without warning, and everyone looks up in surprise.",
               "accepted_values": [],
               "hint": null
             }

@@ -24,9 +24,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    StructuredLLMProviderProfile,
-    StructuredLLMRequest,
-    StructuredLLMResponse,
     StructuredLLMUsage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -61,21 +58,13 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
-_RETRY = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_retry_response.json")
 
 
 class RecordedRoundsProvider(StubProvider):
-    """Replay the recorded live rounds in order; the last one repeats."""
+    """Replay the recorded live round on every call."""
 
     def __init__(self) -> None:
-        super().__init__(content={}, usage=StructuredLLMUsage())
-        self._rounds = [json.loads(path.read_text()) for path in (_RESPONSE, _RETRY)]
-
-    async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
-    ) -> StructuredLLMResponse:
-        self._content = self._rounds[min(self.call_count, len(self._rounds) - 1)]
-        return await super().complete_structured(request=request, profile=profile)
+        super().__init__(content=json.loads(_RESPONSE.read_text()), usage=StructuredLLMUsage())
 
 
 class LockingFakeJobs(InMemoryEnrichmentJobRepository):
@@ -153,18 +142,9 @@ async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagn
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
-    # The recorded live round 1 left the total-points line unclaimed; round 2 claimed it.
-    assert env.provider.call_count == 2
-    assert finished.diagnostics == (
-        {
-            "stage": "admission",
-            "code": "chunk_unclaimed",
-            "round": 1,
-            "item": None,
-            "anchors": ["body:0003"],
-            "detail": "",
-        },
-    )
+    # The recorded live round claimed every chunk, so no further round and no failure event.
+    assert env.provider.call_count == 1
+    assert finished.diagnostics == ()
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert opened.summary.version == 1

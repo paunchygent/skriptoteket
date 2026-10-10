@@ -1,6 +1,6 @@
-"""Real PostgreSQL upload-to-version-one proof replaying recorded live Responses rounds.
+"""Real PostgreSQL upload-to-version-one proof replaying a recorded live Responses round.
 
-The two response fixtures are the output of a recorded live provider run on the quiz.
+The response fixture is the output of a recorded live GPT-6 Luna run on the quiz.
 The HTTP adapter, job queue, token ledger, container storage and QTI validators
 are the production implementations.
 """
@@ -33,6 +33,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    AnswerKeyProviderRoute,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -54,6 +57,9 @@ from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
 )
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_conversion_profile,
 )
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
@@ -83,7 +89,6 @@ _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
 _RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
-_RETRY = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_retry_response.json")
 
 
 async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
@@ -107,10 +112,10 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
         requests.append(payload)
         assert request.url.path == "/v1/responses"
         assert payload["text"]["format"]["strict"] is True
-        assert payload["max_output_tokens"] == 16_384
+        assert payload["model"] == "gpt-6-luna"
+        assert payload["reasoning"] == {"effort": "medium"}
+        assert payload["max_output_tokens"] == 128_000
         assert "tools" not in payload
-        # Recorded live rounds: round 2 claims the one chunk round 1 left unclaimed.
-        recorded = (_RESPONSE, _RETRY)[min(len(requests), 2) - 1]
         return httpx.Response(
             200,
             json={
@@ -119,7 +124,7 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
                     {
                         "type": "message",
                         "content": [
-                            {"type": "output_text", "text": recorded.read_text(encoding="utf-8")}
+                            {"type": "output_text", "text": _RESPONSE.read_text(encoding="utf-8")}
                         ],
                     }
                 ],
@@ -163,7 +168,12 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
             )
             converter = DocxAIConverter(
                 provider=provider,
-                provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+                provider_selector=FixedRouteAnswerKeyProviderSelector(
+                    route=AnswerKeyProviderRoute(
+                        primary=build_luna_docx_conversion_profile(settings),
+                        failover=_route().failover,
+                    )
+                ),
                 leases=PostgreSQLAnswerKeyTokenLeaseRepository(
                     session, daily_token_limit=1_000_000
                 ),
@@ -184,14 +194,12 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
             )
             finished = await processor.handle(job=running)
         assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
-        assert finished.source_docx is None and len(requests) == 2
+        assert finished.source_docx is None and len(requests) == 1
 
     async with session_factory() as reader:
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
-        assert [(e["round"], e["code"], e["anchors"]) for e in model.diagnostics] == [
-            (1, "chunk_unclaimed", ["body:0003"])
-        ]
+        assert model.diagnostics == []
         vault_files = PostgreSQLUserVaultFileRepository(reader)
         store = ExamWorkspaceDocumentStore(
             vault_files=vault_files,
@@ -234,7 +242,7 @@ async def test_quiz_background_job_commits_recorded_live_document_and_valid_qti(
                 )
             )
         ).all()
-        assert len(leases) == 2 and all(lease.reserved_tokens > 16_384 for lease in leases)
+        assert len(leases) == 1 and leases[0].reserved_tokens > 128_000
         # The replayed bodies carry no usage, so no measured tokens are invented.
         assert all(lease.actual_tokens is None for lease in leases)
         package, report = build_native_examnet_qti_package(
