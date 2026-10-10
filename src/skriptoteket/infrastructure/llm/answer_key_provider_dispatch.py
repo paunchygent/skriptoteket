@@ -9,7 +9,7 @@ Purpose:
 Relationships:
     Implements ``protocols.exam_answer_key.AnswerKeyStructuredProviderProtocol``
     over the OpenAI Responses adapter and the OpenRouter Chat Completions
-    adapter; composed in ``di.curated_apps``.
+    adapter; composed in ``di.exam_answer_key``.
 """
 
 from __future__ import annotations

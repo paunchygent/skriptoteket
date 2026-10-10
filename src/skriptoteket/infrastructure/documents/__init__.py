@@ -6,6 +6,7 @@ Purpose:
     library APIs into the application layer.
 
 Relationships:
-    Providers in ``skriptoteket.di.curated_apps`` expose these adapters through
-    protocol seams for Document Converter and existing PDF-producing apps.
+    Providers in ``skriptoteket.di.document_converter`` and
+    ``skriptoteket.di.classroom_planner_class_lists`` expose these adapters
+    through protocol seams for Document Converter and existing PDF-producing apps.
 """
