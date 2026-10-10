@@ -107,5 +107,5 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 | S1 | The DOCX walking skeleton proves the full import, edit/create, save/reopen, export vertical before any breadth work. |
 | S2 | DOCX implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done. |
 | S3 | Native documents persist versioned in Mina filer; QTI, PDF, and DOCX are on-demand exports only. |
-| S4 | LLM output and low-confidence items require teacher-review provenance before export eligibility. |
+| S4 | AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is export-eligible without teacher approval, with visible provenance and undo. AI-invented answer keys, low-confidence items and unresolved items require teacher review before export eligibility (amended by user decision 2026-10-10). |
 | S5 | OCR/scanned-PDF handling is deferred out of this story; digital PDF follows as the next slice. |

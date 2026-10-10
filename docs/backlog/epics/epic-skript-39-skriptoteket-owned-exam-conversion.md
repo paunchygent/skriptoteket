@@ -190,7 +190,7 @@ closes the epic and is not on the critical path.
 | E1  | The exam-conversion domain ports into Skriptoteket as this epic; ADR-SKRIPT-0066 is amended to the new boundary in the same slice. |
 | E2  | Migration is incremental strangler with lane-by-lane parity-gated retirement of the Sir Convert exam lane; no big-bang cutover. |
 | E3  | The confirmed item contract is the supported types on the Exam.net-proven subset; no unsupported-type handling is authorized (TASK-SKRIPT-39-01-03 canceled). |
-| E4  | Ingestion is deterministic-first with LLM only for the low-confidence remainder and answer-key proposals, always behind teacher review. |
+| E4  | Ingestion is deterministic-first with LLM only for the low-confidence remainder and answer-key proposals. AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is applied directly and is export-eligible, with visible provenance and undo; AI-invented answer keys (no facit) and unresolved items stay behind teacher review (amended by user decision 2026-10-10). |
 | E5  | Heavy OCR and STT remain in Sir Convert-a-Lot behind a generic contract; the exam-specific cross-repo schema surface retires with the cutover. |
 | E6  | Teacher authoring (display/edit/create) is in scope only as the native editable exam workspace slice (ST-SKRIPT-39-04 under ADR-SKRIPT-0091, accepted 2026-10-09, narrowing ADR-SKRIPT-0090's exclusion); QTI import is this epic's final story and not on the critical path. |
 | E7  | Answer-key completion is remote-API-first with the 5M-token daily lease contract carried over from TASK-SIRCON-08-01-07; the Qwen answer-key sidecar retires as governed cleanup. |

@@ -13,10 +13,11 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A DOCX exam whose items the rules cannot resolve imports with AI-interpreted items
-  that show the student only source text, ask only what the item asks, and accept only
-  facit-derived answers, so Exam.net scores a correct student answer as correct; when
-  the AI fails, the teacher still gets a valid rule-based item marked for review
+- A DOCX exam whose items the rules cannot resolve imports export-ready without teacher
+  action wherever the AI can resolve them from the teacher's facit, showing the student
+  only source text, asking only what the item asks, and accepting facit answers plus
+  close misspellings; the teacher is asked only about unresolved items, and AI failure
+  leaves a valid rule-based item marked for review
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -50,10 +51,10 @@ DOCX exams in general, not for one fixture.
   an option code built. Code assembles the item from the answers.
 - **Tier 2, generation (existing Responses structured-output lane).** Used
   only when code cannot build candidates for an unresolved item, and for
-  AI-suggested answer variants (spelling variants, synonyms). It returns a
-  native item in a fixed schema: a kind from the Exam.net-supported set and
-  per sub-item an ordered sequence of text and gap segments, each gap holding
-  facit-derived answers and suggested variants.
+  close-spelling variants of facit answers. It returns a native item in a
+  fixed schema: a kind from the Exam.net-supported set and per sub-item an
+  ordered sequence of text and gap segments, each gap holding facit-derived
+  answers and close-spelling variants.
 - **Confidence gates both tiers.** A Decisions answer below the confidence
   threshold, or a `refusal`, leaves the rule-based item for teacher review.
   The Decisions API is in public beta; its unavailability never blocks
@@ -67,11 +68,21 @@ DOCX exams in general, not for one fixture.
 - **Failure never breaks an item.** Invalid, missing, or over-budget AI
   output is discarded and the rule-based item stays, marked review_required,
   as today. The import always creates and opens the document.
-- **The teacher decides.** An AI interpretation arrives as a proposal in the
-  Detaljer drawer, using the existing proposal and review path; export stays
-  blocked until the teacher approves it. AI-suggested variants are listed
-  separately and the teacher ticks each one; only facit-derived answers are
-  accepted by default.
+- **The app resolves what it reasonably can; the teacher is not asked.** An
+  interpretation that passes every check with high confidence is applied to
+  the item directly and is export-eligible. Detaljer shows "Tolkad av AI"
+  with what was decided and an undo action that restores the rule-based
+  item. This provenance is distinct from AI-invented answer keys, which keep
+  the existing `machine_proposed` review and export block.
+- **The teacher is asked only about what the app cannot resolve:** a
+  refusal, low confidence, or a facit that is missing or contradictory. Each
+  such item names the specific open question in Swedish.
+- **Close spellings are added automatically.** For each facit answer the app
+  adds obvious misspellings as accepted answers, never different words or
+  synonyms. A code check bounds each variant by a small edit distance to its
+  facit answer and rejects variants that equal another facit answer in the
+  item. Variants are listed in Detaljer with undo; the teacher ticks
+  nothing.
 - **The teacher can correct a gap.** The gap popover gets a "Visa som text"
   action that turns a gap into fixed text.
 
@@ -99,8 +110,8 @@ DOCX exams in general, not for one fixture.
 ## Core Vertical And Performance
 
 `DOCX import -> rules segment items -> unresolved items to AI, one call each
--> code checks accept or discard -> Redigera shows AI proposals in Detaljer
--> teacher approves, ticks variants, or uses Visa som text -> save -> QTI
+-> code checks accept or discard -> confident results applied with "Tolkad
+av AI" provenance; only unresolved items ask the teacher -> save -> QTI
 export with one keyed text entry per asked slot`.
 
 - Token use scales with unresolved items only; resolved items never reach
@@ -125,7 +136,8 @@ export with one keyed text entry per asked slot`.
 - Backend gates per `AGENTS.md` (lint, typecheck, focused tests) and the
   frontend gates for the drawer and popover changes.
 - Agent-driven browser walk on Hemma staging: import, review AI proposals,
-  tick a variant, use Visa som text, save, export QTI and inspect it.
+  confirm the resolved items are export-ready without teacher action, undo
+  one interpretation, use Visa som text, save, export QTI and inspect it.
 
 ## Stop Conditions
 
@@ -145,7 +157,9 @@ export with one keyed text entry per asked slot`.
 | F3 | A gap holds any number of accepted answers, never one answer per label (user decision 2026-10-10); the AI may split facit alternatives into separate accepted answers of one gap. |
 | F4 | The gap popover gets "Visa som text", turning a gap into fixed text (user decision 2026-10-10). |
 | F5 | AI interpretation runs automatically at import, only for items the rules could not resolve (user decision 2026-10-10). |
-| F6 | AI-suggested answer variants are separate suggestions the teacher ticks; only facit-derived answers are accepted by default (user decision 2026-10-10). |
+| F6 | The app adds close misspellings of facit answers automatically, bounded by a code-enforced edit distance; never synonyms or different words; no teacher ticking (user decision 2026-10-10, replacing teacher-ticked suggestions). |
 | F7 | The AI is boxed in by code-enforced checks; invalid output is discarded and the rule-based item stays, so AI failure never breaks import or an item (user decision 2026-10-10). |
 | F8 | This task is rescoped from label splitting to AI item interpretation at import, including Visa som text (user decision 2026-10-10). |
 | F9 | Decisions API first (`gpt-6-luna`, typed classification of code-built candidates), with the existing Responses structured-output lane only as fallback for items without buildable candidates and for variant suggestions (user decision 2026-10-10; Decisions API verified in OpenAI docs as public beta, input-only pricing, EU residency). |
+| F10 | High-confidence, check-passing interpretation of the teacher's own facit is applied directly and export-eligible with "Tolkad av AI" provenance and undo; the teacher is asked only about unresolved items (user decision 2026-10-10, amending E4 and S4). |
+| F11 | AI-invented answer keys for items without a facit keep the teacher check before export (user decision 2026-10-10). |
