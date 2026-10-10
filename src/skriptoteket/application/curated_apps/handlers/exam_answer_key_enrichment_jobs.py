@@ -84,10 +84,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        vault_files: VaultFileRepositoryProtocol | None = None,
-        vault_storage: VaultStorageProtocol | None = None,
-        workspace_codec: ExamWorkspaceContainerCodecProtocol | None = None,
-        docx_handler: ProcessExamWorkspaceDocxJobHandler | None = None,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        workspace_codec: ExamWorkspaceContainerCodecProtocol,
+        docx_handler: ProcessExamWorkspaceDocxJobHandler,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._uow = uow
@@ -135,8 +135,6 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         """Run one claimed enrichment job to a terminal status."""
 
         if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
-            if self._docx_handler is None:
-                raise ValueError("DOCX job processor is not configured.")
             return await self._docx_handler.handle(job=job)
         if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
             return await self._workspace_lane.handle(job=job)
@@ -158,24 +156,15 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         """
 
         async with self._uow:
-            if source_kind is None:
-                job = await self._enrichment_jobs.claim_next_expired(
-                    worker_id=worker_id,
-                    now=now,
-                    lease_ttl=lease_ttl,
-                )
-            else:
-                job = await self._enrichment_jobs.claim_next_expired(
-                    worker_id=worker_id,
-                    now=now,
-                    lease_ttl=lease_ttl,
-                    source_kind=source_kind,
-                )
+            job = await self._enrichment_jobs.claim_next_expired(
+                worker_id=worker_id,
+                now=now,
+                lease_ttl=lease_ttl,
+                source_kind=source_kind,
+            )
             if job is None:
                 return None
         if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
-            if self._docx_handler is None:
-                raise ValueError("DOCX job processor is not configured.")
             return await self._docx_handler.handle(
                 job=job,
                 fallback_reason="Konverteringen avbröts. Kontrollera innehållet i provet.",

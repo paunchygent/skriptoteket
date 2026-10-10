@@ -40,6 +40,17 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     item_is_enrichable,
     plan_answer_key_enrichment,
@@ -62,6 +73,12 @@ from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_conversion_artifacts import (
     FilesystemExamConversionArtifactStore,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
+    PythonDocxExamChunker,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
@@ -96,6 +113,14 @@ from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases impor
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
 )
+from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
+from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
+    PostgreSQLUserVaultFileRepository,
+)
+from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
+    PostgreSQLUserVaultUsageRepository,
+)
+from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.workers.exam_answer_key_enrichment import (
     process_next_answer_key_enrichment_job,
 )
@@ -316,6 +341,43 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     )
     assert submitted.status.value == "submitted"
 
+    vault_files = PostgreSQLUserVaultFileRepository(db_session)
+    vault_storage = LocalVaultStorage(vault_root=tmp_path / "vault")
+    codec = ExamWorkspaceContainerCodec()
+    docx_handler = ProcessExamWorkspaceDocxJobHandler(
+        jobs=enrichment_jobs,
+        chunker=PythonDocxExamChunker(),
+        converter=DocxAIConverter(
+            provider=provider,
+            profile=provider_route().primary,
+            leases=leases,
+            uow=uow,
+            clock=clock,
+            enabled=True,
+        ),
+        codec=codec,
+        store=ExamWorkspaceDocumentStore(
+            vault_files=vault_files,
+            vault_usage=PostgreSQLUserVaultUsageRepository(db_session),
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=5_000_000,
+                VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
+            proposal_carry_forward=CarryExamWorkspaceProposals(
+                enrichment_jobs=enrichment_jobs,
+                proposed_overlays=overlays,
+                clock=clock,
+                id_generator=ids,
+            ),
+        ),
+        users=PostgreSQLUserRepository(db_session),
+        uow=uow,
+        clock=clock,
+        id_generator=ids,
+    )
     processor = ProcessExamAnswerKeyEnrichmentJobHandler(
         enrichment_jobs=enrichment_jobs,
         conversion_jobs=jobs,
@@ -328,6 +390,10 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         uow=uow,
         clock=clock,
         id_generator=ids,
+        vault_files=vault_files,
+        vault_storage=vault_storage,
+        workspace_codec=codec,
+        docx_handler=docx_handler,
     )
     worker_container = make_async_container(
         WorkerProvider(handler=processor, jobs=enrichment_jobs, uow=uow)

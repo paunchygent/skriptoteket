@@ -84,6 +84,7 @@ from tests.unit.application.curated_apps.handlers.test_exam_answer_key_enrichmen
     StubProvider,
     UUIDGenerator,
     _route,
+    docx_job_handler,
 )
 
 pytestmark = pytest.mark.unit
@@ -198,6 +199,7 @@ class _WorkspaceHarness:
         )
         self.vault_storage.stored[(self.owner_user_id, head_file_id)] = self.container_bytes
 
+        codec = FakeWorkspaceCodec(container=ExamWorkspaceContainerContent(document=document))
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
             conversion_jobs=self.conversion_jobs,
@@ -212,8 +214,15 @@ class _WorkspaceHarness:
             id_generator=UUIDGenerator(),
             vault_files=self.vault_files,
             vault_storage=self.vault_storage,
-            workspace_codec=FakeWorkspaceCodec(
-                container=ExamWorkspaceContainerContent(document=document)
+            workspace_codec=codec,
+            docx_handler=docx_job_handler(
+                enrichment_jobs=self.enrichment_jobs,
+                proposed_overlays=self.proposed_overlays,
+                leases=self.leases,
+                provider=provider,
+                vault_files=self.vault_files,
+                vault_storage=self.vault_storage,
+                codec=codec,
             ),
         )
 

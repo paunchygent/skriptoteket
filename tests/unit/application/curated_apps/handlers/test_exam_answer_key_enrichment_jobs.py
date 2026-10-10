@@ -41,6 +41,17 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import C
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
+    ProcessExamWorkspaceDocxJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
+    CarryExamWorkspaceProposals,
+)
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
     StructuredLLMBackendFailureCode,
@@ -66,10 +77,25 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
     SourceBoundCorrectionIntent,
 )
+from skriptoteket.domain.scripting.vault import VaultUsage
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
+    PythonDocxExamChunker,
+)
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
+from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from tests.fixtures.application_fixtures import FakeUow
+from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
+from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+    InMemoryVaultFileRepository,
+    InMemoryVaultStorage,
+    InMemoryVaultUsageRepository,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -498,6 +524,59 @@ def _unkeyed_dxe_bytes(*, include_open_ended: bool = False) -> bytes:
     return json.dumps({"exams": [{"questions": questions}]}).encode("utf-8")
 
 
+def docx_job_handler(
+    *,
+    enrichment_jobs: InMemoryEnrichmentJobRepository,
+    proposed_overlays: InMemoryProposedOverlayRepository,
+    leases: InMemoryLeaseRepository,
+    provider: AnswerKeyStructuredProviderProtocol,
+    vault_files: InMemoryVaultFileRepository,
+    vault_storage: InMemoryVaultStorage,
+    codec: ExamWorkspaceContainerCodecProtocol,
+) -> ProcessExamWorkspaceDocxJobHandler:
+    """Wire the DOCX import processor the enrichment dispatcher requires."""
+
+    uow = FakeUow()
+    clock = FixedClock(_NOW)
+    id_generator = UUIDGenerator()
+    return ProcessExamWorkspaceDocxJobHandler(
+        jobs=enrichment_jobs,
+        chunker=PythonDocxExamChunker(),
+        converter=DocxAIConverter(
+            provider=provider,
+            profile=_route().primary,
+            leases=leases,
+            uow=uow,
+            clock=clock,
+            enabled=True,
+        ),
+        codec=codec,
+        store=ExamWorkspaceDocumentStore(
+            vault_files=vault_files,
+            vault_usage=InMemoryVaultUsageRepository(
+                usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=_NOW)
+            ),
+            vault_storage=vault_storage,
+            uow=uow,
+            clock=clock,
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=5_000_000,
+                VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
+            proposal_carry_forward=CarryExamWorkspaceProposals(
+                enrichment_jobs=enrichment_jobs,
+                proposed_overlays=proposed_overlays,
+                clock=clock,
+                id_generator=id_generator,
+            ),
+        ),
+        users=UserRepositoryStub(),
+        uow=uow,
+        clock=clock,
+        id_generator=id_generator,
+    )
+
+
 class _Harness:
     def __init__(
         self,
@@ -512,6 +591,9 @@ class _Harness:
         self.provider = provider
         self.producer = RecordingProducer()
         self.artifacts = RecordingArtifactStore()
+        vault_files = InMemoryVaultFileRepository()
+        vault_storage = InMemoryVaultStorage()
+        codec = ExamWorkspaceContainerCodec()
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
             conversion_jobs=self.conversion_jobs,
@@ -524,6 +606,18 @@ class _Harness:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             id_generator=UUIDGenerator(),
+            vault_files=vault_files,
+            vault_storage=vault_storage,
+            workspace_codec=codec,
+            docx_handler=docx_job_handler(
+                enrichment_jobs=self.enrichment_jobs,
+                proposed_overlays=self.proposed_overlays,
+                leases=self.leases,
+                provider=provider,
+                vault_files=vault_files,
+                vault_storage=vault_storage,
+                codec=codec,
+            ),
         )
 
     async def seed_claimed_job(

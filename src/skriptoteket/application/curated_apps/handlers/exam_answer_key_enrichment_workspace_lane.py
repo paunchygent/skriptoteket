@@ -88,9 +88,9 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         id_generator: IdGeneratorProtocol,
         attempts: AnswerKeyProviderAttemptRunner,
         ledger: AnswerKeyAttemptLedger,
-        vault_files: VaultFileRepositoryProtocol | None,
-        vault_storage: VaultStorageProtocol | None,
-        workspace_codec: ExamWorkspaceContainerCodecProtocol | None,
+        vault_files: VaultFileRepositoryProtocol,
+        vault_storage: VaultStorageProtocol,
+        workspace_codec: ExamWorkspaceContainerCodecProtocol,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._proposed_overlays = proposed_overlays
@@ -107,12 +107,6 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         """Complete one workspace-lane job: advisory proposals, no conversion."""
 
-        if (
-            self._vault_files is None
-            or self._vault_storage is None
-            or self._workspace_codec is None
-        ):
-            return await self.fail(job=job, last_error="workspace_dependencies_missing")
         if job.workspace_lineage_id is None or job.workspace_document_revision is None:
             return await self.fail(job=job, last_error="workspace_binding_missing")
         head = await self._vault_files.get_document_head(
