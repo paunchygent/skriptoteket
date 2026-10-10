@@ -29,7 +29,9 @@ const emit = defineEmits<{
   open: [lineageId: string];
 }>();
 
-// "N av M med samma namn" per lineage id, only for names that repeat.
+// "N av M med samma namn" per lineage id, only for names that repeat. The
+// summary carries no creation time, so N is the position in the current list
+// ordered by latest save (oldest first); it can change after a save.
 const sameNameCounts = computed(() => {
   const groups = new Map<string, ExamWorkspaceDocumentSummary[]>();
   for (const entry of props.documents) {

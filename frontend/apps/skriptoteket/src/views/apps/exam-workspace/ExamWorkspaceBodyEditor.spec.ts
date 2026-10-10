@@ -221,6 +221,32 @@ describe("ExamWorkspaceBodyEditor", () => {
     wrapper.unmount();
   });
 
+  it("explains that Backspace beside an image changes nothing, without mentioning gaps", async () => {
+    const wrapper = mountEditor();
+    const element = paragraph(wrapper, 1);
+    const marker = element.querySelector('[data-asset-id="asset_001"]')!;
+    const range = document.createRange();
+    range.setStartAfter(marker);
+    range.collapse(true);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const event = new InputEvent("beforeinput", {
+      bubbles: true,
+      cancelable: true,
+      inputType: "deleteContentBackward",
+    });
+    element.dispatchEvent(event);
+    await wrapper.vm.$nextTick();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-body-status"]').text()).toBe(
+      "Bilden tas inte bort i texten.",
+    );
+    wrapper.unmount();
+  });
+
   it("explains why Backspace beside a gap changes nothing, until the next input", async () => {
     const wrapper = mountEditor();
     const element = paragraph(wrapper, 0);

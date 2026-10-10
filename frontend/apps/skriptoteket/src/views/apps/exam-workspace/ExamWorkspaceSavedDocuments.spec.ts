@@ -3,8 +3,8 @@
  *
  * Expected behavior:
  *   Exams that share a file name are told apart by version, saved time, and
- *   an "N av M med samma namn" count, oldest first; a unique name carries no
- *   count.
+ *   an "N av M med samma namn" count, the position in the current list ordered
+ *   by latest save, oldest first; a unique name carries no count.
  */
 
 import { mount } from "@vue/test-utils";
