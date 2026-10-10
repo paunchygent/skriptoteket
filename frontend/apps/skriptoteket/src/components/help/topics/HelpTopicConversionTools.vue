@@ -14,6 +14,10 @@ const { showIndex } = useHelp();
       <li>Välj eller ladda upp det material som verktyget ska bearbeta.</li>
       <li>Kontrollera inställningarna innan du startar konverteringen.</li>
       <li>Följ statusen och hämta resultatet när bearbetningen är klar.</li>
+      <li>
+        Varje gång du sparar i provarbetsytan blir det en ny version i Mina filer. Spara provet
+        innan du laddar ner QTI, PDF eller Word.
+      </li>
     </ul>
   </HelpTopicLayout>
 </template>
