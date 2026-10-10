@@ -84,5 +84,5 @@ holds the approved key`.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | P1 | Pending answer-key proposals carry over when the teacher saves a new version (user decision 2026-10-10). |
-| P2 | Only proposals for items whose answer-relevant content is unchanged carry over; others are dropped as stale (design recommendation 2026-10-10; confirmed at proposed->ready). |
-| P3 | Approved and rejected proposals are not carried; deleted items drop their proposals (design recommendation 2026-10-10; confirmed at proposed->ready). |
+| P2 | Only proposals for items whose answer-relevant content is unchanged carry over; others are dropped as stale (user decision 2026-10-10). |
+| P3 | Approved and rejected proposals are not carried; deleted items drop their proposals (user decision 2026-10-10). |

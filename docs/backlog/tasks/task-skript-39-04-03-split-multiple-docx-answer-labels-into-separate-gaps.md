@@ -38,8 +38,13 @@ TASK-SKRIPT-39-04-02 found the same defect in the real fixture
 - Each gap's accepted value is the text between its label and the next label
   or the end of the line, trimmed.
 - An item whose labels all split cleanly no longer carries
-  `multiple_answer_labels_detected`. A label with no answer text after it
-  keeps the item unkeyed and review_required, as single-label lines do today.
+  `multiple_answer_labels_detected`.
+- A label with no answer text after it still becomes a gap, with no
+  accepted value. The question stays a gap-fill item (it no longer falls
+  back to free text), is review_required, and shows the missing answer at
+  the gap. The existing partial-key save rule then refuses a teacher save
+  in Swedish until the teacher types the answer. The import itself must
+  still create and open the document.
 - Points, confidence and the other review reasons keep their current rules.
 
 ## Contract Inputs
@@ -63,7 +68,8 @@ each gap as its own chip -> QTI export holds one keyed text entry per gap`.
 
 ## Validation
 
-- Unit tests: two labels, three labels, a label without an answer, and the
+- Unit tests: two labels, three labels, a trailing label without an
+  answer (gap-fill with one empty gap, review_required), and the
   single-label case unchanged. The line 113 assertion becomes two gaps
   `("att det regnar",)` and `("att-sats",)`.
 - Fixture test on the real DOCX: no gap's accepted value contains a second
@@ -79,6 +85,8 @@ each gap as its own chip -> QTI export holds one keyed text entry per gap`.
 - Stop if splitting would change items without multiple labels.
 - Stop if a label pattern in the fixture cannot be split without guessing;
   keep it review_required and report it.
+- Stop if the import path refuses to persist a document with an empty gap;
+  report it instead of weakening the save rule.
 - Production acceptance remains user-owned.
 
 ## Decided Contract Terms
@@ -86,5 +94,5 @@ each gap as its own chip -> QTI export holds one keyed text entry per gap`.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | F1 | Fix the merged facit value as its own task under ST-SKRIPT-39-04 (user decision 2026-10-10). |
-| F2 | Each answer label on a facit line becomes its own gap with only its own answer as accepted value (design recommendation 2026-10-10; confirmed at proposed->ready). |
-| F3 | Labels without answer text keep the existing review_required path; no guessed answers (design recommendation 2026-10-10; confirmed at proposed->ready). |
+| F2 | Each answer label on a facit line becomes its own gap with only its own answer as accepted value (user decision 2026-10-10). |
+| F3 | A label without answer text becomes an empty gap; the item stays gap-fill and review_required, and the teacher must type the answer before saving; no guessed answers and no free-text fallback (user decision 2026-10-10). |

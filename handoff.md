@@ -2,11 +2,11 @@
 
 - [TASK-SKRIPT-39-04-03](docs/backlog/tasks/task-skript-39-04-03-split-multiple-docx-answer-labels-into-separate-gaps.md)
   is `proposed`: one gap per DOCX answer label (walk finding W9, merged
-  value "vid skolan Satsdel: adverbial"). User owns proposed->ready and
-  confirms design terms F2-F3. Backend work: route to Codex.
+  value "vid skolan Satsdel: adverbial"). Terms F1-F3 user-decided 2026-10-10; user owns
+  proposed->ready. Backend work: route to Codex.
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
   is `proposed`: pending answer-key proposals survive a save (user decision
-  P1); user confirms staleness terms P2-P3 at proposed->ready. Backend work:
+  P1-P3, 2026-10-10); user owns proposed->ready. Backend work:
   route to Codex.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
