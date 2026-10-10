@@ -1,0 +1,557 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "chapter_4_poetry_and_lyrics_quiz_med_facit.docx",
+  "source_sha256": "c396eac546dae8cbdbd569ce563d85b756121b2f8b1ef1250b85c18cde6357b6",
+  "title": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
+  "confirmed": false,
+  "items": [
+    {
+      "source_label": "Part 1, Question 1",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nHis profound essay about the war impressed the whole class. What does “profound” mean here?",
+      "choices": [
+        "deep",
+        "strange",
+        "dignified",
+        "thrifty"
+      ],
+      "correct_choices": [
+        "deep"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 2",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nThey live a frugal life in a small house by the lake. What does “frugal” mean here?",
+      "choices": [
+        "mysterious",
+        "deep",
+        "thrifty",
+        "strange"
+      ],
+      "correct_choices": [
+        "thrifty"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 3",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nA peculiar noise woke her just after midnight. What does “peculiar” mean here?",
+      "choices": [
+        "indescribable",
+        "strange",
+        "dignified",
+        "deep"
+      ],
+      "correct_choices": [
+        "strange"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 4",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nEveryone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
+      "choices": [
+        "crossed from one side to the other",
+        "kept it as something precious",
+        "made it richer or better",
+        "refused to give up his position"
+      ],
+      "correct_choices": [
+        "refused to give up his position"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 5",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nRead the sentence:\n“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
+      "choices": [
+        "symbolism",
+        "imagery",
+        "metaphor",
+        "alliteration"
+      ],
+      "correct_choices": [
+        "imagery"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 6",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nRead the sentence:\n“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
+      "choices": [
+        "imagery",
+        "symbolism",
+        "alliteration",
+        "metaphor"
+      ],
+      "correct_choices": [
+        "metaphor"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 7",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nRead the sentence:\nIn a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
+      "choices": [
+        "theme",
+        "tone",
+        "speaker",
+        "style"
+      ],
+      "correct_choices": [
+        "speaker"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 1, Question 8",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 1\nRead the sentence:\nRead the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
+      "choices": [
+        "rhyme scheme",
+        "rhythm",
+        "stanza",
+        "line"
+      ],
+      "correct_choices": [
+        "rhyme scheme"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 1: contemplation",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: contemplation\nSelect the Swedish translation of “contemplation”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "begrundande"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 2: dignified",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: dignified\nSelect the Swedish translation of “dignified”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "värdig"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 3: enrich",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: enrich\nSelect the Swedish translation of “enrich”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "berika"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 4: ineffable",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: ineffable\nSelect the Swedish translation of “ineffable”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "obeskrivlig"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 5: inscrutable",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: inscrutable\nSelect the Swedish translation of “inscrutable”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "outgrundlig"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 6: oblivion",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: oblivion\nSelect the Swedish translation of “oblivion”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "glömska"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2A, Question 7: prejudice",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2A: prejudice\nSelect the Swedish translation of “prejudice”.",
+      "choices": [
+        "begrundande",
+        "berika",
+        "fördom",
+        "glömska",
+        "obeskrivlig",
+        "outgrundlig",
+        "sparsam",
+        "värdig"
+      ],
+      "correct_choices": [
+        "fördom"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 1: style",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: style\nSelect the meaning of “style”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "poet’s typical writing manner"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 2: stanza",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: stanza\nSelect the meaning of “stanza”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "group of poem lines"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 3: tone",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: tone\nSelect the meaning of “tone”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "attitude toward subject"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 4: rhythm",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: rhythm\nSelect the meaning of “rhythm”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "beat of stressed syllables"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 5: theme",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: theme\nSelect the meaning of “theme”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "central message of poem"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 2B, Question 6: symbolism",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Part 2B: symbolism\nSelect the meaning of “symbolism”.",
+      "choices": [
+        "group of poem lines",
+        "poet’s typical writing manner",
+        "beat of stressed syllables",
+        "central message of poem",
+        "single row of words",
+        "attitude toward subject",
+        "use of symbols for ideas"
+      ],
+      "correct_choices": [
+        "use of symbols for ideas"
+      ],
+      "gaps": [],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 1",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always [___] the letters her grandmother wrote her, and she keeps them in a wooden box.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "cherish"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 2",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to [___] the desert from east to west.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "traverse"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 3",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to [___] other players by mocking them.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "humiliate"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 4",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. [___], the chorus changes key without warning, and everyone looks up in surprise.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "out of the blue"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 5",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each [___] in the first stanza has eight syllables.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "line"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 6",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the [___], are all common and concrete.",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "diction"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    },
+    {
+      "source_label": "Part 3, Question 7",
+      "kind": "gap_fill",
+      "points": 1,
+      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of [___].",
+      "choices": [],
+      "correct_choices": [],
+      "gaps": [
+        {
+          "accepted_values": [
+            "alliteration"
+          ]
+        }
+      ],
+      "pairs": [],
+      "teacher_questions": []
+    }
+  ],
+  "notes": [
+    "Drafted directly from word/document.xml in DOCX body order and the embedded facit. User confirmation is pending.",
+    "Part 2A and Part 2B headings are unnumbered in the source; source labels assign their ordinal position within each section.",
+    "Part 3 repeats each in-sentence gap as a separate response line; only the in-sentence gap is retained."
+  ]
+}

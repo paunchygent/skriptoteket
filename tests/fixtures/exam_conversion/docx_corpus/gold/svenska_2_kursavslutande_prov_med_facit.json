@@ -1,0 +1,452 @@
+{
+  "schema_version": "exam_conversion_gold_v1",
+  "source_filename": "svenska_2_kursavslutande_prov_med_facit.docx",
+  "source_sha256": "99b204dcead1b27ade6cb82da8681772a3c4920a562d9cd29d9d12135face7dd",
+  "title": "Kursavslutande prov: Svenska 2",
+  "confirmed": false,
+  "notes": [
+    "Draft transcribed directly from source OOXML and inline facit; 24 source-numbered items, 36 points.",
+    "Del 1 has one Fråga 1 heading over numbered questions 1-15; these remain fifteen items.",
+    "Individual points for questions 1-15 are inferred from their 15-point section. User confirmation includes this inference.",
+    "Open short-answer rubrics and partial-credit allocation are outside the comparator; no automatic acceptance set is invented."
+  ],
+  "items": [
+    {
+      "source_label": "Fråga 1",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nGunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
+      "choices": [
+        "Hederskultur",
+        "Hövisk kärlek",
+        "Naturliga rättigheter",
+        "Nyttotänkande"
+      ],
+      "correct_choices": [
+        "Hederskultur"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 2",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nVilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
+      "choices": [
+        "Centrallyrik stil",
+        "Lakonisk stil",
+        "Realistisk stil",
+        "Satirisk stil"
+      ],
+      "correct_choices": [
+        "Lakonisk stil"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 3",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nDantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
+      "choices": [
+        "Satir",
+        "Allegori",
+        "Realism",
+        "Humanism"
+      ],
+      "correct_choices": [
+        "Allegori"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 4",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nDon Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
+      "choices": [
+        "Idealism och realism",
+        "Känsla och förnuft",
+        "Njutning och plikt",
+        "Kristen frälsning och synd"
+      ],
+      "correct_choices": [
+        "Idealism och realism"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 5",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nI Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
+      "choices": [
+        "Plikt och kärlek",
+        "Kraft och list",
+        "Känsla och fantasi",
+        "Empiri och förnuft"
+      ],
+      "correct_choices": [
+        "Kraft och list"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 6",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nVad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
+      "choices": [
+        "Handlingen",
+        "Versmåttet",
+        "Huvudkaraktären",
+        "Budskapet"
+      ],
+      "correct_choices": [
+        "Versmåttet"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 7",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nRobinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
+      "choices": [
+        "Känsla och natur",
+        "Förnuft och nytta",
+        "Frihet och rättigheter",
+        "Sinnevärld och idévärld"
+      ],
+      "correct_choices": [
+        "Förnuft och nytta"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 8",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nEn text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
+      "choices": [
+        "Satir",
+        "Allegori",
+        "Realism",
+        "Humanism"
+      ],
+      "correct_choices": [
+        "Satir"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 9",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nDen kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
+      "choices": [
+        "Naturliga rättigheter",
+        "Upplysningens gränser",
+        "Rationalism och empirism",
+        "Romantikens natursyn"
+      ],
+      "correct_choices": [
+        "Upplysningens gränser"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 10",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nI Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
+      "choices": [
+        "Pliktkänsla och kärlek",
+        "Empiri och förnuft",
+        "Förnuft och känsla",
+        "Rättssamhälle och hederskultur"
+      ],
+      "correct_choices": [
+        "Förnuft och känsla"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 11",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nI Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
+      "choices": [
+        "Plikt och kärlek",
+        "Vetenskap och ansvar",
+        "Förnuft och empiri",
+        "Frihet och rättigheter"
+      ],
+      "correct_choices": [
+        "Vetenskap och ansvar"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 12",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nEn text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
+      "choices": [
+        "Upplysningen",
+        "Romantiken",
+        "Renässansen",
+        "Medeltiden"
+      ],
+      "correct_choices": [
+        "Romantiken"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 13",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nVilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
+      "choices": [
+        "Från förnuftets kritik till känslans sanning",
+        "Från Guds ordning till människans möjligheter",
+        "Från naturens nytta till naturens känslospegling",
+        "Från mäns rättigheter till kvinnors politiska krav"
+      ],
+      "correct_choices": [
+        "Från Guds ordning till människans möjligheter"
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 14",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nVilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
+      "choices": [
+        "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
+        "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
+        "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
+        "Robinson styrs av heder och ära; Werther följer riddarens plikt."
+      ],
+      "correct_choices": [
+        "Robinson använder naturen praktiskt; Werther speglar känslor i den."
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 15",
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Skriv rätt bokstav.\nVilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
+      "choices": [
+        "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
+        "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
+        "Den används främst för riddarideal, sedan för realism och parodi.",
+        "Den används främst för hederskultur, sedan för råd om furstemakt."
+      ],
+      "correct_choices": [
+        "Den används främst för nytta och kritik, sedan för känsla och inre liv."
+      ],
+      "notes": [
+        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      ]
+    },
+    {
+      "source_label": "Fråga 16",
+      "kind": "gap_fill",
+      "points": 3,
+      "prompt": "Morfem\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek [___]\nb) I ordet lekfullheten är -full och -het [___]\nc) I ordet lekfullheten är -en [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        }
+      ],
+      "notes": [
+        "Subpart b groups -full and -het under one answer A, as printed; whole-item points stay 3. No partial-credit rule is inferred."
+      ]
+    },
+    {
+      "source_label": "Fråga 17",
+      "kind": "gap_fill",
+      "points": 3,
+      "prompt": "Fraser\nAnvänd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en [___]\nb) Frasen på skolgården är en [___]\nc) Frasen kan vila är en [___]",
+      "gaps": [
+        {
+          "accepted_values": [
+            "NF"
+          ]
+        },
+        {
+          "accepted_values": [
+            "PF"
+          ]
+        },
+        {
+          "accepted_values": [
+            "VF"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "source_label": "Fråga 18",
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nNoah [___] skrev [___] brevet [___] tydligt [___].",
+      "gaps": [
+        {
+          "accepted_values": [
+            "S"
+          ]
+        },
+        {
+          "accepted_values": [
+            "P"
+          ]
+        },
+        {
+          "accepted_values": [
+            "DO"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Adv"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "source_label": "Fråga 19",
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nAlva [___] är [___] inte [___] färdig [___].",
+      "gaps": [
+        {
+          "accepted_values": [
+            "S"
+          ]
+        },
+        {
+          "accepted_values": [
+            "P"
+          ]
+        },
+        {
+          "accepted_values": [
+            "SA"
+          ]
+        },
+        {
+          "accepted_values": [
+            "Pf"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "source_label": "Fråga 20",
+      "kind": "gap_fill",
+      "points": 2,
+      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
+      "gaps": [
+        {
+          "accepted_values": [
+            "huvudsats"
+          ]
+        },
+        {
+          "accepted_values": [
+            "före"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "source_label": "Fråga 21",
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Renässansen\nVad menas med en renässansmänniska?",
+      "notes": [
+        "Svarsexempel: En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
+        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+      ]
+    },
+    {
+      "source_label": "Fråga 22",
+      "kind": "free_text",
+      "points": 2,
+      "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+      "notes": [
+        "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+      ]
+    },
+    {
+      "source_label": "Fråga 23",
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Språkstruktur\nVad är en nominalisering?",
+      "notes": [
+        "Svarsexempel: När en handling, egenskap eller process uttrycks som substantiv.",
+        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+      ]
+    },
+    {
+      "source_label": "Fråga 24",
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
+      "notes": [
+        "Svarsexempel: I bisats står inte och andra satsadverbial före det finita verbet.",
+        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+      ]
+    }
+  ]
+}
