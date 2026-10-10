@@ -220,10 +220,17 @@ async def test_list_document_heads_returns_one_head_per_workspace_lineage(
     ]
 
 
-async def test_duplicate_document_version_maps_to_conflict_and_cleans_up(
+async def test_duplicate_document_version_maps_to_conflict_without_writing_a_file(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
+    """A second save of an existing (lineage, version) is refused before storage.
+
+    ``create()`` flushes the row before the content is stored, so the unique
+    index raises on the duplicate before any file is written. Verified: the
+    duplicate maps to CONFLICT, no file exists for the duplicate id, and the
+    first version's file, row, and usage total are intact.
+    """
     owner = await _create_owner(session_factory)
     lineage_id = uuid4()
     storage = LocalVaultStorage(vault_root=tmp_path)
