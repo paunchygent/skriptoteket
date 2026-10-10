@@ -97,7 +97,7 @@ class TestExportGate:
         assert isinstance(blockers, list) and blockers
         assert all({"item_id", "reason"} <= set(blocker) for blocker in blockers)
 
-    def test_blocked_plan_raises(self) -> None:
+    def test_absent_answer_key_blocks_before_planning(self) -> None:
         item = NativeExamItem(
             item_id="item_001",
             sequence=1,
@@ -134,7 +134,9 @@ class TestExportGate:
             )
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-        assert exc_info.value.details["plan_status"] == "blocked"
+        assert exc_info.value.details["blockers"] == [
+            {"item_id": "item_001", "reason": "missing_answer_key"}
+        ]
 
 
 class TestFullPackageBuild:

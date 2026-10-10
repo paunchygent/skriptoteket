@@ -47,7 +47,8 @@ export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProp
 export type ExamWorkspaceExportBlockerReason =
   | "review_required"
   | "machine_proposed_key_unreviewed"
-  | "missing_points";
+  | "missing_points"
+  | "missing_answer_key";
 
 export type ExamWorkspaceExportBlocker = {
   item_id: string;

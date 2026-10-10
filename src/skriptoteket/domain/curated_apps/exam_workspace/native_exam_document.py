@@ -403,11 +403,16 @@ class NativeExportBlocker(BaseModel):
         "review_required",
         "machine_proposed_key_unreviewed",
         "missing_points",
+        "missing_answer_key",
     ]
 
 
 def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
-    """S4 gate: LLM output and low-confidence items need review before export."""
+    """S4 gate: LLM output and low-confidence items need review before export.
+
+    Keyed kinds without an answer key block export: Exam.net QTI would carry an
+    automatic item with no correct response and the Exam.net PDF prints the key.
+    """
     blockers: list[NativeExportBlocker] = []
     for item in document.items:
         if item.review.state is NativeItemReviewState.REVIEW_REQUIRED:
@@ -419,6 +424,8 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
                     reason="machine_proposed_key_unreviewed",
                 )
             )
+        if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)
