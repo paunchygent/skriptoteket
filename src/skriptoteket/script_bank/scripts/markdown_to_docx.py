@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from skriptoteket_toolkit import read_inputs, read_settings  # type: ignore[import-not-found]
+from skriptoteket_toolkit import read_inputs, read_settings
 
 # Optional preinstalled libs
 try:

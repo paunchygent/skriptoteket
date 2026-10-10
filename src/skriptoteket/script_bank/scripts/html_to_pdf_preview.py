@@ -20,6 +20,7 @@ import json
 import os
 import re
 import traceback
+from collections.abc import Mapping
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from html.parser import HTMLParser
@@ -28,7 +29,7 @@ from time import perf_counter
 from typing import TypedDict, cast
 from urllib.parse import unquote, urlparse
 
-from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (
     get_action_parts,
     list_input_files,
     read_settings,
@@ -785,8 +786,8 @@ def _handle_preview(*, input_files: list[ManifestFile]) -> dict[str, object]:
 def _handle_action(
     *,
     action_id: str,
-    input_data: dict[str, object],
-    state: dict[str, object],
+    input_data: Mapping[str, object],
+    state: Mapping[str, object],
     output_dir: Path,
 ) -> dict[str, object]:
     # Hantera "börja om"

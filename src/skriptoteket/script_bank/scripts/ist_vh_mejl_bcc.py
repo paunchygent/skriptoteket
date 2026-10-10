@@ -20,15 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
-from skriptoteket_toolkit import list_input_files  # type: ignore[import-not-found]
+from skriptoteket_toolkit import ManifestFile, list_input_files
 
 EMAIL_RE = re.compile(r"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,15})")
-
-
-class ManifestFile(TypedDict):
-    name: str
-    path: str
-    bytes: int
 
 
 class FileExtractionResult(TypedDict):

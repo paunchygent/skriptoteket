@@ -13,10 +13,11 @@ Runner-kontrakt:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
-from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (
     get_action_parts,
     list_input_files,
 )
@@ -64,8 +65,8 @@ def _action_with_note(label: str, action_id: str) -> dict:
 def _handle_action(
     *,
     action_id: str,
-    input_data: dict[str, object],
-    state: dict[str, object],
+    input_data: Mapping[str, object],
+    state: Mapping[str, object],
     output_dir: Path,
 ) -> dict:
     step = _safe_int(state.get("step"), 0)

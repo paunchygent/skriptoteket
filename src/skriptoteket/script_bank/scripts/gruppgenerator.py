@@ -11,11 +11,12 @@ import csv
 import json
 import random
 import re
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, NotRequired, TypedDict
 
-from skriptoteket_toolkit import (  # type: ignore[import-not-found]
+from skriptoteket_toolkit import (
     get_action_parts,
     list_input_files,
     read_inputs,
@@ -146,7 +147,7 @@ def _parse_roster_file(path: Path) -> tuple[list[str], str | None]:
     return (_extract_names_from_rows(rows), None)
 
 
-def _parse_saved_classes(settings: dict[str, object]) -> tuple[dict[str, list[str]], str | None]:
+def _parse_saved_classes(settings: Mapping[str, object]) -> tuple[dict[str, list[str]], str | None]:
     raw = settings.get("saved_classes_json", "")
 
     # Also look for session-promoted classes
@@ -359,9 +360,11 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
     settings_raw = read_settings()
     action_id, action_input_raw, _ = get_action_parts()
 
-    inputs: dict[str, object] = inputs_raw if isinstance(inputs_raw, dict) else {}
-    settings: dict[str, object] = settings_raw if isinstance(settings_raw, dict) else {}
-    action_input: dict[str, object] = action_input_raw if isinstance(action_input_raw, dict) else {}
+    inputs: Mapping[str, object] = inputs_raw if isinstance(inputs_raw, dict) else {}
+    settings: Mapping[str, object] = settings_raw if isinstance(settings_raw, dict) else {}
+    action_input: Mapping[str, object] = (
+        action_input_raw if isinstance(action_input_raw, dict) else {}
+    )
 
     payload = action_input if action_id == "generate" else inputs
 
