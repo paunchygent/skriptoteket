@@ -35,7 +35,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiValidationStatus,
     ExamNetQtiValidatorResult,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import IMSCP_NAMESPACE
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import IMSCP_NAMESPACE
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
 
 _FORBIDDEN_PACKAGE_SUFFIXES = (".mp3", ".wav", ".m4a", ".pdf", ".ggb")

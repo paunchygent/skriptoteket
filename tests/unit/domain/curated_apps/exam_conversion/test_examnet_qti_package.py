@@ -42,8 +42,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiTextEntryGap,
     ExamNetQtiValidationStatus,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import IMSCP_NAMESPACE
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import (
-    IMSCP_NAMESPACE,
     build_examnet_qti_package_plan,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_validation import (
