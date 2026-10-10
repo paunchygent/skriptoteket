@@ -1,36 +1,12 @@
 ## Current
 
-- [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md)
-  is `in_progress`; reviewed work merged to `main` (`8b46ba8f`, pushed).
-  Supporting gates: fe vitest/typecheck/lint/build green, ruff clean, mypy
-  12 baseline errors, 9 unit failures all reproduced on origin/main; 5
-  Postgres integration tests and migration tests pass. D5 live walk
-  2026-10-10 (Claude, built-in browser, viewport 846x822) on Hemma
-  staging `http://127.0.0.1:15173` at `8b46ba8f`, signed in through the
-  HuleEdu browser-session ceremony as the staging proof user: imported
-  `grammatik_omprov_examnet_import_med_facit.docx` (8 items, 38 points, 5
-  review_required); edited Fråga 1, added Fråga 9 (2 points), marked all
-  9 Granskad, saved v2; left and reopened from "Sparade prov" with every
-  edit (40 points); QTI, PDF and DOCX exports returned 200 and all contain
-  the edits; QTI zip has imsmanifest, 9 items, correctResponse on the 7
-  gap items. Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b/evidence/staging-walk/`.
-  Gap-key fix (`b09130ea`, `0f63670a`, `19b24b6c`, reviews approved,
-  merged `2c4dadbc`, pushed, staging redeployed): clearing every key value
-  makes the key `absent`; a partial gap key is refused at save in Swedish;
-  export blocks keyed items without a key (`missing_answer_key`, all
-  targets). Proposal step walked 2026-10-10 on staging at `2c4dadbc`:
-  partial clear on Fråga 2 refused with Swedish toast; full clear saved
-  v3; QTI export refused with "Frågan saknar facit…"; Föreslå facit
-  returned 1 proposal (NF, VF, PF, PF); approved and saved v4; QTI export
-  200 with item_002 as 4 textEntry gaps with correctResponse, 7/9 items
-  keyed. Small items fixed (`dfa4751a`, `5c71368d`, `822f5d8c`, review
-  approved, merged `70aff0cc`, staging redeployed): Swedish review-reason
-  labels, QTI test title is the exam title, blocked-plan test, guard
-  comments, copy "lämna alla luckor tomma"; verified on staging 2026-10-10.
-  DOCX export stays blocked without a key (recommended; user to confirm).
-  Layout redesign TASK-SKRIPT-39-04-02 is `ready` (L1-L8).
-  Owner: Claude session. User
-  gates: D5 acceptance, terminal closure, proposal carry-over across saves.
+- [TASK-SKRIPT-39-04-02](docs/backlog/tasks/task-skript-39-04-02-exam-workspace-two-mode-layout-file-handling-and-item-editing.md)
+  is `ready` (terms L1-L8: Filer/Redigera modes, item list plus dominating
+  editor, metadata drawer, inline gap chips, phone bottom-sheet picker).
+  Next action: implement on a task branch; walk 1440x900, 1366x768,
+  768x1024 and 390x844 on staging with user-friendliness as the gate.
+  Open user gate: proposal carry-over across saves (proposals are per
+  revision and vanish on save).
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
   proposed->ready. Follow-up: Mina filer keeps every workspace version
@@ -50,8 +26,7 @@
   merge and governed terminal closure. The HuleEduOS producer stays a
   deliberately separate hand-tool for now (E15). ADR-SKRIPT-0091 and
   ST-SKRIPT-39-04 were accepted by user decision 2026-10-09 (user-closure
-  gate): ADR-0091 is `accepted`, the story and TASK-SKRIPT-39-04-01 are
-  `ready`, and the DOCX walking skeleton is unblocked.
+  gate): ADR-0091 is `accepted` and the story is `ready`.
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
@@ -127,6 +102,11 @@
 
 ## Recent
 
+- 2026-10-10: TASK-SKRIPT-39-04-01 `done` by user D5 approval
+  (`agent-planning:user-closure-gate`); walk, proposal step, gap-key fix,
+  missing-key export block (DOCX included, user decision) and small items
+  on `main` through `77ea389f`; evidence in the task's Closeout Evidence.
+
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
   on migrating both epics to the contract-derived profile with open child
@@ -154,5 +134,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: user D5 acceptance of TASK-SKRIPT-39-04-01; then implement
-  TASK-SKRIPT-39-04-02 (`ready`).
+- Next: implement TASK-SKRIPT-39-04-02 (`ready`).

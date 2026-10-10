@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-05'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User approved the D5 live walk and the DOCX missing-key export block on 2026-10-10 after independent code reviews approved every merged change.
 task_kind: story
 acceptance_criteria:
 - A real DOCX source converts end to end through deterministic extraction, teacher
@@ -99,3 +101,24 @@ implementation. No extra polling layer or persistence authority is added.
 | D3 | QTI and PDF exports pass the existing fail-closed validators unchanged; the minimal DOCX writer ships with validation. |
 | D4 | Cleanup tasks and workspace review gates precede implementation. |
 | D5 | Production acceptance remains user-owned. |
+
+## Closeout Evidence
+
+- Merged and pushed `main` through `77ea389f`; Hemma staging ran `70aff0cc`
+  (healthy web, worker, database and Vite) for the final walk.
+- D5 walk 2026-10-10 in the built-in browser on Hemma staging through the
+  HuleEdu browser-session ceremony with the staging proof user: imported
+  the genuine fixture `grammatik_omprov_examnet_import_med_facit.docx`
+  (8 items, 38 points, 5 review_required); edited Fråga 1, added Fråga 9,
+  marked all reviewed, saved; left and reopened with every edit; exported
+  QTI, PDF and DOCX, each containing the edits.
+- Proposal step on `2c4dadbc`: a partial gap clear was refused in Swedish;
+  a full clear saved with an absent key; QTI export was blocked with
+  "Frågan saknar facit…"; one AI proposal (NF, VF, PF, PF) was approved and
+  saved; the QTI export kept the item as four keyed text-entry gaps.
+- Follow-up fixes on `70aff0cc`: Swedish review-reason labels and the exam
+  title as the QTI test title, both verified on staging.
+- Evidence: session `01a1257f-b1b7-741b-ac62-044125c05d6b` at
+  `evidence/staging-walk/` and `handoff.md`.
+- User decision: DOCX export stays blocked while a keyed item lacks an
+  answer key.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a9d1502d12ddc30bac53a437ce1f75149f05ef794b74612098713b76f805ccb2",
+  "source_set_digest": "04b39f9917dd60550612973e66b5150cba4c40bdbacda85d51327d93cae584a8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4506,7 +4506,7 @@
       "type": "task",
       "title": "DOCX walking skeleton: import, native edit and create, save and reopen, export",
       "path": "docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4517,7 +4517,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved the D5 live walk and the DOCX missing-key export block on 2026-10-10 after independent code reviews approved every merged change."
       }
     },
     {
