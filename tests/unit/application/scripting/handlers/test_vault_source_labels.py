@@ -135,7 +135,9 @@ async def test_app_export_label_is_registry_title_for_app_id_prefix(
     "source_artifact_id",
     [
         pytest.param("unknown.app:exam-workspace:abc:v1", id="unknown-prefix"),
-        pytest.param(f"document-converter:{uuid4()}:docx", id="unregistered-document-converter"),
+        pytest.param(
+            f"document-converter:{uuid4()}:converted_document", id="unregistered-document-converter"
+        ),
         pytest.param("", id="empty"),
         pytest.param(None, id="absent"),
         pytest.param(":exam-workspace:abc:v1", id="empty-prefix"),
