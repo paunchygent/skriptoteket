@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "47353580e9300f945db949b8dca049aeb43ea580ba85b49e7ae57ddb70988b7b",
+  "source_set_digest": "88c9032fd461fdb7bd8599096410c08c5cfc9d86a4743235a72379d0f361fa7b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4590,7 +4590,7 @@
       "type": "task",
       "title": "Carry pending answer-key proposals across exam workspace saves",
       "path": "docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4609,7 +4609,26 @@
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
       "path": "docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md",
-      "status": "ready",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-02",
+      "type": "task",
+      "title": "Gold corpus and eval loop for AI-first DOCX conversion",
+      "path": "docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
