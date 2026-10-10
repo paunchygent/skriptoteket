@@ -11,7 +11,7 @@ Relationships:
 """
 
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -101,23 +101,25 @@ def clock() -> ClockProtocol:
 
 
 @pytest.fixture
+def smtp_check() -> AsyncMock:
+    return AsyncMock(return_value=("healthy", None))
+
+
+@pytest.fixture
 def app(
     monkeypatch: pytest.MonkeyPatch,
     settings: Settings,
     engine: AsyncMock,
     users: AsyncMock,
     clock: ClockProtocol,
+    smtp_check: AsyncMock,
 ) -> FastAPI:
     monkeypatch.setattr(
         observability_routes,
         "check_database",
         AsyncMock(return_value=("healthy", None)),
     )
-    monkeypatch.setattr(
-        observability_routes,
-        "check_smtp",
-        AsyncMock(return_value=("healthy", None)),
-    )
+    monkeypatch.setattr(observability_routes, "check_smtp", smtp_check)
     monkeypatch.setattr(
         observability_routes,
         "get_session_file_usage",
@@ -187,7 +189,7 @@ async def test_liveness_is_passive_while_readiness_reports_dependency_failures(
         "dependencies": {},
         "timestamp": payload["timestamp"],
     }
-    assert datetime.fromisoformat(payload["timestamp"]).utcoffset().total_seconds() == 0
+    assert datetime.fromisoformat(payload["timestamp"]).utcoffset() == timedelta(0)
     database.assert_not_awaited()
     smtp.assert_not_awaited()
     engine.begin.assert_not_called()
@@ -207,6 +209,7 @@ async def test_liveness_is_passive_while_readiness_reports_dependency_failures(
 async def test_readiness_preserves_disabled_smtp_check(
     client: httpx.AsyncClient,
     settings: Settings,
+    smtp_check: AsyncMock,
 ) -> None:
     settings.HEALTHZ_SMTP_CHECK_ENABLED = False
 
@@ -214,7 +217,7 @@ async def test_readiness_preserves_disabled_smtp_check(
 
     assert response.status_code == 200
     assert "smtp" not in response.json()["dependencies"]
-    observability_routes.check_smtp.assert_not_awaited()
+    smtp_check.assert_not_awaited()
 
 
 @pytest.mark.asyncio
