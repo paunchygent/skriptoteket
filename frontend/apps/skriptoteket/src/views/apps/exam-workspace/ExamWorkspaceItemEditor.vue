@@ -11,14 +11,19 @@
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  */
 
+import { computed } from "vue";
+
 import { IconCheck, IconWarning } from "../../../components/icons";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import { isPartiallyKeyedGapItem } from "./useExamWorkspaceDocument";
 
 const props = defineProps<{
   item: NativeExamItem;
 }>();
+
+const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
 
 const emit = defineEmits<{
   markReviewed: [itemId: string];
@@ -292,6 +297,13 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
           Ledtråd: {{ gap.hint }}
         </span>
       </label>
+      <p
+        v-if="hasPartialGapKey"
+        class="text-xs leading-snug text-error"
+        data-test="exam-workspace-gap-key-hint"
+      >
+        Fyll i godkända svar för varje lucka, eller töm alla luckor om frågan ska sakna facit.
+      </p>
     </fieldset>
   </section>
 </template>
