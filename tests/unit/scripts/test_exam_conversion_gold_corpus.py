@@ -1,4 +1,4 @@
-"""Source-bound completeness of the eight unconfirmed DOCX gold drafts."""
+"""Source-bound completeness of the eight user-confirmed DOCX gold files."""
 
 import hashlib
 from pathlib import Path
@@ -42,8 +42,8 @@ def test_gold_schema_source_hash_and_complete_item_counts(stem: str) -> None:
     assert len(gold.items) == count
     assert sum(item.points or 0 for item in gold.items) == points
     assert len({item.source_label for item in gold.items}) == count
-    assert gold.confirmed is False
-    assert gold.confirmation_note is None
+    assert gold.confirmed is True
+    assert gold.confirmation_note is not None and "2026-10-10" in gold.confirmation_note
 
 
 def test_source_matching_tables_and_word_banks_are_preserved() -> None:
@@ -89,4 +89,4 @@ def test_gold_compares_equal_to_itself_without_unresolved_questions(stem: str) -
     comparison = compare_exam(gold, gold.items)
     assert [item.mismatches for item in comparison.items if not item.passed] == []
     assert comparison.passed
-    assert comparison.unconfirmed
+    assert not comparison.unconfirmed

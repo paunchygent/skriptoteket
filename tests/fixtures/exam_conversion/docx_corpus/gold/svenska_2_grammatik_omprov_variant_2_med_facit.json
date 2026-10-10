@@ -3,7 +3,8 @@
   "source_filename": "svenska_2_grammatik_omprov_variant_2_med_facit.docx",
   "source_sha256": "2bcc38ba7c291956101d3a4e6bb678118421a035e8f614b0f1df0b8d48c81041",
   "title": "Omprov: grammatik och språkstrukturer — Svenska 2",
-  "confirmed": false,
+  "confirmed": true,
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
   "notes": [
     "Draft read directly from word/document.xml and its inline facit. One item per numbered Fråga (8 items, 38 points).",
     "Source answer labels become gap markers; facit is absent from student-visible prompts. Open analysis facit is retained only in notes."

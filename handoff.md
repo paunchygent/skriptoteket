@@ -1,24 +1,22 @@
 ## Current
 
-- [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
-  is `in_progress` on `codex/task-skript-39-05-02`. Owner: delegated Codex
-  implementation lead; source-read drafts contain 314 items in eight exams.
-  Schema/comparator proof: 73 tests; corpus proof: 11 tests. Next: parent review
-  and user gold confirmation. Methodology item 2 has a teacher question in gold.
-  All gold stays unconfirmed until the user confirms it. Eval wiring waits
-  for the parent to merge TASK-SKRIPT-39-05-01 into main, then merge main
-  into this branch. Retained session: `01a12706-566c-7480-acc3-427145283942`.
-
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  is `ready` (user 2026-10-10): AI-first DOCX conversion, terms A1-A12;
-  supersedes TASK-SKRIPT-39-04-03. Task 1
-  [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-  is `in_progress` (walking skeleton on the Chapter 4 poetry quiz); Codex
-  implements on `codex/task-skript-39-05-01`. Plan: retained session `01a12706-566c-7480-acc3-427145283942`.
+  is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
+  assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
+  `01a12706-566c-7480-acc3-427145283942`.
+  - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
+    `in_progress` on `codex/task-skript-39-05-01` at `4ac59c24` (R2 repair of
+    the facit-as-metadata finding); Sol rereview running. Next: merge, staging
+    redeploy, live-provider browser walk, token record.
+  - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
+    `in_progress`: gold and comparator approved by Sol rereview and merged;
+    the user confirmed all eight gold files (314 items, 398 points) on
+    2026-10-10. Next: wire the eval runner once task 1 merges.
 
 - [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress`: pending answer-key proposals survive a save (P1-P3);
-  Codex implements on `codex/task-skript-39-04-04`, retained session
+  is `in_progress` on `codex/task-skript-39-04-04`: Opus 5.5 repairs three
+  Sol review findings (rejection semantics, test file size, silent drop).
+  Next: Sol rereview, merge, staging walk. Retained session
   `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
@@ -163,4 +161,4 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: review, merge and staging-walk TASK-SKRIPT-39-05-01 and 39-04-04 when Codex reports.
+- Next: rereview, merge and staging-walk TASK-SKRIPT-39-05-01 and 39-04-04.
