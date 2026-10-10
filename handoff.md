@@ -23,11 +23,13 @@
   v3; QTI export refused with "Frågan saknar facit…"; Föreslå facit
   returned 1 proposal (NF, VF, PF, PF); approved and saved v4; QTI export
   200 with item_002 as 4 textEntry gaps with correctResponse, 7/9 items
-  keyed. Open findings: raw review code `long_answer_key`; QTI test title
-  is the filename; reviewer minors (blocked-plan test gap, comment on
-  unreachable unkeyed QTI/PDF branches, copy "lämna alla luckor tomma");
-  DOCX export is also blocked by a missing key (user to confirm). Layout
-  redesign proposed as TASK-SKRIPT-39-04-02. Owner: Claude session. User
+  keyed. Small items fixed (`dfa4751a`, `5c71368d`, `822f5d8c`, review
+  approved, merged `70aff0cc`, staging redeployed): Swedish review-reason
+  labels, QTI test title is the exam title, blocked-plan test, guard
+  comments, copy "lämna alla luckor tomma"; verified on staging 2026-10-10.
+  DOCX export stays blocked without a key (recommended; user to confirm).
+  Layout redesign TASK-SKRIPT-39-04-02 is `ready` (L1-L8).
+  Owner: Claude session. User
   gates: D5 acceptance, terminal closure, proposal carry-over across saves.
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
@@ -152,5 +154,5 @@
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
-- Next: user D5 acceptance of TASK-SKRIPT-39-04-01; user closes the two
-  open decisions on TASK-SKRIPT-39-04-02 and moves it to `ready`.
+- Next: user D5 acceptance of TASK-SKRIPT-39-04-01; then implement
+  TASK-SKRIPT-39-04-02 (`ready`).
