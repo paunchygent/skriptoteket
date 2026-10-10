@@ -50,7 +50,7 @@ class ExamWorkspaceContainerCodec:
         ).encode("utf-8")
 
         buffer = io.BytesIO()
-        with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        with zipfile.ZipFile(buffer, "w") as archive:
             for name, payload in (
                 (_MANIFEST_NAME, manifest_bytes),
                 (_DOCUMENT_NAME, document_bytes),
@@ -60,6 +60,7 @@ class ExamWorkspaceContainerCodec:
                 ),
             ):
                 info = zipfile.ZipInfo(name, date_time=_FIXED_ZIP_DATETIME)
+                info.compress_type = zipfile.ZIP_DEFLATED
                 archive.writestr(info, payload)
         return buffer.getvalue()
 
