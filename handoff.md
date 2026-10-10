@@ -6,14 +6,11 @@
   `01a12706-566c-7480-acc3-427145283942`.
 
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress`: producer contract, failure observability and gpt-6-luna
-    medium conversion merged (`929e847a`, Sol rereview approved `fcc094a6`).
-    Staging walk 2026-10-10 at `929e847a`: quiz job succeeded in 59 s, 28
-    items/28 points, QTI created. Live corpus eval (all eight, gpt-6-luna
-    medium): 0/8 pass A7; main causes are comparator projection (title, hint,
-    instructions), review-item fragmentation and a facit leak in review
-    fragments (`evidence/corpus-live-eval-gpt-6-luna/summary.md`). Next: user
-    triage of the eval, then task 2.
+    `in_progress`: merged to main `448bdf50` after three Boy Scout repair
+    rounds (Sol rereview approved `40be487f`,
+    `evidence/reviews/TASK-SKRIPT-39-05-01/review-n4-rereview-40be487f.md`).
+    Staging redeploy to `448bdf50` started 2026-10-11. Next: DOCX upload walk
+    on staging, then user closure.
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
     `in_progress`: gold and comparator approved by Sol rereview and merged;
     the user confirmed all eight gold files (314 items, 398 points) on
@@ -26,6 +23,11 @@
   All-types Exam.net import 2026-10-10 passed (exam 5310254, 13 tasks, 28p).
   Retained plan `01a127b9-9597-7303-b076-e5b24e5954d2`. Next: user
   proposed->ready; sequenced after story 8.
+
+- [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
+  is `ready` (user decision 2026-10-11): multi-file tool bundles, then split
+  the four over-long script-bank tools; ADR afterwards, status proposed.
+  Owner: Claude parent; lead Opus 5.5 assignment. Next: lead implementation.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review
