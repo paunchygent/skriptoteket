@@ -23,8 +23,10 @@ from skriptoteket_toolkit import (  # type: ignore[import-not-found]
 
 
 def _safe_int(value: object, default: int = 0) -> int:
+    if not isinstance(value, int | float | str):
+        return default
     try:
-        return int(value)  # noqa: PLC1901
+        return int(value)
     except (TypeError, ValueError):
         return default
 

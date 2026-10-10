@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 from typing import Any, Dict, List
 
-from pdf_helper import save_as_pdf
+from pdf_helper import save_as_pdf  # type: ignore[import-not-found]
 from skriptoteket_toolkit import get_action_parts, read_inputs  # type: ignore[import-not-found]
 
 # ──────────────────────────────────────────────────────────────────────────────
