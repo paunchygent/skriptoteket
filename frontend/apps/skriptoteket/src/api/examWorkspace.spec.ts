@@ -4,21 +4,27 @@
  * Expected behavior:
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
- *   import with the `file` field, lineage readback, and versioned PUT saves
- *   with `expected_revision` plus the full native document.
+ *   import with the `file` field, head-version listing, lineage readback,
+ *   versioned PUT saves with `expected_revision` plus the full native
+ *   document, blob export downloads per target, and enrichment start/status.
  */
 
 import { describe, expect, it, vi } from "vitest";
 
-import { apiGet, apiPost, apiPut } from "./client";
+import { apiFetchBlobResponse, apiGet, apiPost, apiPut } from "./client";
 import {
+  downloadExamWorkspaceExport,
   getExamWorkspaceDocument,
+  getExamWorkspaceEnrichment,
   importExamWorkspaceDocument,
+  listExamWorkspaceDocuments,
   saveExamWorkspaceDocument,
+  startExamWorkspaceEnrichment,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
 vi.mock("./client", () => ({
+  apiFetchBlobResponse: vi.fn(),
   apiGet: vi.fn(),
   apiPost: vi.fn(),
   apiPut: vi.fn(),
@@ -27,6 +33,7 @@ vi.mock("./client", () => ({
 const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
 const apiPutMock = vi.mocked(apiPut);
+const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
 
@@ -134,5 +141,47 @@ describe("examWorkspace transport", () => {
       expected_revision: 4,
     });
     expect(result).toBe(response);
+  });
+
+  it("lists saved documents from the collection path", async () => {
+    apiGetMock.mockResolvedValueOnce({ documents: [] });
+
+    const result = await listExamWorkspaceDocuments();
+
+    expect(apiGetMock).toHaveBeenCalledWith(DOCUMENTS_ROOT);
+    expect(result).toEqual({ documents: [] });
+  });
+
+  it("downloads each export target as a blob from the export path", async () => {
+    const blobResponse = {
+      blob: new Blob(["zip"]),
+      contentType: "application/zip",
+      filename: "prov-qti.zip",
+    };
+    apiFetchBlobResponseMock.mockResolvedValueOnce(blobResponse);
+
+    const result = await downloadExamWorkspaceExport("lineage-1", "qti");
+
+    expect(apiFetchBlobResponseMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/exports/qti`,
+    );
+    expect(result).toBe(blobResponse);
+  });
+
+  it("starts enrichment with POST and reads status with GET on the enrichment path", async () => {
+    const status = {
+      document_revision: 2,
+      lineage_id: "lineage-1",
+      proposals: [],
+      state: "queued" as const,
+    };
+    apiPostMock.mockResolvedValueOnce(status);
+    apiGetMock.mockResolvedValueOnce(status);
+
+    await startExamWorkspaceEnrichment("lineage-1");
+    await getExamWorkspaceEnrichment("lineage-1");
+
+    expect(apiPostMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
+    expect(apiGetMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
   });
 });

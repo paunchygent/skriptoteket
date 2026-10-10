@@ -19,179 +19,26 @@ import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
-import type {
-  ExamWorkspaceDocumentResponse,
-  NativeExamDocument,
-  NativeExamItem,
-} from "../../api/examWorkspace";
-import { mountWithContext } from "../../test/utils";
-import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import type { NativeExamDocument } from "../../api/examWorkspace";
+import {
+  buildResponse,
+  importFixtureDocument,
+  mountExamWorkspace,
+  saveDocument,
+  selectItemRow,
+} from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
+  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
-vi.mock("../../api/examWorkspace", () => ({
-  getExamWorkspaceDocument: apiMocks.getExamWorkspaceDocument,
-  importExamWorkspaceDocument: apiMocks.importExamWorkspaceDocument,
-  saveExamWorkspaceDocument: apiMocks.saveExamWorkspaceDocument,
-}));
-
-function buildFreeTextItem(sequence: number): NativeExamItem {
-  return {
-    answer_key: { correct_choice_ids: [], origin: "not_applicable" },
-    body: [
-      { segments: [{ kind: "text", text: `Fråga ${sequence}: beskriv med egna ord.` }] },
-    ],
-    choices: [],
-    gaps: [],
-    item_id: `item_${String(sequence).padStart(3, "0")}`,
-    kind: "free_text",
-    points: 2,
-    review: {
-      confidence: 0.9,
-      parse_origin: "deterministic",
-      reasons: [],
-      state: "review_complete",
-    },
-    sequence,
-    source_anchor: null,
-    title: `Fråga ${sequence}`,
-  };
-}
-
-function buildDocument(): NativeExamDocument {
-  const items: NativeExamItem[] = [
-    buildFreeTextItem(1),
-    {
-      ...buildFreeTextItem(2),
-      answer_key: { correct_choice_ids: ["choice_a"], origin: "source_provided" },
-      choices: [
-        { choice_id: "choice_a", text: "Avdunstning" },
-        { choice_id: "choice_b", text: "Kondensation" },
-        { choice_id: "choice_c", text: "Nederbörd" },
-      ],
-      kind: "single_choice",
-      title: "Vattnets kretslopp",
-    },
-    {
-      ...buildFreeTextItem(3),
-      answer_key: {
-        correct_choice_ids: ["choice_a", "choice_b"],
-        origin: "machine_proposed",
-      },
-      choices: [
-        { choice_id: "choice_a", text: "Syre" },
-        { choice_id: "choice_b", text: "Kväve" },
-        { choice_id: "choice_c", text: "Argon" },
-      ],
-      kind: "multiple_response",
-      review: {
-        confidence: 0.4,
-        parse_origin: "llm_parsed",
-        reasons: ["föreslaget facit behöver godkännas"],
-        state: "review_required",
-      },
-      title: "Luftens gaser",
-    },
-    {
-      ...buildFreeTextItem(4),
-      body: [
-        {
-          segments: [
-            { kind: "text", text: "Vatten kokar vid" },
-            { gap_id: "gap_001", kind: "gap" },
-            { kind: "text", text: "grader." },
-          ],
-        },
-      ],
-      gaps: [{ accepted_values: ["100"], gap_id: "gap_001", hint: null }],
-      kind: "gap_fill",
-      review: {
-        confidence: 0.5,
-        parse_origin: "llm_parsed",
-        reasons: ["luckan behöver godkända svar"],
-        state: "review_required",
-      },
-      title: "Kokpunkt",
-    },
-    buildFreeTextItem(5),
-    buildFreeTextItem(6),
-    buildFreeTextItem(7),
-    buildFreeTextItem(8),
-  ];
-
-  return {
-    assets: [],
-    document_id: "doc-1",
-    instructions: ["Besvara alla frågor."],
-    items,
-    origin: {
-      extractor_version: "docx-extractor-1",
-      kind: "docx_import",
-      source_filename: "NO_Prov_HT25.docx",
-      source_sha256: "abc123",
-    },
-    revision: 1,
-    schema_version: "native_exam_document_v1",
-    title: "NO-prov HT25",
-  };
-}
-
-function buildResponse(params: {
-  title?: string;
-  version: number;
-}): ExamWorkspaceDocumentResponse {
-  const document = buildDocument();
-  return {
-    document: {
-      ...document,
-      revision: params.version,
-      title: params.title ?? document.title,
-    },
-    notes: [],
-    summary: {
-      lineage_id: "lineage-1",
-      name: params.title ?? document.title,
-      saved_at: "2026-10-09T08:00:00Z",
-      vault_file_id: "file-1",
-      version: params.version,
-    },
-  };
-}
-
-function mountView() {
-  return mountWithContext(ExamWorkspaceView);
-}
-
-type ViewWrapper = ReturnType<typeof mountView>;
-
-async function importFixtureDocument(wrapper: ViewWrapper) {
-  const input = wrapper.find<HTMLInputElement>(
-    '[data-test="exam-workspace-source-file-input"]',
-  );
-  Object.defineProperty(input.element, "files", {
-    configurable: true,
-    value: [
-      new File(["prov"], "NO_Prov_HT25.docx", {
-        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      }),
-    ],
-  });
-  await input.trigger("change");
-  await flushPromises();
-}
-
-async function selectItemRow(wrapper: ViewWrapper, itemId: string) {
-  await wrapper.find(`[data-test="exam-workspace-item-row-${itemId}"]`).trigger("click");
-}
-
-async function saveDocument(wrapper: ViewWrapper) {
-  await wrapper.find('[data-test="exam-workspace-save"]').trigger("click");
-  await flushPromises();
-}
+vi.mock("../../api/examWorkspace", () => apiMocks);
 
 function lastSavedDocument(): NativeExamDocument {
   const calls = apiMocks.saveExamWorkspaceDocument.mock.calls;
@@ -206,12 +53,21 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.listExamWorkspaceDocuments.mockReset();
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.getExamWorkspaceEnrichment.mockReset();
+  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
+    document_revision: 1,
+    lineage_id: "lineage-1",
+    proposals: [],
+    state: "not_requested",
+  });
   apiMocks.importExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
 });
 
 describe("ExamWorkspaceView walking skeleton slice", () => {
   it("shows the extracted items with Swedish type labels and review status after import", async () => {
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
 
     await importFixtureDocument(wrapper);
 
@@ -231,7 +87,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   });
 
   it("marks the workspace as unsaved when the selected item title is edited", async () => {
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -246,7 +102,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   });
 
   it("adds a new teacher-created free-text question with the next free item id", async () => {
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await wrapper.find('[data-test="exam-workspace-add-item"]').trigger("click");
@@ -263,7 +119,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
   it("saves with the bumped client-side revision and the previous expected revision", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -288,7 +144,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
   it("marks a machine-proposed answer key as reviewed_advisory when the item is marked reviewed", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_003");
@@ -309,7 +165,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
   it("stores teacher answer-key edits as teacher_authored for choices and gaps", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -346,7 +202,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(
       buildResponse({ title: "Serverversion av provet", version: 2 }),
     );
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -368,7 +224,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(
       buildResponse({ title: "Uppdaterat prov", version: 1 }),
     );
-    const wrapper = mountView();
+    const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await wrapper.find('[data-test="exam-workspace-reload"]').trigger("click");

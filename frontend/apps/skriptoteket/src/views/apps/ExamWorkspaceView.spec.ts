@@ -23,16 +23,16 @@ import { mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 
 const apiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
+  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
-vi.mock("../../api/examWorkspace", () => ({
-  getExamWorkspaceDocument: apiMocks.getExamWorkspaceDocument,
-  importExamWorkspaceDocument: apiMocks.importExamWorkspaceDocument,
-  saveExamWorkspaceDocument: apiMocks.saveExamWorkspaceDocument,
-}));
+vi.mock("../../api/examWorkspace", () => apiMocks);
 
 const FORBIDDEN_VISIBLE_WORDS = [
   "artefakt",
@@ -119,6 +119,15 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.listExamWorkspaceDocuments.mockReset();
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.getExamWorkspaceEnrichment.mockReset();
+  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
+    document_revision: 1,
+    lineage_id: "lineage-1",
+    proposals: [],
+    state: "not_requested",
+  });
 });
 
 describe("ExamWorkspaceView host frame", () => {

@@ -3,8 +3,10 @@
  *
  * Domain purpose:
  *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
- *   edit items locally with immutable updates, save versioned revisions, and
- *   recover from stale-save conflicts by reloading the latest saved version.
+ *   list and reopen saved documents, edit items locally with immutable
+ *   updates, move advisory answer-key proposals into the editor, save
+ *   versioned revisions, and recover from stale-save conflicts by reloading
+ *   the latest saved version.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView`.
@@ -18,6 +20,7 @@ import { isApiError } from "../../../api/client";
 import {
   getExamWorkspaceDocument,
   importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
+  listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
@@ -37,6 +40,8 @@ const SAVE_SUCCESS_COPY = "Provet är sparat.";
 const SAVE_FAILURE_COPY = "Det gick inte att spara provet. Försök igen.";
 const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
 const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
+const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
+const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
 
 function nextItemId(items: NativeExamItem[]): string {
   const usedIds = new Set(items.map((item) => item.item_id));
@@ -64,6 +69,7 @@ export function useExamWorkspaceDocument() {
   const isBusy = ref(false);
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
+  const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
 
   const selectedItem = computed<NativeExamItem | null>(() => {
     const current = workspaceDocument.value;
@@ -84,6 +90,13 @@ export function useExamWorkspaceDocument() {
   function applyResponse(response: ExamWorkspaceDocumentResponse): void {
     workspaceDocument.value = response.document;
     summary.value = response.summary;
+    savedDocuments.value = savedDocuments.value.some(
+      (entry) => entry.lineage_id === response.summary.lineage_id,
+    )
+      ? savedDocuments.value.map((entry) =>
+          entry.lineage_id === response.summary.lineage_id ? response.summary : entry,
+        )
+      : [response.summary, ...savedDocuments.value];
     notes.value = response.notes;
     isDirty.value = false;
     const items = response.document.items;
@@ -105,6 +118,34 @@ export function useExamWorkspaceDocument() {
       toast.success(IMPORT_SUCCESS_COPY);
     } catch {
       toast.failure(IMPORT_FAILURE_COPY);
+    } finally {
+      isBusy.value = false;
+    }
+  }
+
+  async function loadSavedDocuments(): Promise<void> {
+    try {
+      const response = await listExamWorkspaceDocuments();
+      savedDocuments.value = response.documents;
+    } catch {
+      toast.failure(LIST_FAILURE_COPY);
+    }
+  }
+
+  async function openDocument(lineageId: string): Promise<boolean> {
+    if (isBusy.value) {
+      return false;
+    }
+    isBusy.value = true;
+    try {
+      const response = await getExamWorkspaceDocument(lineageId);
+      selectedItemId.value = null;
+      applyResponse(response);
+      conflictNotice.value = null;
+      return true;
+    } catch {
+      toast.failure(OPEN_FAILURE_COPY);
+      return false;
     } finally {
       isBusy.value = false;
     }
@@ -272,6 +313,35 @@ export function useExamWorkspaceDocument() {
     }));
   }
 
+  /**
+   * Move an advisory proposal into the editor as an unreviewed prefill.
+   * With `approve`, the teacher accepts it unchanged in the same step, which
+   * records the key as `reviewed_advisory`.
+   */
+  function applyProposal(itemId: string, proposedItem: NativeExamItem, approve: boolean): void {
+    patchItem(itemId, (item) => {
+      const prefilled: NativeExamItem = {
+        ...item,
+        answer_key: { ...proposedItem.answer_key, origin: "machine_proposed" },
+        gaps: item.gaps.map((gap) => {
+          const proposedGap = proposedItem.gaps.find(
+            (candidate) => candidate.gap_id === gap.gap_id,
+          );
+          return proposedGap ? { ...gap, accepted_values: proposedGap.accepted_values } : gap;
+        }),
+        review: { ...item.review, state: "review_required" },
+      };
+      if (!approve) {
+        return prefilled;
+      }
+      return {
+        ...prefilled,
+        answer_key: { ...prefilled.answer_key, origin: "reviewed_advisory" },
+        review: { ...prefilled.review, state: "review_complete" },
+      };
+    });
+  }
+
   function addItem(): void {
     const current = workspaceDocument.value;
     if (!current) {
@@ -303,15 +373,19 @@ export function useExamWorkspaceDocument() {
 
   return {
     addItem,
+    applyProposal,
     conflictNotice,
     importDocument,
     isBusy,
     isDirty,
     isExportReady,
+    loadSavedDocuments,
     markItemReviewed,
     notes,
+    openDocument,
     reloadDocument,
     saveDocument,
+    savedDocuments,
     selectItem,
     selectedItem,
     selectedItemId,

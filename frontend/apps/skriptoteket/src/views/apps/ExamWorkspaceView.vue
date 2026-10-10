@@ -3,41 +3,68 @@
  * Teacher exam workspace host frame.
  *
  * Domain purpose:
- *   Provide the minimal teacher exam workspace: upload a .docx exam, review
- *   extracted questions with per-item review status, edit the selected
- *   question, and save versioned revisions.
+ *   Provide the minimal teacher exam workspace: upload a .docx exam or
+ *   reopen a saved one, review extracted questions with per-item review
+ *   status, edit the selected question, review advisory answer-key
+ *   proposals, save versioned revisions, and download QTI, PDF, and DOCX
+ *   files from the saved version.
  *
  * Relationships:
- *   - Mounted by the canonical `/apps/exam-workspace` route.
- *   - Delegates state to `useExamWorkspaceDocument` and item editing to
- *     `ExamWorkspaceItemEditor`.
+ *   - Mounted by the canonical `/apps/exam-workspace` route; the
+ *     `?document=<lineage_id>` query reopens a saved document.
+ *   - Delegates state to `useExamWorkspaceDocument`,
+ *     `useExamWorkspaceExports`, and `useExamWorkspaceEnrichment`; item
+ *     editing to `ExamWorkspaceItemEditor` and proposals to
+ *     `ExamWorkspaceProposalPanel`.
  */
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { Upload } from "lucide-vue-next";
 
 import { IconCheck, IconWarning } from "../../components/icons";
 import { UiDenseStatusPill } from "../../components/ui";
+import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./exam-workspace/ExamWorkspaceItemEditor.vue";
-import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import ExamWorkspaceProposalPanel from "./exam-workspace/ExamWorkspaceProposalPanel.vue";
+import {
+  examWorkspaceDocumentLabel,
+  examWorkspaceSavedAtLabel,
+  toExamWorkspaceItemRows,
+} from "./exam-workspace/examWorkspaceRows";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
+import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
+import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 
 const DOCX_EXTENSION = ".docx";
 const INVALID_DOCX_COPY = "Det gick inte att använda filen. Välj en .docx-fil.";
 const MULTIPLE_FILES_COPY = "Välj en provfil åt gången.";
 
+const EXPORT_TARGETS: { target: ExamWorkspaceExportTarget; label: string }[] = [
+  { label: "QTI", target: "qti" },
+  { label: "PDF", target: "pdf" },
+  { label: "DOCX", target: "docx" },
+];
+
+const route = useRoute();
+const router = useRouter();
+
 const {
   addItem,
+  applyProposal,
   conflictNotice,
   importDocument,
   isBusy,
   isDirty,
   isExportReady,
+  loadSavedDocuments,
   markItemReviewed,
   notes,
+  openDocument,
   reloadDocument,
   saveDocument,
+  savedDocuments,
   selectItem,
   selectedItem,
   selectedItemId,
@@ -51,11 +78,73 @@ const {
   workspaceDocument,
 } = useExamWorkspaceDocument();
 
+const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
+  useExamWorkspaceExports(summary);
+
+const {
+  dismissProposal,
+  enrichmentMessage,
+  isEnrichmentPending,
+  isRequesting,
+  proposalForItem,
+  requestProposals,
+} = useExamWorkspaceEnrichment(summary);
+
 const sourceFileError = ref<string | null>(null);
 
 const itemRows = computed(() =>
   workspaceDocument.value ? toExamWorkspaceItemRows(workspaceDocument.value.items) : [],
 );
+
+const selectedProposal = computed(() =>
+  selectedItem.value ? proposalForItem(selectedItem.value.item_id) : null,
+);
+
+const otherSavedDocuments = computed(() =>
+  savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
+);
+
+function routeDocumentId(): string | null {
+  const value = route.query.document;
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+watch(
+  () => summary.value?.lineage_id ?? null,
+  (lineageId) => {
+    if (lineageId && routeDocumentId() !== lineageId) {
+      void router.replace({ query: { ...route.query, document: lineageId } });
+    }
+  },
+);
+
+onMounted(() => {
+  const lineageId = routeDocumentId();
+  if (lineageId) {
+    void openDocument(lineageId);
+  }
+  void loadSavedDocuments();
+});
+
+function handleExport(target: ExamWorkspaceExportTarget): void {
+  void exportDocument(target);
+}
+
+function handleApproveProposal(itemId: string): void {
+  const proposal = proposalForItem(itemId);
+  if (proposal) {
+    applyProposal(itemId, proposal.proposed_item, true);
+    dismissProposal(itemId);
+  }
+}
+
+function handleEditProposal(itemId: string): void {
+  const proposal = proposalForItem(itemId);
+  if (proposal) {
+    applyProposal(itemId, proposal.proposed_item, false);
+    dismissProposal(itemId);
+  }
+}
 
 function isDocxFile(file: File): boolean {
   return file.name.toLowerCase().endsWith(DOCX_EXTENSION);
@@ -165,6 +254,43 @@ function handleDrop(event: DragEvent): void {
           </section>
 
           <section
+            v-if="otherSavedDocuments.length > 0"
+            class="grid gap-2"
+            data-test="exam-workspace-saved-documents"
+          >
+            <h2 class="text-sm font-semibold leading-tight text-navy">
+              Sparade prov
+            </h2>
+            <ul class="grid gap-1">
+              <li
+                v-for="entry in otherSavedDocuments"
+                :key="entry.lineage_id"
+              >
+                <button
+                  type="button"
+                  class="grid w-full gap-0.5 border border-navy/20 bg-canvas px-3 py-2 text-left hover:bg-panel disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="isBusy || isDirty"
+                  :data-test="`exam-workspace-open-${entry.lineage_id}`"
+                  @click="openDocument(entry.lineage_id)"
+                >
+                  <span class="truncate text-sm font-medium leading-snug text-navy">
+                    {{ examWorkspaceDocumentLabel(entry.name) }}
+                  </span>
+                  <span class="text-xs leading-snug text-navy/65">
+                    Version {{ entry.version }} · {{ examWorkspaceSavedAtLabel(entry.saved_at) }}
+                  </span>
+                </button>
+              </li>
+            </ul>
+            <p
+              v-if="isDirty"
+              class="text-xs leading-snug text-navy/65"
+            >
+              Spara det öppna provet innan du öppnar ett annat.
+            </p>
+          </section>
+
+          <section
             v-if="workspaceDocument && summary"
             class="grid gap-2"
             data-test="exam-workspace-summary"
@@ -225,35 +351,66 @@ function handleDrop(event: DragEvent): void {
             </h2>
             <div class="grid grid-cols-3 gap-2">
               <button
+                v-for="exportOption in EXPORT_TARGETS"
+                :key="exportOption.target"
                 type="button"
                 class="btn-ghost justify-center shadow-none"
-                :disabled="!isExportReady"
-                data-test="exam-workspace-export-qti"
+                :disabled="isDirty || isBusy || exportingTarget !== null"
+                :aria-busy="exportingTarget === exportOption.target ? 'true' : undefined"
+                :data-test="`exam-workspace-export-${exportOption.target}`"
+                @click="handleExport(exportOption.target)"
               >
-                QTI
-              </button>
-              <button
-                type="button"
-                class="btn-ghost justify-center shadow-none"
-                :disabled="!isExportReady"
-                data-test="exam-workspace-export-pdf"
-              >
-                PDF
-              </button>
-              <button
-                type="button"
-                class="btn-ghost justify-center shadow-none"
-                :disabled="!isExportReady"
-                data-test="exam-workspace-export-docx"
-              >
-                DOCX
+                {{ exportOption.label }}
               </button>
             </div>
             <p
-              v-if="!isExportReady"
+              v-if="exportNotice"
+              class="text-xs font-semibold leading-snug text-error"
+              data-test="exam-workspace-export-notice"
+            >
+              {{ exportNotice }}
+            </p>
+            <p
+              v-else-if="isDirty"
               class="text-xs leading-snug text-navy/65"
             >
-              Filerna kan skapas när provet är sparat och alla frågor är granskade.
+              Spara provet innan du skapar filer. Filerna skapas från den sparade versionen.
+            </p>
+            <p
+              v-else-if="!isExportReady"
+              class="text-xs leading-snug text-navy/65"
+            >
+              Filerna kan skapas när alla frågor är granskade och har poäng.
+            </p>
+          </section>
+
+          <section
+            v-if="workspaceDocument && summary"
+            class="grid gap-2"
+            data-test="exam-workspace-enrichment"
+          >
+            <h2 class="text-sm font-semibold leading-tight text-navy">
+              Facitförslag
+            </h2>
+            <p class="text-xs leading-snug text-navy/65">
+              AI kan föreslå facit för frågor som saknar facit. Du granskar varje förslag innan det används.
+            </p>
+            <button
+              type="button"
+              class="btn-ghost justify-center shadow-none"
+              :disabled="isDirty || isBusy || isRequesting || isEnrichmentPending"
+              data-test="exam-workspace-enrichment-request"
+              @click="requestProposals"
+            >
+              Föreslå facit
+            </button>
+            <p
+              v-if="enrichmentMessage"
+              class="text-xs leading-snug text-navy"
+              role="status"
+              data-test="exam-workspace-enrichment-message"
+            >
+              {{ enrichmentMessage }}
             </p>
           </section>
         </div>
@@ -375,6 +532,25 @@ function handleDrop(event: DragEvent): void {
                         {{ row.statusLabel }}
                       </span>
                     </span>
+                    <span
+                      v-if="proposalForItem(row.itemId)"
+                      class="mt-1 block text-xs leading-snug text-navy/70"
+                      :data-test="`exam-workspace-item-proposal-${row.itemId}`"
+                    >
+                      Facitförslag finns
+                    </span>
+                    <ul
+                      v-if="exportBlockersByItemId[row.itemId]"
+                      class="mt-1 grid gap-0.5 text-xs leading-snug text-error"
+                      :data-test="`exam-workspace-item-blockers-${row.itemId}`"
+                    >
+                      <li
+                        v-for="blocker in exportBlockersByItemId[row.itemId]"
+                        :key="blocker"
+                      >
+                        {{ blocker }}
+                      </li>
+                    </ul>
                   </td>
                 </tr>
               </tbody>
@@ -392,6 +568,16 @@ function handleDrop(event: DragEvent): void {
             @update-points="updateItemPoints"
             @update-title="updateItemTitle"
           />
+
+          <ExamWorkspaceProposalPanel
+            v-if="selectedItem && selectedProposal"
+            :disabled="isBusy"
+            :item="selectedItem"
+            :proposed-item="selectedProposal.proposed_item"
+            @approve="handleApproveProposal"
+            @dismiss="dismissProposal"
+            @edit="handleEditProposal"
+          />
         </section>
 
         <section
@@ -404,7 +590,7 @@ function handleDrop(event: DragEvent): void {
               Inget prov är inläst
             </h2>
             <p class="text-xs leading-snug text-navy/65">
-              Ladda upp ett .docx-prov för att börja.
+              Ladda upp ett .docx-prov eller öppna ett sparat prov för att börja.
             </p>
           </div>
         </section>

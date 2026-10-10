@@ -3,7 +3,8 @@
  *
  * Domain purpose:
  *   Map native exam items to the compact teacher-facing table rows with
- *   Swedish type and review-status labels.
+ *   Swedish type and review-status labels, and saved-document summaries to
+ *   short list labels.
  *
  * Relationships:
  *   - Pure functions consumed by `ExamWorkspaceView`.
@@ -29,6 +30,7 @@ export type ExamWorkspaceItemRow = {
 };
 
 const EXCERPT_MAX_LENGTH = 140;
+const CONTAINER_SUFFIX = ".provdokument.zip";
 
 export const EXAM_WORKSPACE_TYPE_LABELS: Record<NativeExamItemKind, string> = {
   free_text: "Fritext",
@@ -79,13 +81,11 @@ export function examWorkspacePromptExcerpt(item: NativeExamItem): string {
 
 export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemRow {
   const title =
-    item.title !== null && item.title.trim().length > 0
-      ? item.title
-      : `Fråga ${item.sequence}`;
+    item.title && item.title.trim().length > 0 ? item.title : `Fråga ${item.sequence}`;
 
   return {
     itemId: item.item_id,
-    pointsLabel: examWorkspacePointsLabel(item.points),
+    pointsLabel: examWorkspacePointsLabel(item.points ?? null),
     promptExcerpt: examWorkspacePromptExcerpt(item),
     reviewReasons: item.review.reasons,
     reviewRequired: item.review.state === "review_required",
@@ -98,4 +98,16 @@ export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemR
 
 export function toExamWorkspaceItemRows(items: NativeExamItem[]): ExamWorkspaceItemRow[] {
   return items.map(toExamWorkspaceItemRow);
+}
+
+export function examWorkspaceDocumentLabel(name: string): string {
+  return name.endsWith(CONTAINER_SUFFIX) ? name.slice(0, -CONTAINER_SUFFIX.length) : name;
+}
+
+export function examWorkspaceSavedAtLabel(savedAt: string): string {
+  const date = new Date(savedAt);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" });
 }

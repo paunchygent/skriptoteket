@@ -3,114 +3,55 @@
  *
  * Domain purpose:
  *   Thin typed client for the teacher exam workspace document lifecycle:
- *   import a .docx exam, read a document lineage back, and save versioned
- *   revisions of the native exam document.
+ *   import a .docx exam, list and reopen saved documents, save versioned
+ *   revisions, download on-demand exports, and request advisory answer-key
+ *   proposals for the saved head revision.
  *
  * Relationships:
  *   - Uses `api/client.ts` helpers for protected API calls.
- *   - Consumed by `views/apps/exam-workspace/useExamWorkspaceDocument.ts`.
- *   - Local hand-written types; generated openapi types for these routes do
- *     not exist yet, so shapes mirror the backend contract exactly.
+ *   - Types come from the generated OpenAPI schema (`api/openapi.d.ts`).
+ *   - Consumed by `views/apps/exam-workspace/useExamWorkspaceDocument.ts`,
+ *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiGet, apiPost, apiPut } from "./client";
+import { apiFetchBlobResponse, apiGet, apiPost, apiPut } from "./client";
+import type { ApiBlobResponse } from "./client";
+import type { components } from "./openapi";
+
+type Schemas = components["schemas"];
 
 const ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace";
 
-export type NativeExamBodySegment =
-  | { kind: "text"; text: string }
-  | { kind: "gap"; gap_id: string }
-  | { kind: "asset"; asset_id: string };
+export type NativeExamDocument = Schemas["NativeExamDocument-Output"];
+export type NativeExamItem = Schemas["NativeExamItem-Output"];
+export type NativeExamBodyParagraph = Schemas["NativeParagraph"];
+export type NativeExamBodySegment = NativeExamBodyParagraph["segments"][number];
+export type NativeExamItemKind = Schemas["NativeExamItemKind"];
+export type NativeExamChoice = Schemas["NativeChoice"];
+export type NativeExamGap = Schemas["NativeGap"];
+export type NativeExamAnswerKeyOrigin = Schemas["NativeAnswerKeyOrigin"];
+export type NativeExamAnswerKey = Schemas["NativeAnswerKey"];
+export type NativeExamReviewState = Schemas["NativeItemReviewState"];
+export type NativeExamParseOrigin = Schemas["NativeParseOrigin"];
+export type NativeExamItemReview = Schemas["NativeItemReview"];
 
-export type NativeExamBodyParagraph = {
-  segments: NativeExamBodySegment[];
-};
+export type ExamWorkspaceDocumentSummary = Schemas["ExamWorkspaceDocumentSummary"];
+export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
+export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
+export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
+export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
+export type ExamWorkspaceEnrichmentStatus = Schemas["ExamWorkspaceEnrichmentStatusResponse"];
+export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProposalItem"];
 
-export type NativeExamItemKind =
-  | "free_text"
-  | "single_choice"
-  | "multiple_response"
-  | "gap_fill";
+/** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
+export type ExamWorkspaceExportBlockerReason =
+  | "review_required"
+  | "machine_proposed_key_unreviewed"
+  | "missing_points";
 
-export type NativeExamChoice = {
-  choice_id: string;
-  text: string;
-};
-
-export type NativeExamGap = {
-  gap_id: string;
-  accepted_values: string[];
-  hint: string | null;
-};
-
-export type NativeExamAnswerKeyOrigin =
-  | "absent"
-  | "not_applicable"
-  | "source_provided"
-  | "teacher_authored"
-  | "machine_proposed"
-  | "reviewed_advisory";
-
-export type NativeExamAnswerKey = {
-  origin: NativeExamAnswerKeyOrigin;
-  correct_choice_ids: string[];
-};
-
-export type NativeExamReviewState = "review_required" | "review_complete";
-
-export type NativeExamParseOrigin = "deterministic" | "llm_parsed" | "teacher_created";
-
-export type NativeExamItemReview = {
-  state: NativeExamReviewState;
-  parse_origin: NativeExamParseOrigin;
-  confidence: number | null;
-  reasons: string[];
-};
-
-export type NativeExamItem = {
+export type ExamWorkspaceExportBlocker = {
   item_id: string;
-  sequence: number;
-  kind: NativeExamItemKind;
-  title: string | null;
-  body: NativeExamBodyParagraph[];
-  points: number | null;
-  choices: NativeExamChoice[];
-  gaps: NativeExamGap[];
-  answer_key: NativeExamAnswerKey;
-  review: NativeExamItemReview;
-  source_anchor: string | null;
-};
-
-export type NativeExamDocumentOrigin = {
-  kind: "docx_import" | "created";
-  source_filename?: string | null;
-  source_sha256?: string | null;
-  extractor_version?: string | null;
-};
-
-export type NativeExamDocument = {
-  schema_version: "native_exam_document_v1";
-  document_id: string;
-  revision: number;
-  title: string;
-  instructions: string[];
-  items: NativeExamItem[];
-  assets: [];
-  origin: NativeExamDocumentOrigin;
-};
-
-export type ExamWorkspaceDocumentSummary = {
-  lineage_id: string;
-  version: number;
-  vault_file_id: string;
-  name: string;
-  saved_at: string;
-};
-
-export type ExamWorkspaceDocumentResponse = {
-  document: NativeExamDocument;
-  summary: ExamWorkspaceDocumentSummary;
-  notes: string[];
+  reason: ExamWorkspaceExportBlockerReason;
 };
 
 export type SaveExamWorkspaceDocumentParams = {
@@ -120,6 +61,10 @@ export type SaveExamWorkspaceDocumentParams = {
 
 function documentPath(lineageId: string): string {
   return `${ROOT}/documents/${encodeURIComponent(lineageId)}`;
+}
+
+export async function listExamWorkspaceDocuments(): Promise<ExamWorkspaceDocumentListResponse> {
+  return await apiGet<ExamWorkspaceDocumentListResponse>(`${ROOT}/documents`);
 }
 
 export async function importExamWorkspaceDocument(
@@ -140,8 +85,30 @@ export async function saveExamWorkspaceDocument(
   lineageId: string,
   params: SaveExamWorkspaceDocumentParams,
 ): Promise<ExamWorkspaceDocumentResponse> {
-  return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), {
-    expected_revision: params.expectedRevision,
+  const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
     document: params.document,
-  });
+    expected_revision: params.expectedRevision,
+  };
+  return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
+}
+
+export async function downloadExamWorkspaceExport(
+  lineageId: string,
+  target: ExamWorkspaceExportTarget,
+): Promise<ApiBlobResponse> {
+  return await apiFetchBlobResponse(
+    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}`,
+  );
+}
+
+export async function startExamWorkspaceEnrichment(
+  lineageId: string,
+): Promise<ExamWorkspaceEnrichmentStatus> {
+  return await apiPost<ExamWorkspaceEnrichmentStatus>(`${documentPath(lineageId)}/enrichment`);
+}
+
+export async function getExamWorkspaceEnrichment(
+  lineageId: string,
+): Promise<ExamWorkspaceEnrichmentStatus> {
+  return await apiGet<ExamWorkspaceEnrichmentStatus>(`${documentPath(lineageId)}/enrichment`);
 }
