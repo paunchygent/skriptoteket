@@ -84,6 +84,7 @@ SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
         single_answer_key_label="Rätt svar",
         multiple_answer_key_label="Rätta svar",
         match_key_label="Rätta par",
+        marking_guide_label="Rättningsmall",
     ),
 )
 
@@ -198,6 +199,7 @@ def _pdf_item_semantics(
         points=points,
         prompt_html=prompt_html,
         source_item_type_label=item.kind.value,
+        marking_guide=item.marking_guide,
         options=tuple(
             PdfExamOptionSemantics(option_id=_choice_number(choice.choice_id), text=choice.text)
             for choice in item.choices

@@ -67,6 +67,7 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
+  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -152,6 +153,7 @@ const redigeraGridClass = computed(() => {
               (itemId, gapId, acceptedValues) =>
                 emit('updateGapValues', itemId, gapId, acceptedValues)
             "
+            @update-marking-guide="(itemId, guide) => emit('updateMarkingGuide', itemId, guide)"
             @update-match-entry-text="
               (itemId, side, entryId, text) =>
                 emit('updateMatchEntryText', itemId, side, entryId, text)

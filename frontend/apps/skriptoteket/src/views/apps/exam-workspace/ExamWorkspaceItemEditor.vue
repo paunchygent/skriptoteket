@@ -38,6 +38,7 @@ import {
   isIncompleteMatchingItem,
 } from "./examWorkspaceAnswerKeyRules";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import ExamWorkspaceMarkingGuideField from "./ExamWorkspaceMarkingGuideField.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
   EMPTY_MATCH_TEXT_GUIDANCE,
@@ -76,6 +77,7 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
+  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -90,6 +92,14 @@ const pointsHintId = useId();
 const choiceHintId = useId();
 const matchHintId = useId();
 const matchKeyHintId = useId();
+
+const TYPE_CONFIDENCE_THRESHOLD = 0.95;
+
+const typeUncertain = computed(
+  () =>
+    typeof props.item.review.confidence === "number" &&
+    props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,
+);
 
 const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
 
@@ -212,6 +222,11 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
       </h2>
+      <span
+        v-if="typeUncertain"
+        class="text-xs text-navy/65"
+        data-test="exam-workspace-type-uncertain"
+      >Kontrollera frågetypen</span>
       <div
         class="ml-auto flex flex-wrap items-center gap-3"
         data-test="exam-workspace-review-badge"
@@ -318,6 +333,13 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
+    />
+
+    <ExamWorkspaceMarkingGuideField
+      v-if="item.kind === 'free_text'"
+      :disabled="disabled"
+      :guide="item.marking_guide ?? null"
+      @update="(guide) => emit('updateMarkingGuide', item.item_id, guide)"
     />
 
     <fieldset

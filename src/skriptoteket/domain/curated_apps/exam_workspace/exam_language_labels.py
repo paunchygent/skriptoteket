@@ -35,6 +35,7 @@ class ExamLanguageLabels:
     answer_key: str = "✓"
     correct_answer: str = ""
     pair: str = ""
+    marking_guide: str = ""
 
     def question_label(self, first: int | str, last: int | str | None = None) -> str:
         numbers = str(first) if last is None or last == first else f"{first}–{last}"
@@ -94,6 +95,7 @@ _LANGUAGES = (
             answer_key="Facit",
             correct_answer="Rätt svar",
             pair="Par",
+            marking_guide="Rättningsmall",
         ),
     ),
     _Language(
@@ -111,6 +113,7 @@ _LANGUAGES = (
             answer_key="Answer key",
             correct_answer="Correct answer",
             pair="Pair",
+            marking_guide="Marking guide",
         ),
     ),
 )

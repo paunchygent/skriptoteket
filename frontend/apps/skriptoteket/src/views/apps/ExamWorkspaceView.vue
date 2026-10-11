@@ -78,6 +78,7 @@ const {
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  updateItemMarkingGuide,
   updateItemMatchEntryText,
   updateItemMatchPairs,
   updateItemParagraphSegments,
@@ -415,6 +416,7 @@ function handleEditProposal(itemId: string): void {
             @update-choice-text="updateItemChoiceText"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
+            @update-marking-guide="updateItemMarkingGuide"
             @update-match-entry-text="updateItemMatchEntryText"
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"

@@ -51,6 +51,7 @@ class ExamNetPdfItemLabelPolicy:
     multiple_answer_key_label: str = "Correct answers"
     match_key_label: str = "Correct answers"
     gap_label: str = "Lucka"
+    marking_guide_label: str = "Marking guide"
 
 
 @dataclass(frozen=True)
@@ -121,7 +122,7 @@ class OpenEndedExamNetPdfItemStrategy:
                     labels=labels,
                     item_type_label=labels.free_text_type_label,
                     instruction="",
-                    body_html="",
+                    body_html=_marking_guide_html(item, labels),
                     item_type_marker=labels.source_item_type_marker,
                 )
             )
@@ -463,6 +464,13 @@ def _gap_answer_key_html(
         for index, gap in enumerate(item.gaps, start=1)
     )
     return f'<div class="answer-key"><p>{escape(labels.multiple_answer_key_label)}:</p>{rows}</div>'
+
+
+def _marking_guide_html(item: PdfExamItemSemantics, labels: ExamNetPdfItemLabelPolicy) -> str:
+    if not item.marking_guide:
+        return ""
+    guide = escape(item.marking_guide).replace("\n", "<br>")
+    return f'<p class="answer-key">{escape(labels.marking_guide_label)}: {guide}</p>'
 
 
 def _gap_values_by_gap_id(item: PdfExamItemSemantics) -> dict[str, tuple[str, ...]]:

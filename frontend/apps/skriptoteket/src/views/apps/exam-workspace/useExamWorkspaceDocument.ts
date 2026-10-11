@@ -274,6 +274,10 @@ export function useExamWorkspaceDocument() {
     }));
   }
 
+  function updateItemMarkingGuide(itemId: string, guide: string | null): void {
+    patchItem(itemId, (item) => ({ ...item, marking_guide: guide }));
+  }
+
   function updateItemPoints(itemId: string, points: number | null): void {
     patchItem(itemId, (item) => ({ ...item, points }));
   }
@@ -465,6 +469,7 @@ export function useExamWorkspaceDocument() {
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,
+    updateItemMarkingGuide,
     updateItemMatchEntryText,
     updateItemMatchPairs,
     updateItemPoints,

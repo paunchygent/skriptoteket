@@ -92,3 +92,4 @@ class PdfExamItemSemantics:
     match_left: tuple[PdfExamMatchEntrySemantics, ...] = ()
     match_right: tuple[PdfExamMatchEntrySemantics, ...] = ()
     answer_key: PdfExamAnswerKeySemantics = PdfExamAnswerKeySemantics(available=False)
+    marking_guide: str | None = None
