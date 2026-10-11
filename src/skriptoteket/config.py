@@ -341,7 +341,7 @@ class Settings(BaseSettings):
     # lease. Context and output limits are the GPT-6 Luna model limits. One
     # whole-exam round has taken 95.7 s, so its timeout is its own.
     LLM_DOCX_CONVERSION_MODEL: str = "gpt-6-luna"
-    LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "medium"
+    LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS: int = 1_050_000
     LLM_DOCX_CONVERSION_MAX_OUTPUT_TOKENS: int = 128_000
     LLM_DOCX_CONVERSION_TIMEOUT_SECONDS: int = 300
@@ -350,10 +350,12 @@ class Settings(BaseSettings):
     # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
     # Type-batched DOCX conversion (TASK-SKRIPT-39-05-04 D29): question families
-    # per converter batch, set after the D26 measurement. The converter effort is
-    # LLM_DOCX_CONVERSION_REASONING_EFFORT. The grouping pass and the label-only
-    # second pass (D23 pass B) observed at most 566 output tokens per call.
-    LLM_DOCX_BATCH_FAMILIES: int = Field(default=16, ge=1)
+    # per converter batch, set after the D26 measurement: one family per batch at
+    # low converter effort (LLM_DOCX_CONVERSION_REASONING_EFFORT) matched 302 of
+    # 314 corpus items with every exam ready within 35 s (2026-10-11). The
+    # grouping pass and the label-only second pass (D23 pass B) observed at most
+    # 566 output tokens per call.
+    LLM_DOCX_BATCH_FAMILIES: int = Field(default=1, ge=1)
     LLM_DOCX_GROUPING_MAX_OUTPUT_TOKENS: int = 60_000
     LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS: int = 4_000
 

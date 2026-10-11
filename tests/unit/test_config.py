@@ -143,3 +143,10 @@ def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:
     settings = Settings.model_construct(TRUSTED_PROXY_CIDRS="127.0.0.1/32, 10.0.0.0/8,127.0.0.1/32")
 
     assert settings.trusted_proxy_cidrs == frozenset({"127.0.0.1/32", "10.0.0.0/8"})
+
+
+def test_docx_conversion_defaults_to_one_family_per_batch_at_low_effort() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.LLM_DOCX_BATCH_FAMILIES == 1
+    assert settings.LLM_DOCX_CONVERSION_REASONING_EFFORT == "low"

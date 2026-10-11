@@ -58,6 +58,8 @@ FIXTURES = Path("tests/fixtures/exam_conversion")
 CORPUS = FIXTURES / "docx_corpus"
 RECORDINGS = FIXTURES / "docx_build_v10"
 WORKER = "replay-worker"
+# The live run behind RECORDINGS packed 16 families per batch; batch request ids follow it.
+RECORDED_FAMILIES_PER_BATCH = 16
 _NOW = datetime(2026, 10, 11, 12, 0, tzinfo=UTC)
 
 
@@ -266,8 +268,9 @@ def build_replay(
     leases: AnswerKeyTokenLeaseRepositoryProtocol | None = None,
     enabled: bool = True,
     root: Path = RECORDINGS,
+    families_per_batch: int = RECORDED_FAMILIES_PER_BATCH,
 ) -> Replay:
-    """Build the production pipeline over ``exam``'s recordings."""
+    """Build the production pipeline over ``exam``'s recordings at their batch size."""
     provider = ReplayProvider(exam, failures, root)
     progress = progress or RecordingProgress()
     pipeline = build_docx_conversion_pipeline(
@@ -278,7 +281,9 @@ def build_replay(
         uow=SerializedUnitOfWork(NoTransaction()),
         clock=FixedClock(_NOW),
         settings=Settings.model_construct(
-            LLM_ANSWER_KEY_ENABLED=enabled, OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key"
+            LLM_ANSWER_KEY_ENABLED=enabled,
+            OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",
+            LLM_DOCX_BATCH_FAMILIES=families_per_batch,
         ),
         progress=progress,
     )

@@ -113,6 +113,7 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     CORPUS,
+    RECORDED_FAMILIES_PER_BATCH,
     RECORDINGS,
     GrantingLeases,
     NoSleep,
@@ -314,6 +315,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
         VAULT_MAX_TOTAL_BYTES=50_000_000,
         LLM_ANSWER_KEY_ENABLED=True,
         OPENAI_LLM_ANSWER_KEY_API_KEY=_KEY,
+        LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
     )
     transport = RecordedTransport(_EXAM)
     batch_count = len(list((RECORDINGS / _EXAM).glob("docx_w*.json")))
@@ -485,7 +487,9 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
         pipeline = _pipeline(
             client,
             settings=Settings.model_construct(
-                LLM_ANSWER_KEY_ENABLED=True, OPENAI_LLM_ANSWER_KEY_API_KEY=_KEY
+                LLM_ANSWER_KEY_ENABLED=True,
+                OPENAI_LLM_ANSWER_KEY_API_KEY=_KEY,
+                LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
             ),
             leases=GrantingLeases(),
             uow=NoTransaction(),
