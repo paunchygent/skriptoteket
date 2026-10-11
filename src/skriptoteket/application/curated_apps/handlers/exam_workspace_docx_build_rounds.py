@@ -98,6 +98,10 @@ Rules:
   is a gap even when its value can be found in the given text. A field the question does not
   ask for, such as the marked part or a clause the question hands over so the student can
   answer about it, restates context and stays text with its value.
+  In a source with answers, a blank may be printed already filled with its answer, marked by
+  formatting such as italics, bold or colour, or set apart by position: that place is the
+  gap and those words are its accepted_values. Formatting alone does not make a word an
+  answer: a quoted or cited word the student needs to read stays question text.
 - When the facit itself shows that the student decides where units start and end (it rewrites
   a sentence with a label after each unit, or splits a word into parts joined with +), the
   question is free_text with no gaps: keep the question wording and leave the answer line out.
