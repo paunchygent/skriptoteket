@@ -16,14 +16,7 @@ from enum import StrEnum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    ValidationError,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -225,6 +218,7 @@ class NativeExamItem(BaseModel):
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
     title: str | None = None
+    printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
     choices: tuple[NativeChoice, ...] = ()

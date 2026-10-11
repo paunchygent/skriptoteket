@@ -110,7 +110,7 @@ def _parent_qti_item(
         )
         image_count += len(qti_child.image_resources)
         qti_children.append(qti_child)
-    first, last = qti_children[0], qti_children[-1]
+    first = qti_children[0]
     parent_id = _safe_identifier(parent.parent_id)
     if len(qti_children) == 1 and first.interaction_type is not ExamNetQtiInteractionType.GAP_FILL:
         # One child has nothing to share: a stem outside its interaction would be
@@ -125,7 +125,7 @@ def _parent_qti_item(
     return ExamNetQtiItem(
         item_id=parent_id,
         sequence=first.sequence,
-        title=labels.question_label(first.sequence, last.sequence),
+        title=_parent_title(children, labels),
         interaction_type=first.interaction_type,
         prompt_lines=parent.instruction,
         max_score=sum(scored) if scored else None,
@@ -179,7 +179,7 @@ def _base_qti_item(
     return ExamNetQtiItem(
         item_id=_safe_identifier(item.item_id),
         sequence=item.sequence,
-        title=_item_title(item, labels),
+        title=labels.item_title(item),
         interaction_type=_INTERACTION_TYPE_BY_KIND[item.kind],
         prompt_lines=item.plain_text_lines(),
         max_score=item.points,
@@ -313,15 +313,19 @@ def _image_resources(
                 filename=f"{item.item_id}-image-{number:03d}.png",
                 media_type=asset.media_type,
                 payload=payload,
-                alt_text=labels.image_alt(index, _item_title(item, labels)),
+                alt_text=labels.image_alt(index, labels.item_title(item)),
                 source_reference=asset_id,
             )
         )
     return tuple(resources)
 
 
-def _item_title(item: NativeExamItem, labels: ExamLanguageLabels) -> str:
-    return item.title or labels.question_label(item.sequence)
+def _parent_title(children: tuple[NativeExamItem, ...], labels: ExamLanguageLabels) -> str:
+    """The span of the children's printed labels (D20); running numbers when one lacks it."""
+    printed = [child.printed_label for child in children if child.printed_label]
+    if len(printed) == len(children):
+        return labels.printed_span(printed[0], printed[-1])
+    return labels.question_label(children[0].sequence, children[-1].sequence)
 
 
 def _safe_identifier(value: str) -> str:

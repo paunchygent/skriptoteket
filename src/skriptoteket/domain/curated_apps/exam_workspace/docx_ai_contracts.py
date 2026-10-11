@@ -74,6 +74,12 @@ class ProducedItem(_Produced):
     )
     kind: NativeExamItemKind
     title: str | None = Field(description="A question heading printed in the source, else null.")
+    printed_label: str | None = Field(
+        default=None,
+        description="The question's own number or letter as the source prints it, with its "
+        'word and without punctuation or points, such as "Fråga 3", "Question 4", "3" '
+        'or "a"; null when the source prints none. Never part of title or body.',
+    )
     body: tuple[ProducedParagraph, ...] = Field(
         min_length=1,
         description="Student-visible question text, also for review items. Inline facit "

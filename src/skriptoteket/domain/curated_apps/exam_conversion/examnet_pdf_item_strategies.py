@@ -49,6 +49,7 @@ class ExamNetPdfItemLabelPolicy:
     point_label: str = "Poängvärde"
     single_answer_key_label: str = "Correct answer"
     multiple_answer_key_label: str = "Correct answers"
+    match_key_label: str = "Correct answers"
     gap_label: str = "Lucka"
 
 
@@ -313,7 +314,7 @@ class MatchingExamNetPdfItemStrategy:
         body_html = (
             f'<div class="match-left">{left_html}</div>'
             f'<div class="match-right">{right_html}</div>'
-            f'<div class="answer-key"><p>{escape(labels.multiple_answer_key_label)}:</p>'
+            f'<div class="answer-key"><p>{escape(labels.match_key_label)}:</p>'
             f"{key_rows}</div>"
         )
         return ExamNetPdfItemStrategyResult(

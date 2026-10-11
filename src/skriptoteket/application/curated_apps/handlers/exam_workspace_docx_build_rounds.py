@@ -101,7 +101,9 @@ Rules:
 - A heading or label line that introduces one question, such as "Question 3 (2 points)" or
   "Part B: term (1 point)", belongs to that question: include its anchor in source_anchors,
   copy its wording without the question number and printed points as the item title (null
-  when nothing else remains), and take the points it prints. title and instructions
+  when nothing else remains), and take the points it prints. printed_label copies the
+  question's own number or letter as printed, with its word ("Fråga 3", "Question 4", "3",
+  "a"); a number shared by a part heading stays out. title and instructions
   hold only text that belongs to no single question. A section instruction, word box or
   shared passage printed once for a run of questions is an instruction, never part of the
   first question or of any question: the converter groups the questions it serves under
@@ -173,7 +175,7 @@ def build_round_request(
         job_id=str(job_id),
         item_id=f"docx_batch_{round_number}",
         item_type="docx_exam",
-        prompt_template_version="docx_exam_build_v8",
+        prompt_template_version="docx_exam_build_v9",
         system_prompt=_PROMPT,
         user_payload=payload,
         output_spec=spec,

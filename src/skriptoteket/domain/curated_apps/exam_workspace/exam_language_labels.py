@@ -1,9 +1,9 @@
 """Student-visible labels an export adds to an exam, in the exam's own language.
 
-Governing decision: TASK-SKRIPT-39-05-03 D18. A Swedish exam reads "Fråga 1–15" and an
-English one "Question 1–18"; an exam never shows labels in another language. The language
-is read from the exam's own text by counting common function words. An exam whose text
-names no known language gets labels without a word: the bare numbers.
+Governing decisions: TASK-SKRIPT-39-05-03 D18 and D21. A Swedish exam reads "Fråga 1–15"
+and an English one "Question 1–18"; no export shows fixed words in another language. The
+language is read from the exam's own text by counting common function words. An exam whose
+text names no known language gets labels without a word: bare numbers and symbols.
 """
 
 from __future__ import annotations
@@ -13,23 +13,54 @@ from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+    NativeExamItem,
 )
 
 _WORD = re.compile(r"[^\W\d_]{2,}")
+_TRAILING_NUMBER = re.compile(r"^(.*?)(\d+)$")
 
 
 @dataclass(frozen=True)
 class ExamLanguageLabels:
-    """The words an export prints before question, gap and image numbers."""
+    """The fixed words an export prints around question numbers, gaps, images and keys."""
 
+    language: str = ""
     question: str = ""
     gap: str = ""
     image: str = ""
     image_of: str = ""
+    points: str = ""
+    points_unit: str = ""
+    points_missing: str = "–"
+    answer_key: str = "✓"
+    correct_answer: str = ""
+    pair: str = ""
 
     def question_label(self, first: int, last: int | None = None) -> str:
         numbers = str(first) if last is None or last == first else f"{first}–{last}"
         return f"{self.question} {numbers}".strip()
+
+    def printed_title(self, printed_label: str) -> str:
+        """A printed label as a title: a bare number gets the question word ("3" → "Fråga 3")."""
+        return self.question_label(int(printed_label)) if printed_label.isdigit() else printed_label
+
+    def item_title(self, item: NativeExamItem) -> str:
+        """The item's own title, else its printed label, else its running number."""
+        if item.title:
+            return item.title
+        if item.printed_label:
+            return self.printed_title(item.printed_label)
+        return self.question_label(item.sequence)
+
+    def printed_span(self, first: str, last: str) -> str:
+        """The title over children printed first to last, such as "Question 1–7"."""
+        first_match, last_match = _TRAILING_NUMBER.match(first), _TRAILING_NUMBER.match(last)
+        if first_match and last_match and first_match.group(1) == last_match.group(1):
+            prefix, low, high = first_match.group(1), first_match.group(2), last_match.group(2)
+            if not prefix.strip():
+                return self.question_label(int(low), int(high))
+            return f"{prefix}{low}–{high}" if low != high else first
+        return first if first == last else f"{first}–{last}"
 
     def gap_label(self, index: int) -> str:
         return f"{self.gap} {index}".strip()
@@ -38,6 +69,15 @@ class ExamLanguageLabels:
         if not self.image:
             return f"{index}: {item_label}"
         return f"{self.image} {index} {self.image_of} {item_label}"
+
+    def points_line(self, points: str | None) -> str:
+        """Such as "Poäng: 2 poäng" or "Points: 2"; "(2)" without a known language."""
+        value = self.points_missing if points is None else f"{points} {self.points_unit}".strip()
+        return f"{self.points}: {value}" if self.points else f"({value})"
+
+    def keyed(self, word: str, value: str) -> str:
+        """A key line such as "Rätt svar: Beta"; the bare value without a known language."""
+        return f"{word}: {value}" if word else value
 
 
 @dataclass(frozen=True)
@@ -52,14 +92,37 @@ _LANGUAGES = (
             "och att det som är en ett på för med av inte till om vad vilken vilka "
             "har kan ska den de jag du var när eller också från".split()
         ),
-        ExamLanguageLabels(question="Fråga", gap="Lucka", image="Bild", image_of="till"),
+        ExamLanguageLabels(
+            language="sv",
+            question="Fråga",
+            gap="Lucka",
+            image="Bild",
+            image_of="till",
+            points="Poäng",
+            points_unit="poäng",
+            points_missing="saknas",
+            answer_key="Facit",
+            correct_answer="Rätt svar",
+            pair="Par",
+        ),
     ),
     _Language(
         frozenset(
             "the and is are of to in that an for with not what which who has have "
             "can will was were or from this it".split()
         ),
-        ExamLanguageLabels(question="Question", gap="Gap", image="Image", image_of="for"),
+        ExamLanguageLabels(
+            language="en",
+            question="Question",
+            gap="Gap",
+            image="Image",
+            image_of="for",
+            points="Points",
+            points_missing="missing",
+            answer_key="Answer key",
+            correct_answer="Correct answer",
+            pair="Pair",
+        ),
     ),
 )
 

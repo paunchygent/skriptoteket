@@ -21,6 +21,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedParagraph,
     ProducedSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
+    exam_language_labels,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
@@ -232,9 +235,10 @@ def test_distractors_are_listed_by_the_docx_writer_and_stay_out_of_its_pairs():
     content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(_document(item))
 
     texts = [paragraph.text for paragraph in DocxDocument(io.BytesIO(content)).paragraphs]
+    pair = f"{exam_language_labels(_document(item)).pair}:"
     assert f"D) {_DISTRACTOR}" in texts
-    assert not [t for t in texts if t.startswith("Par:") and _DISTRACTOR in t]
-    assert len([t for t in texts if t.startswith("Par:")]) == len(item.answer_key.match_pairs)
+    assert not [t for t in texts if t.startswith(pair) and _DISTRACTOR in t]
+    assert len([t for t in texts if t.startswith(pair)]) == len(item.answer_key.match_pairs)
 
 
 def test_left_entry_without_a_pair_is_rejected():

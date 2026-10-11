@@ -6054,6 +6054,8 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /** Printed Label */
+            printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
@@ -6092,6 +6094,8 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /** Printed Label */
+            printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;

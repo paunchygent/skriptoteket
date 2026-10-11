@@ -3,7 +3,8 @@
 Purpose:
     Build the fail-closed Exam.net PDF document plan from a native exam
     document by adapting items into source-neutral PDF item semantics and
-    delegating target policy to the existing Exam.net PDF item strategies.
+    delegating target policy to the existing Exam.net PDF item strategies. A Swedish
+    exam prints the documented Swedish markers; every other exam prints the default ones.
 
 Relationships:
     - Consumes `domain.curated_apps.exam_workspace.native_exam_document`.
@@ -50,6 +51,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
+    ExamNetPdfItemLabelPolicy,
+    ExamNetPdfTargetProfileContext,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
+    ExamLanguageLabels,
+    exam_language_labels,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKeyOrigin,
@@ -61,6 +68,24 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 
 NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
+
+# Marker words from sir-convert-a-lot
+# docs/reference/ref-examnet-pdf-to-exam-swedish-renderer-profile.md ("Canonical Swedish PDF
+# Profile" and "Supported Item Profiles"). That profile documents Swedish words only, so every
+# other language keeps the default profile's markers.
+SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
+    target_id="examnet_pdf",
+    profile_version="examnet-pdf-swedish-v2",
+    label_policy=ExamNetPdfItemLabelPolicy(
+        choice_type_label="Flerval",
+        multiple_response_type_label="Flerval",
+        matching_type_label="Matcha ihop",
+        target_item_type_marker="Typ",
+        single_answer_key_label="Rätt svar",
+        multiple_answer_key_label="Rätta svar",
+        match_key_label="Rätta par",
+    ),
+)
 
 _GAP_PLACEHOLDER_HTML = '<span class="gap-placeholder">[____]</span>'
 _ASSET_SUFFIX_BY_MEDIA_TYPE = {
@@ -87,6 +112,12 @@ def native_exam_to_pdf_document(
 ) -> DigiExamExamNetPdfDocument:
     """Build an Exam.net PDF-converter HTML plan from a native exam document."""
 
+    labels = exam_language_labels(document)
+    context = (
+        SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
+        if labels.language == "sv"
+        else DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
+    )
     asset_files, asset_paths_by_id, asset_warnings = _prepare_assets(document, assets_by_id)
     if asset_warnings:
         return _blocked(asset_warnings)
@@ -97,6 +128,8 @@ def native_exam_to_pdf_document(
         item_render, item_warnings = _render_item(
             item=item,
             asset_paths_by_id=asset_paths_by_id,
+            labels=labels,
+            context=context,
             parent_instruction_html=_parent_instruction_html(document, item),
         )
         warnings.extend(item_warnings)
@@ -117,6 +150,8 @@ def _render_item(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+    context: ExamNetPdfTargetProfileContext,
     parent_instruction_html: str,
 ) -> tuple[DigiExamExamNetPdfItemRender | None, tuple[DigiExamExamNetPdfWarning, ...]]:
     if item.points is None:
@@ -128,7 +163,7 @@ def _render_item(
             ),
         )
 
-    prompt_html = _prompt_html(item=item, asset_paths_by_id=asset_paths_by_id)
+    prompt_html = _prompt_html(item=item, asset_paths_by_id=asset_paths_by_id, labels=labels)
     if not prompt_has_renderable_content(prompt_html):
         return None, (
             DigiExamExamNetPdfWarning(
@@ -145,7 +180,7 @@ def _render_item(
     )
     strategy_result = DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY.render(
         item=item_semantics,
-        context=DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
+        context=context,
     )
     return strategy_result.item, strategy_result.warnings
 
@@ -203,7 +238,12 @@ def _parent_instruction_html(document: NativeExamDocument, item: NativeExamItem)
     return f'<div class="parent-instruction">{lines}</div>'
 
 
-def _prompt_html(*, item: NativeExamItem, asset_paths_by_id: Mapping[str, str]) -> str:
+def _prompt_html(
+    *,
+    item: NativeExamItem,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
     paragraphs: list[str] = []
     for paragraph in item.body:
         parts: list[str] = []
@@ -213,17 +253,22 @@ def _prompt_html(*, item: NativeExamItem, asset_paths_by_id: Mapping[str, str]) 
             elif isinstance(segment, NativeGapSegment):
                 parts.append(_GAP_PLACEHOLDER_HTML)
             else:
-                parts.append(_image_html(segment.asset_id, asset_paths_by_id))
+                parts.append(_image_html(segment.asset_id, asset_paths_by_id, labels))
         paragraphs.append(f"<p>{''.join(parts)}</p>")
     return "".join(paragraphs)
 
 
-def _image_html(asset_id: str, asset_paths_by_id: Mapping[str, str]) -> str:
+def _image_html(
+    asset_id: str,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
     relative_path = asset_paths_by_id[asset_id]
+    alt = f"{labels.image} {asset_id}".strip()
     return (
         '<img class="prompt-image" '
         f'src="{escape(relative_path, quote=True)}" '
-        f'alt="Bild {escape(asset_id, quote=True)}">'
+        f'alt="{escape(alt, quote=True)}">'
     )
 
 
