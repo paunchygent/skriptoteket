@@ -14,8 +14,8 @@ closeout_review:
 task_kind: story
 acceptance_criteria:
 - A DOCX whose opening heading carries answer-key wording converts to a title without
-  that wording, the rest of the heading copied verbatim, and the gold titles of sa24
-  and bf26_english match it
+  that wording, the rest of the heading copied verbatim, and every gold title that
+  carries that wording matches it
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -35,8 +35,8 @@ dash, a colon, a comma or enclosing parentheses. The step recognises one closed
 Swedish and English phrase list, at the start or the end of the heading. The
 filename fallback title goes through the same step. No rule names an exam.
 
-The gold titles of `sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit` and
-`bf26_english_1_unit_test_kap_1_2_med_facit` drop the same wording; nothing else
+Every gold title that carries answer-key wording drops it: `sa24`,
+`bf26_english`, `bf26_diagnostic`, `chapter_4` and `metodprov`; nothing else
 in gold changes.
 
 ## Contract Inputs
@@ -74,5 +74,5 @@ export title. The step does no extra model call.
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| D1  | Converted titles drop answer-key wording, and the gold titles of sa24 and bf26_english drop it too. |
+| D1  | Converted titles drop answer-key wording, and every gold title carrying it drops it too (five corpus exams; amended 2026-10-11 when discovery found three more than the walk showed). |
 | D2  | The rule 5 verbatim check is unchanged. A deterministic step after it removes the phrases on one closed Swedish and English list (answer key, key, facit, med facit, with answers, svar) at the heading's start or end, with their joining separator. The filename fallback uses the same step. No rule names an exam. |
