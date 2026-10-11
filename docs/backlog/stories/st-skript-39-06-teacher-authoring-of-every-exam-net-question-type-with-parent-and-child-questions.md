@@ -34,9 +34,8 @@ document has no grouping.
   gaps), Lucktext with dropdown, matching, ordering and free text. Every type
   proven in QTI 2.1 counts as proven in QTI 3.0.
 - **Standalone or parent with children.** A parent holds one shared
-  instruction and one or more child questions. All children of one parent
-  have the type chosen when the parent is created. Ordering questions are
-  standalone only.
+  instruction and one or more child questions of any mix of types, as
+  Exam.net allows. Ordering questions are standalone only.
 - **Points.** Each child has its own points; the parent shows their sum and
   is not edited directly.
 - **Editing children.** Inside one parent the teacher adds, deletes and
@@ -114,7 +113,7 @@ document has no grouping.
 | P1  | This is a new EPIC-SKRIPT-39 story sequenced after story 8, whose QTI 3.0 exporter it builds on (user decision 2026-10-10). |
 | P2  | Teachers create all seven Exam.net-proven types: single choice, multiple choice, Lucktext, Lucktext with dropdown, matching, ordering, free text; every type proven in QTI 2.1 counts as proven in QTI 3.0 (user decision 2026-10-10). |
 | P3  | Ordering questions are standalone only and never children of a parent (user decision 2026-10-10). |
-| P4  | A question is standalone or a parent with one shared instruction and child questions; all children of a parent share the type chosen at creation (user decision 2026-10-10). |
+| P4  | A question is standalone or a parent with one shared instruction and child questions of any mix of types (user decisions 2026-10-10 and 2026-10-11). |
 | P5  | DOCX conversion produces the same parent and child structure: section instructions become parents and their questions become children (user decision 2026-10-10). |
 | P6  | Each child has its own points; the parent shows their sum and is not edited directly (user decision 2026-10-10). |
 | P7  | Inside one parent the teacher adds, deletes and reorders children; moving questions between parents or out to standalone is later work (user decision 2026-10-10). |
