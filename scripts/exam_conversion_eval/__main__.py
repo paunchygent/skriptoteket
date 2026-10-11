@@ -49,26 +49,33 @@ from .gold import GoldExam
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 _RECORDINGS = Path("tests/fixtures/exam_conversion")
-# Each exam's recorded provider responses in round order.
+# Each exam's recorded provider responses in round order, from a prompt v5 live run.
 _RECORDED_ROUNDS: dict[str, tuple[str, ...]] = {
     "bf26_diagnostic_grammar_test_ht26_med_facit": (
-        "bf26_diagnostic_grammar_docx_build_response.json",
+        "docx_build_v5/bf26_diagnostic_grammar_test_ht26_med_facit/round1.json",
     ),
-    "bf26_english_1_unit_test_kap_1_2_med_facit": ("bf26_english_1_docx_build_response.json",),
-    "chapter_4_poetry_and_lyrics_quiz_med_facit": ("chapter_4_poetry_docx_build_response.json",),
-    "metodprov_vetenskaplig_metod_med_facit": ("metodprov_docx_build_response.json",),
+    "bf26_english_1_unit_test_kap_1_2_med_facit": (
+        "docx_build_v5/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json",
+    ),
+    "chapter_4_poetry_and_lyrics_quiz_med_facit": (
+        "docx_build_v5/chapter_4_poetry_and_lyrics_quiz_med_facit/round1.json",
+        "docx_build_v5/chapter_4_poetry_and_lyrics_quiz_med_facit/round2.json",
+    ),
+    "metodprov_vetenskaplig_metod_med_facit": (
+        "docx_build_v5/metodprov_vetenskaplig_metod_med_facit/round1.json",
+    ),
     "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit": (
-        "sa24_solid_gold_3_docx_build_response_round1.json",
-        "sa24_solid_gold_3_docx_build_response_round2.json",
+        "docx_build_v5/sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit/round1.json",
     ),
     "svenska_2_grammatik_omprov_variant_1_med_facit": (
-        "svenska_2_grammatik_variant_1_docx_build_response.json",
+        "docx_build_v5/svenska_2_grammatik_omprov_variant_1_med_facit/round1.json",
     ),
     "svenska_2_grammatik_omprov_variant_2_med_facit": (
-        "svenska_2_grammatik_variant_2_docx_build_response.json",
+        "docx_build_v5/svenska_2_grammatik_omprov_variant_2_med_facit/round1.json",
     ),
     "svenska_2_kursavslutande_prov_med_facit": (
-        "svenska_2_kursavslutande_prov_docx_build_response.json",
+        "docx_build_v5/svenska_2_kursavslutande_prov_med_facit/round1.json",
+        "docx_build_v5/svenska_2_kursavslutande_prov_med_facit/round2.json",
     ),
 }
 

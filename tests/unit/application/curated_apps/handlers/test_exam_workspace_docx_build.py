@@ -297,7 +297,7 @@ async def test_recorded_course_exam_contract_keeps_one_item_per_question(respons
     _assert_course_exam_order(result, chunks)
 
 
-def test_course_exam_round_request_shows_teacher_italics_to_the_model():
+async def test_course_exam_round_request_shows_teacher_italics_to_the_model():
     chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
         content=(_FIXTURES / f"docx_corpus/{_COURSE_EXAM}.docx").read_bytes()
     )
@@ -347,7 +347,7 @@ async def test_v3_recording_without_italic_marks_leaked_the_fraga_20_answer():
 
 
 async def test_recorded_english_current_input_keys_matching_letters_from_facit():
-    response = "bf26_english_1_docx_build_response.json"
+    response = "docx_build_v5/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json"
     result, chunks = await _replay(_ENGLISH, response)
     items = result.document.items
     assert len(items) == len(_gold(_ENGLISH)) == 53
