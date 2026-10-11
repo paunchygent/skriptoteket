@@ -51,27 +51,13 @@ def label_route(probability: float) -> LabelRoute:
 
 
 @dataclass(frozen=True)
-class GoverningInstruction:
-    """Shared instruction referenced before a zero-based student-view line."""
-
-    text: str
-    before_line: int
-
-
-@dataclass(frozen=True)
 class LabelingItem:
-    """One question as the student sees it, its answer key, and read-only context.
-
-    ``governing_instructions`` preserve instruction positions within ``source_text``;
-    ``parent_instruction`` supplies a governing instruction before line zero for current callers.
+    """One question's own source text as markdown, with inline answers, key labels,
+    governing instructions and section heading where they stand (D14).
     """
 
     item_id: str
     source_text: str
-    parent_instruction: str | None = None
-    answer_key: str | None = None
-    governing_instructions: tuple[GoverningInstruction, ...] = ()
-    section_heading: str | None = None
 
 
 @dataclass(frozen=True)

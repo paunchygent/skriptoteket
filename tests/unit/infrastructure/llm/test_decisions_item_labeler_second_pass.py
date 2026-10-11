@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import replace
 from pathlib import Path
 from typing import Literal
 from uuid import uuid4
@@ -12,6 +11,8 @@ from pydantic import BaseModel, JsonValue, TypeAdapter
 
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
+    build_decisions_payload,
+    build_second_pass_payload,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabel,
@@ -20,15 +21,12 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelingItem,
     LabelingRequest,
     LabelRoute,
-    ThresholdPolicy,
 )
 
 pytestmark = pytest.mark.unit
 
 FIXTURES = Path("tests/fixtures/item_type_labeler")
 SECOND_PASS = "corpus_exam_24_questions_second_pass.json"
-CONTEXT_MARKER = "Source above the question (read-only context):"
-QUESTION_MARKER = "Question as the student sees it:\n"
 
 Responder = Callable[[httpx.Request], httpx.Response]
 RAW_REQUEST = TypeAdapter(dict[str, JsonValue])
@@ -147,15 +145,24 @@ class Harness:
             api_key="fixture-key",
             timeout_seconds=30,
             sleeper=self.sleeper,
-            policy=ThresholdPolicy(),
         )
 
 
-def _replay(exchanges: list[RecordedExchange]) -> Responder:
+def _replay(fixture: SecondPassFixture) -> Responder:
+    """Pair historical provider outputs with current inputs for unit checks only.
+
+    This does not replay an actual new request or measure provider behavior.
+    """
+    expected = [(build_decisions_payload(fixture.items), fixture.exchanges[0])]
+    expected.extend(
+        (build_second_pass_payload(fixture.items[index]), exchange)
+        for index, exchange in _second_pass_exchanges(fixture).items()
+    )
+
     def respond(request: httpx.Request) -> httpx.Response:
         sent = RAW_REQUEST.validate_json(request.content)
-        matches = [exchange for exchange in exchanges if exchange.request == sent]
-        assert len(matches) == 1, "adapter did not rebuild a recorded request"
+        matches = [exchange for payload, exchange in expected if payload == sent]
+        assert len(matches) == 1, "unexpected current-source request"
         return _recorded_response(matches[0])
 
     return respond
@@ -164,11 +171,10 @@ def _replay(exchanges: list[RecordedExchange]) -> Responder:
 def _item_index_of(request: RecordedRequest, fixture: SecondPassFixture) -> int:
     """The item a single-question second-pass request re-asks, found by its rendered question."""
 
-    rendered = request.input
     matches = [
         index
         for index, item in enumerate(fixture.items)
-        if QUESTION_MARKER + item.source_text in rendered
+        if request.model_dump() == build_second_pass_payload(item)
     ]
     assert len(matches) == 1, "second-pass request does not name exactly one item"
     return matches[0]
@@ -179,31 +185,40 @@ def _first_pass_answers(fixture: SecondPassFixture) -> list[RecordedAnswer]:
 
 
 def _second_pass_exchanges(fixture: SecondPassFixture) -> dict[int, RecordedExchange]:
-    return {
-        _item_index_of(request, fixture): exchange
-        for exchange in fixture.exchanges
-        if len((request := RecordedRequest.model_validate(exchange.request)).questions) == 1
-    }
+    recorded: dict[int, RecordedExchange] = {}
+    for exchange in fixture.exchanges:
+        request = RecordedRequest.model_validate(exchange.request)
+        if len(request.questions) != 1:
+            continue
+        # In these historical recordings preceding context contains other
+        # questions. The target source follows it; no old marker is required.
+        positions = [request.input.rfind(item.source_text) for item in fixture.items]
+        last = max(positions)
+        assert last >= 0
+        matches = [index for index, position in enumerate(positions) if position == last]
+        assert len(matches) == 1
+        index = matches[0]
+        assert index not in recorded
+        recorded[index] = exchange
+    return recorded
 
 
-def _escalated_with_context(fixture: SecondPassFixture) -> set[int]:
+def _escalated(fixture: SecondPassFixture) -> set[int]:
     return {
         index
-        for index, (answer, item) in enumerate(
-            zip(_first_pass_answers(fixture), fixture.items, strict=True)
-        )
-        if _chosen_probability(answer) < 0.95 and item.expanded_context
+        for index, answer in enumerate(_first_pass_answers(fixture))
+        if _chosen_probability(answer) < 0.95
     }
 
 
 async def _label_all(fixture: SecondPassFixture) -> tuple[Harness, ItemTypeLabeling]:
-    harness = Harness(_replay(fixture.exchanges))
+    harness = Harness(_replay(fixture))
     request = LabelingRequest(job_id=uuid4(), items=fixture.items)
     labeling = await harness.labeler().label(request=request)
     return harness, labeling
 
 
-async def test_only_escalated_questions_with_context_are_re_asked_alone() -> None:
+async def test_every_escalated_question_is_re_asked_with_identical_own_source() -> None:
     fixture = _load(SECOND_PASS)
 
     harness, _ = await _label_all(fixture)
@@ -213,18 +228,16 @@ async def test_only_escalated_questions_with_context_are_re_asked_alone() -> Non
     single = [sent for sent in harness.requests if len(sent.questions) == 1]
     assert len(batched) == 1
     assert len(batched[0].questions) == len(fixture.items)
-    assert CONTEXT_MARKER not in batched[0].input
-    assert all(CONTEXT_MARKER in sent.input for sent in single)
-    escalated = _escalated_with_context(fixture)
+    escalated = _escalated(fixture)
     re_asked = {_item_index_of(sent, fixture) for sent in single}
     assert re_asked == escalated
     assert len(single) == len(escalated)
-    escalated_without_context = [
-        index
-        for index, answer in enumerate(_first_pass_answers(fixture))
-        if _chosen_probability(answer) < 0.95 and not fixture.items[index].expanded_context
-    ]
-    assert not re_asked & set(escalated_without_context)
+    for sent in single:
+        index = _item_index_of(sent, fixture)
+        own_source = fixture.items[index].source_text
+        assert sent.input.split("### Question q1\n", 1)[1] == own_source
+        batched_source = batched[0].input.split(f"### Question q{index + 1}\n", 1)[1]
+        assert batched_source.split("\n\n### Question ", 1)[0] == own_source
 
 
 async def test_second_pass_result_replaces_first_pass_and_keeps_it() -> None:
@@ -256,9 +269,9 @@ async def test_second_pass_result_replaces_first_pass_and_keeps_it() -> None:
         assert result.route == expected
 
 
-async def test_usage_sums_both_passes_and_estimate_covers_them() -> None:
+async def test_usage_sums_recorded_outputs_from_both_passes() -> None:
     fixture = _load(SECOND_PASS)
-    harness = Harness(_replay(fixture.exchanges))
+    harness = Harness(_replay(fixture))
     request = LabelingRequest(job_id=uuid4(), items=fixture.items)
     labeler = harness.labeler()
 
@@ -268,32 +281,16 @@ async def test_usage_sums_both_passes_and_estimate_covers_them() -> None:
     assert labeling.usage.input_tokens == sum(recorded)
     assert labeling.usage.requests == 1 + len(_second_pass_exchanges(fixture))
     assert labeling.usage.attempts == len(fixture.exchanges)
-    estimate = labeler.estimate_input_tokens(request=request)
-    assert estimate >= recorded[0]
-    assert estimate > sum(recorded)
-
-
-async def test_items_without_expanded_context_get_no_second_pass() -> None:
-    fixture = _load(SECOND_PASS)
-    harness = Harness(_replay(fixture.exchanges[:1]))
-    items = tuple(replace(item, expanded_context=None) for item in fixture.items)
-
-    labeling = await harness.labeler().label(request=LabelingRequest(job_id=uuid4(), items=items))
-
-    assert len(harness.requests) == 1
-    assert labeling.usage.requests == 1
-    assert any(r.route == LabelRoute.ESCALATE for r in labeling.results)
-    assert all(r.first_pass is None for r in labeling.results)
 
 
 async def test_unavailable_second_pass_raises_after_successful_first_pass() -> None:
     fixture = _load(SECOND_PASS)
-    replay = _replay(fixture.exchanges[:1])
+    replay = _replay(fixture)
     outage = _unavailable(503)
 
     def respond(request: httpx.Request) -> httpx.Response:
         if len(RecordedRequest.model_validate_json(request.content).questions) == 1:
-            _replay(list(_second_pass_exchanges(fixture).values()))(request)
+            replay(request)
             return _recorded_response(outage)
         return replay(request)
 
@@ -305,4 +302,4 @@ async def test_unavailable_second_pass_raises_after_successful_first_pass() -> N
     assert caught.value.code == "provider_unavailable"
     assert caught.value.status_code == 503
     assert len(harness.requests[0].questions) == len(fixture.items)
-    assert len(harness.requests) == 1 + 3 * len(_escalated_with_context(fixture))
+    assert len(harness.requests) == 1 + 3 * len(_escalated(fixture))

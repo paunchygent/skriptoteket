@@ -53,7 +53,12 @@ class _Body(TypedDict):
     usage: _Usage
 
 
+class _Request(TypedDict):
+    questions: list[JsonValue]
+
+
 class _Exchange(TypedDict):
+    request: _Request
     status_code: int
     body: _Body
 
@@ -61,7 +66,6 @@ class _Exchange(TypedDict):
 class _Item(TypedDict):
     item_id: str
     source_text: str
-    parent_instruction: str | None
 
 
 class _Recording(TypedDict):
@@ -76,6 +80,15 @@ class _Unavailable(TypedDict):
 def _fixture(name: str) -> _Recording:
     fixture: _Recording = json.loads((_FIXTURES / name).read_text())
     return fixture
+
+
+def _recorded_re_ask() -> _Exchange:
+    """A recorded single-question answer, standing in for every second-pass call."""
+
+    recording: _Recording = json.loads(
+        (_FIXTURES / "corpus_exam_24_questions_second_pass.json").read_text()
+    )
+    return next(e for e in recording["exchanges"] if len(e["request"]["questions"]) == 1)
 
 
 def _unavailable() -> _Unavailable:
@@ -115,12 +128,18 @@ class _Harness:
 
     def _post(self, request: httpx.Request) -> httpx.Response:
         self.events.append("post")
+        if len(json.loads(request.content)["questions"]) == 1:
+            return _ok(_recorded_re_ask())
         return self._responses.pop(0)
 
 
 def _recorded_exam() -> tuple[LabelingRequest, _Exchange]:
     fixture = _fixture("corpus_exam_24_questions.json")
-    items = tuple(LabelingItem(**item) for item in fixture["items"])
+    # Fixtures are historical recordings; legacy context keys are ignored.
+    items = tuple(
+        LabelingItem(item_id=item["item_id"], source_text=item["source_text"])
+        for item in fixture["items"]
+    )
     return LabelingRequest(job_id=uuid4(), items=items), fixture["exchanges"][0]
 
 
@@ -134,13 +153,18 @@ async def test_reserves_estimate_before_network_and_reconciles_measured_tokens()
 
     labeling = await harness.labeler.label(request=request)
 
-    assert harness.events == ["reserve", "post"]
+    re_asked = sum(1 for result in labeling.results if result.first_pass is not None)
+    assert re_asked > 0
+    assert harness.events == ["reserve", "post", *["post"] * re_asked]
     reserve = harness.leases.reserve.await_args.kwargs
     assert reserve["requested_tokens"] == harness.adapter.estimate_input_tokens(request=request)
     assert reserve["job_id"] == request.job_id
     assert reserve["item_id"] == LEASE_ITEM_ID
     assert reserve["provider_profile_id"] == "openai-decisions-gpt-6-luna"
-    measured = exchange["body"]["usage"]["input_tokens"]
+    measured = (
+        exchange["body"]["usage"]["input_tokens"]
+        + re_asked * _recorded_re_ask()["body"]["usage"]["input_tokens"]
+    )
     assert harness.leases.reconcile.await_args.kwargs["actual_tokens"] == measured
     assert labeling.usage.input_tokens == measured
     assert len(labeling.results) == len(request.items)

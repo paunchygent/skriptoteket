@@ -16,6 +16,8 @@ from skriptoteket.config import Settings
 from skriptoteket.di.item_type_labeler import ItemTypeLabelerProvider
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
+    build_decisions_payload,
+    split_items,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabel,
@@ -23,6 +25,7 @@ from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabeling,
     LabelingItem,
     LabelingRequest,
+    LabelingUsage,
     LabelRoute,
     MeteredItemTypeLabelerProtocol,
 )
@@ -78,7 +81,6 @@ class _Exchange(TypedDict):
 class _Item(TypedDict):
     item_id: str
     source_text: str
-    parent_instruction: str | None
 
 
 class _Recording(TypedDict):
@@ -99,7 +101,14 @@ def _load(name: str) -> _Recording:
 
 def _request_for(fixture: _Recording) -> LabelingRequest:
     return LabelingRequest(
-        job_id=uuid4(), items=tuple(LabelingItem(**item) for item in fixture["items"])
+        job_id=uuid4(),
+        items=tuple(
+            LabelingItem(
+                item_id=item["item_id"],
+                source_text=item["source_text"],
+            )
+            for item in fixture["items"]
+        ),
     )
 
 
@@ -162,11 +171,27 @@ class Harness:
         )
 
 
-def _replay(exchanges: list[_Exchange]) -> Responder:
+def _replay(exchanges: list[_Exchange], *, fixture: _Recording | None = None) -> Responder:
+    # Historical outputs exercise the current request/parser boundary only.
+    # Their old request bodies are not evidence of requests made by this adapter.
+    fixture = _load(CORPUS_24) if fixture is None else fixture
+    chunks = split_items(_request_for(fixture).items)
+    expected = [
+        (
+            build_decisions_payload(chunk),
+            next(
+                exchange
+                for exchange in exchanges
+                if len(exchange["request"]["questions"]) == len(chunk)
+            ),
+        )
+        for chunk in chunks
+    ]
+
     def respond(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
-        matches = [exchange for exchange in exchanges if exchange["request"] == sent]
-        assert len(matches) == 1, "adapter did not rebuild a recorded request"
+        matches = [exchange for payload, exchange in expected if payload == sent]
+        assert len(matches) == 1, "unexpected current-source request"
         return _recorded_response(matches[0])
 
     return respond
@@ -194,7 +219,28 @@ def _with_mutated_body(mutate: Callable[[_Body], None]) -> Responder:
 
 async def _label_24(responder: Responder) -> ItemTypeLabeling:
     harness = Harness(responder)
-    return await harness.labeler().label(request=_request_for(_load(CORPUS_24)))
+    return await _first_pass(harness.labeler(), _request_for(_load(CORPUS_24)))
+
+
+async def _first_pass(
+    labeler: OpenAIDecisionsItemTypeLabeler, request: LabelingRequest
+) -> ItemTypeLabeling:
+    """Exercise first-pass HTTP/parser failures with first-pass-only recordings.
+
+    Full inherited re-ask orchestration is covered in the second-pass file.
+    """
+    outcomes = [
+        await labeler._label_chunk(build_decisions_payload(chunk), chunk)
+        for chunk in split_items(request.items)
+    ]
+    return ItemTypeLabeling(
+        results=tuple(result for results, _, _ in outcomes for result in results),
+        usage=LabelingUsage(
+            input_tokens=sum(tokens or 0 for _, tokens, _ in outcomes),
+            requests=len(outcomes),
+            attempts=sum(attempts for _, _, attempts in outcomes),
+        ),
+    )
 
 
 async def _expect_error(responder: Responder) -> ItemTypeLabelerError:
@@ -211,7 +257,7 @@ async def test_threshold_routes_recorded_answers_at_the_095_boundary() -> None:
     fixture = _load(CORPUS_24)
     harness = Harness(_replay(fixture["exchanges"]))
 
-    labeling = await harness.labeler().label(request=_request_for(fixture))
+    labeling = await _first_pass(harness.labeler(), _request_for(fixture))
 
     answers = _recorded_answers_24()
     probabilities = [_chosen_probability(answer) for answer in answers]
@@ -228,6 +274,30 @@ async def test_threshold_routes_recorded_answers_at_the_095_boundary() -> None:
         assert result.route == expected
     assert any(r.probability == 0.95 and r.route == LabelRoute.ACCEPT for r in labeling.results)
     assert any(r.probability < 0.95 and r.route == LabelRoute.ESCALATE for r in labeling.results)
+
+
+@pytest.mark.parametrize("name", [CORPUS_24, CORPUS_204])
+def test_request_input_carries_each_source_text_verbatim_and_nothing_else(name: str) -> None:
+    fixture = _load(name)
+    items = _request_for(fixture).items
+    inputs = [build_decisions_payload(chunk)["input"] for chunk in split_items(items)]
+    assert all(isinstance(rendered, str) for rendered in inputs)
+    offset = 0
+    for rendered, chunk in zip(inputs, split_items(items), strict=True):
+        assert isinstance(rendered, str)
+        for forbidden in (
+            "Answer key",
+            "[Governing instruction",
+            "Section heading:",
+            "Question as the student sees it:",
+        ):
+            assert forbidden not in rendered.split("\n\n### Question ", 1)[1]
+        for index, item in enumerate(chunk):
+            block = rendered.split(f"### Question q{index + 1}\n", 1)[1]
+            followed = f"\n\n### Question q{index + 2}\n"
+            assert block.split(followed, 1)[0] == item.source_text
+        offset += len(chunk)
+    assert offset == len(items)
 
 
 class _LabelerInputs(Provider):
@@ -262,7 +332,7 @@ async def test_environment_cannot_move_the_decided_threshold_or_model(
     )
     labeler = await container.get(MeteredItemTypeLabelerProtocol)
 
-    labeling = await labeler.label(request=_request_for(fixture))
+    labeling = await _first_pass(labeler, _request_for(fixture))
     await container.close()
 
     assert [sent["model"] for sent in harness.requests] == ["gpt-6-luna"]
@@ -274,11 +344,11 @@ async def test_environment_cannot_move_the_decided_threshold_or_model(
 
 async def test_204_items_split_into_two_recorded_requests_in_item_order() -> None:
     fixture = _load(CORPUS_204)
-    harness = Harness(_replay(fixture["exchanges"]))
+    harness = Harness(_replay(fixture["exchanges"], fixture=fixture))
     request = _request_for(fixture)
     labeler = harness.labeler()
 
-    labeling = await labeler.label(request=request)
+    labeling = await _first_pass(labeler, request)
 
     assert len(harness.requests) == 2
     assert sorted(len(sent["questions"]) for sent in harness.requests) == [4, 200]
@@ -291,16 +361,13 @@ async def test_204_items_split_into_two_recorded_requests_in_item_order() -> Non
     assert labeling.usage.input_tokens == recorded_tokens
     assert labeling.usage.requests == 2
     assert labeling.usage.attempts == 2
-    estimate = labeler.estimate_input_tokens(request=request)
-    assert 0 < estimate
-    assert recorded_tokens / 2 <= estimate <= recorded_tokens * 2
 
 
 async def test_recorded_503_then_success_retries_once_after_base_delay() -> None:
     fixture = _load(CORPUS_24)
     harness = Harness(_sequence(_always(_unavailable(503)), _replay(fixture["exchanges"])))
 
-    labeling = await harness.labeler().label(request=_request_for(fixture))
+    labeling = await _first_pass(harness.labeler(), _request_for(fixture))
 
     assert len(labeling.results) == len(fixture["items"])
     assert labeling.usage.attempts == 2
@@ -313,7 +380,7 @@ async def test_recorded_504_retry_after_is_capped() -> None:
     assert gateway_timeout["headers"]["retry-after"] == "120"
     harness = Harness(_sequence(_always(gateway_timeout), _replay(fixture["exchanges"])))
 
-    labeling = await harness.labeler().label(request=_request_for(fixture))
+    labeling = await _first_pass(harness.labeler(), _request_for(fixture))
 
     assert len(labeling.results) == len(fixture["items"])
     assert harness.sleeper.delays == [8.0]

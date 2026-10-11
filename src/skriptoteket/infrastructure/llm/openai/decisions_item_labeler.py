@@ -11,8 +11,8 @@ Purpose:
 Relationships:
     Implements ``protocols.item_type_labeler.MeteredItemTypeLabelerProtocol``.
     Label descriptions define gap and free text by how the answer is scored
-    (D15), and each question renders as the student sees it with a separate
-    answer key (D14); both were measured in the labeler run of 2026-10-11 and
+    (D15), and each question retains its source text and inline keys
+    (amended D14); a new measurement is required after the input repair and
     a rewording invalidates that measurement. Request and answer shapes follow
     the official Decisions guide (developers.openai.com/api/docs/guides/decisions,
     read 2026-10-11) and the recorded responses.
@@ -34,7 +34,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 )
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
-    GoverningInstruction,
     ItemTypeLabel,
     ItemTypeLabelerError,
     ItemTypeLabeling,
@@ -272,48 +271,14 @@ def _question_id(index: int) -> str:
     return f"q{index + 1}"
 
 
-def _governing_instructions(item: LabelingItem) -> tuple[GoverningInstruction, ...]:
-    if item.parent_instruction:
-        return (GoverningInstruction(item.parent_instruction, 0), *item.governing_instructions)
-    return item.governing_instructions
-
-
-def _render_item(index: int, item: LabelingItem, instruction_ids: dict[str, str]) -> str:
-    lines = [f"### Question {_question_id(index)}"]
-    if item.section_heading:
-        heading_id = instruction_ids.get(item.section_heading)
-        heading = f"[Governing instruction {heading_id}]" if heading_id else item.section_heading
-        lines += ["Section heading:", heading]
-    lines.append("Question as the student sees it:")
-    references: dict[int, list[str]] = {}
-    for instruction in _governing_instructions(item):
-        references.setdefault(instruction.before_line, []).append(
-            f"[Governing instruction {instruction_ids[instruction.text]}]"
-        )
-    source_lines = item.source_text.splitlines()
-    for position in range(len(source_lines) + 1):
-        lines.extend(references.get(position, ()))
-        if position < len(source_lines):
-            lines.append(source_lines[position])
-    if item.answer_key:
-        lines += ["Answer key:", item.answer_key]
-    return "\n".join(lines)
-
-
 def render_items(items: Sequence[LabelingItem]) -> str:
-    """Render request-local instruction definitions and each question's own context."""
+    """Send each question's faithful source text under a routing heading, nothing else."""
 
-    instruction_ids: dict[str, str] = {}
-    for item in items:
-        for instruction in _governing_instructions(item):
-            if instruction.text not in instruction_ids:
-                instruction_ids[instruction.text] = f"c{len(instruction_ids) + 1}"
     blocks = [CLASSIFICATION_INSTRUCTION]
     blocks.extend(
-        f"### Governing instruction {instruction_id}\n{text}"
-        for text, instruction_id in instruction_ids.items()
+        f"### Question {_question_id(index)}\n{item.source_text}"
+        for index, item in enumerate(items)
     )
-    blocks.extend(_render_item(index, item, instruction_ids) for index, item in enumerate(items))
     return "\n\n".join(blocks)
 
 
@@ -341,7 +306,7 @@ def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
 
 
 def build_second_pass_payload(item: LabelingItem) -> _JsonObject:
-    """Re-ask one escalated question alone with its identical own context."""
+    """Re-ask one escalated question alone with its own source text."""
 
     return _payload(render_items((item,)), 1)
 

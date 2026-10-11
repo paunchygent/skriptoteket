@@ -37,12 +37,8 @@ from scripts.item_type_labeler_live.records import (
     RunSummary,
     SavedGrouping,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.labeler_student_view import (
-    student_view,
-    tight_heading,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
+    PythonDocxLabelerMarkdown,
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
@@ -51,7 +47,6 @@ from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.protocols.item_type_labeler import (
-    GoverningInstruction,
     ItemTypeLabelerError,
     ItemTypeLabeling,
     ItemTypeLabelResult,
@@ -123,10 +118,9 @@ def corpus_items(
     stem: str,
     grouping: SavedGrouping,
 ) -> list[LabelingItem]:
-    """Own question/key, source-positioned governing instructions and section heading."""
+    """Each question's own chunks, governing instructions and section heading as source markdown."""
 
-    chunks = PythonDocxExamChunker().chunk(content=(corpus / f"{stem}.docx").read_bytes())
-    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    chunks = PythonDocxLabelerMarkdown().chunk(content=(corpus / f"{stem}.docx").read_bytes())
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     all_keys = frozenset(a for q in grouping["questions"] for a in q["key_anchors"])
     all_questions = frozenset(a for q in grouping["questions"] for a in q["anchors"])
@@ -145,33 +139,26 @@ def corpus_items(
             key=positions.__getitem__,
         )
         own = set(question["anchors"]) | set(question["key_anchors"])
-        view = student_view(
-            [chunk for chunk in chunks if chunk.anchor in own - titles - set(governing)],
-            [by_anchor[a] for a in question["key_anchors"]],
+        start = min(positions[anchor] for anchor in question["anchors"])
+        heading_anchor = next(
+            (
+                chunk.anchor
+                for chunk in reversed(chunks[:start])
+                if chunk.kind == "heading" and chunk.anchor not in titles | all_questions | all_keys
+            ),
+            None,
         )
-        instructions = []
-        for anchor in governing:
-            text = student_view([by_anchor[anchor]], []).question
-            if text:
-                instructions.append(
-                    GoverningInstruction(
-                        text=text,
-                        before_line=sum(
-                            len(line.text.split("\n"))
-                            for line in view.lines
-                            if positions[line.anchor] < positions[anchor]
-                        ),
-                    )
-                )
+        included = own | set(governing)
+        if heading_anchor is not None:
+            included.add(heading_anchor)
+        selected: dict[str, str] = {}
+        for chunk in chunks:
+            if chunk.anchor in included:
+                selected.setdefault(chunk.anchor, chunk.marked_text)
         items.append(
             LabelingItem(
                 item_id=f"{stem}/{qid}",
-                source_text=view.question,
-                answer_key=view.answer_key,
-                governing_instructions=tuple(instructions),
-                section_heading=tight_heading(
-                    chunks, question["anchors"], titles | all_questions | all_keys
-                ),
+                source_text="\n".join(selected.values()),
             )
         )
     return items
@@ -181,13 +168,6 @@ def item_json(item: LabelingItem) -> ItemRecord:
     return {
         "item_id": item.item_id,
         "source_text": item.source_text,
-        "parent_instruction": item.parent_instruction,
-        "answer_key": item.answer_key,
-        "governing_instructions": [
-            {"text": instruction.text, "before_line": instruction.before_line}
-            for instruction in item.governing_instructions
-        ],
-        "section_heading": item.section_heading,
     }
 
 

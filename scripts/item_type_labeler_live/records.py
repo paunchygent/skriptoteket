@@ -28,18 +28,9 @@ class GroupingRecord(TypedDict):
     output: SavedGrouping
 
 
-class InstructionRecord(TypedDict):
-    text: str
-    before_line: int
-
-
 class ItemRecord(TypedDict):
     item_id: str
     source_text: str
-    parent_instruction: str | None
-    answer_key: str | None
-    governing_instructions: list[InstructionRecord]
-    section_heading: str | None
 
 
 class ChoiceRecord(TypedDict):
