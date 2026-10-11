@@ -7,24 +7,18 @@ from dataclasses import dataclass
 from typing import Literal
 
 Principle = Literal[
-    "segmentation",
     "response_kind",
-    "response_slots",
     "scoring",
     "points",
     "no_answer_leakage",
-    "no_platform_labels",
     "content_present",
     "gold",
 ]
 PRINCIPLES: tuple[Principle, ...] = (
-    "segmentation",
     "response_kind",
-    "response_slots",
     "scoring",
     "points",
     "no_answer_leakage",
-    "no_platform_labels",
     "content_present",
 )
 

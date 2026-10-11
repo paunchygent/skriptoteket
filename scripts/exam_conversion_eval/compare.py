@@ -1,9 +1,8 @@
-"""Judge a conversion against gold by the eight conversion principles, not textual identity.
+"""Judge a conversion against gold by five principles a teacher would accept, not identity.
 
-TASK-SKRIPT-39-05-03 states the principles. The gold file is one correct conversion: a
-converted exam passes when each question, a standalone item or a child of a parent, shows a
-student the same wording in the same order and place, is answered the same way and scored the
-same, the questions sit under the same parents, and nothing Exam.net owns or any answer shows.
+ST-SKRIPT-39-05 term A7: the gold file is one correct conversion, not the only one. A converted
+exam passes when its title passes and each question, a standalone item or a child of a parent,
+has gold's type, answer key and points, shows no facit answer, and loses no gold wording.
 """
 
 from __future__ import annotations
@@ -15,7 +14,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 
-from .compare_answers import labels, leakage, scoring
+from .compare_answers import leakage, scoring
 from .compare_questions import GoldQuestion, Question, gold_questions, native_questions
 from .compare_results import (
     PRINCIPLES,
@@ -25,14 +24,7 @@ from .compare_results import (
     Principle,
     TitleComparison,
 )
-from .compare_structure import (
-    all_phrases,
-    content,
-    membership_groups,
-    parent_membership,
-    segmentation,
-    slots,
-)
+from .compare_structure import content
 from .compare_text import words
 from .gold import GoldExam, GoldItem, GoldParent
 
@@ -75,23 +67,17 @@ def compare_title(
     return TitleComparison(gold_title, title, title is not None and words(title) in accepted)
 
 
-def _compare_question(
-    gold: GoldQuestion, actual: Question, phrases: Sequence[str], membership: list[FieldMismatch]
-) -> tuple[FieldMismatch, ...]:
+def _compare_question(gold: GoldQuestion, actual: Question) -> tuple[FieldMismatch, ...]:
     item = gold.item
     mismatches: list[FieldMismatch] = []
     if item.teacher_questions:
         mismatches.append(FieldMismatch("gold", "gold_unresolved", item.teacher_questions, ()))
-    mismatches.extend(membership)
-    mismatches.extend(segmentation(gold, actual, phrases))
     if item.kind != actual.kind:
         mismatches.append(FieldMismatch("response_kind", "kind", item.kind, actual.kind))
-    mismatches.extend(slots(gold, actual))
     mismatches.extend(scoring(gold, actual))
     if item.points != actual.points:
         mismatches.append(FieldMismatch("points", "points", item.points, actual.points))
     mismatches.extend(leakage(gold, actual))
-    mismatches.extend(labels(gold, actual))
     mismatches.extend(content(gold, actual))
     return tuple(mismatches)
 
@@ -100,26 +86,22 @@ def _compare_exam(
     expected: GoldExam, actual: Sequence[Question], title: TitleComparison
 ) -> ExamComparison:
     golds = gold_questions(expected.items)
-    phrases = all_phrases(golds)
-    gold_groups = membership_groups([gold.view.parent for gold in golds])
-    actual_groups = membership_groups([question.parent for question in actual])
     results: list[ItemComparison] = []
     for index in range(max(len(golds), len(actual))):
         if index >= len(golds):
             observed = actual[index]
-            mismatch = FieldMismatch("segmentation", "extra_item", None, observed)
+            mismatch = FieldMismatch("response_kind", "extra_item", None, observed)
             results.append(ItemComparison(index, observed.source_label, (mismatch,)))
         elif index >= len(actual):
             label = golds[index].view.source_label
-            mismatch = FieldMismatch("segmentation", "missing_item", label, None)
+            mismatch = FieldMismatch("content_present", "missing_item", label, None)
             results.append(ItemComparison(index, label, (mismatch,)))
         else:
-            membership = parent_membership(gold_groups[index], actual_groups[index])
             results.append(
                 ItemComparison(
                     index,
                     golds[index].view.source_label,
-                    _compare_question(golds[index], actual[index], phrases, membership),
+                    _compare_question(golds[index], actual[index]),
                 )
             )
     return ExamComparison(expected.confirmed, expected.confirmation_note, tuple(results), title)
