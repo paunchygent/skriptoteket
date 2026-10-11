@@ -17,9 +17,9 @@ acceptance_criteria:
 - Grouping and labeling run on all eight corpus exams and their questions, subparts,
   shared-context scope and labels are checked against the source before any conversion
   change
-- The parallelization measurement (D26) runs on frozen grouping and labels and reports
-  time to first batch, time to all ready, cost and exam-conversion-eval quality for
-  every arm before production conversion changes
+- The parallelization measurement (D26) runs the production pipeline per setting and
+  reports time to first batch, time to all ready, cost and quality read as in D34
+  before batch size and reasoning effort are set
 - Converted batches reach the exam workspace as they finish, pending questions show
   as placeholders, and the saved document passes the assembly check against the
   grouping list before save and QTI export
@@ -58,8 +58,8 @@ steps decide what each question is:
    named parent, each instruction once, source order. Free_text questions
    carry a marking guide (rättningsmall / poängmall) in the converter schema.
 4. **Recovery.** A converter that finds a question outside its batch's types
-   reports a typed conflict; that question is relabeled and resent, at most
-   three attempts in total.
+   reports a typed conflict; that question is relabeled and resent once. If it
+   still conflicts, it keeps the converted item with the check-type review mark.
 
 Step 1 has two candidates, both run in the feasibility step: the Responses
 grouping pass above, and Decisions-only grouping, where a `choice` question
@@ -175,9 +175,15 @@ succeeded on retry.
 | D23 | Labeler prompt P1d in both passes: a type name the teacher writes settles a label, a key marking more than one option correct settles multiple_response, Swedish type names with English counterparts, no evidence wording. Admission: first pass at >= 0.95, otherwise B decides alone; no C, no tie-breaker; unresolved becomes free_text for now (user decisions 2026-10-11). |
 | D24 | The teacher re-tag and rebuild flow for unsettled or wrong types is its own later story, contracted after the parallelization measurement (user decision 2026-10-11). |
 | D25 | Two conversion waves (accepted questions at once, B questions after their labels arrive), progressive delivery to the editor, and a free_text marking-guide field in the converter schema are part of this task (user decisions 2026-10-11). |
-| D26 | The parallelization measurement freezes grouping, labels and B per exam and compares, one exam at a time with all requests sent at once: whole exam (re-measured baseline), type batches of about 16 and about 6 question families, and one family per request, each with gpt-6-luna reasoning none, low and medium, two runs per exam; plus a heading-split comparison without grouping or labels, and Sol 6.1 low and medium for questions below 0.95 both with B's label and deciding the type itself. Per request it records timing, tokens, cost and 429s; batches are assembled and judged with exam-conversion-eval, and an arm counts as faster only when quality holds; the schema stays at docx_exam_build_v9 (user decisions 2026-10-11). |
+| D26 | The parallelization measurement runs the production pipeline per setting, starting with one small exam: batch size (whole exam, about 16 or 6 question families, one family per request) and gpt-6-luna reasoning low or medium; reasoning none is dropped. Settings that are clearly bad are stopped early instead of run on every exam. It records timing, cost and 429s per request; quality is read as in D34. The frozen-input harness is discarded (user decisions 2026-10-11). |
 | D27 | When questions under one instruction get different labels, consecutive questions of one type form one parent each, following the gold rule; each carries the instruction, and a moved question carries the check-the-type mark (user decision 2026-10-11). |
 | D28 | The gold files are corrected before the measurement: samhallskunskap q14 and kursavslutande Fråga 20 become free_text, each with a note citing the user decision (user decision 2026-10-11). |
 | D29 | The decided parts of steps 1-4 are built now, in parallel with the D26 measurement, by several agents in the task worktree with disjoint file scopes; batch size, converter reasoning effort, Sol escalation and heading split stay single named settings set after the measurement, which runs from a frozen snapshot (user decision 2026-10-11). |
 | D30 | While batches still convert, the teacher can edit converted items: the document is saved when the first batch is ready, with placeholders (source text, converting) for the rest; each later batch fills only its own placeholders, and a placeholder the teacher changed keeps the teacher's version while the late result is dropped (user decision 2026-10-11). |
 | D31 | The free_text marking guide is shown and editable in the item editor and printed in the DOCX and PDF answer-key exports; it enters the QTI export as a scorer rubric only after a staging import shows Exam.net accepts and displays it (user decision 2026-10-11). |
+| D32 | The strict response schema is the only gate on converter output. A schema-valid response is never rejected or retried for unclaimed chunks, unknown or conflicting anchors, source-rule, item-rule or label-rule checks, or family splits: batch anchors are a per-request schema enum, the first item claiming an anchor keeps it, an unclaimed chunk becomes a review item holding its source text, and an item that breaks a document invariant becomes a review item with the reason. The only resend is one typed type_conflict resend per question (step 4) (user decisions 2026-10-11). |
+| D33 | Following A7, gold is one correct conversion, not the only one. exam-conversion-eval judges a question only on type, answer key, points, answer leakage, and that no gold word is lost wherever it sits in the question or its parent; segmentation, slot placement, platform label and word-order checks are removed. Each converted question is paired with the gold question its wording overlaps most, not by position (user decisions 2026-10-11). |
+| D34 | Conversion quality is judged, not computed: the D33 script is a loose gate that catches most failures, and the parent and the user then read the results together, adding reviewer agents (Claude, Sol 6.1) where they help. No fixed procedure is set in advance. Conversion is a best-effort first draft that a teacher reviews and can resend: a setting is chosen when its quality is reasonable for its wait, and extra time that buys only small gains on most questions is not worth it (user decision 2026-10-11). |
+| D35 | The labeler sees every question with the full text of each shared heading, instruction or word box that governs it, repeated per question; conversion keeps its ownership, and a converted question never lacks the shared text that governs it (user decision 2026-10-11). |
+| D36 | Shared section text may be copied into each question's labeler and conversion input wherever that makes them more dependable. The saved document and the QTI export show it once, on the section parent; each child keeps only its own stem, verbatim. Enumeration (numbers or letters on question stems and on MCQ alternatives) is removed in the final presentation and may stay until then; labels that name the parts inside one question's body (a), b)) stay (user decisions 2026-10-11). |
+| D37 | The conversion default is one question family per request at gpt-6-luna low reasoning: the real pipeline converted 302 of 314 corpus questions with every exam ready within about 34 s, against 300 of 314 and up to 60 s for about 6 families at medium; medium bought no measurable quality (user decision 2026-10-11). |

@@ -24,7 +24,7 @@ This application follows:
 
 - Every change follows established patterns
 - No makeshift solutions or "temporary" hacks
-- No legacy support or compatibility shims: do the full refactor (delete old paths) instead of workarounds
+- No legacy support or compatibility shims: do the full refactor (delete old paths) instead of workarounds. Skriptoteket is unreleased; backward compatibility with older data, schemas, payloads, settings or stored state is never a requirement unless the user states it explicitly for a named app
 - If a pattern doesn't exist, propose it first
 - Deviant code **MUST** be refactored immediately
 
