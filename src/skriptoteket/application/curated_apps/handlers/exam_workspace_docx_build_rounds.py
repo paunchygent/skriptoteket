@@ -43,16 +43,22 @@ points line this part owns: read them to convert the questions they govern and t
 heading, instruction or points line that serves the whole section from one that belongs to
 a single question of this part. Never convert a question of context_chunks, list their
 anchors anywhere or copy their wording into an item, the title or instructions.
-item_kinds lists the kinds this part produces. A question whose response type is none of
-them returns outcome type_conflict with conflict_kind set to the kind its source shows, its
-source_anchors and its body; never force it into one of the listed kinds.
+item_kinds lists the kinds this part produces. A question's kind follows from its answer
+places under the rules below: options to choose among make a choice kind, two lists to pair
+make matching, answer places the gap rules define, each keyed by accepted strings, make
+gap_fill whatever the length of those strings, and a written response the teacher judges
+against a sample answer, criteria or grading guidance makes free_text. A question whose kind
+by these rules is none of item_kinds returns outcome type_conflict with conflict_kind set
+to that kind, its source_anchors and its body; never force it into one of the listed kinds.
 Chunk text wraps each stretch the teacher set in italics in <i>...</i>. The tags are source
 formatting, not wording: never copy them into any output field.
 Two kinds of labels are never confused:
 - Ordering enumeration is removed. It is the number or letter that orders the questions (1, 2, 3
   or a, b, c before a question's stem, which starts an item of its own) and the letter or number
   that orders a question's choices (A, B, C or 1, 2, 3 before each choice). Leave it out of
-  title, body and choices; printed_label may carry a question's own number or letter.
+  title, body and choices; printed_label may carry a question's own number or letter. Only
+  the number or letter is removed: a blank or cue right after it is question text, and such
+  a blank is the sentence's first gap.
 - A part label is kept verbatim. It is a label such as "a)" or "b)" on a line or run inside one
   question's body that names a part of that single question: the student's answer and the
   marking guide refer to it. Part labels are question text. Copy each exactly as printed, in
@@ -60,11 +66,11 @@ Two kinds of labels are never confused:
   or move one into printed_label.
 Rules:
 - Student-visible text (title, body, choices, exam title and instructions) is copied from
-  the source wording. A cue printed for the student, such as a first letter or a word in
-  brackets beside a blank, or a word, translation or word count in brackets after the
-  sentence, is body text. Keep every such cue with its brackets and all of its words where
-  the source prints it, also when it is in another language than the sentence: it tells
-  the student what to write, it is not the answer. Do not paraphrase,
+  the source wording. A cue printed beside a blank, such as a first letter or a word in
+  brackets, is body text next to the gap. A cue printed after the sentence, such as a word,
+  translation or word count in brackets, is body text where the source prints it. Keep every
+  such cue with its brackets and all of its words, also when it is in another language than
+  the sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
   translate, solve or invent. Every word of a question's own chunks that is not facit goes
   into its title or body, including the words before and after each blank and every label
   that stays text; never shorten a sentence to the part around its blank.
@@ -85,10 +91,6 @@ Rules:
   word, stays student-visible text without the tags. Tell them apart by the sentence:
   italic words that complete the statement the student is asked to complete or decide, so
   that the statement without them is the question, are facit.
-- Facit words are never student-visible text, whatever the kind. In gap_fill they are the
-  accepted_values of the gaps below. In a kind without gaps, leave them out of the body,
-  keep the rest of the sentence with its part label, and for free_text copy them, each after
-  its part label, into the marking_guide.
 - A blank in a question with options marks the place the options fill: copy it into the body
   as text exactly as printed; it is no gap.
 - A gap is a place where the student writes an answer the facit keys. The facit gives the
@@ -114,8 +116,13 @@ Rules:
   does not ask for, such as the marked part or a clause the question hands over so the
   student can answer about it, restates context and stays text with its value, also when
   the value is in italics or written like an answer. A quoted or cited word the student needs
-  to read stays question text. Each field or unit the question asks for is one gap, also
-  when one facit label answers for several units the source lists together.
+  to read stays question text. A facit that copies out one word, phrase or clause per field
+  the question asks for is a gap per field. Each field or unit the question asks for is one
+  gap, also when one facit label answers for several units the source lists together.
+- Facit words are never student-visible text, whatever the kind. In gap_fill they are the
+  accepted_values of their gaps. In a kind without gaps, leave them out of the body, keep the
+  rest of the sentence with its part label, and for free_text copy them, each after its part
+  label, into the marking_guide.
 - A gap's accepted_values hold the forms the facit gives, including variants it lists as also
   accepted. The converter itself adds each part of a form that joins alternatives with a
   slash, the short form an instruction defines ("short form = term") for a facit term,
