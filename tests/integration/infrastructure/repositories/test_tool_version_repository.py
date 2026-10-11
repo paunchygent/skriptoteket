@@ -10,6 +10,7 @@ from skriptoteket.domain.scripting.tool_versions import create_draft_version
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
+from skriptoteket.script_bank.sources import read_script_bank_source
 
 pytestmark = pytest.mark.asyncio(loop_scope="module")
 
@@ -408,8 +409,6 @@ async def test_tool_version_create_with_settings_schema(
 async def test_seeded_bundle_round_trips_through_the_repository(
     db_session: AsyncSession, tool: Tool, now: datetime
 ) -> None:
-    from skriptoteket.cli.commands.seed_script_bank import read_script_bank_source
-
     repo = PostgreSQLToolVersionRepository(db_session)
     source_code, bundle_files = read_script_bank_source(source_filename="yrkesgenerator/tool.py")
     version = create_draft_version(
