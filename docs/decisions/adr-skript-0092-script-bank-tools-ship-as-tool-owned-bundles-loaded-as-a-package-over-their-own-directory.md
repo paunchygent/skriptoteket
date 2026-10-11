@@ -72,3 +72,7 @@ data files. The tool owns the bundle; the shared runner gains no tool code.
   duplicate it: 8–20 KB per version for the four current bundles.
 - An editor save of a bundled tool keeps the bundle it started from; a
   contributor sees only the entrypoint and cannot change sibling modules.
+- Deploy order: the `skriptoteket-runner` image must be rebuilt before bundled
+  versions are seeded. The previous runner loads `/work/script.py` as a plain
+  module, so a bundle's relative imports fail there. The new runner runs
+  single-file tools unchanged, so rebuilding the runner first is safe.
