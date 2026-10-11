@@ -16,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.errors import validation_error
 
 # Where the student writes: an underscore run, a dotted line, or empty brackets.
 _BLANK_MARKER = re.compile(r"_{3,}|\.{4,}|…{2,}|\[\s*\]|\(\s*\)")
@@ -25,6 +26,56 @@ _ITALIC = re.compile(r"<i>(.*?)</i>", re.DOTALL)
 _PLUS_JOIN = re.compile(r"\S\s*\+\s*\S")
 _UNIT_LABEL = re.compile(r"\(\s*[^()\s][^()]{0,11}\)")
 _TITLE_SEPARATORS = " \t\n—–-:,|"
+_ANSWER_KEY_PHRASES = ("answer key", "key", "facit", "med facit", "with answers", "svar")
+_ANSWER_KEY_LABEL = "(?:" + "|".join(re.escape(phrase) for phrase in _ANSWER_KEY_PHRASES) + ")"
+_ANSWER_KEY_PREFIX = re.compile(
+    rf"\A\s*(?:{_ANSWER_KEY_LABEL}\s*[—–:,\-]|"
+    rf"\(\s*{_ANSWER_KEY_LABEL}\s*\)(?:\s*[—–:,\-])?)\s*",
+    re.IGNORECASE,
+)
+_ANSWER_KEY_SUFFIX = re.compile(
+    rf"\s*(?:[—–:,\-]\s*{_ANSWER_KEY_LABEL}|"
+    rf"(?:[—–:,\-]\s*)?\(\s*{_ANSWER_KEY_LABEL}\s*\))\s*\Z",
+    re.IGNORECASE,
+)
+_FILENAME_ANSWER_KEY_LABEL = (
+    "(?:"
+    + "|".join(
+        r"[\s_\-]+".join(re.escape(word) for word in phrase.split())
+        for phrase in sorted(_ANSWER_KEY_PHRASES, key=len, reverse=True)
+    )
+    + ")"
+)
+_FILENAME_TITLE_DELIMITER = r"\s*[—–:,_\-]+\s*"
+_FILENAME_ANSWER_KEY_PREFIX = re.compile(
+    rf"\A\s*(?:{_FILENAME_ANSWER_KEY_LABEL}{_FILENAME_TITLE_DELIMITER}|"
+    rf"\(\s*{_FILENAME_ANSWER_KEY_LABEL}\s*\)(?:{_FILENAME_TITLE_DELIMITER})?)\s*",
+    re.IGNORECASE,
+)
+_FILENAME_ANSWER_KEY_SUFFIX = re.compile(
+    rf"\s*(?:{_FILENAME_TITLE_DELIMITER}{_FILENAME_ANSWER_KEY_LABEL}|"
+    rf"(?:{_FILENAME_TITLE_DELIMITER})?\(\s*{_FILENAME_ANSWER_KEY_LABEL}\s*\))\s*\Z",
+    re.IGNORECASE,
+)
+
+
+def title_without_answer_key(text: str, *, filename: bool = False) -> str:
+    """Remove delimited answer-key labels at either edge, preserving the title substring."""
+    prefix_pattern = _FILENAME_ANSWER_KEY_PREFIX if filename else _ANSWER_KEY_PREFIX
+    suffix_pattern = _FILENAME_ANSWER_KEY_SUFFIX if filename else _ANSWER_KEY_SUFFIX
+    remainder = text
+    while True:
+        previous = remainder
+        prefix = prefix_pattern.match(remainder)
+        if prefix is not None:
+            remainder = remainder[prefix.end() :]
+        suffix = suffix_pattern.search(remainder)
+        if suffix is not None:
+            remainder = remainder[: suffix.start()]
+        if not remainder.strip():
+            raise validation_error("Removing answer-key wording would leave an empty title")
+        if remainder == previous:
+            return remainder
 
 
 def _normalized(text: str) -> str:

@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -76,3 +76,42 @@ export title. The step does no extra model call.
 | --- | --------------------- |
 | D1  | Converted titles drop answer-key wording, and every gold title carrying it drops it too (five corpus exams; amended 2026-10-11 when discovery found three more than the walk showed). |
 | D2  | The rule 5 verbatim check is unchanged. A deterministic step after it removes the phrases on one closed Swedish and English list (answer key, key, facit, med facit, with answers, svar) at the heading's start or end, with their joining separator. The filename fallback uses the same step. No rule names an exam. |
+
+## Implementation Evidence
+
+2026-10-11: the deterministic title step runs after unchanged rule 5 admission
+and on the filename fallback stem, preserving its extension and source filename.
+The five gold changes are title-only, approved by the user through the parent.
+Retained session `01a12706-566c-7480-acc3-427145283942`, directory
+`evidence/task-skript-39-05-05/`:
+
+- `gold-title-changes.md` lists the exact five title changes; `gold-title.diff`
+  retains the full diff.
+- `title-tests.log`: 22 focused tests pass on the real corpus headings and
+  recorded rounds. Five headings lose labels; three remain unchanged. The
+  corpus has no opening heading using `key` or `svar` as ordinary title wording,
+  so that negative case remains uncovered.
+- `lint.log` and `typecheck.log`: Ruff and Mypy pass on all four changed Python
+  files.
+- `recorded-title-proof.json`: all eight existing eval title checks pass;
+  non-title item results are identical to the baseline on `6bf05757`.
+  `recorded-eval/report.json` and `baseline-6bf05757/report.json` retain both runs.
+  Both full eval commands exit 1: diagnostic, English and grammar variant 2
+  retain their existing item mismatches. This establishes the task's title
+  proof; it does not establish a passing full conversion eval.
+
+Parent-owned independent review, merge and the staging editor/QTI walk remain.
+
+2026-10-11: fresh-owner repair of admitted F1 from review `b306d05e` treats
+underscores and hyphens as word separators only for filename fallback. The
+shared closed phrase list removes each complete edge label and its joining
+separator, preserving remaining filename characters, the extension and source
+filename. Heading cleanup, verbatim admission and the five approved gold edits
+remain unchanged.
+
+Retained repair evidence: `evidence/task-skript-39-05-05/f1-repair/` in the same
+session. The new adversarial tests failed before repair (40 failed, 5 passed);
+after repair all 45 pass, alongside all 22 accepted title tests. Changed-file
+Ruff/Mypy pass. `filename-fallback-probe.json` records exact corrected titles
+for all eight real corpus filenames with unchanged source filenames.
+Independent rereview and the parent-owned staging walk remain outstanding.

@@ -10,8 +10,14 @@
     edit, QTI export; retained root
     `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
   - [TASK-SKRIPT-39-05-05](docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md)
-    `ready`: titles drop answer-key wording (user decision 2026-10-11). Next:
-    Codex implementation-specialist in its own worktree.
+    `in_progress`: titles drop answer-key wording (user decision 2026-10-11).
+    Owner: Codex implementation-specialist in `Skriptoteket-task-skript-39-05-05`.
+    Review `b306d05e` requested F1: filename separators. Fresh repair removes
+    whole underscore/hyphen labels; 22 accepted and 45 new tests pass, with
+    changed-file Ruff/Mypy and an exact eight-corpus fallback probe.
+    Next: independent rereview, parent merge and staging title/editor/QTI walk.
+    Evidence: retained root `evidence/task-skript-39-05-05/f1-repair/`.
+    Prior recorded eval's three item failures match baseline `6bf05757`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Codex lead `18bb0b85` (thread `01a12ad3`) in worktree
     `Skriptoteket-task-skript-39-05-04`. v1/v2 sweep and D16 tables done
