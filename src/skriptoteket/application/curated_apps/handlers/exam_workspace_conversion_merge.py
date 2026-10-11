@@ -308,10 +308,17 @@ def merge_conversion(
         if intact:
             id_map.update(zip((i.item_id for i in candidate.items), prior.item_ids, strict=True))
             written[candidate.unit_id] = prior.model_copy(update={"state": candidate.state})
-        elif prior.state is ConversionUnitState.CONVERTING:
-            written[candidate.unit_id] = prior.model_copy(
-                update={"state": ConversionUnitState.TEACHER_KEPT}
+        else:
+            # The teacher's items stay, and stay under the parents conversion gives them.
+            id_map.update(
+                (item.item_id, item_id)
+                for item, item_id in zip(candidate.items, prior.item_ids, strict=False)
+                if item_id in head_by_id
             )
+            if prior.state is ConversionUnitState.CONVERTING:
+                written[candidate.unit_id] = prior.model_copy(
+                    update={"state": ConversionUnitState.TEACHER_KEPT}
+                )
         previous_last = head_items[-1].item_id if head_items else previous_last
 
     ordered: list[NativeExamItem] = []
@@ -379,7 +386,11 @@ def _merge_parents(
     id_map: dict[str, str],
     items: tuple[NativeExamItem, ...],
 ) -> tuple[tuple[NativeExamParent, ...], str | None]:
-    """Conversion's parents while the teacher kept the delivered ones; only valid ones stay."""
+    """Conversion's parents while the teacher kept the delivered ones (D30).
+
+    A parent whose saved children no longer form one consecutive run of one kind is split
+    into such runs, each carrying the instruction (D27), so no child loses its instruction.
+    """
     delivered = (
         target.parents is not None and _parents_digest(head.parents) == progress.parents_digest
     )
@@ -392,17 +403,46 @@ def _merge_parents(
         ]
     else:
         proposed = list(head.parents)
-    present = {item.item_id for item in items}
+    by_id = {item.item_id: item for item in items}
+    parent_ids = _ParentIds(parent.parent_id for parent in proposed)
+    claimed: set[str] = set()
     accepted: list[NativeExamParent] = []
     for parent in proposed:
-        children = tuple(item_id for item_id in parent.item_ids if item_id in present)
-        if not children:
-            continue
-        candidate = parent.model_copy(update={"item_ids": children})
-        try:
-            validate_parent_structure((*accepted, candidate), items)
-        except ValueError:
-            continue
-        accepted.append(candidate)
+        children = sorted(
+            (by_id[i] for i in dict.fromkeys(parent.item_ids) if i in by_id and i not in claimed),
+            key=lambda item: item.sequence,
+        )
+        for index, run in enumerate(_kind_runs(children)):
+            parent_id = parent.parent_id if index == 0 else parent_ids.fresh()
+            accepted.append(parent.model_copy(update={"parent_id": parent_id, "item_ids": run}))
+            claimed.update(run)
     parents = tuple(accepted)
+    validate_parent_structure(parents, items)
     return parents, (_parents_digest(parents) if delivered else progress.parents_digest)
+
+
+def _kind_runs(children: Sequence[NativeExamItem]) -> list[tuple[str, ...]]:
+    """Maximal runs of children that are consecutive in the document and share one kind."""
+    runs: list[list[NativeExamItem]] = []
+    for child in children:
+        last = runs[-1][-1] if runs else None
+        if last is not None and child.sequence == last.sequence + 1 and child.kind is last.kind:
+            runs[-1].append(child)
+        else:
+            runs.append([child])
+    return [tuple(child.item_id for child in run) for run in runs]
+
+
+class _ParentIds:
+    """Fresh parent ids for the runs a split parent adds."""
+
+    def __init__(self, used: Iterable[str]) -> None:
+        self._used = set(used)
+        self._next = max([0, *(int(p[7:]) for p in self._used if p[7:].isdigit())]) + 1
+
+    def fresh(self) -> str:
+        while f"parent_{self._next:03d}" in self._used:
+            self._next += 1
+        parent_id = f"parent_{self._next:03d}"
+        self._used.add(parent_id)
+        return parent_id
