@@ -120,11 +120,83 @@
         },
         {
           "source_label": "Fråga 5",
-          "kind": "free_text",
+          "kind": "gap_fill",
           "points": 6,
-          "prompt": "Gör satsdelsanalys av meningarna.\na) Eleverna lämnade inte sina mobiler i skåpet.\nb) Läraren gav klassen tydliga instruktioner före provet.\nc) Stämningen blev lugn efter genomgången.",
+          "prompt": "Gör satsdelsanalys av meningarna.\na) Eleverna [___] lämnade [___] inte [___] sina mobiler [___] i skåpet [___].\nb) Läraren [___] gav [___] klassen [___] tydliga instruktioner [___] före provet [___].\nc) Stämningen [___] blev [___] lugn [___] efter genomgången [___].",
           "notes": [
-            "Source facit (teacher grading): a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nb) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nc) Stämningen blev lugn efter genomgången. Analys: Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
+            "Satsdelsanalys: each facit label after a sentence unit is one gap after that unit accepting that label (D39, user decision 2026-10-11)."
+          ],
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "SA"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "IO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Pf"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            }
           ]
         }
       ]

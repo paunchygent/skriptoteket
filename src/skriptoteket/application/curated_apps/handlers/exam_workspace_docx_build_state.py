@@ -213,18 +213,25 @@ class DocxBuildState:
         """Every chunk not built or used as metadata/facit becomes a review item.
 
         A printed section total that cannot be split equally leaves its items without
-        points, which blocks export until a teacher sets them.
+        points, which blocks export until a teacher sets them. A section's points line the
+        split absorbs is metadata, never a review item.
         """
+        points = split_section_totals(
+            self.chunks,
+            tuple(self.accepted),
+            self.instructions,
+            frozenset(chunk.anchor for chunk in self.pending),
+        )
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
+            if chunk.anchor in points.absorbed:
+                continue
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
-        accepted, unsplit = split_section_totals(
-            self.chunks, tuple(self.accepted), self.instructions, frozenset(review_reasons)
-        )
-        for anchor in unsplit:
+        for anchor in points.unsplit:
             self.record("fallback", "section_points_unsplit", anchors=(anchor,))
+        accepted = points.accepted
         result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,

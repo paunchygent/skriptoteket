@@ -102,9 +102,12 @@ Rules:
   formatting such as italics, bold or colour, or set apart by position: that place is the
   gap and those words are its accepted_values. Formatting alone does not make a word an
   answer: a quoted or cited word the student needs to read stays question text.
-- When the facit itself shows that the student decides where units start and end (it rewrites
-  a sentence with a label after each unit, or splits a word into parts joined with +), the
-  question is free_text with no gaps: keep the question wording and leave the answer line out.
+- When the facit prints a sentence with a label after each of its units, each label is one
+  gap placed right after its unit, and that label is the gap's accepted_values: the sentence's
+  units stay text segments in their order.
+- When the facit itself shows that the student decides where units start and end by
+  splitting a word into parts joined with +, the question is free_text with no gaps: keep the
+  question wording and leave the answer line out.
   A facit that copies out one word, phrase or clause per field is a gap per field.
   When the source fixes the units and gives a facit label for them, each facit label is one
   gap, also when one label answers for several units the source lists together.

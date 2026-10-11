@@ -41,6 +41,11 @@ Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
 a native free-text item requiring review. `matching` corresponds to the native
 matching kind, whose two lists and directed pairs the comparator reads.
+A facit that prints a label after each unit of a sentence makes each label one
+gap after its unit, accepting that label (D39). A points total printed for a
+section over questions that print no points of their own is split evenly over
+those questions when it divides evenly (D38); both are user decisions of
+2026-10-11.
 
 A conversion is correct when a student on Exam.net meets the same questions,
 answers them the same way and is scored the same as on paper, and the

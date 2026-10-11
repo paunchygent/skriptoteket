@@ -95,8 +95,12 @@ LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
     ItemTypeLabel.GAP_FILL: (
         "Each response slot (a blank, a blank line or a labelled field) is keyed by one or "
         "more accepted strings of any length, including slots filled from a word bank. "
-        "Type names: lucktext (gap text, cloze), fyll i luckan / luckorna (fill in the gap "
-        "/ gaps)."
+        "In a source with answers, a blank may be printed already filled with its answer, "
+        "marked by formatting such as italics, bold or colour, or set apart by position: "
+        "that place is a slot keyed by those words. When the key prints a sentence with a "
+        "label after each of its units, each label is one slot after its unit, keyed by "
+        "that label. Type names: lucktext (gap text, cloze), fyll i luckan / luckorna "
+        "(fill in the gap / gaps)."
     ),
     ItemTypeLabel.FREE_TEXT: (
         "The student writes a response whose key is a sample answer, an analysis or "
