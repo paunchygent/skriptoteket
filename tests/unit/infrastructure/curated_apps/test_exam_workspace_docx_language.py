@@ -83,7 +83,9 @@ def test_every_points_line_and_key_heading_uses_the_exam_language(stem: str) -> 
         if item.points is not None and not float(item.points).is_integer():
             continue
         assert labels.points_line(points) in texts
-    headings = [p.text for p in parsed.paragraphs if p.style.name == "Heading 2"]
+    headings = [
+        p.text for p in parsed.paragraphs if p.style is not None and p.style.name == "Heading 2"
+    ]
     assert headings in ([], [labels.answer_key])
 
 
