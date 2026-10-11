@@ -42,6 +42,7 @@ from skriptoteket.di.infrastructure import (
     InfrastructureServicesProvider,
     InfrastructureSessionFilesProvider,
 )
+from skriptoteket.di.item_type_labeler import ItemTypeLabelerProvider
 from skriptoteket.di.llm import LlmProvider
 from skriptoteket.di.reagent_prep_chef import ReagentPrepChefProvider
 from skriptoteket.di.scripting import ScriptingProvider
@@ -66,6 +67,7 @@ __all__ = [
     "ExamWorkspaceProvider",
     "FavoritesProvider",
     "IdentityProvider",
+    "ItemTypeLabelerProvider",
     "InfrastructureCuratedAppsProvider",
     "InfrastructureDatabaseProvider",
     "InfrastructureRepositoryProvider",
@@ -109,6 +111,7 @@ def create_container(settings: Settings) -> AsyncContainer:
         FavoritesProvider(),
         EditorProvider(),
         ExamWorkspaceProvider(),
+        ItemTypeLabelerProvider(),
         LlmProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
