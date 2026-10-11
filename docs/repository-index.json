@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "998d891868eb26843f4bd4bab34af402ba97fe59039f04931fe0112f4dfaf200",
+  "source_set_digest": "fdf631ffb698fe8fe37a2b2d9f863bc8780c336a1278efc6aa3ed5207387d451",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5635,7 +5635,7 @@
       "type": "task",
       "title": "Multi-file script-bank tool bundles and the split of four over-long tools",
       "path": "docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {

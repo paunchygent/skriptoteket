@@ -26,6 +26,11 @@ class ToolVersionModel(Base):
     state: Mapped[str] = mapped_column(String(32), index=True, nullable=False)
 
     source_code: Mapped[str] = mapped_column(Text, nullable=False)
+    bundle_files: Mapped[dict[str, str]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+    )
     entrypoint: Mapped[str] = mapped_column(String(128), nullable=False)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
 

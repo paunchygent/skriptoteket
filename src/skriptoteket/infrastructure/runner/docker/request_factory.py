@@ -109,7 +109,12 @@ def _build_workdir_archive(
         WorkdirArchiveEntry.file(name="memory.json", content=memory_json),
         WorkdirArchiveEntry.file(name="request.json", content=request_json_bytes),
         WorkdirArchiveEntry.directory(name="input"),
+        WorkdirArchiveEntry.directory(name="bundle"),
     ]
+    entries.extend(
+        WorkdirArchiveEntry.file(name=f"bundle/{name}", content=text.encode("utf-8"))
+        for name, text in version.bundle_files.items()
+    )
     for entry in input_files:
         entries.append(
             WorkdirArchiveEntry.file(

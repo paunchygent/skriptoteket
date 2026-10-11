@@ -92,6 +92,7 @@ def _apply_version_override(
     updated["content_hash"] = compute_content_hash(
         entrypoint=entrypoint,
         source_code=source_code,
+        bundle_files=version.bundle_files,
     )
 
     return version.model_copy(update=updated)

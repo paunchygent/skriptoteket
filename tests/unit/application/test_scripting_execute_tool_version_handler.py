@@ -72,7 +72,11 @@ def make_tool_version(*, tool_id: UUID, now: datetime, state: VersionState) -> T
         state=state,
         source_code=source_code,
         entrypoint=entrypoint,
-        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        content_hash=compute_content_hash(
+            entrypoint=entrypoint,
+            source_code=source_code,
+            bundle_files={},
+        ),
         derived_from_version_id=None,
         created_by_user_id=uuid4(),
         created_at=now,

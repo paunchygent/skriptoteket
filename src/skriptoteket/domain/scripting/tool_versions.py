@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -35,6 +36,7 @@ class ToolVersion(BaseModel):
     state: VersionState
 
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     entrypoint: str
     content_hash: str
     settings_schema: list[UiActionField] | None = None
@@ -77,8 +79,13 @@ class RollbackVersionResult(BaseModel):
     archived_previous_active_version: ToolVersion | None = None
 
 
-def compute_content_hash(*, entrypoint: str, source_code: str) -> str:
+_BUNDLE_FILE_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")
+
+
+def compute_content_hash(*, entrypoint: str, source_code: str, bundle_files: dict[str, str]) -> str:
     content = f"{entrypoint}\n{source_code}"
+    for name in sorted(bundle_files):
+        content += f"\n{name}\n{bundle_files[name]}"
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
@@ -104,6 +111,13 @@ def _validate_source_code(*, source_code: str) -> str:
     return source_code
 
 
+def _validate_bundle_files(*, bundle_files: dict[str, str]) -> dict[str, str]:
+    for name in bundle_files:
+        if not _BUNDLE_FILE_NAME.fullmatch(name):
+            raise validation_error("bundle file name is invalid", details={"name": name})
+    return bundle_files
+
+
 def _normalize_optional_text(value: str | None) -> str | None:
     if value is None:
         return None
@@ -117,6 +131,7 @@ def create_draft_version(
     tool_id: UUID,
     version_number: int,
     source_code: str,
+    bundle_files: dict[str, str],
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
     input_schema: ToolInputSchema,
@@ -129,6 +144,7 @@ def create_draft_version(
     _validate_version_number(version_number=version_number)
     normalized_entrypoint = _validate_entrypoint(entrypoint=entrypoint)
     normalized_source_code = _validate_source_code(source_code=source_code)
+    validated_bundle_files = _validate_bundle_files(bundle_files=bundle_files)
 
     return ToolVersion(
         id=version_id,
@@ -136,10 +152,12 @@ def create_draft_version(
         version_number=version_number,
         state=VersionState.DRAFT,
         source_code=normalized_source_code,
+        bundle_files=validated_bundle_files,
         entrypoint=normalized_entrypoint,
         content_hash=compute_content_hash(
             entrypoint=normalized_entrypoint,
             source_code=normalized_source_code,
+            bundle_files=validated_bundle_files,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
         input_schema=normalize_tool_input_schema(input_schema=input_schema),
@@ -190,10 +208,12 @@ def save_draft_snapshot(
         version_number=new_version_number,
         state=VersionState.DRAFT,
         source_code=normalized_source_code,
+        bundle_files=previous_version.bundle_files,
         entrypoint=normalized_entrypoint,
         content_hash=compute_content_hash(
             entrypoint=normalized_entrypoint,
             source_code=normalized_source_code,
+            bundle_files=previous_version.bundle_files,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
         input_schema=normalize_tool_input_schema(input_schema=input_schema),
@@ -288,6 +308,7 @@ def publish_version(
         version_number=new_active_version_number,
         state=VersionState.ACTIVE,
         source_code=reviewed_version.source_code,
+        bundle_files=reviewed_version.bundle_files,
         entrypoint=reviewed_version.entrypoint,
         content_hash=reviewed_version.content_hash,
         settings_schema=reviewed_version.settings_schema,
@@ -352,6 +373,7 @@ def rollback_to_version(
         version_number=new_active_version_number,
         state=VersionState.ACTIVE,
         source_code=archived_version.source_code,
+        bundle_files=archived_version.bundle_files,
         entrypoint=archived_version.entrypoint,
         content_hash=archived_version.content_hash,
         settings_schema=archived_version.settings_schema,

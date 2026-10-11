@@ -391,9 +391,7 @@ async def _seed_one_entry(
 
     assert tool is not None
 
-    source_code = (
-        resource_files("skriptoteket.script_bank.scripts") / entry.source_filename
-    ).read_text(encoding="utf-8")
+    source_code, bundle_files = _read_script_bank_source(source_filename=entry.source_filename)
 
     active_version = await versions.get_active_for_tool(tool_id=tool.id)
     if active_version is None:
@@ -414,6 +412,7 @@ async def _seed_one_entry(
                     tool_id=tool.id,
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
+                    bundle_files=bundle_files,
                     settings_schema=entry.settings_schema,
                     input_schema=entry.input_schema,
                     usage_instructions=entry.usage_instructions,
@@ -437,6 +436,7 @@ async def _seed_one_entry(
     elif sync_code and (
         active_version.entrypoint != entry.entrypoint
         or active_version.source_code != source_code
+        or active_version.bundle_files != bundle_files
         or active_version.usage_instructions != entry.usage_instructions
         or active_version.settings_schema != entry.settings_schema
         or active_version.input_schema != entry.input_schema
@@ -459,6 +459,7 @@ async def _seed_one_entry(
                     derived_from_version_id=active_version.id,
                     entrypoint=entry.entrypoint,
                     source_code=source_code,
+                    bundle_files=bundle_files,
                     settings_schema=entry.settings_schema,
                     input_schema=entry.input_schema,
                     usage_instructions=entry.usage_instructions,
@@ -496,6 +497,21 @@ async def _seed_one_entry(
         typer.echo(f"Seeded tool: {tool.slug} (deduped from {deduped_from_slug})")
     elif not dry_run:
         typer.echo(f"Seeded tool: {entry.slug} (updated)")
+
+
+def _read_script_bank_source(*, source_filename: str) -> tuple[str, dict[str, str]]:
+    """Read a tool's entrypoint and, for a tool in its own folder, the folder's other files."""
+    scripts_root = resource_files("skriptoteket.script_bank.scripts")
+    source_code = (scripts_root / source_filename).read_text(encoding="utf-8")
+    tool_dir, _, entry_name = source_filename.rpartition("/")
+    if not tool_dir:
+        return source_code, {}
+    bundle_files = {
+        path.name: path.read_text(encoding="utf-8")
+        for path in (scripts_root / tool_dir).iterdir()
+        if path.is_file() and path.name != entry_name
+    }
+    return source_code, bundle_files
 
 
 async def _acquire_seed_draft_lock(
