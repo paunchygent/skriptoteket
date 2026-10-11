@@ -25,6 +25,7 @@ from .roster import (
     parse_previous_groups,
     parse_roster_file,
     parse_saved_classes,
+    read_session_classes,
     select_roster_file,
 )
 
@@ -142,6 +143,7 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
     previous_groups_raw = str(payload.get("previous_groups") or "")
 
     # Strategy: Read previous groups from file if provided, else fallback to text field
+    previous_groups_read_error: str | None = None
     previous_groups_file_refs = payload.get("previous_groups_file")
     if isinstance(previous_groups_file_refs, list) and previous_groups_file_refs:
         # Take the first one (usually max=1 anyway)
@@ -152,13 +154,24 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
             if item.get("ref") == file_ref:
                 try:
                     previous_groups_raw = Path(item["path"]).read_text(encoding="utf-8")
-                    break
-                except Exception:
-                    pass
+                except (OSError, UnicodeDecodeError):
+                    previous_groups_read_error = (
+                        f"Filen med tidigare grupper '{item['name']}' kunde inte läsas som text."
+                    )
+                break
 
-    saved_classes, saved_error = parse_saved_classes(settings)
+    session_classes, session_classes_error = read_session_classes()
+    saved_classes, saved_error = parse_saved_classes(settings, session_classes)
     if saved_error:
         saved_classes = {}
+
+    read_error = session_classes_error or previous_groups_read_error
+    if read_error:
+        return {
+            "outputs": [_notice("error", read_error)],
+            "next_actions": _build_actions(saved_classes),
+            "state_update": {"kind": "no_change"},
+        }
 
     roster_path = select_roster_file(Path(input_dir))
 

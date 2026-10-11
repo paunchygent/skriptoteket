@@ -105,21 +105,29 @@ def parse_roster_file(path: Path) -> tuple[list[str], str | None]:
     return (_extract_names_from_rows(rows), None)
 
 
-def parse_saved_classes(settings: Mapping[str, object]) -> tuple[dict[str, list[str]], str | None]:
-    raw = settings.get("saved_classes_json", "")
-
-    # Also look for session-promoted classes
+def read_session_classes() -> tuple[dict[str, list[str]], str | None]:
+    """Read the classes an earlier run promoted to the session, if any."""
     session_classes: dict[str, list[str]] = {}
     for item in list_input_files():
         if item["name"] == "session_classes.json":
             try:
                 data = json.loads(Path(item["path"]).read_text(encoding="utf-8"))
-                if isinstance(data, dict):
-                    for k, v in data.items():
-                        if isinstance(v, list):
-                            session_classes[str(k)] = [str(i) for i in v]
-            except Exception:
-                pass
+            except (OSError, ValueError):
+                return (
+                    session_classes,
+                    "Klasserna som sparats i sessionen (session_classes.json) kunde inte läsas.",
+                )
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    if isinstance(v, list):
+                        session_classes[str(k)] = [str(i) for i in v]
+    return (session_classes, None)
+
+
+def parse_saved_classes(
+    settings: Mapping[str, object], session_classes: dict[str, list[str]]
+) -> tuple[dict[str, list[str]], str | None]:
+    raw = settings.get("saved_classes_json", "")
 
     if raw is None:
         return (session_classes, None)
