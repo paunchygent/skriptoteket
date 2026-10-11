@@ -15,6 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
     SectionInstructions,
     place_section_instructions,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    title_without_answer_key,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
@@ -213,10 +216,17 @@ def assemble_build_result(
     items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
+    if title is not None:
+        document_title = title.text
+    else:
+        stem, extension = (
+            (filename[:-5], filename[-5:]) if filename.lower().endswith(".docx") else (filename, "")
+        )
+        document_title = title_without_answer_key(stem) + extension
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,
-        title=title.text if title else filename,
+        title=document_title,
         instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.reaching),
         items=items,
         parents=placed.parents,
