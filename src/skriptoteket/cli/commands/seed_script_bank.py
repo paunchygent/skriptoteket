@@ -391,7 +391,7 @@ async def _seed_one_entry(
 
     assert tool is not None
 
-    source_code, bundle_files = _read_script_bank_source(source_filename=entry.source_filename)
+    source_code, bundle_files = read_script_bank_source(source_filename=entry.source_filename)
 
     active_version = await versions.get_active_for_tool(tool_id=tool.id)
     if active_version is None:
@@ -499,7 +499,7 @@ async def _seed_one_entry(
         typer.echo(f"Seeded tool: {entry.slug} (updated)")
 
 
-def _read_script_bank_source(*, source_filename: str) -> tuple[str, dict[str, str]]:
+def read_script_bank_source(*, source_filename: str) -> tuple[str, dict[str, str]]:
     """Read a tool's entrypoint and, for a tool in its own folder, the folder's other files."""
     scripts_root = resource_files("skriptoteket.script_bank.scripts")
     source_code = (scripts_root / source_filename).read_text(encoding="utf-8")

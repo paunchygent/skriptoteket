@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.scripting.models import ToolVersion, VersionState
+from skriptoteket.domain.scripting.tool_versions import create_draft_version
 from skriptoteket.infrastructure.repositories.tool_version_repository import (
     PostgreSQLToolVersionRepository,
 )
@@ -401,3 +402,35 @@ async def test_tool_version_create_with_settings_schema(
     assert len(fetched.settings_schema) == 2
     assert fetched.settings_schema[0].name == "title"
     assert fetched.settings_schema[0].label == "Document Title"
+
+
+@pytest.mark.integration
+async def test_seeded_bundle_round_trips_through_the_repository(
+    db_session: AsyncSession, tool: Tool, now: datetime
+) -> None:
+    from skriptoteket.cli.commands.seed_script_bank import read_script_bank_source
+
+    repo = PostgreSQLToolVersionRepository(db_session)
+    source_code, bundle_files = read_script_bank_source(source_filename="yrkesgenerator/tool.py")
+    version = create_draft_version(
+        version_id=uuid4(),
+        tool_id=tool.id,
+        version_number=1,
+        source_code=source_code,
+        bundle_files=bundle_files,
+        entrypoint="run_tool",
+        input_schema=[],
+        created_by_user_id=tool.owner_user_id,
+        derived_from_version_id=None,
+        change_summary=None,
+        now=now,
+    )
+    await repo.create(version=version)
+    db_session.expunge_all()
+
+    fetched = await repo.get_by_id(version_id=version.id)
+
+    assert fetched is not None
+    assert fetched.source_code == source_code
+    assert fetched.bundle_files == bundle_files
+    assert fetched.content_hash == version.content_hash
