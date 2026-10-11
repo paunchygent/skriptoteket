@@ -88,8 +88,10 @@ The parent recommends the placements from that evidence.
 Steps 1 and 2 are built and measured (feasibility result below and D23).
 Before step 3 changes production, a parallelization measurement (D26)
 compares batch shapes, reasoning efforts, a heading-split comparison and a
-Sol 6.1 escalation for questions below 0.95; building step 3 follows the
-user's decision on its result.
+Sol 6.1 escalation for questions below 0.95. Step 3 is built now in
+parallel with the measurement (D29); the measured values (batch size,
+converter reasoning effort, Sol escalation, heading split) are set after
+the user's decision on its result.
 
 ## Contract Inputs
 
@@ -176,3 +178,6 @@ succeeded on retry.
 | D26 | The parallelization measurement freezes grouping, labels and B per exam and compares, one exam at a time with all requests sent at once: whole exam (re-measured baseline), type batches of about 16 and about 6 question families, and one family per request, each with gpt-6-luna reasoning none, low and medium, two runs per exam; plus a heading-split comparison without grouping or labels, and Sol 6.1 low and medium for questions below 0.95 both with B's label and deciding the type itself. Per request it records timing, tokens, cost and 429s; batches are assembled and judged with exam-conversion-eval, and an arm counts as faster only when quality holds; the schema stays at docx_exam_build_v9 (user decisions 2026-10-11). |
 | D27 | When questions under one instruction get different labels, consecutive questions of one type form one parent each, following the gold rule; each carries the instruction, and a moved question carries the check-the-type mark (user decision 2026-10-11). |
 | D28 | The gold files are corrected before the measurement: samhallskunskap q14 and kursavslutande Fråga 20 become free_text, each with a note citing the user decision (user decision 2026-10-11). |
+| D29 | The decided parts of steps 1-4 are built now, in parallel with the D26 measurement, by several agents in the task worktree with disjoint file scopes; batch size, converter reasoning effort, Sol escalation and heading split stay single named settings set after the measurement, which runs from a frozen snapshot (user decision 2026-10-11). |
+| D30 | While batches still convert, the teacher can edit converted items: the document is saved when the first batch is ready, with placeholders (source text, converting) for the rest; each later batch fills only its own placeholders, and a placeholder the teacher changed keeps the teacher's version while the late result is dropped (user decision 2026-10-11). |
+| D31 | The free_text marking guide is shown and editable in the item editor and printed in the DOCX and PDF answer-key exports; it enters the QTI export as a scorer rubric only after a staging import shows Exam.net accepts and displays it (user decision 2026-10-11). |
