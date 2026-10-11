@@ -147,6 +147,8 @@
 
 ## Recent
 
+- Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
+  (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
 - TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
   carried across saves; staging walk 2026-10-10 at `929e847a`, Sol `231a2190`,
   merge `e0746f2a`.

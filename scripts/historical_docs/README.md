@@ -2,7 +2,7 @@
 
 This directory preserves the legacy Skriptoteket documentation validator as a
 read-only historical inspection tool. It selects only records whose paths and
-identifiers still match `docs/_meta/docs-contract.yaml`.
+identifiers still match `docs/_meta/historical-docs-contract.yaml`.
 
 The shared `repository-governance` commands are the sole authority for current
 documents, generated indexes, hooks, and lifecycle operations. This validator
