@@ -26,7 +26,8 @@ from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+
+from pydantic import JsonValue
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -41,7 +42,7 @@ V2 = "exam_conversion_gold_v2"
 CHECK_HEADING = "## Check output"
 PARTIAL_LINE_MIN_CHARS = 20
 
-JsonDict = dict[str, Any]
+JsonDict = dict[str, JsonValue]
 
 _LIST_LABEL = re.compile(r"^(?:\d+[.)]|[A-Za-z][.)]|Fråga \d+\.)\s+")
 _POINT_SUFFIX = re.compile(r"\s*\(\d+(?:[.,]\d+)?\s*(?:points?|poäng)\)\s*$")
@@ -139,12 +140,21 @@ def _char_prefix(texts: Sequence[str]) -> str:
     return prefix
 
 
+def _dict_list(value: JsonValue) -> list[JsonDict]:
+    if isinstance(value, list) and all(isinstance(entry, dict) for entry in value):
+        return [entry for entry in value if isinstance(entry, dict)]
+    raise ValueError("expected a JSON array of objects")
+
+
 def _sum_points(items: Sequence[JsonDict]) -> float:
-    return float(sum(item["points"] for item in items if item.get("points") is not None))
+    values = [item["points"] for item in items if item.get("points") is not None]
+    if all(isinstance(value, int | float) for value in values):
+        return float(sum(value for value in values if isinstance(value, int | float)))
+    raise ValueError("a points value is not a number")
 
 
 def plan_exam(stem: str, gold: JsonDict, docx_counts: Counter[str]) -> ExamPlan:
-    items: list[JsonDict] = gold["items"]
+    items = _dict_list(gold["items"])
     plan = ExamPlan(stem=stem, items=[], before_items=len(items), before_points=_sum_points(items))
     runs = _first_line_runs(items)
     runs_per_first_line = Counter(_prompt_lines(items[start])[0] for start, _ in runs)
@@ -224,7 +234,7 @@ def _plan_run(
     if not stopped_early:
         _note_partial_sharing(plan, prompts, len(instruction), labels)
     _note_neighbours(plan, items, start, end, instruction[0], labels)
-    children = []
+    children: list[JsonValue] = []
     for item, prompt in zip(group, prompts, strict=True):
         child = dict(item)
         child["prompt"] = "\n".join(prompt[len(instruction) :])
@@ -297,7 +307,7 @@ def build_plans(gold_dir: Path, corpus_dir: Path) -> list[tuple[Path, JsonDict, 
 def moved_document(gold: JsonDict, plan: ExamPlan) -> JsonDict:
     moved = dict(gold)
     moved["schema_version"] = V2
-    moved["items"] = plan.items
+    moved["items"] = list[JsonValue](plan.items)
     return moved
 
 
@@ -372,7 +382,10 @@ def baseline_gold(path: Path, ref: str) -> JsonDict:
         text=True,
         check=True,
     )
-    return json.loads(shown.stdout)  # type: ignore[no-any-return]
+    parsed: JsonValue = json.loads(shown.stdout)
+    if not isinstance(parsed, dict):
+        raise ValueError(f"{relative} at {ref} is not a JSON object")
+    return parsed
 
 
 def check_exam(moved_path: Path, ref: str) -> list[str]:
@@ -391,6 +404,7 @@ def check_exam(moved_path: Path, ref: str) -> list[str]:
         problems.append("a top-level field other than items changed")
     if list(moved) != list(original):
         problems.append("top-level key order changed")
+    original_items = _dict_list(original["items"])
     rebuilt: list[JsonDict] = []
     for item in moved["items"]:
         if item.get("kind") == "parent":
@@ -400,14 +414,14 @@ def check_exam(moved_path: Path, ref: str) -> list[str]:
                 rebuilt.append(restored)
         else:
             rebuilt.append(item)
-    if len(rebuilt) != len(original["items"]):
-        problems.append(f"{len(rebuilt)} questions after, {len(original['items'])} before")
-    for index, (after, before) in enumerate(zip(rebuilt, original["items"], strict=False)):
+    if len(rebuilt) != len(original_items):
+        problems.append(f"{len(rebuilt)} questions after, {len(original_items)} before")
+    for index, (after, before) in enumerate(zip(rebuilt, original_items, strict=False)):
         if after != before or list(after) != list(before):
             problems.append(f"question {index + 1} ({before['source_label']}) differs")
-    if _sum_points(rebuilt) != _sum_points(original["items"]):
+    if _sum_points(rebuilt) != _sum_points(original_items):
         problems.append("points total changed")
-    if len(exam.questions) != len(original["items"]):
+    if len(exam.questions) != len(original_items):
         problems.append("GoldExam.questions count differs from the original")
     return problems
 
@@ -418,15 +432,15 @@ def run_check(gold_dir: Path, ref: str) -> tuple[list[str], bool]:
     for path in sorted(gold_dir.glob("*.json")):
         problems = check_exam(path, ref)
         moved = json.loads(path.read_text(encoding="utf-8"))
-        original = baseline_gold(path, ref)
+        original_items = _dict_list(baseline_gold(path, ref)["items"])
         parents = [i for i in moved["items"] if i.get("kind") == "parent"]
         children = sum(len(p["children"]) for p in parents)
         standalone = len(moved["items"]) - len(parents)
         status = "ok" if not problems else "FAIL: " + "; ".join(problems)
         lines.append(
             f"- `{path.name}`: {len(parents)} parents, {children} children, {standalone} "
-            f"standalone = {children + standalone} questions (was {len(original['items'])}), "
-            f"{_points_text(_sum_points(original['items']))} points before; {status}"
+            f"standalone = {children + standalone} questions (was {len(original_items)}), "
+            f"{_points_text(_sum_points(original_items))} points before; {status}"
         )
         clean = clean and not problems
     return lines, clean

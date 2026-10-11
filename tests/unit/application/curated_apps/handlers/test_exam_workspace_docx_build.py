@@ -2,6 +2,7 @@
 
 import io
 import json
+import re
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -357,9 +358,11 @@ async def test_recorded_course_exam_keeps_inline_facit_out_of_student_text():
             if isinstance(segment, NativeTextSegment)
         )
         assert item.kind.value == gold.kind == "gap_fill"
-        assert [list(g.accepted_values) for g in item.gaps] == [
-            list(g.accepted_values) for g in gold.gaps
-        ]
+        # D13: beside gold's short form, a gap accepts only the term the item's text defines.
+        defined = set(re.findall(r"= (\w+)", body))
+        for native_gap, gold_gap in zip(item.gaps, gold.gaps, strict=True):
+            assert set(gold_gap.accepted_values) <= set(native_gap.accepted_values)
+            assert set(native_gap.accepted_values) - set(gold_gap.accepted_values) <= defined
         for line in gold.prompt.split("\n")[1:]:
             for fragment in line.split("[___]"):
                 assert " ".join(fragment.split()) in body

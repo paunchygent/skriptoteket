@@ -37,6 +37,8 @@ from tests.unit.scripts.exam_conversion_corpus_support import (
 )
 
 _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
+_DIAGNOSTIC = "bf26_diagnostic_grammar_test_ht26_med_facit"
+_WORD_BANK = "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit"
 
 
 def _failed(comparison: ExamComparison, index: int) -> set[str]:
@@ -239,6 +241,42 @@ def test_dropping_the_parent_instruction_fails_content_for_every_child():
         for i in _positions(recorded, parent):
             assert "content_present" in _failed(comparison, i), stem
             assert "segmentation" not in _failed(comparison, i), stem
+
+
+def test_a_childs_answer_disclosed_in_its_parent_instruction_leaks():
+    recorded, _ = replayed(_DIAGNOSTIC)
+    child = next(item for item in recorded.items if item.gaps and recorded.parent_of(item.item_id))
+    parent = recorded.parent_of(child.item_id)
+    assert parent is not None
+    index = recorded.items.index(child)
+    answer = child.gaps[0].accepted_values[0]
+    assert answer == "play"
+    assert answer not in "\n".join(parent.instruction).lower()
+    assert _compare(_DIAGNOSTIC).items[index].passed
+
+    disclosed = parent.model_copy(update={"instruction": (*parent.instruction, answer)})
+    mutated = _replace_parent(recorded, parent, disclosed)
+    assert mutated.items is recorded.items
+    comparison = _compare(_DIAGNOSTIC, mutated)
+    assert _failed(comparison, index) == {"no_answer_leakage"}
+
+
+@pytest.mark.parametrize("stem", [_DIAGNOSTIC, _WORD_BANK])
+def test_unchanged_native_parent_instructions_and_word_banks_do_not_leak(stem: str):
+    recorded, _ = replayed(stem)
+    assert recorded.parents
+    if stem == _WORD_BANK:
+        assert any(
+            value.lower() in "\n".join(parent.instruction).lower()
+            for parent in recorded.parents
+            for index in _positions(recorded, parent)
+            for gap in recorded.items[index].gaps
+            for value in gap.accepted_values
+        )
+    baseline = _compare(stem)
+    for parent in recorded.parents:
+        for index in _positions(recorded, parent):
+            assert "no_answer_leakage" not in _failed(baseline, index)
 
 
 def _single(exam: GoldExam, item: GoldItem) -> GoldExam:

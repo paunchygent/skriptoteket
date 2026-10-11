@@ -7,10 +7,12 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-10'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)
 task_kind: story
 acceptance_criteria:
   - Uploading the Chapter 4 poetry quiz DOCX returns at once, the workspace shows a converting status, and the exam opens with AI-built items that pass the native contract, where any chunk that fails after the retries is a review item holding its source text, and the QTI export passes the fail-closed validators

@@ -313,7 +313,7 @@ def _image_resources(
                 filename=f"{item.item_id}-image-{number:03d}.png",
                 media_type=asset.media_type,
                 payload=payload,
-                alt_text=labels.image_alt(index, labels.item_title(item)),
+                alt_text=labels.image_alt(index),
                 source_reference=asset_id,
             )
         )

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bf6e496166672a48d425dfd00d97700ddbb12013712da07a38356cf33b286a42",
+  "source_set_digest": "91e1422ff5df558c25f86bbc1fae33d00ba8740e5cb621f51b195650f0f3cc2d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4632,7 +4632,7 @@
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
       "path": "docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4643,7 +4643,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4651,7 +4653,7 @@
       "type": "task",
       "title": "Gold corpus and eval loop for AI-first DOCX conversion",
       "path": "docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4662,7 +4664,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4670,7 +4674,7 @@
       "type": "task",
       "title": "Fix the conversion defects the staging corpus walk found",
       "path": "docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4681,7 +4685,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4690,6 +4696,44 @@
       "title": "Label items with a Decisions classifier and convert type-focused batches in parallel",
       "path": "docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-05",
+      "type": "task",
+      "title": "Remove answer-key wording from converted exam titles",
+      "path": "docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-06",
+      "type": "task",
+      "title": "Judge a staging-converted exam document against its gold with one command",
+      "path": "docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5674,6 +5718,24 @@
       "title": "Multi-file script-bank tool bundles and the split of four over-long tools",
       "path": "docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md",
       "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0038",
+      "type": "task",
+      "title": "Retire repository rules and route staging walks to staging-walk",
+      "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {

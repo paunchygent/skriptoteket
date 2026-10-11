@@ -18,6 +18,8 @@ from tests.unit.scripts.exam_conversion_corpus_support import (
 _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _SVENSKA = "svenska_2_grammatik_omprov_variant_2_med_facit"
 _POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+_DIAGNOSTIC = "bf26_diagnostic_grammar_test_ht26_med_facit"
+_WORD_BANK = "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit"
 
 
 def _failed(comparison: ExamComparison, index: int) -> set[str]:
@@ -240,3 +242,39 @@ def test_a_question_number_on_a_later_line_fails_labels():
     numbered = "\n".join([first, f"1. {rest[0]}", *rest[1:]])
     comparison = compare_exam(exam, mutated_items(exam, 0, prompt=numbered))
     assert "no_platform_labels" in _failed(comparison, 0)
+
+
+def test_a_childs_answer_disclosed_in_its_gold_parent_instruction_leaks():
+    exam = gold_exam(_DIAGNOSTIC)
+    position, parent = next(
+        (i, entry) for i, entry in enumerate(exam.items) if isinstance(entry, GoldParent)
+    )
+    child = parent.children[0]
+    index = question_index(exam, child.source_label)
+    answer = child.gaps[0].accepted_values[0]
+    assert answer == "play"
+    assert answer not in parent.instruction.lower()
+    assert compare_exam(exam, exam.items).passed
+
+    disclosed = parent.model_copy(update={"instruction": f"{parent.instruction}\n{answer}"})
+    assert disclosed.children is parent.children
+    items = (*exam.items[:position], disclosed, *exam.items[position + 1 :])
+    comparison = compare_exam(exam, items)
+    assert not comparison.passed
+    assert _failed(comparison, index) == {"no_answer_leakage"}
+
+
+@pytest.mark.parametrize("stem", [_DIAGNOSTIC, _WORD_BANK])
+def test_unchanged_gold_parent_instructions_and_word_banks_do_not_leak(stem: str):
+    exam = gold_exam(stem)
+    parents = [entry for entry in exam.items if isinstance(entry, GoldParent)]
+    assert parents
+    if stem == _WORD_BANK:
+        assert any(
+            value.lower() in parent.instruction.lower()
+            for parent in parents
+            for child in parent.children
+            for gap in child.gaps
+            for value in gap.accepted_values
+        )
+    assert compare_exam(exam, exam.items).passed

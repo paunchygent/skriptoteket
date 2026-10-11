@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     label_rule_violation,
     opening_heading,
     title_rule_violation,
+    title_without_answer_key,
     with_accepted_forms,
     with_printed_hints,
 )
@@ -121,6 +122,9 @@ def _admit_metadata(content: dict[str, JsonValue], state: DocxBuildState, seen: 
             _require_anchors(metadata.source_anchors, state, seen)
             if field_name == "title" and state.title is None:
                 _require_title_rule(metadata, state)
+                metadata = metadata.model_copy(
+                    update={"text": title_without_answer_key(metadata.text)}
+                )
         except _Rejected as rejected:
             state.record("admission", f"{field_name}_{rejected.code}", detail=rejected.detail)
             continue
@@ -157,7 +161,8 @@ def _admit_item(
                     "admission", "model_review", item=index, anchors=anchors, detail=reason
                 )
             else:
-                context = definition_context(state.chunks, anchors)
+                instructions = (a for m in state.instructions for a in m.source_anchors)
+                context = definition_context(state.chunks, anchors, instructions)
                 item = native_item(with_accepted_forms(produced, context))
         except ValidationError as error:
             detail = validation_detail(error)
