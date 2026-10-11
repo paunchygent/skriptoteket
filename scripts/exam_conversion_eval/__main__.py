@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import traceback
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -70,8 +71,20 @@ class _ExamReport:
     timings: dict[str, tuple[float, float]]
     batches_ready: int
     events: tuple[dict[str, JsonValue], ...]
-    crash: str | None
+    crash: tuple[str, ...]
     comparison: ExamComparison
+
+
+def _crash_lines(error: BaseException) -> tuple[str, ...]:
+    """Describe every leaf exception of a crash with its message and raising frame."""
+    if isinstance(error, BaseExceptionGroup):
+        return tuple(line for inner in error.exceptions for line in _crash_lines(inner))
+    line = f"{type(error).__name__}: {error}"
+    frames = traceback.extract_tb(error.__traceback__)
+    if frames:
+        frame = frames[-1]
+        line += f" (at {frame.filename}:{frame.lineno} in {frame.name})"
+    return (line,)
 
 
 class _RecordingProvider:
@@ -206,7 +219,7 @@ async def _evaluate(
             timings={},
             batches_ready=progress.batches_ready,
             events=(),
-            crash=f"{type(error).__name__}: {error}",
+            crash=_crash_lines(error),
             comparison=compare_exam(gold, ()),
         )
     result = outcome.result
@@ -224,7 +237,7 @@ async def _evaluate(
         },
         batches_ready=progress.batches_ready,
         events=tuple(event.as_json() for event in result.events),
-        crash=None,
+        crash=(),
         comparison=compare_native_exam(gold, result.document, [chunk.text for chunk in chunks]),
     )
 
@@ -277,8 +290,8 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
         )
         if not report.comparison.title.passed:
             print(f"  title fails: gold={report.gold_title!r} actual={report.title!r}")
-        if report.crash:
-            print(f"  conversion crashed: {report.crash[:300]}")
+        for line in report.crash:
+            print(f"  conversion crashed: {line}")
         for item in failed:
             for mismatch in item.mismatches:
                 detail = f"expected={mismatch.expected!r} actual={mismatch.actual!r}"
