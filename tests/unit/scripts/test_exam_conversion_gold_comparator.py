@@ -281,3 +281,77 @@ def test_a_parent_instruction_moved_onto_every_child_passes():
     moved = parent.model_copy(update={"instruction": "Svara.", "children": children})
     items = (*exam.items[:position], moved, *exam.items[position + 1 :])
     assert compare_exam(exam, items).passed
+
+
+def _adjacent_items(stem: str) -> tuple[GoldExam, int, GoldItem, int, GoldItem]:
+    """The exam, its first two adjacent standalone items among the first eight, each with its
+    position in the exam's items, and the first item's question index."""
+    exam = gold_exam(stem)
+    standalone = [i for i, entry in enumerate(exam.items) if isinstance(entry, GoldItem)]
+    first, second = next(
+        (a, b) for a, b in zip(standalone, standalone[1:], strict=False) if b == a + 1 and a < 8
+    )
+    one, two = exam.items[first], exam.items[second]
+    assert isinstance(one, GoldItem)
+    assert isinstance(two, GoldItem)
+    return exam, first, one, second, two
+
+
+def _stems_with_adjacent_items() -> list[str]:
+    stems = []
+    for stem in STEMS:
+        try:
+            _adjacent_items(stem)
+        except StopIteration:
+            continue
+        stems.append(stem)
+    return stems
+
+
+def _failing(comparison: ExamComparison) -> dict[int, set[str]]:
+    return {i.index: {m.reason for m in i.mismatches} for i in comparison.items if not i.passed}
+
+
+@pytest.mark.parametrize("stem", _stems_with_adjacent_items())
+def test_two_questions_merged_into_one_fail_only_the_merged_pair(stem: str):
+    exam, first, one, second, two = _adjacent_items(stem)
+    first_index = question_index(exam, one.source_label)
+    second_index = question_index(exam, two.source_label)
+    merged = one.model_copy(update={"prompt": f"{one.prompt}\n{two.prompt}"})
+    items = (*exam.items[:first], merged, *exam.items[second + 1 :])
+    comparison = compare_exam(exam, items)
+    failing = _failing(comparison)
+    assert failing[second_index] == {"missing_item"}
+    assert set(failing) <= {first_index, second_index}
+    assert len(comparison.items) == len(exam.questions)
+
+
+@pytest.mark.parametrize("stem", _stems_with_adjacent_items())
+def test_one_question_split_into_two_fails_the_split_and_one_extra_item(stem: str):
+    exam, first, one, _, _ = _adjacent_items(stem)
+    first_index = question_index(exam, one.source_label)
+    lines = one.prompt.split("\n")
+    head = one.model_copy(update={"prompt": lines[0]})
+    tail = one.model_copy(update={"prompt": "\n".join(lines[1:]) or lines[0]})
+    items = (*exam.items[:first], head, tail, *exam.items[first + 1 :])
+    comparison = compare_exam(exam, items)
+    failing = _failing(comparison)
+    extra = len(exam.questions)
+    assert failing[extra] == {"extra_item"}
+    assert set(failing) <= {first_index, extra}
+    assert len(comparison.items) == extra + 1
+
+
+@pytest.mark.parametrize("stem", _stems_with_adjacent_items())
+def test_one_dropped_question_is_the_only_missing_item(stem: str):
+    exam, first, one, _, _ = _adjacent_items(stem)
+    first_index = question_index(exam, one.source_label)
+    comparison = compare_exam(exam, (*exam.items[:first], *exam.items[first + 1 :]))
+    assert _failing(comparison) == {first_index: {"missing_item"}}
+
+
+def test_a_question_converted_out_of_order_is_judged_against_its_own_gold():
+    exam = gold_exam(_POETRY)
+    first, second = exam.items[0], exam.items[1]
+    comparison = compare_exam(exam, (second, first, *exam.items[2:]))
+    assert comparison.passed

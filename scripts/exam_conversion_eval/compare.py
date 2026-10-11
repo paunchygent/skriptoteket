@@ -25,7 +25,7 @@ from .compare_results import (
     TitleComparison,
 )
 from .compare_structure import content
-from .compare_text import words
+from .compare_text import word_set, words
 from .gold import GoldExam, GoldItem, GoldParent
 
 __all__ = [
@@ -82,28 +82,60 @@ def _compare_question(gold: GoldQuestion, actual: Question) -> tuple[FieldMismat
     return tuple(mismatches)
 
 
+# A parent's instruction is shared by its children, so it never tells siblings apart.
+def _question_words(question: Question) -> frozenset[str]:
+    return word_set((question.title, *question.body, *question.entries()))
+
+
+def _pair_by_wording(golds: Sequence[GoldQuestion], actual: Sequence[Question]) -> dict[int, int]:
+    """D33: gold and converted questions pair by shared wording, the largest overlap first.
+
+    The overlap is the share of the gold question's words found in the converted question; a
+    pair needs a shared word and a tie goes to the nearer position. Taking the largest overlap
+    first lets a gold question without a counterpart claim only what is left over, so one
+    merged, split or dropped question never takes the partner of a later one.
+    Returns converted positions by gold position.
+    """
+    converted = [_question_words(question) for question in actual]
+    candidates: list[tuple[float, int, int, int]] = []
+    for position, gold in enumerate(golds):
+        gold_words = _question_words(gold.view)
+        for index, words_found in enumerate(converted):
+            if shared := len(gold_words & words_found):
+                candidates.append(
+                    (-shared / len(gold_words), abs(index - position), position, index)
+                )
+    pairs: dict[int, int] = {}
+    taken: set[int] = set()
+    for _, _, position, index in sorted(candidates):
+        if position not in pairs and index not in taken:
+            pairs[position] = index
+            taken.add(index)
+    return pairs
+
+
 def _compare_exam(
     expected: GoldExam, actual: Sequence[Question], title: TitleComparison
 ) -> ExamComparison:
+    """D33, D34: a gold question pairs with the converted question of the most shared wording.
+
+    A gold question without a pair is missing; a converted question without a pair is extra.
+    """
     golds = gold_questions(expected.items)
+    pairs = _pair_by_wording(golds, actual)
     results: list[ItemComparison] = []
-    for index in range(max(len(golds), len(actual))):
-        if index >= len(golds):
-            observed = actual[index]
-            mismatch = FieldMismatch("response_kind", "extra_item", None, observed)
-            results.append(ItemComparison(index, observed.source_label, (mismatch,)))
-        elif index >= len(actual):
-            label = golds[index].view.source_label
-            mismatch = FieldMismatch("content_present", "missing_item", label, None)
-            results.append(ItemComparison(index, label, (mismatch,)))
+    for position, gold in enumerate(golds):
+        if position in pairs:
+            mismatches = _compare_question(gold, actual[pairs[position]])
         else:
-            results.append(
-                ItemComparison(
-                    index,
-                    golds[index].view.source_label,
-                    _compare_question(golds[index], actual[index]),
-                )
+            mismatches = (
+                FieldMismatch("content_present", "missing_item", gold.view.source_label, None),
             )
+        results.append(ItemComparison(position, gold.view.source_label, mismatches))
+    for index in sorted(set(range(len(actual))) - set(pairs.values())):
+        observed = actual[index]
+        mismatch = FieldMismatch("response_kind", "extra_item", None, observed)
+        results.append(ItemComparison(len(results), observed.source_label, (mismatch,)))
     return ExamComparison(expected.confirmed, expected.confirmation_note, tuple(results), title)
 
 
