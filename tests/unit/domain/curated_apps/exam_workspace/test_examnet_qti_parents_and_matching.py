@@ -250,7 +250,9 @@ def test_parent_of_recorded_gap_fill_children_is_one_item_with_a_separator_befor
     ]
     assert summed == entry_ids
     outcomes = {o.attrib["identifier"]: o for o in root.iter(_tag("outcomeDeclaration"))}
-    assert outcomes["MAXSCORE"].find(f".//{_tag('value')}").text == str(parent.max_score)  # type: ignore[union-attr]
+    max_score_value = outcomes["MAXSCORE"].find(f".//{_tag('value')}")
+    assert max_score_value is not None
+    assert max_score_value.text == str(parent.max_score)
 
 
 def test_package_with_a_gap_fill_parent_replaces_its_children_where_the_first_child_stood():
@@ -284,7 +286,11 @@ def test_parent_of_recorded_choice_children_holds_each_stem_in_its_own_interacti
     blocks = list(body)
     assert [b.tag for b in blocks] == [_tag("p")] + [_tag("choiceInteraction")] * len(numbers)
     assert blocks[0].text == _INSTRUCTION
-    prompts = ["".join(b.find(_tag("prompt")).itertext()).strip() for b in blocks[1:]]  # type: ignore[union-attr]
+    prompts = []
+    for block in blocks[1:]:
+        prompt = block.find(_tag("prompt"))
+        assert prompt is not None
+        prompts.append("".join(prompt.itertext()).strip())
     assert all(prompts) and len(set(prompts)) == len(prompts)
     assert [b.attrib["responseIdentifier"] for b in blocks[1:]] == [
         f"item_{n:03d}_RESPONSE" for n in numbers
@@ -293,7 +299,9 @@ def test_parent_of_recorded_choice_children_holds_each_stem_in_its_own_interacti
         m.attrib["identifier"] for m in root.iterfind(f".//{_tag('sum')}/{_tag('mapResponse')}")
     ]
     assert summed == [f"item_{n:03d}_RESPONSE" for n in numbers]
-    assert root.find(_tag("responseProcessing")).attrib.get("template") is None  # type: ignore[union-attr]
+    response_processing = root.find(_tag("responseProcessing"))
+    assert response_processing is not None
+    assert response_processing.attrib.get("template") is None
     assert archive.read("items/parent_001.xml")
 
 

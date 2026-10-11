@@ -19,7 +19,6 @@ from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepository
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabelerProtocol,
     MeteredItemTypeLabelerProtocol,
-    ThresholdPolicy,
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -38,8 +37,6 @@ class ItemTypeLabelerProvider(Provider):
             api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
             timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
             sleeper=sleeper,
-            policy=ThresholdPolicy(default=settings.LLM_ITEM_LABELER_ACCEPT_THRESHOLD),
-            model=settings.LLM_ITEM_LABELER_MODEL,
         )
 
     @provide(scope=Scope.REQUEST)

@@ -9,12 +9,13 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import httpx
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.item_type_labeling import (
     LEASE_ITEM_ID,
@@ -34,7 +35,6 @@ from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabelerError,
     LabelingItem,
     LabelingRequest,
-    ThresholdPolicy,
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -45,9 +45,43 @@ _FIXTURES = Path("tests/fixtures/item_type_labeler")
 _NOW = datetime(2026, 10, 11, 12, tzinfo=UTC)
 
 
-def _fixture(name: str) -> dict[str, Any]:
-    fixture: dict[str, Any] = json.loads((_FIXTURES / name).read_text())
+class _Usage(TypedDict):
+    input_tokens: int
+
+
+class _Body(TypedDict):
+    usage: _Usage
+
+
+class _Exchange(TypedDict):
+    status_code: int
+    body: _Body
+
+
+class _Item(TypedDict):
+    item_id: str
+    source_text: str
+    parent_instruction: str | None
+
+
+class _Recording(TypedDict):
+    items: list[_Item]
+    exchanges: list[_Exchange]
+
+
+class _Unavailable(TypedDict):
+    body: JsonValue
+
+
+def _fixture(name: str) -> _Recording:
+    fixture: _Recording = json.loads((_FIXTURES / name).read_text())
     return fixture
+
+
+def _unavailable() -> _Unavailable:
+    path = _FIXTURES / "decisions_unavailable_responses.json"
+    responses: list[_Unavailable] = json.loads(path.read_text())["responses"]
+    return responses[0]
 
 
 class _Harness:
@@ -65,7 +99,6 @@ class _Harness:
             api_key="fixture-key",
             timeout_seconds=30,
             sleeper=AsyncMock(spec=SleeperProtocol),
-            policy=ThresholdPolicy(),
         )
         self.labeler = LeasedItemTypeLabeler(
             labeler=self.adapter, leases=self.leases, uow=self.uow, clock=clock
@@ -85,13 +118,13 @@ class _Harness:
         return self._responses.pop(0)
 
 
-def _recorded_exam() -> tuple[LabelingRequest, dict[str, Any]]:
+def _recorded_exam() -> tuple[LabelingRequest, _Exchange]:
     fixture = _fixture("corpus_exam_24_questions.json")
     items = tuple(LabelingItem(**item) for item in fixture["items"])
     return LabelingRequest(job_id=uuid4(), items=items), fixture["exchanges"][0]
 
 
-def _ok(exchange: dict[str, Any]) -> httpx.Response:
+def _ok(exchange: _Exchange) -> httpx.Response:
     return httpx.Response(exchange["status_code"], json=exchange["body"])
 
 
@@ -129,7 +162,7 @@ async def test_refused_lease_fails_closed_without_network() -> None:
 
 async def test_unavailable_provider_keeps_reservation_charged() -> None:
     request, _ = _recorded_exam()
-    failure = _fixture("decisions_unavailable_responses.json")["responses"][0]
+    failure = _unavailable()
     harness = _Harness(*(httpx.Response(503, json=failure["body"]) for _ in range(3)))
 
     with pytest.raises(ItemTypeLabelerError) as raised:

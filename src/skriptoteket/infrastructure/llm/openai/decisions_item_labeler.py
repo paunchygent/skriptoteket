@@ -29,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     estimate_prompt_tokens,
 )
 from skriptoteket.protocols.item_type_labeler import (
+    ACCEPT_THRESHOLD,
     ItemTypeLabel,
     ItemTypeLabelerError,
     ItemTypeLabeling,
@@ -38,7 +39,7 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelingUsage,
     LabelRoute,
     MeteredItemTypeLabelerProtocol,
-    ThresholdPolicy,
+    label_route,
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
@@ -85,8 +86,6 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
         api_key: str,
         timeout_seconds: float,
         sleeper: SleeperProtocol,
-        policy: ThresholdPolicy,
-        model: str = DECISIONS_MODEL,
         max_attempts: int = 3,
         base_delay_seconds: float = 1.0,
         max_delay_seconds: float = 8.0,
@@ -102,19 +101,17 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
         self._api_key = api_key.strip()
         self._timeout_seconds = timeout_seconds
         self._sleeper = sleeper
-        self._policy = policy
-        self._model = model
         self._max_attempts = max_attempts
         self._base_delay_seconds = base_delay_seconds
         self._max_delay_seconds = max_delay_seconds
 
     @property
     def provider_profile_id(self) -> str:
-        return f"openai-decisions-{self._model}"
+        return f"openai-decisions-{DECISIONS_MODEL}"
 
     def estimate_input_tokens(self, *, request: LabelingRequest) -> int:
         return sum(
-            estimate_prompt_tokens(json.dumps(build_decisions_payload(self._model, chunk)))
+            estimate_prompt_tokens(json.dumps(build_decisions_payload(chunk)))
             for chunk in split_items(request.items)
         )
 
@@ -150,8 +147,8 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
     async def _label_chunk(
         self, items: Sequence[LabelingItem]
     ) -> tuple[list[ItemTypeLabelResult], int | None, int]:
-        body, attempts = await self._post(build_decisions_payload(self._model, items))
-        results, input_tokens = parse_decisions_answers(body, items, self._policy)
+        body, attempts = await self._post(build_decisions_payload(items))
+        results, input_tokens = parse_decisions_answers(body, items)
         return results, input_tokens, attempts
 
     async def _post(self, payload: _JsonObject) -> tuple[JsonValue, int]:
@@ -244,7 +241,7 @@ def render_items(items: Sequence[LabelingItem]) -> str:
     return "\n\n".join(blocks)
 
 
-def build_decisions_payload(model: str, items: Sequence[LabelingItem]) -> _JsonObject:
+def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
     choices: list[JsonValue] = [
         {"value": label.value, "description": LABEL_DESCRIPTIONS[label]} for label in ItemTypeLabel
     ]
@@ -262,18 +259,19 @@ def build_decisions_payload(model: str, items: Sequence[LabelingItem]) -> _JsonO
         }
         for index in range(len(items))
     ]
-    return {"model": model, "input": render_items(items), "questions": questions}
+    return {"model": DECISIONS_MODEL, "input": render_items(items), "questions": questions}
 
 
 def parse_decisions_answers(
-    body: JsonValue, items: Sequence[LabelingItem], policy: ThresholdPolicy
+    body: JsonValue, items: Sequence[LabelingItem]
 ) -> tuple[list[ItemTypeLabelResult], int | None]:
     """Map answers back to items by name; any missing, extra or unknown answer fails the request."""
 
-    if not isinstance(body, dict) or not isinstance(body.get("answers"), list):
+    listed = body.get("answers") if isinstance(body, dict) else None
+    if not isinstance(body, dict) or not isinstance(listed, list):
         raise _malformed("Decisions response has no answers list.")
     answers: dict[str, _JsonObject] = {}
-    for answer in body["answers"]:  # type: ignore[union-attr]
+    for answer in listed:
         if not isinstance(answer, dict) or not isinstance(answer.get("name"), str):
             raise _malformed("Decisions answer has no name.")
         name = str(answer["name"])
@@ -283,20 +281,18 @@ def parse_decisions_answers(
     expected = {f"kind_{_question_id(index)}": item for index, item in enumerate(items)}
     if set(answers) != set(expected):
         raise _malformed("Decisions answers do not match the questions asked.")
-    results = [_result(item, answers[name], policy) for name, item in expected.items()]
+    results = [_result(item, answers[name]) for name, item in expected.items()]
     return results, _input_tokens(body)
 
 
-def _result(
-    item: LabelingItem, answer: _JsonObject, policy: ThresholdPolicy
-) -> ItemTypeLabelResult:
+def _result(item: LabelingItem, answer: _JsonObject) -> ItemTypeLabelResult:
     if answer.get("type") == "refusal":
         return ItemTypeLabelResult(
             item_id=item.item_id,
             label=ItemTypeLabel.UNRESOLVED,
             probabilities={},
             probability=0.0,
-            threshold=policy.threshold_for(ItemTypeLabel.UNRESOLVED),
+            threshold=ACCEPT_THRESHOLD,
             route=LabelRoute.ESCALATE,
             refused=True,
         )
@@ -310,8 +306,8 @@ def _result(
         label=label,
         probabilities=probabilities,
         probability=probability,
-        threshold=policy.threshold_for(label),
-        route=policy.route(label, probability),
+        threshold=ACCEPT_THRESHOLD,
+        route=label_route(probability),
     )
 
 

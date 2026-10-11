@@ -346,11 +346,9 @@ class Settings(BaseSettings):
     LLM_DOCX_CONVERSION_MAX_OUTPUT_TOKENS: int = 128_000
     LLM_DOCX_CONVERSION_TIMEOUT_SECONDS: int = 300
     # Item-type labeler (TASK-SKRIPT-39-05-04): Decisions on the answer-key
-    # base URL, key and daily token lease. A label below its threshold
-    # escalates instead of being accepted.
-    LLM_ITEM_LABELER_MODEL: str = "gpt-6-luna"
+    # base URL, key and daily token lease. Its model and acceptance threshold
+    # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
-    LLM_ITEM_LABELER_ACCEPT_THRESHOLD: float = Field(default=0.95, ge=0.0, le=1.0)
 
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
     # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect

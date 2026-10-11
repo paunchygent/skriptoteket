@@ -4,23 +4,29 @@ import copy
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 from uuid import uuid4
 
 import httpx
 import pytest
+from dishka import Provider, Scope, from_context, make_async_container
+from pydantic import JsonValue
 
+from skriptoteket.config import Settings
+from skriptoteket.di.item_type_labeler import ItemTypeLabelerProvider
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabel,
     ItemTypeLabelerError,
+    ItemTypeLabeling,
     LabelingItem,
     LabelingRequest,
     LabelRoute,
-    ThresholdPolicy,
+    MeteredItemTypeLabelerProtocol,
 )
+from skriptoteket.protocols.sleeper import SleeperProtocol
 
 pytestmark = pytest.mark.unit
 
@@ -31,23 +37,81 @@ CORPUS_204 = "corpus_three_exams_204_questions.json"
 Responder = Callable[[httpx.Request], httpx.Response]
 
 
-def _load(name: str) -> dict[str, Any]:
-    data: dict[str, Any] = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
-    return data
+class _Probability(TypedDict):
+    value: str
+    probability: float
 
 
-def _request_for(fixture: dict[str, Any]) -> LabelingRequest:
+class _Answer(TypedDict):
+    """A recorded Decisions answer; a refusal carries only its type and name."""
+
+    type: str
+    name: str
+    choice: NotRequired[str]
+    probabilities: NotRequired[list[_Probability]]
+    confidence: NotRequired[float]
+
+
+class _Usage(TypedDict):
+    input_tokens: int
+
+
+class _Body(TypedDict):
+    model: str
+    answers: NotRequired[list[_Answer]]
+    usage: _Usage
+
+
+class _Sent(TypedDict):
+    model: str
+    input: str
+    questions: list[dict[str, JsonValue]]
+
+
+class _Exchange(TypedDict):
+    request: _Sent
+    status_code: int
+    headers: dict[str, str]
+    body: _Body
+
+
+class _Item(TypedDict):
+    item_id: str
+    source_text: str
+    parent_instruction: str | None
+
+
+class _Recording(TypedDict):
+    items: list[_Item]
+    exchanges: list[_Exchange]
+
+
+class _Unavailable(TypedDict):
+    status_code: int
+    headers: dict[str, str]
+    body: JsonValue
+
+
+def _load(name: str) -> _Recording:
+    recording: _Recording = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+    return recording
+
+
+def _request_for(fixture: _Recording) -> LabelingRequest:
     return LabelingRequest(
         job_id=uuid4(), items=tuple(LabelingItem(**item) for item in fixture["items"])
     )
 
 
-def _unavailable(status_code: int) -> dict[str, Any]:
-    responses = _load("decisions_unavailable_responses.json")["responses"]
+def _unavailable(status_code: int) -> _Unavailable:
+    path = FIXTURES / "decisions_unavailable_responses.json"
+    responses: list[_Unavailable] = json.loads(path.read_text(encoding="utf-8"))["responses"]
     return next(r for r in responses if r["status_code"] == status_code)
 
 
-def _recorded_response(recording: dict[str, Any], status_code: int | None = None) -> httpx.Response:
+def _recorded_response(
+    recording: _Exchange | _Unavailable, status_code: int | None = None
+) -> httpx.Response:
     status = recording["status_code"] if status_code is None else status_code
     body = recording["body"]
     if isinstance(body, str):
@@ -55,7 +119,7 @@ def _recorded_response(recording: dict[str, Any], status_code: int | None = None
     return httpx.Response(status, headers=recording["headers"], json=body)
 
 
-def _chosen_probability(answer: dict[str, Any]) -> float:
+def _chosen_probability(answer: _Answer) -> float:
     by_value = {entry["value"]: entry["probability"] for entry in answer["probabilities"]}
     return float(by_value[answer["choice"]])
 
@@ -70,7 +134,7 @@ class RecordingSleeper:
 
 class Harness:
     def __init__(self, responder: Responder) -> None:
-        self.requests: list[dict[str, Any]] = []
+        self.requests: list[_Sent] = []
         self.sleeper = RecordingSleeper()
         self._responder = responder
 
@@ -78,14 +142,14 @@ class Harness:
         assert request.method == "POST"
         assert request.url.path == "/v1/decisions"
         assert request.headers["Authorization"] == "Bearer fixture-key"
-        self.requests.append(json.loads(request.content))
+        sent: _Sent = json.loads(request.content)
+        self.requests.append(sent)
         return self._responder(request)
 
     def labeler(
         self,
         *,
         api_key: str = "fixture-key",
-        policy: ThresholdPolicy | None = None,
         max_attempts: int = 3,
     ) -> OpenAIDecisionsItemTypeLabeler:
         return OpenAIDecisionsItemTypeLabeler(
@@ -94,12 +158,11 @@ class Harness:
             api_key=api_key,
             timeout_seconds=30,
             sleeper=self.sleeper,
-            policy=policy or ThresholdPolicy(),
             max_attempts=max_attempts,
         )
 
 
-def _replay(exchanges: list[dict[str, Any]]) -> Responder:
+def _replay(exchanges: list[_Exchange]) -> Responder:
     def respond(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
         matches = [exchange for exchange in exchanges if exchange["request"] == sent]
@@ -119,30 +182,29 @@ def _sequence(*responders: Responder) -> Responder:
     return respond
 
 
-def _always(recording: dict[str, Any], status_code: int | None = None) -> Responder:
+def _always(recording: _Exchange | _Unavailable, status_code: int | None = None) -> Responder:
     return lambda _request: _recorded_response(recording, status_code)
 
 
-def _with_mutated_body(mutate: Callable[[dict[str, Any]], None]) -> Responder:
+def _with_mutated_body(mutate: Callable[[_Body], None]) -> Responder:
     exchange = copy.deepcopy(_load(CORPUS_24)["exchanges"][0])
     mutate(exchange["body"])
     return _replay([exchange])
 
 
-async def _label_24(responder: Responder, **labeler_options: Any) -> Any:
+async def _label_24(responder: Responder) -> ItemTypeLabeling:
     harness = Harness(responder)
-    return await harness.labeler(**labeler_options).label(request=_request_for(_load(CORPUS_24)))
+    return await harness.labeler().label(request=_request_for(_load(CORPUS_24)))
 
 
-async def _expect_error(responder: Responder, **labeler_options: Any) -> ItemTypeLabelerError:
+async def _expect_error(responder: Responder) -> ItemTypeLabelerError:
     with pytest.raises(ItemTypeLabelerError) as caught:
-        await _label_24(responder, **labeler_options)
+        await _label_24(responder)
     return caught.value
 
 
-def _recorded_answers_24() -> list[dict[str, Any]]:
-    answers: list[dict[str, Any]] = _load(CORPUS_24)["exchanges"][0]["body"]["answers"]
-    return answers
+def _recorded_answers_24() -> list[_Answer]:
+    return _load(CORPUS_24)["exchanges"][0]["body"]["answers"]
 
 
 async def test_threshold_routes_recorded_answers_at_the_095_boundary() -> None:
@@ -168,28 +230,46 @@ async def test_threshold_routes_recorded_answers_at_the_095_boundary() -> None:
     assert any(r.probability < 0.95 and r.route == LabelRoute.ESCALATE for r in labeling.results)
 
 
-async def test_per_label_threshold_escalates_only_its_label() -> None:
-    fixture = _load(CORPUS_24)
-    answers = _recorded_answers_24()
-    boundary_label = ItemTypeLabel(
-        next(a["choice"] for a in answers if _chosen_probability(a) == 0.95)
+class _LabelerInputs(Provider):
+    client = from_context(provides=httpx.AsyncClient, scope=Scope.APP)
+    sleeper = from_context(provides=SleeperProtocol, scope=Scope.APP)
+    settings = from_context(provides=Settings, scope=Scope.APP)
+
+
+async def test_environment_cannot_move_the_decided_threshold_or_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The wired labeler keeps the 0.95 boundary and its model whatever the environment says."""
+    monkeypatch.setenv("LLM_ITEM_LABELER_ACCEPT_THRESHOLD", "0.5")
+    monkeypatch.setenv("LLM_ITEM_LABELER_MODEL", "another-model")
+    settings = Settings(
+        _env_file=None,
+        LLM_ANSWER_KEY_BASE_URL="https://example.test",
+        OPENAI_LLM_ANSWER_KEY_API_KEY="fixture-key",
     )
-    policy = ThresholdPolicy(per_label={boundary_label: 0.96})
+    fixture = _load(CORPUS_24)
     harness = Harness(_replay(fixture["exchanges"]))
+    container = make_async_container(
+        ItemTypeLabelerProvider(),
+        _LabelerInputs(),
+        context={
+            httpx.AsyncClient: httpx.AsyncClient(transport=httpx.MockTransport(harness.handle)),
+            SleeperProtocol: harness.sleeper,
+            Settings: settings,
+        },
+        # The leased request-scope labeler needs a database; only the adapter is wired here.
+        skip_validation=True,
+    )
+    labeler = await container.get(MeteredItemTypeLabelerProtocol)
 
-    labeling = await harness.labeler(policy=policy).label(request=_request_for(fixture))
+    labeling = await labeler.label(request=_request_for(fixture))
+    await container.close()
 
-    for result in labeling.results:
-        if result.label == boundary_label:
-            assert result.threshold == 0.96
-            expected = LabelRoute.ACCEPT if result.probability >= 0.96 else LabelRoute.ESCALATE
-        else:
-            assert result.threshold == 0.95
-            expected = LabelRoute.ACCEPT if result.probability >= 0.95 else LabelRoute.ESCALATE
-        assert result.route == expected
-    flipped = [r for r in labeling.results if r.label == boundary_label and r.probability == 0.95]
-    assert flipped
-    assert all(r.route == LabelRoute.ESCALATE for r in flipped)
+    assert [sent["model"] for sent in harness.requests] == ["gpt-6-luna"]
+    assert all(r.threshold == 0.95 for r in labeling.results)
+    below = [r for r in labeling.results if r.probability < 0.95]
+    assert below
+    assert all(r.route == LabelRoute.ESCALATE for r in below)
 
 
 async def test_204_items_split_into_two_recorded_requests_in_item_order() -> None:
@@ -274,27 +354,27 @@ async def test_non_retryable_status_fails_without_retry() -> None:
     assert harness.sleeper.delays == []
 
 
-def _replace_choice(body: dict[str, Any]) -> None:
+def _replace_choice(body: _Body) -> None:
     body["answers"][0]["choice"] = "essay"
 
 
-def _replace_probability_value(body: dict[str, Any]) -> None:
+def _replace_probability_value(body: _Body) -> None:
     body["answers"][0]["probabilities"][1]["value"] = "essay"
 
 
-def _remove_answer(body: dict[str, Any]) -> None:
+def _remove_answer(body: _Body) -> None:
     del body["answers"][3]
 
 
-def _duplicate_answer(body: dict[str, Any]) -> None:
+def _duplicate_answer(body: _Body) -> None:
     body["answers"].append(copy.deepcopy(body["answers"][3]))
 
 
-def _remove_answers_key(body: dict[str, Any]) -> None:
+def _remove_answers_key(body: _Body) -> None:
     del body["answers"]
 
 
-def _probability_above_one(body: dict[str, Any]) -> None:
+def _probability_above_one(body: _Body) -> None:
     body["answers"][0]["probabilities"][0]["probability"] = 1.5
 
 
@@ -310,7 +390,7 @@ def _probability_above_one(body: dict[str, Any]) -> None:
     ],
 )
 async def test_mutated_recorded_body_is_rejected(
-    mutate: Callable[[dict[str, Any]], None], code: str
+    mutate: Callable[[_Body], None], code: str
 ) -> None:
     error = await _expect_error(_with_mutated_body(mutate))
 
@@ -319,6 +399,7 @@ async def test_mutated_recorded_body_is_rejected(
 
 async def test_non_json_success_body_raises_invalid_json() -> None:
     gateway_page = _unavailable(504)["body"]
+    assert isinstance(gateway_page, str)
     error = await _expect_error(lambda _request: httpx.Response(200, text=gateway_page))
 
     assert error.code == "invalid_json"
@@ -329,7 +410,7 @@ async def test_refusal_escalates_only_the_refused_item() -> None:
     baseline = await _label_24(_replay(fixture["exchanges"]))
     refused_index = 2
 
-    def refuse(body: dict[str, Any]) -> None:
+    def refuse(body: _Body) -> None:
         name = body["answers"][refused_index]["name"]
         body["answers"][refused_index] = {"type": "refusal", "name": name}
 

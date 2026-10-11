@@ -19,9 +19,10 @@ import os
 import time
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
 import httpx
+from pydantic import JsonValue
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -35,7 +36,6 @@ from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabeling,
     LabelingItem,
     LabelingRequest,
-    ThresholdPolicy,
 )
 
 CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
@@ -52,24 +52,43 @@ KEPT_HEADERS = (
 DECISIONS_INPUT_USD_PER_MILLION = 0.10  # gpt-6-luna Decisions input price, read 2026-10-11.
 
 
+class GroupedQuestion(TypedDict):
+    id: str
+    anchors: list[str]
+    key_anchors: list[str]
+
+
+class GroupingContext(TypedDict):
+    anchor: str
+    governs: list[str]
+
+
+class Grouping(TypedDict):
+    """A saved provider grouping's output: the questions and the contexts that govern them."""
+
+    questions: list[GroupedQuestion]
+    contexts: list[GroupingContext]
+
+
 class RecordingTransport(httpx.AsyncBaseTransport):
     """Forward to the real transport and keep each exchange without credentials."""
 
     def __init__(self) -> None:
         self._inner = httpx.AsyncHTTPTransport()
-        self.exchanges: list[dict[str, Any]] = []
+        self.exchanges: list[dict[str, JsonValue]] = []
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         started = time.perf_counter()
         response = await self._inner.handle_async_request(request)
         content = await response.aread()
         try:
-            body: Any = json.loads(content)
+            body: JsonValue = json.loads(content)
         except ValueError:
             body = content.decode("utf-8", errors="replace")
+        sent: JsonValue = json.loads(request.content)
         self.exchanges.append(
             {
-                "request": json.loads(request.content),
+                "request": sent,
                 "status_code": response.status_code,
                 "duration_seconds": round(time.perf_counter() - started, 3),
                 "headers": {k: response.headers[k] for k in KEPT_HEADERS if k in response.headers},
@@ -90,7 +109,7 @@ class RecordingTransport(httpx.AsyncBaseTransport):
         await self._inner.aclose()
 
 
-def corpus_items(stem: str, grouping: dict[str, Any]) -> list[LabelingItem]:
+def corpus_items(stem: str, grouping: Grouping) -> list[LabelingItem]:
     """One item per grouped question: its source and key lines, governing context as parent."""
 
     chunks = PythonDocxExamChunker().chunk(content=(CORPUS / f"{stem}.docx").read_bytes())
@@ -111,7 +130,7 @@ def corpus_items(stem: str, grouping: dict[str, Any]) -> list[LabelingItem]:
     return items
 
 
-def labeling_json(labeling: ItemTypeLabeling) -> dict[str, Any]:
+def labeling_json(labeling: ItemTypeLabeling) -> dict[str, JsonValue]:
     tokens = labeling.usage.input_tokens
     return {
         "usage": {
@@ -135,7 +154,9 @@ def labeling_json(labeling: ItemTypeLabeling) -> dict[str, Any]:
     }
 
 
-async def run_one(name: str, items: list[LabelingItem], out: Path, api_key: str) -> dict[str, Any]:
+async def run_one(
+    name: str, items: list[LabelingItem], out: Path, api_key: str
+) -> dict[str, JsonValue]:
     transport = RecordingTransport()
     async with httpx.AsyncClient(transport=transport) as client:
         labeler = OpenAIDecisionsItemTypeLabeler(
@@ -144,12 +165,11 @@ async def run_one(name: str, items: list[LabelingItem], out: Path, api_key: str)
             api_key=api_key,
             timeout_seconds=60.0,
             sleeper=AsyncioSleeper(),
-            policy=ThresholdPolicy(),
         )
         request = LabelingRequest(job_id=uuid.uuid4(), items=tuple(items))
         started = time.perf_counter()
         try:
-            outcome: dict[str, Any] = labeling_json(await labeler.label(request=request))
+            outcome = labeling_json(await labeler.label(request=request))
         except ItemTypeLabelerError as error:
             outcome = {"error": {"code": error.code, "status_code": error.status_code}}
         outcome["wall_seconds"] = round(time.perf_counter() - started, 3)
@@ -176,12 +196,12 @@ async def main() -> None:
     api_key = os.environ["OPENAI_LLM_ANSWER_KEY_API_KEY"]
     args.out.mkdir(parents=True, exist_ok=True)
     stems = sorted(path.stem for path in CORPUS.glob("*.docx"))
-    items = {
-        stem: corpus_items(
-            stem, json.loads((args.groupings / stem / "grouping_a.json").read_text())["output"]
-        )
-        for stem in stems
-    }
+    items: dict[str, list[LabelingItem]] = {}
+    for stem in stems:
+        grouping: Grouping = json.loads((args.groupings / stem / "grouping_a.json").read_text())[
+            "output"
+        ]
+        items[stem] = corpus_items(stem, grouping)
     started = time.perf_counter()
     summaries = await asyncio.gather(
         *(run_one(stem, items[stem], args.out, api_key) for stem in stems)
