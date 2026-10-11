@@ -54,7 +54,9 @@ def question_index(exam: GoldExam, label: str) -> int:
 
 
 @cache
-def replayed(stem: str) -> tuple[NativeExamDocument, tuple[str, ...]]:
+def replayed(
+    stem: str, recordings: Path = RECORDINGS
+) -> tuple[NativeExamDocument, tuple[str, ...]]:
     """The exam converted from its recorded provider rounds, with the source chunk texts."""
     chunks = PythonDocxExamChunker().chunk(content=(CORPUS / f"{stem}.docx").read_bytes())
     state = DocxBuildState(
@@ -64,7 +66,7 @@ def replayed(stem: str) -> tuple[NativeExamDocument, tuple[str, ...]]:
         source_sha256="0" * 64,
         chunks=chunks,
     )
-    for recorded in sorted((RECORDINGS / stem).glob("round*.json")):
+    for recorded in sorted((recordings / stem).glob("round*.json")):
         admit_batch(json.loads(recorded.read_text()), state)
     return state.result().document, tuple(chunk.text for chunk in chunks)
 

@@ -17,7 +17,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 
 _WORD = re.compile(r"[^\W\d_]{2,}")
-_TRAILING_NUMBER = re.compile(r"^(.*?)(\d+)$")
+# A printed label ends in its number or letter, optionally after a word: "Question 4", "a".
+_PRINTED = re.compile(r"^(?:(.*\S)\s+)?(\d+|[^\W\d_])$")
 
 
 @dataclass(frozen=True)
@@ -36,13 +37,16 @@ class ExamLanguageLabels:
     correct_answer: str = ""
     pair: str = ""
 
-    def question_label(self, first: int, last: int | None = None) -> str:
+    def question_label(self, first: int | str, last: int | str | None = None) -> str:
         numbers = str(first) if last is None or last == first else f"{first}–{last}"
         return f"{self.question} {numbers}".strip()
 
     def printed_title(self, printed_label: str) -> str:
-        """A printed label as a title: a bare number gets the question word ("3" → "Fråga 3")."""
-        return self.question_label(int(printed_label)) if printed_label.isdigit() else printed_label
+        """A printed label as a title: a bare number or letter gets the question word."""
+        match = _PRINTED.match(printed_label)
+        if match and match.group(1) is None:
+            return self.question_label(printed_label)
+        return printed_label
 
     def item_title(self, item: NativeExamItem) -> str:
         """The item's own title, else its printed label, else its running number."""
@@ -54,12 +58,12 @@ class ExamLanguageLabels:
 
     def printed_span(self, first: str, last: str) -> str:
         """The title over children printed first to last, such as "Question 1–7"."""
-        first_match, last_match = _TRAILING_NUMBER.match(first), _TRAILING_NUMBER.match(last)
+        first_match, last_match = _PRINTED.match(first), _PRINTED.match(last)
         if first_match and last_match and first_match.group(1) == last_match.group(1):
-            prefix, low, high = first_match.group(1), first_match.group(2), last_match.group(2)
-            if not prefix.strip():
-                return self.question_label(int(low), int(high))
-            return f"{prefix}{low}–{high}" if low != high else first
+            word, low, high = first_match.group(1), first_match.group(2), last_match.group(2)
+            if word is None:
+                return self.question_label(low, high)
+            return f"{word} {low}–{high}" if low != high else first
         return first if first == last else f"{first}–{last}"
 
     def gap_label(self, index: int) -> str:
