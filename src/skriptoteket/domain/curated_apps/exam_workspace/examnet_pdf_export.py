@@ -10,7 +10,7 @@ Relationships:
     - Consumes `domain.curated_apps.exam_workspace.native_exam_document`.
     - Reuses the neutral types in
       `domain.curated_apps.exam_conversion.exam_pdf_item_semantics`, the
-      default strategy registry in `examnet_pdf_item_strategies`, and the
+      default strategy registry in `examnet_pdf_item_registry`, and the
       document assembly in `digiexam_examnet_pdf_html`.
     - Mirrors the fail-closed coordination of
       `domain.curated_apps.exam_conversion.digiexam_examnet_pdf`.
@@ -48,8 +48,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
     PdfExamMatchPairSemantics,
     PdfExamOptionSemantics,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry import (
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,

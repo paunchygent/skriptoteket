@@ -1,26 +1,21 @@
-"""Exam.net PDF item rendering target-profile strategies.
+"""Exam.net PDF item rendering strategies, one per neutral item family.
 
 Purpose:
-    Own Exam.net-oriented PDF target policy for mapping immutable,
-    source-neutral PDF item semantics into PDF item sections, warnings, and
-    manual follow-up signals.
+    Map immutable, source-neutral PDF item semantics into Exam.net PDF item sections,
+    warnings, and manual follow-up signals.
 
 Relationships:
-    - Consumes `domain.exam_pdf_item_semantics` values without source-adapter
-      imports or mutations.
-    - Produces item render contracts from `domain.digiexam_examnet_pdf_contracts`
-      for the PDF item coordinator.
+    - Implements the `ExamNetPdfItemRenderingStrategy` protocol from
+      `examnet_pdf_target_profile` using the helpers in `examnet_pdf_item_rendering`.
+    - Selected by the registry in `examnet_pdf_item_registry`.
     - Keeps Exam.net-specific layout labels and target shaping out of parser
       IR, effective IR, bundle, QTI, and service layers.
 """
 
 from __future__ import annotations
 
-import re
-from collections.abc import Mapping
 from dataclasses import dataclass
 from html import escape
-from typing import Protocol
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfItemRender,
@@ -28,80 +23,23 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
     DigiExamExamNetPdfWarningCode,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics import (
-    PdfExamItemKind,
     PdfExamItemSemantics,
 )
-
-_LABELLED_OPTION_PATTERN = re.compile(r"^(?:[A-Za-z]|\d+)[.)]\s+")
-
-
-@dataclass(frozen=True)
-class ExamNetPdfItemLabelPolicy:
-    """Localized target labels owned by the Exam.net PDF target profile."""
-
-    free_text_type_label: str = "Fritext"
-    choice_type_label: str = "Multiple choice"
-    multiple_response_type_label: str = "Multiple response"
-    gap_open_cloze_type_label: str = "Lucktext"
-    matching_type_label: str = "Matching"
-    source_item_type_marker: str = "Typ"
-    target_item_type_marker: str = "Type"
-    point_label: str = "Poängvärde"
-    single_answer_key_label: str = "Correct answer"
-    multiple_answer_key_label: str = "Correct answers"
-    match_key_label: str = "Correct answers"
-    gap_label: str = "Lucka"
-    marking_guide_label: str = "Marking guide"
-
-
-@dataclass(frozen=True)
-class ExamNetPdfTargetProfileContext:
-    """Read-only target-profile context passed to Exam.net PDF item strategies."""
-
-    target_id: str
-    profile_version: str
-    label_policy: ExamNetPdfItemLabelPolicy
-    allow_gap_open_cloze_alternate_layout: bool = False
-
-
-@dataclass(frozen=True)
-class ExamNetPdfItemStrategyResult:
-    """Rendered target item section plus warnings emitted by one strategy."""
-
-    item: DigiExamExamNetPdfItemRender | None
-    warnings: tuple[DigiExamExamNetPdfWarning, ...] = ()
-
-
-class ExamNetPdfItemRenderingStrategy(Protocol):
-    """Strategy protocol for one neutral item family in an Exam.net PDF target."""
-
-    def render(
-        self,
-        *,
-        item: PdfExamItemSemantics,
-        context: ExamNetPdfTargetProfileContext,
-    ) -> ExamNetPdfItemStrategyResult:
-        """Render one immutable neutral PDF item into an Exam.net section."""
-        ...
-
-
-@dataclass(frozen=True)
-class ExamNetPdfItemRenderingPolicyRegistry:
-    """Registry that selects a target item strategy without widening callers."""
-
-    strategies_by_item_kind: Mapping[PdfExamItemKind, ExamNetPdfItemRenderingStrategy]
-    unsupported_strategy: ExamNetPdfItemRenderingStrategy
-
-    def render(
-        self,
-        *,
-        item: PdfExamItemSemantics,
-        context: ExamNetPdfTargetProfileContext,
-    ) -> ExamNetPdfItemStrategyResult:
-        """Render one item with the registered strategy for its neutral kind."""
-
-        strategy = self.strategies_by_item_kind.get(item.kind, self.unsupported_strategy)
-        return strategy.render(item=item, context=context)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_rendering import (
+    answer_key_mismatch,
+    gap_answer_key_html,
+    item_shell,
+    marking_guide_html,
+    match_letter,
+    missing_answer_key,
+    missing_gap_key_labels,
+    option_texts_by_id,
+    options_html,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
+    ExamNetPdfItemStrategyResult,
+    ExamNetPdfTargetProfileContext,
+)
 
 
 @dataclass(frozen=True)
@@ -117,12 +55,12 @@ class OpenEndedExamNetPdfItemStrategy:
         labels = context.label_policy
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
-                html=_item_shell(
+                html=item_shell(
                     item=item,
                     labels=labels,
                     item_type_label=labels.free_text_type_label,
                     instruction="",
-                    body_html=_marking_guide_html(item, labels),
+                    body_html=marking_guide_html(item, labels),
                     item_type_marker=labels.source_item_type_marker,
                 )
             )
@@ -139,33 +77,33 @@ class SingleChoiceExamNetPdfItemStrategy:
         item: PdfExamItemSemantics,
         context: ExamNetPdfTargetProfileContext,
     ) -> ExamNetPdfItemStrategyResult:
-        option_text_by_id, warnings = _option_text_by_id(item)
+        option_text_by_id, warnings = option_texts_by_id(item)
         if warnings:
             return ExamNetPdfItemStrategyResult(item=None, warnings=warnings)
         if not option_text_by_id or not item.answer_key.available:
-            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
         if len(item.answer_key.correct_option_ids) != 1:
             return ExamNetPdfItemStrategyResult(
                 item=None,
-                warnings=(_answer_key_mismatch(item, "single-answer choice needs one key"),),
+                warnings=(answer_key_mismatch(item, "single-answer choice needs one key"),),
             )
 
         correct_answer = option_text_by_id.get(item.answer_key.correct_option_ids[0])
         if correct_answer is None:
             return ExamNetPdfItemStrategyResult(
                 item=None,
-                warnings=(_answer_key_mismatch(item, "correct id is not present in options"),),
+                warnings=(answer_key_mismatch(item, "correct id is not present in options"),),
             )
 
         labels = context.label_policy
-        body_html = _options_html(tuple(option_text_by_id.values()))
+        body_html = options_html(tuple(option_text_by_id.values()))
         body_html += (
             f'<p class="answer-key">{escape(labels.single_answer_key_label)}: '
             f"{escape(correct_answer)}</p>"
         )
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
-                html=_item_shell(
+                html=item_shell(
                     item=item,
                     labels=labels,
                     item_type_label=labels.choice_type_label,
@@ -187,15 +125,15 @@ class MultipleResponseExamNetPdfItemStrategy:
         item: PdfExamItemSemantics,
         context: ExamNetPdfTargetProfileContext,
     ) -> ExamNetPdfItemStrategyResult:
-        option_text_by_id, warnings = _option_text_by_id(item)
+        option_text_by_id, warnings = option_texts_by_id(item)
         if warnings:
             return ExamNetPdfItemStrategyResult(item=None, warnings=warnings)
         if not option_text_by_id or not item.answer_key.available:
-            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
         if not item.answer_key.correct_option_ids:
             return ExamNetPdfItemStrategyResult(
                 item=None,
-                warnings=(_answer_key_mismatch(item, "multiple response needs a key"),),
+                warnings=(answer_key_mismatch(item, "multiple response needs a key"),),
             )
 
         correct_answers: list[str] = []
@@ -204,19 +142,19 @@ class MultipleResponseExamNetPdfItemStrategy:
             if correct_answer is None:
                 return ExamNetPdfItemStrategyResult(
                     item=None,
-                    warnings=(_answer_key_mismatch(item, "correct id is not present in options"),),
+                    warnings=(answer_key_mismatch(item, "correct id is not present in options"),),
                 )
             correct_answers.append(correct_answer)
 
         labels = context.label_policy
-        body_html = _options_html(tuple(option_text_by_id.values()))
+        body_html = options_html(tuple(option_text_by_id.values()))
         body_html += (
             f'<p class="answer-key">{escape(labels.multiple_answer_key_label)}: '
             f"{escape('; '.join(correct_answers))}</p>"
         )
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
-                html=_item_shell(
+                html=item_shell(
                     item=item,
                     labels=labels,
                     item_type_label=labels.multiple_response_type_label,
@@ -239,13 +177,13 @@ class GapOpenClozeExamNetPdfItemStrategy:
         context: ExamNetPdfTargetProfileContext,
     ) -> ExamNetPdfItemStrategyResult:
         if not item.answer_key.correct_gap_answers:
-            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
-        missing_key_labels = _missing_gap_key_labels(item, context.label_policy)
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
+        missing_key_labels = missing_gap_key_labels(item, context.label_policy)
         if missing_key_labels:
             return ExamNetPdfItemStrategyResult(
                 item=None,
                 warnings=(
-                    _answer_key_mismatch(
+                    answer_key_mismatch(
                         item,
                         f"missing accepted values for {missing_key_labels}",
                     ),
@@ -253,10 +191,10 @@ class GapOpenClozeExamNetPdfItemStrategy:
             )
 
         labels = context.label_policy
-        body_html = _gap_answer_key_html(item, labels)
+        body_html = gap_answer_key_html(item, labels)
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
-                html=_item_shell(
+                html=item_shell(
                     item=item,
                     labels=labels,
                     item_type_label=labels.gap_open_cloze_type_label,
@@ -279,12 +217,12 @@ class MatchingExamNetPdfItemStrategy:
         context: ExamNetPdfTargetProfileContext,
     ) -> ExamNetPdfItemStrategyResult:
         if not item.match_left or not item.answer_key.available:
-            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
         left_text_by_id = {entry.entry_id: entry.text for entry in item.match_left}
         right_text_by_id = {entry.entry_id: entry.text for entry in item.match_right}
         pairs = item.answer_key.correct_match_pairs
         if not pairs:
-            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
         if (
             any(
                 pair.left_id not in left_text_by_id or pair.right_id not in right_text_by_id
@@ -295,7 +233,7 @@ class MatchingExamNetPdfItemStrategy:
         ):
             return ExamNetPdfItemStrategyResult(
                 item=None,
-                warnings=(_answer_key_mismatch(item, "pairs do not key every left entry once"),),
+                warnings=(answer_key_mismatch(item, "pairs do not key every left entry once"),),
             )
 
         labels = context.label_policy
@@ -304,7 +242,7 @@ class MatchingExamNetPdfItemStrategy:
             for index, entry in enumerate(item.match_left, start=1)
         )
         right_html = "".join(
-            f"<p>{_match_letter(index)}) {escape(entry.text)}</p>"
+            f"<p>{match_letter(index)}) {escape(entry.text)}</p>"
             for index, entry in enumerate(item.match_right)
         )
         key_rows = "".join(
@@ -320,7 +258,7 @@ class MatchingExamNetPdfItemStrategy:
         )
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
-                html=_item_shell(
+                html=item_shell(
                     item=item,
                     labels=labels,
                     item_type_label=labels.matching_type_label,
@@ -363,142 +301,3 @@ class UnsupportedExamNetPdfItemStrategy:
                 ),
             ),
         )
-
-
-DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
-    target_id="examnet_pdf",
-    profile_version="examnet-pdf-swedish-v1",
-    label_policy=ExamNetPdfItemLabelPolicy(),
-)
-
-DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY = ExamNetPdfItemRenderingPolicyRegistry(
-    strategies_by_item_kind={
-        PdfExamItemKind.OPEN_RESPONSE: OpenEndedExamNetPdfItemStrategy(),
-        PdfExamItemKind.SINGLE_CHOICE: SingleChoiceExamNetPdfItemStrategy(),
-        PdfExamItemKind.MULTIPLE_RESPONSE: MultipleResponseExamNetPdfItemStrategy(),
-        PdfExamItemKind.GAP_OPEN_CLOZE: GapOpenClozeExamNetPdfItemStrategy(),
-        PdfExamItemKind.MATCHING: MatchingExamNetPdfItemStrategy(),
-    },
-    unsupported_strategy=UnsupportedExamNetPdfItemStrategy(),
-)
-
-
-def _option_text_by_id(
-    item: PdfExamItemSemantics,
-) -> tuple[dict[int, str], tuple[DigiExamExamNetPdfWarning, ...]]:
-    option_text_by_id: dict[int, str] = {}
-    warnings: list[DigiExamExamNetPdfWarning] = []
-    for option in item.options:
-        option_text = _target_option_text(option.text)
-        if option_text == "":
-            continue
-        option_text_by_id[option.option_id] = option_text
-
-    if len(set(option_text_by_id.values())) != len(option_text_by_id):
-        return {}, (_answer_key_mismatch(item, "duplicate option text is unsafe"),)
-    return option_text_by_id, tuple(warnings)
-
-
-def _target_option_text(source_text: str) -> str:
-    normalized_text = " ".join(source_text.split())
-    return _LABELLED_OPTION_PATTERN.sub("", normalized_text, count=1)
-
-
-def _missing_answer_key(item: PdfExamItemSemantics) -> DigiExamExamNetPdfWarning:
-    return DigiExamExamNetPdfWarning(
-        code=DigiExamExamNetPdfWarningCode.MANUAL_ANSWER_KEY_REQUIRED,
-        message=f"Item {item.item_id} needs source-proven answer-key data before PDF render.",
-        item_id=item.item_id,
-    )
-
-
-def _answer_key_mismatch(
-    item: PdfExamItemSemantics,
-    reason: str,
-) -> DigiExamExamNetPdfWarning:
-    return DigiExamExamNetPdfWarning(
-        code=DigiExamExamNetPdfWarningCode.ALTERNATIVE_ANSWER_KEY_MISMATCH,
-        message=f"Item {item.item_id} cannot render safely: {reason}.",
-        item_id=item.item_id,
-    )
-
-
-def _match_letter(index: int) -> str:
-    if index < 26:
-        return chr(ord("A") + index)
-    return str(index + 1)
-
-
-def _options_html(options: tuple[str, ...]) -> str:
-    options_html = "".join(f"<p>{escape(option)}</p>" for option in options)
-    return f'<div class="options">{options_html}</div>'
-
-
-def _missing_gap_key_labels(
-    item: PdfExamItemSemantics,
-    labels: ExamNetPdfItemLabelPolicy,
-) -> str:
-    values_by_gap_id = _gap_values_by_gap_id(item)
-    missing_labels = tuple(
-        f"{labels.gap_label} {index}"
-        for index, gap in enumerate(item.gaps, start=1)
-        if not values_by_gap_id.get(gap.gap_id)
-    )
-    return ", ".join(missing_labels)
-
-
-def _gap_answer_key_html(
-    item: PdfExamItemSemantics,
-    labels: ExamNetPdfItemLabelPolicy,
-) -> str:
-    values_by_gap_id = _gap_values_by_gap_id(item)
-    if len(item.gaps) == 1:
-        values = values_by_gap_id.get(item.gaps[0].gap_id, ())
-        return (
-            f'<p class="answer-key">{escape(labels.multiple_answer_key_label)}: '
-            f"{escape('; '.join(values))}</p>"
-        )
-    rows = "".join(
-        f"<p>{escape(labels.gap_label)} {index}: "
-        f"{escape('; '.join(values_by_gap_id.get(gap.gap_id, ())))}</p>"
-        for index, gap in enumerate(item.gaps, start=1)
-    )
-    return f'<div class="answer-key"><p>{escape(labels.multiple_answer_key_label)}:</p>{rows}</div>'
-
-
-def _marking_guide_html(item: PdfExamItemSemantics, labels: ExamNetPdfItemLabelPolicy) -> str:
-    if not item.marking_guide:
-        return ""
-    guide = escape(item.marking_guide).replace("\n", "<br>")
-    return f'<p class="answer-key">{escape(labels.marking_guide_label)}: {guide}</p>'
-
-
-def _gap_values_by_gap_id(item: PdfExamItemSemantics) -> dict[str, tuple[str, ...]]:
-    values_by_gap_id: dict[str, list[str]] = {gap.gap_id: [] for gap in item.gaps}
-    for answer in item.answer_key.correct_gap_answers:
-        value = answer.value.strip()
-        if value and answer.gap_id in values_by_gap_id:
-            values_by_gap_id[answer.gap_id].append(value)
-    return {gap_id: tuple(values) for gap_id, values in values_by_gap_id.items()}
-
-
-def _item_shell(
-    *,
-    item: PdfExamItemSemantics,
-    labels: ExamNetPdfItemLabelPolicy,
-    item_type_label: str,
-    instruction: str,
-    body_html: str,
-    item_type_marker: str,
-) -> str:
-    instruction_html = f"<p>{escape(instruction)}</p>" if instruction else ""
-    return (
-        '<section class="exam-item">'
-        f"<h2>Fråga {item.sequence}</h2>"
-        f'<p class="points">{escape(labels.point_label)}: {item.points}</p>'
-        f'<p class="item-type">{escape(item_type_marker)}: {escape(item_type_label)}</p>'
-        f"{instruction_html}"
-        f'<div class="prompt">{item.prompt_html}</div>'
-        f"{body_html}"
-        "</section>"
-    )
