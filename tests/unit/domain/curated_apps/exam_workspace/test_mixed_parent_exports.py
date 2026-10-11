@@ -1,14 +1,20 @@
-"""Exam.net QTI export of a recorded parent whose children differ in kind (D27).
+"""Exports of a recorded parent whose children differ in kind (D27).
 
-A parent holds any mix of question types, as an Exam.net information block does: it exports
-as one assessment item with one interaction per child, each child with its own response and
-mapping, and SCORE sums every child's mapped responses.
+A parent holds any mix of question types, as an Exam.net information block does. QTI exports
+it as one assessment item with one interaction per child, each child with its own response
+and mapping, and SCORE sums every child's mapped responses. PDF and DOCX print the
+instruction once, before the first child, and each child as its own kind.
 """
 
 import io
 import zipfile
 from xml.etree import ElementTree
 
+from docx import Document
+
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
+    DigiExamExamNetPdfStatus,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiExamNetProofStatus,
     ExamNetQtiInteractionType,
@@ -26,11 +32,17 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_validation imp
     build_examnet_qti_validation_report,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
+    native_exam_to_pdf_document,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
+    ExamWorkspaceDocxWriter,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
@@ -174,3 +186,26 @@ def test_package_status_reads_a_gated_child_behind_a_choice_first_child():
 
     assert plan.target_support_status is ExamNetQtiTargetSupportStatus.PROOF_GATED
     assert plan.examnet_proof_status is ExamNetQtiExamNetProofStatus.NOT_PROVEN
+
+
+def test_pdf_and_docx_print_a_mixed_parent_instruction_once_before_its_first_child():
+    numbers = _mixed_window()
+    document = recorded_document((parent_over("parent_001", _INSTRUCTION, *numbers),))
+    children = [document.item_by_id(f"item_{n:03d}") for n in numbers]
+    assert len({child.kind for child in children}) == 3
+    opening = children[0].plain_text_lines()[0]
+
+    pdf = native_exam_to_pdf_document(document)
+    assert pdf.status is DigiExamExamNetPdfStatus.SUCCESS, pdf.warnings
+    assert pdf.html.count(_INSTRUCTION) == 1
+    first_section = pdf.html.index(f"<h2>Fråga {numbers[0]}</h2>")
+    second_section = pdf.html.index(f"<h2>Fråga {numbers[1]}</h2>")
+    assert first_section < pdf.html.index(_INSTRUCTION) < second_section
+
+    writer = ExamWorkspaceDocxWriter()
+    content = writer.build_docx_bytes(document)
+    writer.validate_docx_bytes(content, expected_item_count=len(document.items))
+    lines = [p.text for p in Document(io.BytesIO(content)).paragraphs]
+    assert lines.count(_INSTRUCTION) == 1
+    opening_at = next(k for k, line in enumerate(lines) if opening in line)
+    assert lines.index(_INSTRUCTION) < opening_at

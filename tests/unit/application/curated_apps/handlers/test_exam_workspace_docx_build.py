@@ -239,3 +239,25 @@ async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_item
         for e in outcome.result.events
     )
     assert outcome.update.pending == ()
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_questions_one_context_governs_share_one_parent_whatever_their_kinds(exam: str):
+    _, outcome = await _convert(exam)
+    update = outcome.update
+    document = update.document
+    items = {item.item_id: item for item in document.items}
+
+    assert not [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"]
+    for context in _manifest(exam).contexts:
+        governed = [q for q in context.governs if update.item_ids.get(q)]
+        parents = {update.parent_ids.get(q) for q in governed}
+        if len(governed) >= 2:
+            assert len(parents) == 1 and None not in parents, context.anchor
+    mixed = [
+        parent
+        for parent in document.parents
+        if len({items[item_id].kind for item_id in parent.item_ids}) > 1
+    ]
+    if exam == _GRAMMAR_1:
+        assert mixed, "the grammar exam's mixed-kind section lost its parent"
