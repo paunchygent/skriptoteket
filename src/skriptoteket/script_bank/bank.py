@@ -84,7 +84,7 @@ Adresserna är semikolonseparerade och fungerar direkt i Outlook.""",
         profession_slugs=["gemensamt"],
         category_slugs=["administration", "ovrigt"],
         seed_group=ScriptBankSeedGroup.CURATED,
-        source_filename="markdown_to_docx.py",
+        source_filename="markdown_to_docx/tool.py",
         input_schema=[
             ToolInputFileField(
                 name="markdown_files",
@@ -208,7 +208,7 @@ Det här verktyget visar alla Skriptoteket-funktioner:
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         seed_group=ScriptBankSeedGroup.CURATED,
-        source_filename="html_to_pdf_preview.py",
+        source_filename="html_to_pdf_preview/tool.py",
         input_schema=[
             ToolInputFileField(name="files", label="Filer", min=1, max=10),
         ],
@@ -244,7 +244,7 @@ minska upprepade par.
         profession_slugs=["larare"],
         category_slugs=["administration"],
         seed_group=ScriptBankSeedGroup.CURATED,
-        source_filename="gruppgenerator.py",
+        source_filename="gruppgenerator/tool.py",
         settings_schema=[
             UiTextField(name="saved_classes_json", label="Sparade klasser (JSON)"),
         ],
@@ -341,7 +341,7 @@ minska upprepade par.
         profession_slugs=["gemensamt"],
         category_slugs=["ovrigt"],
         seed_group=ScriptBankSeedGroup.CURATED,
-        source_filename="yrkesgenerator.py",
+        source_filename="yrkesgenerator/tool.py",
         input_schema=[
             ToolInputStringField(
                 name="full_name",

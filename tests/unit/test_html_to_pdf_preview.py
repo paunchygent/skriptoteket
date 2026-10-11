@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from skriptoteket.script_bank.scripts import html_to_pdf_preview
+from skriptoteket.script_bank.scripts.html_to_pdf_preview import html_prep, tool
 
 
 def _find_table_output(payload: dict[str, object], *, title: str) -> dict[str, object]:
@@ -20,7 +20,7 @@ def _find_table_output(payload: dict[str, object], *, title: str) -> dict[str, o
 
 @pytest.mark.unit
 def test_build_page_css_sets_margin_zero_and_normalizes_page_size() -> None:
-    css_a4 = html_to_pdf_preview._build_page_css(
+    css_a4 = html_prep.build_page_css(
         page_size="a4",
         orientation="portrait",
     )
@@ -35,7 +35,7 @@ def test_build_page_css_sets_margin_zero_and_normalizes_page_size() -> None:
     assert ".card, .diagram" in css_a4
     assert "max-height" in css_a4
 
-    css_letter = html_to_pdf_preview._build_page_css(
+    css_letter = html_prep.build_page_css(
         page_size="letter",
         orientation="landscape",
     )
@@ -46,7 +46,7 @@ def test_build_page_css_sets_margin_zero_and_normalizes_page_size() -> None:
 @pytest.mark.unit
 def test_force_details_open_adds_open_attribute() -> None:
     html = "<html><body><details><summary>x</summary><div>y</div></details></body></html>"
-    updated = html_to_pdf_preview._force_details_open(html=html)
+    updated = html_prep._force_details_open(html=html)
     assert "<details open>" in updated
 
 
@@ -57,7 +57,7 @@ def test_force_details_open_does_not_duplicate_open_attribute() -> None:
         '<details open="open"><summary>a</summary><div>b</div></details>'
         "</body></html>"
     )
-    updated = html_to_pdf_preview._force_details_open(html=html)
+    updated = html_prep._force_details_open(html=html)
     assert updated.count("<details open") == 2
 
 
@@ -65,7 +65,7 @@ def test_force_details_open_does_not_duplicate_open_attribute() -> None:
 def test_inject_author_css_inserts_before_head_close() -> None:
     html = "<html><head><title>x</title></head><body>y</body></html>"
     css = "body { color: red; }"
-    updated = html_to_pdf_preview._inject_author_css(html=html, css=css)
+    updated = html_prep.inject_author_css(html=html, css=css)
     assert "<style>" in updated
     assert css in updated
     assert updated.index("<style>") < updated.index("</head>")
@@ -74,7 +74,7 @@ def test_inject_author_css_inserts_before_head_close() -> None:
 @pytest.mark.unit
 def test_rewrite_details_to_divs_removes_summary_tags() -> None:
     html = "<html><body><details><summary>Title</summary><div>Body</div></details></body></html>"
-    updated = html_to_pdf_preview._rewrite_details_to_divs(html=html)
+    updated = html_prep._rewrite_details_to_divs(html=html)
     assert "<details" not in updated
     assert "</details>" not in updated
     assert "<summary" not in updated
@@ -90,7 +90,7 @@ def test_inline_css_into_svgs_inserts_style_tag_inside_svg(tmp_path: Path) -> No
         '<svg viewBox="0 0 10 10"><rect class="node"/></svg>'
         "</body></html>"
     )
-    updated = html_to_pdf_preview._inline_css_into_svgs(html=html, base_dir=tmp_path)
+    updated = html_prep._inline_css_into_svgs(html=html, base_dir=tmp_path)
     assert "<svg" in updated
     assert "<style" in updated
     assert ".node{fill:red}" in updated
@@ -113,7 +113,7 @@ def test_inline_css_into_svgs_includes_linked_css_and_imports(tmp_path: Path) ->
         '<svg viewBox="0 0 10 10"><rect class="from_a"/></svg>'
         "</body></html>"
     )
-    updated = html_to_pdf_preview._inline_css_into_svgs(html=html, base_dir=base_dir)
+    updated = html_prep._inline_css_into_svgs(html=html, base_dir=base_dir)
     assert ".from_a{fill:green}" in updated
     assert ".from_b{stroke:blue}" in updated
 
@@ -127,7 +127,7 @@ def test_inline_css_into_svgs_ignores_remote_stylesheets(tmp_path: Path) -> None
         '<svg viewBox="0 0 10 10"><rect/></svg>'
         "</body></html>"
     )
-    updated = html_to_pdf_preview._inline_css_into_svgs(html=html, base_dir=tmp_path)
+    updated = html_prep._inline_css_into_svgs(html=html, base_dir=tmp_path)
     assert '<style type="text/css">' not in updated
 
 
@@ -142,7 +142,7 @@ def test_select_print_css_skips_injection_when_document_defines_at_page(
         '<html><head><link rel="stylesheet" href="debate_card_style.css"></head>'
         '<body><div class="page">x</div></body></html>'
     )
-    css, is_tool_editor = html_to_pdf_preview._select_print_css_for_document(
+    css, is_tool_editor = html_prep.select_print_css_for_document(
         html=html,
         base_dir=tmp_path,
         page_size="a4",
@@ -155,7 +155,7 @@ def test_select_print_css_skips_injection_when_document_defines_at_page(
 @pytest.mark.unit
 def test_select_print_css_injects_size_only_when_no_at_page(tmp_path: Path) -> None:
     html = "<html><head><style>body { color: black; }</style></head><body>x</body></html>"
-    css, is_tool_editor = html_to_pdf_preview._select_print_css_for_document(
+    css, is_tool_editor = html_prep.select_print_css_for_document(
         html=html,
         base_dir=tmp_path,
         page_size="a4",
@@ -174,7 +174,7 @@ def test_select_print_css_uses_tool_editor_overrides_when_detected(tmp_path: Pat
         "<html><head><style>.app{display:grid}</style></head>"
         '<body><div class="app"><aside class="sidebar"></aside></div></body></html>'
     )
-    css, is_tool_editor = html_to_pdf_preview._select_print_css_for_document(
+    css, is_tool_editor = html_prep.select_print_css_for_document(
         html=html,
         base_dir=tmp_path,
         page_size="a4",
@@ -189,7 +189,7 @@ def test_select_print_css_uses_tool_editor_overrides_when_detected(tmp_path: Pat
 @pytest.mark.unit
 def test_wrap_preview_html_injects_wrappers_and_css() -> None:
     html = "<html><head><title>x</title></head><body><div>y</div></body></html>"
-    wrapped = html_to_pdf_preview._wrap_preview_html(html=html)
+    wrapped = html_prep.wrap_preview_html(html=html)
     assert 'id="__preview_outer"' in wrapped
     assert 'id="__preview_inner"' in wrapped
     assert "--preview-scale" in wrapped
@@ -206,14 +206,14 @@ def test_wrap_preview_html_is_idempotent() -> None:
         '<body><div id="__preview_outer"><div id="__preview_inner">y</div></div></body>'
         "</html>"
     )
-    wrapped = html_to_pdf_preview._wrap_preview_html(html=html)
+    wrapped = html_prep.wrap_preview_html(html=html)
     assert wrapped == html
 
 
 @pytest.mark.unit
 def test_wrap_pdf_html_injects_wrappers_and_css() -> None:
     html = "<html><head><title>x</title></head><body><div>y</div></body></html>"
-    wrapped = html_to_pdf_preview._wrap_pdf_html(html=html)
+    wrapped = html_prep.wrap_pdf_html(html=html)
     assert 'id="__pdf_outer"' in wrapped
     assert 'id="__pdf_inner"' in wrapped
     assert "#__pdf_outer" in wrapped
@@ -226,13 +226,13 @@ def test_wrap_pdf_html_is_idempotent() -> None:
         '<body><div id="__pdf_outer"><div id="__pdf_inner">y</div></div></body>'
         "</html>"
     )
-    wrapped = html_to_pdf_preview._wrap_pdf_html(html=html)
+    wrapped = html_prep.wrap_pdf_html(html=html)
     assert wrapped == html
 
 
 @pytest.mark.unit
 def test_build_weasyprint_recovery_css_relaxes_break_rules() -> None:
-    css = html_to_pdf_preview._build_weasyprint_recovery_css()
+    css = html_prep.build_weasyprint_recovery_css()
     assert "height: auto" in css
     assert "break-inside: auto" in css
     assert "page-break-inside: auto" in css
@@ -261,9 +261,9 @@ def test_handle_action_writes_error_artifact_and_short_table_message(
     ) -> str | None:  # noqa: ARG001
         raise Exception(long_a)  # noqa: BLE001
 
-    monkeypatch.setattr(html_to_pdf_preview, "_try_weasyprint", _fail_weasyprint)
+    monkeypatch.setattr(tool, "try_weasyprint", _fail_weasyprint)
 
-    payload = html_to_pdf_preview._handle_action(
+    payload = tool._handle_action(
         action_id="convert",
         input_data={"page_size": "a4", "orientation": "portrait"},
         state={"html_files": [str(source)]},
@@ -308,9 +308,9 @@ def test_handle_action_success_does_not_write_error_artifact(
         pdf_path.write_bytes(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
         return "weasyprint"
 
-    monkeypatch.setattr(html_to_pdf_preview, "_try_weasyprint", _ok_weasyprint)
+    monkeypatch.setattr(tool, "try_weasyprint", _ok_weasyprint)
 
-    payload = html_to_pdf_preview._handle_action(
+    payload = tool._handle_action(
         action_id="convert",
         input_data={"page_size": "a4", "orientation": "portrait"},
         state={"html_files": [str(source)]},
