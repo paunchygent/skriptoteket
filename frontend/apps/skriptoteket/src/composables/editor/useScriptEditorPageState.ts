@@ -24,6 +24,7 @@ export function useScriptEditorPageState() {
     editor,
     entrypoint,
     sourceCode,
+    bundleFiles,
     settingsSchemaText,
     inputSchemaText,
     usageInstructions,
@@ -103,6 +104,7 @@ export function useScriptEditorPageState() {
     fields: {
       entrypoint,
       sourceCode,
+      bundleFiles,
       settingsSchemaText,
       inputSchemaText,
       usageInstructions,
@@ -198,6 +200,7 @@ export function useScriptEditorPageState() {
     changeSummary,
     entrypoint,
     sourceCode,
+    bundleFiles,
     settingsSchemaText,
     inputSchemaText,
     usageInstructions,

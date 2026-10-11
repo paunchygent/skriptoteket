@@ -140,6 +140,7 @@ def test_save_draft_snapshot_success() -> None:
         new_version_id=new_version_id,
         new_version_number=2,
         source_code="new code",
+        bundle_files={},
         entrypoint="app.py",
         input_schema=[],
         saved_by_user_id=user_id,
@@ -187,6 +188,7 @@ def test_save_draft_snapshot_validations() -> None:
             new_version_id=uuid4(),
             new_version_number=3,
             source_code="code",
+            bundle_files={},
             entrypoint="main.py",
             input_schema=[],
             saved_by_user_id=user_id,
@@ -202,6 +204,7 @@ def test_save_draft_snapshot_validations() -> None:
             new_version_id=uuid4(),
             new_version_number=2,  # Same as previous
             source_code="code",
+            bundle_files={},
             entrypoint="main.py",
             input_schema=[],
             saved_by_user_id=user_id,

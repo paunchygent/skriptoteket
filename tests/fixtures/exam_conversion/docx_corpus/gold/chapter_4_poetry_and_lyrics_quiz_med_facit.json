@@ -1,5 +1,5 @@
 {
-  "schema_version": "exam_conversion_gold_v1",
+  "schema_version": "exam_conversion_gold_v2",
   "source_filename": "chapter_4_poetry_and_lyrics_quiz_med_facit.docx",
   "source_sha256": "c396eac546dae8cbdbd569ce563d85b756121b2f8b1ef1250b85c18cde6357b6",
   "title": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
@@ -79,40 +79,47 @@
       "teacher_questions": []
     },
     {
-      "source_label": "Part 1, Question 5",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Read the sentence:\n“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
-      "choices": [
-        "symbolism",
-        "imagery",
-        "metaphor",
-        "alliteration"
-      ],
-      "correct_choices": [
-        "imagery"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 1, Question 6",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Read the sentence:\n“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
-      "choices": [
-        "imagery",
-        "symbolism",
-        "alliteration",
-        "metaphor"
-      ],
-      "correct_choices": [
-        "metaphor"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
+      "kind": "parent",
+      "source_label": "Part 1, Question 5–6",
+      "instruction": "Read the sentence:",
+      "children": [
+        {
+          "source_label": "Part 1, Question 5",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
+          "choices": [
+            "symbolism",
+            "imagery",
+            "metaphor",
+            "alliteration"
+          ],
+          "correct_choices": [
+            "imagery"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "Part 1, Question 6",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
+          "choices": [
+            "imagery",
+            "symbolism",
+            "alliteration",
+            "metaphor"
+          ],
+          "correct_choices": [
+            "metaphor"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        }
+      ]
     },
     {
       "source_label": "Part 1, Question 7",
@@ -431,123 +438,130 @@
       "teacher_questions": []
     },
     {
-      "source_label": "Part 3, Question 1",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always [___] the letters her grandmother wrote her, and she keeps them in a wooden box.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Part 3, Question 1–7",
+      "instruction": "Word box:",
+      "children": [
         {
-          "accepted_values": [
-            "cherish"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 2",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to [___] the desert from east to west.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 1",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always [___] the letters her grandmother wrote her, and she keeps them in a wooden box.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "cherish"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "traverse"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 3",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to [___] other players by mocking them.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 2",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to [___] the desert from east to west.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "traverse"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "humiliate"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 4",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. [___], the chorus changes key without warning, and everyone looks up in surprise.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 3",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to [___] other players by mocking them.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "humiliate"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "out of the blue"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 5",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each [___] in the first stanza has eight syllables.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 4",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. [___], the chorus changes key without warning, and everyone looks up in surprise.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "out of the blue"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "line"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 6",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the [___], are all common and concrete.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 5",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each [___] in the first stanza has eight syllables.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "line"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "diction"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 3, Question 7",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Word box:\nalliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of [___].",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "Part 3, Question 6",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the [___], are all common and concrete.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "diction"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "alliteration"
-          ]
+          "source_label": "Part 3, Question 7",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of [___].",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "alliteration"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
         }
-      ],
-      "pairs": [],
-      "teacher_questions": []
+      ]
     }
   ],
   "notes": [

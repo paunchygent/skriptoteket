@@ -79,3 +79,4 @@ runs through the real runner on real input.
 | D3 | The four tools split into files under 500 lines each, by the responsibilities in N2; career data and template become a data module and a template file. |
 | D4 | Storage shape follows the existing persistence and read paths, through a migration. |
 | D5 | The ADR is written after implementation from what was built, status proposed, and reviewed by the advisor. |
+| D6  | The script editor and version views show every file of a bundled version, entrypoint first, and the editor edits and saves them together as one new version (user decision 2026-10-11, resolving the source-code reader stop condition). |

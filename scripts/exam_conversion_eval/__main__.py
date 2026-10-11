@@ -49,33 +49,19 @@ from .gold import GoldExam
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 _RECORDINGS = Path("tests/fixtures/exam_conversion")
-# Each exam's recorded provider responses in round order.
-_RECORDED_ROUNDS: dict[str, tuple[str, ...]] = {
-    "bf26_diagnostic_grammar_test_ht26_med_facit": (
-        "bf26_diagnostic_grammar_docx_build_response.json",
-    ),
-    "bf26_english_1_unit_test_kap_1_2_med_facit": ("bf26_english_1_docx_build_response.json",),
-    "chapter_4_poetry_and_lyrics_quiz_med_facit": ("chapter_4_poetry_docx_build_response.json",),
-    "metodprov_vetenskaplig_metod_med_facit": ("metodprov_docx_build_response.json",),
-    "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit": (
-        "sa24_solid_gold_3_docx_build_response_round1.json",
-        "sa24_solid_gold_3_docx_build_response_round2.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_1_med_facit": (
-        "svenska_2_grammatik_variant_1_docx_build_response.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_2_med_facit": (
-        "svenska_2_grammatik_variant_2_docx_build_response.json",
-    ),
-    "svenska_2_kursavslutande_prov_med_facit": (
-        "svenska_2_kursavslutande_prov_docx_build_response.json",
-    ),
-}
+# Each exam's recorded provider responses, one file per round, from a prompt v7 live run.
+_RECORDED_RUN = _RECORDINGS / "docx_build_v7"
+
+
+def _recorded_rounds(exam: str) -> list[Path]:
+    return sorted((_RECORDED_RUN / exam).glob("round*.json"))
 
 
 @dataclass(frozen=True)
 class _ExamReport:
     exam: str
+    gold_title: str
+    title: str | None
     gold_items: int
     converted_items: int
     input_tokens: int | None
@@ -172,18 +158,21 @@ async def _evaluate(
         clock=UTCClock(),
         enabled=True,
     )
+    chunks = PythonDocxExamChunker().chunk(content=content)
     try:
         result = await converter.convert(
             job_id=uuid4(),
             document_id=uuid4(),
             filename=docx.name,
             source_sha256=source_sha256,
-            chunks=PythonDocxExamChunker().chunk(content=content),
+            chunks=chunks,
         )
     except Exception as error:
         return _ExamReport(
             exam=docx.stem,
-            gold_items=len(gold.items),
+            gold_title=gold.title,
+            title=None,
+            gold_items=len(gold.questions),
             converted_items=0,
             input_tokens=None,
             output_tokens=None,
@@ -193,22 +182,22 @@ async def _evaluate(
         )
     return _ExamReport(
         exam=docx.stem,
-        gold_items=len(gold.items),
+        gold_title=gold.title,
+        title=result.document.title,
+        gold_items=len(gold.questions),
         converted_items=len(result.document.items),
         input_tokens=result.input_tokens,
         output_tokens=result.output_tokens,
         events=tuple(event.as_json() for event in result.events),
         crash=None,
-        comparison=compare_native_exam(gold, result.document),
+        comparison=compare_native_exam(gold, result.document, [chunk.text for chunk in chunks]),
     )
 
 
 async def _recorded(settings: Settings) -> list[_ExamReport]:
     exams = sorted(_CORPUS.glob("*.docx"))
     providers = [
-        _ReplayedProvider(
-            [json.loads((_RECORDINGS / name).read_text()) for name in _RECORDED_ROUNDS[docx.stem]]
-        )
+        _ReplayedProvider([json.loads(path.read_text()) for path in _recorded_rounds(docx.stem)])
         for docx in exams
     ]
     return list(
@@ -249,14 +238,20 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             f" tokens in {report.input_tokens} out {report.output_tokens};"
             f" events {len(report.events)}"
         )
+        failures = report.comparison.failures_by_principle()
+        print(
+            "  failing items per principle: " + ", ".join(f"{p} {n}" for p, n in failures.items())
+        )
+        if not report.comparison.title.passed:
+            print(f"  title fails: gold={report.gold_title!r} actual={report.title!r}")
         if report.crash:
             print(f"  conversion crashed: {report.crash[:300]}")
         for item in failed:
             for mismatch in item.mismatches:
                 detail = f"expected={mismatch.expected!r} actual={mismatch.actual!r}"
                 print(
-                    f"  [{item.index}] {item.source_label} {mismatch.field} {mismatch.reason}:"
-                    f" {detail[:200]}"
+                    f"  [{item.index}] {item.source_label} {mismatch.principle} {mismatch.reason}:"
+                    f" {detail[:400]}"
                 )
 
 

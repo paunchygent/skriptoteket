@@ -38,6 +38,7 @@ class ToolVersionOverride(BaseModel):
 
     entrypoint: str | None = None
     source_code: str | None = None
+    bundle_files: dict[str, str] | None = None
     settings_schema: ToolSettingsSchema | None = None
     input_schema: ToolInputSchema | None = None
     usage_instructions: str | None = None
@@ -48,6 +49,7 @@ class SandboxSnapshotPayload(BaseModel):
 
     entrypoint: str = Field(..., min_length=1, max_length=128)
     source_code: str = Field(..., min_length=1)
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: ToolSettingsSchema | None = None
     input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None
@@ -102,6 +104,7 @@ class SaveDraftVersionCommand(BaseModel):
     version_id: UUID
     entrypoint: str = "run_tool"
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: ToolSettingsSchema | None = None
     input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None

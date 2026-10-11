@@ -6,8 +6,8 @@
  *   or DOCX export, so invalid states are explained at the question instead
  *   of discovered at export. The server export gate stays authoritative;
  *   this mirrors its reasons and adds the item states the save refuses:
- *   a partial gap key, points that are not greater than zero, and a choice
- *   without text.
+ *   a partial gap key, an incomplete matching key, points that are not
+ *   greater than zero, and a choice or matching entry without text.
  *
  * Relationships:
  *   - Mirrors `native_export_blockers` in
@@ -23,26 +23,42 @@ import type {
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
-import { isPartiallyKeyedGapItem, PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import {
+  INCOMPLETE_MATCH_KEY_GUIDANCE,
+  isIncompleteMatchingItem,
+  isPartiallyKeyedGapItem,
+  PARTIAL_GAP_KEY_GUIDANCE,
+} from "./examWorkspaceAnswerKeyRules";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
+  EMPTY_MATCH_TEXT_GUIDANCE,
   hasEmptyChoiceText,
+  hasEmptyMatchText,
   hasNonPositivePoints,
   NON_POSITIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
 
-const KEYED_KINDS = new Set<NativeExamItemKind>(["gap_fill", "multiple_response", "single_choice"]);
+const KEYED_KINDS = new Set<NativeExamItemKind>([
+  "gap_fill",
+  "matching",
+  "multiple_response",
+  "single_choice",
+]);
 
 export type ExamWorkspaceReadinessReason =
   | ExamWorkspaceExportBlockerReason
   | "empty_choice_text"
+  | "empty_match_text"
+  | "incomplete_match_key"
   | "non_positive_points"
   | "partial_gap_key";
 
 const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
   ...EXAM_WORKSPACE_EXPORT_BLOCKER_COPY,
   empty_choice_text: EMPTY_CHOICE_TEXT_GUIDANCE,
+  empty_match_text: EMPTY_MATCH_TEXT_GUIDANCE,
+  incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
   non_positive_points: NON_POSITIVE_POINTS_GUIDANCE,
   partial_gap_key: PARTIAL_GAP_KEY_GUIDANCE,
 };
@@ -61,6 +77,9 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   if (isPartiallyKeyedGapItem(item)) {
     reasons.push("partial_gap_key");
   }
+  if (isIncompleteMatchingItem(item)) {
+    reasons.push("incomplete_match_key");
+  }
   if (item.points === null) {
     reasons.push("missing_points");
   }
@@ -69,6 +88,9 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   }
   if (hasEmptyChoiceText(item)) {
     reasons.push("empty_choice_text");
+  }
+  if (hasEmptyMatchText(item)) {
+    reasons.push("empty_match_text");
   }
   return reasons;
 }

@@ -110,8 +110,16 @@ class ExamNetQtiChoice:
 
 
 @dataclass(frozen=True)
+class ExamNetQtiMatchEntry:
+    """One visible entry of a QTI match interaction list, in the source's own order."""
+
+    identifier: str
+    text: str
+
+
+@dataclass(frozen=True)
 class ExamNetQtiMatchPair:
-    """One exact left/right pair for a proof-gated QTI match interaction."""
+    """One exact left/right pair, carried only by the response and scoring data."""
 
     left_identifier: str
     left_text: str
@@ -151,7 +159,13 @@ class ExamNetQtiUnsupportedResource:
 
 @dataclass(frozen=True)
 class ExamNetQtiItem:
-    """One QTI item request in the Exam.net target profile."""
+    """One QTI item request in the Exam.net target profile.
+
+    A parent item carries ``children`` (items of one interaction type, in order)
+    and the ``instruction_lines`` they share; it exports as one assessment item
+    holding one interaction per child. Its ``image_resources`` are the children's
+    in order, so package planning writes every image once under the parent.
+    """
 
     item_id: str
     sequence: int
@@ -169,8 +183,12 @@ class ExamNetQtiItem:
     correct_choice_identifiers: tuple[str, ...] = ()
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = ()
     match_pairs: tuple[ExamNetQtiMatchPair, ...] = ()
+    match_left: tuple[ExamNetQtiMatchEntry, ...] = ()
+    match_right: tuple[ExamNetQtiMatchEntry, ...] = ()
     image_resources: tuple[ExamNetQtiImageResource, ...] = ()
     unsupported_resources: tuple[ExamNetQtiUnsupportedResource, ...] = ()
+    instruction_lines: tuple[str, ...] = ()
+    children: tuple[ExamNetQtiItem, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -18,6 +18,7 @@ class SandboxSnapshot(BaseModel):
     created_by_user_id: UUID
     entrypoint: str
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: ToolSettingsSchema | None = None
     input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None

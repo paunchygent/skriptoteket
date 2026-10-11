@@ -1,187 +1,141 @@
-"""Compare exam substance without importing or running a converter."""
+"""Judge a conversion against gold by the eight conversion principles, not textual identity.
+
+TASK-SKRIPT-39-05-03 states the principles. The gold file is one correct conversion: a
+converted exam passes when each question, a standalone item or a child of a parent, shows a
+student the same wording in the same order and place, is answered the same way and scored the
+same, the questions sit under the same parents, and nothing Exam.net owns or any answer shows.
+"""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
-    is_allowed_answer_spelling_variant,
-    normalize_answer,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import points_line
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeGapSegment,
-    NativeItemReviewState,
 )
 
-from .gold import GoldExam, GoldGap, GoldItem, GoldKind, GoldPair
+from .compare_answers import labels, leakage, scoring
+from .compare_questions import GoldQuestion, Question, gold_questions, native_questions
+from .compare_results import (
+    PRINCIPLES,
+    ExamComparison,
+    FieldMismatch,
+    ItemComparison,
+    Principle,
+    TitleComparison,
+)
+from .compare_structure import (
+    all_phrases,
+    content,
+    membership_groups,
+    parent_membership,
+    segmentation,
+    slots,
+)
+from .compare_text import words
+from .gold import GoldExam, GoldItem, GoldParent
+
+__all__ = [
+    "PRINCIPLES",
+    "ExamComparison",
+    "FieldMismatch",
+    "ItemComparison",
+    "Principle",
+    "TitleComparison",
+    "compare_exam",
+    "compare_native_exam",
+]
 
 
-@dataclass(frozen=True)
-class FieldMismatch:
-    field: str
-    reason: str
-    expected: object
-    actual: object
+def compare_title(
+    gold_title: str, title: str | None, chunk_texts: Sequence[str]
+) -> TitleComparison:
+    """D12: the gold title, the source heading, or the heading with its printed subtitle.
 
-
-@dataclass(frozen=True)
-class ItemComparison:
-    index: int
-    source_label: str
-    mismatches: tuple[FieldMismatch, ...]
-
-    @property
-    def passed(self) -> bool:
-        return not self.mismatches
-
-
-@dataclass(frozen=True)
-class ExamComparison:
-    confirmed: bool
-    confirmation_note: str | None
-    items: tuple[ItemComparison, ...]
-
-    @property
-    def unconfirmed(self) -> bool:
-        return not self.confirmed
-
-    @property
-    def passed(self) -> bool:
-        """Substantive result; confirmation status remains separate metadata."""
-        return all(item.passed for item in self.items)
-
-
-@dataclass(frozen=True)
-class _ObservedItem:
-    source_label: str
-    kind: GoldKind
-    points: int | float | None
-    prompt: str
-    choices: tuple[str, ...]
-    correct_choices: tuple[str, ...]
-    gaps: tuple[GoldGap, ...]
-    pairs: tuple[GoldPair, ...] = ()
-
-
-def _text(value: str) -> str:
-    return " ".join(value.split())
-
-
-def _texts(values: Sequence[str]) -> tuple[str, ...]:
-    return tuple(sorted({_text(value) for value in values}))
-
-
-def compare_items(expected: GoldItem, actual: GoldItem) -> tuple[FieldMismatch, ...]:
-    return _compare_item(expected, actual)
-
-
-def _compare_item(
-    expected: GoldItem, actual: GoldItem | _ObservedItem
-) -> tuple[FieldMismatch, ...]:
-    mismatches: list[FieldMismatch] = []
-
-    def check(field: str, gold: object, observed: object) -> None:
-        if gold != observed:
-            mismatches.append(FieldMismatch(field, "different", gold, observed))
-
-    if expected.teacher_questions:
-        mismatches.append(
-            FieldMismatch("teacher_questions", "gold_unresolved", expected.teacher_questions, ())
+    The heading is the source chunk whose words equal the gold title, or whose words with the
+    next chunk's words equal it; the subtitle is the chunk after the heading. A line that prints
+    points, such as an exam total, is no subtitle.
+    """
+    target = words(gold_title)
+    accepted = {target}
+    texts = [text for text in chunk_texts if words(text)]
+    chunks = [words(text) for text in texts]
+    for index, heading in enumerate(chunks):
+        subtitle = (
+            chunks[index + 1]
+            if index + 1 < len(chunks) and not points_line(texts[index + 1])
+            else None
         )
-    check("kind", expected.kind, actual.kind)
-    check("points", expected.points, actual.points)
-    check("prompt", _text(expected.prompt), _text(actual.prompt))
-    check("choices", _texts(expected.choices), _texts(actual.choices))
-    check("correct_choices", _texts(expected.correct_choices), _texts(actual.correct_choices))
-    check("gaps", len(expected.gaps), len(actual.gaps))
-    all_gold_answers = tuple(value for gap in expected.gaps for value in gap.accepted_values)
-    for index, (gold_gap, observed_gap) in enumerate(zip(expected.gaps, actual.gaps, strict=False)):
-        gold_answers = {normalize_answer(value) for value in gold_gap.accepted_values}
-        observed_answers = {normalize_answer(value) for value in observed_gap.accepted_values}
-        field = f"gaps[{index}].accepted_values"
-        missing = gold_answers - observed_answers
-        if missing:
-            mismatches.append(FieldMismatch(field, "missing_answers", tuple(sorted(missing)), ()))
-        extras = {
-            answer
-            for answer in observed_answers - gold_answers
-            if not any(
-                is_allowed_answer_spelling_variant(
-                    gold, answer, other_gold_answers=all_gold_answers
-                )
-                for gold in gold_answers
-            )
-        }
-        if extras:
-            mismatches.append(FieldMismatch(field, "extra_answers", (), tuple(sorted(extras))))
-    check(
-        "pairs",
-        tuple(sorted({(_text(pair.left), _text(pair.right)) for pair in expected.pairs})),
-        tuple(sorted({(_text(pair.left), _text(pair.right)) for pair in actual.pairs})),
-    )
+        if heading == target or (subtitle and f"{heading} {subtitle}" == target):
+            accepted.add(heading)
+            if subtitle:
+                accepted.add(f"{heading} {subtitle}")
+            break
+    return TitleComparison(gold_title, title, title is not None and words(title) in accepted)
+
+
+def _compare_question(
+    gold: GoldQuestion, actual: Question, phrases: Sequence[str], membership: list[FieldMismatch]
+) -> tuple[FieldMismatch, ...]:
+    item = gold.item
+    mismatches: list[FieldMismatch] = []
+    if item.teacher_questions:
+        mismatches.append(FieldMismatch("gold", "gold_unresolved", item.teacher_questions, ()))
+    mismatches.extend(membership)
+    mismatches.extend(segmentation(gold, actual, phrases))
+    if item.kind != actual.kind:
+        mismatches.append(FieldMismatch("response_kind", "kind", item.kind, actual.kind))
+    mismatches.extend(slots(gold, actual))
+    mismatches.extend(scoring(gold, actual))
+    if item.points != actual.points:
+        mismatches.append(FieldMismatch("points", "points", item.points, actual.points))
+    mismatches.extend(leakage(gold, actual))
+    mismatches.extend(labels(gold, actual))
+    mismatches.extend(content(gold, actual))
     return tuple(mismatches)
 
 
-def compare_exam(expected: GoldExam, actual: Sequence[GoldItem]) -> ExamComparison:
-    return _compare_exam(expected, actual)
-
-
-def _compare_exam(expected: GoldExam, actual: Sequence[GoldItem | _ObservedItem]) -> ExamComparison:
+def _compare_exam(
+    expected: GoldExam, actual: Sequence[Question], title: TitleComparison
+) -> ExamComparison:
+    golds = gold_questions(expected.items)
+    phrases = all_phrases(golds)
+    gold_groups = membership_groups([gold.view.parent for gold in golds])
+    actual_groups = membership_groups([question.parent for question in actual])
     results: list[ItemComparison] = []
-    for index in range(max(len(expected.items), len(actual))):
-        if index >= len(expected.items):
+    for index in range(max(len(golds), len(actual))):
+        if index >= len(golds):
             observed = actual[index]
+            mismatch = FieldMismatch("segmentation", "extra_item", None, observed)
+            results.append(ItemComparison(index, observed.source_label, (mismatch,)))
+        elif index >= len(actual):
+            label = golds[index].view.source_label
+            mismatch = FieldMismatch("segmentation", "missing_item", label, None)
+            results.append(ItemComparison(index, label, (mismatch,)))
+        else:
+            membership = parent_membership(gold_groups[index], actual_groups[index])
             results.append(
                 ItemComparison(
                     index,
-                    observed.source_label,
-                    (FieldMismatch("item", "extra_item", None, observed),),
+                    golds[index].view.source_label,
+                    _compare_question(golds[index], actual[index], phrases, membership),
                 )
             )
-        elif index >= len(actual):
-            gold = expected.items[index]
-            mismatches = list(_compare_item(gold, gold))
-            mismatches.append(FieldMismatch("item", "missing_item", gold, None))
-            results.append(ItemComparison(index, gold.source_label, tuple(mismatches)))
-        else:
-            gold = expected.items[index]
-            results.append(
-                ItemComparison(index, gold.source_label, _compare_item(gold, actual[index]))
-            )
-    return ExamComparison(expected.confirmed, expected.confirmation_note, tuple(results))
+    return ExamComparison(expected.confirmed, expected.confirmation_note, tuple(results), title)
 
 
-def _project_native(item: NativeExamItem) -> _ObservedItem:
-    kind: GoldKind = item.kind.value
-    if (
-        item.kind is NativeExamItemKind.FREE_TEXT
-        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    ):
-        kind = "review"
-    gap_by_id = {gap.gap_id: gap for gap in item.gaps}
-    ordered_gaps = tuple(
-        GoldGap(accepted_values=gap_by_id[segment.gap_id].accepted_values)
-        for paragraph in item.body
-        for segment in paragraph.segments
-        if isinstance(segment, NativeGapSegment)
-    )
-    correct_ids = set(item.answer_key.correct_choice_ids)
-    return _ObservedItem(
-        source_label=item.item_id,
-        kind=kind,
-        points=item.points,
-        prompt="\n".join(item.plain_text_lines()),
-        choices=tuple(choice.text for choice in item.choices),
-        correct_choices=tuple(
-            choice.text for choice in item.choices if choice.choice_id in correct_ids
-        ),
-        gaps=ordered_gaps,
+def compare_exam(expected: GoldExam, actual: Sequence[GoldItem | GoldParent]) -> ExamComparison:
+    """Judge gold-shaped items, such as gold itself or an exam that converted nothing."""
+    title = TitleComparison(expected.title, expected.title, True)
+    return _compare_exam(
+        expected, tuple(question.view for question in gold_questions(actual)), title
     )
 
 
-def compare_native_exam(expected: GoldExam, document: NativeExamDocument) -> ExamComparison:
-    return _compare_exam(expected, tuple(_project_native(item) for item in document.items))
+def compare_native_exam(
+    expected: GoldExam, document: NativeExamDocument, source_chunks: Sequence[str] = ()
+) -> ExamComparison:
+    """Judge a native document; the source chunk texts let the title be the source heading."""
+    title = compare_title(expected.title, document.title, source_chunks)
+    return _compare_exam(expected, native_questions(document), title)

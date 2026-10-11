@@ -7,9 +7,9 @@
  *   with Swedish copy naming the questions instead of a generic failure.
  *   Mirrors these `NativeExamItem` field rules exactly: points must be
  *   greater than zero (`_positive_finite_points`), and choice text must not
- *   be empty (`NativeChoice.text`, `min_length=1`, not stripped). A partial
- *   gap key (`_answer_key_invariants`) comes from
- *   `examWorkspaceAnswerKeyRules`.
+ *   be empty (`NativeChoice.text`, `min_length=1`, not stripped), and so must
+ *   matching entry text. A partial gap key or an incomplete matching key
+ *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
  *
  * Relationships:
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
@@ -20,6 +20,8 @@
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
+  incompleteMatchKeyCopy,
+  isIncompleteMatchingItem,
   isPartiallyKeyedGapItem,
   partialGapKeyCopy,
   questionSubject,
@@ -27,6 +29,7 @@ import {
 
 export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
+export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller ett svar i matchningen saknar text.";
 
 export function hasNonPositivePoints(item: NativeExamItem): boolean {
   return typeof item.points === "number" && item.points <= 0;
@@ -38,6 +41,10 @@ export function isEmptyChoiceText(text: string): boolean {
 
 export function hasEmptyChoiceText(item: NativeExamItem): boolean {
   return item.choices.some((choice) => isEmptyChoiceText(choice.text));
+}
+
+export function hasEmptyMatchText(item: NativeExamItem): boolean {
+  return [...item.match_left, ...item.match_right].some((entry) => isEmptyChoiceText(entry.text));
 }
 
 function refusal(
@@ -56,6 +63,7 @@ function refusal(
 export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | null {
   const refusals = [
     refusal(items, isPartiallyKeyedGapItem, partialGapKeyCopy),
+    refusal(items, isIncompleteMatchingItem, incompleteMatchKeyCopy),
     refusal(
       items,
       hasNonPositivePoints,
@@ -67,6 +75,12 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
       hasEmptyChoiceText,
       (refused) =>
         `${questionSubject(refused)} har svarsalternativ utan text. Skriv text i varje svarsalternativ.`,
+    ),
+    refusal(
+      items,
+      hasEmptyMatchText,
+      (refused) =>
+        `${questionSubject(refused)} har rader eller svar i matchningen utan text. Skriv text i varje rad och varje svar.`,
     ),
   ].filter((copy): copy is string => copy !== null);
   return refusals.length > 0 ? refusals.join(" ") : null;

@@ -259,6 +259,7 @@ class StartSandboxActionHandler(StartSandboxActionHandlerProtocol):
                 version_override=ToolVersionOverride(
                     entrypoint=snapshot.entrypoint,
                     source_code=snapshot.source_code,
+                    bundle_files=snapshot.bundle_files,
                     settings_schema=snapshot.settings_schema,
                     input_schema=snapshot.input_schema,
                     usage_instructions=snapshot.usage_instructions,

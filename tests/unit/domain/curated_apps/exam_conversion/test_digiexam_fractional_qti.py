@@ -20,10 +20,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiTextEntryGap,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
-    QTI_NAMESPACE,
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
 
 pytestmark = pytest.mark.unit
 

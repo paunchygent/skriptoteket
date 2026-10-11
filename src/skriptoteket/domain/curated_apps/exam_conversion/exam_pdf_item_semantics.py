@@ -24,6 +24,7 @@ class PdfExamItemKind(StrEnum):
     SINGLE_CHOICE = "single_choice"
     MULTIPLE_RESPONSE = "multiple_response"
     GAP_OPEN_CLOZE = "gap_open_cloze"
+    MATCHING = "matching"
     UNSUPPORTED = "unsupported"
 
 
@@ -51,12 +52,29 @@ class PdfExamGapAnswerSemantics:
 
 
 @dataclass(frozen=True)
+class PdfExamMatchEntrySemantics:
+    """One entry of a matching list, identified within its own list."""
+
+    entry_id: str
+    text: str
+
+
+@dataclass(frozen=True)
+class PdfExamMatchPairSemantics:
+    """One correct directed pair: a left entry and the right entry it matches."""
+
+    left_id: str
+    right_id: str
+
+
+@dataclass(frozen=True)
 class PdfExamAnswerKeySemantics:
     """Source-neutral answer-key semantics available for target rendering."""
 
     available: bool
     correct_option_ids: tuple[int, ...] = ()
     correct_gap_answers: tuple[PdfExamGapAnswerSemantics, ...] = ()
+    correct_match_pairs: tuple[PdfExamMatchPairSemantics, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -71,4 +89,6 @@ class PdfExamItemSemantics:
     source_item_type_label: str | None = None
     options: tuple[PdfExamOptionSemantics, ...] = ()
     gaps: tuple[PdfExamGapSemantics, ...] = ()
+    match_left: tuple[PdfExamMatchEntrySemantics, ...] = ()
+    match_right: tuple[PdfExamMatchEntrySemantics, ...] = ()
     answer_key: PdfExamAnswerKeySemantics = PdfExamAnswerKeySemantics(available=False)

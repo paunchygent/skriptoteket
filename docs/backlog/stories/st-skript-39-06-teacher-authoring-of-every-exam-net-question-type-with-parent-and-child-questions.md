@@ -53,10 +53,12 @@ document has no grouping.
   separate child questions.
 - **Conversion and gold.** DOCX conversion produces the same structure:
   section instructions become parents and their questions become children.
-  The gold files and the comparator move to this structure in the same task.
+  TASK-SKRIPT-39-05-03 delivers this, with the gold files, the comparator,
+  the native parent model, its QTI export and editor display; this story
+  adds parent authoring.
 - **Boundaries.** ST-SKRIPT-39-05 keeps the matching kind (native model,
-  editor, QTI export) and today's gold convention; this story adds teacher
-  creation for matching. ST-SKRIPT-39-04's acceptance stands; creating every
+  editor, QTI export) and delivers converted parents; this story adds teacher
+  creation for matching and parent authoring. ST-SKRIPT-39-04's acceptance stands; creating every
   type is new scope here.
 
 ## Contract Inputs
@@ -118,7 +120,7 @@ document has no grouping.
 | P7  | Inside one parent the teacher adds, deletes and reorders children; moving questions between parents or out to standalone is later work (user decision 2026-10-10). |
 | P8  | The first task is the walking skeleton: a parent with two Lucktext children created, saved and exported on staging and imported into Exam.net by the agent through the teacher's browser session (user decision 2026-10-10). |
 | P9  | ST-SKRIPT-39-05 task 4 keeps the matching kind; this story adds teacher creation for it (user decision 2026-10-10). |
-| P10 | ST-SKRIPT-39-05 keeps the current gold convention; a task in this story moves the gold files, comparator and conversion to parents together (user decision 2026-10-10). |
+| P10 | Superseded 2026-10-11: TASK-SKRIPT-39-05-03 moves conversion, gold and the comparator to parents (user decision 2026-10-11). |
 | P11 | ST-SKRIPT-39-04's acceptance stands; creating every question type is new scope in this story (user decision 2026-10-10). |
 | P12 | Lucktext children export with the empty `SEPARATOR` gap-match before every child sentence, a recorded exception to QTI 3.0 schema validity, proven by the BF26 package and the all-types import of 2026-10-10. |
 | P13 | Teacher-facing labels follow Exam.net: "Ny uppgift" creates a standalone question or a parent and "+ Deluppgift" adds a child; parent and child are internal names (user confirmation 2026-10-10). |

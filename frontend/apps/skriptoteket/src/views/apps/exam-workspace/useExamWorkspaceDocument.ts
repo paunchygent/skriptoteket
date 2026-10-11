@@ -31,6 +31,7 @@ import type {
   NativeExamBodySegment,
   NativeExamDocument,
   NativeExamItem,
+  NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
@@ -304,8 +305,43 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => ({
       ...item,
       answer_key: {
+        ...item.answer_key,
         correct_choice_ids: correctChoiceIds,
         origin: teacherKeyOrigin(correctChoiceIds.length > 0),
+      },
+    }));
+  }
+
+  function updateItemMatchEntryText(
+    itemId: string,
+    side: "left" | "right",
+    entryId: string,
+    text: string,
+  ): void {
+    patchItem(itemId, (item) =>
+      side === "left"
+        ? {
+            ...item,
+            match_left: item.match_left.map((entry) =>
+              entry.left_id === entryId ? { ...entry, text } : entry,
+            ),
+          }
+        : {
+            ...item,
+            match_right: item.match_right.map((entry) =>
+              entry.right_id === entryId ? { ...entry, text } : entry,
+            ),
+          },
+    );
+  }
+
+  function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {
+    patchItem(itemId, (item) => ({
+      ...item,
+      answer_key: {
+        ...item.answer_key,
+        match_pairs: pairs,
+        origin: teacherKeyOrigin(pairs.length > 0),
       },
     }));
   }
@@ -378,12 +414,14 @@ export function useExamWorkspaceDocument() {
     }
     const itemId = nextItemId(current.items);
     const newItem: NativeExamItem = {
-      answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
       body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
       choices: [],
       gaps: [],
       item_id: itemId,
       kind: "free_text",
+      match_left: [],
+      match_right: [],
       points: null,
       review: {
         confidence: null,
@@ -427,6 +465,8 @@ export function useExamWorkspaceDocument() {
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,
+    updateItemMatchEntryText,
+    updateItemMatchPairs,
     updateItemPoints,
     updateItemTitle,
     workspaceDocument,

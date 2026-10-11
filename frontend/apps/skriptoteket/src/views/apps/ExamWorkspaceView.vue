@@ -78,6 +78,8 @@ const {
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  updateItemMatchEntryText,
+  updateItemMatchPairs,
   updateItemParagraphSegments,
   updateItemPoints,
   updateItemTitle,
@@ -123,7 +125,9 @@ const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
 
 const items = computed(() => workspaceDocument.value?.items ?? []);
 
-const itemRows = computed(() => toExamWorkspaceItemRows(items.value));
+const itemRows = computed(() =>
+  toExamWorkspaceItemRows(items.value, workspaceDocument.value?.parents ?? []),
+);
 
 const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
 
@@ -411,6 +415,8 @@ function handleEditProposal(itemId: string): void {
             @update-choice-text="updateItemChoiceText"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
+            @update-match-entry-text="updateItemMatchEntryText"
+            @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
             @update-points="updateItemPoints"
             @update-title="updateItemTitle"

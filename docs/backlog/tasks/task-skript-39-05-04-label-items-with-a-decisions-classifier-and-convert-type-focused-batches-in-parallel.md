@@ -112,6 +112,16 @@ routing only.
   input to grouping, labeling, conversion or repair.
 - Per-call tokens, cost and duration are recorded.
 
+Feasibility result (2026-10-11, commit a63ec3cf, report
+`.orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-04/final-report.md`):
+Responses grouping exact on 269–284 of 314 questions in 12–25 s per exam;
+Decisions grouping with quoted chunks (B2) 266 in 2–4 s but misses most
+shared-instruction scope; the item-type labeler is 96–97% correct and every
+error has probability below 0.95; images, the ambiguity score, answer slots,
+facit attachment, points, post-conversion checks and retry routing gave no
+gain worth their cost; 7 of 356 Decisions calls failed with 503/504 and
+succeeded on retry.
+
 ## Stop Conditions
 
 - A conversion experiment (step 3 or later) starts before TASK-SKRIPT-39-05-03
@@ -132,3 +142,7 @@ routing only.
 | D9  | The labeling-only feasibility step starts now, in parallel with TASK-SKRIPT-39-05-03; conversion experiments wait for its merge (user decision 2026-10-11). |
 | D5  | The feasibility step runs before conversion changes; the larger measurement phases need a user decision on its result (user decision 2026-10-11). |
 | D6  | Speed criterion: at least 30% lower median upload-to-ready on the 53-, 73- and 104-item exams, small exams at most 10% slower. Eval criteria are evidence for the parent's recommendation to the user, not automatic gates (user decisions 2026-10-11). |
+| D10 | Decisions is used only for the item-type labeler: text input, 0.95 probability threshold, retries on 503 and 504; the other placements are dropped (user decision 2026-10-11). |
+| D11 | The conversion experiment measures both groupings end to end: Responses grouping (A), and Decisions grouping with quoted chunks (B2) using A's instruction-scope rules; total time decides only when quality holds (user decision 2026-10-11). |
+| D12 | The conversion experiment starts after TASK-SKRIPT-39-05-03 merges and builds batching on its parent model, so a parent and its children share a batch (user decision 2026-10-11). |
+| D13 | The conversion experiment also targets two consecutive live eval runs where every corpus item meets the eight conversion principles, and measures higher reasoning effort as one variable (user decision 2026-10-11, moved from TASK-SKRIPT-39-05-03 D19). |

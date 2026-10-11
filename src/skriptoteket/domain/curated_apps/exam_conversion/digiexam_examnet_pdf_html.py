@@ -79,6 +79,18 @@ p {{
 .options p {{
   margin: 0 0 5pt;
 }}
+.parent-instruction {{
+  font-weight: 700;
+  margin: 0 0 14pt;
+}}
+.match-left,
+.match-right {{
+  margin: 8pt 0 8pt 18pt;
+}}
+.match-left p,
+.match-right p {{
+  margin: 0 0 5pt;
+}}
 </style>
 </head>
 <body>

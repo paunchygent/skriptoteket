@@ -37,6 +37,11 @@ class SandboxSnapshotModel(Base):
 
     entrypoint: Mapped[str] = mapped_column(String(128), nullable=False)
     source_code: Mapped[str] = mapped_column(Text, nullable=False)
+    bundle_files: Mapped[dict[str, str]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+    )
     settings_schema: Mapped[list[dict[str, object]] | None] = mapped_column(JSONB, nullable=True)
     input_schema: Mapped[list[dict[str, object]]] = mapped_column(
         JSONB,

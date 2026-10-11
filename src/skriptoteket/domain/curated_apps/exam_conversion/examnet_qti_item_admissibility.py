@@ -36,7 +36,7 @@ _SAFE_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 
 def manual_follow_ups(items: tuple[ExamNetQtiItem, ...]) -> tuple[ExamNetQtiManualFollowUp, ...]:
     follow_ups: list[ExamNetQtiManualFollowUp] = []
-    for item in items:
+    for item in _leaf_items(items):
         for resource in item.unsupported_resources:
             follow_ups.append(_unsupported_resource_follow_up(item, resource))
         if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
@@ -59,7 +59,33 @@ def blocking_errors(items: tuple[ExamNetQtiItem, ...]) -> tuple[str, ...]:
     if not items:
         errors.append("QTI package needs at least one item.")
     for item in items:
-        errors.extend(_item_errors(item))
+        if item.children:
+            errors.extend(_parent_errors(item))
+        else:
+            errors.extend(_item_errors(item))
+    return tuple(errors)
+
+
+def _leaf_items(items: tuple[ExamNetQtiItem, ...]) -> tuple[ExamNetQtiItem, ...]:
+    return tuple(leaf for item in items for leaf in (item.children or (item,)))
+
+
+def _parent_errors(parent: ExamNetQtiItem) -> tuple[str, ...]:
+    errors: list[str] = []
+    if not _SAFE_IDENTIFIER_PATTERN.fullmatch(parent.item_id):
+        errors.append(f"Item {parent.item_id} has an unsafe QTI identifier.")
+    if not any(line.strip() for line in parent.instruction_lines):
+        errors.append(f"Item {parent.item_id} has no instruction text.")
+    child_ids = tuple(child.item_id for child in parent.children)
+    if len(set(child_ids)) != len(child_ids):
+        errors.append(f"Item {parent.item_id} has duplicate child identifiers.")
+    if len({child.interaction_type for child in parent.children}) != 1:
+        errors.append(f"Item {parent.item_id} has children of different interaction types.")
+    for child in parent.children:
+        if child.children:
+            errors.append(f"Item {child.item_id} cannot nest inside parent {parent.item_id}.")
+        else:
+            errors.extend(_item_errors(child))
     return tuple(errors)
 
 
@@ -141,13 +167,17 @@ def _matching_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
         return (f"Item {item.item_id} needs exact matching pairs.",)
     if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
         return ()
-    identifiers = tuple(
-        identifier
-        for pair in item.match_pairs
-        for identifier in (pair.left_identifier, pair.right_identifier)
-    )
-    if len(set(identifiers)) != len(identifiers):
+    left = tuple(entry.identifier for entry in item.match_left)
+    right = tuple(entry.identifier for entry in item.match_right)
+    if not left or not right:
+        return (f"Item {item.item_id} needs both matching lists.",)
+    if len(set(left + right)) != len(left + right):
         return (f"Item {item.item_id} has duplicate match identifiers.",)
+    if any(
+        pair.left_identifier not in left or pair.right_identifier not in right
+        for pair in item.match_pairs
+    ):
+        return (f"Item {item.item_id} pairs entries missing from its matching lists.",)
     return ()
 
 

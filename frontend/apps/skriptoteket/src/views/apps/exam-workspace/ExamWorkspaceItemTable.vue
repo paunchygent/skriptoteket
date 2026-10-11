@@ -9,12 +9,15 @@
  *   blockers from the server's last refused export.
  *
  * Relationships:
+ *   - Shows a parent's shared instruction and total points once above its
+ *     first child; children are marked with a left rule.
  *   - Rendered by `ExamWorkspaceView` in the Redigera list panel and in the
  *     phone question sheet; emits `select` with the item id and the view
  *     selects it through `useExamWorkspaceDocument`.
  */
 
 import { IconCheck, IconWarning } from "../../../components/icons";
+import { PARENT_HEADING_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 
 defineProps<{
@@ -40,7 +43,25 @@ const emit = defineEmits<{
       v-for="row in rows"
       :key="row.itemId"
       class="border-b border-navy/15"
+      :class="row.parentChild ? 'border-l-4 border-l-navy/25' : undefined"
     >
+      <div
+        v-if="row.parentBlock"
+        class="grid gap-1 border-b border-navy/15 bg-canvas px-3 py-2 text-xs leading-snug text-navy"
+        :data-test="`exam-workspace-parent-${row.parentBlock.parentId}`"
+      >
+        <span class="font-semibold">{{ PARENT_HEADING_COPY }}</span>
+        <span
+          v-for="(line, lineIndex) in row.parentBlock.instruction"
+          :key="lineIndex"
+          class="block"
+          data-test="exam-workspace-parent-instruction-line"
+        >{{ line }}</span>
+        <span
+          class="font-semibold text-navy/80"
+          data-test="exam-workspace-parent-points"
+        >{{ row.parentBlock.pointsLabel }}</span>
+      </div>
       <button
         type="button"
         class="grid w-full gap-1 px-3 py-2.5 text-left text-navy"
