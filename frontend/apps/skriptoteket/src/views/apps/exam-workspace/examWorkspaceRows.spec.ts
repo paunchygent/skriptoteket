@@ -23,12 +23,14 @@ import {
 
 function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
-    answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ segments: [{ kind: "text", text: "Beskriv fotosyntesen." }] }],
     choices: [],
     gaps: [],
     item_id: "item_001",
     kind: "free_text",
+    match_left: [],
+    match_right: [],
     points: 2,
     review: {
       confidence: 0.95,
@@ -49,6 +51,7 @@ describe("examWorkspaceRows", () => {
     expect(examWorkspaceTypeLabel("single_choice")).toBe("Flerval: ett val");
     expect(examWorkspaceTypeLabel("multiple_response")).toBe("Flerval: flera val");
     expect(examWorkspaceTypeLabel("gap_fill")).toBe("Lucktext");
+    expect(examWorkspaceTypeLabel("matching")).toBe("Matchning");
   });
 
   it("maps review states to Swedish status labels", () => {
@@ -75,6 +78,8 @@ describe("examWorkspaceRows", () => {
         { segments: [{ kind: "text", text: "Motivera ditt svar." }] },
       ],
       kind: "gap_fill",
+      match_left: [],
+      match_right: [],
     });
 
     expect(examWorkspacePromptExcerpt(item)).toBe(

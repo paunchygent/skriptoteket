@@ -43,6 +43,10 @@ class ExamWorkspaceDocxWriter:
             if item.kind in _CHOICE_KINDS:
                 for index, choice in enumerate(item.choices):
                     output.add_paragraph(f"{_choice_letter(index)}) {choice.text}")
+            for index, left in enumerate(item.match_left, start=1):
+                output.add_paragraph(f"{index}. {left.text}")
+            for index, right in enumerate(item.match_right):
+                output.add_paragraph(f"{_choice_letter(index)}) {right.text}")
 
         keyed_items = tuple(item for item in document.items if _facit_lines(item))
         if keyed_items:
@@ -119,5 +123,12 @@ def _facit_lines(item: NativeExamItem) -> tuple[str, ...]:
         return tuple(
             f"Lucka {index}: {' / '.join(gap.accepted_values)}"
             for index, gap in enumerate(item.gaps, start=1)
+        )
+    if item.kind is NativeExamItemKind.MATCHING and item.answer_key.match_pairs:
+        left = {entry.left_id: entry.text for entry in item.match_left}
+        right = {entry.right_id: entry.text for entry in item.match_right}
+        return tuple(
+            f"Par: {left[pair.left_id]} – {right[pair.right_id]}"
+            for pair in item.answer_key.match_pairs
         )
     return ()

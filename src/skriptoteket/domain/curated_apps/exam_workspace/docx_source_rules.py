@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
+    ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
@@ -30,10 +31,36 @@ def _segments_units(mark: str) -> bool:
     return bool(_PLUS_JOIN.search(mark)) or len(_UNIT_LABEL.findall(mark)) >= 2
 
 
+def _restated_marks(chunk: DocxChunk) -> list[str]:
+    """Inline facit phrases the line already prints as visible text, beside marks it does not.
+
+    Only a phrase of two or more words counts, since a lone letter or word recurs by chance.
+    """
+    marks = [_normalized(mark).casefold() for mark in _ITALIC.findall(chunk.marked_text)]
+    visible = _normalized(_ITALIC.sub(" ", chunk.marked_text)).casefold()
+    printed = [
+        m
+        for m in marks
+        if len(m.split()) >= 2 and re.search(rf"(?<!\w){re.escape(m)}(?!\w)", visible)
+    ]
+    return printed if len(printed) < len(marks) else []
+
+
 def item_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str | None:
     """Rules 1 and 2: gaps come from answer slots; segmentation tasks are free text."""
     if item.outcome == "review":
         return None
+    sources = tuple(sources)
+    values = {
+        _normalized(v).casefold() for p in item.body for s in p.segments for v in s.accepted_values
+    }
+    for chunk in sources:
+        if values & set(_restated_marks(chunk)):
+            return (
+                f"a facit field on {chunk.anchor} repeats wording that line already shows the "
+                "student, while its other facit fields are new: that field restates context, "
+                "so it stays text with its value and is no gap"
+            )
     texts = [chunk.marked_text for chunk in sources]
     blanks = sum(len(_BLANK_MARKER.findall(text)) for text in texts)
     marks = [mark for text in texts for mark in _ITALIC.findall(text)]
@@ -44,15 +71,22 @@ def item_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str
             "unit), so the student decides where units start and end: make it free_text "
             "with no gaps and keep the facit out of the body"
         )
-    if blanks and not gaps and not item.choices:
+    if blanks and not gaps and not item.choices and not item.match_left:
         return (
             f"its source shows {blanks} blank marker(s) (an underscore run, dotted line or "
-            "empty brackets) and has no options: each blank the student fills in is a gap"
+            "empty brackets) and has no options or match lists: each blank the student fills "
+            "in is a gap"
         )
     if gaps > blanks + len(marks):
         return (
             f"it has {gaps} gaps but its source shows {blanks} blank marker(s) and "
             f"{len(marks)} inline answer mark(s): the facit never creates a gap of its own"
+        )
+    printed = sum(len(_BLANK_MARKER.findall(s.text or "")) for p in item.body for s in p.segments)
+    if gaps and printed:
+        return (
+            f"its text still prints {printed} blank marker(s): the blank inside the sentence "
+            "is the gap segment, and a separate line holding only a blank is no second gap"
         )
     return None
 
@@ -106,61 +140,194 @@ def definition_context(
     return tuple(context)
 
 
-def _defines(rest: str, value: str) -> bool:
+def defines(rest: str, value: str) -> bool:
+    """Whether a definition's term text starts with ``value`` as a whole word."""
     folded, wanted = rest.casefold(), value.casefold().strip()
     if not wanted or not folded.startswith(wanted):
         return False
     return len(folded) == len(wanted) or not folded[len(wanted)].isalnum()
 
 
-def _definitions(context: Iterable[DocxChunk]) -> list[tuple[str, str]]:
+def short_form_definitions(texts: Iterable[str]) -> list[tuple[str, str]]:
     """Each "short = term" as (short form, the text from its term to the next definition)."""
     definitions: list[tuple[str, str]] = []
-    for chunk in context:
-        matches = list(_SHORT_FORM.finditer(chunk.text))
+    for text in texts:
+        matches = list(_SHORT_FORM.finditer(text))
         if not matches:
             continue
-        ends = [following.start() for following in matches[1:]] + [len(chunk.text)]
+        ends = [following.start() for following in matches[1:]] + [len(text)]
         definitions.extend(
-            (match.group(1), chunk.text[match.end() : end])
+            (match.group(1), text[match.end() : end])
             for match, end in zip(matches, ends, strict=True)
         )
     return definitions
 
 
-def with_defined_short_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> ProducedItem:
-    """Rule 3: a gap accepts the facit's own form plus the short form the instructions define.
+def slash_alternatives(value: str) -> tuple[str, ...]:
+    """The parts of a facit form that joins worded alternatives with a slash."""
+    parts = tuple(part.strip() for part in value.split("/"))
+    if len(parts) < 2 or not all(any(c.isalpha() for c in part) for part in parts):
+        return ()
+    return parts
 
-    A facit term also accepts its short form. When the inline facit marks write the short
-    form, the term is neither the facit's form nor the form students are told to use, so a
-    term the model added is dropped.
+
+# Typographic apostrophes and quotes, and the keyboard character a student types for each.
+_KEYBOARD_PUNCTUATION = str.maketrans(
+    {"\u2019": "'", "\u2018": "'", "\u02bc": "'", "\u201c": '"', "\u201d": '"', "\u201e": '"'}
+)
+
+
+def _is_sentence(form: str) -> bool:
+    """A form of three or more words that starts with a letter, as a whole sentence does."""
+    stripped = form.strip()
+    return len(stripped.split()) >= 3 and stripped[:1].isalpha()
+
+
+def _other_closing_stop(form: str) -> str:
+    stripped = form.rstrip()
+    return stripped[:-1].rstrip() if stripped.endswith(".") else f"{stripped}."
+
+
+def _accepted_forms(values: tuple[str, ...], definitions: list[tuple[str, str]]) -> tuple[str, ...]:
+    forms = list(values)
+    forms.extend(part for value in values for part in slash_alternatives(value))
+    for short, rest in definitions:
+        if any(defines(rest, form) for form in forms):
+            forms.append(short)
+    forms.extend(form.translate(_KEYBOARD_PUNCTUATION) for form in tuple(forms))
+    forms.extend(form.replace("'", "\u2019") for form in tuple(forms))
+    forms.extend(_other_closing_stop(form) for form in tuple(forms) if _is_sentence(form))
+    return tuple(dict.fromkeys(forms))
+
+
+def with_accepted_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> ProducedItem:
+    """Rule 3: each gap also accepts the forms its facit admits; no model value is removed.
+
+    A gap accepts each part of a facit form that joins alternatives with a slash, the
+    short form an instruction defines ("short = term") for a facit term, the keyboard
+    spelling of a form printed with a typographic apostrophe or quote, and the typographic
+    apostrophe of a form spelled with the keyboard one. A sentence form of three or
+    more words is accepted with and without a closing full stop.
     """
-    context = tuple(context)
-    definitions = _definitions(context)
-    if not definitions:
-        return item
-    marks = {
-        mark.casefold().strip()
-        for chunk in context
-        if chunk.anchor in item.source_anchors
-        for mark in _ITALIC.findall(chunk.marked_text)
-    }
-
-    def added_term(value: str) -> bool:
-        return value.casefold().strip() not in marks and any(
-            short.casefold() in marks and _defines(rest, value) for short, rest in definitions
-        )
-
+    definitions = short_form_definitions(chunk.text for chunk in context)
     body = []
     for paragraph in item.body:
-        segments = []
+        segments = tuple(
+            segment.model_copy(
+                update={"accepted_values": _accepted_forms(segment.accepted_values, definitions)}
+            )
+            for segment in paragraph.segments
+        )
+        body.append(paragraph.model_copy(update={"segments": segments}))
+    return item.model_copy(update={"body": tuple(body)})
+
+
+def _printed_hint(hint: str, source: str) -> str:
+    return f" ({hint})" if f"({hint.strip()})" in source else f" {hint}"
+
+
+def with_printed_hints(item: ProducedItem, sources: Iterable[DocxChunk]) -> ProducedItem:
+    """A cue printed beside a blank is student-visible text after the gap, never a hidden hint."""
+    source = _normalized(" ".join(chunk.text for chunk in sources))
+    body = []
+    for paragraph in item.body:
+        printed = _normalized(" ".join(s.text for s in paragraph.segments if s.text))
+        segments: list[ProducedSegment] = []
         for segment in paragraph.segments:
-            facit = tuple(value for value in segment.accepted_values if not added_term(value))
-            values = list(facit)
-            for short, rest in definitions:
-                known = {value.casefold() for value in values}
-                if short.casefold() not in known and any(_defines(rest, v) for v in facit):
-                    values.append(short)
-            segments.append(segment.model_copy(update={"accepted_values": tuple(values)}))
+            if segment.kind != "gap" or not segment.hint:
+                segments.append(segment)
+                continue
+            hint = _normalized(segment.hint)
+            segments.append(segment.model_copy(update={"hint": None}))
+            if hint not in printed:
+                text = _printed_hint(hint, source)
+                segments.append(
+                    ProducedSegment(kind="text", text=text, accepted_values=(), hint=None)
+                )
         body.append(paragraph.model_copy(update={"segments": tuple(segments)}))
     return item.model_copy(update={"body": tuple(body)})
+
+
+# A printed point label: "(2 p)", "(1 point)" or "Total: 38 poäng".
+POINT_LABEL = re.compile(
+    r"\(\s*\d+(?:[.,]\d+)?\s*(?:p|poäng|points?|pts?)\.?\s*\)"
+    r"|\b\d+(?:[.,]\d+)?\s*(?:poäng|points?)\b",
+    re.IGNORECASE,
+)
+# An inline facit: italic answer text, with the short label that introduces it.
+_LABELLED_FACIT = re.compile(r"[^\s:<>]+:\s*<i>.*?</i>|<i>.*?</i>", re.DOTALL)
+_WORD = re.compile(r"\w+")
+
+
+def points_line(text: str) -> bool:
+    """A line that prints points and at most a two-word label, such as "Total: 38 poäng"."""
+    rest = POINT_LABEL.sub(" ", text)
+    return rest != text and len(_WORD.findall(rest)) < 3
+
+
+def _words(text: str) -> set[str]:
+    return {w for w in _WORD.findall(text.casefold()) if len(w) > 1 and not w.isdigit()}
+
+
+def content_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str | None:
+    """Rule 8: every word of the question's own paragraphs reaches the student.
+
+    Headings, points lines, inline facit with its label, blank markers, point labels,
+    numbers and single characters are exempt; so are the item's answers wherever printed.
+    A facit field that restates the line's visible wording stays text with its label.
+    """
+    if item.outcome == "review":
+        return None
+    answers = [v for p in item.body for s in p.segments for v in s.accepted_values]
+    answers.extend(choice.text for choice in item.choices if choice.correct)
+    answers.extend(pair.right for pair in item.match_pairs)
+    shown = " ".join(
+        (
+            item.title or "",
+            *(s.text or "" for p in item.body for s in p.segments),
+            *(choice.text for choice in item.choices),
+            *item.match_left,
+            *item.match_right,
+        )
+    )
+    visible = _words(shown) | {w for answer in answers for w in _words(answer)}
+    for chunk in sources:
+        if chunk.kind == "heading" or points_line(chunk.text):
+            continue
+        restated = set(_restated_marks(chunk))
+
+        def exempt(match: re.Match[str]) -> str:
+            mark = _normalized(" ".join(_ITALIC.findall(match.group(0)))).casefold()
+            return _ITALIC.sub(r" \1 ", match.group(0)) if mark in restated else " "
+
+        text = POINT_LABEL.sub(
+            " ", _BLANK_MARKER.sub(" ", _LABELLED_FACIT.sub(exempt, chunk.marked_text))
+        )
+        missing = _words(text) - visible
+        if missing:
+            return (
+                f"its text omits {len(missing)} word(s) of {chunk.anchor}: copy every "
+                "student-visible word of the question's own chunks into title, body, options "
+                "or match lists, including lead-in words before a blank"
+            )
+    return None
+
+
+def defined_terms(text: str) -> tuple[str, ...]:
+    """The terms an instruction defines: each "short = term" pair, or a list after a colon."""
+    terms = [
+        word
+        for short, rest in short_form_definitions((text,))
+        for word in (short, *rest.split()[:1])
+    ]
+    _, colon, listed = text.partition(":")
+    parts = [part.strip(" .") for part in re.split(r"[,;]", listed)] if colon else []
+    if len([part for part in parts if part]) >= 2:
+        terms.extend(part for part in parts if part)
+    return tuple(term.strip(" ,;.") for term in terms if term.strip(" ,;."))
+
+
+def uses_term(terms: Iterable[str], sources: Iterable[DocxChunk]) -> bool:
+    """Whether a chunk names one of the terms as a whole word, facit included."""
+    text = " ".join(chunk.marked_text for chunk in sources).casefold()
+    return any(re.search(rf"(?<!\w){re.escape(term.casefold())}(?!\w)", text) for term in terms)

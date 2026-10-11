@@ -32,6 +32,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Do
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+    NativeExamItemKind,
     NativeItemReviewState,
     NativeTextSegment,
     native_export_blockers,
@@ -73,39 +74,17 @@ def ports():
     return converter, provider
 
 
-async def test_recorded_quiz_one_round_builds_all_items_and_exports_qti():
-    fixture = Path("tests/fixtures/exam_conversion")
-    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
-        content=(
-            fixture / "docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
-        ).read_bytes()
-    )
-    converter, provider = ports()
-    provider.complete_structured.return_value = StructuredLLMResponse(
-        json.loads((fixture / "chapter_4_poetry_docx_build_response.json").read_text()),
-        "completed",
-        StructuredLLMUsage(),
-    )
-    result = await converter.convert(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename="test.docx",
-        source_sha256="a" * 64,
-        chunks=chunks,
-    )
-    assert provider.complete_structured.await_count == 1
+async def test_recorded_quiz_builds_all_items_and_exports_qti():
+    exam = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+    result, chunks = await _replay(exam, *_v7_rounds(exam))
+    items = result.document.items
     assert result.document.title == (
         "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key"
     )
-    assert len(result.document.items) == 28
-    assert sum(item.points for item in result.document.items) == 28
-    assert [item.kind.value for item in result.document.items] == ["single_choice"] * 21 + [
-        "gap_fill"
-    ] * 7
-    assert all(
-        i.review.state is NativeItemReviewState.REVIEW_COMPLETE for i in result.document.items
-    )
-    assert result.events == ()
+    assert len(items) == len(_gold(exam)) == 28
+    assert sum(item.points or 0 for item in items) == 28
+    assert [item.kind.value for item in items] == [g.kind for g in _gold(exam)]
+    assert all(i.review.state is NativeItemReviewState.REVIEW_COMPLETE for i in items)
     assert native_export_blockers(result.document) == ()
     package, report = build_native_examnet_qti_package(
         result.document, package_name="probe", qti_writer=ExamNetQtiPackageWriter()
@@ -113,6 +92,7 @@ async def test_recorded_quiz_one_round_builds_all_items_and_exports_qti():
     assert json.loads(report)["package_status"] == "passed"
     with zipfile.ZipFile(io.BytesIO(package)) as archive:
         assert "imsmanifest.xml" in archive.namelist()
+    _assert_no_facit(result, chunks, exam, *_v7_rounds(exam))
 
 
 _FIXTURES = Path("tests/fixtures/exam_conversion")
@@ -154,6 +134,14 @@ def _student_texts(document: NativeExamDocument) -> list[str]:
         texts.extend(choice.text for choice in item.choices)
         texts.extend(gap.hint for gap in item.gaps if gap.hint)
     return [" ".join(text.split()) for text in texts]
+
+
+def _v7_rounds(exam: str) -> tuple[str, ...]:
+    """The prompt v7 live recording rounds of one corpus exam, in order."""
+    return tuple(
+        str(path.relative_to(_FIXTURES))
+        for path in sorted((_FIXTURES / "docx_build_v7" / exam).glob("round*.json"))
+    )
 
 
 def _gold(exam: str) -> tuple[GoldItem, ...]:
@@ -217,37 +205,25 @@ def _assert_no_italic_tags(document: NativeExamDocument) -> None:
     assert not [text for text in texts if "<i>" in text or "</i>" in text]
 
 
-async def test_recorded_english_matching_reviews_stay_one_item_each_without_facit():
+async def test_recorded_english_matching_items_keep_their_lists_and_gold_pairs():
     exam = _ENGLISH
-    responses = (
-        "bf26_english_1_docx_build_response_round1.json",
-        "bf26_english_1_docx_build_response_round2.json",
-    )
-    result, chunks = await _replay(exam, *responses)
+    result, chunks = await _replay(exam, *_v7_rounds(exam))
     items = result.document.items
     gold = _gold(exam)
-    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    item_positions = [positions[i.source_anchor or ""] for i in items]
-
     assert len(items) == len(gold) == 53
-    assert item_positions == sorted(item_positions)
-    reviewed = [
-        n
-        for n, i in enumerate(items)
-        if i.review.state is not NativeItemReviewState.REVIEW_COMPLETE
-    ]
-    assert reviewed == [n for n, g in enumerate(gold) if g.kind == "matching"] == [24, 25, 26]
-    for n in reviewed:
-        assert items[n].review.reasons == (
-            "AI-tolkningen markerade frågan för granskning: Matchningsuppgift med tre "
-            "definitioner och gemensamma alternativ kan inte återges som en stödd frågetyp.",
-        )
-        body = [
-            s.text for p in items[n].body for s in p.segments if isinstance(s, NativeTextSegment)
-        ]
-        assert any("Write the letter of the matching option." in text for text in body)
-    assert len(_assert_review_events_carry_reasons(result)) == 3
-    _assert_no_facit(result, chunks, exam, *responses)
+    matching = [n for n, i in enumerate(items) if i.kind is NativeExamItemKind.MATCHING]
+    assert matching == [n for n, g in enumerate(gold) if g.kind == "matching"]
+    assert matching
+    for n in matching:
+        item = items[n]
+        assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
+        left = {entry.left_id: entry.text for entry in item.match_left}
+        right = {entry.right_id: entry.text for entry in item.match_right}
+        pairs = {(left[p.left_id], right[p.right_id]) for p in item.answer_key.match_pairs}
+        assert pairs == {(pair.left, pair.right) for pair in gold[n].pairs}
+    assert native_export_blockers(result.document) == ()
+    _assert_no_facit(result, chunks, exam, *_v7_rounds(exam))
+    _assert_no_italic_tags(result.document)
 
 
 _COURSE_EXAM = "svenska_2_kursavslutande_prov_med_facit"
@@ -315,7 +291,7 @@ async def test_course_exam_round_request_shows_teacher_italics_to_the_model():
     sent = {c["anchor"]: c["text"] for c in json.loads(request.user_payload)["chunks"]}
     assert set(sent) == {c.anchor for c in chunks}
     assert "satsadverbialet <i>före</i> det finita verbet" in sent["body:0086"]
-    assert request.prompt_template_version == "docx_exam_build_v5"
+    assert request.prompt_template_version == "docx_exam_build_v7"
 
 
 async def test_recorded_course_exam_keeps_inline_facit_out_of_student_text():
@@ -344,21 +320,6 @@ async def test_v3_recording_without_italic_marks_leaked_the_fraga_20_answer():
     response = "svenska_2_kursavslutande_prov_docx_build_response_v3.json"
     result, _ = await _replay(_COURSE_EXAM, response)
     assert any("satsadverbialet före det finita" in t for t in _student_texts(result.document))
-
-
-async def test_recorded_english_current_input_keys_matching_letters_from_facit():
-    response = "docx_build_v5/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json"
-    result, chunks = await _replay(_ENGLISH, response)
-    items = result.document.items
-    assert len(items) == len(_gold(_ENGLISH)) == 53
-    assert all(i.review.state is NativeItemReviewState.REVIEW_COMPLETE for i in items)
-    assert [[list(g.accepted_values) for g in items[n].gaps] for n in (24, 25, 26)] == [
-        [["B"], ["A"], ["C"]],
-        [["C"], ["B"], ["A"]],
-        [["B"], ["C"], ["A"]],
-    ]
-    _assert_no_facit(result, chunks, _ENGLISH, response)
-    _assert_no_italic_tags(result.document)
 
 
 async def test_empty_model_text_segments_change_no_item_in_the_recorded_course_exam():

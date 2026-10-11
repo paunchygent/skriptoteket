@@ -19,11 +19,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     OPENING_HEADING_IS_TITLE,
+    content_rule_violation,
     definition_context,
     item_rule_violation,
     opening_heading,
     title_rule_violation,
-    with_defined_short_forms,
+    with_accepted_forms,
+    with_printed_hints,
 )
 
 _ENVELOPE_FIELDS = set(DocxBuildEnvelope.model_fields)
@@ -53,6 +55,14 @@ def _parse[T: BaseModel](model: type[T], raw: JsonValue) -> T:
         raise _Rejected(
             "item_schema_invalid", detail, f"Svaret följer inte AI-kontraktet ({detail})."
         ) from error
+
+
+def _without_key_anchors(produced: ProducedItem, state: DocxBuildState) -> ProducedItem:
+    """A chunk already admitted as facit stays facit; the item keeps its other chunks."""
+    kept = tuple(a for a in produced.source_anchors if a not in state.key_anchors)
+    if not kept or kept == produced.source_anchors:
+        return produced
+    return produced.model_copy(update={"source_anchors": kept})
 
 
 def _require_anchors(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> None:
@@ -126,10 +136,12 @@ def _admit_item(
 ) -> None:
     anchors: tuple[str, ...] = ()
     try:
-        produced = _parse(ProducedItem, raw)
+        produced = _without_key_anchors(_parse(ProducedItem, raw), state)
         anchors = produced.source_anchors
         _require_anchors(anchors, state, seen)
-        violation = item_rule_violation(produced, (state.chunk_by_anchor[a] for a in anchors))
+        own = tuple(state.chunk_by_anchor[a] for a in anchors)
+        produced = with_printed_hints(produced, own)
+        violation = item_rule_violation(produced, own) or content_rule_violation(produced, own)
         if violation:
             raise _Rejected(
                 "source_rule",
@@ -146,7 +158,7 @@ def _admit_item(
                 )
             else:
                 context = definition_context(state.chunks, anchors)
-                item = native_item(with_defined_short_forms(produced, context))
+                item = native_item(with_accepted_forms(produced, context))
         except ValidationError as error:
             detail = validation_detail(error)
             raise _Rejected(

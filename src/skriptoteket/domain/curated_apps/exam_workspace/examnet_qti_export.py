@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiImageResource,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiMatchPair,
     ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -43,6 +44,7 @@ _INTERACTION_TYPE_BY_KIND = {
     NativeExamItemKind.SINGLE_CHOICE: ExamNetQtiInteractionType.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: ExamNetQtiInteractionType.GAP_FILL,
+    NativeExamItemKind.MATCHING: ExamNetQtiInteractionType.MATCHING,
 }
 
 
@@ -73,6 +75,8 @@ def _qti_item(
         NativeExamItemKind.MULTIPLE_RESPONSE,
     ):
         return _choice_item(item, base_item)
+    if item.kind is NativeExamItemKind.MATCHING:
+        return _matching_item(item, base_item)
     return _gap_fill_item(item, base_item)
 
 
@@ -122,6 +126,24 @@ def _choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiI
         ),
         correct_choice_identifiers=correct_ids,
     )
+
+
+def _matching_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:
+    # As for choice items, `native_export_blockers` already blocks an unkeyed matching item.
+    left = {entry.left_id: entry.text for entry in item.match_left}
+    right = {entry.right_id: entry.text for entry in item.match_right}
+    pairs: tuple[ExamNetQtiMatchPair, ...] = ()
+    if item.answer_key.origin is not NativeAnswerKeyOrigin.ABSENT:
+        pairs = tuple(
+            ExamNetQtiMatchPair(
+                left_identifier=_safe_identifier(pair.left_id),
+                left_text=" ".join(left[pair.left_id].split()),
+                right_identifier=_safe_identifier(pair.right_id),
+                right_text=" ".join(right[pair.right_id].split()),
+            )
+            for pair in item.answer_key.match_pairs
+        )
+    return replace(base_item, evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC, match_pairs=pairs)
 
 
 def _gap_fill_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:

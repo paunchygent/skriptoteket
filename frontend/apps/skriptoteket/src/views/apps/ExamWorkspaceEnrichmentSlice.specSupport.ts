@@ -47,7 +47,7 @@ export function buildUnkeyedResponse(version: number): ExamWorkspaceDocumentResp
         item.item_id === "item_002"
           ? {
               ...item,
-              answer_key: { correct_choice_ids: [], origin: "absent" },
+              answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
               review: { ...item.review, reasons: ["facit saknas"], state: "review_required" },
             }
           : item,
@@ -65,7 +65,7 @@ function proposedItem(): NativeExamItem {
   }
   return {
     ...item,
-    answer_key: { correct_choice_ids: ["choice_c"], origin: "machine_proposed" },
+    answer_key: { correct_choice_ids: ["choice_c"], match_pairs: [], origin: "machine_proposed" },
     review: {
       ...item.review,
       reasons: [...item.review.reasons, "machine_proposed_answer_key"],

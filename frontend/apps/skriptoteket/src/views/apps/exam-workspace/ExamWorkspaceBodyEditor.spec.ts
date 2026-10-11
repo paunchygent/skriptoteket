@@ -22,7 +22,7 @@ import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 
 function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
-    answer_key: { correct_choice_ids: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [
       {
         segments: [
@@ -42,6 +42,8 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     ],
     item_id: "item_001",
     kind: "gap_fill",
+    match_left: [],
+    match_right: [],
     points: 1,
     review: {
       confidence: 0.95,
@@ -560,10 +562,12 @@ describe("ExamWorkspaceBodyEditor", () => {
 
     await wrapper.setProps({
       item: buildGapItem({
-        answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
         body: [{ segments: [{ kind: "text", text: "Beskriv." }] }],
         gaps: [],
         kind: "free_text",
+        match_left: [],
+        match_right: [],
       }),
     });
     expect(wrapper.find('[data-test="exam-workspace-gap-key-hint"]').exists()).toBe(false);

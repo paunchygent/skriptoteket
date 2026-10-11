@@ -5,20 +5,27 @@
  *   A gap item is partially keyed only while its answer key is keyed and at
  *   least one gap has no accepted values. The refusal copy names one item in
  *   the singular and several items in the plural with a Swedish list joiner.
+ *   A matching item is incomplete while its key is keyed and any left or right
+ *   entry is missing from the pairs or used more than once, or a pair names an
+ *   unknown entry; an absent key with no pairs is never incomplete.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
+  INCOMPLETE_MATCH_KEY_GUIDANCE,
+  incompleteMatchKeyCopy,
+  isIncompleteMatchingItem,
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
   partialGapKeyCopy,
 } from "./examWorkspaceAnswerKeyRules";
+import { buildMatchingItem, buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
 
 function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
-    answer_key: { correct_choice_ids: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [
       {
         segments: [
@@ -37,6 +44,8 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     ],
     item_id: "item_001",
     kind: "gap_fill",
+    match_left: [],
+    match_right: [],
     points: 1,
     review: {
       confidence: 0.95,
@@ -67,7 +76,7 @@ describe("isPartiallyKeyedGapItem", () => {
   });
 
   it("accepts a gap item whose answer key is absent", () => {
-    const item = buildGapItem({ answer_key: { correct_choice_ids: [], origin: "absent" } });
+    const item = buildGapItem({ answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" } });
     expect(isPartiallyKeyedGapItem(item)).toBe(false);
   });
 
@@ -87,6 +96,69 @@ describe("partialGapKeyCopy", () => {
     const items = [3, 4, 7].map((sequence) => buildGapItem({ sequence }));
     expect(partialGapKeyCopy(items)).toBe(
       `Frågorna 3, 4 och 7 saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`,
+    );
+  });
+});
+
+describe("isIncompleteMatchingItem", () => {
+  it("accepts the corpus key where every entry is used exactly once", () => {
+    expect(isIncompleteMatchingItem(buildMatchingItem())).toBe(false);
+  });
+
+  it("rejects a keyed item that is missing one pair", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithPairs([
+          [1, 2],
+          [2, 1],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a keyed item that uses one right entry twice", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithPairs([
+          [1, 2],
+          [2, 2],
+          [3, 3],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a keyed item whose pair names an unknown right entry", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithPairs([
+          [1, 2],
+          [2, 1],
+          [3, 9],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a keyed item with no pairs at all", () => {
+    expect(isIncompleteMatchingItem(buildMatchingItemWithPairs([]))).toBe(true);
+  });
+
+  it("accepts an absent key with no pairs", () => {
+    const item = buildMatchingItemWithPairs([]);
+
+    expect(
+      isIncompleteMatchingItem({ ...item, answer_key: { ...item.answer_key, origin: "absent" } }),
+    ).toBe(false);
+  });
+
+  it("never flags a non-matching item", () => {
+    expect(isIncompleteMatchingItem(buildGapItem())).toBe(false);
+  });
+
+  it("names the question and carries the guidance", () => {
+    expect(incompleteMatchKeyCopy([buildMatchingItem({ sequence: 4 })])).toBe(
+      `Fråga 4 har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
   });
 });

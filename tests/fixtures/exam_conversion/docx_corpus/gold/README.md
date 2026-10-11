@@ -9,11 +9,12 @@ second labelling to the English 1, poetry and Solid Gold 3 files. A later change
 confirmation. Unresolved `teacher_questions` prevent confirmation and produce comparison mismatches.
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`).
-The comparator is `scripts/exam_conversion_eval/compare.py`. It compares
-ordered items, kind, points, prompt, choice sets, correct-choice sets, each
-gap's accepted answers, and directed matching pairs. Reports keep the source
-item labels and the confirmation state. Comparisons against these confirmed
-files are the A7 acceptance evidence.
+The comparator is `scripts/exam_conversion_eval/compare.py`. A gold file is one
+correct conversion, so the comparator judges the eight conversion principles of
+TASK-SKRIPT-39-05-03 against it rather than textual identity. Reports keep the
+source item labels, the confirmation state and, per exam, the number of items
+failing each principle. Comparisons against these confirmed files are the A7
+acceptance evidence.
 
 One source-numbered question is one gold item, including all of its subparts.
 The poetry quiz's separately labelled Part 2 and Part 3 questions are separate
@@ -29,15 +30,39 @@ prompts drop empty cells, including blank matching answer cells.
 
 Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
-a native free-text item requiring review. `matching` is a gold kind already;
-its native implementation belongs to the later matching task.
+a native free-text item requiring review. `matching` corresponds to the native
+matching kind, whose two lists and directed pairs the comparator reads.
 
-Prompt, option and matching text comparison normalises whitespace. Gap
-answers additionally ignore case. Every facit answer must remain present;
-an extra answer passes only the parent-decided A10 spelling policy in
-`answer_spelling.py`: Damerau-Levenshtein distance at most 1 for a gold
-answer of up to six characters, otherwise at most 2, over the whole answer.
-An extra answer equal to another gap's gold answer in the same item fails.
+Items are paired with gold by position. A converted item passes when it meets
+all eight principles:
+
+1. **Segmentation.** The exam has the gold number of items, and no item holds a
+   stretch of five or more words that belongs only to another gold item.
+2. **Response kind.** The item has the gold kind; a free-text item requiring
+   review counts as `review`.
+3. **Response slots.** The item has the gold number of gaps, the same options
+   and, for matching, the same two lists, compared by wording.
+4. **Scoring.** The correct options equal gold, and the pairs equal the gold
+   pairs. Each gap accepts every gold answer, ignoring case and whitespace. An
+   extra answer fails when it is another gap's gold answer, or when it is
+   neither within the A10 spelling policy in `answer_spelling.py`
+   (Damerau-Levenshtein distance at most 1 for a gold answer of up to six
+   characters, otherwise at most 2, over the whole answer) nor a form rule 3
+   admits: a part of a slash-joined gold answer, or the other half of a
+   "short = term" definition in the gold prompt.
+5. **Points.** Points equal gold.
+6. **No answer leakage.** No gold answer, correct option or matched right
+   entry occurs as a whole phrase in the item's title or prompt more often
+   than in the gold prompt.
+7. **No platform labels.** Options and match entries carry no leading letter or
+   number, and the title or prompt carries no opening question number, no
+   point label and no printed blank marker beyond what the gold prompt shows.
+8. **Content present.** Every line and table cell of the gold prompt, without
+   its list label, occurs in the item title, the item prompt or the item's
+   match lists. Document instructions do not count, because the Exam.net
+   export carries only items. Case, punctuation, quote style, whitespace, line
+   breaks and gap markers do not count.
+
 Explicit source facit variants remain gold answers in their own right.
 
 `pdm run exam-conversion-eval --mode recorded --evidence-dir <dir>` converts

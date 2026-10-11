@@ -70,6 +70,8 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.SINGLE_CHOICE: PdfExamItemKind.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: PdfExamItemKind.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
+    # The Exam.net PDF profile has no matching family; its strategy reports the item.
+    NativeExamItemKind.MATCHING: PdfExamItemKind.UNSUPPORTED,
 }
 # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
 # already blocks keyed items without a key before export. An unkeyed keyed item

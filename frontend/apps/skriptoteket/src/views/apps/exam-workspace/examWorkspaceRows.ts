@@ -64,6 +64,7 @@ const CONTAINER_SUFFIX = ".provdokument.zip";
 export const EXAM_WORKSPACE_TYPE_LABELS: Record<NativeExamItemKind, string> = {
   free_text: "Fritext",
   gap_fill: "Lucktext",
+  matching: "Matchning",
   multiple_response: "Flerval: flera val",
   single_choice: "Flerval: ett val",
 };

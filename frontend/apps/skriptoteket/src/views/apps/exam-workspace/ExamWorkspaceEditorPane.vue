@@ -25,6 +25,7 @@ import type {
   ExamWorkspaceAnswerKeyProposal,
   NativeExamBodySegment,
   NativeExamItem,
+  NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceItemDrawer from "./ExamWorkspaceItemDrawer.vue";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
@@ -60,6 +61,13 @@ const emit = defineEmits<{
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  updateMatchEntryText: [
+    itemId: string,
+    side: "left" | "right",
+    entryId: string,
+    text: string,
+  ];
+  updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
     paragraphIndex: number,
@@ -139,6 +147,11 @@ const redigeraGridClass = computed(() => {
               (itemId, gapId, acceptedValues) =>
                 emit('updateGapValues', itemId, gapId, acceptedValues)
             "
+            @update-match-entry-text="
+              (itemId, side, entryId, text) =>
+                emit('updateMatchEntryText', itemId, side, entryId, text)
+            "
+            @update-match-pairs="(itemId, pairs) => emit('updateMatchPairs', itemId, pairs)"
             @update-paragraph-segments="
               (itemId, paragraphIndex, segments) =>
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)

@@ -42,10 +42,12 @@ function buildDocument(revision: number): NativeExamDocument {
     instructions: ["Besvara alla frågor."],
     items: [
       {
-        answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
         body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
         gaps: [],
+        match_left: [],
+        match_right: [],
         item_id: "item_001",
         kind: "free_text",
         points: 2,

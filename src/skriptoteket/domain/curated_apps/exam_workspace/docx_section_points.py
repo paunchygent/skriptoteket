@@ -1,10 +1,32 @@
 """Equal split of a printed section total over the section's items that print no points."""
 
+import re
+
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
 
 AcceptedItem = tuple[NativeExamItem, tuple[str, ...]]
+
+
+def _total(
+    instruction: ProducedMetadata, chunks: tuple[DocxChunk, ...], positions: dict[str, int]
+) -> int | None:
+    """The instruction's total, or the one total its section heading prints."""
+    if instruction.points is not None:
+        return instruction.points
+    headings = [chunks[positions[a]] for a in instruction.source_anchors]
+    labels = [
+        label
+        for chunk in headings
+        if chunk.kind == "heading"
+        for label in POINT_LABEL.findall(chunk.text)
+    ]
+    if len(labels) != 1:
+        return None
+    number = re.search(r"\d+", labels[0])
+    return int(number.group()) if number else None
 
 
 def split_section_totals(
@@ -15,7 +37,8 @@ def split_section_totals(
 ) -> tuple[tuple[AcceptedItem, ...], tuple[str, ...]]:
     """Give each item in a section an equal share of the section's printed total.
 
-    A section starts at an instruction that prints a total and runs to the next such
+    A section starts at an instruction that prints a total, or at a section heading whose
+    one printed total the model left out, and runs to the next such
     instruction or to the end of the document. The total is split only when the section has
     at least two members, every member prints no points, no source chunk in the section
     went unbuilt, and the total divides evenly over the members. A total over one question
@@ -24,10 +47,11 @@ def split_section_totals(
     other section left unsplit is reported by its first anchor.
     """
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    totals = [(instruction, _total(instruction, chunks, positions)) for instruction in instructions]
     sections = sorted(
-        (positions[first], first, instruction.points)
-        for instruction in instructions
-        if instruction.points is not None
+        (positions[first], first, total)
+        for instruction, total in totals
+        if total is not None
         for first in (min(instruction.source_anchors, key=positions.__getitem__),)
     )
     starts = [min(positions[anchor] for anchor in anchors) for _, anchors in accepted]

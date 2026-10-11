@@ -49,35 +49,12 @@ from .gold import GoldExam
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 _RECORDINGS = Path("tests/fixtures/exam_conversion")
-# Each exam's recorded provider responses in round order, from a prompt v5 live run.
-_RECORDED_ROUNDS: dict[str, tuple[str, ...]] = {
-    "bf26_diagnostic_grammar_test_ht26_med_facit": (
-        "docx_build_v5/bf26_diagnostic_grammar_test_ht26_med_facit/round1.json",
-    ),
-    "bf26_english_1_unit_test_kap_1_2_med_facit": (
-        "docx_build_v5/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json",
-    ),
-    "chapter_4_poetry_and_lyrics_quiz_med_facit": (
-        "docx_build_v5/chapter_4_poetry_and_lyrics_quiz_med_facit/round1.json",
-        "docx_build_v5/chapter_4_poetry_and_lyrics_quiz_med_facit/round2.json",
-    ),
-    "metodprov_vetenskaplig_metod_med_facit": (
-        "docx_build_v5/metodprov_vetenskaplig_metod_med_facit/round1.json",
-    ),
-    "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit": (
-        "docx_build_v5/sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit/round1.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_1_med_facit": (
-        "docx_build_v5/svenska_2_grammatik_omprov_variant_1_med_facit/round1.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_2_med_facit": (
-        "docx_build_v5/svenska_2_grammatik_omprov_variant_2_med_facit/round1.json",
-    ),
-    "svenska_2_kursavslutande_prov_med_facit": (
-        "docx_build_v5/svenska_2_kursavslutande_prov_med_facit/round1.json",
-        "docx_build_v5/svenska_2_kursavslutande_prov_med_facit/round2.json",
-    ),
-}
+# Each exam's recorded provider responses, one file per round, from a prompt v7 live run.
+_RECORDED_RUN = _RECORDINGS / "docx_build_v7"
+
+
+def _recorded_rounds(exam: str) -> list[Path]:
+    return sorted((_RECORDED_RUN / exam).glob("round*.json"))
 
 
 @dataclass(frozen=True)
@@ -219,9 +196,7 @@ async def _evaluate(
 async def _recorded(settings: Settings) -> list[_ExamReport]:
     exams = sorted(_CORPUS.glob("*.docx"))
     providers = [
-        _ReplayedProvider(
-            [json.loads((_RECORDINGS / name).read_text()) for name in _RECORDED_ROUNDS[docx.stem]]
-        )
+        _ReplayedProvider([json.loads(path.read_text()) for path in _recorded_rounds(docx.stem)])
         for docx in exams
     ]
     return list(
@@ -262,6 +237,10 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             f" tokens in {report.input_tokens} out {report.output_tokens};"
             f" events {len(report.events)}"
         )
+        failures = report.comparison.failures_by_principle()
+        print(
+            "  failing items per principle: " + ", ".join(f"{p} {n}" for p, n in failures.items())
+        )
         if report.title != report.gold_title:
             print(f"  title differs: gold={report.gold_title!r} actual={report.title!r}")
         if report.crash:
@@ -270,8 +249,8 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             for mismatch in item.mismatches:
                 detail = f"expected={mismatch.expected!r} actual={mismatch.actual!r}"
                 print(
-                    f"  [{item.index}] {item.source_label} {mismatch.field} {mismatch.reason}:"
-                    f" {detail[:200]}"
+                    f"  [{item.index}] {item.source_label} {mismatch.principle} {mismatch.reason}:"
+                    f" {detail[:400]}"
                 )
 
 

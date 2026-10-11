@@ -3,8 +3,10 @@
  *
  * Domain purpose:
  *   Decide whether a gap item carries a partial answer key (keyed, but with
- *   empty accepted values in some gaps) and build the Swedish guidance copy
- *   the teacher sees inline and when a save is refused.
+ *   empty accepted values in some gaps) or a matching item carries an
+ *   incomplete pair list (keyed, but not every left and right entry used
+ *   exactly once), and build the Swedish guidance copy the teacher sees
+ *   inline and when a save is refused.
  *
  * Relationships:
  *   - Pure functions consumed by `examWorkspaceItemSaveRules`,
@@ -17,6 +19,9 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
 
+export const INCOMPLETE_MATCH_KEY_GUIDANCE =
+  "Välj ett svar för varje rad och använd varje svar en gång, eller lämna alla rader utan svar om frågan ska sakna facit.";
+
 function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
 }
@@ -27,6 +32,33 @@ export function isPartiallyKeyedGapItem(item: NativeExamItem): boolean {
     item.kind === "gap_fill" &&
     hasKeyedOrigin(item) &&
     item.gaps.some((gap) => gap.accepted_values.length === 0)
+  );
+}
+
+function eachUsedOnce(ids: string[], pairIds: string[]): boolean {
+  return ids.every((id) => pairIds.filter((pairId) => pairId === id).length === 1);
+}
+
+/**
+ * A keyed matching item needs every left and every right entry in exactly one
+ * pair, and no pair naming an unknown entry; the server refuses anything else.
+ */
+export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
+  if (item.kind !== "matching" || !hasKeyedOrigin(item)) {
+    return false;
+  }
+  const leftIds = item.match_left.map((left) => left.left_id);
+  const rightIds = item.match_right.map((right) => right.right_id);
+  const pairs = item.answer_key.match_pairs;
+  const pairLeftIds = pairs.map((pair) => pair.left_id);
+  const pairRightIds = pairs.map((pair) => pair.right_id);
+  const namesOnlyKnownEntries =
+    pairLeftIds.every((id) => leftIds.includes(id)) &&
+    pairRightIds.every((id) => rightIds.includes(id));
+  return !(
+    namesOnlyKnownEntries &&
+    eachUsedOnce(leftIds, pairLeftIds) &&
+    eachUsedOnce(rightIds, pairRightIds)
   );
 }
 
@@ -46,4 +78,8 @@ export function questionSubject(items: NativeExamItem[]): string {
 
 export function partialGapKeyCopy(items: NativeExamItem[]): string {
   return `${questionSubject(items)} saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`;
+}
+
+export function incompleteMatchKeyCopy(items: NativeExamItem[]): string {
+  return `${questionSubject(items)} har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`;
 }
