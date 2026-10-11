@@ -145,3 +145,4 @@ succeeded on retry.
 | D10 | Decisions is used only for the item-type labeler: text input, 0.95 probability threshold, retries on 503 and 504; the other placements are dropped (user decision 2026-10-11). |
 | D11 | The conversion experiment measures both groupings end to end: Responses grouping (A), and Decisions grouping with quoted chunks (B2) using A's instruction-scope rules; total time decides only when quality holds (user decision 2026-10-11). |
 | D12 | The conversion experiment starts after TASK-SKRIPT-39-05-03 merges and builds batching on its parent model, so a parent and its children share a batch (user decision 2026-10-11). |
+| D13 | The conversion experiment also targets two consecutive live eval runs where every corpus item meets the eight conversion principles, and measures higher reasoning effort as one variable (user decision 2026-10-11, moved from TASK-SKRIPT-39-05-03 D19). |
