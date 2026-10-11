@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)
 task_kind: story
 acceptance_criteria:
 - Live eval runs on the corpus show no code fault against the eight conversion principles, including matching items and parents; remaining failures are run-to-run model slips, and two consecutive clean runs move to TASK-SKRIPT-39-05-04

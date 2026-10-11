@@ -5,15 +5,13 @@
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
 
-  - TASK-SKRIPT-39-05-01, -02 and
-    [-03](docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md)
-    `in_progress`: 03 rereview approved `8441c8f3`, merged `1db37835`, pushed.
-    Staging walk 2026-10-11 on `1db37835` (DOCX upload as proof user): the three
-    Svenska 2 exams, `sa24` and `bf26_english` match gold on all eight
-    principles (166/166 items, titles right); bf26 matching edit saved and QTI
-    export carries it. Evidence: retained root
-    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`. Next: user
-    closure of 01-03.
+  - TASK-SKRIPT-39-05-01, -02 and -03 `done` (user closure 2026-10-11 after the
+    staging walk on `1db37835`: 166/166 items on all eight principles, matching
+    edit, QTI export; retained root
+    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
+  - [TASK-SKRIPT-39-05-05](docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md)
+    `ready`: titles drop answer-key wording (user decision 2026-10-11). Next:
+    Codex implementation-specialist in its own worktree.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Codex lead `18bb0b85` (thread `01a12ad3`) in worktree
     `Skriptoteket-task-skript-39-05-04`. v1/v2 sweep and D16 tables done

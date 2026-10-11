@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1cbb5a5497f2f85f29d1b7f65a21cdfc61827d83af3f138a8505509b2457dab8",
+  "source_set_digest": "b03e7ff5cbc6d9b481a3d014a9a922bf45e5b6b5c753dc27328b12a1d9899f7a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4632,7 +4632,7 @@
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
       "path": "docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4643,7 +4643,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4651,7 +4653,7 @@
       "type": "task",
       "title": "Gold corpus and eval loop for AI-first DOCX conversion",
       "path": "docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4662,7 +4664,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4670,7 +4674,7 @@
       "type": "task",
       "title": "Fix the conversion defects the staging corpus walk found",
       "path": "docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4681,7 +4685,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 01-03 on 2026-10-11 after the staging walk on main 1db37835, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md (166/166 items on all eight principles, matching edit, QTI export)"
       }
     },
     {
@@ -4690,6 +4696,25 @@
       "title": "Label items with a Decisions classifier and convert type-focused batches in parallel",
       "path": "docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-05",
+      "type": "task",
+      "title": "Remove answer-key wording from converted exam titles",
+      "path": "docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
