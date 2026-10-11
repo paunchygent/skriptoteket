@@ -35,7 +35,9 @@ formatting, not wording: never copy them into any output field.
 Rules:
 - Student-visible text (title, body, choices, exam title and instructions) is copied from
   the source wording. A cue printed beside a blank, such as a first letter or a word in
-  brackets, is body text next to the gap; gap hints stay null. Do not paraphrase,
+  brackets, is body text next to the gap; gap hints stay null. Keep every such cue with its
+  brackets where the source prints it, also when it is in another language than the
+  sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
   translate, solve or invent.
 - The exam title is the document's opening heading, copied verbatim, whatever its wording says.
 - A chunk is facit by its position: it stands under a facit heading, or it is a separate
