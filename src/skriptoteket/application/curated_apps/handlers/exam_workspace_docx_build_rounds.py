@@ -172,7 +172,8 @@ Rules:
   Each source chunk belongs to exactly one item, the title, an instruction, or
   answer_key_anchors. This holds for every chunk up to the last one of chunks, also after
   the last question: a facit line whose answer became a gap's accepted_values goes in
-  answer_key_anchors, and a heading or points line goes in the title or an instruction.
+  answer_key_anchors, a heading goes in the title or an instruction, and a points line goes
+  where the points rule places it.
 - Return every question in the supplied chunks in this one response; context_chunks hold no
   question of this part.
 - When a question cannot be converted faithfully, return outcome review with a short
