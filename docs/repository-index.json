@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b03e7ff5cbc6d9b481a3d014a9a922bf45e5b6b5c753dc27328b12a1d9899f7a",
+  "source_set_digest": "e6fdb740ccfc1dc11e3e0c182a498240fb91a50603f366ac77f16e0b8a5ebd09",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4714,7 +4714,7 @@
       "type": "task",
       "title": "Remove answer-key wording from converted exam titles",
       "path": "docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
