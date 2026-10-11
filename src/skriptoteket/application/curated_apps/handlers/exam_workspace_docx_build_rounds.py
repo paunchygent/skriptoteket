@@ -81,7 +81,12 @@ Rules:
   labels written after or inside the sentence, or an answer line "Label: value". Those marks
   are answer-key content, never student-visible text. Italic text the question quotes for the
   student to analyse, such as an example sentence, clause or word, stays student-visible text
-  without the tags.
+  without the tags. Tell them apart by the sentence: italic words that complete the statement
+  the student is asked to complete or decide, so that the statement without them is the
+  question, are facit. Leave them out of the body, keep the rest of the sentence with its part
+  label, and for free_text copy them, each after its part label, into the marking_guide.
+- A blank in a question with options marks the place the options fill: copy it into the body
+  as text exactly as printed; it is no gap.
 - Gaps come from answer slots, never from the facit. A gap exists where the student-visible
   text shows a blank marker (an underscore run, a dotted line or empty brackets): each blank
   in a question without options is one gap, except that a line holding nothing but a blank
