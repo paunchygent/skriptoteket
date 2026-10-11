@@ -1,0 +1,353 @@
+"""Type-batched parallel DOCX conversion (TASK-SKRIPT-39-05-04 steps 1-4, D25, D29).
+
+One grouping call maps the questions, one labeling call types them, and type batches
+convert concurrently in two waves: questions the first labeling pass accepts convert at
+once; questions the second pass decides join second-wave batches once labeling ends.
+Each admitted batch reaches the progress port as a provisional document; the final
+document is assembled in source order and checked against the grouping.
+
+An unresolved or unsupported label converts as free text (D23). The strict schema is the
+only gate on a batch response. A family the converter reports as a type conflict is resent
+with the reported kind, the only resend; every family is sent at most three times in
+total. Chunks no batch converts become review items.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import time
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
+from uuid import UUID
+
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
+    assembly_check,
+    conversion_update,
+    merge_batch,
+    provisional_result,
+    with_confidence,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
+    MAX_ATTEMPTS,
+    convert_batch,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
+    DocxBuildRoundExchange,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
+    SerializedUnitOfWork,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
+    DocxBuildResult,
+    DocxStageTiming,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
+    ConversionBatch,
+    QuestionFamily,
+    pack_batches,
+    question_families,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
+    ExamManifest,
+    question_source,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItemKind,
+)
+from skriptoteket.domain.errors import DomainError
+from skriptoteket.protocols.docx_conversion_progress import (
+    ConversionOutline,
+    ConversionUpdate,
+    DocxConversionProgressProtocol,
+    OutlineQuestion,
+)
+from skriptoteket.protocols.exam_grouping import ExamGrouperProtocol, ExamGroupingError
+from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
+from skriptoteket.protocols.item_type_labeler import (
+    ItemTypeLabel,
+    ItemTypeLabelerError,
+    ItemTypeLabelerProtocol,
+    ItemTypeLabelResult,
+    LabelingItem,
+    LabelingRequest,
+    LabelPass,
+)
+
+_KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
+    ItemTypeLabel.SINGLE_CHOICE: NativeExamItemKind.SINGLE_CHOICE,
+    ItemTypeLabel.MULTIPLE_RESPONSE: NativeExamItemKind.MULTIPLE_RESPONSE,
+    ItemTypeLabel.GAP_FILL: NativeExamItemKind.GAP_FILL,
+    ItemTypeLabel.FREE_TEXT: NativeExamItemKind.FREE_TEXT,
+    ItemTypeLabel.MATCHING: NativeExamItemKind.MATCHING,
+    ItemTypeLabel.UNSUPPORTED: NativeExamItemKind.FREE_TEXT,
+    ItemTypeLabel.UNRESOLVED: NativeExamItemKind.FREE_TEXT,
+}
+_DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
+_LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
+_CONFLICT_REASON = "AI-tolkningen kunde inte avgöra frågetypen. Kontrollera källtexten manuellt."
+
+
+@dataclass(frozen=True)
+class DocxConversionOutcome:
+    """The final build result and its mapping of grouped questions to items."""
+
+    result: DocxBuildResult
+    update: ConversionUpdate
+
+
+@dataclass(frozen=True)
+class DocxConversionJob:
+    """Identity and source of one conversion."""
+
+    job_id: UUID
+    worker_id: str
+    document_id: UUID
+    filename: str
+    source_sha256: str
+    source_docx: bytes
+    chunks: tuple[DocxChunk, ...]
+
+
+class _Run:
+    """Mutable bookkeeping of one conversion; every mutation happens under the UoW lock."""
+
+    def __init__(self, job: DocxConversionJob, started: float) -> None:
+        self.job = job
+        self.started = started
+        self.state = DocxBuildState(
+            job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
+        )
+        self.families: tuple[QuestionFamily, ...] = ()
+        self.title_anchors: frozenset[str] = frozenset()
+        self.kinds: dict[str, NativeExamItemKind] = {}
+        self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
+        self.attempts: dict[str, int] = {}
+        self.filled: list[str] = []
+        self.timings: list[DocxStageTiming] = []
+
+    def family(self, question_id: str) -> QuestionFamily:
+        return next(f for f in self.families if f.question_id == question_id)
+
+    def timed(self, stage: str, started: float) -> None:
+        self.timings.append(
+            DocxStageTiming(stage, started - self.started, time.monotonic() - self.started)
+        )
+
+    def confidence(self) -> dict[str, float]:
+        """The first-pass probability of the label each question converts with."""
+        return {
+            qid: self.first_pass.get(qid, {}).get(ItemTypeLabel(kind.value), 0.0)
+            for qid, kind in self.kinds.items()
+        }
+
+    @property
+    def pending(self) -> tuple[str, ...]:
+        return tuple(f.question_id for f in self.families if f.question_id not in self.filled)
+
+
+class DocxConversionPipeline:
+    """Group, label and convert type batches concurrently into one native exam."""
+
+    def __init__(
+        self,
+        *,
+        grouper: ExamGrouperProtocol,
+        labeler: ItemTypeLabelerProtocol,
+        labeler_chunker: DocxExamChunkerProtocol,
+        exchange: DocxBuildRoundExchange,
+        profile: StructuredLLMProviderProfile,
+        progress: DocxConversionProgressProtocol,
+        uow: SerializedUnitOfWork,
+        families_per_batch: int,
+        enabled: bool,
+    ) -> None:
+        self._grouper = grouper
+        self._labeler = labeler
+        self._labeler_chunker = labeler_chunker
+        self._exchange = exchange
+        self._profile = profile
+        self._progress = progress
+        self._uow = uow
+        self._families_per_batch = families_per_batch
+        self._enabled = enabled
+
+    async def convert(
+        self, *, job: DocxConversionJob, fallback_reason: str | None = None
+    ) -> DocxConversionOutcome:
+        run = _Run(job, time.monotonic())
+        if fallback_reason or not self._enabled:
+            reason = fallback_reason or _DISABLED_REASON
+            run.state.record(
+                "fallback", "lease_expired" if fallback_reason else "ai_disabled", detail=reason
+            )
+            run.state.fail_all_pending(reason)
+            return self._final(run, None)
+        started = time.monotonic()
+        try:
+            grouping = await self._grouper.group(job_id=job.job_id, chunks=job.chunks)
+        except ExamGroupingError as error:
+            run.state.record("grouping", error.code, detail=error.detail)
+            run.state.fail_all_pending(str(error))
+            return self._final(run, None)
+        for usage in grouping.usage:
+            run.state.record_usage(usage)
+        run.timed("grouping", started)
+        manifest = grouping.manifest
+        run.families = question_families(manifest, job.chunks)
+        run.title_anchors = frozenset(manifest.title_anchors)
+        run.attempts = {f.question_id: 0 for f in run.families}
+        await self._outline(run, manifest)
+        try:
+            async with asyncio.TaskGroup() as tasks:
+                tasks.create_task(self._label_and_convert(run, manifest, tasks))
+        except* DomainError as group:
+            raise group.exceptions[0] from group
+        return self._final(run, manifest)
+
+    async def _outline(self, run: _Run, manifest: ExamManifest) -> None:
+        questions = tuple(
+            OutlineQuestion(
+                question_id=family.question_id,
+                position=family.position,
+                anchors=family.question_anchors,
+                source_text="\n".join(
+                    run.state.chunk_by_anchor[a].text for a in family.question_anchors
+                ),
+            )
+            for family in run.families
+        )
+        title = " ".join(run.state.chunk_by_anchor[a].text for a in manifest.title_anchors)
+        async with self._uow.lock:
+            await self._progress.outline(
+                worker_id=run.job.worker_id,
+                job_id=run.job.job_id,
+                outline=ConversionOutline(title=title or None, questions=questions),
+            )
+
+    def _labeling_request(self, run: _Run, manifest: ExamManifest) -> LabelingRequest:
+        """Each question's faithful source markdown (D14); plain chunk text when the source
+        holds content markdown cannot carry, until image input exists."""
+        try:
+            source = self._labeler_chunker.chunk(content=run.job.source_docx)
+        except ValueError:
+            run.state.record("labeling", "labeler_source_plain_text")
+            source = run.job.chunks
+        return LabelingRequest(
+            job_id=run.job.job_id,
+            items=tuple(
+                LabelingItem(
+                    item_id=f.question_id,
+                    source_text=question_source(manifest, source, f.question_id),
+                )
+                for f in run.families
+            ),
+        )
+
+    async def _label_and_convert(
+        self, run: _Run, manifest: ExamManifest, tasks: asyncio.TaskGroup
+    ) -> None:
+        started = time.monotonic()
+        second_wave: list[str] = []
+
+        def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
+            for result in results:
+                run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
+                run.first_pass[result.item_id] = (result.first_pass or result).probabilities
+            if results and results[0].decided_by is LabelPass.FIRST:
+                run.timed("labeling_first_pass", started)
+                self._dispatch(run, [r.item_id for r in results], "w1-", tasks)
+            else:
+                second_wave.extend(r.item_id for r in results)
+
+        try:
+            await self._labeler.label(
+                request=self._labeling_request(run, manifest), on_results=settle
+            )
+        except ItemTypeLabelerError as error:
+            run.state.record("labeling", error.code, detail=str(error.status_code or ""))
+            run.state.fail_all_pending(_LABELING_REASON)
+            return
+        run.timed("labeling", started)
+        if second_wave:
+            self._dispatch(run, second_wave, "w2-", tasks)
+
+    def _dispatch(
+        self, run: _Run, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
+    ) -> None:
+        chosen = set(question_ids)
+        families = tuple(f for f in run.families if f.question_id in chosen)
+        for batch in pack_batches(
+            families, run.kinds, families_per_batch=self._families_per_batch, prefix=prefix
+        ):
+            tasks.create_task(self._convert(run, batch, tasks))
+
+    async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:
+        started = time.monotonic()
+        job = run.job
+        state = DocxBuildState(
+            job.job_id,
+            job.document_id,
+            job.filename,
+            job.source_sha256,
+            job.chunks,
+            claimable=batch.claims,
+            context_anchors=batch.reads,
+            allowed_kinds=batch.kinds,
+            batch=batch.batch_id,
+        )
+        families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
+        outcome = await convert_batch(
+            state=state,
+            batch=batch,
+            families=families,
+            attempts=run.attempts,
+            exchange=self._exchange,
+            profile=self._profile,
+        )
+        resend: list[str] = []
+        run.families = tuple(
+            replace(f, claims=outcome.released[f.question_id])
+            if f.question_id in outcome.released
+            else f
+            for f in run.families
+        )
+        for qid, kind in outcome.conflicts.items():
+            run.kinds[qid] = kind
+            if run.attempts[qid] < MAX_ATTEMPTS:
+                resend.append(qid)
+            else:
+                state.record("fallback", "type_conflict_exhausted", detail=qid)
+                run.state.fail_chunks(tuple(run.family(qid).claims), _CONFLICT_REASON)
+        with_confidence(state, run.families, run.confidence())
+        run.timed(f"batch {batch.batch_id}", started)
+        async with self._uow.lock:
+            merge_batch(run.state, state, run.title_anchors)
+            run.filled.extend(qid for qid in batch.question_ids if qid not in outcome.conflicts)
+            provisional = provisional_result(run.state, run.families, frozenset(run.pending))
+            await self._progress.batch_ready(
+                worker_id=job.worker_id,
+                job_id=job.job_id,
+                update=conversion_update(
+                    provisional.document, run.families, tuple(run.filled), run.pending
+                ),
+            )
+        if resend:
+            self._dispatch(run, resend, f"{batch.batch_id}c", tasks)
+
+    def _final(self, run: _Run, manifest: ExamManifest | None) -> DocxConversionOutcome:
+        started = time.monotonic()
+        result = run.state.result()
+        update = conversion_update(result.document, run.families, tuple(run.filled), ())
+        checks = assembly_check(result.document, manifest, run.families, update) if manifest else ()
+        run.timed("assembly", started)
+        return DocxConversionOutcome(
+            result=replace(result, events=(*result.events, *checks), timings=tuple(run.timings)),
+            update=update,
+        )

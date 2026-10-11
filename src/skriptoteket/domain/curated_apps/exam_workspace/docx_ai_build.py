@@ -60,11 +60,7 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         for segment in paragraph.segments:
             if segment.kind == "gap":
                 gap_id = f"gap_{len(gaps) + 1:03d}"
-                gaps.append(
-                    NativeGap(
-                        gap_id=gap_id, accepted_values=segment.accepted_values, hint=segment.hint
-                    )
-                )
+                gaps.append(NativeGap(gap_id=gap_id, accepted_values=segment.accepted_values))
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
                 segments.append(NativeTextSegment(text=segment.text))
@@ -102,6 +98,9 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         match_left=match_left,
         match_right=match_right,
         answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct, match_pairs=pairs),
+        marking_guide=(
+            produced.marking_guide if produced.kind is NativeExamItemKind.FREE_TEXT else None
+        ),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,

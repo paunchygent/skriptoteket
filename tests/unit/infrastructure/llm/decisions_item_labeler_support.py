@@ -1,9 +1,7 @@
 """Recorded-response support shared by the Decisions item-labeler adapter tests.
 
-The recordings hold historical first-pass outputs. The adapter's public ``label()``
-also re-asks every escalated question alone, so ``replay`` serves those single-question
-requests from the item's own recorded first-pass answer: a choice answer resolves to
-``SECOND_PASS_PROBABILITY`` and a refusal stays a refusal.
+The recordings hold historical first-pass outputs; ``replay`` serves them to the
+current first-pass requests and rejects any other request.
 """
 
 from __future__ import annotations
@@ -21,7 +19,6 @@ from pydantic import JsonValue
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
     build_decisions_payload,
-    build_second_pass_payload,
     split_items,
 )
 from skriptoteket.protocols.item_type_labeler import LabelingItem, LabelingRequest
@@ -30,8 +27,6 @@ FIXTURES = Path("tests/fixtures/item_type_labeler")
 CORPUS_24 = "corpus_exam_24_questions.json"
 CORPUS_204 = "corpus_three_exams_204_questions.json"
 ACCEPT_BOUNDARY = 0.95
-SECOND_PASS_PROBABILITY = 0.97
-SECOND_PASS_INPUT_TOKENS = 100
 
 Responder = Callable[[httpx.Request], httpx.Response]
 
@@ -178,35 +173,12 @@ class Harness:
         )
 
 
-def _second_pass_exchange(exchange: Exchange, answer: Answer) -> Exchange:
-    """A single-question response that re-answers ``answer`` for its own re-ask."""
-
-    again = copy.deepcopy(answer)
-    again["name"] = "kind_q1"
-    if again["type"] == "choice":
-        for entry in again["probabilities"]:
-            if entry["value"] == again["choice"]:
-                entry["probability"] = SECOND_PASS_PROBABILITY
-    body = Body(
-        model=exchange["body"]["model"],
-        answers=[again],
-        usage=Usage(input_tokens=SECOND_PASS_INPUT_TOKENS),
-    )
-    return Exchange(
-        request=exchange["request"],
-        status_code=exchange["status_code"],
-        headers=exchange["headers"],
-        body=body,
-    )
-
-
 def replay(exchanges: list[Exchange], *, fixture: Recording | None = None) -> Responder:
     # Historical outputs exercise the current request/parser boundary only.
     # Their old request bodies are not evidence of requests made by this adapter.
     fixture = load(CORPUS_24) if fixture is None else fixture
     items = request_for(fixture).items
     first_pass: list[tuple[JsonValue, Exchange]] = []
-    second_pass: list[tuple[JsonValue, Exchange, str]] = []
     for chunk in split_items(items):
         exchange = next(
             exchange
@@ -214,22 +186,12 @@ def replay(exchanges: list[Exchange], *, fixture: Recording | None = None) -> Re
             if len(exchange["request"]["questions"]) == len(chunk)
         )
         first_pass.append((build_decisions_payload(chunk), exchange))
-        second_pass.extend(
-            (build_second_pass_payload(item), exchange, f"kind_q{index + 1}")
-            for index, item in enumerate(chunk)
-        )
 
     def respond(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
         matches = [exchange for payload, exchange in first_pass if payload == sent]
-        if matches:
-            assert len(matches) == 1, "unexpected current-source request"
-            return recorded_response(matches[0])
-        again = [(ex, name) for payload, ex, name in second_pass if payload == sent]
-        assert len(again) == 1, "unexpected current-source request"
-        exchange, name = again[0]
-        answer = next(a for a in exchange["body"]["answers"] if a["name"] == name)
-        return recorded_response(_second_pass_exchange(exchange, answer))
+        assert len(matches) == 1, "unexpected current-source request"
+        return recorded_response(matches[0])
 
     return respond
 

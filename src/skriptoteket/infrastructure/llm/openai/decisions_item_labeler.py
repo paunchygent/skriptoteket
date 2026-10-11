@@ -4,9 +4,9 @@ Purpose:
     Ask one ``choice`` question per item on ``POST /v1/decisions`` and route
     each answer through the label thresholds. Requests hold at most 200
     questions; larger inputs split into concurrent requests that each carry
-    only their own items. Every escalated question is then re-asked alone
-    with its own context (second pass, D16), all such questions
-    concurrently. 503 and 504 retry with bounded backoff.
+    only their own items. This is the batched first pass; an escalated
+    question is decided by the Responses second pass (D23). 503 and 504
+    retry with bounded backoff.
 
 Relationships:
     Implements ``protocols.item_type_labeler.MeteredItemTypeLabelerProtocol``.
@@ -25,7 +25,6 @@ import asyncio
 import json
 import math
 from collections.abc import Coroutine, Iterable, Sequence
-from dataclasses import replace
 
 import httpx
 from pydantic import JsonValue
@@ -150,15 +149,9 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
         return f"openai-decisions-{DECISIONS_MODEL}"
 
     def estimate_input_tokens(self, *, request: LabelingRequest) -> int:
-        """First-pass requests plus one possible single-question call for every item."""
-
-        first = sum(
+        return sum(
             estimate_prompt_tokens(json.dumps(build_decisions_payload(chunk)))
             for chunk in split_items(request.items)
-        )
-        return first + sum(
-            estimate_prompt_tokens(json.dumps(build_second_pass_payload(item)))
-            for item in request.items
         )
 
     async def label(self, *, request: LabelingRequest) -> ItemTypeLabeling:
@@ -168,22 +161,11 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             raise ItemTypeLabelerError(
                 code="config_missing", message="Decisions labeler API key is not configured."
             )
-        first = await self._gather(
+        outcomes = await self._gather(
             self._label_chunk(build_decisions_payload(chunk), chunk)
             for chunk in split_items(request.items)
         )
-        results = [result for outcome in first for result in outcome[0]]
-        again = [
-            (index, item)
-            for index, (item, result) in enumerate(zip(request.items, results, strict=True))
-            if result.route is LabelRoute.ESCALATE
-        ]
-        second = await self._gather(
-            self._label_chunk(build_second_pass_payload(item), (item,)) for _, item in again
-        )
-        for (index, _), (relabeled, _, _) in zip(again, second, strict=True):
-            results[index] = replace(relabeled[0], first_pass=results[index])
-        outcomes = first + second
+        results = [result for outcome in outcomes for result in outcome[0]]
         tokens = [outcome[1] for outcome in outcomes]
         return ItemTypeLabeling(
             results=tuple(results),
@@ -325,7 +307,7 @@ def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
 
 
 def build_second_pass_payload(item: LabelingItem) -> _JsonObject:
-    """Re-ask one escalated question alone with its own source text."""
+    """One question alone; its ``input`` is the second pass's tight source input (D23)."""
 
     return _payload(render_items((item,)), 1)
 

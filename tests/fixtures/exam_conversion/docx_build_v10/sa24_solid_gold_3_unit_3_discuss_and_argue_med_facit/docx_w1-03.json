@@ -1,0 +1,669 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0067",
+    "body:0069",
+    "body:0071",
+    "body:0073",
+    "body:0075",
+    "body:0077",
+    "body:0079",
+    "body:0081",
+    "body:0083",
+    "body:0085",
+    "body:0087",
+    "body:0089",
+    "body:0091",
+    "body:0093",
+    "body:0095",
+    "body:0097",
+    "body:0098"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0066"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "27",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“It really wasn’t your fault, Emma! So why do you ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "persist"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (p…) in blaming yourself for what happened?” (envisas)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0068"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "28",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She was given an injection to ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lessen",
+                "lesen"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (l…) the pain. (minska)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "29",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "overwhelming"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (o…) majority of those present were in favour of the plan. (överväldigande)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0072"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "30",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His earnings are said to amount to £300 000 ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "per annum",
+                "per anum"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (p…). (årligen /2 words/)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0074"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "31",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Several people were injured in ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "skirmishes"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (s…) during the night. (mindre sammandrabbningar)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "32",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She’s being ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "touted"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (t…) as the next leader of the party. (framhållen vitt och brett)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0078"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "33",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cycling is a totally ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sustainable"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (s…) form of transport. (hållbar)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0080"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "34",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Harold has been absent from class six times this term, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "according",
+                "acording"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (a…) to our records,” said the head teacher to his parents. (enligt)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "35",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Charles has ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "embarked"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (e…) on a new career as a teacher. (gett sig in i)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0084"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "36",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Of all the essential minerals in the human body, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calcium"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is the most abundant. It helps the body form bones and teeth.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0086"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "37",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Indigestion"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (I…) is pain caused by difficulty in digesting food.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "38",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Malnutrition",
+                "mallnutrition"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (M…) is a poor condition of health caused by a lack of food or a lack of the right type of food.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0090"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "39",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The common usage of the word ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diet"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (d…) is a limited variety or amount of food that you eat for medical reasons or because you want to lose weight.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0092"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "40",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calorie",
+                "callorie"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is a unit of measurement for energy. We use this term to define the amount of energy in the food we eat. They are found in fats, carbohydrates, proteins and alcohol.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0094"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "41",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Fibre",
+                "fiber"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (F…) is the indigestible part of plants. It helps to keep your gut healthy and prevent constipation.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "42",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "balanced",
+                "ballanced"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (b…) ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diet"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (d…) is enough, but not too much, of the right kinds of food.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

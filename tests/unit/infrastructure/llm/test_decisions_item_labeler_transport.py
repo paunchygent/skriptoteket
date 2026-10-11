@@ -8,7 +8,6 @@ from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     CORPUS_24,
     Harness,
     always,
-    escalated_answers,
     load,
     replay,
     request_for,
@@ -26,7 +25,8 @@ async def test_recorded_503_then_success_retries_once_after_base_delay() -> None
     labeling = await harness.labeler().label(request=request_for(fixture))
 
     assert len(labeling.results) == len(fixture["items"])
-    assert labeling.usage.attempts == 2 + len(escalated_answers(fixture))
+    assert labeling.usage.requests == 1
+    assert labeling.usage.attempts == 2
     assert harness.sleeper.delays == [1.0]
 
 

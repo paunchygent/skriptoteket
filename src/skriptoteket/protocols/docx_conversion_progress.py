@@ -91,3 +91,8 @@ class DocxConversionProgressProtocol(Protocol):
         The caller owns ``file_id`` and discards that vault file when its transaction fails.
         """
         ...
+
+    async def abandon(self, *, worker_id: str, job_id: UUID, reason: str) -> None:
+        """Called inside the caller's fenced unit of work when the job fails after conversion
+        started; placeholders a teacher has not changed become review items with ``reason``."""
+        ...

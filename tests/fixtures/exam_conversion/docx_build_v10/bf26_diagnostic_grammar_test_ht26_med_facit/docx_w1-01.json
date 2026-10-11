@@ -1,0 +1,697 @@
+{
+  "title": {
+    "text": "Diagnostic Grammar Test — BF26, HT26 — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 105 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0006",
+    "body:0008",
+    "body:0010",
+    "body:0012",
+    "body:0014",
+    "body:0016",
+    "body:0018",
+    "body:0019",
+    "body:0021",
+    "body:0023",
+    "body:0025",
+    "body:0027",
+    "body:0029",
+    "body:0031",
+    "body:0033",
+    "body:0035",
+    "body:0037"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0005"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The most famous bands ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "play"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (spelar) at the festival every summer.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0007"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They looked ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "for"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (efter) the keys everywhere but they couldn’t find them.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0009"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "breakfast"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (frukosten) we immediately left for the meeting.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "is snowing",
+                "’s snowing",
+                "'s snowing"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (snöar), so make sure you put on your boots!",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "During the meeting of the ministers, their ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "wives"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (fruar) and one husband participated in a special programme.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0015"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Everything was revealed ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "at the end of the book",
+                "at the end of the book."
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (i slutet av boken).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "was running"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (sprang) through the park when the tree ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fell"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (föll) on her.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "These are"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Det här är) the only seats left for tonight’s performance.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0022"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "worked"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (arbetade) abroad for many years to support his family.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0024"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The photographer ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "put",
+                "laid"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (lade) the photographs on the table.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0026"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "studied"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (studerade) physics at the University of California.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0028"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The boys’",
+                "The boys'"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Pojkarnas) changing room is over there to the left.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0030"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The children’s",
+                "The children's"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Barnens) toys were all over the floor.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0032"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He gave me ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a fifty-dollar bill",
+                "a fifty dollar bill",
+                "a fifty-dollar note",
+                "a fifty dollar note",
+                "a 50-dollar bill",
+                "a 50 dollar bill",
+                "a $50 bill"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en femtiodollarssedel).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0034"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They said that they ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "would come",
+                "’d come",
+                "'d come"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skulle komma) in the early afternoon.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0036"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "How many ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "mice"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (möss) has our cat caught today?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

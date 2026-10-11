@@ -1,0 +1,648 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0075",
+    "body:0077",
+    "body:0079",
+    "body:0081",
+    "body:0083",
+    "body:0085",
+    "body:0087",
+    "body:0089",
+    "body:0091",
+    "body:0093",
+    "body:0095",
+    "body:0097",
+    "body:0099",
+    "body:0101",
+    "body:0103",
+    "body:0105"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0074"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "34",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I’m sure this is my ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "boyfriend’s",
+                "boyfriend's"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (pojkväns) umbrella.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "35",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lost"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (förlorade) the match by 1–0.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0078"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "36",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Protestants",
+                "the Protestants"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (protestanterna) will be a minority in Northern Ireland.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0080"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "37",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "If you ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "should win",
+                "were to win",
+                "happen to win",
+                "should happen to win",
+                "win",
+                "ever win"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skulle vinna), please let me know!",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "38",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Ten years ago"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (För tio år sedan) he wrote his first book.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0084"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "39",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The city’s",
+                "The city's",
+                "The town’s",
+                "The town's"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Stadens) finances are in good order.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0086"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "40",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "rains"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (regnar) a lot in Seattle.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "41",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Most"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (De flesta) immigrants tend to live together in the same neighbourhoods.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0090"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "42",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It is just ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a ten-minute",
+                "a ten minute",
+                "a 10-minute",
+                "a 10 minute"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en tio minuters) boat trip.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0092"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "43",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It was ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "an"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en) honour to carry the flag in the parade.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0094"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "44",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Most"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (De flesta) visitors stay in the exhibition for only half an hour.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "45",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We really should give more money to ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "the poor"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (de fattiga).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0098"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "46",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "John Grisham ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "writes"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skriver) one novel a year.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0100"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "47",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Many people blame ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "society"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (samhället) when something goes wrong.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0102"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "48",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The five-year-old",
+                "The five year old"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Den fem år gamla) boy got lost in the deep forest.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0104"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "49",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "More sun and light would be good for ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "most of us"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (de flesta av oss).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

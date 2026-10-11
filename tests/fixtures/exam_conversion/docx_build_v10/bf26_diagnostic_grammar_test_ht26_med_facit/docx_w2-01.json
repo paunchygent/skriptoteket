@@ -1,0 +1,321 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0042"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0116"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0122"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0180"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0216"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0222"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0044",
+    "body:0118",
+    "body:0124",
+    "body:0182",
+    "body:0218",
+    "body:0224"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0043"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Det slutade med att alla betalade fem dollar var. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "It ended with everyone paying five dollars each",
+                "It ended with everyone paying five dollars each.",
+                "It ended with everybody paying five dollars each",
+                "It ended with everybody paying five dollars each.",
+                "In the end everyone paid five dollars each",
+                "In the end everyone paid five dollars each.",
+                "In the end, everybody paid five dollars each",
+                "In the end, everybody paid five dollars each."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0117"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "55",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Om vi hade tränat mer hade vi kanske vunnit matchen. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "If we had trained more, we might have won the match",
+                "If we had trained more, we might have won the match.",
+                "If we had trained more we might have won the match",
+                "If we had trained more we might have won the match.",
+                "If we had practised more, we might have won the match",
+                "If we had practised more, we might have won the match.",
+                "If we’d trained more, we might have won the match",
+                "If we'd trained more, we might have won the match",
+                "If we’d trained more, we might have won the match.",
+                "If we'd trained more, we might have won the match.",
+                "If we’d trained more we might have won the match",
+                "If we'd trained more we might have won the match",
+                "If we’d trained more we might have won the match.",
+                "If we'd trained more we might have won the match."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "57",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Robert sade att han efter två månader hade glömt allt han hade lärt sig. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Robert said that after two months he had forgotten everything he had learned",
+                "Robert said that after two months he had forgotten everything he had learned.",
+                "Robert said that after two months he had forgotten everything he had learnt",
+                "Robert said that after two months he had forgotten everything he had learnt.",
+                "Robert said that after two months, he had forgotten everything he had learned",
+                "Robert said that after two months, he had forgotten everything he had learned.",
+                "Robert said that he had forgotten everything he had learned after two months",
+                "Robert said that he had forgotten everything he had learned after two months."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0181"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "85",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "John bad om ursäkt för att han kom för sent. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "John apologized for being late",
+                "John apologized for being late.",
+                "John apologised for being late",
+                "John apologised for being late.",
+                "John apologized for arriving late",
+                "John apologized for arriving late.",
+                "John apologised for arriving late",
+                "John apologised for arriving late."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0217"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "102",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Hon hade aldrig gått dit om de inte hade bett henne. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "She would never have gone there if they hadn’t asked her",
+                "She would never have gone there if they hadn’t asked her.",
+                "She would never have gone there if they had not asked her",
+                "She would never have gone there if they had not asked her.",
+                "She’d never have gone there if they hadn’t asked her",
+                "She'd never have gone there if they hadn’t asked her",
+                "She’d never have gone there if they hadn't asked her",
+                "She'd never have gone there if they hadn't asked her",
+                "She’d never have gone there if they hadn’t asked her.",
+                "She'd never have gone there if they hadn’t asked her.",
+                "She’d never have gone there if they hadn't asked her.",
+                "She'd never have gone there if they hadn't asked her.",
+                "She never would have gone there if they hadn’t asked her",
+                "She never would have gone there if they hadn’t asked her."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0223"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "104",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cathy hade till sin stora förvåning gått ut utan skor. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "To her great surprise, Cathy had gone out without shoes",
+                "To her great surprise, Cathy had gone out without shoes.",
+                "To her great surprise Cathy had gone out without shoes",
+                "To her great surprise Cathy had gone out without shoes.",
+                "Cathy had, to her great surprise, gone out without shoes",
+                "Cathy had, to her great surprise, gone out without shoes.",
+                "To her great surprise, Cathy had gone out without any shoes",
+                "To her great surprise, Cathy had gone out without any shoes."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

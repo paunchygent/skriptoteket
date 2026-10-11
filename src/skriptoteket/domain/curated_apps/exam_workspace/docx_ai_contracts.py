@@ -27,14 +27,10 @@ class ProducedSegment(_Produced):
         description="For a gap: the accepted answers from the teacher's facit, including "
         "facit written inline in the question paragraph. Empty for text."
     )
-    hint: str | None = Field(
-        description="Always null: a cue printed beside a blank is student-visible text in "
-        "the text segment after the gap."
-    )
 
     @model_validator(mode="after")
     def _kind_fields(self) -> "ProducedSegment":
-        if self.kind == "text" and (self.text is None or self.accepted_values or self.hint):
+        if self.kind == "text" and (self.text is None or self.accepted_values):
             raise ValueError("text segments carry text only")
         if self.kind == "gap" and self.text is not None:
             raise ValueError("gap segments carry no text")
@@ -65,13 +61,19 @@ class ProducedItem(_Produced):
         description="Anchors of the question's own chunks: prompt, options and blanks. "
         "Never an answer-key chunk.",
     )
-    outcome: Literal["converted", "review"] = Field(
-        description="review when the question cannot be converted faithfully."
+    outcome: Literal["converted", "review", "type_conflict"] = Field(
+        description="review when the question cannot be converted faithfully; type_conflict "
+        "when the question's response type is not one of the batch's item kinds."
+    )
+    conflict_kind: NativeExamItemKind | None = Field(
+        default=None,
+        description="For type_conflict: the item kind the source shows. Null otherwise.",
     )
     review_reason: str | None = Field(
         description="For review: a short Swedish reason naming what blocks conversion. "
-        "Null when converted."
+        "Null when converted or type_conflict."
     )
+    # Strict schemas reject keywords beside a $ref; each request narrows kind to its batch.
     kind: NativeExamItemKind
     title: str | None = Field(description="A question heading printed in the source, else null.")
     printed_label: str | None = Field(
@@ -106,6 +108,12 @@ class ProducedItem(_Produced):
         "entry; a match_right entry no pair uses stays in match_right. Empty without a facit "
         "entry and for other kinds.",
     )
+    marking_guide: str | None = Field(
+        default=None,
+        description="For free_text: the teacher's marking guide for the question (sample "
+        "answer, grading criteria or points guidance) copied from the facit wording; null "
+        "when the facit gives none and for other kinds.",
+    )
 
     @model_validator(mode="after")
     def _pairs_name_entries(self) -> "ProducedItem":
@@ -136,7 +144,9 @@ class DocxBuildEnvelope(_Produced):
     items: tuple[ProducedItem, ...]
 
 
-DocxBuildStage = Literal["provider", "admission", "fallback", "job"]
+DocxBuildStage = Literal[
+    "provider", "admission", "fallback", "job", "grouping", "labeling", "batch", "assembly"
+]
 
 
 class DocxBuildEvent(_Produced):
@@ -144,7 +154,7 @@ class DocxBuildEvent(_Produced):
 
     stage: DocxBuildStage
     code: str
-    round: int | None = None
+    batch: str | None = None
     item: int | None = None
     anchors: tuple[str, ...] = ()
     detail: str = ""
@@ -154,9 +164,19 @@ class DocxBuildEvent(_Produced):
 
 
 @dataclass(frozen=True)
+class DocxStageTiming:
+    """Wall-clock seconds of one pipeline stage, measured from conversion start."""
+
+    stage: str
+    started_seconds: float
+    finished_seconds: float
+
+
+@dataclass(frozen=True)
 class DocxBuildResult:
     document: NativeExamDocument
     notes: tuple[str, ...]
     input_tokens: int | None = None
     output_tokens: int | None = None
     events: tuple[DocxBuildEvent, ...] = ()
+    timings: tuple[DocxStageTiming, ...] = ()

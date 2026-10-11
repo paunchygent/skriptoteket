@@ -156,7 +156,6 @@ class NativeGap(BaseModel):
 
     gap_id: str = Field(pattern=_GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
-    hint: str | None = None
 
     @field_validator("accepted_values")
     @classmethod

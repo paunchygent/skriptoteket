@@ -1,0 +1,136 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0059",
+    "body:0065"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0056",
+        "body:0057",
+        "body:0058"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "inscrutable",
+      "printed_label": "Part 2A",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “inscrutable”.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": true
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0062",
+        "body:0063",
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "oblivion",
+      "printed_label": "Part 2A",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “oblivion”.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": true
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

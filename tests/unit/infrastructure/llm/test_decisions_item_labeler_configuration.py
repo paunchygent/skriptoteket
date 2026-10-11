@@ -2,20 +2,20 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from dishka import Provider, Scope, from_context, make_async_container
 
 from skriptoteket.config import Settings
-from skriptoteket.di.item_type_labeler import ItemTypeLabelerProvider
+from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
+    OpenAIDecisionsItemTypeLabeler,
+)
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabelerError,
     LabelRoute,
-    MeteredItemTypeLabelerProtocol,
 )
-from skriptoteket.protocols.sleeper import SleeperProtocol
 from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     ACCEPT_BOUNDARY,
     CORPUS_24,
     Harness,
+    RecordingSleeper,
     chosen_probability,
     escalated_answers,
     load,
@@ -26,16 +26,10 @@ from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
 pytestmark = pytest.mark.unit
 
 
-class _LabelerInputs(Provider):
-    client = from_context(provides=httpx.AsyncClient, scope=Scope.APP)
-    sleeper = from_context(provides=SleeperProtocol, scope=Scope.APP)
-    settings = from_context(provides=Settings, scope=Scope.APP)
-
-
 async def test_environment_cannot_move_the_decided_threshold_or_model(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The wired labeler keeps the 0.95 boundary and its model whatever the environment says."""
+    """The first pass keeps the 0.95 boundary and its model whatever the environment says."""
     monkeypatch.setenv("LLM_ITEM_LABELER_ACCEPT_THRESHOLD", "0.5")
     monkeypatch.setenv("LLM_ITEM_LABELER_MODEL", "another-model")
     settings = Settings(
@@ -45,32 +39,43 @@ async def test_environment_cannot_move_the_decided_threshold_or_model(
     )
     fixture = load(CORPUS_24)
     harness = Harness(replay(fixture["exchanges"]))
-    container = make_async_container(
-        ItemTypeLabelerProvider(),
-        _LabelerInputs(),
-        context={
-            httpx.AsyncClient: httpx.AsyncClient(transport=httpx.MockTransport(harness.handle)),
-            SleeperProtocol: harness.sleeper,
-            Settings: settings,
-        },
-        # The leased request-scope labeler needs a database; only the adapter is wired here.
-        skip_validation=True,
+    labeler = OpenAIDecisionsItemTypeLabeler(
+        client=httpx.AsyncClient(transport=httpx.MockTransport(harness.handle)),
+        base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+        api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+        timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
+        sleeper=harness.sleeper,
     )
-    labeler = await container.get(MeteredItemTypeLabelerProtocol)
 
     labeling = await labeler.label(request=request_for(fixture))
-    await container.close()
 
     assert {sent["model"] for sent in harness.requests} == {"gpt-6-luna"}
     assert all(r.threshold == ACCEPT_BOUNDARY for r in labeling.results)
-    below = [r.first_pass for r in labeling.results if r.first_pass is not None]
-    assert below
-    assert all(first.route == LabelRoute.ESCALATE and first.probability < 0.95 for first in below)
-    # A 0.5 boundary would re-ask only answers below it; the decided 0.95 re-asks every one below.
+    # A 0.5 boundary would accept answers in [0.5, 0.95); the decided 0.95 escalates them.
     answers = load(CORPUS_24)["exchanges"][0]["body"]["answers"]
     assert any(0.5 <= chosen_probability(a) < ACCEPT_BOUNDARY for a in answers)
-    assert len(below) == len(escalated_answers(fixture))
-    assert len(harness.requests) == 1 + len(below)
+    escalated = [r for r in labeling.results if r.route == LabelRoute.ESCALATE]
+    assert len(escalated) == len(escalated_answers(fixture))
+    assert all(r.probability < ACCEPT_BOUNDARY for r in escalated)
+    assert len(harness.requests) == 1
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [{"base_url": "  "}, {"timeout_seconds": 0}, {"max_attempts": 0}],
+)
+def test_invalid_configuration_is_rejected_at_construction(overrides: dict[str, object]) -> None:
+    arguments: dict[str, object] = {
+        "client": httpx.AsyncClient(),
+        "base_url": "https://example.test",
+        "api_key": "fixture-key",
+        "timeout_seconds": 30,
+        "sleeper": RecordingSleeper(),
+        **overrides,
+    }
+
+    with pytest.raises(ValueError):
+        OpenAIDecisionsItemTypeLabeler(**arguments)  # type: ignore[arg-type]
 
 
 async def test_missing_api_key_fails_before_any_request() -> None:

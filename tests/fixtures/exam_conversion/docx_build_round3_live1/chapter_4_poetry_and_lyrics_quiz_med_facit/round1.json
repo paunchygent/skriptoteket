@@ -82,8 +82,7 @@
             {
               "kind": "text",
               "text": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -109,7 +108,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -126,8 +126,7 @@
             {
               "kind": "text",
               "text": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -153,7 +152,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -170,8 +170,7 @@
             {
               "kind": "text",
               "text": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -197,7 +196,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -214,8 +214,7 @@
             {
               "kind": "text",
               "text": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -241,7 +240,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -258,8 +258,7 @@
             {
               "kind": "text",
               "text": "“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -285,7 +284,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -302,8 +302,7 @@
             {
               "kind": "text",
               "text": "“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -329,7 +328,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -346,8 +346,7 @@
             {
               "kind": "text",
               "text": "In a poem, the person who talks is a tired nurse. The poet is a college student. Which term names the tired nurse?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -373,7 +372,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -390,8 +390,7 @@
             {
               "kind": "text",
               "text": "Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -417,7 +416,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -435,8 +435,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “contemplation”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -478,7 +477,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -496,8 +496,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “dignified”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -539,7 +538,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -557,8 +557,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “enrich”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -600,7 +599,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -618,8 +618,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “ineffable”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -661,7 +660,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -679,8 +679,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “inscrutable”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -722,7 +721,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -740,8 +740,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “oblivion”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -783,7 +782,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -801,8 +801,7 @@
             {
               "kind": "text",
               "text": "Select the Swedish translation of “prejudice”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -844,7 +843,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -862,8 +862,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “style”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -901,7 +900,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -919,8 +919,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “stanza”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -958,7 +957,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -976,8 +976,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “tone”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1015,7 +1014,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1033,8 +1033,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “rhythm”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1072,7 +1071,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1090,8 +1090,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “theme”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1129,7 +1128,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1147,8 +1147,7 @@
             {
               "kind": "text",
               "text": "Select the meaning of “symbolism”.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1186,7 +1185,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1204,22 +1204,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "cherish"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " the letters her grandmother wrote her, and she keeps them in a wooden box.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1228,7 +1225,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1246,22 +1244,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "traverse"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " the desert from east to west.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1270,7 +1265,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1288,22 +1284,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "humiliate"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " other players by mocking them.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1312,7 +1305,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1332,14 +1326,12 @@
               "text": null,
               "accepted_values": [
                 "out of the blue"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", the chorus changes key without warning, and everyone looks up in surprise.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1348,7 +1340,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1366,22 +1359,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "line"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " in the first stanza has eight syllables.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1390,7 +1380,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1408,22 +1399,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "diction"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", are all common and concrete.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1432,7 +1420,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1450,22 +1439,19 @@
             {
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "alliteration"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ".",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1474,7 +1460,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

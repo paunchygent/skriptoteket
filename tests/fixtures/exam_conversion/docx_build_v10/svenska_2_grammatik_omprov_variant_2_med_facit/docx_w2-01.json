@@ -1,0 +1,681 @@
+{
+  "title": {
+    "text": "Omprov: grammatik och språkstrukturer",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Svenska 2",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 38 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 1: Morfem och fraser",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 12
+    },
+    {
+      "text": "Del 2: Satsdelar",
+      "source_anchors": [
+        "body:0034"
+      ],
+      "points": 8
+    },
+    {
+      "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "source_anchors": [
+        "body:0035"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 3: Bisatser och komplex meningsbyggnad",
+      "source_anchors": [
+        "body:0053"
+      ],
+      "points": 10
+    },
+    {
+      "text": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.",
+      "source_anchors": [
+        "body:0054"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0008",
+        "body:0009",
+        "body:0010",
+        "body:0011",
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "free_text",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Dela upp orden i morfem.",
+      "printed_label": "Fråga 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) solrosornas",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) läsbarheten",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) handbollsspelarnas",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0017",
+        "body:0018",
+        "body:0019",
+        "body:0020",
+        "body:0021",
+        "body:0022"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Ange frastyp.",
+      "printed_label": "Fråga 2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skriv NF, PF eller VF.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De nyfikna barnen Frastyp: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "NF"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) skulle springa Frastyp: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "VF"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) i korridoren Frastyp: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) under rasten Frastyp: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026",
+        "body:0027",
+        "body:0028",
+        "body:0029",
+        "body:0030"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Skriv huvudordet i varje nominalfras.",
+      "printed_label": "Fråga 3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) de två gamla cyklarna från källaren Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cyklarna"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) min yngre brors röda jacka i hallen Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "jacka"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) alla pennorna på det stora bordet Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "pennorna"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) den breda stigen genom parken Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "stigen"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Skriv satsdelen för den markerade delen.",
+      "printed_label": "Fråga 4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "adverbial"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "indirekt objekt"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Rummet blev tyst. Markerad del: tyst Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "predikativ/predikatsfyllnad",
+                "predikativ",
+                "predikatsfyllnad"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "direkt objekt"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0056",
+        "body:0057",
+        "body:0058",
+        "body:0059",
+        "body:0060",
+        "body:0061",
+        "body:0062",
+        "body:0063"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
+      "printed_label": "Fråga 6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Jag hörde att brandlarmet ringde klockan två. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Problemet var att läraren stod vid tavlan. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Pf"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) När regnet slutade gick klassen ut. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "tidsbisats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Eleverna viskade eftersom filmen hade börjat. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "orsaksbisats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "e) Om bussen kommer i tid hinner vi till lektionen. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "villkorsbisats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "f) Hon satte alarmet för att hon skulle vakna i tid. Typ: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "avsiktsbisats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0066",
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Analysera en komplex mening.",
+      "printed_label": "Fråga 7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Mening: Att flera datorer slutade fungera förklarar varför provet blev försenat.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Skriv bisatserna. Bisats 1: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Att flera datorer slutade fungera"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "varför provet blev försenat"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2 satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

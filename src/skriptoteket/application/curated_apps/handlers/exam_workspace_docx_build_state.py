@@ -18,22 +18,43 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
     split_section_totals,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+    NativeExamItemKind,
+)
 
 logger = structlog.get_logger(__name__)
 
 NO_ITEM_REASON = "AI-tolkningen gav ingen fråga eller rubrik för källstycket."
 
 
+@dataclass(frozen=True)
+class TypeConflict:
+    """A question the converter reports, or produces, outside the batch's item kinds."""
+
+    anchors: tuple[str, ...]
+    kind: NativeExamItemKind
+
+
 @dataclass
 class DocxBuildState:
-    """Freeze accepted items; every unclaimed chunk keeps the last reason it failed."""
+    """Freeze accepted items; every unclaimed chunk keeps the last reason it failed.
+
+    ``chunks`` is always the whole document, because the opening heading, definitions and
+    section totals are document-wide. A type batch claims only ``claimable`` anchors (None:
+    every anchor), reads ``context_anchors`` as read-only instructions, and admits only
+    ``allowed_kinds`` (None: every kind).
+    """
 
     job_id: UUID
     document_id: UUID
     filename: str
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
+    claimable: frozenset[str] | None = None
+    context_anchors: frozenset[str] = frozenset()
+    allowed_kinds: frozenset[NativeExamItemKind] | None = None
+    batch: str | None = None
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
@@ -42,9 +63,8 @@ class DocxBuildState:
     key_anchors: set[str] = field(default_factory=set)
     claimed: set[str] = field(default_factory=set)
     reasons: dict[str, str] = field(default_factory=dict)
-    failures: tuple[str, ...] = ()
+    conflicts: list[TypeConflict] = field(default_factory=list)
     events: list[DocxBuildEvent] = field(default_factory=list)
-    round: int | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
     input_complete: bool = True
@@ -56,8 +76,25 @@ class DocxBuildState:
         self.known_anchors = frozenset(self.chunk_by_anchor)
 
     @property
+    def owned(self) -> frozenset[str]:
+        return self.known_anchors if self.claimable is None else self.claimable
+
+    @property
     def pending(self) -> tuple[DocxChunk, ...]:
-        return tuple(chunk for chunk in self.chunks if chunk.anchor not in self.claimed)
+        owned = self.owned
+        return tuple(
+            chunk
+            for chunk in self.chunks
+            if chunk.anchor in owned and chunk.anchor not in self.claimed
+        )
+
+    def release(self, anchors: frozenset[str]) -> None:
+        """Hand anchors back to the pipeline: this batch no longer owns or reports them."""
+        self.claimable = self.owned - anchors
+        self.accepted = [entry for entry in self.accepted if not anchors.intersection(entry[1])]
+        self.claimed -= anchors
+        for anchor in anchors:
+            self.reasons.pop(anchor, None)
 
     def record(
         self,
@@ -73,7 +110,7 @@ class DocxBuildState:
             {
                 "stage": stage,
                 "code": code,
-                "round": self.round,
+                "batch": self.batch,
                 "item": item,
                 "anchors": anchors,
                 "detail": detail,
@@ -83,8 +120,9 @@ class DocxBuildState:
         logger.warning("DOCX build failure observed", job_id=str(self.job_id), **event.as_json())
 
     def fail_chunks(self, anchors: tuple[str, ...] | set[str], reason: str) -> None:
+        owned = self.owned
         for anchor in anchors:
-            if anchor in self.known_anchors and anchor not in self.claimed:
+            if anchor in owned and anchor not in self.claimed:
                 self.reasons[anchor] = reason
 
     def fail_all_pending(self, reason: str) -> None:

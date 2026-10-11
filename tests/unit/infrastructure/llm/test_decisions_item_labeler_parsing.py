@@ -71,7 +71,7 @@ def test_threshold_routes_recorded_answers_at_the_095_boundary() -> None:
     assert any(r.probability < 0.95 and r.route == LabelRoute.ESCALATE for r in results)
 
 
-async def test_public_label_re_asks_exactly_the_answers_below_the_boundary() -> None:
+async def test_public_label_escalates_exactly_the_answers_below_the_boundary() -> None:
     fixture = load(CORPUS_24)
     harness = Harness(replay(fixture["exchanges"]))
 
@@ -80,16 +80,15 @@ async def test_public_label_re_asks_exactly_the_answers_below_the_boundary() -> 
     answers = _recorded_answers_24()
     for result, answer in zip(labeling.results, answers, strict=True):
         probability = chosen_probability(answer)
-        if probability >= ACCEPT_THRESHOLD:
-            assert result.first_pass is None
-            assert result.label == ItemTypeLabel(answer["choice"])
-            assert result.probability == probability
-            assert result.route == LabelRoute.ACCEPT
-        else:
-            assert result.first_pass is not None
-            assert result.first_pass.probability == probability
-            assert result.first_pass.route == LabelRoute.ESCALATE
-    assert len(harness.requests) == 1 + len(escalated_answers(fixture))
+        assert result.label == ItemTypeLabel(answer["choice"])
+        assert result.probability == probability
+        assert result.first_pass is None
+        expected = LabelRoute.ACCEPT if probability >= ACCEPT_THRESHOLD else LabelRoute.ESCALATE
+        assert result.route == expected
+    assert sum(r.route is LabelRoute.ESCALATE for r in labeling.results) == len(
+        escalated_answers(fixture)
+    )
+    assert len(harness.requests) == 1
 
 
 def _replace_choice(body: Body) -> None:
@@ -150,8 +149,7 @@ async def test_refusal_escalates_only_the_refused_item() -> None:
     assert refused.route == LabelRoute.ESCALATE
     assert refused.refused is True
     assert dict(refused.probabilities) == {}
-    assert refused.first_pass is not None
-    assert refused.first_pass.refused is True
+    assert refused.first_pass is None
     others = [r for i, r in enumerate(labeling.results) if i != refused_index]
     expected = [r for i, r in enumerate(baseline.results) if i != refused_index]
     assert others == expected

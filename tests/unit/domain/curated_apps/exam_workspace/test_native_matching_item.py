@@ -82,7 +82,7 @@ def _produced(
         title=None,
         body=tuple(
             ProducedParagraph(
-                segments=(ProducedSegment(kind="text", text=line, accepted_values=(), hint=None),)
+                segments=(ProducedSegment(kind="text", text=line, accepted_values=()),)
             )
             for line in stems
         ),

@@ -349,6 +349,13 @@ class Settings(BaseSettings):
     # base URL, key and daily token lease. Its model and acceptance threshold
     # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
+    # Type-batched DOCX conversion (TASK-SKRIPT-39-05-04 D29): question families
+    # per converter batch, set after the D26 measurement. The converter effort is
+    # LLM_DOCX_CONVERSION_REASONING_EFFORT. The grouping pass and the label-only
+    # second pass (D23 pass B) observed at most 566 output tokens per call.
+    LLM_DOCX_BATCH_FAMILIES: int = Field(default=16, ge=1)
+    LLM_DOCX_GROUPING_MAX_OUTPUT_TOKENS: int = 60_000
+    LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS: int = 4_000
 
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
     # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect

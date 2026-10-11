@@ -8,7 +8,7 @@ reaches. An instruction printed inside an item's own chunks keeps its source pos
 
 import re
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
@@ -251,10 +251,26 @@ def _reaches(
     return reached
 
 
+def _kind_runs(reach: tuple[int, ...], ordered: list[Placed]) -> list[tuple[int, ...]]:
+    """Split a reach into maximal runs of consecutive items of one kind."""
+    runs: list[list[int]] = []
+    for k in reach:
+        if runs and ordered[runs[-1][-1]][2].kind is ordered[k][2].kind:
+            runs[-1].append(k)
+        else:
+            runs.append([k])
+    return [tuple(run) for run in runs]
+
+
 def _parent_groups(
     reached: list[_Run], ordered: list[Placed]
 ) -> tuple[list[list[_Run]], list[DocxBuildEvent]]:
-    """Runs whose instruction reaches the same two or more consecutive items of one kind."""
+    """Runs whose instruction reaches the same two or more consecutive items of one kind.
+
+    When the reached items differ in kind, each stretch of two or more consecutive items of
+    one kind becomes its own parent carrying the instruction (D27); a lone item of another
+    kind gets the instruction copied into it.
+    """
     candidates: dict[tuple[int, ...], list[_Run]] = {}
     for run in reached:
         consecutive = all(b - a == 1 for a, b in zip(run.reach, run.reach[1:], strict=False))
@@ -266,7 +282,9 @@ def _parent_groups(
     for span, group in sorted(candidates.items()):
         if taken.intersection(span):
             continue
-        if len({ordered[k][2].kind for k in span}) > 1:
+        taken.update(span)
+        stretches = _kind_runs(span, ordered)
+        if len(stretches) > 1:
             ids = ", ".join(_item_id(k) for k in span)
             events.append(
                 DocxBuildEvent(
@@ -274,12 +292,14 @@ def _parent_groups(
                     code="parent_kinds_mixed",
                     anchors=tuple(c.anchor for run in group for c in run.sources),
                     detail=f"a section instruction serves items of different kinds ({ids}): "
-                    "it is copied into each item",
+                    "each run of one kind gets its own parent",
                 )
             )
-            continue
-        taken.update(span)
-        groups.append(group)
+        groups.extend(
+            [replace(run, reach=stretch) for run in group]
+            for stretch in stretches
+            if len(stretch) >= 2
+        )
     return groups, events
 
 
@@ -310,17 +330,20 @@ def place_section_instructions(
     runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions)
     reached = _reaches(chunks, ordered, runs, item_sources, positions)
     groups, events = _parent_groups(reached, ordered)
-    parented = {id(run) for group in groups for run in group}
+    parented: dict[tuple[int | None, int], set[int]] = {}
+    for group in groups:
+        for run in group:
+            parented.setdefault((run.origin, run.start), set()).update(run.reach)
     carried: dict[int, list[str]] = {}
     reaching = set(joined_origins)
     for run in reached:
         if run.origin is not None and run.reach:
             reaching.add(run.origin)
-        if id(run) in parented:
-            continue
+        covered = parented.get((run.origin, run.start), set())
         wording = "\n".join(chunk.text for chunk in run.sources)
         for k in run.reach:
-            carried.setdefault(k, []).append(wording)
+            if k not in covered:
+                carried.setdefault(k, []).append(wording)
     items = tuple(
         _with_paragraphs(_with_joined(item, joined.get(k, [])), carried.get(k, [])).model_copy(
             update={"item_id": _item_id(k), "sequence": k + 1}

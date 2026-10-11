@@ -1,0 +1,102 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
+      "source_anchors": [
+        "body:0068"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0067",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Fraser",
+      "printed_label": "Fråga 17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Frasen tre korta svar är en",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Frasen på skolgården är en",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Frasen kan vila är en",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "a) NF; b) PF; c) VF"
+    },
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086",
+        "body:0087"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Huvudsats, bisats och BIFF",
+      "printed_label": "Fråga 20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De väntar inte. är en",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) I bisatsen att de inte väntar står satsadverbialet det finita verbet.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "a) huvudsats; b) före"
+    }
+  ]
+}
