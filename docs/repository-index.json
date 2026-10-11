@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5e2ec8291d1b418f7664f0fb2ef4fa92a3ea5000d9830bb1f0f21206f07ae3db",
+  "source_set_digest": "d8090014ed03d3096e489e7c545a51e4938aa81715277732b5d38a90bffa41c6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5718,6 +5718,24 @@
       "title": "Multi-file script-bank tool bundles and the split of four over-long tools",
       "path": "docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md",
       "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0038",
+      "type": "task",
+      "title": "Retire repository rules and route staging walks to staging-walk",
+      "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
