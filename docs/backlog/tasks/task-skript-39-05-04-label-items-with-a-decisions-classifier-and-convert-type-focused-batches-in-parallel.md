@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -114,8 +114,8 @@ routing only.
 
 ## Stop Conditions
 
-- TASK-SKRIPT-39-05-03 is not merged; this task measures against its frozen
-  result.
+- A conversion experiment (step 3 or later) starts before TASK-SKRIPT-39-05-03
+  is merged; the labeling-only feasibility step may run before it.
 - The grouping pass needs to write question text or answers.
 - A rule needs to name an exam, a question number or a subject term.
 
@@ -129,5 +129,6 @@ routing only.
 | D4  | Item types come from a Decisions-API labeler with probability thresholds, not code-side cue typing (user decision 2026-10-11). |
 | D7  | The feasibility step compares Responses grouping with Decisions-only chunk-role grouping, and tries an answer-slot predicate, an ambiguity score and page-image input; the parent recommends from that evidence (user decisions 2026-10-11). |
 | D8  | The feasibility step evaluates every Decisions placement in the workflow (before conversion, facit attachment, points, post-conversion checks, retry routing) for quality per cost and time (user direction 2026-10-11). |
+| D9  | The labeling-only feasibility step starts now, in parallel with TASK-SKRIPT-39-05-03; conversion experiments wait for its merge (user decision 2026-10-11). |
 | D5  | The feasibility step runs before conversion changes; the larger measurement phases need a user decision on its result (user decision 2026-10-11). |
 | D6  | Speed criterion: at least 30% lower median upload-to-ready on the 53-, 73- and 104-item exams, small exams at most 10% slower. Eval criteria are evidence for the parent's recommendation to the user, not automatic gates (user decisions 2026-10-11). |
