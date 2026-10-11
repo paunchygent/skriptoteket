@@ -50,13 +50,18 @@ points.
    copied verbatim. A chunk is facit by its position (under a facit heading,
    or as an answer line), never because its wording mentions an answer key.
 
-Invariants for rules 1, 2 and 5 are checked against the source chunks and
+Invariants for rules 1, 2, 5 and 7 are checked against the source chunks and
 sent back as `validation_errors` retry rounds; they never consult gold.
 
 6. **Matching.** A question that asks the student to pair entries of two
    lists becomes a native matching item with its directed pairs from the
-   facit. The native document model, the conversion schema, the editor and
-   the QTI export carry the matching kind (ST-SKRIPT-39-05 A6).
+   facit. The answer list may hold more entries than the prompt list
+   (distractors). The native document model, the conversion schema, the
+   editor, the QTI export, the PDF export and answer-key completion carry the
+   matching kind (ST-SKRIPT-39-05 A6).
+7. **Platform labels in code.** Code rejects a converted item whose text still
+   carries a question number, a printed point label or a printed blank marker,
+   and sends it back as a `validation_errors` retry round.
 
 ### Conversion principles
 
@@ -136,9 +141,17 @@ round limit.
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| D1  | The conversion follows the six source-structure rules above, including the matching kind end to end (user decision 2026-10-11, replacing an earlier term that excluded matching). |
+| D1  | The conversion follows the source-structure rules above, including the matching kind end to end (user decision 2026-10-11, replacing an earlier term that excluded matching). |
 | D2  | No rule names an exam, a question number or a subject term. Invariants check the source, never gold. No retry-until-gold loop (user instruction 2026-10-11: no reward hacking). |
 | D3  | Gold files are read-only authority for comparison (TASK-SKRIPT-39-05-02). |
 | D4  | The Claude parent session owns this exam work; repairs elsewhere go to Codex (user decision 2026-10-11). |
 | D5  | The eval judges the eight conversion principles against gold, not textual identity; the comparator rewrite belongs to this task (user decisions 2026-10-11). |
 | D6  | Each part of a slash-joined facit form is accepted; code does not remove model-added values (user decisions 2026-10-11). |
+| D7  | Matching items may hold distractors: the answer list may be longer than the prompt list (user decision 2026-10-11). |
+| D8  | PDF export prints matching items, and answer-key completion proposes matching pairs where the facit lacks them (user decision 2026-10-11). |
+| D9  | Code rejects items that keep question numbers, printed point labels or blank markers and retries them, as for the other source invariants (user decision 2026-10-11). |
+| D10 | A section instruction stays in its section text and is not copied into the items under it (user decision 2026-10-11). |
+| D11 | A gap also accepts the other apostrophe spelling and a full-sentence answer with or without its final full stop (user decision 2026-10-11). |
+| D12 | The title is the exam heading; a heading plus its printed subtitle is also correct, but the heading alone is preferred (user decision 2026-10-11). |
+| D13 | When instructions define an abbreviation and its term, a gap accepts both halves (user decision 2026-10-11). |
+| D14 | Admission has no source-word presence check; faithful wording stays with the model per story A14 (user decision 2026-10-11). |
