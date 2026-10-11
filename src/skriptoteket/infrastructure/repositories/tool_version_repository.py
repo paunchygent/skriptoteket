@@ -158,6 +158,7 @@ class PostgreSQLToolVersionRepository(ToolVersionRepositoryProtocol):
             version_number=version.version_number,
             state=version.state,
             source_code=version.source_code,
+            bundle_files=version.bundle_files,
             entrypoint=version.entrypoint,
             content_hash=version.content_hash,
             settings_schema=settings_schema,

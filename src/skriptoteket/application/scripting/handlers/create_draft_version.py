@@ -110,6 +110,11 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                 )
 
             version_number = await self._versions.get_next_version_number(tool_id=tool.id)
+            effective_bundle_files = (
+                command.bundle_files
+                if "bundle_files" in command.model_fields_set
+                else (derived_from.bundle_files if derived_from is not None else {})
+            )
             effective_settings_schema = (
                 command.settings_schema
                 if "settings_schema" in command.model_fields_set
@@ -130,6 +135,7 @@ class CreateDraftVersionHandler(CreateDraftVersionHandlerProtocol):
                 tool_id=tool.id,
                 version_number=version_number,
                 source_code=command.source_code,
+                bundle_files=effective_bundle_files,
                 entrypoint=command.entrypoint,
                 settings_schema=effective_settings_schema,
                 input_schema=effective_input_schema,

@@ -198,11 +198,16 @@ def _to_contract_v3_fields(
     raise TypeError("Entrypoint must return a str (HTML) or a dict (contract payload)")
 
 
-def _load_module_from_path(*, module_path: Path) -> object:
-    spec = spec_from_file_location("tool_script", module_path)
+def _load_module_from_path(*, module_path: Path, bundle_dir: Path) -> object:
+    # The entrypoint loads as a package whose only search location is the tool's bundle
+    # directory, so its relative imports reach the tool's own modules and nothing else.
+    spec = spec_from_file_location(
+        "tool_script", module_path, submodule_search_locations=[str(bundle_dir)]
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError("Failed to load tool script (invalid spec)")
     module = module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -264,7 +269,7 @@ def main() -> int:
 
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
-        module = _load_module_from_path(module_path=script_path)
+        module = _load_module_from_path(module_path=script_path, bundle_dir=work_dir / "bundle")
 
         func = getattr(module, entrypoint, None)
         if func is None or not callable(func):

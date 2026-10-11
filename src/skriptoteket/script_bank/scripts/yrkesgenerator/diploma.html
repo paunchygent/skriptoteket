@@ -1,0 +1,146 @@
+
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Noto Serif", "DejaVu Serif", serif;
+      background: #fffaf2;
+      color: #111;
+      margin: 0;
+    }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 18mm;
+      background: #f0ebe2;
+    }
+    .sheet {
+      width: 100%;
+      height: 100%;
+      background: #fffaf2;
+      border: 6px double #111;
+      padding: 20mm 18mm 16mm 18mm;
+    }
+    .top {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+    }
+    .seal-cell {
+      width: 110px;
+      vertical-align: top;
+    }
+    .seal {
+      width: 96px;
+      height: 96px;
+      border-radius: 999px;
+      border: 3px solid #111;
+      text-align: center;
+      margin-right: 12px;
+    }
+    .seal-title {
+      margin-top: 22px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .seal-sub {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .meta {
+      font-family: "Noto Sans", "DejaVu Sans", sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #333;
+    }
+    .title {
+      font-size: 34px;
+      margin: 8px 0 4px 0;
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+    }
+    .career {
+      font-size: 20px;
+      margin: 0 0 18px 0;
+    }
+    .rule {
+      height: 2px;
+      background: #111;
+      margin: 14px 0 18px 0;
+    }
+    .details {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "Noto Sans", "DejaVu Sans", sans-serif;
+      font-size: 12px;
+    }
+    .details td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    .details td.label {
+      width: 32%;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-size: 10px;
+      color: #333;
+    }
+    .footer {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="sheet">
+    <table class="top">
+      <tr>
+        <td class="seal-cell">
+          <div class="seal">
+            <div class="seal-title">YR</div>
+            <div class="seal-sub">DIPLOM</div>
+          </div>
+        </td>
+        <td>
+          <div class="meta">Officiellt ödesintyg</div>
+          <div class="title">Yrkesdiplom</div>
+          <div class="name">${full_name}</div>
+          <div class="career">${career_title}</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="rule"></div>
+    <table class="details">
+      <tr><td class="label">Förväntad lön</td><td>${salary}</td></tr>
+      <tr><td class="label">Motto</td><td>${motto}</td></tr>
+      <tr><td class="label">Side hustle</td><td>${side_hustle}</td></tr>
+      <tr><td class="label">Aura</td><td>${aura}</td></tr>
+      <tr><td class="label">Svaghet</td><td>${weakness}</td></tr>
+      <tr><td class="label">Perk</td><td>${perk}</td></tr>
+    </table>
+
+    <div class="footer">Ödesrunda #${round_number} • Detta beslut kan ej överklagas</div>
+    </div>
+  </div>
+</body>
+</html>

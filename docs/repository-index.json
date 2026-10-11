@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "998d891868eb26843f4bd4bab34af402ba97fe59039f04931fe0112f4dfaf200",
+  "source_set_digest": "aecd94ce5fbec6b942127568db250365139d6ad6ca76341df8dfcdce5a98e398",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5635,7 +5635,7 @@
       "type": "task",
       "title": "Multi-file script-bank tool bundles and the split of four over-long tools",
       "path": "docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
@@ -7144,6 +7144,24 @@
         "governing": [
           "EPIC-SKRIPT-39",
           "ADR-SKRIPT-0090"
+        ]
+      }
+    },
+    {
+      "id": "ADR-SKRIPT-0092",
+      "type": "adr",
+      "title": "Script-bank tools ship as tool-owned bundles loaded as a package over their own directory",
+      "path": "docs/decisions/adr-skript-0092-script-bank-tools-ship-as-tool-owned-bundles-loaded-as-a-package-over-their-own-directory.md",
+      "status": "accepted",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "governing": [
+          "TASK-SKRIPT-REP-0037"
         ]
       }
     },
@@ -10679,6 +10697,16 @@
           "EPIC-SKRIPT-39",
           "ST-SKRIPT-39-04"
         ],
+        "supersedes": [],
+        "superseded_by": null
+      },
+      {
+        "id": "ADR-SKRIPT-0092",
+        "title": "Script-bank tools ship as tool-owned bundles loaded as a package over their own directory",
+        "status": "accepted",
+        "path": "docs/decisions/adr-skript-0092-script-bank-tools-ship-as-tool-owned-bundles-loaded-as-a-package-over-their-own-directory.md",
+        "governing": [],
+        "governed_contracts": [],
         "supersedes": [],
         "superseded_by": null
       }

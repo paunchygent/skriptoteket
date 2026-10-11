@@ -83,6 +83,7 @@ class CreateDraftVersionCommand(BaseModel):
     derived_from_version_id: UUID | None = None
     entrypoint: str = "run_tool"
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: ToolSettingsSchema | None = None
     input_schema: ToolInputSchema = Field(default_factory=list)
     usage_instructions: str | None = None

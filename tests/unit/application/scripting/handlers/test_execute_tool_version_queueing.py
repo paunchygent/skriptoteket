@@ -66,7 +66,11 @@ def _make_tool_version(*, tool_id: UUID, now: datetime) -> ToolVersion:
         state=VersionState.ACTIVE,
         source_code=source_code,
         entrypoint=entrypoint,
-        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        content_hash=compute_content_hash(
+            entrypoint=entrypoint,
+            source_code=source_code,
+            bundle_files={},
+        ),
         created_by_user_id=uuid4(),
         created_at=now,
         input_schema=[ToolInputFileField(name="files", label="Files", min=0, max=10)],

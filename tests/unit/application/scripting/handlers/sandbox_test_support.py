@@ -58,7 +58,11 @@ def make_tool_version(
         state=state,
         source_code=source_code,
         entrypoint=entrypoint,
-        content_hash=compute_content_hash(entrypoint=entrypoint, source_code=source_code),
+        content_hash=compute_content_hash(
+            entrypoint=entrypoint,
+            source_code=source_code,
+            bundle_files={},
+        ),
         settings_schema=settings_schema,
         derived_from_version_id=None,
         created_by_user_id=created_by_user_id,
