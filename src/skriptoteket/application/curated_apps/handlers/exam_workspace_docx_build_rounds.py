@@ -60,10 +60,11 @@ Two kinds of labels are never confused:
   or move one into printed_label.
 Rules:
 - Student-visible text (title, body, choices, exam title and instructions) is copied from
-  the source wording. A cue printed beside a blank, such as a first letter or a word in
-  brackets, is body text next to the gap. Keep every such cue with its
-  brackets where the source prints it, also when it is in another language than the
-  sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
+  the source wording. A cue printed for the student, such as a first letter or a word in
+  brackets beside a blank, or a word, translation or word count in brackets after the
+  sentence, is body text. Keep every such cue with its brackets and all of its words where
+  the source prints it, also when it is in another language than the sentence: it tells
+  the student what to write, it is not the answer. Do not paraphrase,
   translate, solve or invent. Every word of a question's own chunks that is not facit goes
   into its title or body, including the words before and after each blank and every label
   that stays text; never shorten a sentence to the part around its blank.
@@ -77,40 +78,44 @@ Rules:
 - Answers come only from the teacher's facit or answer lines in the source: mark a choice
   correct, or give a gap's accepted_values, only when the facit keys it. Without a facit entry
   leave every choice false and accepted_values empty; never guess.
-- A question paragraph can carry its facit inline, usually in italics: answer words or short
-  labels written after or inside the sentence, or an answer line "Label: value". Those marks
-  are answer-key content, never student-visible text. Italic text the question quotes for the
-  student to analyse, such as an example sentence, clause or word, stays student-visible text
-  without the tags. Tell them apart by the sentence: italic words that complete the statement
-  the student is asked to complete or decide, so that the statement without them is the
-  question, are facit. Leave them out of the body, keep the rest of the sentence with its part
-  label, and for free_text copy them, each after its part label, into the marking_guide.
+- A question paragraph can carry its facit inline. Inline facit is set apart as an answer:
+  by formatting, usually italics, or after an answer label, as in an answer line
+  "Label: value"; a bracketed cue in the question's own plain text is no facit. Italic text
+  the question quotes for the student to analyse, such as an example sentence, clause or
+  word, stays student-visible text without the tags. Tell them apart by the sentence:
+  italic words that complete the statement the student is asked to complete or decide, so
+  that the statement without them is the question, are facit.
+- Facit words are never student-visible text, whatever the kind. In gap_fill they are the
+  accepted_values of the gaps below. In a kind without gaps, leave them out of the body,
+  keep the rest of the sentence with its part label, and for free_text copy them, each after
+  its part label, into the marking_guide.
 - A blank in a question with options marks the place the options fill: copy it into the body
   as text exactly as printed; it is no gap.
-- Gaps come from answer slots, never from the facit. A gap exists where the student-visible
-  text shows a blank marker (an underscore run, a dotted line or empty brackets): each blank
-  in a question without options is one gap, except that a line holding nothing but a blank
-  after a sentence that already has its blank repeats that blank and is no second gap. A gap
-  also exists where an answer line
-  "Label: value" holds a field the question asks the student to produce: the label stays text
-  and the value becomes the gap's accepted_values. What the question asks the student to
-  write decides this, not whether the words appear elsewhere: a field the question asks for
-  is a gap even when its value can be found in the given text. A field the question does not
-  ask for, such as the marked part or a clause the question hands over so the student can
-  answer about it, restates context and stays text with its value.
-  In a source with answers, a blank may be printed already filled with its answer, marked by
-  formatting such as italics, bold or colour, or set apart by position: that place is the
-  gap and those words are its accepted_values. Formatting alone does not make a word an
-  answer: a quoted or cited word the student needs to read stays question text.
-- When the facit prints a sentence with a label after each of its units, each label is one
-  gap placed right after its unit, and that label is the gap's accepted_values: the sentence's
-  units stay text segments in their order. When the facit prints a word split into parts
-  joined with + and a label after each part, each label is one gap placed right after its
-  part, and that label is the gap's accepted_values: the parts and the + signs stay text
-  segments in their order, and a part with no label after it is text with no gap.
-- A facit that copies out one word, phrase or clause per field is a gap per field.
-  When the source fixes the units and gives a facit label for them, each facit label is one
-  gap, also when one label answers for several units the source lists together.
+- A gap is a place where the student writes an answer the facit keys. The facit gives the
+  answers; where the gaps are follows from how the source marks those answers, in four ways:
+  1. A blank marker in the student-visible text (an underscore run, a dotted line or empty
+     brackets): each blank in a question without options is one gap, except that a line
+     holding nothing but a blank after a sentence that already has its blank repeats that
+     blank and is no second gap.
+  2. A blank printed already filled with its answer, marked by formatting such as italics,
+     bold or colour, or set apart by position: that place is the gap and those words are its
+     accepted_values.
+  3. An answer line "Label: value" whose field the question asks the student to produce:
+     the label stays text and the value becomes the gap's accepted_values.
+  4. A facit that prints a sentence with a label after each of its units, or a word split
+     into parts joined with + and a label after each part: each label is one gap placed
+     right after its unit or part, and that label is the gap's accepted_values. The units, or
+     the parts and the + signs, stay text segments in their order, also when the question
+     prints the sentence or word whole; they are the only facit words that become
+     student-visible text. A part with no label after it is text with no gap.
+  What the question asks the student to write decides which answer places are gaps, never
+  formatting and never whether the words appear elsewhere: a field the question asks for is
+  a gap even when its value can be found in the given text. A field or value the question
+  does not ask for, such as the marked part or a clause the question hands over so the
+  student can answer about it, restates context and stays text with its value, also when
+  the value is in italics or written like an answer. A quoted or cited word the student needs
+  to read stays question text. Each field or unit the question asks for is one gap, also
+  when one facit label answers for several units the source lists together.
 - A gap's accepted_values hold the forms the facit gives, including variants it lists as also
   accepted. The converter itself adds each part of a form that joins alternatives with a
   slash, the short form an instruction defines ("short form = term") for a facit term,
