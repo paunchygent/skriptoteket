@@ -50,7 +50,7 @@ points.
    copied verbatim. A chunk is facit by its position (under a facit heading,
    or as an answer line), never because its wording mentions an answer key.
 
-Invariants for rules 1, 2, 5 and 7 are checked against the source chunks and
+Invariants for rules 1, 2, 5 and 8 are checked against the source chunks and
 sent back as `validation_errors` retry rounds; they never consult gold.
 
 6. **Matching.** A question that asks the student to pair entries of two
@@ -59,7 +59,18 @@ sent back as `validation_errors` retry rounds; they never consult gold.
    (distractors). The native document model, the conversion schema, the
    editor, the QTI export, the PDF export and answer-key completion carry the
    matching kind (ST-SKRIPT-39-05 A6).
-7. **Platform labels in code.** Code rejects a converted item whose text still
+7. **Section instructions become parents.** A section instruction with the
+   questions under it becomes one parent: the shared instruction and its
+   child questions, each child with its own kind, slots and points, the
+   parent's points their sum. The native document model, the conversion
+   schema and prompt, persistence and API, the editor (showing the parent
+   instruction and editing its children as items are edited today) and the
+   QTI export carry parents. QTI uses the parent layout proven by the BF26
+   English 1 package (ST-SKRIPT-39-06 Export): one item, the instruction as a
+   paragraph, one interaction per child, SCORE summing the children, and the
+   empty `SEPARATOR` before every Lucktext child sentence. Parent authoring
+   (adding, deleting and reordering children) stays in ST-SKRIPT-39-06.
+8. **Platform labels in code.** Code rejects a converted item whose text still
    carries a question number, a printed point label or a printed blank marker,
    and sends it back as a `validation_errors` retry round.
 
@@ -91,7 +102,10 @@ against it, not textual identity:
    style, line breaks, the order of accepted variants and whether a heading
    sits in the title or the prompt do not count.
 
-Out of scope: any change to gold files.
+Gold files move to the parent structure (rule 7) without any other change;
+the parent shows the user the gold diff before the eval relies on it. The
+principles apply to each child, and segmentation also judges which questions
+belong to which parent.
 
 ## Contract Inputs
 
@@ -134,7 +148,8 @@ round limit.
 
 ## Stop Conditions
 
-- A rule needs an item kind other than matching, an exam-specific condition, or a gold change.
+- A rule needs an item kind other than matching, an exam-specific condition, or a gold change other than the move to parents.
+- A corpus section holds questions of different kinds, which ST-SKRIPT-39-06 P4 does not allow under one parent.
 - Consistency needs a model or provider change.
 
 ## Decided Contract Terms
@@ -150,7 +165,7 @@ round limit.
 | D7  | Matching items may hold distractors: the answer list may be longer than the prompt list (user decision 2026-10-11). |
 | D8  | PDF export prints matching items, and answer-key completion proposes matching pairs where the facit lacks them (user decision 2026-10-11). |
 | D9  | Code rejects items that keep question numbers, printed point labels or blank markers and retries them, as for the other source invariants (user decision 2026-10-11). |
-| D10 | A section instruction is copied into each item under it until the next heading, matching today's gold; section instructions become parents with child questions in ST-SKRIPT-39-06 (P5, P10) (user decision 2026-10-11). |
+| D10 | Conversion turns each section instruction and its questions into a parent with child questions, exported in the BF26-proven QTI parent layout; gold and the eval move to parents in this task; parent authoring stays in ST-SKRIPT-39-06 (user decision 2026-10-11, replacing ST-SKRIPT-39-06 P10). |
 | D11 | A gap also accepts the other apostrophe spelling and a full-sentence answer with or without its final full stop (user decision 2026-10-11). |
 | D12 | The title is the exam heading; a heading plus its printed subtitle is also correct, but the heading alone is preferred (user decision 2026-10-11). |
 | D13 | When instructions define an abbreviation and its term, a gap accepts both halves (user decision 2026-10-11). |
