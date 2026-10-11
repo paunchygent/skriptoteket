@@ -83,7 +83,7 @@ def test_every_block_is_its_xml_text_plus_structure_and_converter_input_is_uncha
 ) -> None:
     content = path.read_bytes()
     before = PythonDocxExamChunker().chunk(content=content)
-    projected = PythonDocxLabelerMarkdown().chunk(content=content)
+    projected = PythonDocxLabelerMarkdown().source(content=content).chunks
     blocks, _ = _source(path)
 
     assert [(c.anchor, c.kind, c.text) for c in projected] == [
@@ -98,7 +98,7 @@ def test_every_block_is_its_xml_text_plus_structure_and_converter_input_is_uncha
 def test_italic_runs_reach_the_labeler_as_the_converter_marks_them(path: Path) -> None:
     content = path.read_bytes()
     converter = {c.anchor: c.marked_text for c in PythonDocxExamChunker().chunk(content=content)}
-    for chunk in PythonDocxLabelerMarkdown().chunk(content=content):
+    for chunk in PythonDocxLabelerMarkdown().source(content=content).chunks:
         for italic in re.findall(r"<i>(.*?)</i>", converter[chunk.anchor], flags=re.S):
             assert f"<i>{italic}</i>" in chunk.marked_text.replace("**", ""), chunk.anchor
 
@@ -107,7 +107,9 @@ def test_italic_runs_reach_the_labeler_as_the_converter_marks_them(path: Path) -
 def test_word_bullets_keep_marker_and_indentation_from_numbering_xml(stem: str) -> None:
     path = CORPUS / f"{stem}.docx"
     blocks, numbering = _source(path)
-    chunks = {c.anchor: c for c in PythonDocxLabelerMarkdown().chunk(content=path.read_bytes())}
+    chunks = {
+        c.anchor: c for c in PythonDocxLabelerMarkdown().source(content=path.read_bytes()).chunks
+    }
     listed = []
     for anchor, block in blocks.items():
         properties = block.find("w:pPr/w:numPr", NS)

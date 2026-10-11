@@ -120,7 +120,9 @@ def corpus_items(
 ) -> list[LabelingItem]:
     """Each question's own chunks, governing instructions and section heading as source markdown."""
 
-    chunks = PythonDocxLabelerMarkdown().chunk(content=(corpus / f"{stem}.docx").read_bytes())
+    chunks = (
+        PythonDocxLabelerMarkdown().source(content=(corpus / f"{stem}.docx").read_bytes()).chunks
+    )
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     all_keys = frozenset(a for q in grouping["questions"] for a in q["key_anchors"])
     all_questions = frozenset(a for q in grouping["questions"] for a in q["anchors"])

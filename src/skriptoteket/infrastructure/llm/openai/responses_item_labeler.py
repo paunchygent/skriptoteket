@@ -11,7 +11,7 @@ Purpose:
 Relationships:
     Implements ``protocols.item_type_labeler.SecondPassItemTypeLabelerProtocol``
     over ``protocols.exam_answer_key.AnswerKeyStructuredProviderProtocol``. The
-    user payload and label descriptions come from
+    user payload, its source images and label descriptions come from
     ``infrastructure.llm.openai.decisions_item_labeler``; the profile comes from
     ``docx_conversion_profiles.build_luna_item_label_profile``.
     ``application.curated_apps.item_type_labeling`` wraps it with the token lease.
@@ -25,6 +25,7 @@ from uuid import UUID
 from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    IMAGE_INPUT_TOKEN_ESTIMATE,
     StructuredLLMBackendFailureCode,
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
@@ -34,7 +35,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     LABEL_DESCRIPTIONS,
-    build_second_pass_payload,
+    layout_items,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 from skriptoteket.protocols.item_type_labeler import (
@@ -73,9 +74,7 @@ def _label_schema() -> dict[str, JsonValue]:
 def build_second_pass_request(
     *, job_id: UUID, item: LabelingItem, profile: StructuredLLMProviderProfile
 ) -> StructuredLLMRequest:
-    user_payload = build_second_pass_payload(item)["input"]
-    if not isinstance(user_payload, str):
-        raise TypeError("Second-pass payload input must be a string.")
+    user_payload, images = layout_items((item,))
     schema = _label_schema()
     return StructuredLLMRequest(
         job_id=str(job_id),
@@ -87,8 +86,10 @@ def build_second_pass_request(
         output_spec=StructuredOutputSpec("item_type_label", "1", schema),
         estimated_input_tokens=estimate_prompt_tokens(
             SYSTEM_PROMPT + user_payload + json.dumps(schema)
-        ),
+        )
+        + IMAGE_INPUT_TOKEN_ESTIMATE * len(images),
         max_output_tokens=profile.max_output_tokens,
+        user_images=images,
     )
 
 

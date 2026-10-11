@@ -30,7 +30,10 @@ import httpx
 from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    IMAGE_INPUT_TOKEN_ESTIMATE,
+    SourceImage,
     estimate_prompt_tokens,
+    input_content,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
@@ -150,7 +153,8 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
 
     def estimate_input_tokens(self, *, request: LabelingRequest) -> int:
         return sum(
-            estimate_prompt_tokens(json.dumps(build_decisions_payload(chunk)))
+            estimate_prompt_tokens(json.dumps(_payload(render_items(chunk), (), len(chunk))))
+            + IMAGE_INPUT_TOKEN_ESTIMATE * sum(len(item.images) for item in chunk)
             for chunk in split_items(request.items)
         )
 
@@ -272,18 +276,24 @@ def _question_id(index: int) -> str:
     return f"q{index + 1}"
 
 
+def layout_items(items: Sequence[LabelingItem]) -> tuple[str, tuple[SourceImage, ...]]:
+    """Each question's faithful source under a routing heading, nothing else; each source
+    image stands at its own place in the rendered text."""
+
+    text = CLASSIFICATION_INSTRUCTION
+    images: list[SourceImage] = []
+    for index, item in enumerate(items):
+        text += f"\n\n### Question {_question_id(index)}\n"
+        images.extend(SourceImage(image.png, len(text) + image.offset) for image in item.images)
+        text += item.source_text
+    return text, tuple(images)
+
+
 def render_items(items: Sequence[LabelingItem]) -> str:
-    """Send each question's faithful source text under a routing heading, nothing else."""
-
-    blocks = [CLASSIFICATION_INSTRUCTION]
-    blocks.extend(
-        f"### Question {_question_id(index)}\n{item.source_text}"
-        for index, item in enumerate(items)
-    )
-    return "\n\n".join(blocks)
+    return layout_items(items)[0]
 
 
-def _payload(rendered: str, count: int) -> _JsonObject:
+def _payload(rendered: str, images: tuple[SourceImage, ...], count: int) -> _JsonObject:
     choices: list[JsonValue] = [
         {"value": label.value, "description": LABEL_DESCRIPTIONS[label]} for label in ItemTypeLabel
     ]
@@ -299,17 +309,15 @@ def _payload(rendered: str, count: int) -> _JsonObject:
         }
         for index in range(count)
     ]
-    return {"model": DECISIONS_MODEL, "input": rendered, "questions": questions}
+    source: JsonValue = (
+        [{"role": "user", "content": input_content(rendered, images)}] if images else rendered
+    )
+    return {"model": DECISIONS_MODEL, "input": source, "questions": questions}
 
 
 def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
-    return _payload(render_items(items), len(items))
-
-
-def build_second_pass_payload(item: LabelingItem) -> _JsonObject:
-    """One question alone; its ``input`` is the second pass's tight source input (D23)."""
-
-    return _payload(render_items((item,)), 1)
+    text, images = layout_items(items)
+    return _payload(text, images, len(items))
 
 
 def parse_decisions_answers(

@@ -81,7 +81,7 @@ def build_docx_conversion_pipeline(
             uow=uow,
             clock=clock,
         ),
-        labeler_chunker=PythonDocxLabelerMarkdown(),
+        labeler_source=PythonDocxLabelerMarkdown(),
         exchange=exchange,
         profile=build_luna_docx_conversion_profile(settings),
         progress=progress,

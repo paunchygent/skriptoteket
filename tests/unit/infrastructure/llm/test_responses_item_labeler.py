@@ -9,6 +9,8 @@ import pytest
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    IMAGE_INPUT_TOKEN_ESTIMATE,
+    SourceImage,
     StructuredLLMBackendFailureCode,
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
@@ -19,9 +21,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
     estimate_prompt_tokens,
 )
+from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
+    build_answer_key_responses_payload,
+)
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     LABEL_DESCRIPTIONS,
-    build_second_pass_payload,
+    render_items,
 )
 from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_item_label_profile,
@@ -104,7 +109,8 @@ def test_request_fields_and_schema() -> None:
     assert request.system_prompt == (
         "Select exactly one supported label for the target question. Return only the schema object."
     )
-    assert request.user_payload == build_second_pass_payload(ITEM)["input"]
+    assert request.user_payload == render_items((ITEM,))
+    assert request.user_images == ()
     assert request.max_output_tokens == profile.max_output_tokens
     spec = request.output_spec
     assert (spec.schema_name, spec.schema_version) == ("item_type_label", "1")
@@ -199,3 +205,31 @@ async def test_invalid_responses_raise(response: StructuredLLMResponse, code: st
             job_id=JOB_ID, item=ITEM
         )
     assert caught.value.code == code
+
+
+def test_a_source_image_stands_at_its_place_in_the_responses_input() -> None:
+    png = b"\x89PNG\r\n\x1a\nfixture"
+    item = LabelingItem(
+        item_id="q8",
+        source_text="Fråga 8\nPara ihop orden.",
+        images=(SourceImage(png, len("Fråga 8")),),
+    )
+    profile = _profile()
+    request = build_second_pass_request(job_id=JOB_ID, item=item, profile=profile)
+    text_only = build_second_pass_request(
+        job_id=JOB_ID,
+        item=LabelingItem(item_id="q8", source_text=item.source_text),
+        profile=profile,
+    )
+
+    content = build_answer_key_responses_payload(profile=profile, request=request)["input"]
+    assert isinstance(content, list) and isinstance(content[0], dict)
+    parts = content[0]["content"]
+    assert parts == [
+        {"type": "input_text", "text": request.user_payload.removesuffix("\nPara ihop orden.")},
+        {"type": "input_image", "image_url": SourceImage(png, 0).data_url},
+        {"type": "input_text", "text": "\nPara ihop orden."},
+    ]
+    assert request.estimated_input_tokens == (
+        text_only.estimated_input_tokens + IMAGE_INPUT_TOKEN_ESTIMATE
+    )

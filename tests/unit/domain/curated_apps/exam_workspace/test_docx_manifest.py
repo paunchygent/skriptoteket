@@ -210,7 +210,7 @@ def test_unplaced_anchors_are_all_unclaimed_chunks_in_order(
 
 
 def test_question_source_has_section_heading_and_instruction_but_no_metadata() -> None:
-    labeler_chunks = PythonDocxLabelerMarkdown().chunk(content=_DOCX.read_bytes())
+    labeler_chunks = PythonDocxLabelerMarkdown().source(content=_DOCX.read_bytes()).chunks
     marked = {chunk.anchor: chunk.marked_text for chunk in labeler_chunks}
     own = [_b(n) for n in (10, 11, 12, 13)]
     manifest = manifest_from_output(

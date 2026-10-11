@@ -22,6 +22,10 @@ from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    SourceImage,
+)
+
 
 class ItemTypeLabel(StrEnum):
     """Closed label set; declaration order is the order sent to a model."""
@@ -62,11 +66,13 @@ def label_route(probability: float) -> LabelRoute:
 @dataclass(frozen=True)
 class LabelingItem:
     """One question's own source text as markdown, with inline answers, key labels,
-    governing instructions and section heading where they stand (D14).
+    governing instructions and section heading where they stand (D14). A source part
+    markdown cannot carry is an image standing at its offset in ``source_text``.
     """
 
     item_id: str
     source_text: str
+    images: tuple[SourceImage, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,10 @@
 Each chunk keeps the converter's anchor, kind and text. Only ``marked_text`` changes: it
 renders the block as the teacher sees it in Word, with heading level, indentation, Word
 bullets, bold as ``**...**`` and italic as ``<i>...</i>`` (the converter's existing cue
-for inline facit). Code adds no text and removes none.
+for inline facit). Code adds no text and removes none. A block markdown cannot carry
+(drawings, text boxes, merged or nested table cells, Word-generated numbering) goes to the
+labeler as a rendered image of that block; when no faithful image can be made, the block is
+reported as unavailable instead of approximated.
 """
 
 from __future__ import annotations
@@ -28,6 +31,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
+    DocxBlockImageRenderer,
+    LabelerSourceImageUnavailable,
+)
+from skriptoteket.protocols.exam_workspace import LabelerSource, LabelerSourceProtocol
 
 # Content markdown cannot carry faithfully; such a block needs an image of that part.
 _IMAGE_ONLY = tuple(
@@ -37,12 +45,8 @@ _IMAGE_ONLY = tuple(
 _TWIPS_PER_SPACE = 180  # 9 pt per rendered space
 
 
-class LabelerSourceImageRequired(ValueError):
-    """The source block needs a rendered image rather than a text approximation."""
-
-    def __init__(self, anchor: str) -> None:
-        self.anchor = anchor
-        super().__init__(f"Source image required for {anchor}")
+class _ImageRequired(Exception):
+    """The block needs a rendered image rather than a text approximation."""
 
 
 def _style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
@@ -144,7 +148,7 @@ def _paragraph(paragraph: Paragraph, document: DocxDocument) -> str:
             marker = "- "
         elif number_format != "none":
             # A Word-generated number is not in the text; render that block as an image.
-            raise LabelerSourceImageRequired("")
+            raise _ImageRequired
     direct = _child(_child(paragraph._p, "w:pPr"), "w:ind")
     spaces = _indent_spaces(direct)
     if spaces is None and level is not None:
@@ -167,7 +171,7 @@ def _table(table: Table, document: DocxDocument) -> str:
         for element in row._tr.tc_lst:
             cell = _Cell(element, table)
             if cell.tables:
-                raise LabelerSourceImageRequired("")
+                raise _ImageRequired
             cells.append("<br>".join(_paragraph(p, document) for p in cell.paragraphs))
         rows.append("| " + " | ".join(cells) + " |")
     # The GFM separator row carries table structure, not source text.
@@ -176,28 +180,38 @@ def _table(table: Table, document: DocxDocument) -> str:
     return "\n".join(rows)
 
 
-class PythonDocxLabelerMarkdown:
-    """Project converter chunks to faithful labeler markdown from the same DOCX bytes."""
+class PythonDocxLabelerMarkdown(LabelerSourceProtocol):
+    """Project converter chunks to faithful labeler markdown and block images from one DOCX."""
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+    def source(self, *, content: bytes) -> LabelerSource:
         source = PythonDocxExamChunker().chunk(content=content)
         by_anchor = {chunk.anchor: chunk for chunk in source}
         document = Document(io.BytesIO(content))
+        renderer = DocxBlockImageRenderer(document)
         projected: list[DocxChunk] = []
+        images: dict[str, bytes] = {}
+        unavailable: dict[str, str] = {}
         for ordinal, element in enumerate(document.element.body, start=1):
             anchor = f"body:{ordinal:04d}"
             chunk = by_anchor.get(anchor)
             if chunk is None:
                 continue
-            if any(next(element.iter(tag), None) is not None for tag in _IMAGE_ONLY):
-                raise LabelerSourceImageRequired(anchor)
             try:
-                if isinstance(element, CT_P):
-                    markdown = _paragraph(Paragraph(element, document), document)
-                else:
-                    assert isinstance(element, CT_Tbl)
-                    markdown = _table(Table(element, document), document)
-            except LabelerSourceImageRequired as error:
-                raise LabelerSourceImageRequired(anchor) from error
+                markdown = _markdown(element, document)
+            except _ImageRequired:
+                markdown = ""
+                try:
+                    images[anchor] = renderer.render(element, anchor=anchor)
+                except LabelerSourceImageUnavailable as error:
+                    unavailable[anchor] = error.reason
             projected.append(replace(chunk, marked_text=markdown))
-        return tuple(projected)
+        return LabelerSource(chunks=tuple(projected), images=images, unavailable=unavailable)
+
+
+def _markdown(element: BaseOxmlElement, document: DocxDocument) -> str:
+    if any(next(element.iter(tag), None) is not None for tag in _IMAGE_ONLY):
+        raise _ImageRequired
+    if isinstance(element, CT_P):
+        return _paragraph(Paragraph(element, document), document)
+    assert isinstance(element, CT_Tbl)
+    return _table(Table(element, document), document)

@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
     StructuredLLMUsage,
+    input_content,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 
@@ -139,7 +140,7 @@ def build_answer_key_responses_payload(
             {
                 "type": "message",
                 "role": "user",
-                "content": [{"type": "input_text", "text": request.user_payload}],
+                "content": input_content(request.user_payload, request.user_images),
             }
         ],
         "instructions": request.system_prompt,

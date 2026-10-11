@@ -153,7 +153,7 @@ class RecordedTransport:
         content = corpus_docx(exam)
         chunks = PythonDocxExamChunker().chunk(content=content)
         try:
-            source = PythonDocxLabelerMarkdown().chunk(content=content)
+            source = PythonDocxLabelerMarkdown().source(content=content).chunks
         except ValueError:
             source = chunks
         manifest = manifest_from_output(

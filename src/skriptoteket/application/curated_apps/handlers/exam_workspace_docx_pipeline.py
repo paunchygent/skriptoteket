@@ -6,7 +6,11 @@ once; each question the second pass decides converts as soon as its label arrive
 Each admitted batch reaches the progress port as a provisional document; the final
 document is assembled in source order and checked against the grouping.
 
-An unresolved or unsupported label converts as free text (D23). The strict schema is the
+Each question reaches the labeler as its faithful source: markdown, with an image of each
+block markdown cannot carry (D14). A question holding a block of which no faithful image
+could be made is not labeled: the event names the block, and the question converts as free
+text with no label confidence, so it carries the type-check mark. An unresolved or
+unsupported label converts as free text (D23). The strict schema is the
 only gate on a batch response. A family the converter reports as a type conflict is resent
 with the reported kind, the only resend. A family that still conflicts in its resend is
 kept as converted and carries the type-check mark: its review confidence stays below the
@@ -45,6 +49,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_u
     SerializedUnitOfWork,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    SourceImage,
     StructuredLLMProviderProfile,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -60,7 +65,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
-    question_source,
+    question_source_anchors,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
@@ -73,7 +78,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
     OutlineQuestion,
 )
 from skriptoteket.protocols.exam_grouping import ExamGrouperProtocol, ExamGroupingError
-from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
+from skriptoteket.protocols.exam_workspace import LabelerSource, LabelerSourceProtocol
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabel,
     ItemTypeLabelerError,
@@ -159,6 +164,22 @@ class _Run:
         return tuple(f.question_id for f in self.families if f.question_id not in self.filled)
 
 
+def _labeling_item(
+    question_id: str, source: LabelerSource, anchors: frozenset[str]
+) -> LabelingItem:
+    """The question's block markdown in source order, each block image at its place."""
+    text = ""
+    images: list[SourceImage] = []
+    for chunk in source.chunks:
+        if chunk.anchor not in anchors:
+            continue
+        if chunk.anchor in source.images:
+            images.append(SourceImage(source.images[chunk.anchor], len(text)))
+            continue
+        text = f"{text}\n{chunk.marked_text}" if text else chunk.marked_text
+    return LabelingItem(item_id=question_id, source_text=text, images=tuple(images))
+
+
 class DocxConversionPipeline:
     """Group, label and convert type batches concurrently into one native exam."""
 
@@ -167,7 +188,7 @@ class DocxConversionPipeline:
         *,
         grouper: ExamGrouperProtocol,
         labeler: ItemTypeLabelerProtocol,
-        labeler_chunker: DocxExamChunkerProtocol,
+        labeler_source: LabelerSourceProtocol,
         exchange: DocxBuildRoundExchange,
         profile: StructuredLLMProviderProfile,
         progress: DocxConversionProgressProtocol,
@@ -177,7 +198,7 @@ class DocxConversionPipeline:
     ) -> None:
         self._grouper = grouper
         self._labeler = labeler
-        self._labeler_chunker = labeler_chunker
+        self._labeler_source = labeler_source
         self._exchange = exchange
         self._profile = profile
         self._progress = progress
@@ -237,29 +258,39 @@ class DocxConversionPipeline:
                 outline=ConversionOutline(title=title or None, questions=questions),
             )
 
-    def _labeling_request(self, run: _Run, manifest: ExamManifest) -> LabelingRequest:
-        """Each question's faithful source markdown (D14); plain chunk text when the source
-        holds content markdown cannot carry, until image input exists."""
-        try:
-            source = self._labeler_chunker.chunk(content=run.job.source_docx)
-        except ValueError:
-            run.state.record("labeling", "labeler_source_plain_text")
-            source = run.job.chunks
-        return LabelingRequest(
-            job_id=run.job.job_id,
-            items=tuple(
-                LabelingItem(
-                    item_id=f.question_id,
-                    source_text=question_source(manifest, source, f.question_id),
+    def _labeling_request(
+        self, run: _Run, manifest: ExamManifest
+    ) -> tuple[LabelingRequest, list[str]]:
+        """Each question's faithful source (D14), and the questions holding a block of which
+        no faithful image could be made; those are recorded and never labeled."""
+        source = self._labeler_source.source(content=run.job.source_docx)
+        items: list[LabelingItem] = []
+        unlabeled: list[str] = []
+        for family in run.families:
+            anchors = question_source_anchors(manifest, source.chunks, family.question_id)
+            missing = sorted(anchor for anchor in anchors if anchor in source.unavailable)
+            for anchor in missing:
+                run.state.record(
+                    "labeling",
+                    "labeler_source_image_unavailable",
+                    anchors=(anchor,),
+                    detail=source.unavailable[anchor],
                 )
-                for f in run.families
-            ),
-        )
+            if missing:
+                unlabeled.append(family.question_id)
+            else:
+                items.append(_labeling_item(family.question_id, source, anchors))
+        return LabelingRequest(job_id=run.job.job_id, items=tuple(items)), unlabeled
 
     async def _label_and_convert(
         self, run: _Run, manifest: ExamManifest, tasks: asyncio.TaskGroup
     ) -> None:
         started = time.monotonic()
+        request, unlabeled = self._labeling_request(run, manifest)
+        for question_id in unlabeled:
+            run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
+        if unlabeled:
+            self._dispatch(run, unlabeled, "wi-", tasks)
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
             for result in results:
@@ -276,9 +307,7 @@ class DocxConversionPipeline:
                 self._dispatch(run, [r.item_id for r in results], prefix, tasks)
 
         try:
-            await self._labeler.label(
-                request=self._labeling_request(run, manifest), on_results=settle
-            )
+            await self._labeler.label(request=request, on_results=settle)
         except ItemTypeLabelerError as error:
             run.state.record("labeling", error.code, detail=str(error.status_code or ""))
             run.state.fail_all_pending(_LABELING_REASON)

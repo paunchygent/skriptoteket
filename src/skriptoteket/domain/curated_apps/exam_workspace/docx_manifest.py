@@ -220,6 +220,14 @@ def _scope(scope: str) -> ContextScope:
 
 def question_source(manifest: ExamManifest, chunks: tuple[DocxChunk, ...], question_id: str) -> str:
     """One question's own chunks, governing context and section heading as source markdown."""
+    included = question_source_anchors(manifest, chunks, question_id)
+    return "\n".join(chunk.marked_text for chunk in chunks if chunk.anchor in included)
+
+
+def question_source_anchors(
+    manifest: ExamManifest, chunks: tuple[DocxChunk, ...], question_id: str
+) -> frozenset[str]:
+    """The anchors of one question's own chunks, governing context and section heading."""
     question = manifest.question(question_id)
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     all_keys = {a for q in manifest.questions for a in q.key_anchors}
@@ -246,4 +254,4 @@ def question_source(manifest: ExamManifest, chunks: tuple[DocxChunk, ...], quest
         )
         if heading is not None:
             included.add(heading)
-    return "\n".join(chunk.marked_text for chunk in chunks if chunk.anchor in included)
+    return frozenset(included)
