@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b5ca33e0c69fa76ee3206be6a3140145354e56fcdb27e7164e8decd5e4313a2e",
+  "source_set_digest": "6f063b0debdf28e0656567c92c3f177d1c7de8d247961aeff263e6da2273a64e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4689,7 +4689,7 @@
       "type": "task",
       "title": "Label items with a Decisions classifier and convert type-focused batches in parallel",
       "path": "docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
