@@ -48,6 +48,16 @@ them returns outcome type_conflict with conflict_kind set to the kind its source
 source_anchors and its body; never force it into one of the listed kinds.
 Chunk text wraps each stretch the teacher set in italics in <i>...</i>. The tags are source
 formatting, not wording: never copy them into any output field.
+Two kinds of labels are never confused:
+- Ordering enumeration is removed. It is the number or letter that orders the questions (1, 2, 3
+  or a, b, c before a question's stem, which starts an item of its own) and the letter or number
+  that orders a question's choices (A, B, C or 1, 2, 3 before each choice). Leave it out of
+  title, body and choices; printed_label may carry a question's own number or letter.
+- A part label is kept verbatim. It is a label such as "a)" or "b)" on a line or run inside one
+  question's body that names a part of that single question: the student's answer and the
+  marking guide refer to it. Part labels are question text. Copy each exactly as printed, in
+  its place in the body, together with the words that follow it. Never drop one, renumber one
+  or move one into printed_label.
 Rules:
 - Student-visible text (title, body, choices, exam title and instructions) is copied from
   the source wording. A cue printed beside a blank, such as a first letter or a word in
@@ -117,8 +127,7 @@ Rules:
   sample answer, criteria or points guidance its facit gives, inline or in answer-key chunks,
   without the facit label. null when the facit gives none and for every other kind. The
   guide is never student-visible text.
-- Choice text omits the option letter or number. Body and title omit the question number
-  and the printed points.
+- Body and title omit the printed points.
 - A heading or label line that introduces one question, such as "Question 3 (2 points)" or
   "Part B: term (1 point)", belongs to that question: include its anchor in source_anchors,
   copy its wording without the question number and printed points as the item title (null
