@@ -509,7 +509,7 @@ def read_script_bank_source(*, source_filename: str) -> tuple[str, dict[str, str
     bundle_files = {
         path.name: path.read_text(encoding="utf-8")
         for path in (scripts_root / tool_dir).iterdir()
-        if path.is_file() and path.name != entry_name
+        if not path.name.startswith(".") and path.is_file() and path.name != entry_name
     }
     return source_code, bundle_files
 
