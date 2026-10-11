@@ -6,16 +6,17 @@
   `01a12706-566c-7480-acc3-427145283942`.
 
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress`: merged to main `448bdf50` after three Boy Scout repair
-    rounds (Sol rereview approved `40be487f`,
-    `evidence/reviews/TASK-SKRIPT-39-05-01/review-n4-rereview-40be487f.md`).
-    Staging redeploy to `448bdf50` started 2026-10-11. Next: DOCX upload walk
-    on staging, then user closure.
+    `in_progress`: merged `448bdf50` after three Boy Scout rounds (Sol
+    rereview approved `40be487f`). Staging healthy at `52836a99`. Next: one
+    DOCX upload walk on staging (covers 39-05-02 fixes), then user closure.
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
-    `in_progress`: gold and comparator approved by Sol rereview and merged;
-    the user confirmed all eight gold files (314 items, 398 points) on
-    2026-10-10; blind-labelling corrections merged after Sol approval
-    (`review-86e495c8.md`). Next: wire the eval runner to the converter.
+    `in_progress`: eval command wired to the production converter; recorded
+    responses for all eight exams; empty-segment crash fixed; DOCX provider
+    timeout 300 s (answer-key flows keep 90 s). Sol review approved `5fa7ca37`,
+    merged `52836a99`. Recorded eval: 17/314 items match gold, mostly dropped
+    section instructions. Follow-up (user decision 2026-10-11): parallel
+    conversion by question group is a later, separate decision. Next: close
+    the gold gap.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
@@ -25,9 +26,11 @@
   proposed->ready; sequenced after story 8.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
-  is `ready` (user decision 2026-10-11): multi-file tool bundles, then split
-  the four over-long script-bank tools; ADR afterwards, status proposed.
-  Owner: Claude parent; lead Opus 5.5 assignment. Next: lead implementation.
+  `in_progress`: tool bundles built and four tools split, branch
+  `codex/task-skript-rep-0037` head `5bd484f7`; ADR-SKRIPT-0092 proposed and
+  passed by the advisor (accept at merge). Sol review running. Deploy: the
+  deploy builds the runner image; run `seed-script-bank --sync-code` only after
+  it. Next: review verdict, merge, staging walk incl. one gruppgenerator run.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review
