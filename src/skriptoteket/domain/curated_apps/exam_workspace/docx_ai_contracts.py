@@ -69,7 +69,7 @@ class ProducedItem(_Produced):
     body: tuple[ProducedParagraph, ...] = Field(
         min_length=1,
         description="Student-visible question text, also for review items. Inline facit "
-        "answers go into gap accepted_values, never into text.",
+        "answers never go into text.",
     )
     points: int | None = Field(description="Points printed in the source, else null.")
     choices: tuple[ProducedChoice, ...] = Field(
@@ -81,6 +81,11 @@ class ProducedItem(_Produced):
 class ProducedMetadata(_Produced):
     text: str = Field(min_length=1)
     source_anchors: tuple[str, ...] = Field(min_length=1)
+    points: int | None = Field(
+        default=None,
+        description="For an instruction: the total its line prints for a section or a group "
+        "of questions. Null for the title, the exam's overall total and lines without points.",
+    )
 
 
 class DocxBuildEnvelope(_Produced):

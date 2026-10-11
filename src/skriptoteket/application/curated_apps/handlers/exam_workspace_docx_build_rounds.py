@@ -35,24 +35,49 @@ formatting, not wording: never copy them into any output field.
 Rules:
 - Student-visible text (title, body, choices, gap hints, exam title and instructions) is copied
   from the source wording. Do not paraphrase, translate, solve or invent.
+- The exam title is the document's opening heading, copied verbatim, whatever its wording says.
+- A chunk is facit by its position: it stands under a facit heading, or it is a separate
+  answer line that follows a question. Never treat a chunk as facit because its wording
+  mentions answers. A chunk that holds question text as well as its inline answer belongs to
+  the question: list it in that item's source_anchors, never in answer_key_anchors.
+  Facit chunks are never student-visible text, title or instructions. List their anchors in
+  answer_key_anchors and nowhere else.
 - Answers come only from the teacher's facit or answer lines in the source: mark a choice
   correct, or give a gap's accepted_values, only when the facit keys it. Without a facit entry
   leave every choice false and accepted_values empty; never guess.
-- Facit and answer chunks are never student-visible text, title or instructions. List their
-  anchors in answer_key_anchors and nowhere else.
-- A question paragraph can carry its facit inline: answer words or grammar labels such as
-  R, P, DO or Adv. written after or inside the sentence. Those marks are answer-key content.
-  The teacher usually sets them in italics: an italic word or label standing where the student
-  answers is the answer. Italic text the question quotes for the student to analyse, such as
-  an example sentence, clause or word, stays student-visible text without the tags.
-  Put each one in a gap segment's accepted_values at the place the student answers, never
-  in body text, title, choices, hints or any other student-visible text. This holds for
-  review items too.
-- points is the number printed for the question in the source, as an integer; null when the
-  source prints none. Never compute or distribute points.
+- A question paragraph can carry its facit inline, usually in italics: answer words or short
+  labels written after or inside the sentence, or an answer line "Label: value". Those marks
+  are answer-key content, never student-visible text. Italic text the question quotes for the
+  student to analyse, such as an example sentence, clause or word, stays student-visible text
+  without the tags.
+- Gaps come from answer slots, never from the facit. A gap exists where the student-visible
+  text shows a blank marker (an underscore run, a dotted line or empty brackets): each blank
+  in a question without options is one gap, except that a line holding nothing but a blank
+  after a sentence that already has its blank repeats that blank and is no second gap. A gap
+  also exists where an answer line
+  "Label: value" holds a field the question asks the student to produce: the label stays text
+  and the value becomes the gap's accepted_values. A field that restates context the student
+  already sees, such as the marked part or a clause the question gives, stays text with its
+  value.
+- When the facit itself shows that the student decides where units start and end (it rewrites
+  a sentence with a label after each unit, or splits a word into parts joined with +), the
+  question is free_text with no gaps: keep the question wording and leave the answer line out.
+  A facit that copies out one word, phrase or clause per field is a gap per field.
+  When the source fixes the units and gives a facit label for them, each facit label is one
+  gap, also when one label answers for several units the source lists together.
+- A gap's accepted_values hold the forms the facit gives, including variants it lists as also
+  accepted. Add no other form: the converter itself adds the short form an instruction
+  defines ("short form = term") for a facit term.
+- points is the number printed for the question itself, as an integer; null when the source
+  prints none for it. Never compute, divide or distribute points. A points line that follows
+  a question's last line is that question's own points, also when the question has lettered
+  parts: include its anchor in that question's source_anchors. A total printed on a section
+  heading, or on a points line after a run of separately numbered questions that print no
+  points of their own, belongs to no single question: report it as an instruction with that
+  line's anchor and the total as its points.
 - kind: single_choice has exactly one correct option, multiple_response one or more,
-  gap_fill splits the source sentence into text segments around each blank with one gap
-  segment per blank, free_text has no choices and no gaps.
+  gap_fill splits the source sentence into text segments around each gap with one gap
+  segment per gap, free_text has no choices and no gaps.
 - Choice text omits the option letter or number. Body omits the question number and the
   printed points.
 - A heading or label line that introduces one question, such as "Question 3 (2 points)" or
@@ -124,7 +149,7 @@ def build_round_request(
         job_id=str(job_id),
         item_id=f"docx_batch_{round_number}",
         item_type="docx_exam",
-        prompt_template_version="docx_exam_build_v4",
+        prompt_template_version="docx_exam_build_v5",
         system_prompt=_PROMPT,
         user_payload=payload,
         output_spec=spec,

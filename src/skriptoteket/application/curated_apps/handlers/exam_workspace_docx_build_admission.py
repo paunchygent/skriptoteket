@@ -17,6 +17,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    OPENING_HEADING_IS_TITLE,
+    definition_context,
+    item_rule_violation,
+    opening_heading,
+    title_rule_violation,
+    with_defined_short_forms,
+)
 
 _ENVELOPE_FIELDS = set(DocxBuildEnvelope.model_fields)
 
@@ -64,16 +72,31 @@ def _require_anchors(anchors: tuple[str, ...], state: DocxBuildState, seen: set[
 
 
 def _admit_keys(raw: JsonValue, state: DocxBuildState) -> None:
+    """Facit is decided by position; the opening heading stays pending as the title."""
     anchors = raw if isinstance(raw, list) else []
     valid = [a for a in anchors if isinstance(a, str) and a in state.known_anchors]
     if len(valid) != len(anchors):
         state.record(
             "admission", "answer_key_anchor_unknown", detail=f"{len(anchors) - len(valid)} unknown"
         )
+    heading = opening_heading(state.chunks)
+    if heading is not None and heading.anchor in valid:
+        valid.remove(heading.anchor)
+        detail = f"answer_key_anchors {heading.anchor} {OPENING_HEADING_IS_TITLE}"
+        state.record("admission", "answer_key_source_rule", anchors=(heading.anchor,))
+        state.failures = (*state.failures, detail)
     for anchor in valid:
         if anchor not in state.claimed:
             state.key_anchors.add(anchor)
             state.claimed.add(anchor)
+
+
+def _require_title_rule(title: ProducedMetadata, state: DocxBuildState) -> None:
+    sources = (state.chunk_by_anchor[a] for a in title.source_anchors)
+    violation = title_rule_violation(title, sources, opening_heading(state.chunks))
+    if violation:
+        state.failures = (*state.failures, violation)
+        raise _Rejected("source_rule", violation, "Titeln följer inte källans rubrik.")
 
 
 def _admit_metadata(content: dict[str, JsonValue], state: DocxBuildState, seen: set[str]) -> None:
@@ -86,6 +109,8 @@ def _admit_metadata(content: dict[str, JsonValue], state: DocxBuildState, seen: 
         try:
             metadata = _parse(ProducedMetadata, raw)
             _require_anchors(metadata.source_anchors, state, seen)
+            if field_name == "title" and state.title is None:
+                _require_title_rule(metadata, state)
         except _Rejected as rejected:
             state.record("admission", f"{field_name}_{rejected.code}", detail=rejected.detail)
             continue
@@ -104,6 +129,13 @@ def _admit_item(
         produced = _parse(ProducedItem, raw)
         anchors = produced.source_anchors
         _require_anchors(anchors, state, seen)
+        violation = item_rule_violation(produced, (state.chunk_by_anchor[a] for a in anchors))
+        if violation:
+            raise _Rejected(
+                "source_rule",
+                violation,
+                "Frågans luckor eller svarstyp följer inte källans struktur.",
+            )
         try:
             if produced.outcome == "review":
                 cause = produced.review_reason or "ingen orsak angavs"
@@ -113,7 +145,8 @@ def _admit_item(
                     "admission", "model_review", item=index, anchors=anchors, detail=reason
                 )
             else:
-                item = native_item(produced)
+                context = definition_context(state.chunks, anchors)
+                item = native_item(with_defined_short_forms(produced, context))
         except ValidationError as error:
             detail = validation_detail(error)
             raise _Rejected(

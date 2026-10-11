@@ -315,7 +315,7 @@ def test_course_exam_round_request_shows_teacher_italics_to_the_model():
     sent = {c["anchor"]: c["text"] for c in json.loads(request.user_payload)["chunks"]}
     assert set(sent) == {c.anchor for c in chunks}
     assert "satsadverbialet <i>före</i> det finita verbet" in sent["body:0086"]
-    assert request.prompt_template_version == "docx_exam_build_v4"
+    assert request.prompt_template_version == "docx_exam_build_v5"
 
 
 async def test_recorded_course_exam_keeps_inline_facit_out_of_student_text():

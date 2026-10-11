@@ -76,6 +76,8 @@ _RECORDED_ROUNDS: dict[str, tuple[str, ...]] = {
 @dataclass(frozen=True)
 class _ExamReport:
     exam: str
+    gold_title: str
+    title: str | None
     gold_items: int
     converted_items: int
     input_tokens: int | None
@@ -183,6 +185,8 @@ async def _evaluate(
     except Exception as error:
         return _ExamReport(
             exam=docx.stem,
+            gold_title=gold.title,
+            title=None,
             gold_items=len(gold.items),
             converted_items=0,
             input_tokens=None,
@@ -193,6 +197,8 @@ async def _evaluate(
         )
     return _ExamReport(
         exam=docx.stem,
+        gold_title=gold.title,
+        title=result.document.title,
         gold_items=len(gold.items),
         converted_items=len(result.document.items),
         input_tokens=result.input_tokens,
@@ -249,6 +255,8 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             f" tokens in {report.input_tokens} out {report.output_tokens};"
             f" events {len(report.events)}"
         )
+        if report.title != report.gold_title:
+            print(f"  title differs: gold={report.gold_title!r} actual={report.title!r}")
         if report.crash:
             print(f"  conversion crashed: {report.crash[:300]}")
         for item in failed:

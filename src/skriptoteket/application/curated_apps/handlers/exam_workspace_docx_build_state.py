@@ -15,6 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
+    split_section_totals,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
 
 logger = structlog.get_logger(__name__)
@@ -32,6 +35,7 @@ class DocxBuildState:
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
+    chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
@@ -48,7 +52,8 @@ class DocxBuildState:
 
     def __post_init__(self) -> None:
         # Chunks are fixed for the state's lifetime, so the anchor index is built once.
-        self.known_anchors = frozenset(chunk.anchor for chunk in self.chunks)
+        self.chunk_by_anchor = {chunk.anchor: chunk for chunk in self.chunks}
+        self.known_anchors = frozenset(self.chunk_by_anchor)
 
     @property
     def pending(self) -> tuple[DocxChunk, ...]:
@@ -97,18 +102,27 @@ class DocxBuildState:
             self.output_complete = False
 
     def result(self) -> DocxBuildResult:
-        """Every chunk not built or used as metadata/facit becomes a review item."""
+        """Every chunk not built or used as metadata/facit becomes a review item.
+
+        A printed section total that cannot be split equally leaves its items without
+        points, which blocks export until a teacher sets them.
+        """
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
+        accepted, unsplit = split_section_totals(
+            self.chunks, tuple(self.accepted), self.instructions, frozenset(review_reasons)
+        )
+        for anchor in unsplit:
+            self.record("fallback", "section_points_unsplit", anchors=(anchor,))
         return assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=self.chunks,
-            accepted=tuple(self.accepted),
+            accepted=accepted,
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,
