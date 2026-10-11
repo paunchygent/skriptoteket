@@ -222,7 +222,7 @@ def assemble_build_result(
         stem, extension = (
             (filename[:-5], filename[-5:]) if filename.lower().endswith(".docx") else (filename, "")
         )
-        document_title = title_without_answer_key(stem) + extension
+        document_title = title_without_answer_key(stem, filename=True) + extension
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,

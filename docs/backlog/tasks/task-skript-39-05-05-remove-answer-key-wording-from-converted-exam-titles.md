@@ -101,3 +101,17 @@ Retained session `01a12706-566c-7480-acc3-427145283942`, directory
   proof; it does not establish a passing full conversion eval.
 
 Parent-owned independent review, merge and the staging editor/QTI walk remain.
+
+2026-10-11: fresh-owner repair of admitted F1 from review `b306d05e` treats
+underscores and hyphens as word separators only for filename fallback. The
+shared closed phrase list removes each complete edge label and its joining
+separator, preserving remaining filename characters, the extension and source
+filename. Heading cleanup, verbatim admission and the five approved gold edits
+remain unchanged.
+
+Retained repair evidence: `evidence/task-skript-39-05-05/f1-repair/` in the same
+session. The new adversarial tests failed before repair (40 failed, 5 passed);
+after repair all 45 pass, alongside all 22 accepted title tests. Changed-file
+Ruff/Mypy pass. `filename-fallback-probe.json` records exact corrected titles
+for all eight real corpus filenames with unchanged source filenames.
+Independent rereview and the parent-owned staging walk remain outstanding.
