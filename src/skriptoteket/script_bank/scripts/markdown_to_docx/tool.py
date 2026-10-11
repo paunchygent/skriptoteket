@@ -130,11 +130,11 @@ def _convert_with_pandoc(
     if not _HAS_PYPANDOC:
         return False, "pypandoc saknas."
 
-    reference = make_reference_docx(profile, tmpdir)
-    extra_args: list[str] = []
-
-    if reference.exists():
-        extra_args.append(f"--reference-doc={str(reference)}")
+    try:
+        reference = make_reference_docx(profile, tmpdir)
+    except Exception as e:
+        return False, f"Referensdokumentet för profilen kunde inte skapas: {e}"
+    extra_args: list[str] = [f"--reference-doc={str(reference)}"]
 
     # BW: disable syntax highlighting to avoid color injection in DOCX code spans/blocks
     # (Pandoc supports --syntax-highlighting=none; this is the correct modern knob.)
@@ -151,10 +151,7 @@ def _convert_with_pandoc(
                 outputfile=str(out_docx),
                 extra_args=extra_args,
             )
-            return (
-                True,
-                f"Pandoc OK (format={fmt}, reference-doc={'ja' if reference.exists() else 'nej'}).",
-            )
+            return True, f"Pandoc OK (format={fmt})."
         except Exception as e:
             last_err = str(e)
 

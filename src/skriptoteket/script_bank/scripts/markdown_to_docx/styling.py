@@ -2,17 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-try:
-    from docx import Document
-    from docx.document import Document as DocxDocument
-    from docx.enum.style import WD_STYLE_TYPE
-    from docx.oxml.ns import qn
-    from docx.shared import Inches, Pt, RGBColor
-    from docx.styles.style import BaseStyle, CharacterStyle, ParagraphStyle
-except Exception:
-    _HAS_DOCX = False
-else:
-    _HAS_DOCX = True
+from docx import Document
+from docx.document import Document as DocxDocument
+from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml.ns import qn
+from docx.shared import Inches, Pt, RGBColor
+from docx.styles.style import CharacterStyle, ParagraphStyle
 
 from .profiles import PROFILE_PRINT_BW, PROFILE_PRINT_COLOR
 
@@ -21,22 +16,10 @@ from .profiles import PROFILE_PRINT_BW, PROFILE_PRINT_COLOR
 # =========================
 
 
-def _ensure_style(doc: DocxDocument, name: str, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
-    """
-    Ensure a style exists in the reference doc. If it already exists, return it.
-    If not, try to create it. If that fails, return None.
-    """
-    try:
-        existing: BaseStyle = doc.styles[name]
-        return existing
-    except Exception:
-        pass
-
-    try:
-        created: BaseStyle = doc.styles.add_style(name, style_type)
-        return created
-    except Exception:
-        return None
+def _ensure_style(doc: DocxDocument, name: str, style_type: WD_STYLE_TYPE) -> None:
+    """Create the style in the reference doc unless it already exists."""
+    if name not in doc.styles:
+        doc.styles.add_style(name, style_type)
 
 
 def _set_style_font(
@@ -49,29 +32,19 @@ def _set_style_font(
     color: RGBColor | None = None,
     underline: bool | None = None,
 ) -> None:
-    try:
-        style: CharacterStyle = doc.styles[style_name]
-    except Exception:
-        return
-
-    try:
-        font = style.font
-        if font_name is not None:
-            font.name = font_name
-            try:
-                font.element.rPr.rFonts.set(qn("w:eastAsia"), font_name)
-            except Exception:
-                pass
-        if size_pt is not None:
-            font.size = Pt(size_pt)
-        if bold is not None:
-            font.bold = bold
-        if color is not None:
-            font.color.rgb = color
-        if underline is not None:
-            font.underline = underline
-    except Exception:
-        return
+    style: CharacterStyle = doc.styles[style_name]
+    font = style.font
+    if font_name is not None:
+        font.name = font_name
+        font.element.rPr.rFonts.set(qn("w:eastAsia"), font_name)
+    if size_pt is not None:
+        font.size = Pt(size_pt)
+    if bold is not None:
+        font.bold = bold
+    if color is not None:
+        font.color.rgb = color
+    if underline is not None:
+        font.underline = underline
 
 
 def _set_style_paragraph(
@@ -82,36 +55,23 @@ def _set_style_paragraph(
     space_after_pt: float | None = None,
     line_spacing: float | None = None,
 ) -> None:
-    try:
-        style: ParagraphStyle = doc.styles[style_name]
-    except Exception:
-        return
-
-    try:
-        fmt = style.paragraph_format
-        if space_before_pt is not None:
-            fmt.space_before = Pt(space_before_pt)
-        if space_after_pt is not None:
-            fmt.space_after = Pt(space_after_pt)
-        if line_spacing is not None:
-            fmt.line_spacing = line_spacing
-    except Exception:
-        return
+    style: ParagraphStyle = doc.styles[style_name]
+    fmt = style.paragraph_format
+    if space_before_pt is not None:
+        fmt.space_before = Pt(space_before_pt)
+    if space_after_pt is not None:
+        fmt.space_after = Pt(space_after_pt)
+    if line_spacing is not None:
+        fmt.line_spacing = line_spacing
 
 
 def _apply_docx_profile_styles(doc: DocxDocument, profile: str) -> None:
-    if not _HAS_DOCX:
-        return
-
     # Margins
-    try:
-        section = doc.sections[0]
-        section.top_margin = Inches(1.0)
-        section.bottom_margin = Inches(1.0)
-        section.left_margin = Inches(1.0)
-        section.right_margin = Inches(1.0)
-    except Exception:
-        pass
+    section = doc.sections[0]
+    section.top_margin = Inches(1.0)
+    section.bottom_margin = Inches(1.0)
+    section.left_margin = Inches(1.0)
+    section.right_margin = Inches(1.0)
 
     navy = RGBColor(0x08, 0x2B, 0x4C)  # HuleEdu deep navy
     action = RGBColor(0x3F, 0x7F, 0x78)  # HuleEdu Verdigris action
@@ -218,9 +178,6 @@ def make_reference_docx(profile: str, tmpdir: Path) -> Path:
     We explicitly ensure key styles exist, so Pandoc has something to map to.
     """
     ref_path = tmpdir / f"reference_{profile}.docx"
-    if not _HAS_DOCX:
-        return ref_path
-
     doc: DocxDocument = Document()
 
     # Ensure styles that matter for "no color" exist
