@@ -110,6 +110,16 @@ def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:
     )
 
 
+def _item_payload(view: AnswerKeyItemView, text_key: str, text: str) -> dict[str, JsonValue]:
+    """The item as the student reads it: a grouped question also shows its parent's instruction."""
+
+    item: dict[str, JsonValue] = {"item_id": view.item_id, "title": view.title}
+    if view.instruction:
+        item["instruction"] = view.instruction
+    item[text_key] = text
+    return item
+
+
 def matching_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[str, JsonValue]:
     """Build the model-facing payload for a matching workspace item."""
 
@@ -126,11 +136,7 @@ def matching_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict
                 "left_id and right_id values."
             ),
         },
-        "item": {
-            "item_id": view.item_id,
-            "title": view.title,
-            "stem": view.stem_text,
-        },
+        "item": _item_payload(view, "stem", view.stem_text),
         "left_entries": [{"left_id": entry_id, "text": text} for entry_id, text in view.match_left],
         "right_entries": [
             {"right_id": entry_id, "text": text} for entry_id, text in view.match_right
@@ -158,11 +164,7 @@ def choice_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[s
             "item_type": item_type.value,
             "instruction": _choice_user_instruction(item_type),
         },
-        "item": {
-            "item_id": view.item_id,
-            "title": view.title,
-            "stem": view.stem_text,
-        },
+        "item": _item_payload(view, "stem", view.stem_text),
         "choices": [
             {
                 "choice_value": str(choice_id),
@@ -193,11 +195,7 @@ def gap_fill_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict
                 "teacher-intended accepted value for every numbered blank."
             ),
         },
-        "item": {
-            "item_id": view.item_id,
-            "title": view.title,
-            "cloze_text": view.cloze_text,
-        },
+        "item": _item_payload(view, "cloze_text", view.cloze_text),
         "gaps": gap_entries,
         "output": {
             "provider_output_mode": "json_schema",

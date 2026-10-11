@@ -30,6 +30,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamItem,
     NativeExamItemKind,
+    NativeExamParent,
     NativeGapSegment,
     NativeItemReviewState,
     NativeMatchPair,
@@ -69,6 +70,8 @@ class AnswerKeyItemView(BaseModel):
     item_id: str
     kind: AnswerKeyViewKind
     title: str
+    # The instruction a grouped question's parent prints above it, such as a word bank.
+    instruction: str = ""
     stem_text: str
     choices: tuple[tuple[int, str], ...] = ()
     gap_count: int = Field(default=0, ge=0)
@@ -211,8 +214,10 @@ def _remove_space_before_punctuation(text: str) -> str:
     return result
 
 
-def answer_key_item_view(item: NativeExamItem) -> AnswerKeyItemView:
-    """Project one keyed native exam item into its prompt view."""
+def answer_key_item_view(
+    item: NativeExamItem, parent: NativeExamParent | None
+) -> AnswerKeyItemView:
+    """Project one keyed native exam item, under its parent's instruction, into its prompt view."""
 
     kind = _VIEW_KIND_BY_ITEM_KIND.get(item.kind)
     if kind is None:
@@ -222,6 +227,7 @@ def answer_key_item_view(item: NativeExamItem) -> AnswerKeyItemView:
         item_id=item.item_id,
         kind=kind,
         title=item.title or "",
+        instruction="\n".join(parent.instruction) if parent else "",
         stem_text="\n".join(item.plain_text_lines()),
         choices=tuple((choice_int_id(choice.choice_id), choice.text) for choice in item.choices),
         gap_count=len(gap_ids),
@@ -238,7 +244,7 @@ def answer_key_item_views(document: NativeExamDocument) -> tuple[AnswerKeyItemVi
     """Select keyed items whose answer key is absent, in document order."""
 
     return tuple(
-        answer_key_item_view(item)
+        answer_key_item_view(item, document.parent_of(item.item_id))
         for item in document.items
         if item.kind in _VIEW_KIND_BY_ITEM_KIND
         and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
