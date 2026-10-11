@@ -1,5 +1,6 @@
 """Map produced items to the native contract and assemble the build result."""
 
+from collections.abc import Iterator
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -7,6 +8,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
+    ProducedParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -54,9 +56,10 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
                     )
                 )
                 segments.append(NativeGapSegment(gap_id=gap_id))
-            else:
-                segments.append(NativeTextSegment(text=segment.text or ""))
-        body.append(NativeParagraph(segments=tuple(segments)))
+            elif segment.text:
+                segments.append(NativeTextSegment(text=segment.text))
+        if segments:
+            body.append(NativeParagraph(segments=tuple(segments)))
     keyed = bool(correct) or any(gap.accepted_values for gap in gaps)
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         origin = NativeAnswerKeyOrigin.NOT_APPLICABLE
@@ -80,19 +83,23 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     )
 
 
+def _review_segments(paragraph: ProducedParagraph) -> Iterator[NativeSegment]:
+    for segment in paragraph.segments:
+        if segment.kind == "gap":
+            yield _REVIEW_BLANK
+        elif segment.text:
+            yield NativeTextSegment(text=segment.text)
+
+
 def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
     """One teacher-review item for a question the model could not convert.
 
     Gap answers and choice keys never become text; a gap shows as a blank line.
     """
     paragraphs = [
-        NativeParagraph(
-            segments=tuple(
-                NativeTextSegment(text=s.text or "") if s.kind == "text" else _REVIEW_BLANK
-                for s in paragraph.segments
-            )
-        )
+        NativeParagraph(segments=segments)
         for paragraph in produced.body
+        if (segments := tuple(_review_segments(paragraph)))
     ]
     if produced.choices:
         lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
