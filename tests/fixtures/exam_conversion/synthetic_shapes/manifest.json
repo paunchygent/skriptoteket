@@ -169,7 +169,7 @@
     },
     {
       "number": "14",
-      "intended_response": "fixed_slots",
+      "intended_response": "free_text",
       "shape": "sentence_on_line"
     },
     {
