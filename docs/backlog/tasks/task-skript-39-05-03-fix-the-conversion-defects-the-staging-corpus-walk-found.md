@@ -13,7 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Every item of every corpus exam meets the eight conversion principles in this contract against its gold file on two consecutive live eval runs, including the matching items
+- Live eval runs on the corpus show no code fault against the eight conversion principles, including matching items and parents; remaining failures are run-to-run model slips, and two consecutive clean runs move to TASK-SKRIPT-39-05-04
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -137,8 +137,8 @@ round limit.
 
 - The eval comparator judges the eight conversion principles, and its gold
   README states them.
-- `pdm run exam-conversion-eval --mode live`: every item of every corpus exam
-  meets the principles on two consecutive runs.
+- `pdm run exam-conversion-eval --mode live`: no remaining failure is a code
+  fault; run-to-run model slips are recorded (D19).
 - Focused tests for the changed code. Tests are adversarial on real corpus
   chunks.
 - Lint and typecheck on the changed files.
@@ -174,3 +174,6 @@ round limit.
 | D16 | A parent holds only the instruction lines every child shares; a line only some questions carry stays in those children (user decision 2026-10-11). |
 | D17 | A section instruction over questions of different kinds makes no parent; those questions stay standalone with the instruction copied into each (user decision 2026-10-11). |
 | D18 | The gold move to parents is approved; a parent's label is built from its children's printed labels in the exam's own language, such as "Fråga 1–15" or "Question 1–18" (user decisions 2026-10-11). |
+| D19 | The task merges on its measured live result (305-313 of 314 items over four runs, no code faults); two consecutive clean runs become a goal of TASK-SKRIPT-39-05-04's batching experiment, which also measures higher reasoning effort (user decision 2026-10-11). |
+| D20 | Each question keeps its printed label, and parent titles are built from the children's printed labels, not Exam.net's running numbers (user decision 2026-10-11). |
+| D21 | Every export follows the exam's language: QTI, the teacher DOCX export (Fråga/Lucka/Poäng/Rätt svar) and the Exam.net PDF markers (user decision 2026-10-11). |
