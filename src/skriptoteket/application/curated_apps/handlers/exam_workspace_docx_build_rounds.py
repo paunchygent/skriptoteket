@@ -104,11 +104,11 @@ Rules:
   answer: a quoted or cited word the student needs to read stays question text.
 - When the facit prints a sentence with a label after each of its units, each label is one
   gap placed right after its unit, and that label is the gap's accepted_values: the sentence's
-  units stay text segments in their order.
-- When the facit itself shows that the student decides where units start and end by
-  splitting a word into parts joined with +, the question is free_text with no gaps: keep the
-  question wording and leave the answer line out.
-  A facit that copies out one word, phrase or clause per field is a gap per field.
+  units stay text segments in their order. When the facit prints a word split into parts
+  joined with + and a label after each part, each label is one gap placed right after its
+  part, and that label is the gap's accepted_values: the parts and the + signs stay text
+  segments in their order, and a part with no label after it is text with no gap.
+- A facit that copies out one word, phrase or clause per field is a gap per field.
   When the source fixes the units and gives a facit label for them, each facit label is one
   gap, also when one label answers for several units the source lists together.
 - A gap's accepted_values hold the forms the facit gives, including variants it lists as also

@@ -92,7 +92,14 @@ def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
         return _text(item, facit)
 
     hits = _mutations(leak, "no_answer_leakage")
-    assert {stem for stem, *_ in hits} >= {s for s in STEMS if s.startswith("svenska_2")}
+    # Only exams with an open question whose gold keeps a teacher's facit can leak it.
+    with_facit = {
+        s
+        for s in STEMS
+        if s.startswith("svenska_2") and any(_facit(q) for q in gold_exam(s).questions)
+    }
+    assert with_facit
+    assert {stem for stem, *_ in hits} >= with_facit
     for stem, index, baseline, mutated in hits:
         assert "no_answer_leakage" not in _failed(baseline, index), stem
         assert "no_answer_leakage" in _failed(mutated, index), stem

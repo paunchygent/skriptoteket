@@ -98,7 +98,8 @@ LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
         "In a source with answers, a blank may be printed already filled with its answer, "
         "marked by formatting such as italics, bold or colour, or set apart by position: "
         "that place is a slot keyed by those words. When the key prints a sentence with a "
-        "label after each of its units, each label is one slot after its unit, keyed by "
+        "label after each of its units, or a word split into parts joined with + and a "
+        "label after each part, each label is one slot after its unit or part, keyed by "
         "that label. Type names: lucktext (gap text, cloze), fyll i luckan / luckorna "
         "(fill in the gap / gaps)."
     ),

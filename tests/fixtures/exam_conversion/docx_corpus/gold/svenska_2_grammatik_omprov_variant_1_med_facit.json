@@ -4,7 +4,7 @@
   "source_sha256": "2cc852d8b5d5f04252d83bda5244dcf76a28e7a3cfc922d769a46337502a4e1d",
   "title": "Omprov: grammatik och språkstrukturer — Svenska 2",
   "confirmed": true,
-  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted. Confirmed by the user on 2026-10-11: Fråga 4–5 is one parent over questions of mixed kinds (D27) and Fråga 5 is gap_fill with one gap per satsdel label (D39). Fråga 1 is gap_fill with one gap per morpheme label under D39 (user decision 2026-10-11).",
   "notes": [
     "Draft read directly from word/document.xml and its inline facit. One item per numbered Fråga (8 items, 38 points).",
     "Source answer labels become gap markers; facit is absent from student-visible prompts. Open analysis facit is retained only in notes."
@@ -12,12 +12,88 @@
   "items": [
     {
       "source_label": "Fråga 1",
-      "kind": "free_text",
+      "kind": "gap_fill",
       "points": 6,
-      "prompt": "Dela upp orden i morfem.\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.\na) snöbollarnas\nb) skrivbarheten\nc) fotbollsspelarnas",
+      "prompt": "Dela upp orden i morfem.\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.\na) snö [___] + boll [___] + ar [___] + na [___] + s [___]\nb) skriv [___] + bar [___] + het [___] + en [___]\nc) fot [___] + boll [___] + foge-s + spel [___] + are [___] + na [___] + s [___]",
       "notes": [
-        "Source facit (teacher grading): a) snöbollarnas Svar: snö (R) + boll (R) + ar (B) + na (B) + s (B)\nb) skrivbarheten Svar: skriv (R) + bar (A) + het (A) + en (B)\nc) fotbollsspelarnas Svar: fot (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)",
-        "One open response retains the morpheme segmentation and classification task; no automatic answer variants are invented."
+        "Morfemanalys: each facit label after a part of a word joined with + is one gap after that part accepting that label; foge-s carries no label and stays text (D39, user decision 2026-10-11)."
+      ],
+      "gaps": [
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        }
       ]
     },
     {
