@@ -4,6 +4,9 @@ import { mount } from "@vue/test-utils";
 
 import { useScriptEditor } from "./useScriptEditor";
 import type { UiNotifier } from "../notify";
+import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
+import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
+import toolPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/tool.py?raw";
 
 const clientMocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
@@ -44,6 +47,7 @@ function createEditorResponse(overrides: Record<string, unknown> = {}) {
   return {
     entrypoint: "run_tool",
     source_code: "print('hi')",
+    bundle_files: {},
     settings_schema: [],
     input_schema: [],
     usage_instructions: null,
@@ -86,10 +90,12 @@ async function mountEditor({
 
   clientMocks.apiGet.mockResolvedValueOnce(editorResponse);
 
+  let editorState!: ReturnType<typeof useScriptEditor>;
+
   const TestComponent = defineComponent({
     name: "TestScriptEditor",
     setup() {
-      return useScriptEditor({
+      editorState = useScriptEditor({
         toolId,
         versionId,
         userId,
@@ -97,6 +103,7 @@ async function mountEditor({
         router: router as never,
         notify: notify as UiNotifier,
       });
+      return editorState;
     },
     template: "<div />",
   });
@@ -104,7 +111,7 @@ async function mountEditor({
   const wrapper = mount(TestComponent);
   await flushPromises();
 
-  return { wrapper, router, notify };
+  return { wrapper, router, notify, editorState };
 }
 
 beforeEach(() => {
@@ -158,6 +165,37 @@ describe("useScriptEditor", () => {
       expect.objectContaining({ entrypoint: "run_tool", derived_from_version_id: "ver-1" }),
     );
     expect(notify.warning).toHaveBeenCalledWith("Conflict");
+
+    wrapper.unmount();
+  });
+
+  it("carries edited bundle files beside the entrypoint source when the bundle turns dirty", async () => {
+    const { wrapper, editorState } = await mountEditor({
+      editorResponse: createEditorResponse({
+        source_code: toolPy,
+        bundle_files: { "roster.py": rosterPy, "grouping.py": groupingPy },
+      }),
+    });
+
+    expect(editorState.hasDirtyChanges.value).toBe(false);
+
+    const editedRoster = `${rosterPy}\n# edited by teacher\n`;
+    editorState.bundleFiles.value["roster.py"] = editedRoster;
+    await nextTick();
+
+    expect(editorState.hasDirtyChanges.value).toBe(true);
+    expect(editorState.sourceCode.value).toBe(toolPy);
+
+    clientMocks.apiPost.mockResolvedValueOnce({ redirect_url: "/admin/tools" });
+    await editorState.save();
+
+    expect(clientMocks.apiPost).toHaveBeenCalledWith(
+      "/api/v1/editor/tool-versions/ver-1/save",
+      expect.objectContaining({
+        source_code: toolPy,
+        bundle_files: { "roster.py": editedRoster, "grouping.py": groupingPy },
+      }),
+    );
 
     wrapper.unmount();
   });

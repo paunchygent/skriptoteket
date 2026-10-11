@@ -1,11 +1,11 @@
 import { computed, watch, type ComputedRef } from "vue";
 import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
-import { isVirtualFileId, type VirtualFileId } from "./virtualFiles";
+import { isEditorFileId, type EditorFileId } from "./bundleFiles";
 
 export type EditorCompareTarget = { kind: "version"; versionId: string } | { kind: "working" };
 
-export const DEFAULT_COMPARE_FIELD: VirtualFileId = "tool.py";
+export const DEFAULT_COMPARE_FIELD: EditorFileId = "tool.py";
 
 type QueryRecord = Record<string, string | string[] | null | undefined>;
 
@@ -43,19 +43,19 @@ export function useEditorCompareState(options: {
   router: Router;
 }): {
   compareTarget: ComputedRef<EditorCompareTarget | null>;
-  activeFileId: ComputedRef<VirtualFileId | null>;
+  activeFileId: ComputedRef<EditorFileId | null>;
   setCompareTarget: (target: EditorCompareTarget | null) => Promise<void>;
   setCompareVersionId: (versionId: string | null) => Promise<void>;
   toggleCompareVersionId: (versionId: string) => Promise<void>;
-  setActiveFileId: (fileId: VirtualFileId) => Promise<void>;
+  setActiveFileId: (fileId: EditorFileId) => Promise<void>;
   closeCompare: () => Promise<void>;
 } {
   const { route, router } = options;
 
   const compareTarget = computed(() => parseCompareTarget(queryStringValue(route.query.compare)));
-  const activeFileId = computed<VirtualFileId | null>(() => {
+  const activeFileId = computed<EditorFileId | null>(() => {
     const value = queryStringValue(route.query.field);
-    return value && isVirtualFileId(value) ? value : null;
+    return value && isEditorFileId(value) ? value : null;
   });
 
   async function setCompareTarget(target: EditorCompareTarget | null): Promise<void> {
@@ -80,7 +80,7 @@ export function useEditorCompareState(options: {
     await setCompareVersionId(versionId);
   }
 
-  async function setActiveFileId(fileId: VirtualFileId): Promise<void> {
+  async function setActiveFileId(fileId: EditorFileId): Promise<void> {
     if (!compareTarget.value) {
       return;
     }

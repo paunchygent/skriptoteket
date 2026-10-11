@@ -10,6 +10,7 @@ import { computed, ref, toRef, watch } from "vue";
 
 import { apiFetch } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { BundleFiles } from "../../composables/editor/bundleFiles";
 import { useEditorSandboxActions } from "../../composables/editor/useEditorSandboxActions";
 import { useEditorSandboxRunExecution } from "../../composables/editor/useEditorSandboxRunExecution";
 import { useSandboxFileRefs } from "../../composables/editor/useSandboxFileRefs";
@@ -33,6 +34,7 @@ const props = defineProps<{
   isReadOnly: boolean;
   entrypoint: string;
   sourceCode: string;
+  bundleFiles: BundleFiles;
   usageInstructions: string;
   inputSchema: ToolInputSchema;
   inputSchemaError: string | null;
@@ -79,6 +81,7 @@ const runExec = useEditorSandboxRunExecution({
   isRunning,
   entrypoint: toRef(props, "entrypoint"),
   sourceCode: toRef(props, "sourceCode"),
+  bundleFiles: toRef(props, "bundleFiles"),
   usageInstructions: toRef(props, "usageInstructions"),
   settingsSchema: toRef(props, "settingsSchema"),
   inputSchema: toRef(props, "inputSchema"),

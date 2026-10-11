@@ -172,6 +172,7 @@ const chatColumnWidth = computed(() => {
                   :versions="props.versions"
                   :base-version="props.selectedVersion"
                   :base-files="baseFiles"
+                  :base-bundle-files="props.bundleFiles"
                   :compare-target="props.compareTarget"
                   :active-file-id="props.compareActiveFileId"
                   :base-is-dirty="props.hasDirtyChanges"
@@ -268,6 +269,7 @@ const chatColumnWidth = computed(() => {
                   :entrypoint="props.entrypoint"
                   :is-read-only="props.isReadOnly"
                   :source-code="props.sourceCode"
+                  :bundle-files="props.bundleFiles"
                   :usage-instructions="props.usageInstructions"
                   :settings-schema="props.settingsSchema"
                   :settings-schema-error="props.settingsSchemaError"
@@ -295,8 +297,10 @@ const chatColumnWidth = computed(() => {
                   <EditorSourceCodePanel
                     :entrypoint="props.entrypoint"
                     :source-code="props.sourceCode"
+                    :bundle-files="props.bundleFiles"
                     :is-read-only="props.isReadOnly"
                     @update:source-code="emit('update:sourceCode', $event)"
+                    @update:bundle-files="emit('update:bundleFiles', $event)"
                     @editor-view-ready="emit('editorViewReady', $event)"
                   />
                 </div>

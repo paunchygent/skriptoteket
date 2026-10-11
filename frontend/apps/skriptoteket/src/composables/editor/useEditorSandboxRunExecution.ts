@@ -2,6 +2,7 @@ import { onBeforeUnmount, ref, type Ref } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { BundleFiles } from "./bundleFiles";
 import type { FileFieldSelection, ToolFileFieldSpec } from "../tools/useToolInputs";
 
 type SandboxRunResponse = components["schemas"]["SandboxRunResponse"];
@@ -19,6 +20,7 @@ type UseEditorSandboxRunExecutionOptions = {
   isRunning: Ref<boolean>;
   entrypoint: Readonly<Ref<string>>;
   sourceCode: Readonly<Ref<string>>;
+  bundleFiles: Readonly<Ref<BundleFiles>>;
   usageInstructions: Readonly<Ref<string>>;
   settingsSchema: Readonly<Ref<ToolSettingsSchema | null>>;
   inputSchema: Readonly<Ref<ToolInputSchema>>;
@@ -41,6 +43,7 @@ export function useEditorSandboxRunExecution({
   isRunning,
   entrypoint,
   sourceCode,
+  bundleFiles,
   usageInstructions,
   settingsSchema,
   inputSchema,
@@ -159,6 +162,7 @@ export function useEditorSandboxRunExecution({
     const snapshotPayload = {
       entrypoint: resolvedEntrypoint,
       source_code: sourceCode.value,
+      bundle_files: bundleFiles.value,
       settings_schema: settingsSchema.value ?? null,
       input_schema: inputSchema.value,
       usage_instructions: resolvedUsageInstructions ? resolvedUsageInstructions : null,

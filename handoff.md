@@ -26,11 +26,16 @@
   proposed->ready; sequenced after story 8.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
-  `in_progress`: tool bundles built and four tools split, branch
-  `codex/task-skript-rep-0037` head `5bd484f7`; ADR-SKRIPT-0092 proposed and
-  passed by the advisor (accept at merge). Sol review running. Deploy: the
-  deploy builds the runner image; run `seed-script-bank --sync-code` only after
-  it. Next: review verdict, merge, staging walk incl. one gruppgenerator run.
+  `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
+  D6 (editor and version views show and save every bundle file) rereview approved
+  `578d4a4d`, merged `4b68bcde` and pushed; staging `skriptoteket-dev` rebuilt and
+  healthy on it. Gruppgenerator run on staging done. Production: `hemma-deploy`
+  and `seed-script-bank --sync-code` were run there by mistake; gruppgeneratorn
+  depublished, the other seeded tools stay unpublished. Staging grants
+  `skriptoteket-proof-user` the contributor role and gruppgeneratorn maintainership.
+  Next: finish the staging editor walk (sibling `grouping.py` shown; edit a sibling
+  file, sandbox run, save), record the proof, close docs. UX note: a saved class
+  list looks selected in step 2 but is not until the class name is filled.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
   is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review

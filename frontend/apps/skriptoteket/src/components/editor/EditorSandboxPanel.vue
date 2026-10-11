@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import type { components } from "../../api/openapi";
+import type { BundleFiles } from "../../composables/editor/bundleFiles";
 
 import EntrypointDropdown from "./EntrypointDropdown.vue";
 
@@ -18,6 +19,7 @@ type EditorSandboxPanelProps = {
   entrypoint: string;
   isReadOnly: boolean;
   sourceCode: string;
+  bundleFiles: BundleFiles;
   usageInstructions: string;
   settingsSchema: ToolSettingsSchema | null;
   settingsSchemaError: string | null;
@@ -77,6 +79,7 @@ const emit = defineEmits<{
               :is-read-only="props.isReadOnly"
               :entrypoint="props.entrypoint"
               :source-code="props.sourceCode"
+              :bundle-files="props.bundleFiles"
               :settings-schema="props.settingsSchema"
               :settings-schema-error="props.settingsSchemaError"
               :input-schema="props.inputSchema"

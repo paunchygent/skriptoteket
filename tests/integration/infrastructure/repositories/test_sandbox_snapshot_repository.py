@@ -48,6 +48,7 @@ async def test_sandbox_snapshot_create_and_get_roundtrip(
         created_by_user_id=user_id,
         entrypoint="run_tool",
         source_code="print('hi')",
+        bundle_files={"roster.py": "NAMES = ['Åsa']\n", "diploma.html": "<p>{name}</p>\n"},
         settings_schema=settings_schema,
         input_schema=input_schema,
         usage_instructions="Use it",
@@ -78,6 +79,10 @@ async def test_sandbox_snapshot_create_and_get_roundtrip(
     assert fetched is not None
     assert fetched.id == snapshot.id
     assert fetched.entrypoint == "run_tool"
+    assert fetched.bundle_files == {
+        "roster.py": "NAMES = ['Åsa']\n",
+        "diploma.html": "<p>{name}</p>\n",
+    }
     assert fetched.settings_schema is not None
     assert fetched.settings_schema[0].kind is UiActionFieldKind.STRING
     assert fetched.input_schema is not None

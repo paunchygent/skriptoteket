@@ -3,8 +3,11 @@ import { defineComponent, nextTick, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
 import type { components } from "../../api/openapi";
+import type { BundleFiles } from "./bundleFiles";
 import type { FileFieldSelection } from "../tools/useToolInputs";
 import { useEditorSandboxRunExecution } from "./useEditorSandboxRunExecution";
+import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
+import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
 
 const clientMocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
@@ -66,17 +69,20 @@ function mountRunExecution({
   validateSchemasNowResult = true,
   schemaValidationErrorValue = null,
   sessionFilesSnapshotIdValue = null,
+  bundleFilesValue = {},
 }: {
   isReadOnlyValue?: boolean;
   validateSchemasNowResult?: boolean;
   schemaValidationErrorValue?: string | null;
   sessionFilesSnapshotIdValue?: string | null;
+  bundleFilesValue?: BundleFiles;
 } = {}) {
   const versionId = ref("ver-1");
   const isReadOnly = ref(isReadOnlyValue);
   const isRunning = ref(false);
   const entrypoint = ref("run_tool");
   const sourceCode = ref("print('hello')");
+  const bundleFiles = ref<BundleFiles>({ ...bundleFilesValue });
   const usageInstructions = ref("Use it.");
   const settingsSchema = ref(null);
   const inputSchema = ref<ToolInputSchema>([]);
@@ -104,6 +110,7 @@ function mountRunExecution({
         isRunning,
         entrypoint,
         sourceCode,
+        bundleFiles,
         usageInstructions,
         settingsSchema,
         inputSchema,
@@ -198,6 +205,35 @@ describe("useEditorSandboxRunExecution", () => {
     await flushPromises();
 
     expect(clientMocks.apiGet).toHaveBeenCalledWith("/api/v1/editor/tool-runs/run-1");
+
+    wrapper.unmount();
+  });
+
+  it("sends the edited bundle files inside the snapshot form field", async () => {
+    clientMocks.apiFetch.mockResolvedValueOnce({
+      run_id: "run-1",
+      snapshot_id: "snap-1",
+      started_at: "2030-01-01T00:00:00Z",
+      status: "running",
+      state_rev: 1,
+    });
+
+    const rosterText = `${rosterPy}\n# edited by teacher\n`;
+    const { runExec, wrapper } = mountRunExecution({
+      bundleFilesValue: { "roster.py": rosterText, "grouping.py": groupingPy },
+    });
+
+    await runExec.runSandbox();
+    await flushPromises();
+
+    const requestInit = clientMocks.apiFetch.mock.calls[0][1] as { body: FormData };
+    const snapshot = JSON.parse(String(requestInit.body.get("snapshot"))) as {
+      bundle_files: BundleFiles;
+    };
+    expect(snapshot.bundle_files).toEqual({
+      "roster.py": rosterText,
+      "grouping.py": groupingPy,
+    });
 
     wrapper.unmount();
   });

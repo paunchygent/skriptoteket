@@ -4,8 +4,11 @@ import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 import { apiFetch, apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import type { UiNotifier } from "../notify";
+import { areBundleFilesEqual, type BundleFiles } from "./bundleFiles";
+import type { EditorBaselineSnapshot } from "./editorPersistence";
 import { recordRecentEditorTool } from "./editorRecentTools";
 import { editorBaseRouteKey } from "./editorRouteKey";
+import { suggestToolSlugFromTitle } from "./editorToolSlug";
 import { parseSchemaJsonArrayText } from "./schemaJsonHelpers";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
@@ -28,14 +31,6 @@ type SaveOptions = {
   schemaValidationError?: Readonly<Ref<string | null>>;
 };
 
-export type EditorBaselineSnapshot = {
-  entrypoint: string;
-  sourceCode: string;
-  settingsSchemaText: string;
-  inputSchemaText: string;
-  usageInstructions: string;
-};
-
 export function useScriptEditor({
   toolId,
   versionId,
@@ -47,6 +42,7 @@ export function useScriptEditor({
   const editor = ref<EditorBootResponse | null>(null);
   const entrypoint = ref("");
   const sourceCode = ref("");
+  const bundleFiles = ref<BundleFiles>({});
   const settingsSchemaText = ref("");
   const inputSchemaText = ref("");
   const usageInstructions = ref("");
@@ -87,7 +83,8 @@ export function useScriptEditor({
       initialSnapshot.value.sourceCode !== sourceCode.value ||
       initialSnapshot.value.settingsSchemaText !== settingsSchemaText.value ||
       initialSnapshot.value.inputSchemaText !== inputSchemaText.value ||
-      initialSnapshot.value.usageInstructions !== usageInstructions.value
+      initialSnapshot.value.usageInstructions !== usageInstructions.value ||
+      !areBundleFilesEqual(initialSnapshot.value.bundleFiles, bundleFiles.value)
     );
   });
 
@@ -135,6 +132,7 @@ export function useScriptEditor({
     editor.value = response;
     entrypoint.value = response.entrypoint;
     sourceCode.value = response.source_code;
+    bundleFiles.value = { ...response.bundle_files };
 
     const schema = response.settings_schema;
     settingsSchemaText.value = schema ? JSON.stringify(schema, null, 2) : "";
@@ -154,6 +152,7 @@ export function useScriptEditor({
       settingsSchemaText: settingsSchemaText.value,
       inputSchemaText: inputSchemaText.value,
       usageInstructions: usageInstructions.value,
+      bundleFiles: { ...response.bundle_files },
     };
 
     const userIdValue = userId.value;
@@ -164,20 +163,6 @@ export function useScriptEditor({
         slug: response.tool.slug,
       });
     }
-  }
-
-  function suggestToolSlugFromTitle(title: string): string {
-    const lowered = title.trim().toLowerCase();
-    const transliterated = lowered
-      .replaceAll("å", "a")
-      .replaceAll("ä", "a")
-      .replaceAll("ö", "o");
-
-    return transliterated
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+/, "")
-      .replace(/-+$/, "");
   }
 
   function applySlugSuggestionFromTitle(): void {
@@ -256,6 +241,22 @@ export function useScriptEditor({
     await router.push(path);
   }
 
+  function buildSaveRequestFields(
+    settingsSchema: SettingsSchema | null,
+    inputSchema: InputSchema,
+    summaryValue: string | null,
+  ) {
+    return {
+      entrypoint: entrypoint.value.trim(),
+      source_code: sourceCode.value,
+      bundle_files: bundleFiles.value,
+      settings_schema: settingsSchema,
+      input_schema: inputSchema,
+      usage_instructions: normalizedOptionalString(usageInstructions.value),
+      change_summary: summaryValue,
+    };
+  }
+
   async function save(options: SaveOptions = {}): Promise<void> {
     if (!editor.value || isSaving.value) return;
 
@@ -293,15 +294,14 @@ export function useScriptEditor({
       }
       const inputSchema = (inputSchemaResult.value ?? []) as InputSchema;
 
-      if (options.validateSchemasNow) {
-        const valid = await options.validateSchemasNow();
-        if (!valid) {
-          errorMessage.value =
-            options.schemaValidationError?.value ??
-            "Schemat innehåller valideringsfel. Åtgärda felen innan du sparar.";
-          return;
-        }
+      if (options.validateSchemasNow && !(await options.validateSchemasNow())) {
+        errorMessage.value =
+          options.schemaValidationError?.value ??
+          "Schemat innehåller valideringsfel. Åtgärda felen innan du sparar.";
+        return;
       }
+
+      const sharedSaveFields = buildSaveRequestFields(settingsSchema, inputSchema, summaryValue);
 
       if (editor.value.save_mode === "snapshot") {
         const version = selectedVersion.value;
@@ -312,15 +312,7 @@ export function useScriptEditor({
 
         const response = await apiPost<SaveResult>(
           `/api/v1/editor/tool-versions/${version.id}/save`,
-          {
-            entrypoint: entrypointValue,
-            source_code: sourceCode.value,
-            settings_schema: settingsSchema,
-            input_schema: inputSchema,
-            usage_instructions: normalizedOptionalString(usageInstructions.value),
-            change_summary: summaryValue,
-            expected_parent_version_id: version.id,
-          },
+          { ...sharedSaveFields, expected_parent_version_id: version.id },
         );
 
         notify.success("Sparat.");
@@ -330,15 +322,7 @@ export function useScriptEditor({
 
       const response = await apiPost<SaveResult>(
         `/api/v1/editor/tools/${editor.value.tool.id}/draft`,
-        {
-          entrypoint: entrypointValue,
-          source_code: sourceCode.value,
-          settings_schema: settingsSchema,
-          input_schema: inputSchema,
-          usage_instructions: normalizedOptionalString(usageInstructions.value),
-          change_summary: summaryValue,
-          derived_from_version_id: editor.value.create_draft_from_version_id,
-        },
+        { ...sharedSaveFields, derived_from_version_id: editor.value.create_draft_from_version_id },
       );
 
       notify.success("Ny arbetsversion skapad.");
@@ -476,6 +460,7 @@ export function useScriptEditor({
     editor,
     entrypoint,
     sourceCode,
+    bundleFiles,
     settingsSchemaText,
     inputSchemaText,
     usageInstructions,

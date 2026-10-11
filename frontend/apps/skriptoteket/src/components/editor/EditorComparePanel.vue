@@ -2,9 +2,15 @@
 import { computed } from "vue";
 import type { components } from "../../api/openapi";
 
+import {
+  bundleDiffItems,
+  type BundleFiles,
+  type EditorFileDiffItem,
+  type EditorFileId,
+} from "../../composables/editor/bundleFiles";
 import { useEditorCompareData, type WorkingCopyProvider } from "../../composables/editor/useEditorCompareData";
 import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
-import type { VirtualFileId, VirtualFileTextMap } from "../../composables/editor/virtualFiles";
+import type { VirtualFileTextMap } from "../../composables/editor/virtualFiles";
 import { VIRTUAL_DIFF_FILE_IDS } from "../../composables/editor/virtualFiles";
 import VirtualFileDiffViewer from "./diff/VirtualFileDiffViewer.vue";
 
@@ -15,8 +21,9 @@ type EditorComparePanelProps = {
   versions: EditorVersionSummary[];
   baseVersion: EditorVersionSummary | null;
   baseFiles: VirtualFileTextMap;
+  baseBundleFiles: BundleFiles;
   compareTarget: EditorCompareTarget | null;
-  activeFileId: VirtualFileId | null;
+  activeFileId: EditorFileId | null;
   baseIsDirty: boolean;
   canCompareWorkingCopy: boolean;
   workingCopyProvider?: WorkingCopyProvider | null;
@@ -27,10 +34,10 @@ const props = defineProps<EditorComparePanelProps>();
 const emit = defineEmits<{
   (event: "close"): void;
   (event: "updateCompareTargetValue", value: string): void;
-  (event: "updateActiveFileId", fileId: VirtualFileId): void;
+  (event: "updateActiveFileId", fileId: EditorFileId): void;
 }>();
 
-const { compareEditor, compareFiles, isLoading, errorMessage } = useEditorCompareData(
+const { compareEditor, compareFiles, compareBundleFiles, isLoading, errorMessage } = useEditorCompareData(
   computed(() => props.compareTarget),
   { workingCopyProvider: props.workingCopyProvider ?? undefined },
 );
@@ -81,13 +88,14 @@ const workingCompareLabel = computed(() =>
   props.canCompareWorkingCopy ? "Lokalt arbetsexemplar" : "Lokalt arbetsexemplar (saknas)",
 );
 
-const diffItems = computed(() => {
+const diffItems = computed<EditorFileDiffItem[]>(() => {
   if (!compareFiles.value) return [];
-  return VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
+  const virtualItems: EditorFileDiffItem[] = VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
     virtualFileId,
     beforeText: compareFiles.value![virtualFileId],
     afterText: props.baseFiles[virtualFileId],
   }));
+  return [...virtualItems, ...bundleDiffItems(compareBundleFiles.value ?? {}, props.baseBundleFiles)];
 });
 </script>
 

@@ -1,6 +1,7 @@
 import { computed, ref, type Ref } from "vue";
 
 import type { UiNotifier } from "../notify";
+import type { BundleFiles } from "./bundleFiles";
 import {
   AUTO_CHECKPOINT_CAP,
   AUTO_CHECKPOINT_TTL_DAYS,
@@ -58,6 +59,11 @@ export function useEditorWorkingCopyCheckpoints(options: {
 
   let lastAutoCheckpointFingerprint = "";
   let hasWarnedCheckpointFailure = false;
+
+  /** Bundle files a legacy record without them falls back to: the version baseline, else the live editor. */
+  function fallbackBundleFiles(): BundleFiles {
+    return baselineFields.value?.bundleFiles ?? currentFields.value.bundleFiles;
+  }
 
   async function refreshCheckpoints(): Promise<void> {
     if (!canPersist.value || !userId.value || !toolId.value) {
@@ -152,7 +158,7 @@ export function useEditorWorkingCopyCheckpoints(options: {
       return;
     }
 
-    const restoredFields = checkpointFieldsFromRecord(checkpoint);
+    const restoredFields = checkpointFieldsFromRecord(checkpoint, fallbackBundleFiles());
     applyFields(restoredFields);
     await persistHeadNow({
       force: true,
@@ -179,7 +185,7 @@ export function useEditorWorkingCopyCheckpoints(options: {
   async function stashRestoreCandidate(candidate: WorkingCopyHeadRecord): Promise<boolean> {
     if (!canPersist.value || !userId.value || !toolId.value) return false;
 
-    const candidateFields = workingCopyFieldsFromRecord(candidate);
+    const candidateFields = workingCopyFieldsFromRecord(candidate, fallbackBundleFiles());
     const fingerprint = fieldsFingerprint(candidateFields);
 
     try {

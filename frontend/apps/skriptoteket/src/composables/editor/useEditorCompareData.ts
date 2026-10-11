@@ -2,17 +2,18 @@ import { ref, watch, type Ref } from "vue";
 
 import { apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import type { BundleFiles } from "./bundleFiles";
+import type { EditorWorkingCopyFields } from "./editorPersistence";
 import type { EditorCompareTarget } from "./useEditorCompareState";
 import {
   virtualFileTextFromEditorBoot,
   virtualFileTextFromEditorFields,
-  type EditorVirtualFileTextFields,
   type VirtualFileTextMap,
 } from "./virtualFiles";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 
-export type WorkingCopyProvider = () => Promise<EditorVirtualFileTextFields | null>;
+export type WorkingCopyProvider = () => Promise<EditorWorkingCopyFields | null>;
 
 export function useEditorCompareData(
   compareTarget: Readonly<Ref<EditorCompareTarget | null>>,
@@ -20,6 +21,7 @@ export function useEditorCompareData(
 ) {
   const compareEditor = ref<EditorBootResponse | null>(null);
   const compareFiles = ref<VirtualFileTextMap | null>(null);
+  const compareBundleFiles = ref<BundleFiles | null>(null);
   const isLoading = ref(false);
   const errorMessage = ref<string | null>(null);
 
@@ -33,6 +35,7 @@ export function useEditorCompareData(
 
       compareEditor.value = null;
       compareFiles.value = null;
+      compareBundleFiles.value = null;
       errorMessage.value = null;
 
       if (!target) {
@@ -58,10 +61,12 @@ export function useEditorCompareData(
             errorMessage.value = "Det finns inget lokalt arbetsexemplar att diffa.";
           } else {
             compareFiles.value = virtualFileTextFromEditorFields(snapshot);
+            compareBundleFiles.value = { ...snapshot.bundleFiles };
           }
         } catch {
           if (requestId !== requestCounter) return;
           compareFiles.value = null;
+          compareBundleFiles.value = null;
           errorMessage.value = "Det gick inte att ladda lokalt arbetsexemplar.";
         } finally {
           if (requestId === requestCounter) {
@@ -79,11 +84,13 @@ export function useEditorCompareData(
         if (requestId !== requestCounter) return;
         compareEditor.value = response;
         compareFiles.value = virtualFileTextFromEditorBoot(response);
+        compareBundleFiles.value = { ...response.bundle_files };
       } catch (error: unknown) {
         if (requestId !== requestCounter) return;
 
         compareEditor.value = null;
         compareFiles.value = null;
+        compareBundleFiles.value = null;
         if (isApiError(error)) {
           if (error.status === 403) {
             errorMessage.value =
@@ -110,6 +117,7 @@ export function useEditorCompareData(
   return {
     compareEditor,
     compareFiles,
+    compareBundleFiles,
     isLoading,
     errorMessage,
   };
