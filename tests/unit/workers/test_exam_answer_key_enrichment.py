@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import cast
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from dishka import AsyncContainer
+from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -19,12 +18,37 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.workers.exam_answer_key_enrichment import process_next_answer_key_enrichment_job
-from tests.unit.workers.execution_queue_job_processor_test_support import ContainerAdapter
 from tests.unit.workers.execution_queue_repository_fakes import DEFAULT_NOW, FakeUow
 from tests.unit.workers.execution_queue_runtime_fakes import FakeClock
 
 WORKER_ID = "docx-worker"
 LEASE_TTL = timedelta(seconds=30)
+
+
+class AnswerKeyEnrichmentWorkerProvider(Provider):
+    def __init__(
+        self,
+        *,
+        uow: UnitOfWorkProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        handler: ProcessExamAnswerKeyEnrichmentJobHandler,
+    ) -> None:
+        super().__init__()
+        self._uow = uow
+        self._jobs = jobs
+        self._handler = handler
+
+    @provide(scope=Scope.REQUEST)
+    def uow(self) -> UnitOfWorkProtocol:
+        return self._uow
+
+    @provide(scope=Scope.REQUEST)
+    def jobs(self) -> ExamAnswerKeyEnrichmentJobRepositoryProtocol:
+        return self._jobs
+
+    @provide(scope=Scope.REQUEST)
+    def handler(self) -> ProcessExamAnswerKeyEnrichmentJobHandler:
+        return self._handler
 
 
 @pytest.fixture
@@ -53,14 +77,10 @@ def worker_harness() -> tuple[AsyncContainer, AsyncMock, AsyncMock]:
     handler = AsyncMock(spec=ProcessExamAnswerKeyEnrichmentJobHandler)
     handler.fail_next_expired.return_value = None
     jobs.claim_next.return_value = None
-    container = ContainerAdapter(
-        {
-            UnitOfWorkProtocol: FakeUow(),
-            ExamAnswerKeyEnrichmentJobRepositoryProtocol: jobs,
-            ProcessExamAnswerKeyEnrichmentJobHandler: handler,
-        }
+    container = make_async_container(
+        AnswerKeyEnrichmentWorkerProvider(uow=FakeUow(), jobs=jobs, handler=handler)
     )
-    return cast(AsyncContainer, container), jobs, handler
+    return container, jobs, handler
 
 
 def expected_claim_arguments(*, enrichment_enabled: bool) -> dict[str, object]:
