@@ -122,6 +122,7 @@ async function chooseSourceFile(wrapper: ViewWrapper, file: File) {
 beforeEach(() => {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
     job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+    document_revision: 1, questions_total: 0, questions_done: 0, units: [],
   });
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
@@ -161,7 +162,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("accepts a .docx source file and shows the imported document", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 
@@ -219,7 +221,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("imports a dropped .docx while ignoring files that cannot be used", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 
@@ -240,7 +243,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("keeps the frame free of service jargon before and after import", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 

@@ -4976,10 +4976,16 @@ export interface components {
         /**
          * ExamWorkspaceConversionStatus
          * @description Owner-visible status of one background DOCX import.
+         *
+         *     ``document_revision`` is the latest revision conversion saved, absent until the
+         *     first batch is ready; ``units`` lets the editor merge each new revision into
+         *     unsaved teacher edits.
          */
         ExamWorkspaceConversionStatus: {
+            /** Document Revision */
+            document_revision: number | null;
             /** Error Message */
-            error_message?: string | null;
+            error_message: string | null;
             /**
              * Job Id
              * Format: uuid
@@ -4990,11 +4996,37 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+            /** Questions Done */
+            questions_done: number;
+            /** Questions Total */
+            questions_total: number;
             /**
              * State
              * @enum {string}
              */
             state: "queued" | "running" | "succeeded" | "failed";
+            /** Units */
+            units: components["schemas"]["ExamWorkspaceConversionUnit"][];
+        };
+        /**
+         * ExamWorkspaceConversionUnit
+         * @description Items conversion last wrote for one question or question-less review item.
+         *
+         *     ``converting`` items are placeholders; ``teacher_kept`` means the teacher changed the
+         *     placeholder, so the late result was dropped.
+         */
+        ExamWorkspaceConversionUnit: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Question */
+            question: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "converting" | "ready" | "teacher_kept";
+            /** Unit Id */
+            unit_id: string;
         };
         /**
          * ExamWorkspaceDocumentListResponse

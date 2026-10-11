@@ -62,10 +62,12 @@ beforeEach(() => {
   }
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
     job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+    document_revision: 1, questions_total: 0, questions_done: 0, units: [],
   });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
