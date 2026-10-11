@@ -6177,8 +6177,6 @@ export interface components {
             accepted_values: string[];
             /** Gap Id */
             gap_id: string;
-            /** Hint */
-            hint?: string | null;
         };
         /** NativeGapSegment */
         NativeGapSegment: {
