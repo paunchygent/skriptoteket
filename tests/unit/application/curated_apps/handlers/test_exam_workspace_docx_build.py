@@ -369,6 +369,7 @@ async def test_empty_model_text_segments_change_no_item_in_the_recorded_course_e
     items = content["items"]
     assert [items[n]["outcome"] for n in (0, 15)] == ["converted", "review"]
     items[0]["body"][0]["segments"].append(empty)
+    items[0]["body"].append({"segments": [empty]})
     items[15]["body"][0]["segments"].insert(0, empty)
     items[15]["body"].append({"segments": [empty]})
     chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
