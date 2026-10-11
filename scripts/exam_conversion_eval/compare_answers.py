@@ -120,7 +120,10 @@ def facit_phrases(gold: GoldQuestion) -> set[str]:
 
 
 def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
-    """Principle 6: no facit answer is shown more often than the gold question shows it."""
+    """Principle 6: no facit answer is shown more often than the gold question shows it.
+
+    A parent's instruction is printed above each of its children, so it counts on both sides.
+    """
     item = gold.item
     answers = {
         *(value for gap in item.gaps for value in gap.accepted_values),
@@ -128,8 +131,8 @@ def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
         *(pair.right for pair in item.pairs),
     }
     phrases = ({words(value) for value in answers} - {""}) | facit_phrases(gold)
-    shown = stream([actual.title, *actual.body], gaps=True)
-    expected = stream(item.prompt.split("\n"), gaps=True)
+    shown = stream([*actual.instruction, actual.title, *actual.body], gaps=True)
+    expected = stream([*gold.view.instruction, *item.prompt.split("\n")], gaps=True)
     leaked = sorted(
         phrase for phrase in phrases if occurrences(shown, phrase) > occurrences(expected, phrase)
     )
