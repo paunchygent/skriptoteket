@@ -150,7 +150,7 @@ round limit.
 | D7  | Matching items may hold distractors: the answer list may be longer than the prompt list (user decision 2026-10-11). |
 | D8  | PDF export prints matching items, and answer-key completion proposes matching pairs where the facit lacks them (user decision 2026-10-11). |
 | D9  | Code rejects items that keep question numbers, printed point labels or blank markers and retries them, as for the other source invariants (user decision 2026-10-11). |
-| D10 | A section instruction stays in its section text and is not copied into the items under it (user decision 2026-10-11). |
+| D10 | A section instruction is copied into each item under it until the next heading, matching today's gold; section instructions become parents with child questions in ST-SKRIPT-39-06 (P5, P10) (user decision 2026-10-11). |
 | D11 | A gap also accepts the other apostrophe spelling and a full-sentence answer with or without its final full stop (user decision 2026-10-11). |
 | D12 | The title is the exam heading; a heading plus its printed subtitle is also correct, but the heading alone is preferred (user decision 2026-10-11). |
 | D13 | When instructions define an abbreviation and its term, a gap accepts both halves (user decision 2026-10-11). |
