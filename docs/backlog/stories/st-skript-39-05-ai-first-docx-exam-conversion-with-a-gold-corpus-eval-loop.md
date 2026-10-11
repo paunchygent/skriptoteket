@@ -99,14 +99,15 @@ Planned order; each task is scaffolded and contracted before work starts.
    user, and an eval runner that reports every item mismatch.
 3. Corpus breadth: Decisions classification, retries for failing items
    only, and general rules added only where the eval loop shows a need,
-   until every corpus item matches its gold.
+   until every corpus item meets the conversion principles against its gold.
 4. Matching kind: native model, editor, and QTI export.
 5. Teacher surface: "Tolkad av AI" with undo, automatic misspellings, and
    "Visa som text".
 
 ## Verification
 
-- Eval loop: every item of every corpus exam matches its gold file on each
+- Eval loop: every item of every corpus exam meets the conversion principles
+  (TASK-SKRIPT-39-05-03) against its gold file on each
   run; a change is one change followed by a full corpus rerun.
 - Unit tests for chunking, contract validation, the retry bound, and the
   review-item fallback.
@@ -126,7 +127,7 @@ Planned order; each task is scaffolded and contracted before work starts.
 | A4 | Unconvertible input becomes a free-text review item holding its source text with a Swedish note; export stays blocked until fixed (user decision 2026-10-10). |
 | A5 | Conversion runs as a background job with a visible status; the uploaded DOCX is kept until the job finishes (user decision 2026-10-10). |
 | A6 | A matching kind is added; a word bank becomes gap text where each gap accepts its own facit word; other shapes become review items (user decision 2026-10-10). |
-| A7 | The pass bar is a user-confirmed gold file per corpus exam; every item must match on every run (user decision 2026-10-10). |
+| A7 | The pass bar is a user-confirmed gold file per corpus exam; every item must meet the conversion principles against it on every run. Gold is one correct conversion, not the only one (user decision 2026-10-10, refined 2026-10-11). |
 | A8 | Check-passing AI interpretation of the teacher's facit is applied and export-eligible as "Tolkad av AI" with undo (user decision 2026-10-10, carried from 39-04-03 F10). |
 | A9 | AI-invented answer keys without a facit keep the teacher check before export (user decision 2026-10-10, carried from F11). |
 | A10 | The app adds obvious misspellings of facit answers within a code-enforced edit distance, never synonyms (user decision 2026-10-10, carried from F6). |

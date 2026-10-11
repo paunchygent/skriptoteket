@@ -13,7 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- The conversion follows the five source-structure rules in this contract, so the eval reports no difference on the items they govern, two consecutive runs agree, and no exam that matches gold today regresses
+- Every item of every corpus exam meets the eight conversion principles in this contract against its gold file on two consecutive live eval runs, including the matching items
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -38,9 +38,11 @@ points.
    labels, or a word split with `+`), the question is free text with no gaps.
    When the source fixes the units and gives one label per unit, each unit is
    one gap.
-3. **Accepted values.** A gap accepts the facit's own form, plus the form the
+3. **Accepted values.** A gap accepts the facit's own form, each part of a
+   facit form that joins alternatives with a slash, and the form the
    question's instructions tell students to use when they define an
-   abbreviation and its term ("Använd … Adv = adverbial").
+   abbreviation and its term ("Använd … Adv = adverbial"). Code never removes
+   a value the model adds beside these.
 4. **Points.** The model reports printed points only. When a section prints a
    total and its member questions print none, code splits the total equally
    when it divides evenly, and otherwise leaves the items for teacher review.
@@ -51,8 +53,40 @@ points.
 Invariants for rules 1, 2 and 5 are checked against the source chunks and
 sent back as `validation_errors` retry rounds; they never consult gold.
 
-Out of scope: the matching kind (ST-SKRIPT-39-05 A6), and any change to
-gold files.
+6. **Matching.** A question that asks the student to pair entries of two
+   lists becomes a native matching item with its directed pairs from the
+   facit. The native document model, the conversion schema, the editor and
+   the QTI export carry the matching kind (ST-SKRIPT-39-05 A6).
+
+### Conversion principles
+
+A conversion is correct when a student on Exam.net meets the same questions,
+answers them the same way and is scored the same as on paper, and the
+conversion adds nothing Exam.net owns and nothing that reveals an answer.
+The gold file is one correct conversion; the eval judges these principles
+against it, not textual identity:
+
+1. **Segmentation.** One source question is one item with all its subparts,
+   in source order; no source text is lost, duplicated or attached to the
+   wrong item.
+2. **Response kind.** The item has the gold item's kind.
+3. **Response slots.** Gaps are equal in number and order; matching items
+   have the same two lists.
+4. **Scoring.** The correct-choice set equals gold. Each gap accepts every
+   gold answer; an extra answer fails only when it is another gap's gold
+   answer or falls outside the spelling policy and the forms rule 3 admits.
+   Matching pairs equal gold.
+5. **Points.** Points equal gold.
+6. **No answer leakage.** No facit answer appears in student-visible text
+   unless the gold item shows it there.
+7. **No platform labels.** Choices carry no option letters or numbers, and
+   items carry no question numbers, point labels or printed blank markers.
+8. **Content present.** All gold student-visible wording is present in the
+   item's title, section or prompt. Punctuation, whitespace, case, quote
+   style, line breaks, the order of accepted variants and whether a heading
+   sits in the title or the prompt do not count.
+
+Out of scope: any change to gold files.
 
 ## Contract Inputs
 
@@ -82,26 +116,29 @@ round limit.
 
 ## Validation
 
-- `pdm run exam-conversion-eval`: no difference on the items the five rules
-  govern, and no regression on `metodprov`, `bf26_diagnostic`, `sa24`
-  answers or the `bf26_english` choices.
-- Two consecutive eval runs produce the same item shapes.
+- The eval comparator judges the eight conversion principles, and its gold
+  README states them.
+- `pdm run exam-conversion-eval --mode live`: every item of every corpus exam
+  meets the principles on two consecutive runs.
 - Focused tests for the changed code. Tests are adversarial on real corpus
   chunks.
 - Lint and typecheck on the changed files.
-- A staging walk uploads the three Svenska 2 exams and `sa24`, and checks
-  them against gold.
+- A staging walk uploads the three Svenska 2 exams, `sa24` and
+  `bf26_english`, checks them against the principles, edits one matching
+  item in the editor and exports QTI.
 
 ## Stop Conditions
 
-- A rule needs a new item kind, an exam-specific condition, or a gold change.
+- A rule needs an item kind other than matching, an exam-specific condition, or a gold change.
 - Consistency needs a model or provider change.
 
 ## Decided Contract Terms
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| D1  | The conversion follows the five source-structure rules above. Matching stays with its own story item (user decision 2026-10-11). |
+| D1  | The conversion follows the six source-structure rules above, including the matching kind end to end (user decision 2026-10-11, replacing an earlier term that excluded matching). |
 | D2  | No rule names an exam, a question number or a subject term. Invariants check the source, never gold. No retry-until-gold loop (user instruction 2026-10-11: no reward hacking). |
 | D3  | Gold files are read-only authority for comparison (TASK-SKRIPT-39-05-02). |
 | D4  | The Claude parent session owns this exam work; repairs elsewhere go to Codex (user decision 2026-10-11). |
+| D5  | The eval judges the eight conversion principles against gold, not textual identity; the comparator rewrite belongs to this task (user decisions 2026-10-11). |
+| D6  | Each part of a slash-joined facit form is accepted; code does not remove model-added values (user decisions 2026-10-11). |
