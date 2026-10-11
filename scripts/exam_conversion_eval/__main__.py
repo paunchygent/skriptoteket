@@ -225,7 +225,7 @@ async def _live(settings: Settings, evidence_dir: Path) -> list[_ExamReport]:
             client=client,
             base_url=settings.LLM_ANSWER_KEY_BASE_URL,
             api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
-            timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+            timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
         )
         recorders = [_RecordingProvider(live) for _ in exams]
         reports = await asyncio.gather(

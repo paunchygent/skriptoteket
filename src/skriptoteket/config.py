@@ -337,12 +337,14 @@ class Settings(BaseSettings):
     LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT: int = 5_000_000
     LLM_ANSWER_KEY_JOB_LEASE_TTL_SECONDS: int = 900
     # DOCX exam conversion (TASK-SKRIPT-39-05-01): GPT-6 Luna medium reasoning
-    # on the answer-key Responses endpoint, key, timeout, verbosity and daily
-    # token lease. Context and output limits are the GPT-6 Luna model limits.
+    # on the answer-key Responses endpoint, key, verbosity and daily token
+    # lease. Context and output limits are the GPT-6 Luna model limits. One
+    # whole-exam round has taken 95.7 s, so its timeout is its own.
     LLM_DOCX_CONVERSION_MODEL: str = "gpt-6-luna"
     LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "medium"
     LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS: int = 1_050_000
     LLM_DOCX_CONVERSION_MAX_OUTPUT_TOKENS: int = 128_000
+    LLM_DOCX_CONVERSION_TIMEOUT_SECONDS: int = 300
 
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
     # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect
