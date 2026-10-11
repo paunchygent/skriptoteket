@@ -11,7 +11,8 @@ Purpose:
 Relationships:
     Implements ``protocols.item_type_labeler.MeteredItemTypeLabelerProtocol``.
     Label descriptions define gap and free text by how the answer is scored
-    (D15), and each question retains its source text and inline keys
+    (D15); the instruction and descriptions are prompt P1d, sent in both passes
+    (D23), and each question retains its source text and inline keys
     (amended D14); a new measurement is required after the input repair and
     a rewording invalidates that measurement. Request and answer shapes follow
     the official Decisions guide (developers.openai.com/api/docs/guides/decisions,
@@ -56,8 +57,10 @@ RETRYABLE_STATUS_CODES = frozenset({503, 504})
 
 CLASSIFICATION_INSTRUCTION = (
     "Classify the response action the student performs and how that response is scored. "
-    "Read the target question's student view, answer key, governing instruction and section "
-    "heading together. For single_choice the student selects exactly one printed option; "
+    "Read the question as the teacher wrote it, including its instructions, inline answers "
+    "and key labels. A type name the teacher writes for the question, as listed under each "
+    "label, settles the label, and a key that marks more than one option as correct settles "
+    "multiple_response. For single_choice the student selects exactly one printed option; "
     "for multiple_response the student selects several. For gap_fill each response slot is "
     "checked against one or more accepted strings, including a whole sentence or a word "
     "from a supplied bank. For free_text the teacher judges a written response using a "
@@ -68,23 +71,39 @@ CLASSIFICATION_INSTRUCTION = (
     "reliable choice."
 )
 
+# Flervalsfråga names both choice labels; the number of options to choose decides (D23).
+_MULTIPLE_CHOICE_NAME = (
+    "Flervalsfråga (multiple choice) names both single_choice and multiple_response; "
+    "the number of options the student must choose decides between them."
+)
+
 LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
-    ItemTypeLabel.SINGLE_CHOICE: "The student chooses exactly one of the listed options.",
+    ItemTypeLabel.SINGLE_CHOICE: (
+        "The student chooses exactly one of the listed options, also when asked to write "
+        "the option's letter or number. Type names: välj ett alternativ (choose one option), "
+        "ett rätt svar (one correct answer), sant eller falskt / rätt eller fel (true or "
+        f"false). {_MULTIPLE_CHOICE_NAME}"
+    ),
     ItemTypeLabel.MULTIPLE_RESPONSE: (
-        "The student chooses several of the listed options, "
-        "as the question's response instruction asks."
+        "The student chooses several of the listed options, as the question's response "
+        "instruction asks. Type names: flera rätt (more than one correct), välj alla som "
+        "stämmer (select all that apply). A key that marks more than one option as correct "
+        f"settles this label. {_MULTIPLE_CHOICE_NAME}"
     ),
     ItemTypeLabel.GAP_FILL: (
         "Each response slot (a blank, a blank line or a labelled field) is keyed by one or "
-        "more accepted strings of any length, including slots filled from a word bank or "
-        "label list."
+        "more accepted strings of any length, including slots filled from a word bank. "
+        "Type names: lucktext (gap text, cloze), fyll i luckan / luckorna (fill in the gap "
+        "/ gaps)."
     ),
     ItemTypeLabel.FREE_TEXT: (
         "The student writes a response whose key is a sample answer, an analysis or "
-        "grading guidance."
+        "grading guidance. Type names: fritt svar (open answer), öppen fråga (open "
+        "question)."
     ),
     ItemTypeLabel.MATCHING: (
-        "The student pairs entries of one supplied set with entries of another supplied set."
+        "The student pairs entries of one supplied set with entries of another supplied set. "
+        "Type names: para ihop (pair up), matchning (matching)."
     ),
     ItemTypeLabel.UNSUPPORTED: (
         "The required interaction cannot be represented by any kind above without changing "
