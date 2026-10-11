@@ -33,6 +33,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     estimate_prompt_tokens,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompts import (
+    BASE_ANSWER_KEY_SYSTEM_PROMPT,
     CHOICE_PROMPT_TEMPLATE_VERSION,
     GAP_FILL_PROMPT_TEMPLATE_VERSION,
     _choice_answer_shape,
@@ -43,6 +44,19 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemView,
     AnswerKeyViewKind,
+)
+
+MATCHING_PROMPT_TEMPLATE_VERSION = "workspace_matching_answer_key_prompt_v1"
+MATCHING_ANSWER_KEY_DECISION_SCHEMA_VERSION = "workspace_matching_answer_key_decision_v1"
+MATCHING_ITEM_TYPE = "matching"
+
+MATCHING_ANSWER_KEY_SYSTEM_PROMPT = (
+    f"{BASE_ANSWER_KEY_SYSTEM_PROMPT} For matching items, infer the "
+    "teacher-intended pairing of each left entry with one right entry from the "
+    "visible item text and both entry lists. Evaluate each left entry "
+    "independently against every right entry. Pair every left entry exactly "
+    "once and use each right entry at most once; right entries that match no "
+    "left entry are distractors and stay unused."
 )
 
 _ITEM_TYPE_BY_VIEW_KIND: dict[AnswerKeyViewKind, DigiExamItemType] = {
@@ -61,9 +75,82 @@ class WorkspaceAnswerKeyCandidatePlan:
 
 
 def prompt_item_type_for_view(view: AnswerKeyItemView) -> DigiExamItemType:
-    """Return the shared prompt item type one view maps onto."""
+    """Return the shared prompt item type one choice or gap-fill view maps onto."""
 
     return _ITEM_TYPE_BY_VIEW_KIND[view.kind]
+
+
+def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:
+    """Return the strict JSON Schema spec for one matching answer-key decision."""
+
+    if left_count <= 0:
+        raise ValueError("Matching output spec requires at least one left entry.")
+    return StructuredOutputSpec(
+        schema_name=MATCHING_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        schema_version=MATCHING_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        json_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "pairs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "left_id": {"type": "integer"},
+                            "right_id": {"type": "integer"},
+                        },
+                        "required": ["left_id", "right_id"],
+                    },
+                },
+            },
+            "required": ["pairs"],
+        },
+    )
+
+
+def _item_payload(view: AnswerKeyItemView, text_key: str, text: str) -> dict[str, JsonValue]:
+    """The item as the student reads it: a grouped question also shows its parent's instruction."""
+
+    item: dict[str, JsonValue] = {"item_id": view.item_id, "title": view.title}
+    if view.instruction:
+        item["instruction"] = view.instruction
+    item[text_key] = text
+    return item
+
+
+def matching_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[str, JsonValue]:
+    """Build the model-facing payload for a matching workspace item."""
+
+    return {
+        "task": {
+            "name": "pair_teacher_intended_matching_answer_key",
+            "item_type": MATCHING_ITEM_TYPE,
+            "instruction": (
+                "Read the item as a teacher-authored exam question. The student "
+                "matches each left entry to one right entry. Choose the "
+                "teacher-intended right entry for every left entry. Use each "
+                "right entry at most once; a right entry that matches no left "
+                "entry is a distractor and stays unused. Use only the provided "
+                "left_id and right_id values."
+            ),
+        },
+        "item": _item_payload(view, "stem", view.stem_text),
+        "left_entries": [{"left_id": entry_id, "text": text} for entry_id, text in view.match_left],
+        "right_entries": [
+            {"right_id": entry_id, "text": text} for entry_id, text in view.match_right
+        ],
+        "output": {
+            "provider_output_mode": "json_schema",
+            "answer_shape": (
+                "Return a JSON object with a pairs array holding exactly one "
+                "object per left entry, each with the integer left_id and the "
+                "integer right_id of its matching right entry. Every left_id "
+                "appears once and no right_id appears twice."
+            ),
+        },
+    }
 
 
 def choice_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[str, JsonValue]:
@@ -77,11 +164,7 @@ def choice_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[s
             "item_type": item_type.value,
             "instruction": _choice_user_instruction(item_type),
         },
-        "item": {
-            "item_id": view.item_id,
-            "title": view.title,
-            "stem": view.stem_text,
-        },
+        "item": _item_payload(view, "stem", view.stem_text),
         "choices": [
             {
                 "choice_value": str(choice_id),
@@ -112,11 +195,7 @@ def gap_fill_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict
                 "teacher-intended accepted value for every numbered blank."
             ),
         },
-        "item": {
-            "item_id": view.item_id,
-            "title": view.title,
-            "cloze_text": view.cloze_text,
-        },
+        "item": _item_payload(view, "cloze_text", view.cloze_text),
         "gaps": gap_entries,
         "output": {
             "provider_output_mode": "json_schema",
@@ -152,7 +231,11 @@ def plan_workspace_answer_key_candidates(
 
     plans: list[WorkspaceAnswerKeyCandidatePlan] = []
     for view in views:
-        if view.kind is AnswerKeyViewKind.GAP_FILL:
+        if view.kind is AnswerKeyViewKind.MATCHING:
+            prompt_template_version = MATCHING_PROMPT_TEMPLATE_VERSION
+            output_spec = matching_decision_output_spec(len(view.match_left))
+            user_payload = matching_answer_key_model_payload_from_view(view)
+        elif view.kind is AnswerKeyViewKind.GAP_FILL:
             prompt_template_version = GAP_FILL_PROMPT_TEMPLATE_VERSION
             output_spec = numbered_gap_fill_output_spec(view.gap_count)
             user_payload = gap_fill_answer_key_model_payload_from_view(view)
@@ -188,12 +271,17 @@ def _request(
     user_payload_text = json.dumps(
         user_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
-    item_type = prompt_item_type_for_view(view)
-    system_prompt = system_prompt_for_answer_key_item(item_type)
+    if view.kind is AnswerKeyViewKind.MATCHING:
+        item_type = MATCHING_ITEM_TYPE
+        system_prompt = MATCHING_ANSWER_KEY_SYSTEM_PROMPT
+    else:
+        shared_item_type = prompt_item_type_for_view(view)
+        item_type = shared_item_type.value
+        system_prompt = system_prompt_for_answer_key_item(shared_item_type)
     return StructuredLLMRequest(
         job_id=job_id,
         item_id=view.item_id,
-        item_type=item_type.value,
+        item_type=item_type,
         prompt_template_version=prompt_template_version,
         system_prompt=system_prompt,
         user_payload=user_payload_text,

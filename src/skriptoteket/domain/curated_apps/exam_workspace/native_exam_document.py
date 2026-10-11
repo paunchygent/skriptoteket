@@ -16,22 +16,20 @@ from enum import StrEnum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    ValidationError,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v1"] = "native_exam_document_v1"
 
+NativeExamParent = native_exam_parent.NativeExamParent
+parent_points = native_exam_parent.parent_points
 _ITEM_ID_PATTERN = r"^item_[0-9]{3,4}$"
 _CHOICE_ID_PATTERN = r"^choice_[0-9]{3}$"
 _GAP_ID_PATTERN = r"^gap_[0-9]{3}$"
+_MATCH_LEFT_ID_PATTERN = r"^left_[0-9]{3}$"
+_MATCH_RIGHT_ID_PATTERN = r"^right_[0-9]{3}$"
 _ASSET_ID_PATTERN = r"^asset_[0-9a-f]{16}$"
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 
@@ -43,6 +41,7 @@ class NativeExamItemKind(StrEnum):
     SINGLE_CHOICE = "single_choice"
     MULTIPLE_RESPONSE = "multiple_response"
     GAP_FILL = "gap_fill"
+    MATCHING = "matching"
 
 
 class NativeParseOrigin(StrEnum):
@@ -80,6 +79,7 @@ _KEYED_KINDS = frozenset(
         NativeExamItemKind.SINGLE_CHOICE,
         NativeExamItemKind.MULTIPLE_RESPONSE,
         NativeExamItemKind.GAP_FILL,
+        NativeExamItemKind.MATCHING,
     }
 )
 
@@ -124,6 +124,33 @@ class NativeChoice(BaseModel):
     text: str = Field(min_length=1)
 
 
+class NativeMatchLeft(BaseModel):
+    """One entry of the list the student matches from."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    left_id: str = Field(pattern=_MATCH_LEFT_ID_PATTERN)
+    text: str = Field(min_length=1)
+
+
+class NativeMatchRight(BaseModel):
+    """One entry of the list the student matches to."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    right_id: str = Field(pattern=_MATCH_RIGHT_ID_PATTERN)
+    text: str = Field(min_length=1)
+
+
+class NativeMatchPair(BaseModel):
+    """One correct directed pair: a left entry and the right entry it matches."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    left_id: str = Field(pattern=_MATCH_LEFT_ID_PATTERN)
+    right_id: str = Field(pattern=_MATCH_RIGHT_ID_PATTERN)
+
+
 class NativeGap(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -145,6 +172,7 @@ class NativeAnswerKey(BaseModel):
 
     origin: NativeAnswerKeyOrigin
     correct_choice_ids: tuple[str, ...] = ()
+    match_pairs: tuple[NativeMatchPair, ...] = ()
 
 
 class NativeItemReview(BaseModel):
@@ -190,10 +218,13 @@ class NativeExamItem(BaseModel):
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
     title: str | None = None
+    printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
+    match_left: tuple[NativeMatchLeft, ...] = ()
+    match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
     review: NativeItemReview
     source_anchor: str | None = None
@@ -217,6 +248,12 @@ class NativeExamItem(BaseModel):
             raise ValueError("choice ids must be unique")
         if len(set(gap_ids)) != len(gap_ids):
             raise ValueError("gap ids must be unique")
+        left_ids = [entry.left_id for entry in self.match_left]
+        right_ids = [entry.right_id for entry in self.match_right]
+        if len(set(left_ids)) != len(left_ids) or len(set(right_ids)) != len(right_ids):
+            raise ValueError("match entry ids must be unique")
+        if self.kind is not NativeExamItemKind.MATCHING and (self.match_left or self.match_right):
+            raise ValueError("only matching items carry match lists")
 
         if self.kind in (
             NativeExamItemKind.SINGLE_CHOICE,
@@ -231,6 +268,11 @@ class NativeExamItem(BaseModel):
                 raise ValueError("gap_fill items need at least one gap")
             if self.choices:
                 raise ValueError("gap_fill items must not declare choices")
+        elif self.kind is NativeExamItemKind.MATCHING:
+            if not self.match_left or len(self.match_right) < 2:
+                raise ValueError("matching items need left entries and at least two right entries")
+            if self.choices or self.gaps:
+                raise ValueError("matching items must not declare choices or gaps")
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
@@ -244,13 +286,19 @@ class NativeExamItem(BaseModel):
         if self.kind is NativeExamItemKind.FREE_TEXT:
             if key.origin is not NativeAnswerKeyOrigin.NOT_APPLICABLE:
                 raise ValueError("free_text answer-key origin must be not_applicable")
-            if key.correct_choice_ids:
-                raise ValueError("free_text items carry no correct choice ids")
+            if key.correct_choice_ids or key.match_pairs:
+                raise ValueError("free_text items carry no answer-key data")
             return
         if key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE:
             raise ValueError("keyed item kinds cannot use not_applicable origin")
 
-        has_key_data = bool(key.correct_choice_ids) or any(gap.accepted_values for gap in self.gaps)
+        if key.match_pairs and self.kind is not NativeExamItemKind.MATCHING:
+            raise ValueError("only matching items key match pairs")
+        has_key_data = (
+            bool(key.correct_choice_ids)
+            or bool(key.match_pairs)
+            or any(gap.accepted_values for gap in self.gaps)
+        )
         if key.origin is NativeAnswerKeyOrigin.ABSENT:
             if has_key_data:
                 raise ValueError("absent answer key must not carry key data")
@@ -265,12 +313,29 @@ class NativeExamItem(BaseModel):
         elif self.kind is NativeExamItemKind.MULTIPLE_RESPONSE:
             if not key.correct_choice_ids:
                 raise ValueError("multiple_response needs at least one correct choice")
+        elif self.kind is NativeExamItemKind.MATCHING:
+            self._match_pair_invariants(key.match_pairs)
         else:
             if key.correct_choice_ids:
                 raise ValueError("gap_fill items key gaps, not choices")
             for gap in self.gaps:
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
+
+    def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
+        """Every left entry is paired once; unpaired right entries are distractors."""
+        if self.answer_key.correct_choice_ids:
+            raise ValueError("matching items key pairs, not choices")
+        left_ids = {entry.left_id for entry in self.match_left}
+        right_ids = {entry.right_id for entry in self.match_right}
+        paired_left = [pair.left_id for pair in pairs]
+        paired_right = [pair.right_id for pair in pairs]
+        if set(paired_left) - left_ids or set(paired_right) - right_ids:
+            raise ValueError("match pairs must refer to declared entries")
+        if sorted(paired_left) != sorted(left_ids):
+            raise ValueError("a keyed matching item pairs every left entry exactly once")
+        if len(set(paired_right)) != len(paired_right):
+            raise ValueError("a keyed matching item pairs each right entry at most once")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []
@@ -318,6 +383,7 @@ class NativeExamDocument(BaseModel):
     title: str = Field(min_length=1)
     instructions: tuple[str, ...] = ()
     items: tuple[NativeExamItem, ...] = Field(min_length=1)
+    parents: tuple[NativeExamParent, ...] = ()
     assets: tuple[NativeExamAsset, ...] = ()
     origin: NativeExamDocumentOrigin
 
@@ -343,7 +409,11 @@ class NativeExamDocument(BaseModel):
         orphans = known_assets - referenced
         if orphans:
             raise ValueError(f"unreferenced assets: {sorted(orphans)}")
+        native_exam_parent.validate_parent_structure(self.parents, self.items)
         return self
+
+    def parent_of(self, item_id: str) -> NativeExamParent | None:
+        return next((parent for parent in self.parents if item_id in parent.item_ids), None)
 
     def item_by_id(self, item_id: str) -> NativeExamItem:
         for item in self.items:

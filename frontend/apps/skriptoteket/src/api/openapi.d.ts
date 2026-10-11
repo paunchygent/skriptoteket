@@ -5898,6 +5898,11 @@ export interface components {
              * @default []
              */
             correct_choice_ids: string[];
+            /**
+             * Match Pairs
+             * @default []
+             */
+            match_pairs: components["schemas"]["NativeMatchPair"][];
             origin: components["schemas"]["NativeAnswerKeyOrigin"];
         };
         /**
@@ -5961,6 +5966,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["NativeExamItem-Input"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /**
+             * Parents
+             * @default []
+             */
+            parents: components["schemas"]["NativeExamParent"][];
             /** Revision */
             revision: number;
             /**
@@ -5992,6 +6002,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["NativeExamItem-Output"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /**
+             * Parents
+             * @default []
+             */
+            parents: components["schemas"]["NativeExamParent"][];
             /** Revision */
             revision: number;
             /**
@@ -6035,8 +6050,20 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /**
+             * Match Left
+             * @default []
+             */
+            match_left: components["schemas"]["NativeMatchLeft"][];
+            /**
+             * Match Right
+             * @default []
+             */
+            match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /** Printed Label */
+            printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
@@ -6063,8 +6090,20 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /**
+             * Match Left
+             * @default []
+             */
+            match_left: components["schemas"]["NativeMatchLeft"][];
+            /**
+             * Match Right
+             * @default []
+             */
+            match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /** Printed Label */
+            printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
@@ -6078,7 +6117,21 @@ export interface components {
          * @description Writer-proven item subset (EPIC-SKRIPT-39 E3).
          * @enum {string}
          */
-        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill";
+        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
+        /**
+         * NativeExamParent
+         * @description Shared instruction for a run of consecutive child items of one kind.
+         *
+         *     A parent owns no points and no answer key: each child item keeps its own.
+         */
+        NativeExamParent: {
+            /** Instruction */
+            instruction: string[];
+            /** Item Ids */
+            item_ids: string[];
+            /** Parent Id */
+            parent_id: string;
+        };
         /** NativeGap */
         NativeGap: {
             /**
@@ -6118,6 +6171,36 @@ export interface components {
          * @enum {string}
          */
         NativeItemReviewState: "review_required" | "review_complete";
+        /**
+         * NativeMatchLeft
+         * @description One entry of the list the student matches from.
+         */
+        NativeMatchLeft: {
+            /** Left Id */
+            left_id: string;
+            /** Text */
+            text: string;
+        };
+        /**
+         * NativeMatchPair
+         * @description One correct directed pair: a left entry and the right entry it matches.
+         */
+        NativeMatchPair: {
+            /** Left Id */
+            left_id: string;
+            /** Right Id */
+            right_id: string;
+        };
+        /**
+         * NativeMatchRight
+         * @description One entry of the list the student matches to.
+         */
+        NativeMatchRight: {
+            /** Right Id */
+            right_id: string;
+            /** Text */
+            text: string;
+        };
         /** NativeParagraph */
         NativeParagraph: {
             /** Segments */

@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0093"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0092"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It was ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "an"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (en) honour to carry the flag in the parade.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    }
+  ]
+}

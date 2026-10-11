@@ -46,7 +46,10 @@ def carry_pending_proposal_records(
         ):
             continue
         try:
-            if answer_key_item_view(previous_item) != answer_key_item_view(item):
+            previous_view = answer_key_item_view(
+                previous_item, previous_document.parent_of(record.item_id)
+            )
+            if previous_view != answer_key_item_view(item, document.parent_of(record.item_id)):
                 continue
         except ValueError:
             continue

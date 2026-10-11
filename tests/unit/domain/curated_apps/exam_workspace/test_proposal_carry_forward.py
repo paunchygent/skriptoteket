@@ -13,10 +13,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeAnswerKeyOrigin,
     NativeExamDocument,
     NativeExamItem,
+    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.proposal_carry_forward import (
     carry_pending_proposal_records,
 )
+from tests.unit.scripts.exam_conversion_corpus_support import replayed
 
 pytestmark = pytest.mark.unit
 
@@ -258,3 +260,76 @@ def test_unkeyed_kind_drops_proposal(
     )
 
     assert _carry(previous, _save(previous), payload) == (payload.items[1],)
+
+
+@pytest.fixture
+def corpus_proposals() -> tuple[NativeExamDocument, WorkspaceAnswerKeyProposalsPayload]:
+    """Pending keys use the recorded corpus answers, with the saved keys cleared."""
+    document, _ = replayed("sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit")
+    records = tuple(
+        WorkspaceAnswerKeyProposalRecord(
+            item_id=item.item_id,
+            kind=AnswerKeyViewKind.GAP_FILL,
+            gap_accepted_values={gap.gap_id: gap.accepted_values for gap in item.gaps},
+            provider_profile_id="recorded-corpus",
+            model="recorded-corpus",
+            prompt_template_version="recorded-corpus",
+        )
+        for item in document.items
+        if item.kind is NativeExamItemKind.GAP_FILL
+    )
+    assert records
+    assert all(record.gap_accepted_values for record in records)
+    data = document.model_dump()
+    for item in data["items"]:
+        if item["kind"] is NativeExamItemKind.GAP_FILL:
+            item["answer_key"] = {"origin": "absent"}
+            for gap in item["gaps"]:
+                gap["accepted_values"] = []
+    previous = NativeExamDocument.model_validate(data)
+    return previous, WorkspaceAnswerKeyProposalsPayload(
+        lineage_id=previous.document_id,
+        document_revision=previous.revision,
+        items=records,
+    )
+
+
+def test_unchanged_corpus_parent_context_preserves_pending_proposals(
+    corpus_proposals: tuple[NativeExamDocument, WorkspaceAnswerKeyProposalsPayload],
+) -> None:
+    previous, pending = corpus_proposals
+    saved = _save(previous)
+    before = (previous.model_dump(), saved.model_dump(), pending.model_dump())
+
+    assert _carry(previous, saved, pending) == pending.items
+    assert (previous.model_dump(), saved.model_dump(), pending.model_dump()) == before
+
+
+@pytest.mark.parametrize(
+    "removed_text",
+    ["Three of the words will not be used.", "herbal"],
+    ids=["governing-directions", "candidate-bank"],
+)
+def test_changed_corpus_parent_instruction_drops_only_its_children_proposals(
+    corpus_proposals: tuple[NativeExamDocument, WorkspaceAnswerKeyProposalsPayload],
+    removed_text: str,
+) -> None:
+    previous, pending = corpus_proposals
+    parent = previous.parent_of("item_046")
+    assert parent is not None
+    assert any(removed_text in line for line in parent.instruction)
+    data = _save(previous).model_dump()
+    for entry in data["parents"]:
+        if entry["parent_id"] == parent.parent_id:
+            entry["instruction"] = [line.replace(removed_text, "") for line in entry["instruction"]]
+    saved = NativeExamDocument.model_validate(data)
+    assert saved.items == previous.items
+    assert saved.parent_of("item_046") != parent
+    affected_ids = set(parent.item_ids)
+    affected = tuple(record for record in pending.items if record.item_id in affected_ids)
+    unaffected = tuple(record for record in pending.items if record.item_id not in affected_ids)
+    assert affected and unaffected
+    before = (previous.model_dump(), saved.model_dump(), pending.model_dump())
+
+    assert _carry(previous, saved, pending) == unaffected
+    assert (previous.model_dump(), saved.model_dump(), pending.model_dump()) == before

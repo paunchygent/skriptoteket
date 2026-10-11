@@ -19,7 +19,7 @@ Relationships:
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, TypeGuard
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
@@ -30,8 +30,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamItem,
     NativeExamItemKind,
+    NativeExamParent,
     NativeGapSegment,
     NativeItemReviewState,
+    NativeMatchPair,
     NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -49,12 +51,14 @@ class AnswerKeyViewKind(StrEnum):
     CHOICE = "choice"
     MULTI = "multi"
     GAP_FILL = "gap_fill"
+    MATCHING = "matching"
 
 
 _VIEW_KIND_BY_ITEM_KIND: dict[NativeExamItemKind, AnswerKeyViewKind] = {
     NativeExamItemKind.SINGLE_CHOICE: AnswerKeyViewKind.CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: AnswerKeyViewKind.MULTI,
     NativeExamItemKind.GAP_FILL: AnswerKeyViewKind.GAP_FILL,
+    NativeExamItemKind.MATCHING: AnswerKeyViewKind.MATCHING,
 }
 
 
@@ -66,22 +70,32 @@ class AnswerKeyItemView(BaseModel):
     item_id: str
     kind: AnswerKeyViewKind
     title: str
+    # The instruction a grouped question's parent prints above it, such as a word bank.
+    instruction: str = ""
     stem_text: str
     choices: tuple[tuple[int, str], ...] = ()
     gap_count: int = Field(default=0, ge=0)
     gap_ids: tuple[str, ...] = ()
     cloze_text: str = ""
+    match_left: tuple[tuple[int, str], ...] = ()
+    match_right: tuple[tuple[int, str], ...] = ()
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> AnswerKeyItemView:
         if self.gap_count != len(self.gap_ids):
             raise ValueError("gap_count must match the number of gap ids")
         if self.kind is AnswerKeyViewKind.GAP_FILL:
-            if not self.gap_ids or self.choices:
-                raise ValueError("gap_fill views carry gaps and no choices")
+            if not self.gap_ids or self.choices or self.match_left or self.match_right:
+                raise ValueError("gap_fill views carry gaps and no choices or match lists")
+        elif self.kind is AnswerKeyViewKind.MATCHING:
+            if not self.match_left or len(self.match_right) < 2 or self.choices or self.gap_ids:
+                raise ValueError(
+                    "matching views carry left entries, at least two right entries, "
+                    "and no choices or gaps"
+                )
         else:
-            if len(self.choices) < 2 or self.gap_ids:
-                raise ValueError("choice views need at least two choices and no gaps")
+            if len(self.choices) < 2 or self.gap_ids or self.match_left or self.match_right:
+                raise ValueError("choice views need at least two choices and no gaps or matches")
         return self
 
 
@@ -94,6 +108,7 @@ class AnswerKeyItemProposal(BaseModel):
     kind: AnswerKeyViewKind
     correct_choice_ids: tuple[str, ...] = ()
     gap_accepted_values: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    match_pairs: tuple[tuple[str, str], ...] = ()
 
 
 class WorkspaceAnswerKeyProposalRecord(BaseModel):
@@ -105,6 +120,7 @@ class WorkspaceAnswerKeyProposalRecord(BaseModel):
     kind: AnswerKeyViewKind
     correct_choice_ids: tuple[str, ...] = ()
     gap_accepted_values: dict[str, tuple[str, ...]] = {}
+    match_pairs: tuple[tuple[str, str], ...] = ()
     provider_profile_id: str
     model: str
     prompt_template_version: str
@@ -135,6 +151,28 @@ def native_choice_id(int_id: int) -> str:
     if int_id < 0:
         raise ValueError("choice ids cannot be negative")
     return f"choice_{int_id:03d}"
+
+
+def match_int_id(entry_id: str) -> int:
+    """Map a native ``left_NNN`` or ``right_NNN`` id to its integer prompt id."""
+
+    return int(entry_id.rpartition("_")[2])
+
+
+def native_left_id(int_id: int) -> str:
+    """Map an integer prompt id back to the native ``left_NNN`` id."""
+
+    if int_id < 0:
+        raise ValueError("match ids cannot be negative")
+    return f"left_{int_id:03d}"
+
+
+def native_right_id(int_id: int) -> str:
+    """Map an integer prompt id back to the native ``right_NNN`` id."""
+
+    if int_id < 0:
+        raise ValueError("match ids cannot be negative")
+    return f"right_{int_id:03d}"
 
 
 def _gap_ids_in_body_order(item: NativeExamItem) -> tuple[str, ...]:
@@ -176,8 +214,10 @@ def _remove_space_before_punctuation(text: str) -> str:
     return result
 
 
-def answer_key_item_view(item: NativeExamItem) -> AnswerKeyItemView:
-    """Project one keyed native exam item into its prompt view."""
+def answer_key_item_view(
+    item: NativeExamItem, parent: NativeExamParent | None
+) -> AnswerKeyItemView:
+    """Project one keyed native exam item, under its parent's instruction, into its prompt view."""
 
     kind = _VIEW_KIND_BY_ITEM_KIND.get(item.kind)
     if kind is None:
@@ -187,6 +227,7 @@ def answer_key_item_view(item: NativeExamItem) -> AnswerKeyItemView:
         item_id=item.item_id,
         kind=kind,
         title=item.title or "",
+        instruction="\n".join(parent.instruction) if parent else "",
         stem_text="\n".join(item.plain_text_lines()),
         choices=tuple((choice_int_id(choice.choice_id), choice.text) for choice in item.choices),
         gap_count=len(gap_ids),
@@ -194,6 +235,8 @@ def answer_key_item_view(item: NativeExamItem) -> AnswerKeyItemView:
         cloze_text=(
             _numbered_cloze_text(item, gap_ids) if kind is AnswerKeyViewKind.GAP_FILL else ""
         ),
+        match_left=tuple((match_int_id(entry.left_id), entry.text) for entry in item.match_left),
+        match_right=tuple((match_int_id(entry.right_id), entry.text) for entry in item.match_right),
     )
 
 
@@ -201,7 +244,7 @@ def answer_key_item_views(document: NativeExamDocument) -> tuple[AnswerKeyItemVi
     """Select keyed items whose answer key is absent, in document order."""
 
     return tuple(
-        answer_key_item_view(item)
+        answer_key_item_view(item, document.parent_of(item.item_id))
         for item in document.items
         if item.kind in _VIEW_KIND_BY_ITEM_KIND
         and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
@@ -217,6 +260,8 @@ def proposal_from_model_content(
 
     if view.kind is AnswerKeyViewKind.GAP_FILL:
         return _validated_gap_proposal(view=view, content=content)
+    if view.kind is AnswerKeyViewKind.MATCHING:
+        return _validated_matching_proposal(view=view, content=content)
     return _validated_choice_proposal(view=view, content=content)
 
 
@@ -264,12 +309,52 @@ def _validated_gap_proposal(
     )
 
 
+def _validated_matching_proposal(
+    *,
+    view: AnswerKeyItemView,
+    content: dict[str, JsonValue],
+) -> AnswerKeyItemProposal | None:
+    """Accept one pair per left entry; a right entry is used at most once."""
+
+    entries = content.get("pairs")
+    if not isinstance(entries, list | tuple):
+        return None
+    pairs: list[tuple[int, int]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            return None
+        left_id = entry.get("left_id")
+        right_id = entry.get("right_id")
+        if not _is_int(left_id) or not _is_int(right_id):
+            return None
+        pairs.append((left_id, right_id))
+    left_ids = [left_id for left_id, _right_id in pairs]
+    right_ids = [right_id for _left_id, right_id in pairs]
+    if sorted(left_ids) != sorted(left_id for left_id, _text in view.match_left):
+        return None
+    if len(set(right_ids)) != len(right_ids):
+        return None
+    if not set(right_ids) <= {right_id for right_id, _text in view.match_right}:
+        return None
+    return AnswerKeyItemProposal(
+        item_id=view.item_id,
+        kind=view.kind,
+        match_pairs=tuple(
+            (native_left_id(left_id), native_right_id(right_id)) for left_id, right_id in pairs
+        ),
+    )
+
+
+def _is_int(value: JsonValue | None) -> TypeGuard[int]:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def _int_tuple(value: JsonValue | None) -> tuple[int, ...]:
     if not isinstance(value, list | tuple):
         return ()
     integers: list[int] = []
     for entry in value:
-        if not isinstance(entry, int) or isinstance(entry, bool):
+        if not _is_int(entry):
             return ()
         integers.append(entry)
     return tuple(integers)
@@ -285,6 +370,7 @@ def proposal_from_record(record: WorkspaceAnswerKeyProposalRecord) -> AnswerKeyI
         gap_accepted_values=tuple(
             (gap_id, values) for gap_id, values in record.gap_accepted_values.items()
         ),
+        match_pairs=record.match_pairs,
     )
 
 
@@ -329,6 +415,14 @@ def apply_proposal_to_item(
         ]
         payload["answer_key"] = NativeAnswerKey(
             origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED
+        ).model_dump()
+    elif proposal.kind is AnswerKeyViewKind.MATCHING:
+        payload["answer_key"] = NativeAnswerKey(
+            origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
+            match_pairs=tuple(
+                NativeMatchPair(left_id=left_id, right_id=right_id)
+                for left_id, right_id in proposal.match_pairs
+            ),
         ).model_dump()
     else:
         payload["answer_key"] = NativeAnswerKey(

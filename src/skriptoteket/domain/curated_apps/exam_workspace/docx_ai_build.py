@@ -11,6 +11,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    SectionInstructions,
+    place_section_instructions,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
@@ -23,6 +27,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeGapSegment,
     NativeItemReview,
     NativeItemReviewState,
+    NativeMatchLeft,
+    NativeMatchPair,
+    NativeMatchRight,
     NativeParagraph,
     NativeParseOrigin,
     NativeSegment,
@@ -60,7 +67,21 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
                 segments.append(NativeTextSegment(text=segment.text))
         if segments:
             body.append(NativeParagraph(segments=tuple(segments)))
-    keyed = bool(correct) or any(gap.accepted_values for gap in gaps)
+    match_left = tuple(
+        NativeMatchLeft(left_id=f"left_{index:03d}", text=text)
+        for index, text in enumerate(produced.match_left, start=1)
+    )
+    match_right = tuple(
+        NativeMatchRight(right_id=f"right_{index:03d}", text=text)
+        for index, text in enumerate(produced.match_right, start=1)
+    )
+    left_ids = {entry.text: entry.left_id for entry in match_left}
+    right_ids = {entry.text: entry.right_id for entry in match_right}
+    pairs = tuple(
+        NativeMatchPair(left_id=left_ids[pair.left], right_id=right_ids[pair.right])
+        for pair in produced.match_pairs
+    )
+    keyed = bool(correct) or bool(pairs) or any(gap.accepted_values for gap in gaps)
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         origin = NativeAnswerKeyOrigin.NOT_APPLICABLE
     else:
@@ -70,11 +91,14 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         sequence=1,
         kind=produced.kind,
         title=produced.title,
+        printed_label=produced.printed_label,
         body=tuple(body),
         points=produced.points,
         choices=choices,
         gaps=tuple(gaps),
-        answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct),
+        match_left=match_left,
+        match_right=match_right,
+        answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct, match_pairs=pairs),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,
@@ -94,7 +118,7 @@ def _review_segments(paragraph: ProducedParagraph) -> Iterator[NativeSegment]:
 def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
     """One teacher-review item for a question the model could not convert.
 
-    Gap answers and choice keys never become text; a gap shows as a blank line.
+    Gap answers, choice keys and match pairs never become text; a gap shows as a blank line.
     """
     paragraphs = [
         NativeParagraph(segments=segments)
@@ -104,11 +128,16 @@ def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
     if produced.choices:
         lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
         paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
+    for entries in (produced.match_left, produced.match_right):
+        if entries:
+            lines = "\n".join(entries)
+            paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         title=produced.title,
+        printed_label=produced.printed_label,
         body=tuple(paragraphs),
         points=produced.points,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -143,19 +172,21 @@ def _ordered_items(
     chunks: tuple[DocxChunk, ...],
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
     review_reasons: dict[str, str],
-) -> tuple[NativeExamItem, ...]:
+    instructions: tuple[ProducedMetadata, ...],
+) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
-    ordered = [(min(positions[a] for a in anchors), item) for item, anchors in accepted]
+    ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
     ordered.extend(
-        (positions[chunk.anchor], review_chunk_item(chunk, review_reasons[chunk.anchor]))
+        (
+            positions[chunk.anchor],
+            (chunk.anchor,),
+            review_chunk_item(chunk, review_reasons[chunk.anchor]),
+        )
         for chunk in chunks
         if chunk.anchor in review_reasons
     )
-    ordered.sort(key=lambda pair: pair[0])
-    return tuple(
-        item.model_copy(update={"item_id": f"item_{i:03d}", "sequence": i})
-        for i, (_, item) in enumerate(ordered, start=1)
-    )
+    ordered.sort(key=lambda entry: entry[0])
+    return place_section_instructions(chunks, ordered, instructions)
 
 
 def assemble_build_result(
@@ -178,15 +209,17 @@ def assemble_build_result(
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
-    items = _ordered_items(chunks, accepted, review_reasons)
+    placed = _ordered_items(chunks, accepted, review_reasons, instructions)
+    items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,
         title=title.text if title else filename,
-        instructions=tuple(v.text for v in instructions),
+        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.reaching),
         items=items,
+        parents=placed.parents,
         origin=NativeExamDocumentOrigin(
             kind="docx_import",
             source_filename=filename,
@@ -194,4 +227,6 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)
+    return DocxBuildResult(
+        document, tuple(notes), input_tokens, output_tokens, (*events, *placed.events)
+    )

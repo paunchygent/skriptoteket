@@ -252,6 +252,7 @@ def _workspace_proposal_record(
         kind=proposal.kind,
         correct_choice_ids=proposal.correct_choice_ids,
         gap_accepted_values={gap_id: values for gap_id, values in proposal.gap_accepted_values},
+        match_pairs=proposal.match_pairs,
         provider_profile_id=attempt.profile.provider_id,
         model=attempt.profile.model,
         prompt_template_version=plan.request.prompt_template_version,

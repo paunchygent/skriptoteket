@@ -274,7 +274,9 @@ def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str,
         (index for index, child in enumerate(children) if child.tag in interaction_tags),
         None,
     )
-    if interaction_index is not None:
+    # An item with several interactions is a parent: its shared instruction is the
+    # information block before the first child, each child stem sits in its own prompt.
+    if interaction_index is not None and len(interactions) == 1:
         for child in children[:interaction_index]:
             child_tag = child.tag.removeprefix(f"{{{QTI_NAMESPACE}}}")
             errors.append(

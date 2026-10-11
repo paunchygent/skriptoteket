@@ -65,7 +65,7 @@ function buildTwoGapResponse(
         gapItemIds.includes(item.item_id)
           ? {
               ...item,
-              answer_key: { correct_choice_ids: [], origin: "teacher_authored" },
+              answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
               kind: "gap_fill",
               body: [
                 {
@@ -231,6 +231,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_002");
     expect(choiceItem?.answer_key).toEqual({
       correct_choice_ids: ["choice_b"],
+      match_pairs: [],
       origin: "teacher_authored",
     });
     const gapItem = savedDocument.items.find((item) => item.item_id === "item_004");
@@ -257,7 +258,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     const savedDocument = lastSavedDocument();
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
-    expect(choiceItem?.answer_key).toEqual({ correct_choice_ids: [], origin: "absent" });
+    expect(choiceItem?.answer_key).toEqual({ correct_choice_ids: [], match_pairs: [], origin: "absent" });
     const gapItem = savedDocument.items.find((item) => item.item_id === "item_004");
     expect(gapItem?.answer_key.origin).toBe("absent");
     expect(gapItem?.gaps[0]?.accepted_values).toEqual([]);
@@ -337,6 +338,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
     expect(choiceItem?.answer_key).toEqual({
       correct_choice_ids: ["choice_a"],
+      match_pairs: [],
       origin: "teacher_authored",
     });
     const gapItem = savedDocument.items.find((item) => item.item_id === "item_004");

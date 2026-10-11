@@ -44,11 +44,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_admissibi
     blocking_errors,
     manual_follow_ups,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
+    serialize_qti_assessment_item,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import (
     serialize_qti_manifest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
-    serialize_qti_assessment_item,
 )
 
 
