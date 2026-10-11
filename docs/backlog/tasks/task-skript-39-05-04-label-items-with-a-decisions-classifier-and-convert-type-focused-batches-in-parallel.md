@@ -57,6 +57,21 @@ a `predicate` per answer line ("a field the student fills in, or given
 text"), a `score` for item ambiguity that routes ambiguous items to more
 context or a higher-effort pass, and rendered page images as labeler input.
 
+The feasibility step also evaluates where else in the workflow a Decisions
+call gives the most quality per cost and time, each measured against the same
+work done today by the converter or by code:
+
+- before conversion: chunk roles, item types, answer slots, ambiguity;
+- facit attachment: which answer-key line belongs to which question;
+- points: whether a printed section total governs its questions;
+- after conversion: predicate checks of each converted item against its
+  source (answer leakage, platform labels, missing instructions), feeding
+  retries instead of a second generative pass;
+- retry routing: whether a failed item needs relabeling or only
+  reconversion.
+
+The parent recommends the placements from that evidence.
+
 This task first builds steps 1 and 2 and runs them on the eight corpus exams
 without converting. Building step 3 and the larger measurement phases follows
 a user decision on that result.
@@ -113,5 +128,6 @@ routing only.
 | D3  | Each batch holds one item type; only single choice and multiple response may share a batch until measurement justifies another pair (user decisions 2026-10-11). |
 | D4  | Item types come from a Decisions-API labeler with probability thresholds, not code-side cue typing (user decision 2026-10-11). |
 | D7  | The feasibility step compares Responses grouping with Decisions-only chunk-role grouping, and tries an answer-slot predicate, an ambiguity score and page-image input; the parent recommends from that evidence (user decisions 2026-10-11). |
+| D8  | The feasibility step evaluates every Decisions placement in the workflow (before conversion, facit attachment, points, post-conversion checks, retry routing) for quality per cost and time (user direction 2026-10-11). |
 | D5  | The feasibility step runs before conversion changes; the larger measurement phases need a user decision on its result (user decision 2026-10-11). |
 | D6  | Speed criterion: at least 30% lower median upload-to-ready on the 53-, 73- and 104-item exams, small exams at most 10% slower. Eval criteria are evidence for the parent's recommendation to the user, not automatic gates (user decisions 2026-10-11). |
