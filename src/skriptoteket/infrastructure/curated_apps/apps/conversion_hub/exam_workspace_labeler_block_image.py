@@ -21,7 +21,7 @@ import io
 import re
 from collections.abc import Iterator
 
-import pypdfium2  # type: ignore[import-untyped]
+import pypdfium2
 from docx.document import Document as DocxDocument
 from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
