@@ -48,6 +48,15 @@ steps decide what each question is:
    reports a typed conflict; that question is relabeled and resent, at most
    three attempts in total.
 
+Step 1 has two candidates, both run in the feasibility step: the Responses
+grouping pass above, and Decisions-only grouping, where a `choice` question
+per source chunk labels its role (question start, subpart, shared
+instruction or passage, answer key, title) and code builds the groups from
+those labels. The feasibility step also tries three further Decisions inputs:
+a `predicate` per answer line ("a field the student fills in, or given
+text"), a `score` for item ambiguity that routes ambiguous items to more
+context or a higher-effort pass, and rendered page images as labeler input.
+
 This task first builds steps 1 and 2 and runs them on the eight corpus exams
 without converting. Building step 3 and the larger measurement phases follows
 a user decision on that result.
@@ -58,18 +67,26 @@ a user decision on that result.
   `.orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/drafts/parallel-docx-conversion-and-conditional-labeler.md`,
   holding the label rules, starting thresholds, packing policy, cost estimate
   and the four-phase measurement plan.
-- Official Decisions guide and reference, read 2026-10-11: Decisions answers
-  predicate, choice and score questions with probabilities; it does not
-  extract arbitrary structure, which belongs to Responses.
+- Official Decisions guide, read 2026-10-11
+  (developers.openai.com/api/docs/guides/decisions): `predicate`
+  (probability), `choice` (one supplied value, per-value probabilities,
+  confidence) and `score` (ordered levels, per-level probabilities) questions;
+  independent questions batch in one request; text or base64 image input;
+  `gpt-6-luna` only; no structured objects or spans, which belong to
+  Responses. Request limits are not yet verified (the reference page
+  returned 404).
 - Conversion principles and source-structure rules:
   TASK-SKRIPT-39-05-03. Gold files: `tests/fixtures/exam_conversion/docx_corpus/gold/`.
 
 ## Core Vertical And Performance
 
 DOCX upload through grouping, labeling, parallel conversion and assembly to
-the saved document and its QTI export. Target: at least 30% lower median
-upload-to-ready time on the 53-, 73- and 104-item corpus exams than the
-single call, with small exams at most 10% slower.
+the saved document and its QTI export. Speed criterion for the parent's
+recommendation to the user: at least 30% lower median upload-to-ready time on
+the 53-, 73- and 104-item corpus exams than the single call, with small exams
+at most 10% slower. Eval criteria are evidence for that recommendation, never
+automatic decision gates; the labeler's probability thresholds are runtime
+routing only.
 
 ## Validation
 
@@ -94,6 +111,7 @@ single call, with small exams at most 10% slower.
 | D1  | Conversion runs in parallel batches; the single whole-exam call is ruled out as too slow (user decision 2026-10-11). |
 | D2  | A question and its subparts never split; items under a shared instruction or passage go to their type batches and receive the shared text as read-only context, with one owner per source chunk (user decisions 2026-10-11). |
 | D3  | Each batch holds one item type; only single choice and multiple response may share a batch until measurement justifies another pair (user decisions 2026-10-11). |
-| D4  | Item types come from a Decisions-API labeler with probability thresholds, not code-side cue typing; a low-effort Responses grouping pass supplies the question references it labels (user decisions 2026-10-11). |
+| D4  | Item types come from a Decisions-API labeler with probability thresholds, not code-side cue typing (user decision 2026-10-11). |
+| D7  | The feasibility step compares Responses grouping with Decisions-only chunk-role grouping, and tries an answer-slot predicate, an ambiguity score and page-image input; the parent recommends from that evidence (user decisions 2026-10-11). |
 | D5  | The feasibility step runs before conversion changes; the larger measurement phases need a user decision on its result (user decision 2026-10-11). |
-| D6  | Speed target: at least 30% lower median upload-to-ready on the 53-, 73- and 104-item exams; small exams at most 10% slower (user decision 2026-10-11). |
+| D6  | Speed criterion: at least 30% lower median upload-to-ready on the 53-, 73- and 104-item exams, small exams at most 10% slower. Eval criteria are evidence for the parent's recommendation to the user, not automatic gates (user decisions 2026-10-11). |
