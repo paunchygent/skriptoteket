@@ -10,7 +10,8 @@ An unresolved or unsupported label converts as free text (D23). The strict schem
 only gate on a batch response. A family the converter reports as a type conflict is resent
 with the reported kind, the only resend. A family that still conflicts in its resend is
 kept as converted and carries the type-check mark: its review confidence stays below the
-acceptance threshold. Chunks no batch converts become review items.
+acceptance threshold. Chunks no batch converts become review items, and a batch that raises
+leaves only its own questions as review items holding their source text.
 """
 
 from __future__ import annotations
@@ -21,6 +22,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from uuid import UUID
 
+import structlog
+
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     assembly_check,
     conversion_update,
@@ -29,6 +32,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly
     with_confidence,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
+    BatchOutcome,
     convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -91,6 +95,9 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
+_BATCH_FAILED_REASON = "Frågan kunde inte tolkas. Kontrollera källtexten manuellt."
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -286,10 +293,9 @@ class DocxConversionPipeline:
         ):
             tasks.create_task(self._convert(run, batch, tasks))
 
-    async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:
-        started = time.monotonic()
+    def _batch_state(self, run: _Run, batch: ConversionBatch) -> DocxBuildState:
         job = run.job
-        state = DocxBuildState(
+        return DocxBuildState(
             job.job_id,
             job.document_id,
             job.filename,
@@ -301,14 +307,29 @@ class DocxConversionPipeline:
             batch=batch.batch_id,
             keep_conflicts=any(qid in run.resent for qid in batch.question_ids),
         )
+
+    async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:
+        started = time.monotonic()
+        job = run.job
         families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
-        outcome = await convert_batch(
-            state=state,
-            batch=batch,
-            families=families,
-            exchange=self._exchange,
-            profile=self._profile,
-        )
+        try:
+            outcome = await convert_batch(
+                state=self._batch_state(run, batch),
+                batch=batch,
+                families=families,
+                exchange=self._exchange,
+                profile=self._profile,
+            )
+        except Exception as error:
+            # One batch's failure never fails the conversion (D25): its own questions become
+            # review items holding their source text, and every other batch's result stays.
+            logger.exception(
+                "DOCX conversion batch failed", job_id=str(job.job_id), batch=batch.batch_id
+            )
+            outcome = BatchOutcome(self._batch_state(run, batch))
+            outcome.state.record("batch", "batch_failed", detail=type(error).__name__)
+            outcome.state.fail_all_pending(_BATCH_FAILED_REASON)
+        state = outcome.state
         resend = list(outcome.conflicts)
         run.families = tuple(
             replace(f, claims=outcome.released[f.question_id])

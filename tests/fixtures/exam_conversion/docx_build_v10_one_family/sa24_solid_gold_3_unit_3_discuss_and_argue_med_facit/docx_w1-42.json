@@ -1,0 +1,44 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0100"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0099"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "43",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Carbohydrates"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (C…) are one of several substances such as sugar or starch, which provide the body with energy, or foods containing these substances, such as bread, potatoes, pasta and rice.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

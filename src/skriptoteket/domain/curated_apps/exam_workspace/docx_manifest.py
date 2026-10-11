@@ -157,14 +157,7 @@ def manifest_from_output(
         seen_ids.add(question_id)
         own = placement.claim(anchors)
         if own:
-            kept.append(
-                (
-                    question_id,
-                    own,
-                    [s for s in dict.fromkeys(subparts) if s in own],
-                    placement.claim(keys),
-                )
-            )
+            kept.append((question_id, own, list(dict.fromkeys(subparts)), placement.claim(keys)))
         else:
             placement.invalid_only(keys)
 
@@ -174,6 +167,12 @@ def manifest_from_output(
             contexts_kept.append((anchor, scope, owner, governs))
     kept_title = tuple(placement.claim(title))
     kept_other = tuple(placement.claim(other))
+    # A subpart the model lists only as a subpart, and places nowhere else, is one of its
+    # question's own chunks.
+    for _question_id, owned, listed, _keys in kept:
+        unplaced = tuple(s for s in listed if s in positions and s not in placement.placed)
+        owned.extend(placement.claim(unplaced))
+        listed[:] = [s for s in listed if s in owned]
 
     def position(anchor: str) -> int:
         return positions[anchor]

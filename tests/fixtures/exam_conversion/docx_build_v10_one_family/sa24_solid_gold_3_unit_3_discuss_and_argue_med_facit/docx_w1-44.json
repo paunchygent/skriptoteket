@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0104"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0103"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "45",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "nutrient"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (n…) is the part of a food that is used by our bodies, such as protein, fat, carbohydrates, vitamins, and minerals.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0069"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0068"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "28",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She was given an injection to ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lessen",
+                "lesen"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (l…) the pain. (minska)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

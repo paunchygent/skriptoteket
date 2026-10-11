@@ -18,6 +18,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     native_item,
     review_item,
+    review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -132,7 +133,9 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
         state.record(
             "admission", "native_contract_invalid", item=index, anchors=anchors, detail=detail
         )
-        item = review_item(produced, reason)
+        # The generated item broke the contract, so the review item shows its own source.
+        owned = set(anchors)
+        item = review_source_item(tuple(c for c in state.chunks if c.anchor in owned), reason)
     state.accepted.append((item, anchors))
 
 

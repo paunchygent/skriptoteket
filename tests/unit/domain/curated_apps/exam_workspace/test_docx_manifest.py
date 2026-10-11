@@ -135,8 +135,25 @@ def test_out_of_order_questions_and_anchors_are_sorted_by_position(
     assert [q.question_id for q in manifest.questions] == ["q1", "q2"]
     assert manifest.questions[0].anchors == (_b(8), _b(10))
     assert manifest.questions[0].key_anchors == (_b(11), _b(13))
-    assert manifest.questions[1].anchors == tuple(Q2)
-    assert manifest.questions[1].subpart_anchors == (_b(17), _b(18))
+    assert manifest.questions[1].anchors == (_b(9), *Q2)
+    assert manifest.questions[1].subpart_anchors == (_b(9), _b(17), _b(18))
+
+
+def test_a_subpart_listed_only_as_a_subpart_is_owned_unless_placed_elsewhere(
+    chunks: tuple[DocxChunk, ...],
+) -> None:
+    manifest = manifest_from_output(
+        _raw(
+            [_question("q1", [_b(8)], subparts=[_b(9), _b(10)]), _question("q2", Q2)],
+            other=[_b(10)],
+        ),
+        chunks,
+    )
+    assert manifest.questions[0].anchors == (_b(8), _b(9))
+    assert manifest.questions[0].subpart_anchors == (_b(9),)
+    assert manifest.other_anchors == (_b(10),)
+    assert manifest.duplicate_anchors == ()
+    assert _b(9) not in manifest.unplaced_anchors
 
 
 def test_owner_and_governs_naming_missing_question_are_normalised(

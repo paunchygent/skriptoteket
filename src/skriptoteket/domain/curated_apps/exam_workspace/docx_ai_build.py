@@ -39,7 +39,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeTextSegment,
 )
 
-_REVIEW_BLANK = NativeTextSegment(text="____")
+_BLANK = NativeTextSegment(text="____")
 
 
 def native_item(produced: ProducedItem) -> NativeExamItem:
@@ -58,7 +58,10 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     for paragraph in produced.body:
         segments: list[NativeSegment] = []
         for segment in paragraph.segments:
-            if segment.kind == "gap":
+            if segment.kind == "gap" and produced.kind is not NativeExamItemKind.GAP_FILL:
+                # Only gap_fill answers in a gap; another kind shows a printed blank as text.
+                segments.append(_BLANK)
+            elif segment.kind == "gap":
                 gap_id = f"gap_{len(gaps) + 1:03d}"
                 gaps.append(NativeGap(gap_id=gap_id, accepted_values=segment.accepted_values))
                 segments.append(NativeGapSegment(gap_id=gap_id))
@@ -112,7 +115,7 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
 def _review_segments(paragraph: ProducedParagraph) -> Iterator[NativeSegment]:
     for segment in paragraph.segments:
         if segment.kind == "gap":
-            yield _REVIEW_BLANK
+            yield _BLANK
         elif segment.text:
             yield NativeTextSegment(text=segment.text)
 
@@ -152,22 +155,26 @@ def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
     )
 
 
-def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
+def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
+    """One teacher-review item holding the source text of ``chunks``, whatever the model wrote."""
+    text = "\n".join(chunk.text for chunk in chunks if chunk.text)
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(
-            NativeParagraph(segments=(NativeTextSegment(text=chunk.text or "Tomt källstycke."),)),
-        ),
+        body=(NativeParagraph(segments=(NativeTextSegment(text=text or "Tomt källstycke."),)),),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
             parse_origin=NativeParseOrigin.DETERMINISTIC,
             reasons=(reason,),
         ),
-        source_anchor=chunk.anchor,
+        source_anchor=chunks[0].anchor,
     )
+
+
+def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
+    return review_source_item((chunk,), reason)
 
 
 def _ordered_items(

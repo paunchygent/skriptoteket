@@ -1,8 +1,8 @@
 """Strict Responses JSON schema generated from the producer contract.
 
 Each request narrows the schema to its batch: every anchor field accepts only the batch's
-own chunk anchors and an item's kind only the batch's kinds, so the schema is the only
-gate on model output.
+own chunk anchors and an item's kind only the batch's kinds, and a batch without gap_fill
+offers no gap segment, so the schema is the only gate on model output.
 """
 
 from collections.abc import Iterable
@@ -74,9 +74,14 @@ def docx_build_output_spec(
             **_object(fields["source_anchors"]),
             **_anchor_list(allowed, min_items=1),
         }
+    batch_kinds = frozenset(kinds)
     item_fields = _object(_object(definitions["ProducedItem"])["properties"])
-    enum: list[JsonValue] = [kind.value for kind in sorted(kinds, key=lambda k: k.value)]
+    enum: list[JsonValue] = [kind.value for kind in sorted(batch_kinds, key=lambda k: k.value)]
     item_fields["kind"] = {"type": "string", "enum": enum}
+    if NativeExamItemKind.GAP_FILL not in batch_kinds:
+        # Only gap_fill answers in gaps; any other kind copies a printed blank as text.
+        segment_fields = _object(_object(definitions["ProducedSegment"])["properties"])
+        segment_fields["kind"] = {"type": "string", "enum": ["text"]}
     return StructuredOutputSpec(
         schema_name="docx_exam_build",
         schema_version=DOCX_BUILD_SCHEMA_VERSION,
