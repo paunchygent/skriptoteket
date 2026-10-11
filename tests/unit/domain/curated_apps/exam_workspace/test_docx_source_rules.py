@@ -1,6 +1,7 @@
 """Source-structure rules judged against real recorded model output and real corpus chunks."""
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -156,46 +157,48 @@ def test_title_joining_opening_heading_and_next_chunk_with_separator_passes():
     assert _title_violation(chunks, _title(text, "body:0002", "body:0003")) is None
 
 
-def _gap_values(recording: str, docx: str) -> dict[str, list[list[str]]]:
+def _gaps(item: ProducedItem) -> list[list[str]]:
+    return [list(s.accepted_values) for p in item.body for s in p.segments if s.kind == "gap"]
+
+
+def _gold_gaps(docx: str) -> list[list[list[str]]]:
+    gold = json.loads((_FIXTURES / f"docx_corpus/gold/{docx}.json").read_text())
+    return [[gap["accepted_values"] for gap in item.get("gaps", [])] for item in gold["items"]]
+
+
+def _widened(recording: str, docx: str) -> list[tuple[ProducedItem, ProducedItem]]:
     chunks = PythonDocxExamChunker().chunk(
         content=(_FIXTURES / f"docx_corpus/{docx}.docx").read_bytes()
     )
-    result = {}
-    for item in _items(recording):
-        widened = with_defined_short_forms(item, definition_context(chunks, item.source_anchors))
-        result[item.source_anchors[0]] = [
-            list(s.accepted_values) for p in widened.body for s in p.segments if s.kind == "gap"
-        ]
-    return result
+    return [
+        (item, with_defined_short_forms(item, definition_context(chunks, item.source_anchors)))
+        for item in _items(recording)
+    ]
 
 
 def test_facit_term_defined_in_the_section_instruction_also_accepts_its_short_form():
-    values = _gap_values(
-        "svenska_2_grammatik_variant_2_docx_build_response.json",
-        "svenska_2_grammatik_omprov_variant_2_med_facit",
-    )
-    assert values["body:0037"] == [
-        ["adverbial", "Adv"],
-        ["indirekt objekt", "IO"],
-        ["predikativ/predikatsfyllnad", "Pf"],
-        ["direkt objekt", "DO"],
-    ]
+    docx = "svenska_2_grammatik_omprov_variant_2_med_facit"
+    pairs = _widened("svenska_2_grammatik_variant_2_docx_build_response.json", docx)
+    gold = _gold_gaps(docx)
+    # The comparator pairs recorded and gold items by position.
+    item, widened = pairs[3]
+    assert item.source_anchors[0] == "body:0037"
+    for original, values, gold_values in zip(_gaps(item), _gaps(widened), gold[3], strict=True):
+        assert len(values) == len(original) + 1
+        assert {v.casefold() for v in values} <= {g.casefold() for g in gold_values}
     # Short forms listed without "=" define nothing.
-    assert values["body:0016"] == [["NF"], ["VF"], ["PF"], ["PF"]]
+    item, widened = pairs[1]
+    assert item.source_anchors[0] == "body:0016"
+    assert _gaps(widened) == _gaps(item)
 
 
 def test_facit_already_in_short_form_gains_no_term():
-    recording = "svenska_2_kursavslutande_prov_docx_build_response.json"
-    chunks = _chunks("svenska_2_kursavslutande_prov_med_facit")
-    original = {
-        item.source_anchors[0]: [
-            list(s.accepted_values) for p in item.body for s in p.segments if s.kind == "gap"
-        ]
-        for item in _items(recording)
-    }
+    docx = "svenska_2_kursavslutande_prov_med_facit"
+    chunks = _chunks(docx)
     # The questions' own instructions define their labels with "=".
     assert sum(chunks[a].text.count("=") for a in chunks) >= 6
-    assert _gap_values(recording, "svenska_2_kursavslutande_prov_med_facit") == original
+    pairs = _widened("svenska_2_kursavslutande_prov_docx_build_response.json", docx)
+    assert [_gaps(widened) for _, widened in pairs] == [_gaps(item) for item, _ in pairs]
 
 
 def test_term_added_beside_a_short_form_facit_is_dropped():
@@ -211,7 +214,14 @@ def test_term_added_beside_a_short_form_facit_is_dropped():
         for item in _items("svenska_2_kursavslutande_prov_docx_build_response.json")
         if item.source_anchors[0] == "body:0061"
     )
-    terms = iter(("rotmorfem", "avledningsmorfem", "böjningsmorfem"))
+    instruction = by_anchor["body:0062"].text
+    assert instruction.count(" = ") == 3
+
+    def defined_term(short: str) -> str:
+        match = re.search(re.escape(short) + r" = (\w+)", instruction)
+        assert match is not None
+        return match.group(1)
+
     padded = item.model_copy(
         update={
             "body": tuple(
@@ -219,7 +229,12 @@ def test_term_added_beside_a_short_form_facit_is_dropped():
                     update={
                         "segments": tuple(
                             s.model_copy(
-                                update={"accepted_values": (*s.accepted_values, next(terms))}
+                                update={
+                                    "accepted_values": (
+                                        *s.accepted_values,
+                                        *(defined_term(v) for v in s.accepted_values),
+                                    )
+                                }
                             )
                             if s.kind == "gap"
                             else s
@@ -231,7 +246,7 @@ def test_term_added_beside_a_short_form_facit_is_dropped():
             )
         }
     )
-    assert "R = rotmorfem" in by_anchor["body:0062"].text
+    assert padded != item
 
     widened = with_defined_short_forms(padded, definition_context(chunks, item.source_anchors))
 
