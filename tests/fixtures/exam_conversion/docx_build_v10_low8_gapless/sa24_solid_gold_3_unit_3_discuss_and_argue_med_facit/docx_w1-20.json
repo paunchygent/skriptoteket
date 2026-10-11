@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0073"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0072"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "30",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His earnings are said to amount to £300 000 ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "per annum",
+                "per anum"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (p…). (2 words)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

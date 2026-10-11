@@ -43,9 +43,10 @@ CONFLICT_WITHOUT_KIND_REASON = (
 
 
 def validation_detail(error: ValidationError) -> str:
-    """Field locations and error types only, never the rejected input."""
+    """Field locations, error types and the invariant a validator names; never the input."""
     return "; ".join(
-        f"{'.'.join(str(part) for part in entry['loc'])}: {entry['type']}"
+        f"{'.'.join(str(part) for part in entry['loc'])}: "
+        + (entry["msg"] if entry["type"] == "value_error" else entry["type"])
         for entry in error.errors()
     )
 

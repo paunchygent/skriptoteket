@@ -1,0 +1,51 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0024"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The children were very poor and most of them were dressed in ___.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "scraps",
+          "correct": false
+        },
+        {
+          "text": "bundles",
+          "correct": false
+        },
+        {
+          "text": "rags",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

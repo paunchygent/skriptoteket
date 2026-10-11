@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0114"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "c",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The operation was only ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "partially",
+                "partialy"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " successful.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

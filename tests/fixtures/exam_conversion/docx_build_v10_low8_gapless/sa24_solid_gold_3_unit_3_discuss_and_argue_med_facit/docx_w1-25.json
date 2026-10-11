@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0085"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0084"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "36",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Of all the essential minerals in the human body, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calcium"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is the most abundant. It helps the body form bones and teeth.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

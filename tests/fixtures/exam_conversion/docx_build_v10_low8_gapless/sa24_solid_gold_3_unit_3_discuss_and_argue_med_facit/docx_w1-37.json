@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0124"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "h",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Separated from his mother when he was just an ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "infant"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", the boy was brought up in a children’s home.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
