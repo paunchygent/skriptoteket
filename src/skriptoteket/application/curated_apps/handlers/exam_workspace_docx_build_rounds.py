@@ -101,9 +101,11 @@ Rules:
   copy its wording without the question number and printed points as the item title (null
   when nothing else remains), and take the points it prints. title and instructions
   hold only text that belongs to no single question. A section instruction, word box or
-  shared passage that serves a run of questions is an instruction, never part of the
+  shared passage printed once for a run of questions is an instruction, never part of the
   first question or of any question: the converter groups the questions it serves under
-  it, so no question repeats its wording.
+  it, so no question repeats its wording. Wording printed inside a question's own chunk
+  is that question's text, also when other questions print the same wording: copy all of
+  it into that question's body.
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
   Each source chunk belongs to exactly one item, the title, an instruction, or
   answer_key_anchors.
