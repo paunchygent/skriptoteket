@@ -172,3 +172,5 @@ round limit.
 | D14 | Admission has no source-word presence check; faithful wording stays with the model per story A14 (user decision 2026-10-11). |
 | D15 | A section instruction that serves one question makes no parent; it stays in that question's prompt (user decision 2026-10-11). |
 | D16 | A parent holds only the instruction lines every child shares; a line only some questions carry stays in those children (user decision 2026-10-11). |
+| D17 | A section instruction over questions of different kinds makes no parent; those questions stay standalone with the instruction copied into each (user decision 2026-10-11). |
+| D18 | The gold move to parents is approved; a parent's label is built from its children's printed labels in the exam's own language, such as "Fråga 1–15" or "Question 1–18" (user decisions 2026-10-11). |
