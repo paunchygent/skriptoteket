@@ -19,12 +19,9 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.workers.exam_answer_key_enrichment import process_next_answer_key_enrichment_job
-from tests.unit.workers.execution_queue_job_processor_test_support import (
-    DEFAULT_NOW,
-    ContainerAdapter,
-    FakeClock,
-    FakeUow,
-)
+from tests.unit.workers.execution_queue_job_processor_test_support import ContainerAdapter
+from tests.unit.workers.execution_queue_repository_fakes import DEFAULT_NOW, FakeUow
+from tests.unit.workers.execution_queue_runtime_fakes import FakeClock
 
 WORKER_ID = "docx-worker"
 LEASE_TTL = timedelta(seconds=30)

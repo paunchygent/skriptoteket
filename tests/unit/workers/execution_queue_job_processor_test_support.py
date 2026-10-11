@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
 
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.scripting.execution import ToolExecutionResult
 from skriptoteket.domain.scripting.file_refs import build_session_file_ref
 from skriptoteket.domain.scripting.input_files import InputManifest
 from skriptoteket.domain.scripting.models import (
     RunContext,
-    ToolRun,
     ToolVersion,
     VersionState,
     compute_content_hash,
@@ -28,307 +25,36 @@ from skriptoteket.domain.scripting.tool_run_jobs import (
 from skriptoteket.domain.scripting.tool_run_jobs import (
     enqueue_job as enqueue_job_domain,
 )
-from skriptoteket.domain.scripting.tool_sessions import ToolSession
-from skriptoteket.domain.scripting.ui.contract_v2 import UiFormAction
 from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
-from skriptoteket.domain.scripting.ui.policy import DEFAULT_UI_POLICY, UiPolicy, UiPolicyProfileId
-from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
-from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
-from skriptoteket.protocols.promotions import PromotionApplierProtocol
-from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
-from skriptoteket.protocols.runner import ToolRunnerAdoptionProtocol, ToolRunnerProtocol
 from skriptoteket.protocols.scripting import (
     ToolRunRepositoryProtocol,
     ToolVersionRepositoryProtocol,
 )
-from skriptoteket.protocols.scripting_ui import (
-    BackendActionProviderProtocol,
-    UiPayloadNormalizerProtocol,
-    UiPolicyProviderProtocol,
-)
+from skriptoteket.protocols.scripting_ui import UiPayloadNormalizerProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-
-DEFAULT_NOW = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-
-
-class FakeUow(UnitOfWorkProtocol):
-    async def __aenter__(self) -> UnitOfWorkProtocol:
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        return None
-
-
-class InMemoryToolRunRepository:
-    def __init__(self) -> None:
-        self._runs: dict[UUID, ToolRun] = {}
-
-    async def get_by_id(self, *, run_id: UUID) -> ToolRun | None:
-        return self._runs.get(run_id)
-
-    async def create(self, *, run: ToolRun) -> ToolRun:
-        self._runs[run.id] = run
-        return run
-
-    async def update(self, *, run: ToolRun) -> ToolRun:
-        self._runs[run.id] = run
-        return run
-
-
-class InMemoryToolRunJobRepository(ToolRunJobRepositoryProtocol):
-    def __init__(self) -> None:
-        self._jobs_by_run: dict[UUID, ToolRunJob] = {}
-
-    async def get_by_run_id(self, *, run_id: UUID) -> ToolRunJob | None:
-        return self._jobs_by_run.get(run_id)
-
-    async def create(self, *, job: ToolRunJob) -> ToolRunJob:
-        self._jobs_by_run[job.run_id] = job
-        return job
-
-    async def update(self, *, job: ToolRunJob) -> ToolRunJob:
-        self._jobs_by_run[job.run_id] = job
-        return job
-
-    async def claim_next(
-        self, *, worker_id: str, now: datetime, lease_ttl: timedelta, queue: str = "default"
-    ):
-        raise NotImplementedError
-
-    async def heartbeat(
-        self, *, job_id: UUID, worker_id: str, now: datetime, lease_ttl: timedelta
-    ) -> bool:
-        for existing in self._jobs_by_run.values():
-            if existing.id != job_id:
-                continue
-            if existing.locked_by != worker_id:
-                return False
-            await self.update(
-                job=existing.model_copy(update={"locked_until": now + lease_ttl, "updated_at": now})
-            )
-            return True
-        return False
-
-    async def clear_stale_leases(self, *, now: datetime) -> int:
-        raise NotImplementedError
-
-
-class InMemoryToolVersionRepository:
-    def __init__(self, *, versions: dict[UUID, ToolVersion]) -> None:
-        self._versions = versions
-
-    async def get_by_id(self, *, version_id: UUID) -> ToolVersion | None:
-        return self._versions.get(version_id)
-
-
-class InMemoryUserRepository:
-    def __init__(self, *, users: dict[UUID, User]) -> None:
-        self._users = users
-
-    async def get_by_id(self, user_id: UUID) -> User | None:
-        return self._users.get(user_id)
-
-
-class FakeToolSessionRepository:
-    def __init__(
-        self,
-        *,
-        state: dict[str, JsonValue] | None = None,
-        state_rev: int = 0,
-        fail_update: bool = False,
-    ) -> None:
-        self._session: ToolSession | None = None
-        self._state = {} if state is None else state
-        self._state_rev = state_rev
-        self._fail_update = fail_update
-        self.update_calls: list[dict[str, object]] = []
-
-    async def get_or_create(
-        self,
-        *,
-        session_id: UUID,
-        tool_id: UUID,
-        user_id: UUID,
-        context: str,
-    ) -> ToolSession:
-        if self._session is None:
-            self._session = ToolSession(
-                id=session_id,
-                tool_id=tool_id,
-                user_id=user_id,
-                context=context,
-                state=self._state,
-                state_rev=self._state_rev,
-                created_at=DEFAULT_NOW,
-                updated_at=DEFAULT_NOW,
-            )
-        return self._session
-
-    async def update_state(
-        self,
-        *,
-        tool_id: UUID,
-        user_id: UUID,
-        context: str,
-        expected_state_rev: int,
-        state: dict[str, JsonValue],
-    ) -> ToolSession:
-        self.update_calls.append(
-            {
-                "tool_id": tool_id,
-                "user_id": user_id,
-                "context": context,
-                "expected_state_rev": expected_state_rev,
-                "state": state,
-            }
-        )
-        if self._fail_update:
-            raise DomainError(
-                code=ErrorCode.INTERNAL_ERROR,
-                message="Failed to persist state",
-            )
-        session_id = self._session.id if self._session else uuid4()
-        created_at = self._session.created_at if self._session else DEFAULT_NOW
-        self._session = ToolSession(
-            id=session_id,
-            tool_id=tool_id,
-            user_id=user_id,
-            context=context,
-            state=state,
-            state_rev=expected_state_rev + 1,
-            created_at=created_at,
-            updated_at=DEFAULT_NOW,
-        )
-        return self._session
-
-
-class FakeRunInputStorage(RunInputStorageProtocol):
-    def __init__(self, *, files_by_run: dict[UUID, list[ResolvedInputFile]] | None = None) -> None:
-        self._files_by_run = files_by_run or {}
-        self.deleted: list[UUID] = []
-
-    async def store(self, *, run_id: UUID, files: list[ResolvedInputFile]) -> None:
-        self._files_by_run[run_id] = files
-
-    async def get(self, *, run_id: UUID) -> list[ResolvedInputFile]:
-        return self._files_by_run.get(run_id, [])
-
-    async def delete(self, *, run_id: UUID) -> None:
-        self.deleted.append(run_id)
-        self._files_by_run.pop(run_id, None)
-
-
-class FakeClock(ClockProtocol):
-    def __init__(self, *, now: datetime) -> None:
-        self._now = now
-
-    def now(self) -> datetime:
-        return self._now
-
-
-class FakeSleeper:
-    async def sleep(self, seconds: float) -> None:
-        await asyncio.sleep(seconds)
-
-
-class FakeIdGenerator(IdGeneratorProtocol):
-    def new_uuid(self) -> UUID:
-        return uuid4()
-
-
-class FakeUiPolicyProvider(UiPolicyProviderProtocol):
-    async def get_profile_id_for_tool(self, *, tool_id: UUID, actor: User) -> UiPolicyProfileId:
-        del tool_id, actor
-        return UiPolicyProfileId.DEFAULT
-
-    async def get_profile_id_for_curated_app(
-        self, *, curated_app_id: str, actor: User
-    ) -> UiPolicyProfileId:
-        del curated_app_id, actor
-        return UiPolicyProfileId.DEFAULT
-
-    def get_policy(self, *, profile_id: UiPolicyProfileId) -> UiPolicy:
-        del profile_id
-        return DEFAULT_UI_POLICY
-
-
-class FakeBackendActionProvider(BackendActionProviderProtocol):
-    async def list_backend_actions(
-        self,
-        *,
-        tool_id: UUID,
-        actor: User,
-        policy: UiPolicy,
-    ) -> list[UiFormAction]:
-        del tool_id, actor, policy
-        return []
-
-
-class FakePromotionApplier(PromotionApplierProtocol):
-    def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
-
-    async def apply_session_promotions(
-        self,
-        *,
-        run_id: UUID,
-        tool_id: UUID,
-        user_id: UUID,
-        context: str,
-        artifacts_manifest,
-        promotions,
-    ) -> None:
-        self.calls.append(
-            {
-                "run_id": run_id,
-                "tool_id": tool_id,
-                "user_id": user_id,
-                "context": context,
-                "artifacts_manifest": artifacts_manifest,
-                "promotions": promotions,
-            }
-        )
-
-
-class FakeRunner(ToolRunnerProtocol):
-    def __init__(self, *, result: ToolExecutionResult) -> None:
-        self._result = result
-        self.called = False
-
-    async def execute(
-        self,
-        *,
-        run_id: UUID,
-        version: ToolVersion,
-        context: RunContext,
-        input_files: list[ResolvedInputFile],
-        input_values: dict[str, JsonValue],
-        memory_json: bytes,
-        action_payload: dict[str, JsonValue] | None,
-    ) -> ToolExecutionResult:
-        del run_id, version, context, input_files, input_values, memory_json, action_payload
-        self.called = True
-        return self._result
-
-
-class FakeRunnerAdoption(ToolRunnerAdoptionProtocol):
-    def __init__(self, *, result: ToolExecutionResult | None) -> None:
-        self._result = result
-        self.called = False
-
-    async def try_adopt(
-        self,
-        *,
-        run_id: UUID,
-        version: ToolVersion,
-        context: RunContext,
-    ) -> ToolExecutionResult | None:
-        del run_id, version, context
-        self.called = True
-        return self._result
+from tests.unit.workers.execution_queue_repository_fakes import (
+    DEFAULT_NOW,
+    FakeRunInputStorage,
+    FakeToolSessionRepository,
+    FakeUow,
+    InMemoryToolRunJobRepository,
+    InMemoryToolRunRepository,
+    InMemoryToolVersionRepository,
+    InMemoryUserRepository,
+)
+from tests.unit.workers.execution_queue_runtime_fakes import (
+    FakeBackendActionProvider,
+    FakeClock,
+    FakeIdGenerator,
+    FakePromotionApplier,
+    FakeRunner,
+    FakeRunnerAdoption,
+    FakeSleeper,
+    FakeUiPolicyProvider,
+)
 
 
 class _Request:
