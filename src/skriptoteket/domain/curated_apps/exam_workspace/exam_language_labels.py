@@ -29,7 +29,6 @@ class ExamLanguageLabels:
     question: str = ""
     gap: str = ""
     image: str = ""
-    image_of: str = ""
     points: str = ""
     points_unit: str = ""
     points_missing: str = "–"
@@ -41,20 +40,9 @@ class ExamLanguageLabels:
         numbers = str(first) if last is None or last == first else f"{first}–{last}"
         return f"{self.question} {numbers}".strip()
 
-    def printed_title(self, printed_label: str) -> str:
-        """A printed label as a title: a bare number or letter gets the question word."""
-        match = _PRINTED.match(printed_label)
-        if match and match.group(1) is None:
-            return self.question_label(printed_label)
-        return printed_label
-
     def item_title(self, item: NativeExamItem) -> str:
-        """The item's own title, else its printed label, else its running number."""
-        if item.title:
-            return item.title
-        if item.printed_label:
-            return self.printed_title(item.printed_label)
-        return self.question_label(item.sequence)
+        """The item's own title, else its running number; printed labels title only parents."""
+        return item.title or self.question_label(item.sequence)
 
     def printed_span(self, first: str, last: str) -> str:
         """The title over children printed first to last, such as "Question 1–7"."""
@@ -69,10 +57,9 @@ class ExamLanguageLabels:
     def gap_label(self, index: int) -> str:
         return f"{self.gap} {index}".strip()
 
-    def image_alt(self, index: int, item_label: str) -> str:
-        if not self.image:
-            return f"{index}: {item_label}"
-        return f"{self.image} {index} {self.image_of} {item_label}"
+    def image_alt(self, index: int) -> str:
+        """Student-visible alt text: the image word and number, never a question's number."""
+        return f"{self.image} {index}".strip()
 
     def points_line(self, points: str | None) -> str:
         """Such as "Poäng: 2 poäng" or "Points: 2"; "(2)" without a known language."""
@@ -101,7 +88,6 @@ _LANGUAGES = (
             question="Fråga",
             gap="Lucka",
             image="Bild",
-            image_of="till",
             points="Poäng",
             points_unit="poäng",
             points_missing="saknas",
@@ -120,7 +106,6 @@ _LANGUAGES = (
             question="Question",
             gap="Gap",
             image="Image",
-            image_of="for",
             points="Points",
             points_missing="missing",
             answer_key="Answer key",

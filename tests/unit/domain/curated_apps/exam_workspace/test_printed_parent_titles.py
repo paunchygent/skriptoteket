@@ -6,14 +6,27 @@ expected title is the question part of gold's own parent label, such as "Questio
 Running numbers continue across parts; printed numbers restart, so the two differ.
 """
 
+import hashlib
 import re
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 
 from scripts.exam_conversion_eval.gold import GoldParent
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
+    serialize_qti_assessment_item,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
+    exam_language_labels,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeAssetSegment,
+    NativeExamAsset,
+    NativeParagraph,
 )
 from tests.unit.scripts.exam_conversion_corpus_support import gold_exam, replayed
 
@@ -68,3 +81,53 @@ def test_printed_labels_never_enter_student_visible_text(stem: str) -> None:
     for item in numbered:
         label = re.compile(rf"^\s*{re.escape(item.printed_label or '')}\b")
         assert not any(label.match(line) for line in item.plain_text_lines()), (stem, item)
+
+
+_PNG = b"\x89PNG\r\n\x1a\nimage-bytes"
+_ASSET = NativeExamAsset(
+    asset_id="asset_0123456789abcdef",
+    sha256=hashlib.sha256(_PNG).hexdigest(),
+    media_type="image/png",
+    byte_length=len(_PNG),
+)
+
+
+@pytest.mark.parametrize("stem", _STEMS)
+def test_an_untitled_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: str) -> None:
+    """A printed label titles only parents; an image added to the item never names it."""
+    document, _ = replayed(stem, _LABELLED)
+    labels = exam_language_labels(document)
+    untitled = [item for item in document.items if not item.title and item.printed_label]
+    assert untitled
+    if stem == "bf26_english_1_unit_test_kap_1_2_med_facit":
+        (restarted,) = [item for item in untitled if item.sequence == 28]
+        assert restarted.printed_label == "1"
+        assert labels.image == "Image"
+    for item in untitled:
+        assert labels.item_title(item) == labels.question_label(item.sequence), item.printed_label
+        illustrated = item.model_copy(
+            update={
+                "body": (
+                    *item.body,
+                    NativeParagraph(segments=(NativeAssetSegment(asset_id=_ASSET.asset_id),)),
+                )
+            }
+        )
+        changed = document.model_copy(
+            update={
+                "items": tuple(illustrated if i is item else i for i in document.items),
+                "assets": (_ASSET,),
+            }
+        )
+        exported = native_exam_to_examnet_qti_items(changed, assets_by_id={_ASSET.asset_id: _PNG})
+        (qti,) = [entry for entry in exported if entry.image_resources]
+        if document.parent_of(item.item_id) is None:
+            assert qti.title == labels.question_label(item.sequence), (stem, item.printed_label)
+        xml = ElementTree.fromstring(serialize_qti_assessment_item(qti, image_paths=("image.png",)))
+        body = xml.find("{*}itemBody")
+        assert body is not None
+        alts = [node.attrib["alt"] for node in body.iter() if node.tag.endswith("}img")]
+        assert alts == [f"{labels.image} 1"], (stem, item.printed_label)
+        for alt in alts:
+            assert labels.question_label(item.printed_label or "") not in alt
+            assert labels.question_label(item.sequence) not in alt
