@@ -7,6 +7,11 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
 
 ## Repo Invariants
 
+- Skriptoteket is an unreleased, iterative testbed: backward compatibility is
+  never a requirement. Keep no readers, defaults, aliases, fallbacks or dual
+  paths for older data, schemas, payloads, settings or stored client state;
+  change the format and delete the old path. Compatibility applies only where
+  the user states it explicitly for a named app.
 - Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
   use the package-owned `pdm run new-*` scaffolders, and close doc changes with
   `pdm run docs-validate`.
