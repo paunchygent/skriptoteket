@@ -170,3 +170,5 @@ round limit.
 | D12 | The title is the exam heading; a heading plus its printed subtitle is also correct, but the heading alone is preferred (user decision 2026-10-11). |
 | D13 | When instructions define an abbreviation and its term, a gap accepts both halves (user decision 2026-10-11). |
 | D14 | Admission has no source-word presence check; faithful wording stays with the model per story A14 (user decision 2026-10-11). |
+| D15 | A section instruction that serves one question makes no parent; it stays in that question's prompt (user decision 2026-10-11). |
+| D16 | A parent holds only the instruction lines every child shares; a line only some questions carry stays in those children (user decision 2026-10-11). |
