@@ -59,6 +59,9 @@ export type ExamWorkspaceConversionBinding = {
   isSaving: () => boolean;
 };
 
+/** What a save conflict turned out to be, once the conversion revision was checked. */
+export type ConflictSync = "merged" | "unrelated" | "unknown";
+
 export function useExamWorkspaceConversion(
   isBusy: () => boolean,
   binding: ExamWorkspaceConversionBinding,
@@ -73,7 +76,8 @@ export function useExamWorkspaceConversion(
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let generation = 0;
   let pollFailures = 0;
-  let statusRequestPending = false;
+  /** The one status request in flight (poll or conflict sync); a second waits for it. */
+  let statusRequest: Promise<void> | null = null;
 
   const conversionProgress = computed(() => {
     const status = conversionStatus.value;
@@ -193,10 +197,10 @@ export function useExamWorkspaceConversion(
     }
   }
 
-  async function refreshConversion(pollGeneration: number): Promise<void> {
-    const status = conversionStatus.value;
-    if (!status || statusRequestPending || !isConverting.value) return;
-    statusRequestPending = true;
+  async function runStatusRequest(
+    status: ExamWorkspaceConversionStatus,
+    pollGeneration: number,
+  ): Promise<void> {
     try {
       const next = status.state === "succeeded" || status.state === "failed"
         ? status
@@ -211,9 +215,17 @@ export function useExamWorkspaceConversion(
       conversionError.value = STATUS_FAILURE_COPY;
       pollFailures += 1;
       schedulePoll(pollGeneration);
-    } finally {
-      statusRequestPending = false;
     }
+  }
+
+  async function refreshConversion(pollGeneration: number): Promise<void> {
+    const status = conversionStatus.value;
+    if (!status || statusRequest || !isConverting.value) return;
+    const request = runStatusRequest(status, pollGeneration).finally(() => {
+      statusRequest = null;
+    });
+    statusRequest = request;
+    await request;
   }
 
   function retryConversionStatus(): void {
@@ -223,26 +235,39 @@ export function useExamWorkspaceConversion(
 
   /**
    * After a save conflict on the converting exam, merge the revision
-   * conversion wrote meanwhile. Returns true when the open copy now stands on
-   * a newer revision than the failed save expected, so the caller can save
-   * again without losing edits.
+   * conversion wrote meanwhile, waiting for a status request already in
+   * flight first. Returns "merged" when the open copy now stands on a newer
+   * revision than the failed save expected, so the caller can save again
+   * without losing edits; "unrelated" when the conflict is not a batch's; and
+   * "unknown" when the revision could not be fetched, so the caller keeps the
+   * teacher's copy instead of replacing it. Outside conversion it returns
+   * "unrelated".
    */
-  async function syncAfterConflict(expectedRevision: number): Promise<boolean> {
-    const status = conversionStatus.value;
-    if (!status || !isEditingConversion.value || statusRequestPending) return false;
+  async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {
     const pollGeneration = generation;
-    statusRequestPending = true;
-    try {
+    while (statusRequest) await statusRequest;
+    const status = conversionStatus.value;
+    if (pollGeneration !== generation || !status || !isEditingConversion.value) {
+      return "unrelated";
+    }
+    const request = (async () => {
       const next = await getExamWorkspaceConversionStatus(status.job_id);
-      if (pollGeneration !== generation) return false;
+      if (pollGeneration !== generation) return;
       conversionStatus.value = next;
       await applyRevision(next, pollGeneration, true);
+    })().finally(() => {
+      statusRequest = null;
+    });
+    statusRequest = request;
+    try {
+      await request;
     } catch {
-      return false;
-    } finally {
-      statusRequestPending = false;
+      return "unknown";
     }
-    return (binding.summary.value?.version ?? 0) > expectedRevision;
+    if (pollGeneration !== generation) return "unknown";
+    // The poll chain may have found this request pending and ended; resume it.
+    if (isConverting.value && pollTimer === null) schedulePoll(pollGeneration);
+    return (binding.summary.value?.version ?? 0) > expectedRevision ? "merged" : "unrelated";
   }
 
   async function importDocument(file: File): Promise<void> {

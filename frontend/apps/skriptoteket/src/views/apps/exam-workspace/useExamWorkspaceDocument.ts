@@ -216,16 +216,17 @@ export function useExamWorkspaceDocument() {
       toast.success(SAVE_SUCCESS_COPY);
       return true;
     } catch (error) {
-      // A batch saved meanwhile: merge it and save once more on top of it.
-      if (
-        isApiError(error) &&
-        error.status === 409 &&
-        !afterConversionConflict &&
-        (await syncAfterConflict(expectedRevision))
-      ) {
+      // A batch saved meanwhile: merge it and save again on top of it. Each
+      // retry stands on a strictly newer revision, so batches bound the loop.
+      const conflict = isApiError(error) && error.status === 409;
+      const sync = conflict ? await syncAfterConflict(expectedRevision) : "unrelated";
+      if (sync === "merged") {
         return await saveDocument(rejectedProposalItemIds, true);
       }
-      if (isApiError(error) && error.status === 409) {
+      if (sync === "unknown") {
+        // Reloading would replace the teacher's copy with a revision never merged into it.
+        toast.failure(SAVE_FAILURE_COPY);
+      } else if (conflict) {
         conflictNotice.value = EXAM_WORKSPACE_CONFLICT_COPY;
         toast.failure(EXAM_WORKSPACE_CONFLICT_COPY);
         await reloadAfterConflict(currentSummary.lineage_id);

@@ -230,4 +230,49 @@ describe("Exam workspace progressive conversion", () => {
     ]);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
+
+  it("merges and saves the teacher's edits when a save conflicts while a status poll is still in flight", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+
+    let resolvePoll!: (value: ExamWorkspaceConversionStatus) => void;
+    apiMocks.getExamWorkspaceConversionStatus
+      .mockReturnValueOnce(new Promise((resolve) => { resolvePoll = resolve; }))
+      .mockResolvedValueOnce(SECOND_STATUS);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(SECOND);
+    apiMocks.saveExamWorkspaceDocument
+      .mockRejectedValueOnce(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }))
+      .mockResolvedValueOnce(revision(3, SECOND.document.items));
+    await tick();
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+    resolvePoll(SECOND_STATUS);
+    await flushPromises();
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
+    expect(retry.expectedRevision).toBe(2);
+    expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
+      "Lärarens rubrik ett",
+      "Konverterad 2",
+      "Konverterad 3",
+    ]);
+    expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
+  });
+
+  it("keeps the teacher's copy when the conflicting revision cannot be fetched", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+
+    apiMocks.getExamWorkspaceConversionStatus.mockRejectedValueOnce(new Error("offline"));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(SECOND);
+    apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
+      new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }),
+    );
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+  });
 });
