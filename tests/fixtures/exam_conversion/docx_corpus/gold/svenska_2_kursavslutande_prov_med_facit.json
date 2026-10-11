@@ -1,5 +1,5 @@
 {
-  "schema_version": "exam_conversion_gold_v1",
+  "schema_version": "exam_conversion_gold_v2",
   "source_filename": "svenska_2_kursavslutande_prov_med_facit.docx",
   "source_sha256": "99b204dcead1b27ade6cb82da8681772a3c4920a562d9cd29d9d12135face7dd",
   "title": "Kursavslutande prov: Svenska 2",
@@ -13,273 +13,280 @@
   ],
   "items": [
     {
-      "source_label": "Fråga 1",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nGunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
-      "choices": [
-        "Hederskultur",
-        "Hövisk kärlek",
-        "Naturliga rättigheter",
-        "Nyttotänkande"
-      ],
-      "correct_choices": [
-        "Hederskultur"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 2",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nVilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
-      "choices": [
-        "Centrallyrik stil",
-        "Lakonisk stil",
-        "Realistisk stil",
-        "Satirisk stil"
-      ],
-      "correct_choices": [
-        "Lakonisk stil"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 3",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nDantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
-      "choices": [
-        "Satir",
-        "Allegori",
-        "Realism",
-        "Humanism"
-      ],
-      "correct_choices": [
-        "Allegori"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 4",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nDon Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
-      "choices": [
-        "Idealism och realism",
-        "Känsla och förnuft",
-        "Njutning och plikt",
-        "Kristen frälsning och synd"
-      ],
-      "correct_choices": [
-        "Idealism och realism"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 5",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nI Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
-      "choices": [
-        "Plikt och kärlek",
-        "Kraft och list",
-        "Känsla och fantasi",
-        "Empiri och förnuft"
-      ],
-      "correct_choices": [
-        "Kraft och list"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 6",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nVad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
-      "choices": [
-        "Handlingen",
-        "Versmåttet",
-        "Huvudkaraktären",
-        "Budskapet"
-      ],
-      "correct_choices": [
-        "Versmåttet"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 7",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nRobinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
-      "choices": [
-        "Känsla och natur",
-        "Förnuft och nytta",
-        "Frihet och rättigheter",
-        "Sinnevärld och idévärld"
-      ],
-      "correct_choices": [
-        "Förnuft och nytta"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 8",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nEn text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
-      "choices": [
-        "Satir",
-        "Allegori",
-        "Realism",
-        "Humanism"
-      ],
-      "correct_choices": [
-        "Satir"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 9",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nDen kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
-      "choices": [
-        "Naturliga rättigheter",
-        "Upplysningens gränser",
-        "Rationalism och empirism",
-        "Romantikens natursyn"
-      ],
-      "correct_choices": [
-        "Upplysningens gränser"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 10",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nI Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
-      "choices": [
-        "Pliktkänsla och kärlek",
-        "Empiri och förnuft",
-        "Förnuft och känsla",
-        "Rättssamhälle och hederskultur"
-      ],
-      "correct_choices": [
-        "Förnuft och känsla"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 11",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nI Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
-      "choices": [
-        "Plikt och kärlek",
-        "Vetenskap och ansvar",
-        "Förnuft och empiri",
-        "Frihet och rättigheter"
-      ],
-      "correct_choices": [
-        "Vetenskap och ansvar"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 12",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nEn text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
-      "choices": [
-        "Upplysningen",
-        "Romantiken",
-        "Renässansen",
-        "Medeltiden"
-      ],
-      "correct_choices": [
-        "Romantiken"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 13",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nVilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
-      "choices": [
-        "Från förnuftets kritik till känslans sanning",
-        "Från Guds ordning till människans möjligheter",
-        "Från naturens nytta till naturens känslospegling",
-        "Från mäns rättigheter till kvinnors politiska krav"
-      ],
-      "correct_choices": [
-        "Från Guds ordning till människans möjligheter"
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 14",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nVilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
-      "choices": [
-        "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
-        "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
-        "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
-        "Robinson styrs av heder och ära; Werther följer riddarens plikt."
-      ],
-      "correct_choices": [
-        "Robinson använder naturen praktiskt; Werther speglar känslor i den."
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
-      ]
-    },
-    {
-      "source_label": "Fråga 15",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Skriv rätt bokstav.\nVilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
-      "choices": [
-        "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
-        "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
-        "Den används främst för riddarideal, sedan för realism och parodi.",
-        "Den används främst för hederskultur, sedan för råd om furstemakt."
-      ],
-      "correct_choices": [
-        "Den används främst för nytta och kritik, sedan för känsla och inre liv."
-      ],
-      "notes": [
-        "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+      "kind": "parent",
+      "source_label": "Fråga 1–15",
+      "instruction": "Skriv rätt bokstav.",
+      "children": [
+        {
+          "source_label": "Fråga 1",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
+          "choices": [
+            "Hederskultur",
+            "Hövisk kärlek",
+            "Naturliga rättigheter",
+            "Nyttotänkande"
+          ],
+          "correct_choices": [
+            "Hederskultur"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 2",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
+          "choices": [
+            "Centrallyrik stil",
+            "Lakonisk stil",
+            "Realistisk stil",
+            "Satirisk stil"
+          ],
+          "correct_choices": [
+            "Lakonisk stil"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 3",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
+          "choices": [
+            "Satir",
+            "Allegori",
+            "Realism",
+            "Humanism"
+          ],
+          "correct_choices": [
+            "Allegori"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 4",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
+          "choices": [
+            "Idealism och realism",
+            "Känsla och förnuft",
+            "Njutning och plikt",
+            "Kristen frälsning och synd"
+          ],
+          "correct_choices": [
+            "Idealism och realism"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 5",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
+          "choices": [
+            "Plikt och kärlek",
+            "Kraft och list",
+            "Känsla och fantasi",
+            "Empiri och förnuft"
+          ],
+          "correct_choices": [
+            "Kraft och list"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 6",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
+          "choices": [
+            "Handlingen",
+            "Versmåttet",
+            "Huvudkaraktären",
+            "Budskapet"
+          ],
+          "correct_choices": [
+            "Versmåttet"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 7",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
+          "choices": [
+            "Känsla och natur",
+            "Förnuft och nytta",
+            "Frihet och rättigheter",
+            "Sinnevärld och idévärld"
+          ],
+          "correct_choices": [
+            "Förnuft och nytta"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 8",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
+          "choices": [
+            "Satir",
+            "Allegori",
+            "Realism",
+            "Humanism"
+          ],
+          "correct_choices": [
+            "Satir"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 9",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
+          "choices": [
+            "Naturliga rättigheter",
+            "Upplysningens gränser",
+            "Rationalism och empirism",
+            "Romantikens natursyn"
+          ],
+          "correct_choices": [
+            "Upplysningens gränser"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 10",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
+          "choices": [
+            "Pliktkänsla och kärlek",
+            "Empiri och förnuft",
+            "Förnuft och känsla",
+            "Rättssamhälle och hederskultur"
+          ],
+          "correct_choices": [
+            "Förnuft och känsla"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 11",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
+          "choices": [
+            "Plikt och kärlek",
+            "Vetenskap och ansvar",
+            "Förnuft och empiri",
+            "Frihet och rättigheter"
+          ],
+          "correct_choices": [
+            "Vetenskap och ansvar"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 12",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
+          "choices": [
+            "Upplysningen",
+            "Romantiken",
+            "Renässansen",
+            "Medeltiden"
+          ],
+          "correct_choices": [
+            "Romantiken"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 13",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
+          "choices": [
+            "Från förnuftets kritik till känslans sanning",
+            "Från Guds ordning till människans möjligheter",
+            "Från naturens nytta till naturens känslospegling",
+            "Från mäns rättigheter till kvinnors politiska krav"
+          ],
+          "correct_choices": [
+            "Från Guds ordning till människans möjligheter"
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 14",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
+          "choices": [
+            "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
+            "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
+            "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
+            "Robinson styrs av heder och ära; Werther följer riddarens plikt."
+          ],
+          "correct_choices": [
+            "Robinson använder naturen praktiskt; Werther speglar känslor i den."
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        },
+        {
+          "source_label": "Fråga 15",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
+          "choices": [
+            "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
+            "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
+            "Den används främst för riddarideal, sedan för realism och parodi.",
+            "Den används främst för hederskultur, sedan för råd om furstemakt."
+          ],
+          "correct_choices": [
+            "Den används främst för nytta och kritik, sedan för känsla och inre liv."
+          ],
+          "notes": [
+            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+          ]
+        }
       ]
     },
     {

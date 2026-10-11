@@ -68,6 +68,7 @@ function buildDocument(revision: number): NativeExamDocument {
       source_filename: "NO_Prov_HT25.docx",
       source_sha256: "abc123",
     },
+    parents: [],
     revision,
     schema_version: "native_exam_document_v1",
     title: "NO-prov HT25",

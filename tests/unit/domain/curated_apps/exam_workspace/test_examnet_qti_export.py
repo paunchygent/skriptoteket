@@ -50,7 +50,7 @@ def _document(
     return NativeExamDocument(
         document_id=uuid4(),
         revision=1,
-        title="Prov",
+        title="Prov på svenska",
         items=items,
         assets=assets,
         origin=NativeExamDocumentOrigin(kind="created"),

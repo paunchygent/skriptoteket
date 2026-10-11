@@ -67,3 +67,17 @@ export function buildMatchingItemWithPairs(
     ...overrides,
   });
 }
+
+/**
+ * The same item with a fourth right entry that belongs to no left entry,
+ * "ferocious" from the corpus question that follows it, keyed with the corpus pairs.
+ */
+export function buildMatchingItemWithDistractor(
+  overrides: Partial<NativeExamItem> = {},
+): NativeExamItem {
+  const base = buildMatchingItem();
+  return buildMatchingItem({
+    match_right: [...base.match_right, { right_id: "right_004", text: "ferocious" }],
+    ...overrides,
+  });
+}

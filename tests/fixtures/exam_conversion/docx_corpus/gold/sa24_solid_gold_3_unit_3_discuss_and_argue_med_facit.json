@@ -1,5 +1,5 @@
 {
-  "schema_version": "exam_conversion_gold_v1",
+  "schema_version": "exam_conversion_gold_v2",
   "source_filename": "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit.docx",
   "source_sha256": "ba730467fe3d1c2a1dabe7c3a15c23339d4c18086af640c34e05fecb6b67d10e",
   "title": "Test Unit 3 Discuss and Argue — answer key",
@@ -794,485 +794,499 @@
       "teacher_questions": []
     },
     {
-      "source_label": "E Choose the words, Question a",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMy aunt is a great believer in Chinese [___] medicines.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+      "kind": "parent",
+      "source_label": "E Choose the words, Question a–o",
+      "instruction": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding",
+      "children": [
         {
-          "accepted_values": [
-            "herbal"
-          ]
+          "source_label": "E Choose the words, Question a",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "My aunt is a great believer in Chinese [___] medicines.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "herbal"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question b",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Many celebrities become [___] on cocaine and other drugs.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "hooked"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question c",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "The operation was only [___] successful.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "partially",
+                "partialy"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question d",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Business is [___] at the moment. Our profits are up 25% on last year.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "booming"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question e",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Textbook writing can be an intellectually and socially [___] activity.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "rewarding"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question f",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "When buying health products, you should only ever buy [___] brands.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "reputable",
+                "repputable"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question g",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Hepatitis is a potentially [___] disease.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "fatal"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question h",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Separated from his mother when he was just an [___], the boy was brought up in a children’s home.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "infant"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question i",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "After some [___], we’ve decided to sell our house in London and move to Scotland.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "consideration",
+                "considderation"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question j",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Many people have fled to Europe to escape war and [___] in their own country.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "persecution"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question k",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "“You can’t sit on the [___] any longer – you have to decide whose side you’re on!”",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "fence"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question l",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Her words left a [___] impression on me. I will never forget them.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "lasting"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question m",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "My grandfather died of a [___] at the age of ninety-three.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "stroke"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question n",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Protein is [___] for healthy body tissues.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "essential",
+                "esential"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "E Choose the words, Question o",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Under her teacher’s [___], Ludmilla has developed into an accomplished pianist.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "guidance"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
         }
-      ],
-      "pairs": [],
-      "teacher_questions": []
+      ]
     },
     {
-      "source_label": "E Choose the words, Question b",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMany celebrities become [___] on cocaine and other drugs.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+      "kind": "parent",
+      "source_label": "F Advanced Vocabulary Revision: Linking words, Question a–m",
+      "instruction": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas",
+      "children": [
         {
-          "accepted_values": [
-            "hooked"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question c",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nThe operation was only [___] successful.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question a",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Using cannabis regularly can be addictive. [___], it can lead to taking harder drugs such as heroin.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "Moreover"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "partially",
-            "partialy"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question d",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nBusiness is [___] at the moment. Our profits are up 25% on last year.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question b",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "[___] the government does something about the National Health Service now, things will only get worse in the future.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "Unless",
+                "unles"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "booming"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question e",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nTextbook writing can be an intellectually and socially [___] activity.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question c",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "A lot of money has already been spent on education. A lot more, [___], will have to be spent in the future.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "however"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "rewarding"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question f",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nWhen buying health products, you should only ever buy [___] brands.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question d",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "She went to work in Paris as an au pair [___] improve her French.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "in order to"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "reputable",
-            "repputable"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question g",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nHepatitis is a potentially [___] disease.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question e",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "[___] all the mistakes you’ve made, this is still a very good essay.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "In spite of"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "fatal"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question h",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nSeparated from his mother when he was just an [___], the boy was brought up in a children’s home.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question f",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "James had too much to eat and drink last night and, [___], he had a bad night’s sleep.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "consequently"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "infant"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question i",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nAfter some [___], we’ve decided to sell our house in London and move to Scotland.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question g",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "[___] Tom is very good at science, his brother is absolutely hopeless.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "Whereas"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "consideration",
-            "considderation"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question j",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMany people have fled to Europe to escape war and [___] in their own country.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question h",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "“Are you in favour of fox hunting?” “No, [___], I believe it’s cruel, barbaric and should be banned!”",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "on the contrary"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "persecution"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question k",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\n“You can’t sit on the [___] any longer – you have to decide whose side you’re on!”",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question i",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "Soldiers are taught to be obedient – [___], to obey orders without question.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "in other words"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "fence"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question l",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nHer words left a [___] impression on me. I will never forget them.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question j",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "There are many different ways of getting rich. You could, [___], win £1 million on the National Lottery.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "for instance"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "lasting"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question m",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nMy grandfather died of a [___] at the age of ninety-three.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question k",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "“[___], I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "In conclusion"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "stroke"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question n",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nProtein is [___] for healthy body tissues.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question l",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "When a dog ran across the street, the car in front of us stopped suddenly, [___] causing a collision.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "thereby"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
+        },
         {
-          "accepted_values": [
-            "essential",
-            "esential"
-          ]
+          "source_label": "F Advanced Vocabulary Revision: Linking words, Question m",
+          "kind": "gap_fill",
+          "points": 1,
+          "prompt": "[___] had the Prime Minister started his speech when some of the audience started booing loudly.",
+          "choices": [],
+          "correct_choices": [],
+          "gaps": [
+            {
+              "accepted_values": [
+                "No sooner"
+              ]
+            }
+          ],
+          "pairs": [],
+          "teacher_questions": []
         }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "E Choose the words, Question o",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Choose a word to fill the gaps. Three of the words will not be used.\nbooming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding\nUnder her teacher’s [___], Ludmilla has developed into an accomplished pianist.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "guidance"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question a",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nUsing cannabis regularly can be addictive. [___], it can lead to taking harder drugs such as heroin.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "Moreover"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question b",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] the government does something about the National Health Service now, things will only get worse in the future.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "Unless",
-            "unles"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question c",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nA lot of money has already been spent on education. A lot more, [___], will have to be spent in the future.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "however"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question d",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nShe went to work in Paris as an au pair [___] improve her French.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "in order to"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question e",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] all the mistakes you’ve made, this is still a very good essay.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "In spite of"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question f",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nJames had too much to eat and drink last night and, [___], he had a bad night’s sleep.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "consequently"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question g",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] Tom is very good at science, his brother is absolutely hopeless.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "Whereas"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question h",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“Are you in favour of fox hunting?” “No, [___], I believe it’s cruel, barbaric and should be banned!”",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "on the contrary"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question i",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nSoldiers are taught to be obedient – [___], to obey orders without question.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "in other words"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question j",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nThere are many different ways of getting rich. You could, [___], win £1 million on the National Lottery.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "for instance"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question k",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n“[___], I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "In conclusion"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question l",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\nWhen a dog ran across the street, the car in front of us stopped suddenly, [___] causing a collision.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "thereby"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "F Advanced Vocabulary Revision: Linking words, Question m",
-      "kind": "gap_fill",
-      "points": 1,
-      "prompt": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)\nconsequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas\n[___] had the Prime Minister started his speech when some of the audience started booing loudly.",
-      "choices": [],
-      "correct_choices": [],
-      "gaps": [
-        {
-          "accepted_values": [
-            "No sooner"
-          ]
-        }
-      ],
-      "pairs": [],
-      "teacher_questions": []
+      ]
     }
   ],
   "notes": [

@@ -20,6 +20,8 @@
  *     `ExamWorkspaceBodyEditor`.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the save rules from `examWorkspaceItemSaveRules`.
+ *   - Tells the teacher when the question is a child of a parent, which
+ *     it cannot move, remove or retype here.
  */
 
 import { computed, useId } from "vue";
@@ -45,6 +47,8 @@ import {
   isEmptyChoiceText,
   NON_POSITIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
+import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
+import type { ExamWorkspaceParentChild } from "./examWorkspaceParents";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
@@ -52,6 +56,7 @@ const props = defineProps<{
   detailsOpen: boolean;
   disabled?: boolean;
   item: NativeExamItem;
+  parentChild?: ExamWorkspaceParentChild | null;
   position: number;
   showNavigation: boolean;
   total: number;
@@ -259,6 +264,15 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         </button>
       </div>
     </header>
+
+    <p
+      v-if="parentChild"
+      class="border-l-4 border-navy/35 pl-2 text-sm leading-snug text-navy"
+      data-test="exam-workspace-parent-child-note"
+    >
+      Deluppgift {{ parentChild.childIndex + 1 }} av {{ parentChild.childCount }}. Den gemensamma
+      instruktionen visas i listan över frågor. {{ PARENT_CHILD_LOCKED_COPY }}
+    </p>
 
     <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
       <label class="grid gap-1 text-xs font-semibold text-navy/80">

@@ -13,9 +13,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItemKind,
+)
 
 # Where the student writes: an underscore run, a dotted line, or empty brackets.
 _BLANK_MARKER = re.compile(r"_{3,}|\.{4,}|…{2,}|\[\s*\]|\(\s*\)")
+_CHOICE_KINDS = (NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE)
 _ITALIC = re.compile(r"<i>(.*?)</i>", re.DOTALL)
 # A mark that splits text into units: units joined with "+", or a label after each unit.
 _PLUS_JOIN = re.compile(r"\S\s*\+\s*\S")
@@ -254,8 +258,6 @@ POINT_LABEL = re.compile(
     r"|\b\d+(?:[.,]\d+)?\s*(?:poäng|points?)\b",
     re.IGNORECASE,
 )
-# An inline facit: italic answer text, with the short label that introduces it.
-_LABELLED_FACIT = re.compile(r"[^\s:<>]+:\s*<i>.*?</i>|<i>.*?</i>", re.DOTALL)
 _WORD = re.compile(r"\w+")
 
 
@@ -265,51 +267,86 @@ def points_line(text: str) -> bool:
     return rest != text and len(_WORD.findall(rest)) < 3
 
 
-def _words(text: str) -> set[str]:
-    return {w for w in _WORD.findall(text.casefold()) if len(w) > 1 and not w.isdigit()}
+# A question number printed before the question: an optional one-word prefix, a number of up to
+# three digits, then a closing mark, the end of the line, or the points label that follows it.
+_NUMBER_LABEL = re.compile(
+    r"^\s*((?:[^\W\d_]+\s+)?\d{1,3})(?!\w)(?=\s*(?:[.):]|[(\u2013\u2014-]|$))\s*([.):])?"
+)
+# A points label printed in parentheses, which no sentence of question text is.
+_PARENTHESIZED_POINTS = re.compile(
+    r"\(\s*\d+(?:[.,]\d+)?\s*(?:p|poäng|points?|pts?)\.?\s*\)", re.IGNORECASE
+)
 
 
-def content_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str | None:
-    """Rule 8: every word of the question's own paragraphs reaches the student.
+def _shown_texts(item: ProducedItem) -> list[str]:
+    return [
+        item.title or "",
+        *(s.text or "" for p in item.body for s in p.segments),
+        *(choice.text for choice in item.choices),
+        *item.match_left,
+        *item.match_right,
+    ]
 
-    Headings, points lines, inline facit with its label, blank markers, point labels,
-    numbers and single characters are exempt; so are the item's answers wherever printed.
-    A facit field that restates the line's visible wording stays text with its label.
+
+def _marker_free_texts(item: ProducedItem) -> list[str]:
+    """Texts that print no blank marker; the prompt of a choice item keeps its response position."""
+    if item.kind in _CHOICE_KINDS:
+        return [item.title or "", *(choice.text for choice in item.choices)]
+    return _shown_texts(item)
+
+
+def _first_body_text(item: ProducedItem) -> str:
+    segments = item.body[0].segments if item.body else ()
+    return segments[0].text or "" if segments else ""
+
+
+def _starts_with_label(text: str, label: str, mark: str | None) -> bool:
+    shown = _normalized(text)
+    if not shown.startswith(label):
+        return False
+    rest = shown[len(label) :]
+    if mark:
+        return not rest or rest.startswith(mark)
+    return not rest or not rest[0].isalnum()
+
+
+def label_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str | None:
+    """Rule 8: the platform numbers and scores questions, so printed labels stay out of the text.
+
+    A question number the first own chunk prints (a number, with at most one word before
+    it) does not open the title or the first body line, no points label an own chunk
+    prints appears in the title, body, options or match lists, and no blank marker is
+    printed in the title, options or match lists, nor in the body of a non-choice item.
     """
     if item.outcome == "review":
         return None
-    answers = [v for p in item.body for s in p.segments for v in s.accepted_values]
-    answers.extend(choice.text for choice in item.choices if choice.correct)
-    answers.extend(pair.right for pair in item.match_pairs)
-    shown = " ".join(
-        (
-            item.title or "",
-            *(s.text or "" for p in item.body for s in p.segments),
-            *(choice.text for choice in item.choices),
-            *item.match_left,
-            *item.match_right,
-        )
-    )
-    visible = _words(shown) | {w for answer in answers for w in _words(answer)}
-    for chunk in sources:
-        if chunk.kind == "heading" or points_line(chunk.text):
-            continue
-        restated = set(_restated_marks(chunk))
-
-        def exempt(match: re.Match[str]) -> str:
-            mark = _normalized(" ".join(_ITALIC.findall(match.group(0)))).casefold()
-            return _ITALIC.sub(r" \1 ", match.group(0)) if mark in restated else " "
-
-        text = POINT_LABEL.sub(
-            " ", _BLANK_MARKER.sub(" ", _LABELLED_FACIT.sub(exempt, chunk.marked_text))
-        )
-        missing = _words(text) - visible
-        if missing:
+    sources = tuple(sources)
+    opening = _NUMBER_LABEL.match(sources[0].text) if sources else None
+    if opening is not None:
+        label, mark = _normalized(opening.group(1)), opening.group(2)
+        if any(
+            _starts_with_label(t, label, mark) for t in (item.title or "", _first_body_text(item))
+        ):
             return (
-                f"its text omits {len(missing)} word(s) of {chunk.anchor}: copy every "
-                "student-visible word of the question's own chunks into title, body, options "
-                "or match lists, including lead-in words before a blank"
+                f"its title or first line still begins with the question number that "
+                f"{sources[0].anchor} prints: the platform numbers the questions, so leave the "
+                "printed number out"
             )
+    shown = _normalized(" ".join(_shown_texts(item)))
+    for chunk in sources:
+        labels = POINT_LABEL if points_line(chunk.text) else _PARENTHESIZED_POINTS
+        if any(_normalized(label) in shown for label in labels.findall(chunk.text)):
+            return (
+                f"its text still prints the points label that {chunk.anchor} shows: the "
+                "points belong in the points field, so leave the printed label out"
+            )
+    printed = sum(len(_BLANK_MARKER.findall(text)) for text in _marker_free_texts(item))
+    if printed:
+        return (
+            f"its title, text, options or match lists still print {printed} blank marker(s) "
+            "(an underscore run, dotted line or empty brackets): the platform draws the "
+            "answer field itself, so leave the printed marker out"
+        )
     return None
 
 

@@ -5958,6 +5958,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["NativeExamItem-Input"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /**
+             * Parents
+             * @default []
+             */
+            parents: components["schemas"]["NativeExamParent"][];
             /** Revision */
             revision: number;
             /**
@@ -5989,6 +5994,11 @@ export interface components {
             /** Items */
             items: components["schemas"]["NativeExamItem-Output"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
+            /**
+             * Parents
+             * @default []
+             */
+            parents: components["schemas"]["NativeExamParent"][];
             /** Revision */
             revision: number;
             /**
@@ -6096,6 +6106,20 @@ export interface components {
          * @enum {string}
          */
         NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
+        /**
+         * NativeExamParent
+         * @description Shared instruction for a run of consecutive child items of one kind.
+         *
+         *     A parent owns no points and no answer key: each child item keeps its own.
+         */
+        NativeExamParent: {
+            /** Instruction */
+            instruction: string[];
+            /** Item Ids */
+            item_ids: string[];
+            /** Parent Id */
+            parent_id: string;
+        };
         /** NativeGap */
         NativeGap: {
             /**

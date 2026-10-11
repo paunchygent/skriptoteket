@@ -5,9 +5,10 @@
  *   A gap item is partially keyed only while its answer key is keyed and at
  *   least one gap has no accepted values. The refusal copy names one item in
  *   the singular and several items in the plural with a Swedish list joiner.
- *   A matching item is incomplete while its key is keyed and any left or right
- *   entry is missing from the pairs or used more than once, or a pair names an
- *   unknown entry; an absent key with no pairs is never incomplete.
+ *   A matching item is incomplete while its key is keyed and any left entry
+ *   is missing from the pairs, any left or right entry is used more than once,
+ *   or a pair names an unknown entry. A right entry in no pair is a distractor
+ *   and keeps the key complete; an absent key with no pairs is never incomplete.
  */
 
 import { describe, expect, it } from "vitest";
@@ -21,7 +22,11 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
   partialGapKeyCopy,
 } from "./examWorkspaceAnswerKeyRules";
-import { buildMatchingItem, buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
+import {
+  buildMatchingItem,
+  buildMatchingItemWithDistractor,
+  buildMatchingItemWithPairs,
+} from "./examWorkspaceMatchingItem.specSupport";
 
 function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
@@ -101,7 +106,7 @@ describe("partialGapKeyCopy", () => {
 });
 
 describe("isIncompleteMatchingItem", () => {
-  it("accepts the corpus key where every entry is used exactly once", () => {
+  it("accepts the corpus key where every entry is paired once", () => {
     expect(isIncompleteMatchingItem(buildMatchingItem())).toBe(false);
   });
 
@@ -125,6 +130,42 @@ describe("isIncompleteMatchingItem", () => {
           [3, 3],
         ]),
       ),
+    ).toBe(true);
+  });
+
+  it("accepts a keyed item with an unpaired right entry", () => {
+    expect(isIncompleteMatchingItem(buildMatchingItemWithDistractor())).toBe(false);
+  });
+
+  it("rejects two left entries choosing the same right entry beside a distractor", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithDistractor({
+          answer_key: {
+            correct_choice_ids: [],
+            match_pairs: [
+              { left_id: "left_001", right_id: "right_004" },
+              { left_id: "left_002", right_id: "right_004" },
+              { left_id: "left_003", right_id: "right_003" },
+            ],
+            origin: "teacher_authored",
+          },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a distractor item that leaves a left entry unpaired", () => {
+    const item = buildMatchingItemWithDistractor();
+
+    expect(
+      isIncompleteMatchingItem({
+        ...item,
+        answer_key: {
+          ...item.answer_key,
+          match_pairs: item.answer_key.match_pairs.slice(0, 2),
+        },
+      }),
     ).toBe(true);
   });
 

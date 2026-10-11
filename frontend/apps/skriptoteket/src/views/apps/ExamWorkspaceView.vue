@@ -125,7 +125,9 @@ const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
 
 const items = computed(() => workspaceDocument.value?.items ?? []);
 
-const itemRows = computed(() => toExamWorkspaceItemRows(items.value));
+const itemRows = computed(() =>
+  toExamWorkspaceItemRows(items.value, workspaceDocument.value?.parents ?? []),
+);
 
 const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
 

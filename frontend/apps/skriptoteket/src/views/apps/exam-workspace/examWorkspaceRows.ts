@@ -14,8 +14,14 @@
 import type {
   NativeExamItem,
   NativeExamItemKind,
+  NativeExamParent,
   NativeExamReviewState,
 } from "../../../api/examWorkspace";
+import {
+  examWorkspaceParentBlocksByFirstChild,
+  examWorkspaceParentChildren,
+} from "./examWorkspaceParents";
+import type { ExamWorkspaceParentBlock, ExamWorkspaceParentChild } from "./examWorkspaceParents";
 
 const REVIEW_REASON_LABELS: Record<string, string> = {
   long_answer_key:
@@ -56,6 +62,10 @@ export type ExamWorkspaceItemRow = {
   statusLabel: string;
   reviewRequired: boolean;
   reviewReasons: string[];
+  /** Set on a child question: where it sits in its parent. */
+  parentChild: ExamWorkspaceParentChild | null;
+  /** Set only on a parent's first child: the shared instruction and total points. */
+  parentBlock: ExamWorkspaceParentBlock | null;
 };
 
 const EXCERPT_MAX_LENGTH = 140;
@@ -121,12 +131,18 @@ export function examWorkspaceDisplayTitle(title: string | null | undefined, sequ
   return trimmed.replace(prefix, "").trim();
 }
 
-export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemRow {
+export function toExamWorkspaceItemRow(
+  item: NativeExamItem,
+  parentChild: ExamWorkspaceParentChild | null = null,
+  parentBlock: ExamWorkspaceParentBlock | null = null,
+): ExamWorkspaceItemRow {
   const title =
     examWorkspaceDisplayTitle(item.title, item.sequence) || `Fråga ${item.sequence}`;
 
   return {
     itemId: item.item_id,
+    parentBlock,
+    parentChild,
     pointsLabel: examWorkspacePointsLabel(item.points ?? null),
     promptExcerpt: examWorkspacePromptExcerpt(item),
     reviewReasons: item.review.reasons.map(examWorkspaceReviewReasonLabel),
@@ -138,8 +154,15 @@ export function toExamWorkspaceItemRow(item: NativeExamItem): ExamWorkspaceItemR
   };
 }
 
-export function toExamWorkspaceItemRows(items: NativeExamItem[]): ExamWorkspaceItemRow[] {
-  return items.map(toExamWorkspaceItemRow);
+export function toExamWorkspaceItemRows(
+  items: NativeExamItem[],
+  parents: NativeExamParent[] = [],
+): ExamWorkspaceItemRow[] {
+  const blocks = examWorkspaceParentBlocksByFirstChild(parents, items);
+  const children = examWorkspaceParentChildren(parents);
+  return items.map((item) =>
+    toExamWorkspaceItemRow(item, children[item.item_id] ?? null, blocks[item.item_id] ?? null),
+  );
 }
 
 export function examWorkspaceDocumentLabel(name: string): string {

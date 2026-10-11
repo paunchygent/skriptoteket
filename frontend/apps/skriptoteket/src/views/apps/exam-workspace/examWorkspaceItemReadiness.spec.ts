@@ -18,7 +18,11 @@ import {
   examWorkspaceReadinessByItemId,
 } from "./examWorkspaceItemReadiness";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE, PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
-import { buildMatchingItem, buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
+import {
+  buildMatchingItem,
+  buildMatchingItemWithDistractor,
+  buildMatchingItemWithPairs,
+} from "./examWorkspaceMatchingItem.specSupport";
 
 function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
@@ -202,6 +206,10 @@ describe("examWorkspaceItemReadiness for matching items", () => {
     );
 
     expect(reasons).toEqual(["incomplete_match_key"]);
+  });
+
+  it("reports nothing for a keyed item with an unpaired right entry", () => {
+    expect(examWorkspaceItemReadiness(buildMatchingItemWithDistractor())).toEqual([]);
   });
 
   it("reports an entry without text", () => {

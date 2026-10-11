@@ -86,21 +86,24 @@ Rules:
   segment per gap, matching pairs entries of two lists, free_text has no choices and no gaps.
 - A question that asks the student to pair each entry of one list with an entry of another
   list (a table or two lists, answered by writing a letter or number next to each entry) is
-  matching. match_left holds the entries the student pairs from and match_right the entries
-  they choose among, each copied without its number or letter. match_pairs holds the pairs
-  the facit gives, each copying one match_left entry and the match_right entry the facit's
-  letter or number points to. The body holds the question's instructions without the lists.
+  matching. match_left holds the entries the student pairs from and match_right every entry
+  the student chooses among, also entries no pair uses, each copied without its number or
+  letter. match_pairs holds the pairs the facit gives: each match_left entry in exactly one
+  pair, copying that entry and the match_right entry the facit's letter or number points to;
+  a match_right entry no pair names stays in the list. The body holds the question's
+  instructions without the lists.
   A matching item has no gaps and no choices; an empty answer cell is no blank.
 - Choice text omits the option letter or number. Body and title omit the question number
-  and the printed points.
+  and the printed points; an item that begins with its printed question number or prints a
+  points label comes back in validation_errors.
 - A heading or label line that introduces one question, such as "Question 3 (2 points)" or
   "Part B: term (1 point)", belongs to that question: include its anchor in source_anchors,
   copy its wording without the question number and printed points as the item title (null
   when nothing else remains), and take the points it prints. title and instructions
   hold only text that belongs to no single question. A section instruction, word box or
   shared passage that serves a run of questions is an instruction, never part of the
-  first question: the converter repeats it in each question up to the next section
-  heading.
+  first question or of any question: the converter groups the questions it serves under
+  it, so no question repeats its wording.
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
   Each source chunk belongs to exactly one item, the title, an instruction, or
   answer_key_anchors.
@@ -166,7 +169,7 @@ def build_round_request(
         job_id=str(job_id),
         item_id=f"docx_batch_{round_number}",
         item_type="docx_exam",
-        prompt_template_version="docx_exam_build_v7",
+        prompt_template_version="docx_exam_build_v8",
         system_prompt=_PROMPT,
         user_payload=payload,
         output_spec=spec,

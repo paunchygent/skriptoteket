@@ -1,9 +1,9 @@
-"""Source-authored gold schema for TASK-SKRIPT-39-05-02 G1-G3."""
+"""Source-authored gold schema for TASK-SKRIPT-39-05-02 G1-G3, parents per TASK-SKRIPT-39-05-03."""
 
 from __future__ import annotations
 
 import math
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -117,16 +117,37 @@ class GoldItem(BaseModel):
         return self
 
 
+class GoldParent(BaseModel):
+    """Questions that share one instruction; each child is a complete gold item.
+
+    A parent's points are the sum of its children's points and are not stored.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    kind: Literal["parent"]
+    source_label: str
+    instruction: str
+    children: tuple[GoldItem, ...] = Field(min_length=1)
+
+    @field_validator("source_label", "instruction")
+    @classmethod
+    def _text(cls, value: str) -> str:
+        return _nonblank(value)
+
+
 class GoldExam(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["exam_conversion_gold_v1"] = "exam_conversion_gold_v1"
+    schema_version: Literal["exam_conversion_gold_v2"] = "exam_conversion_gold_v2"
     source_filename: str
     source_sha256: str = Field(pattern=r"^[0-9a-fA-F]{64}$")
     title: str
     confirmed: bool = False
     confirmation_note: str | None = None
-    items: tuple[GoldItem, ...] = Field(min_length=1)
+    items: tuple[Annotated[GoldItem | GoldParent, Field(discriminator="kind")], ...] = Field(
+        min_length=1
+    )
     notes: tuple[str, ...] = ()
 
     @field_validator("source_filename")
@@ -141,15 +162,30 @@ class GoldExam(BaseModel):
     def _title(cls, value: str) -> str:
         return _nonblank(value)
 
+    @property
+    def questions(self) -> tuple[GoldItem, ...]:
+        """Every gradable question in source order: standalone items and parent children."""
+        return tuple(
+            question
+            for item in self.items
+            for question in (item.children if isinstance(item, GoldParent) else (item,))
+        )
+
     @model_validator(mode="after")
     def _exam_fields(self) -> GoldExam:
         labels = [item.source_label for item in self.items]
+        labels.extend(
+            child.source_label
+            for item in self.items
+            if isinstance(item, GoldParent)
+            for child in item.children
+        )
         if len(set(labels)) != len(labels):
             raise ValueError("source_label must be unique per exam")
         if self.confirmed and (
             not self.confirmation_note
             or not self.confirmation_note.strip()
-            or any(item.teacher_questions for item in self.items)
+            or any(question.teacher_questions for question in self.questions)
         ):
             raise ValueError("confirmed gold needs confirmation_note and no teacher_questions")
         return self

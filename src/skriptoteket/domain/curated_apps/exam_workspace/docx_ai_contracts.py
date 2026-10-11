@@ -91,12 +91,13 @@ class ProducedItem(_Produced):
     )
     match_right: tuple[str, ...] = Field(
         default=(),
-        description="For matching: the entries the student matches them to, in source order, "
-        "without their numbers or letters; empty otherwise.",
+        description="For matching: every entry the student chooses among, in source order, "
+        "including entries no pair uses, without their numbers or letters; empty otherwise.",
     )
     match_pairs: tuple[ProducedMatchPair, ...] = Field(
         default=(),
-        description="For matching: each pair the teacher's facit keys. Empty without a facit "
+        description="For matching: each pair the teacher's facit keys, one pair per match_left "
+        "entry; a match_right entry no pair uses stays in match_right. Empty without a facit "
         "entry and for other kinds.",
     )
 

@@ -43,6 +43,7 @@ class ExamNetPdfItemLabelPolicy:
     choice_type_label: str = "Multiple choice"
     multiple_response_type_label: str = "Multiple response"
     gap_open_cloze_type_label: str = "Lucktext"
+    matching_type_label: str = "Matching"
     source_item_type_marker: str = "Typ"
     target_item_type_marker: str = "Type"
     point_label: str = "Poängvärde"
@@ -266,6 +267,70 @@ class GapOpenClozeExamNetPdfItemStrategy:
 
 
 @dataclass(frozen=True)
+class MatchingExamNetPdfItemStrategy:
+    """Render keyed matching items: both lists as the student sees them, pairs in the key."""
+
+    def render(
+        self,
+        *,
+        item: PdfExamItemSemantics,
+        context: ExamNetPdfTargetProfileContext,
+    ) -> ExamNetPdfItemStrategyResult:
+        if not item.match_left or not item.answer_key.available:
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+        left_text_by_id = {entry.entry_id: entry.text for entry in item.match_left}
+        right_text_by_id = {entry.entry_id: entry.text for entry in item.match_right}
+        pairs = item.answer_key.correct_match_pairs
+        if not pairs:
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(_missing_answer_key(item),))
+        if (
+            any(
+                pair.left_id not in left_text_by_id or pair.right_id not in right_text_by_id
+                for pair in pairs
+            )
+            or {pair.left_id for pair in pairs} != set(left_text_by_id)
+            or len(pairs) != len(left_text_by_id)
+        ):
+            return ExamNetPdfItemStrategyResult(
+                item=None,
+                warnings=(_answer_key_mismatch(item, "pairs do not key every left entry once"),),
+            )
+
+        labels = context.label_policy
+        left_html = "".join(
+            f"<p>{index}. {escape(entry.text)}</p>"
+            for index, entry in enumerate(item.match_left, start=1)
+        )
+        right_html = "".join(
+            f"<p>{_match_letter(index)}) {escape(entry.text)}</p>"
+            for index, entry in enumerate(item.match_right)
+        )
+        key_rows = "".join(
+            f"<p>{escape(left_text_by_id[pair.left_id])} – "
+            f"{escape(right_text_by_id[pair.right_id])}</p>"
+            for pair in pairs
+        )
+        body_html = (
+            f'<div class="match-left">{left_html}</div>'
+            f'<div class="match-right">{right_html}</div>'
+            f'<div class="answer-key"><p>{escape(labels.multiple_answer_key_label)}:</p>'
+            f"{key_rows}</div>"
+        )
+        return ExamNetPdfItemStrategyResult(
+            item=DigiExamExamNetPdfItemRender(
+                html=_item_shell(
+                    item=item,
+                    labels=labels,
+                    item_type_label=labels.matching_type_label,
+                    instruction="",
+                    body_html=body_html,
+                    item_type_marker=labels.target_item_type_marker,
+                )
+            )
+        )
+
+
+@dataclass(frozen=True)
 class UnsupportedExamNetPdfItemStrategy:
     """Fail closed for neutral item kinds without a governed PDF target shape."""
 
@@ -310,6 +375,7 @@ DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY = ExamNetPdfItemRenderingPolicyRegist
         PdfExamItemKind.SINGLE_CHOICE: SingleChoiceExamNetPdfItemStrategy(),
         PdfExamItemKind.MULTIPLE_RESPONSE: MultipleResponseExamNetPdfItemStrategy(),
         PdfExamItemKind.GAP_OPEN_CLOZE: GapOpenClozeExamNetPdfItemStrategy(),
+        PdfExamItemKind.MATCHING: MatchingExamNetPdfItemStrategy(),
     },
     unsupported_strategy=UnsupportedExamNetPdfItemStrategy(),
 )
@@ -353,6 +419,12 @@ def _answer_key_mismatch(
         message=f"Item {item.item_id} cannot render safely: {reason}.",
         item_id=item.item_id,
     )
+
+
+def _match_letter(index: int) -> str:
+    if index < 26:
+        return chr(ord("A") + index)
+    return str(index + 1)
 
 
 def _options_html(options: tuple[str, ...]) -> str:

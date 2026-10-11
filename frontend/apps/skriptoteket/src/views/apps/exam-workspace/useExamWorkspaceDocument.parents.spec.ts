@@ -1,0 +1,120 @@
+/**
+ * Exam workspace document state with parents.
+ *
+ * Expected behavior:
+ *   Every edit the editor offers on a child (title, points, text, gap
+ *   answers, review) and adding a question leave the parents untouched and the
+ *   children consecutive, in sequence order and of one kind, so a save never
+ *   sends a parent the server would refuse. A new question is appended after
+ *   the last item and never becomes a child.
+ */
+
+import { flushPromises } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
+import { effectScope } from "vue";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+
+const apiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceConversionStatus: vi.fn(),
+  getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceEnrichment: vi.fn(),
+  importExamWorkspaceDocument: vi.fn(),
+  listExamWorkspaceDocuments: vi.fn(),
+  saveExamWorkspaceDocument: vi.fn(),
+  startExamWorkspaceEnrichment: vi.fn(),
+}));
+
+vi.mock("../../../api/examWorkspace", () => apiMocks);
+
+function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
+  return {
+    document,
+    notes: [],
+    summary: {
+      lineage_id: "lineage-1",
+      name: "english-1.provdokument.zip",
+      saved_at: "2026-10-11T08:00:00Z",
+      vault_file_id: "file-1",
+      version: 1,
+    },
+  };
+}
+
+async function openParentDocument() {
+  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
+  const state = effectScope().run(() => useExamWorkspaceDocument());
+  if (!state) {
+    throw new Error("expected the document state to be created");
+  }
+  await state.openDocument("lineage-1");
+  await flushPromises();
+  return state;
+}
+
+function expectParentsValid(document: NativeExamDocument): void {
+  for (const parent of document.parents) {
+    const children = parent.item_ids.map((itemId) => {
+      const child = document.items.find((item) => item.item_id === itemId);
+      expect(child).toBeDefined();
+      return child!;
+    });
+    const first = children[0]!.sequence;
+    expect(children.map((child) => child.sequence)).toEqual(
+      children.map((_, index) => first + index),
+    );
+    expect(new Set(children.map((child) => child.kind)).size).toBe(1);
+  }
+}
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+  apiMocks.getExamWorkspaceDocument.mockReset();
+  apiMocks.saveExamWorkspaceDocument.mockReset();
+});
+
+describe("parents in useExamWorkspaceDocument", () => {
+  it("keeps parents and children valid through every child edit and an added question", async () => {
+    const original = buildParentDocument();
+    const state = await openParentDocument();
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse(original));
+    const child = original.items[1]!;
+    const gapId = child.gaps[0]!.gap_id;
+
+    state.updateItemTitle("item_002", "Sentence two");
+    state.updateItemPoints("item_002", 2);
+    state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
+    state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", text: "Edited." }]);
+    state.markItemReviewed("item_002");
+    state.addItem();
+
+    await expect(state.saveDocument()).resolves.toBe(true);
+
+    const sent = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document as NativeExamDocument;
+    expect(sent.parents).toEqual(original.parents);
+    expect(sent.items.map((item) => item.item_id)).toEqual([
+      "item_001",
+      "item_002",
+      "item_003",
+      "item_004",
+      "item_005",
+    ]);
+    expect(sent.items[4]!.sequence).toBe(5);
+    expect(sent.parents.flatMap((parent) => parent.item_ids)).not.toContain("item_005");
+    expectParentsValid(sent);
+  });
+
+  it("changes only the edited child's points, so the parent total follows from its children", async () => {
+    const state = await openParentDocument();
+
+    state.updateItemPoints("item_003", null);
+
+    const document = state.workspaceDocument.value!;
+    expect(document.items.map((item) => item.points)).toEqual([1, 1, null, 1]);
+    expect(document.parents).toEqual(buildParentDocument().parents);
+  });
+});

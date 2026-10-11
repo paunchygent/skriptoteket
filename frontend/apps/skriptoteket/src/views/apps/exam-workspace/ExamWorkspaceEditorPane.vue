@@ -79,6 +79,10 @@ const emit = defineEmits<{
 
 const isPhone = computed(() => props.layout === "phone");
 
+const selectedParentChild = computed(
+  () => props.itemRows.find((row) => row.itemId === props.selectedItemId)?.parentChild ?? null,
+);
+
 const selectedReadiness = computed(() =>
   props.selectedItem ? (props.readinessByItemId[props.selectedItem.item_id] ?? []) : [],
 );
@@ -130,6 +134,7 @@ const redigeraGridClass = computed(() => {
             :details-open="detailsOpen"
             :disabled="disabled"
             :item="selectedItem"
+            :parent-child="selectedParentChild"
             :position="selectedPosition"
             :show-navigation="!isPhone"
             :total="itemCount"

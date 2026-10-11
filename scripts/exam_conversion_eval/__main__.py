@@ -158,20 +158,21 @@ async def _evaluate(
         clock=UTCClock(),
         enabled=True,
     )
+    chunks = PythonDocxExamChunker().chunk(content=content)
     try:
         result = await converter.convert(
             job_id=uuid4(),
             document_id=uuid4(),
             filename=docx.name,
             source_sha256=source_sha256,
-            chunks=PythonDocxExamChunker().chunk(content=content),
+            chunks=chunks,
         )
     except Exception as error:
         return _ExamReport(
             exam=docx.stem,
             gold_title=gold.title,
             title=None,
-            gold_items=len(gold.items),
+            gold_items=len(gold.questions),
             converted_items=0,
             input_tokens=None,
             output_tokens=None,
@@ -183,13 +184,13 @@ async def _evaluate(
         exam=docx.stem,
         gold_title=gold.title,
         title=result.document.title,
-        gold_items=len(gold.items),
+        gold_items=len(gold.questions),
         converted_items=len(result.document.items),
         input_tokens=result.input_tokens,
         output_tokens=result.output_tokens,
         events=tuple(event.as_json() for event in result.events),
         crash=None,
-        comparison=compare_native_exam(gold, result.document),
+        comparison=compare_native_exam(gold, result.document, [chunk.text for chunk in chunks]),
     )
 
 
@@ -241,8 +242,8 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
         print(
             "  failing items per principle: " + ", ".join(f"{p} {n}" for p, n in failures.items())
         )
-        if report.title != report.gold_title:
-            print(f"  title differs: gold={report.gold_title!r} actual={report.title!r}")
+        if not report.comparison.title.passed:
+            print(f"  title fails: gold={report.gold_title!r} actual={report.title!r}")
         if report.crash:
             print(f"  conversion crashed: {report.crash[:300]}")
         for item in failed:

@@ -25,10 +25,13 @@ from pydantic import (
     model_validator,
 )
 
+from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v1"] = "native_exam_document_v1"
 
+NativeExamParent = native_exam_parent.NativeExamParent
+parent_points = native_exam_parent.parent_points
 _ITEM_ID_PATTERN = r"^item_[0-9]{3,4}$"
 _CHOICE_ID_PATTERN = r"^choice_[0-9]{3}$"
 _GAP_ID_PATTERN = r"^gap_[0-9]{3}$"
@@ -326,7 +329,7 @@ class NativeExamItem(BaseModel):
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
     def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
-        """Each entry of both lists is paired exactly once, as the Exam.net match sets need."""
+        """Every left entry is paired once; unpaired right entries are distractors."""
         if self.answer_key.correct_choice_ids:
             raise ValueError("matching items key pairs, not choices")
         left_ids = {entry.left_id for entry in self.match_left}
@@ -337,8 +340,8 @@ class NativeExamItem(BaseModel):
             raise ValueError("match pairs must refer to declared entries")
         if sorted(paired_left) != sorted(left_ids):
             raise ValueError("a keyed matching item pairs every left entry exactly once")
-        if sorted(paired_right) != sorted(right_ids):
-            raise ValueError("a keyed matching item pairs every right entry exactly once")
+        if len(set(paired_right)) != len(paired_right):
+            raise ValueError("a keyed matching item pairs each right entry at most once")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []
@@ -386,6 +389,7 @@ class NativeExamDocument(BaseModel):
     title: str = Field(min_length=1)
     instructions: tuple[str, ...] = ()
     items: tuple[NativeExamItem, ...] = Field(min_length=1)
+    parents: tuple[NativeExamParent, ...] = ()
     assets: tuple[NativeExamAsset, ...] = ()
     origin: NativeExamDocumentOrigin
 
@@ -411,7 +415,11 @@ class NativeExamDocument(BaseModel):
         orphans = known_assets - referenced
         if orphans:
             raise ValueError(f"unreferenced assets: {sorted(orphans)}")
+        native_exam_parent.validate_parent_structure(self.parents, self.items)
         return self
+
+    def parent_of(self, item_id: str) -> NativeExamParent | None:
+        return next((parent for parent in self.parents if item_id in parent.item_ids), None)
 
     def item_by_id(self, item_id: str) -> NativeExamItem:
         for item in self.items:

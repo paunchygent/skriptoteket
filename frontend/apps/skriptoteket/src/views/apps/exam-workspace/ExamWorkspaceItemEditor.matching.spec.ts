@@ -5,7 +5,8 @@
  *   A matching item shows numbered left rows with a text input and a select
  *   of lettered right entries; choosing an answer emits the full pair list in
  *   left order, clearing the last choice emits an empty list, an entry text
- *   edit emits its side and id, an incomplete key shows the inline guidance,
+ *   edit emits its side and id, an incomplete key shows the inline guidance, a right entry in no pair keeps
+ *   the key complete,
  *   and an empty entry text shows the entry hint.
  */
 
@@ -14,7 +15,12 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
-import { buildMatchingItem, buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
+import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import {
+  buildMatchingItem,
+  buildMatchingItemWithDistractor,
+  buildMatchingItemWithPairs,
+} from "./examWorkspaceMatchingItem.specSupport";
 
 function mountEditor(item: NativeExamItem) {
   return mount(ExamWorkspaceItemEditor, {
@@ -88,8 +94,38 @@ describe("ExamWorkspaceItemEditor matching fieldset", () => {
     );
 
     expect(wrapper.get('[data-test="exam-workspace-match-key-hint"]').text()).toBe(
-      "Välj ett svar för varje rad och använd varje svar en gång, eller lämna alla rader utan svar om frågan ska sakna facit.",
+      INCOMPLETE_MATCH_KEY_GUIDANCE,
     );
+  });
+
+  it("offers an unpaired right entry as a choice without flagging the key", () => {
+    const wrapper = mountEditor(buildMatchingItemWithDistractor());
+
+    expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
+    expect(
+      wrapper
+        .get('[data-test="exam-workspace-match-pair-left_001"]')
+        .findAll("option")
+        .map((option) => option.text()),
+    ).toContain("D – ferocious");
+  });
+
+  it("flags two left entries that choose the same right entry beside a distractor", () => {
+    const wrapper = mountEditor(
+      buildMatchingItemWithDistractor({
+        answer_key: {
+          correct_choice_ids: [],
+          match_pairs: [
+            { left_id: "left_001", right_id: "right_004" },
+            { left_id: "left_002", right_id: "right_004" },
+            { left_id: "left_003", right_id: "right_003" },
+          ],
+          origin: "teacher_authored",
+        },
+      }),
+    );
+
+    expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(true);
   });
 
   it("emits the side and id of an edited entry text", async () => {

@@ -19,9 +19,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     OPENING_HEADING_IS_TITLE,
-    content_rule_violation,
     definition_context,
     item_rule_violation,
+    label_rule_violation,
     opening_heading,
     title_rule_violation,
     with_accepted_forms,
@@ -141,12 +141,12 @@ def _admit_item(
         _require_anchors(anchors, state, seen)
         own = tuple(state.chunk_by_anchor[a] for a in anchors)
         produced = with_printed_hints(produced, own)
-        violation = item_rule_violation(produced, own) or content_rule_violation(produced, own)
+        violation = item_rule_violation(produced, own) or label_rule_violation(produced, own)
         if violation:
             raise _Rejected(
                 "source_rule",
                 violation,
-                "Frågans luckor eller svarstyp följer inte källans struktur.",
+                "Frågans luckor, svarstyp eller etiketter följer inte källans struktur.",
             )
         try:
             if produced.outcome == "review":

@@ -4,8 +4,8 @@
  * Domain purpose:
  *   Decide whether a gap item carries a partial answer key (keyed, but with
  *   empty accepted values in some gaps) or a matching item carries an
- *   incomplete pair list (keyed, but not every left and right entry used
- *   exactly once), and build the Swedish guidance copy the teacher sees
+ *   incomplete pair list (keyed, but not every left entry in exactly one
+ *   pair, or a right entry in more than one pair), and build the Swedish guidance copy the teacher sees
  *   inline and when a save is refused.
  *
  * Relationships:
@@ -20,7 +20,7 @@ export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
 
 export const INCOMPLETE_MATCH_KEY_GUIDANCE =
-  "Välj ett svar för varje rad och använd varje svar en gång, eller lämna alla rader utan svar om frågan ska sakna facit.";
+  "Välj ett svar för varje rad. Ett svar får användas högst en gång; svar som inte hör till någon rad får stå kvar. Eller lämna alla rader utan svar om frågan ska sakna facit.";
 
 function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
@@ -35,13 +35,14 @@ export function isPartiallyKeyedGapItem(item: NativeExamItem): boolean {
   );
 }
 
-function eachUsedOnce(ids: string[], pairIds: string[]): boolean {
-  return ids.every((id) => pairIds.filter((pairId) => pairId === id).length === 1);
+function countOf(id: string, pairIds: string[]): number {
+  return pairIds.filter((pairId) => pairId === id).length;
 }
 
 /**
- * A keyed matching item needs every left and every right entry in exactly one
- * pair, and no pair naming an unknown entry; the server refuses anything else.
+ * A keyed matching item needs every left entry in exactly one pair and each
+ * right entry in at most one pair (unpaired right entries are distractors),
+ * and no pair naming an unknown entry; the server refuses anything else.
  */
 export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
   if (item.kind !== "matching" || !hasKeyedOrigin(item)) {
@@ -57,8 +58,8 @@ export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
     pairRightIds.every((id) => rightIds.includes(id));
   return !(
     namesOnlyKnownEntries &&
-    eachUsedOnce(leftIds, pairLeftIds) &&
-    eachUsedOnce(rightIds, pairRightIds)
+    leftIds.every((id) => countOf(id, pairLeftIds) === 1) &&
+    rightIds.every((id) => countOf(id, pairRightIds) <= 1)
   );
 }
 

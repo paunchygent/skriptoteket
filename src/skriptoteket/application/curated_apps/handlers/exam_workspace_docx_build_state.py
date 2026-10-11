@@ -117,7 +117,7 @@ class DocxBuildState:
         )
         for anchor in unsplit:
             self.record("fallback", "section_points_unsplit", anchors=(anchor,))
-        return assemble_build_result(
+        result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
@@ -131,3 +131,8 @@ class DocxBuildState:
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,
         )
+        for event in result.events[len(self.events) :]:
+            logger.warning(
+                "DOCX build failure observed", job_id=str(self.job_id), **event.as_json()
+            )
+        return result

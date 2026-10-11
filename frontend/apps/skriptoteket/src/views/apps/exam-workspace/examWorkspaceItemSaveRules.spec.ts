@@ -13,7 +13,11 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
-import { buildMatchingItem, buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
+import {
+  buildMatchingItem,
+  buildMatchingItemWithDistractor,
+  buildMatchingItemWithPairs,
+} from "./examWorkspaceMatchingItem.specSupport";
 
 function buildChoiceItem(
   sequence: number,
@@ -80,6 +84,10 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 describe("examWorkspaceSaveRefusalCopy for matching items", () => {
   it("is null for a fully keyed matching item", () => {
     expect(examWorkspaceSaveRefusalCopy([buildMatchingItem()])).toBeNull();
+  });
+
+  it("is null for a keyed matching item with an unpaired right entry", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildMatchingItemWithDistractor()])).toBeNull();
   });
 
   it("is null once every pair is cleared and the key becomes absent", () => {

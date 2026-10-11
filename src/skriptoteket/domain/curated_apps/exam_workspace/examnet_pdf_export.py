@@ -43,6 +43,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
     PdfExamGapSemantics,
     PdfExamItemKind,
     PdfExamItemSemantics,
+    PdfExamMatchEntrySemantics,
+    PdfExamMatchPairSemantics,
     PdfExamOptionSemantics,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
@@ -70,8 +72,7 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.SINGLE_CHOICE: PdfExamItemKind.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: PdfExamItemKind.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
-    # The Exam.net PDF profile has no matching family; its strategy reports the item.
-    NativeExamItemKind.MATCHING: PdfExamItemKind.UNSUPPORTED,
+    NativeExamItemKind.MATCHING: PdfExamItemKind.MATCHING,
 }
 # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
 # already blocks keyed items without a key before export. An unkeyed keyed item
@@ -96,6 +97,7 @@ def native_exam_to_pdf_document(
         item_render, item_warnings = _render_item(
             item=item,
             asset_paths_by_id=asset_paths_by_id,
+            parent_instruction_html=_parent_instruction_html(document, item),
         )
         warnings.extend(item_warnings)
         if item_render is not None:
@@ -115,6 +117,7 @@ def _render_item(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
+    parent_instruction_html: str,
 ) -> tuple[DigiExamExamNetPdfItemRender | None, tuple[DigiExamExamNetPdfWarning, ...]]:
     if item.points is None:
         return None, (
@@ -135,7 +138,11 @@ def _render_item(
             ),
         )
 
-    item_semantics = _pdf_item_semantics(item=item, points=item.points, prompt_html=prompt_html)
+    item_semantics = _pdf_item_semantics(
+        item=item,
+        points=item.points,
+        prompt_html=parent_instruction_html + prompt_html,
+    )
     strategy_result = DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY.render(
         item=item_semantics,
         context=DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
@@ -161,6 +168,14 @@ def _pdf_item_semantics(
             for choice in item.choices
         ),
         gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.gaps),
+        match_left=tuple(
+            PdfExamMatchEntrySemantics(entry_id=entry.left_id, text=entry.text)
+            for entry in item.match_left
+        ),
+        match_right=tuple(
+            PdfExamMatchEntrySemantics(entry_id=entry.right_id, text=entry.text)
+            for entry in item.match_right
+        ),
         answer_key=PdfExamAnswerKeySemantics(
             available=item.answer_key.origin not in _UNKEYED_ORIGINS,
             correct_option_ids=tuple(
@@ -171,8 +186,21 @@ def _pdf_item_semantics(
                 for gap in item.gaps
                 for value in gap.accepted_values
             ),
+            correct_match_pairs=tuple(
+                PdfExamMatchPairSemantics(left_id=pair.left_id, right_id=pair.right_id)
+                for pair in item.answer_key.match_pairs
+            ),
         ),
     )
+
+
+def _parent_instruction_html(document: NativeExamDocument, item: NativeExamItem) -> str:
+    """The parent's instruction, printed once with the first child item."""
+    parent = document.parent_of(item.item_id)
+    if parent is None or parent.item_ids[0] != item.item_id:
+        return ""
+    lines = "".join(f"<p>{escape(line)}</p>" for line in parent.instruction)
+    return f'<div class="parent-instruction">{lines}</div>'
 
 
 def _prompt_html(*, item: NativeExamItem, asset_paths_by_id: Mapping[str, str]) -> str:

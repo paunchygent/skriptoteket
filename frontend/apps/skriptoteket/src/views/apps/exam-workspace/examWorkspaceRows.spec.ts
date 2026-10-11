@@ -131,6 +131,8 @@ describe("examWorkspaceRows", () => {
 
     expect(row).toEqual({
       itemId: "item_001",
+      parentBlock: null,
+      parentChild: null,
       pointsLabel: "–",
       promptExcerpt: "Beskriv fotosyntesen.",
       reviewReasons: ["osäker tolkning av frågetexten"],

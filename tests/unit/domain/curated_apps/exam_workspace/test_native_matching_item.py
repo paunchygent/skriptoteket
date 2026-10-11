@@ -1,10 +1,12 @@
 """Matching items: native invariants, produced-item mapping and Exam.net export on a gold item."""
 
+import io
 import re
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from docx import Document as DocxDocument
 from pydantic import ValidationError
 
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
@@ -32,7 +34,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeGap,
     NativeMatchPair,
+    NativeMatchRight,
     native_export_blockers,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+    exam_workspace_docx_writer,
 )
 
 _GOLD = Path("tests/fixtures/exam_conversion/docx_corpus/gold")
@@ -43,7 +49,7 @@ _ENTRY_LABEL = re.compile(r"^\s*(?:[A-Za-z]|\d{1,3})\s*[.)]\s+")
 
 def _gold_item() -> GoldItem:
     exam = GoldExam.model_validate_json((_GOLD / f"{_STEM}.json").read_text())
-    return next(item for item in exam.items if item.source_label == _LABEL)
+    return next(item for item in exam.questions if item.source_label == _LABEL)
 
 
 def _table(item: GoldItem) -> tuple[list[str], list[str]]:
@@ -99,6 +105,14 @@ def _keyed(*pairs: tuple[str, str]) -> NativeAnswerKey:
         origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
         match_pairs=tuple(NativeMatchPair(left_id=a, right_id=b) for a, b in pairs),
     )
+
+
+_DISTRACTOR = "an entry no left entry matches"
+
+
+def _with_distractor(item: NativeExamItem) -> NativeExamItem:
+    extra = NativeMatchRight(right_id=f"right_{len(item.match_right) + 1:03d}", text=_DISTRACTOR)
+    return _with(item, match_right=(*item.match_right, extra))
 
 
 def _document(item: NativeExamItem) -> NativeExamDocument:
@@ -190,17 +204,37 @@ def test_produced_pairs_that_use_one_right_entry_twice_fail_the_native_contract(
     first, second, third = gold.pairs
     twice = ((first.left, first.right), (second.left, first.right), (third.left, third.right))
 
-    with pytest.raises(ValidationError, match="pairs every right entry exactly once"):
+    with pytest.raises(ValidationError, match="pairs each right entry at most once"):
         native_item(_produced(pairs=twice))
 
 
-def test_right_entry_used_twice_leaves_another_right_entry_unpaired():
-    item = _valid()
+def test_right_entry_used_twice_is_rejected_even_with_a_distractor_to_spare():
+    item = _with_distractor(_valid())
     pairs = item.answer_key.match_pairs
     reused = (pairs[0], pairs[1].model_copy(update={"right_id": pairs[0].right_id}), pairs[2])
 
-    with pytest.raises(ValidationError, match="pairs every right entry exactly once"):
+    with pytest.raises(ValidationError, match="pairs each right entry at most once"):
         _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": reused}))
+
+
+def test_right_entry_without_a_pair_is_a_distractor_and_the_item_validates():
+    item = _with_distractor(_valid())
+
+    assert len(item.match_right) == len(item.match_left) + 1
+    paired = {pair.right_id for pair in item.answer_key.match_pairs}
+    assert [e.right_id for e in item.match_right if e.right_id not in paired] == ["right_004"]
+    assert native_export_blockers(_document(item)) == ()
+
+
+def test_distractors_are_listed_by_the_docx_writer_and_stay_out_of_its_pairs():
+    item = _with_distractor(_valid())
+
+    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(_document(item))
+
+    texts = [paragraph.text for paragraph in DocxDocument(io.BytesIO(content)).paragraphs]
+    assert f"D) {_DISTRACTOR}" in texts
+    assert not [t for t in texts if t.startswith("Par:") and _DISTRACTOR in t]
+    assert len([t for t in texts if t.startswith("Par:")]) == len(item.answer_key.match_pairs)
 
 
 def test_left_entry_without_a_pair_is_rejected():
