@@ -359,3 +359,34 @@ async def test_recorded_english_current_input_keys_matching_letters_from_facit()
     ]
     _assert_no_facit(result, chunks, _ENGLISH, response)
     _assert_no_italic_tags(result.document)
+
+
+async def test_empty_model_text_segments_change_no_item_in_the_recorded_course_exam():
+    """The first live eval run crashed on a review item carrying a text segment with text ""."""
+    name = "svenska_2_kursavslutande_prov_docx_build_response_v2.json"
+    content = json.loads((_FIXTURES / name).read_text())
+    empty: dict[str, object] = {"kind": "text", "text": "", "accepted_values": [], "hint": None}
+    items = content["items"]
+    assert [items[n]["outcome"] for n in (0, 15)] == ["converted", "review"]
+    items[0]["body"][0]["segments"].append(empty)
+    items[0]["body"].append({"segments": [empty]})
+    items[15]["body"][0]["segments"].insert(0, empty)
+    items[15]["body"].append({"segments": [empty]})
+    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
+        content=(_FIXTURES / f"docx_corpus/{_COURSE_EXAM}.docx").read_bytes()
+    )
+    converter, provider = ports()
+    provider.complete_structured.return_value = StructuredLLMResponse(
+        content, "completed", StructuredLLMUsage()
+    )
+    result = await converter.convert(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename=f"{_COURSE_EXAM}.docx",
+        source_sha256="a" * 64,
+        chunks=chunks,
+    )
+    recorded, _ = await _replay(_COURSE_EXAM, name)
+    assert provider.complete_structured.await_count == 1
+    assert result.document.items == recorded.document.items
+    assert [e.code for e in result.events] == [e.code for e in recorded.events]

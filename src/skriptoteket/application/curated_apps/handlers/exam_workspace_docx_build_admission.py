@@ -104,15 +104,16 @@ def _admit_item(
         produced = _parse(ProducedItem, raw)
         anchors = produced.source_anchors
         _require_anchors(anchors, state, seen)
-        if produced.outcome == "review":
-            cause = produced.review_reason or "ingen orsak angavs"
-            reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
-            state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
-            state.accepted.append((review_item(produced, reason), anchors))
-            seen.update(anchors)
-            return
         try:
-            item = native_item(produced)
+            if produced.outcome == "review":
+                cause = produced.review_reason or "ingen orsak angavs"
+                reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
+                item = review_item(produced, reason)
+                state.record(
+                    "admission", "model_review", item=index, anchors=anchors, detail=reason
+                )
+            else:
+                item = native_item(produced)
         except ValidationError as error:
             detail = validation_detail(error)
             raise _Rejected(

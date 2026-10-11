@@ -7,6 +7,7 @@ they share the request session, UoW, and vault repositories.
 
 from __future__ import annotations
 
+import httpx
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
@@ -43,12 +44,14 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_re
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
+    OpenAIAnswerKeyStructuredProvider,
+)
 from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_docx_conversion_profile,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamAnswerKeyProposedOverlayRepositoryProtocol,
@@ -84,14 +87,20 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def docx_converter(
         self,
-        provider: AnswerKeyStructuredProviderProtocol,
+        client: httpx.AsyncClient,
         leases: AnswerKeyTokenLeaseRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
     ) -> DocxAIConverter:
+        """Whole-exam rounds outlast the answer-key timeout, so the provider has its own."""
         return DocxAIConverter(
-            provider=provider,
+            provider=OpenAIAnswerKeyStructuredProvider(
+                client=client,
+                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
+            ),
             profile=build_luna_docx_conversion_profile(settings),
             leases=leases,
             uow=uow,
