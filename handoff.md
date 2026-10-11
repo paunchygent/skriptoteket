@@ -5,18 +5,21 @@
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
 
-  - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress`: merged `448bdf50` after three Boy Scout rounds (Sol
-    rereview approved `40be487f`). Staging healthy at `52836a99`. Next: one
-    DOCX upload walk on staging (covers 39-05-02 fixes), then user closure.
-  - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
-    `in_progress`: eval command wired to the production converter; recorded
-    responses for all eight exams; empty-segment crash fixed; DOCX provider
-    timeout 300 s (answer-key flows keep 90 s). Sol review approved `5fa7ca37`,
-    merged `52836a99`. Recorded eval: 17/314 items match gold, mostly dropped
-    section instructions. Follow-up (user decision 2026-10-11): parallel
-    conversion by question group is a later, separate decision. Next: close
-    the gold gap.
+  - TASK-SKRIPT-39-05-01, -02 and
+    [-03](docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md)
+    `in_progress`: 03 rereview approved `8441c8f3`, merged `1db37835`, pushed.
+    Staging walk 2026-10-11 on `1db37835` (DOCX upload as proof user): the three
+    Svenska 2 exams, `sa24` and `bf26_english` match gold on all eight
+    principles (166/166 items, titles right); bf26 matching edit saved and QTI
+    export carries it. Evidence: retained root
+    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`. Next: user
+    closure of 01-03.
+  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
+    `in_progress`, Codex lead `18bb0b85` (thread `01a12ad3`) in worktree
+    `Skriptoteket-task-skript-39-05-04`. v1/v2 sweep and D16 tables done
+    (`evidence/task-skript-39-05-04/labeler/takeover-tables/`); context audit
+    admitted (`labeler/context-audit/`). Next: measure v3 tight context, then
+    user decides threshold and D16; then grouping/batching D11-D13.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b0d5850fcecac7263c311732f6f892794a36f679ac3397b6f837dd8dfb4c99b1",
+  "source_set_digest": "1cbb5a5497f2f85f29d1b7f65a21cdfc61827d83af3f138a8505509b2457dab8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4670,7 +4670,7 @@
       "type": "task",
       "title": "Fix the conversion defects the staging corpus walk found",
       "path": "docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
