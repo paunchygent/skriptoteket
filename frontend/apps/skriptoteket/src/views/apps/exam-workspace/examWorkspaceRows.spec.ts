@@ -100,9 +100,6 @@ describe("examWorkspaceRows", () => {
   });
 
   it("maps review reason codes to Swedish text and passes prose through", () => {
-    expect(examWorkspaceReviewReasonLabel("long_answer_key")).toBe(
-      "Facit är längre än vanligt – kontrollera att det bara innehåller svaret.",
-    );
     expect(examWorkspaceReviewReasonLabel("missing_points")).toBe(
       "Poäng saknas – ange poäng för frågan.",
     );

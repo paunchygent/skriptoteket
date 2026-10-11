@@ -16,8 +16,7 @@ the shared `instruction` and `children`, each a complete item whose `prompt`
 omits the instruction lines. A parent's points are the sum of its children's
 points and are not stored. A question that shares its instruction with no
 neighbour stays a standalone item. Source labels are unique across standalone
-items, parents and children. `scripts/exam_conversion_eval/move_gold_to_parents.py`
-performed the one-off move from v1.
+items, parents and children.
 The comparator is `scripts/exam_conversion_eval/compare.py`. A gold file is one
 correct conversion, so the comparator judges the eight conversion principles of
 TASK-SKRIPT-39-05-03 against it rather than textual identity. Reports keep the

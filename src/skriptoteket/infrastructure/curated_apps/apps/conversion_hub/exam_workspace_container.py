@@ -96,7 +96,7 @@ class ExamWorkspaceContainerCodec:
                     raise _invalid("Dokumentfilen innehåller en otillåten post.")
                 assets_by_id[name[len(_ASSET_PREFIX) :]] = archive.read(name)
 
-            notes_raw = manifest.get("notes", [])
+            notes_raw = manifest.get("notes")
             if not isinstance(notes_raw, list) or any(
                 not isinstance(note, str) for note in notes_raw
             ):
