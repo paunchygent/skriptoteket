@@ -3898,6 +3898,10 @@ export interface components {
         };
         /** CreateDraftVersionRequest */
         CreateDraftVersionRequest: {
+            /** Bundle Files */
+            bundle_files?: {
+                [key: string]: string;
+            };
             /** Change Summary */
             change_summary?: string | null;
             /** Derived From Version Id */
@@ -4419,6 +4423,10 @@ export interface components {
         };
         /** EditorBootResponse */
         EditorBootResponse: {
+            /** Bundle Files */
+            bundle_files: {
+                [key: string]: string;
+            };
             /** Create Draft From Version Id */
             create_draft_from_version_id: string | null;
             /** Draft Head Id */
@@ -7776,6 +7784,10 @@ export interface components {
         };
         /** SaveDraftVersionRequest */
         SaveDraftVersionRequest: {
+            /** Bundle Files */
+            bundle_files?: {
+                [key: string]: string;
+            };
             /** Change Summary */
             change_summary?: string | null;
             /**

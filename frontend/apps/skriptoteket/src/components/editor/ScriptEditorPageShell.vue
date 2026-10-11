@@ -6,6 +6,7 @@ import WorkflowActionModal from "./WorkflowActionModal.vue";
 import WorkingCopyRestorePrompt from "./WorkingCopyRestorePrompt.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 import { useScriptEditorPageState } from "../../composables/editor/useScriptEditorPageState";
+import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 
 const {
   errorMessage,
@@ -39,6 +40,7 @@ const {
   changeSummary,
   entrypoint,
   sourceCode,
+  bundleFiles,
   settingsSchemaText,
   inputSchemaText,
   usageInstructions,
@@ -194,7 +196,7 @@ const {
             :base-version-id="selectedVersion?.id ?? null"
             :is-read-only="isReadOnly"
             :editor-view="editorView"
-            :compare-active-file-id="compareActiveFileId"
+            :compare-active-file-id="isVirtualFileId(compareActiveFileId) ? compareActiveFileId : null"
             :fields="aiFields"
             :create-before-apply-checkpoint="createBeforeAiApplyCheckpoint"
             :is-chat-drawer-open="isChatDrawerOpen"
@@ -207,6 +209,7 @@ const {
               v-model:change-summary="changeSummary"
               v-model:entrypoint="entrypoint"
               v-model:source-code="sourceCode"
+              v-model:bundle-files="bundleFiles"
               v-model:settings-schema-text="settingsSchemaText"
               v-model:input-schema-text="inputSchemaText"
               v-model:usage-instructions="usageInstructions"

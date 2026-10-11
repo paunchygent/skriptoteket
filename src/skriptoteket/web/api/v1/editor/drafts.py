@@ -36,6 +36,8 @@ async def create_draft_version(
         "source_code": payload.source_code,
         "change_summary": payload.change_summary,
     }
+    if "bundle_files" in payload.model_fields_set:
+        command_payload["bundle_files"] = payload.bundle_files
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
     if "input_schema" in payload.model_fields_set:
@@ -66,6 +68,8 @@ async def save_draft_version(
         "source_code": payload.source_code,
         "change_summary": payload.change_summary,
     }
+    if "bundle_files" in payload.model_fields_set:
+        command_payload["bundle_files"] = payload.bundle_files
     if "settings_schema" in payload.model_fields_set:
         command_payload["settings_schema"] = payload.settings_schema
     if "input_schema" in payload.model_fields_set:

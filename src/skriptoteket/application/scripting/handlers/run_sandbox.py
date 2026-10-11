@@ -27,6 +27,7 @@ from skriptoteket.domain.scripting.tool_settings import (
     compute_sandbox_settings_context,
     normalize_tool_settings_schema,
 )
+from skriptoteket.domain.scripting.tool_versions import validate_bundle_files
 from skriptoteket.domain.scripting.ui.state_update import resolve_state_update
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.clock import ClockProtocol
@@ -79,6 +80,7 @@ def _snapshot_payload_bytes(
     *,
     entrypoint: str,
     source_code: str,
+    bundle_files: dict[str, str],
     settings_schema: Sequence[BaseModel] | None,
     input_schema: Sequence[BaseModel],
     usage_instructions: str | None,
@@ -86,6 +88,7 @@ def _snapshot_payload_bytes(
     payload = {
         "entrypoint": entrypoint,
         "source_code": source_code,
+        "bundle_files": bundle_files,
         "settings_schema": _serialize_optional_schema(settings_schema),
         "input_schema": _serialize_schema(input_schema),
         "usage_instructions": usage_instructions,
@@ -139,6 +142,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         if not entrypoint:
             raise validation_error("entrypoint is required")
         source_code = command.snapshot_payload.source_code
+        bundle_files = validate_bundle_files(bundle_files=command.snapshot_payload.bundle_files)
         settings_schema = normalize_tool_settings_schema(
             settings_schema=command.snapshot_payload.settings_schema
         )
@@ -149,6 +153,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
         payload_bytes = _snapshot_payload_bytes(
             entrypoint=entrypoint,
             source_code=source_code,
+            bundle_files=bundle_files,
             settings_schema=settings_schema,
             input_schema=input_schema,
             usage_instructions=usage_instructions,
@@ -239,6 +244,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 created_by_user_id=actor.id,
                 entrypoint=entrypoint,
                 source_code=source_code,
+                bundle_files=bundle_files,
                 settings_schema=settings_schema,
                 input_schema=input_schema,
                 usage_instructions=usage_instructions,
@@ -297,6 +303,7 @@ class RunSandboxHandler(RunSandboxHandlerProtocol):
                 version_override=ToolVersionOverride(
                     entrypoint=entrypoint,
                     source_code=source_code,
+                    bundle_files=bundle_files,
                     settings_schema=settings_schema,
                     input_schema=input_schema,
                     usage_instructions=usage_instructions,

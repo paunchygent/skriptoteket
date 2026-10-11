@@ -1,6 +1,6 @@
 import { createTwoFilesPatch } from "diff";
 
-import type { VirtualFileId } from "../virtualFiles";
+import type { EditorFileId } from "../bundleFiles";
 
 export function normalizeTextForPatch(text: string): string {
   const normalized = text.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
@@ -11,7 +11,7 @@ export function normalizeTextForPatch(text: string): string {
 }
 
 export function buildUnifiedPatch(params: {
-  virtualFileId: VirtualFileId;
+  virtualFileId: EditorFileId;
   before: string;
   after: string;
 }): string {

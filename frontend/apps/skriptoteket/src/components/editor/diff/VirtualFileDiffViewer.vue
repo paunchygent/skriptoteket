@@ -4,23 +4,23 @@ import { python } from "@codemirror/lang-python";
 import type { Extension } from "@codemirror/state";
 import { computed, ref, watch } from "vue";
 
+import {
+  editorFileLabel,
+  editorFileLanguage,
+  type EditorFileDiffItem,
+  type EditorFileId,
+} from "../../../composables/editor/bundleFiles";
 import { buildUnifiedPatch, normalizeTextForPatch } from "../../../composables/editor/diff/unifiedPatch";
-import type { VirtualFileId } from "../../../composables/editor/virtualFiles";
-import { virtualFileLabel, virtualFileLanguage } from "../../../composables/editor/virtualFiles";
 import { useToast } from "../../../composables/useToast";
 import { writeTextToClipboard } from "../../../utils/clipboard";
 import CodeMirrorMergeDiff from "./CodeMirrorMergeDiff.vue";
 
-type DiffViewerItem = {
-  virtualFileId: VirtualFileId;
-  beforeText: string;
-  afterText: string;
-};
+type DiffViewerItem = EditorFileDiffItem;
 
 const props = withDefaults(
   defineProps<{
     items: DiffViewerItem[];
-    activeFileId?: VirtualFileId | null;
+    activeFileId?: EditorFileId | null;
     beforeLabel?: string;
     afterLabel?: string;
   }>(),
@@ -32,12 +32,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (event: "update:activeFileId", value: VirtualFileId): void;
+  (event: "update:activeFileId", value: EditorFileId): void;
 }>();
 
 const toast = useToast();
 
-const activeFileFallback = ref<VirtualFileId | null>(props.activeFileId ?? null);
+const activeFileFallback = ref<EditorFileId | null>(props.activeFileId ?? null);
 
 const activeFileId = computed(() => {
   const requested = props.activeFileId;
@@ -95,7 +95,7 @@ const activeLanguage = computed<Extension | null>(() => {
   const fileId = activeItem.value?.virtualFileId;
   if (!fileId) return null;
 
-  const language = virtualFileLanguage(fileId);
+  const language = editorFileLanguage(fileId);
   switch (language) {
     case "python":
       return python();
@@ -109,10 +109,10 @@ const activeLanguage = computed<Extension | null>(() => {
 const activeTabSize = computed(() => {
   const fileId = activeItem.value?.virtualFileId;
   if (!fileId) return 4;
-  return virtualFileLanguage(fileId) === "json" ? 2 : 4;
+  return editorFileLanguage(fileId) === "json" ? 2 : 4;
 });
 
-function setActiveFileId(fileId: VirtualFileId): void {
+function setActiveFileId(fileId: EditorFileId): void {
   activeFileFallback.value = fileId;
   emit("update:activeFileId", fileId);
 }
@@ -140,8 +140,8 @@ function downloadTextFile(filename: string, content: string, mimeType: string): 
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function mimeTypeForVirtualFile(virtualFileId: VirtualFileId): string {
-  const language = virtualFileLanguage(virtualFileId);
+function mimeTypeForEditorFile(fileId: EditorFileId): string {
+  const language = editorFileLanguage(fileId);
   switch (language) {
     case "python":
       return "text/x-python;charset=utf-8";
@@ -194,25 +194,25 @@ async function copyPatch(): Promise<void> {
 function downloadBefore(): void {
   if (!activeItem.value) return;
   downloadTextFile(
-    `before-${activeItem.value.virtualFileId}`,
+    `before-${editorFileLabel(activeItem.value.virtualFileId)}`,
     normalizeTextForPatch(activeItem.value.beforeText),
-    mimeTypeForVirtualFile(activeItem.value.virtualFileId),
+    mimeTypeForEditorFile(activeItem.value.virtualFileId),
   );
 }
 
 function downloadAfter(): void {
   if (!activeItem.value) return;
   downloadTextFile(
-    `after-${activeItem.value.virtualFileId}`,
+    `after-${editorFileLabel(activeItem.value.virtualFileId)}`,
     normalizeTextForPatch(activeItem.value.afterText),
-    mimeTypeForVirtualFile(activeItem.value.virtualFileId),
+    mimeTypeForEditorFile(activeItem.value.virtualFileId),
   );
 }
 
 function downloadPatch(): void {
   if (!activeItem.value) return;
   downloadTextFile(
-    `${activeItem.value.virtualFileId}.patch`,
+    `${editorFileLabel(activeItem.value.virtualFileId)}.patch`,
     buildUnifiedPatch({
       virtualFileId: activeItem.value.virtualFileId,
       before: activeItem.value.beforeText,
@@ -239,14 +239,14 @@ function downloadPatch(): void {
             class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
             :value="activeFileId ?? ''"
             :disabled="props.items.length === 0"
-            @change="setActiveFileId(($event.target as HTMLSelectElement).value as VirtualFileId)"
+            @change="setActiveFileId(($event.target as HTMLSelectElement).value as EditorFileId)"
           >
             <option
               v-for="item in props.items"
               :key="item.virtualFileId"
               :value="item.virtualFileId"
             >
-              {{ item.virtualFileId }} · {{ virtualFileLabel(item.virtualFileId) }}
+              {{ item.virtualFileId }} · {{ editorFileLabel(item.virtualFileId) }}
             </option>
           </select>
         </div>
@@ -257,7 +257,7 @@ function downloadPatch(): void {
               Patch (hela diffen)
             </p>
             <p class="text-[10px] text-navy/60 truncate">
-              {{ activeItem?.virtualFileId ? `${activeItem.virtualFileId}.patch` : "" }}
+              {{ activeItem ? `${editorFileLabel(activeItem.virtualFileId)}.patch` : "" }}
             </p>
           </div>
           <button
