@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from functools import partial
+
 import httpx
 import pytest
 
@@ -60,22 +63,32 @@ async def test_environment_cannot_move_the_decided_threshold_or_model(
     assert len(harness.requests) == 1
 
 
-@pytest.mark.parametrize(
-    "overrides",
-    [{"base_url": "  "}, {"timeout_seconds": 0}, {"max_attempts": 0}],
-)
-def test_invalid_configuration_is_rejected_at_construction(overrides: dict[str, object]) -> None:
-    arguments: dict[str, object] = {
-        "client": httpx.AsyncClient(),
-        "base_url": "https://example.test",
-        "api_key": "fixture-key",
-        "timeout_seconds": 30,
-        "sleeper": RecordingSleeper(),
-        **overrides,
-    }
+def _labeler(
+    *, base_url: str = "https://example.test", timeout_seconds: float = 30, max_attempts: int = 3
+) -> OpenAIDecisionsItemTypeLabeler:
+    return OpenAIDecisionsItemTypeLabeler(
+        client=httpx.AsyncClient(),
+        base_url=base_url,
+        api_key="fixture-key",
+        timeout_seconds=timeout_seconds,
+        sleeper=RecordingSleeper(),
+        max_attempts=max_attempts,
+    )
 
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        pytest.param(partial(_labeler, base_url="  "), id="blank_base_url"),
+        pytest.param(partial(_labeler, timeout_seconds=0), id="zero_timeout"),
+        pytest.param(partial(_labeler, max_attempts=0), id="zero_attempts"),
+    ],
+)
+def test_invalid_configuration_is_rejected_at_construction(
+    build: Callable[[], OpenAIDecisionsItemTypeLabeler],
+) -> None:
     with pytest.raises(ValueError):
-        OpenAIDecisionsItemTypeLabeler(**arguments)  # type: ignore[arg-type]
+        build()
 
 
 async def test_missing_api_key_fails_before_any_request() -> None:

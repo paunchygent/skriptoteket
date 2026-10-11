@@ -191,7 +191,8 @@ def test_missing_key_is_manifest_shape(chunks: tuple[DocxChunk, ...]) -> None:
         manifest_from_output(raw, chunks)
     assert error.value.code == "manifest_shape"
     bad = _raw([_question("q1", Q1)])
-    bad["questions"] = [{"id": "q1", "anchors": Q1, "subpart_anchors": []}]
+    keyless: dict[str, JsonValue] = {"id": "q1", "anchors": list(Q1), "subpart_anchors": []}
+    bad["questions"] = [keyless]
     with pytest.raises(ManifestInvalid) as error:
         manifest_from_output(bad, chunks)
     assert error.value.code == "manifest_shape"

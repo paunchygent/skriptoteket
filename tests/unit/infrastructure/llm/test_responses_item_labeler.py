@@ -111,10 +111,15 @@ def test_request_fields_and_schema() -> None:
     schema = spec.json_schema
     assert schema["required"] == ["label"]
     assert schema["additionalProperties"] is False
-    label_property = schema["properties"]["label"]  # type: ignore[index]
+    properties = schema["properties"]
+    assert isinstance(properties, dict)
+    label_property = properties["label"]
+    assert isinstance(label_property, dict)
     assert label_property["enum"] == [label.value for label in ItemTypeLabel]
+    description = label_property["description"]
+    assert isinstance(description, str)
     for label in ItemTypeLabel:
-        assert f"{label.value}: {LABEL_DESCRIPTIONS[label]}" in label_property["description"]
+        assert f"{label.value}: {LABEL_DESCRIPTIONS[label]}" in description
     assert request.estimated_input_tokens == estimate_prompt_tokens(
         request.system_prompt + request.user_payload + json.dumps(schema)
     )

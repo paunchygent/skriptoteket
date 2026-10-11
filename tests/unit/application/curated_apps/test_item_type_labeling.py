@@ -121,9 +121,9 @@ class _Setup:
         self.reserved[lease.lease_id] = (item_id, int(str(kwargs["requested_tokens"])))
         return lease
 
-    async def _reconcile(self, **kwargs: object) -> None:
-        item_id, _ = self.reserved[kwargs["lease_id"]]  # type: ignore[index]
-        self.reconciled[item_id] = int(str(kwargs["actual_tokens"]))
+    async def _reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
+        item_id, _ = self.reserved[lease_id]
+        self.reconciled[item_id] = actual_tokens
 
     async def label(self, request: LabelingRequest):
         return await self.labeler.label(request=request, on_results=self.sinks.append)
