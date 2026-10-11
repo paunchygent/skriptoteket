@@ -260,6 +260,42 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
 
+  it("keeps the teacher's copy and merges it later when another batch moves the head past the conflict's status", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+
+    // The save from revision 1 conflicts; the status then describes revision 2,
+    // but another batch commits revision 3 before the document is read.
+    const third = revision(3, [converted(1), converted(2), converted(3)]);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(third);
+    apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
+      new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }),
+    );
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("running", 3, ["ready", "ready", "ready"]));
+    await tick();
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(4, third.document.items));
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+    const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
+    expect(retry.expectedRevision).toBe(3);
+    expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
+      "Lärarens rubrik ett",
+      "Konverterad 2",
+      "Konverterad 3",
+    ]);
+  });
+
   it("keeps the teacher's copy when the conflicting revision cannot be fetched", async () => {
     const view = await uploadFirstBatch();
     await editTitle(view, "item_001", "Lärarens rubrik ett");

@@ -238,10 +238,11 @@ export function useExamWorkspaceConversion(
    * conversion wrote meanwhile, waiting for a status request already in
    * flight first. Returns "merged" when the open copy now stands on a newer
    * revision than the failed save expected, so the caller can save again
-   * without losing edits; "unrelated" when the conflict is not a batch's; and
-   * "unknown" when the revision could not be fetched, so the caller keeps the
-   * teacher's copy instead of replacing it. Outside conversion it returns
-   * "unrelated".
+   * without losing edits; "unrelated" when conversion wrote no revision newer
+   * than the failed save's; and "unknown" when conversion did but it could not
+   * be merged (the fetch failed, or a later batch moved the head past the
+   * status), so the caller keeps the teacher's copy and the next poll merges
+   * it. Outside conversion it returns "unrelated".
    */
   async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {
     const pollGeneration = generation;
@@ -250,10 +251,12 @@ export function useExamWorkspaceConversion(
     if (pollGeneration !== generation || !status || !isEditingConversion.value) {
       return "unrelated";
     }
+    let conversionRevision = 0;
     const request = (async () => {
       const next = await getExamWorkspaceConversionStatus(status.job_id);
       if (pollGeneration !== generation) return;
       conversionStatus.value = next;
+      conversionRevision = next.document_revision ?? 0;
       await applyRevision(next, pollGeneration, true);
     })().finally(() => {
       statusRequest = null;
@@ -267,7 +270,8 @@ export function useExamWorkspaceConversion(
     if (pollGeneration !== generation) return "unknown";
     // The poll chain may have found this request pending and ended; resume it.
     if (isConverting.value && pollTimer === null) schedulePoll(pollGeneration);
-    return (binding.summary.value?.version ?? 0) > expectedRevision ? "merged" : "unrelated";
+    if ((binding.summary.value?.version ?? 0) > expectedRevision) return "merged";
+    return conversionRevision > expectedRevision ? "unknown" : "unrelated";
   }
 
   async function importDocument(file: File): Promise<void> {
