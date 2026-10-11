@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fdf631ffb698fe8fe37a2b2d9f863bc8780c336a1278efc6aa3ed5207387d451",
+  "source_set_digest": "9edd4063c0ec70ac6b37c16f1fcf6886da238530afb7a5d8997e306259a88d94",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7148,6 +7148,24 @@
       }
     },
     {
+      "id": "ADR-SKRIPT-0092",
+      "type": "adr",
+      "title": "Script-bank tools ship as tool-owned bundles loaded as a package over their own directory",
+      "path": "docs/decisions/adr-skript-0092-script-bank-tools-ship-as-tool-owned-bundles-loaded-as-a-package-over-their-own-directory.md",
+      "status": "proposed",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "governing": [
+          "TASK-SKRIPT-REP-0037"
+        ]
+      }
+    },
+    {
       "id": "REF-SKRIPT-DECISIONS-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25",
       "type": "reference",
       "title": "Klassrumskartan smart assignment v1 decision memo (2026-03-25)",
@@ -10679,6 +10697,16 @@
           "EPIC-SKRIPT-39",
           "ST-SKRIPT-39-04"
         ],
+        "supersedes": [],
+        "superseded_by": null
+      },
+      {
+        "id": "ADR-SKRIPT-0092",
+        "title": "Script-bank tools ship as tool-owned bundles loaded as a package over their own directory",
+        "status": "proposed",
+        "path": "docs/decisions/adr-skript-0092-script-bank-tools-ship-as-tool-owned-bundles-loaded-as-a-package-over-their-own-directory.md",
+        "governing": [],
+        "governed_contracts": [],
         "supersedes": [],
         "superseded_by": null
       }
