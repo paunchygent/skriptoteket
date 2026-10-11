@@ -2,7 +2,7 @@
 
 One grouping call maps the questions, one labeling call types them, and type batches
 convert concurrently in two waves: questions the first labeling pass accepts convert at
-once; questions the second pass decides join second-wave batches once labeling ends.
+once; each question the second pass decides converts as soon as its label arrives.
 Each admitted batch reaches the progress port as a provisional document; the final
 document is assembled in source order and checked against the grouping.
 
@@ -135,6 +135,7 @@ class _Run:
         self.kinds: dict[str, NativeExamItemKind] = {}
         self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
         self.resent: set[str] = set()
+        self.second_wave_dispatches = 0
         self.filled: list[str] = []
         self.timings: list[DocxStageTiming] = []
 
@@ -259,7 +260,6 @@ class DocxConversionPipeline:
         self, run: _Run, manifest: ExamManifest, tasks: asyncio.TaskGroup
     ) -> None:
         started = time.monotonic()
-        second_wave: list[str] = []
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
             for result in results:
@@ -268,8 +268,12 @@ class DocxConversionPipeline:
             if results and results[0].decided_by is LabelPass.FIRST:
                 run.timed("labeling_first_pass", started)
                 self._dispatch(run, [r.item_id for r in results], "w1-", tasks)
-            else:
-                second_wave.extend(r.item_id for r in results)
+            elif results:
+                # Each second-pass label converts at once; a per-dispatch number keeps
+                # every second-wave batch id unique.
+                run.second_wave_dispatches += 1
+                prefix = f"w2-{run.second_wave_dispatches:02d}-"
+                self._dispatch(run, [r.item_id for r in results], prefix, tasks)
 
         try:
             await self._labeler.label(
@@ -280,8 +284,6 @@ class DocxConversionPipeline:
             run.state.fail_all_pending(_LABELING_REASON)
             return
         run.timed("labeling", started)
-        if second_wave:
-            self._dispatch(run, second_wave, "w2-", tasks)
 
     def _dispatch(
         self, run: _Run, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup

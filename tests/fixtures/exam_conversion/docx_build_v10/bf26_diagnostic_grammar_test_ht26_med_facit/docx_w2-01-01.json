@@ -1,0 +1,59 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0042"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0044"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0043"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Det slutade med att alla betalade fem dollar var. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "It ended with everyone paying five dollars each",
+                "It ended with everyone paying five dollars each.",
+                "It ended with everybody paying five dollars each",
+                "It ended with everybody paying five dollars each.",
+                "In the end everyone paid five dollars each",
+                "In the end everyone paid five dollars each.",
+                "In the end, everybody paid five dollars each",
+                "In the end, everybody paid five dollars each."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

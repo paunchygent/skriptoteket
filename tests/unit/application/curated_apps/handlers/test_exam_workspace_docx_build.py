@@ -84,9 +84,13 @@ async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exa
 
 async def test_a_type_conflict_is_resent_and_leaves_its_neighbours_converted():
     replay, outcome = await _convert(_GRAMMAR_1)
-    reply = recording(_GRAMMAR_1, "docx_w2-01")
     outline = {a: q.question_id for q in replay.progress.outlines[0].questions for a in q.anchors}
-    items = _list(reply["items"])
+    second_wave = [
+        request_id
+        for request_id in replay.provider.request_ids
+        if request_id.startswith("docx_w2-") and "c" not in request_id.removeprefix("docx_")
+    ]
+    items = [i for rid in second_wave for i in _list(recording(_GRAMMAR_1, rid)["items"])]
     conflicted = {
         outline[str(_list(_object(i)["source_anchors"])[0])]
         for i in items
@@ -100,7 +104,7 @@ async def test_a_type_conflict_is_resent_and_leaves_its_neighbours_converted():
     assert conflicted == {"q1"}
     assert {"q2", "q3", "q4"} <= converted
 
-    assert replay.provider.request_ids.count("docx_w2-01c01") == 1
+    assert replay.provider.request_ids.count("docx_w2-01-01c01") == 1
     after_conflict = next(u for u in replay.progress.updates if converted <= set(u.filled))
     assert "q1" in after_conflict.pending
     for qid in converted:

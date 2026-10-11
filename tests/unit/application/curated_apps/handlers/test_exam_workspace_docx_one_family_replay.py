@@ -78,7 +78,7 @@ async def test_a_subpart_the_grouping_lists_only_as_a_subpart_is_converted_with_
     def own_anchors(request_id: str) -> set[str]:
         return {chunk["anchor"] for chunk in sent[request_id]["chunks"]}
 
-    assert "body:0086" in own_anchors("docx_w2-05"), "the subpart left its question's batch"
+    assert "body:0086" in own_anchors("docx_w2-05-01"), "the subpart left its question's batch"
     assert "body:0086" not in own_anchors("docx_w1-02"), "the next question's batch owns it"
 
 

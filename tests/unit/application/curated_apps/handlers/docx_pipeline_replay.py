@@ -77,7 +77,7 @@ def corpus_chunks(exam: str) -> tuple[DocxChunk, ...]:
 
 
 def recording(exam: str, name: str, root: Path = RECORDINGS) -> dict[str, JsonValue]:
-    """One recorded reply, such as ``docx_grouping_1`` or ``docx_w2-01``."""
+    """One recorded reply, such as ``docx_grouping_1`` or ``docx_w2-01-01``."""
     reply: dict[str, JsonValue] = json.loads((root / exam / f"{name}.json").read_text())
     return reply
 
@@ -269,9 +269,10 @@ def build_replay(
     enabled: bool = True,
     root: Path = RECORDINGS,
     families_per_batch: int = RECORDED_FAMILIES_PER_BATCH,
+    provider: ReplayProvider | None = None,
 ) -> Replay:
     """Build the production pipeline over ``exam``'s recordings at their batch size."""
-    provider = ReplayProvider(exam, failures, root)
+    provider = provider or ReplayProvider(exam, failures, root)
     progress = progress or RecordingProgress()
     pipeline = build_docx_conversion_pipeline(
         client=decisions_client(exam, root),

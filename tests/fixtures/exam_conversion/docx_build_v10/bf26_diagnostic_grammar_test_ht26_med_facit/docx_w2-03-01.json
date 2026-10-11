@@ -1,0 +1,59 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0122"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0124"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "57",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Robert sade att han efter två månader hade glömt allt han hade lärt sig. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Robert said that after two months he had forgotten everything he had learned",
+                "Robert said that after two months he had forgotten everything he had learned.",
+                "Robert said that after two months he had forgotten everything he had learnt",
+                "Robert said that after two months he had forgotten everything he had learnt.",
+                "Robert said that after two months, he had forgotten everything he had learned",
+                "Robert said that after two months, he had forgotten everything he had learned.",
+                "Robert said that he had forgotten everything he had learned after two months",
+                "Robert said that he had forgotten everything he had learned after two months."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

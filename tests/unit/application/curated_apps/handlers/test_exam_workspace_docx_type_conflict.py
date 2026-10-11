@@ -1,7 +1,7 @@
 """A question that conflicts twice is resent once, then kept as converted with the type mark.
 
-Replays the live recordings of ``docx_build_v10_repeated_conflict``, where batch ``w2-02``
-reports a type conflict and its resend ``w2-02c01`` reports one again.
+Replays the live recordings of ``docx_build_v10_repeated_conflict``, where batch ``w2-05-01``
+reports a type conflict and its resend ``w2-05-01c01`` reports one again.
 """
 
 import pytest
@@ -33,16 +33,16 @@ async def test_a_second_type_conflict_is_not_resent_again():
     replay, outcome = await _convert()
 
     ids = replay.provider.request_ids
-    assert ids.count("docx_w2-02") == 1
-    assert ids.count("docx_w2-02c01") == 1
-    assert "docx_w2-02c01c01" not in ids
+    assert ids.count("docx_w2-05-01") == 1
+    assert ids.count("docx_w2-05-01c01") == 1
+    assert "docx_w2-05-01c01c01" not in ids
     assert outcome.update.pending == ()
 
 
 async def test_the_twice_conflicted_family_is_kept_as_converted_with_the_type_mark():
     replay, outcome = await _convert()
 
-    resend = recording(_EXAM, "docx_w2-02c01", _ROOT)["items"]
+    resend = recording(_EXAM, "docx_w2-05-01c01", _ROOT)["items"]
     assert isinstance(resend, list) and isinstance(resend[0], dict)
     source_kind = NativeExamItemKind(str(resend[0]["conflict_kind"]))
     document = outcome.update.document

@@ -29,10 +29,15 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 OPENAI_GPT6_LUNA_PROVIDER_ID = "openai-gpt-6-luna"
 OPENAI_GPT6_LUNA_GROUPING_PROVIDER_ID = "openai-gpt-6-luna-grouping"
 OPENAI_GPT6_LUNA_ITEM_LABEL_PROVIDER_ID = "openai-gpt-6-luna-item-label"
+LUNA_MAX_OUTPUT_TOKENS = 128_000
 
 
 def build_luna_docx_conversion_profile(settings: Settings) -> StructuredLLMProviderProfile:
-    """Build the pinned DOCX-conversion Luna profile from operator-configurable settings."""
+    """Build the pinned DOCX-conversion Luna profile from operator-configurable settings.
+
+    One converter batch reserves and may spend the output allowance of its families, never
+    a whole exam's, so a many-family exam fits the daily token lease at once.
+    """
 
     return StructuredLLMProviderProfile(
         provider_id=OPENAI_GPT6_LUNA_PROVIDER_ID,
@@ -40,7 +45,10 @@ def build_luna_docx_conversion_profile(settings: Settings) -> StructuredLLMProvi
         endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
         is_remote=True,
         context_window_tokens=settings.LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS,
-        max_output_tokens=settings.LLM_DOCX_CONVERSION_MAX_OUTPUT_TOKENS,
+        max_output_tokens=min(
+            settings.LLM_DOCX_BATCH_OUTPUT_TOKENS_PER_FAMILY * settings.LLM_DOCX_BATCH_FAMILIES,
+            LUNA_MAX_OUTPUT_TOKENS,
+        ),
         temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
         reasoning_effort=StructuredLLMReasoningEffort(
             settings.LLM_DOCX_CONVERSION_REASONING_EFFORT
