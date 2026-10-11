@@ -388,8 +388,9 @@ def _merge_parents(
 ) -> tuple[tuple[NativeExamParent, ...], str | None]:
     """Conversion's parents while the teacher kept the delivered ones (D30).
 
-    A parent whose saved children no longer form one consecutive run of one kind is split
-    into such runs, each carrying the instruction (D27), so no child loses its instruction.
+    A parent whose saved children no longer form one consecutive run is split into such runs,
+    each carrying the instruction, so no child loses its instruction. Children of any kinds
+    share a parent (D27).
     """
     delivered = (
         target.parents is not None and _parents_digest(head.parents) == progress.parents_digest
@@ -412,7 +413,7 @@ def _merge_parents(
             (by_id[i] for i in dict.fromkeys(parent.item_ids) if i in by_id and i not in claimed),
             key=lambda item: item.sequence,
         )
-        for index, run in enumerate(_kind_runs(children)):
+        for index, run in enumerate(_consecutive_runs(children)):
             parent_id = parent.parent_id if index == 0 else parent_ids.fresh()
             accepted.append(parent.model_copy(update={"parent_id": parent_id, "item_ids": run}))
             claimed.update(run)
@@ -421,12 +422,12 @@ def _merge_parents(
     return parents, (_parents_digest(parents) if delivered else progress.parents_digest)
 
 
-def _kind_runs(children: Sequence[NativeExamItem]) -> list[tuple[str, ...]]:
-    """Maximal runs of children that are consecutive in the document and share one kind."""
+def _consecutive_runs(children: Sequence[NativeExamItem]) -> list[tuple[str, ...]]:
+    """Maximal runs of children that are consecutive in the document."""
     runs: list[list[NativeExamItem]] = []
     for child in children:
         last = runs[-1][-1] if runs else None
-        if last is not None and child.sequence == last.sequence + 1 and child.kind is last.kind:
+        if last is not None and child.sequence == last.sequence + 1:
             runs[-1].append(child)
         else:
             runs.append([child])

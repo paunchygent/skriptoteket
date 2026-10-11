@@ -6156,9 +6156,10 @@ export interface components {
         NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of one kind.
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
          *
-         *     A parent owns no points and no answer key: each child item keeps its own.
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
          */
         NativeExamParent: {
             /** Instruction */

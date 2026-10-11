@@ -77,49 +77,56 @@
       ]
     },
     {
-      "source_label": "Fråga 4",
-      "kind": "gap_fill",
-      "points": 2,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nSkriv satsdelen för den markerade delen.\na) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel: [___]\nb) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel: [___]\nc) Rummet blev tyst. Markerad del: tyst Satsdel: [___]\nd) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel: [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 4–5",
+      "instruction": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "children": [
         {
-          "accepted_values": [
-            "adverbial",
-            "Adv"
+          "source_label": "Fråga 4",
+          "kind": "gap_fill",
+          "points": 2,
+          "prompt": "Skriv satsdelen för den markerade delen.\na) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel: [___]\nb) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel: [___]\nc) Rummet blev tyst. Markerad del: tyst Satsdel: [___]\nd) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel: [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "adverbial",
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "indirekt objekt",
+                "IO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "predikativ",
+                "predikatsfyllnad",
+                "predikativ/predikatsfyllnad",
+                "Pf"
+              ]
+            },
+            {
+              "accepted_values": [
+                "direkt objekt",
+                "DO"
+              ]
+            }
+          ],
+          "notes": [
+            "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
           ]
         },
         {
-          "accepted_values": [
-            "indirekt objekt",
-            "IO"
-          ]
-        },
-        {
-          "accepted_values": [
-            "predikativ",
-            "predikatsfyllnad",
-            "predikativ/predikatsfyllnad",
-            "Pf"
-          ]
-        },
-        {
-          "accepted_values": [
-            "direkt objekt",
-            "DO"
+          "source_label": "Fråga 5",
+          "kind": "free_text",
+          "points": 6,
+          "prompt": "Gör satsdelsanalys av meningarna.\na) Klassen läste inte texten i klassrummet.\nb) Mentorn skickade eleverna ett tydligt schema på morgonen.\nc) Dagen blev stressig efter beskedet.",
+          "notes": [
+            "Source facit (teacher grading): a) Klassen läste inte texten i klassrummet. Analys: Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).\nb) Mentorn skickade eleverna ett tydligt schema på morgonen. Analys: Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).\nc) Dagen blev stressig efter beskedet. Analys: Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv)."
           ]
         }
-      ],
-      "notes": [
-        "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
-      ]
-    },
-    {
-      "source_label": "Fråga 5",
-      "kind": "free_text",
-      "points": 6,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nGör satsdelsanalys av meningarna.\na) Klassen läste inte texten i klassrummet.\nb) Mentorn skickade eleverna ett tydligt schema på morgonen.\nc) Dagen blev stressig efter beskedet.",
-      "notes": [
-        "Source facit (teacher grading): a) Klassen läste inte texten i klassrummet. Analys: Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).\nb) Mentorn skickade eleverna ett tydligt schema på morgonen. Analys: Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).\nc) Dagen blev stressig efter beskedet. Analys: Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv)."
       ]
     },
     {

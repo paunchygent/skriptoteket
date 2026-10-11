@@ -352,7 +352,7 @@ def test_teacher_deleted_sibling_leaves_the_rest_under_the_instruction(
     assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}
 
 
-def test_teacher_retyped_middle_child_splits_the_parent_and_every_child_keeps_the_instruction(
+def test_teacher_retyped_middle_child_stays_in_the_parent_beside_children_of_another_kind(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
@@ -363,16 +363,12 @@ def test_teacher_retyped_middle_child_splits_the_parent_and_every_child_keeps_th
     merged = _final_with_parent(teacher_head, progress)
 
     assert _texts(merged.document) == ["Fråga ett", "Lärarens egen fråga", "Fråga tre"]
-    assert [p.item_ids for p in merged.document.parents] == [
-        ("item_001",),
-        ("item_002",),
-        ("item_003",),
-    ]
-    assert len({p.parent_id for p in merged.document.parents}) == 3
+    assert len({item.kind for item in merged.document.items}) == 2
+    assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_002", "item_003")]
     assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}
 
 
-def test_teacher_retyped_first_child_keeps_it_under_its_own_parent(
+def test_teacher_retyped_first_child_keeps_it_under_the_same_parent(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
@@ -384,8 +380,5 @@ def test_teacher_retyped_first_child_keeps_it_under_its_own_parent(
     merged = _final_with_parent(teacher_head, progress)
 
     assert merged.document.items[0].kind is NativeExamItemKind.FREE_TEXT
-    assert [p.item_ids for p in merged.document.parents] == [
-        ("item_001",),
-        ("item_002", "item_003"),
-    ]
+    assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_002", "item_003")]
     assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}

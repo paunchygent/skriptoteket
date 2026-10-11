@@ -79,6 +79,23 @@ describe("ExamWorkspaceItemTable with a parent", () => {
     expect(wrapper.get('[data-test="exam-workspace-parent-points"]').text()).toBe("Totalt –");
   });
 
+  it("holds gap-fill children and a single-choice child under one parent block", () => {
+    const document = buildParentDocument();
+    const mixed = {
+      ...document,
+      parents: [{ ...document.parents[0]!, item_ids: document.items.map((item) => item.item_id) }],
+    };
+    expect(new Set(mixed.items.map((item) => item.kind))).toEqual(
+      new Set(["gap_fill", "single_choice"]),
+    );
+    const rows = toExamWorkspaceItemRows(mixed.items, mixed.parents);
+    const wrapper = mountTable(mixed);
+
+    expect(wrapper.findAll('[data-test^="exam-workspace-parent-parent_"]')).toHaveLength(1);
+    expect(rows.map((row) => row.parentChild?.childIndex)).toEqual([0, 1, 2, 3]);
+    expect(rows.map((row) => row.parentChild?.childCount)).toEqual([4, 4, 4, 4]);
+  });
+
   it("shows no parent block on a document without parents", () => {
     const wrapper = mountTable({ ...buildParentDocument(), parents: [] });
 

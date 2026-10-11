@@ -108,17 +108,18 @@ def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_
     assert wording not in build.item("body:0025").plain_text_lines()
 
 
-def test_mixed_kind_run_is_still_copied_into_each_item_and_reported():
+def test_mixed_kind_run_is_one_parent_and_no_child_repeats_the_instruction():
     build = _build(_GRAMMAR_1)
     wording = build.wording("body:0035")
     first, second = build.item("body:0037"), build.item("body:0045")
 
     assert first.kind != second.kind
-    assert build.result.document.parents == ()
-    (event,) = [e for e in build.result.events if e.code == "parent_kinds_mixed"]
-    assert event.anchors == ("body:0035",)
+    parent = build.parent_of("body:0037")
+    assert parent is not None and parent == build.parent_of("body:0045")
+    assert parent.instruction == (wording,)
+    assert parent.item_ids == (first.item_id, second.item_id)
     for item in (first, second):
-        assert item.plain_text_lines()[0] == wording
+        assert wording not in item.plain_text_lines()
 
 
 def test_instruction_reaching_a_single_item_is_still_copied_not_parented():

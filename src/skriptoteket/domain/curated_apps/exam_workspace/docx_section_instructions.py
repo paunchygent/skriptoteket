@@ -1,19 +1,17 @@
 """Place a section's instructions: one native parent per run of questions, else a copy per item.
 
 Exam.net carries only items, so an instruction that serves a run of questions becomes the
-parent of that run. An instruction that reaches a single item, a reach that skips an item
-between two reached ones, or a reach of mixed kinds is copied into exactly the items it
-reaches. An instruction printed inside an item's own chunks keeps its source position there.
+parent of that run, whatever kinds its questions have, review items included (D27). An
+instruction that reaches a single item, or a reach that skips an item between two reached
+ones, is copied into exactly the items it reaches. An instruction printed inside an item's
+own chunks keeps its source position there.
 """
 
 import re
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildEvent,
-    ProducedMetadata,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -45,7 +43,6 @@ class SectionInstructions:
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
     reaching: frozenset[int]
-    events: tuple[DocxBuildEvent, ...]
 
 
 @dataclass(frozen=True)
@@ -251,56 +248,20 @@ def _reaches(
     return reached
 
 
-def _kind_runs(reach: tuple[int, ...], ordered: list[Placed]) -> list[tuple[int, ...]]:
-    """Split a reach into maximal runs of consecutive items of one kind."""
-    runs: list[list[int]] = []
-    for k in reach:
-        if runs and ordered[runs[-1][-1]][2].kind is ordered[k][2].kind:
-            runs[-1].append(k)
-        else:
-            runs.append([k])
-    return [tuple(run) for run in runs]
-
-
-def _parent_groups(
-    reached: list[_Run], ordered: list[Placed]
-) -> tuple[list[list[_Run]], list[DocxBuildEvent]]:
-    """Runs whose instruction reaches the same two or more consecutive items of one kind.
-
-    When the reached items differ in kind, each stretch of two or more consecutive items of
-    one kind becomes its own parent carrying the instruction (D27); a lone item of another
-    kind gets the instruction copied into it.
-    """
+def _parent_groups(reached: list[_Run]) -> list[list[_Run]]:
+    """Runs whose instruction reaches the same two or more consecutive items, of any kinds."""
     candidates: dict[tuple[int, ...], list[_Run]] = {}
     for run in reached:
         consecutive = all(b - a == 1 for a, b in zip(run.reach, run.reach[1:], strict=False))
         if run.origin is not None and len(run.reach) >= 2 and consecutive:
             candidates.setdefault(run.reach, []).append(run)
     groups: list[list[_Run]] = []
-    events: list[DocxBuildEvent] = []
     taken: set[int] = set()
     for span, group in sorted(candidates.items()):
-        if taken.intersection(span):
-            continue
-        taken.update(span)
-        stretches = _kind_runs(span, ordered)
-        if len(stretches) > 1:
-            ids = ", ".join(_item_id(k) for k in span)
-            events.append(
-                DocxBuildEvent(
-                    stage="admission",
-                    code="parent_kinds_mixed",
-                    anchors=tuple(c.anchor for run in group for c in run.sources),
-                    detail=f"a section instruction serves items of different kinds ({ids}): "
-                    "each run of one kind gets its own parent",
-                )
-            )
-        groups.extend(
-            [replace(run, reach=stretch) for run in group]
-            for stretch in stretches
-            if len(stretch) >= 2
-        )
-    return groups, events
+        if not taken.intersection(span):
+            taken.update(span)
+            groups.append(group)
+    return groups
 
 
 def place_section_instructions(
@@ -314,11 +275,12 @@ def place_section_instructions(
     opens the items of its run, which ends at the next section heading (a heading no item
     owns, other than a lead-in label) or at the next instruction printed after one of the
     run's items. Section headings and points lines are structure and are never instruction
-    text. The instructions that reach two or more consecutive items of one kind become the
-    parent of exactly those items. An instruction that defines terms reaches only the run's items
-    whose own chunks use one; lines an item prints before its numbered question line are such
-    an instruction too; a lead-in ending in a colon that introduces a question opening with
-    quoted material reaches only the run's items that open with quotes. Every other
+    text. The instructions that reach two or more consecutive items become the parent of
+    exactly those items, whatever their kinds. An instruction that defines terms reaches only
+    the run's items whose own chunks use one; lines an item prints before its numbered
+    question line are such an instruction too; a lead-in ending in a colon that introduces a
+    question opening with quoted material reaches only the run's items that open with quotes.
+    Every other
     instruction, and every instruction whose reach cannot be a parent, is copied into the items
     it reaches. An instruction an item prints inside its own chunks is placed at that position
     in the item's body, and text the item already prints as whole lines is never repeated.
@@ -329,7 +291,7 @@ def place_section_instructions(
     ]
     runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions)
     reached = _reaches(chunks, ordered, runs, item_sources, positions)
-    groups, events = _parent_groups(reached, ordered)
+    groups = _parent_groups(reached)
     parented: dict[tuple[int | None, int], set[int]] = {}
     for group in groups:
         for run in group:
@@ -365,4 +327,4 @@ def place_section_instructions(
         )
         for number, group in enumerate(groups, start=1)
     )
-    return SectionInstructions(items, parents, frozenset(reaching), tuple(events))
+    return SectionInstructions(items, parents, frozenset(reaching))

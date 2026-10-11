@@ -6,7 +6,7 @@ document shows every question still converting as a placeholder with its source 
 the final document turns every chunk no batch converted into a review item. Both map
 every grouped question to its items, and the check reports any question that is not
 exactly one converted item or its review items, and any governing instruction whose
-same-kind questions do not share a parent.
+questions, of whatever kinds, do not share a parent.
 """
 
 from __future__ import annotations
@@ -228,9 +228,8 @@ def assembly_check(
             )
     for context in manifest.contexts:
         governed = [q for q in context.governs if update.item_ids.get(q)]
-        kinds = {items[update.item_ids[q][0]].kind for q in governed}
         parents = {update.parent_ids.get(q) for q in governed}
-        if len(governed) >= 2 and len(kinds) == 1 and (None in parents or len(parents) > 1):
+        if len(governed) >= 2 and (None in parents or len(parents) > 1):
             events.append(
                 DocxBuildEvent(
                     stage="assembly",

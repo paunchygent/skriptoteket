@@ -221,11 +221,7 @@ def _file_sort_key(file: ExamNetQtiPackageFile) -> tuple[int, str]:
 def _target_support_status(
     items: tuple[ExamNetQtiItem, ...],
 ) -> ExamNetQtiTargetSupportStatus:
-    if any(
-        item.interaction_type
-        in {ExamNetQtiInteractionType.GAP_FILL, ExamNetQtiInteractionType.MATCHING}
-        for item in items
-    ):
+    if _has_proof_gated_interaction(items):
         return ExamNetQtiTargetSupportStatus.PROOF_GATED
     return ExamNetQtiTargetSupportStatus.VENDOR_REPORTED_MINIMUM
 
@@ -239,13 +235,19 @@ def _profile_id(
 
 
 def _proof_status(items: tuple[ExamNetQtiItem, ...]) -> ExamNetQtiExamNetProofStatus:
-    if any(
-        item.interaction_type
-        in {ExamNetQtiInteractionType.GAP_FILL, ExamNetQtiInteractionType.MATCHING}
-        for item in items
-    ):
+    if _has_proof_gated_interaction(items):
         return ExamNetQtiExamNetProofStatus.NOT_PROVEN
     return ExamNetQtiExamNetProofStatus.VENDOR_REPORTED_UNPROVEN
+
+
+def _has_proof_gated_interaction(items: tuple[ExamNetQtiItem, ...]) -> bool:
+    """Whether any item, or any child of a parent, is a gap fill or a matching."""
+    return any(
+        leaf.interaction_type
+        in {ExamNetQtiInteractionType.GAP_FILL, ExamNetQtiInteractionType.MATCHING}
+        for item in items
+        for leaf in (item.children or (item,))
+    )
 
 
 def _safe_path_stem(value: str) -> str:

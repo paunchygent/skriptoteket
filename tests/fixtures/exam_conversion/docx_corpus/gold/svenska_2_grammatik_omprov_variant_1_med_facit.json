@@ -77,49 +77,56 @@
       ]
     },
     {
-      "source_label": "Fråga 4",
-      "kind": "gap_fill",
-      "points": 2,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nSkriv satsdelen för den markerade delen.\na) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: [___]\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: [___]\nc) Filmen blev spännande. Markerad del: spännande Satsdel: [___]\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 4–5",
+      "instruction": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "children": [
         {
-          "accepted_values": [
-            "adverbial",
-            "Adv"
+          "source_label": "Fråga 4",
+          "kind": "gap_fill",
+          "points": 2,
+          "prompt": "Skriv satsdelen för den markerade delen.\na) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: [___]\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: [___]\nc) Filmen blev spännande. Markerad del: spännande Satsdel: [___]\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "adverbial",
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "indirekt objekt",
+                "IO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "predikativ",
+                "predikatsfyllnad",
+                "predikativ/predikatsfyllnad",
+                "Pf"
+              ]
+            },
+            {
+              "accepted_values": [
+                "direkt objekt",
+                "DO"
+              ]
+            }
+          ],
+          "notes": [
+            "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
           ]
         },
         {
-          "accepted_values": [
-            "indirekt objekt",
-            "IO"
-          ]
-        },
-        {
-          "accepted_values": [
-            "predikativ",
-            "predikatsfyllnad",
-            "predikativ/predikatsfyllnad",
-            "Pf"
-          ]
-        },
-        {
-          "accepted_values": [
-            "direkt objekt",
-            "DO"
+          "source_label": "Fråga 5",
+          "kind": "free_text",
+          "points": 6,
+          "prompt": "Gör satsdelsanalys av meningarna.\na) Eleverna lämnade inte sina mobiler i skåpet.\nb) Läraren gav klassen tydliga instruktioner före provet.\nc) Stämningen blev lugn efter genomgången.",
+          "notes": [
+            "Source facit (teacher grading): a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nb) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nc) Stämningen blev lugn efter genomgången. Analys: Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
           ]
         }
-      ],
-      "notes": [
-        "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
-      ]
-    },
-    {
-      "source_label": "Fråga 5",
-      "kind": "free_text",
-      "points": 6,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nGör satsdelsanalys av meningarna.\na) Eleverna lämnade inte sina mobiler i skåpet.\nb) Läraren gav klassen tydliga instruktioner före provet.\nc) Stämningen blev lugn efter genomgången.",
-      "notes": [
-        "Source facit (teacher grading): a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nb) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nc) Stämningen blev lugn efter genomgången. Analys: Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
       ]
     },
     {

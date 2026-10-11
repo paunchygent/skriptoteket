@@ -10,8 +10,9 @@ confirmation. Unresolved `teacher_questions` prevent confirmation and produce co
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`,
 `schema_version` `exam_conversion_gold_v2`). `items` holds standalone items and
-parents. A parent (`kind: "parent"`) groups consecutive questions of one response
-kind that sit under one source section instruction. It carries `source_label`,
+parents. A parent (`kind: "parent"`) groups the consecutive questions that sit
+under one source section instruction, of any mix of response kinds, as an Exam.net
+information block holds questions of any type. It carries `source_label`,
 the shared `instruction` and `children`, each a complete item whose `prompt`
 omits the instruction lines. A parent's points are the sum of its children's
 points and are not stored. A question that shares its instruction with no

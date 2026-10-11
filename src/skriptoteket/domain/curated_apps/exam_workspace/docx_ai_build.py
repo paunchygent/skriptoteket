@@ -248,6 +248,4 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(
-        document, tuple(notes), input_tokens, output_tokens, (*events, *placed.events)
-    )
+    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)
