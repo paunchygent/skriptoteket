@@ -131,20 +131,22 @@ export function useExamWorkspaceConversion(
    * Show a newer conversion revision. The first one replaces the open exam; a
    * later one is merged into the teacher's copy. A revision is applied only
    * when the head still is the revision the status describes, so the units
-   * always match the document they index.
+   * always match the document they index. Returns true when a newer revision
+   * waits for an in-flight save, so the caller polls again before finishing.
    */
   async function applyRevision(
     status: ExamWorkspaceConversionStatus,
     pollGeneration: number,
     duringSave = false,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const revision = status.document_revision;
-    if (revision === null || (binding.isSaving() && !duringSave)) return;
+    if (revision === null) return false;
     const first = shownUnits.value === null;
-    if (!first && binding.summary.value?.lineage_id !== status.lineage_id) return;
-    if (!first && (binding.summary.value?.version ?? 0) >= revision) return;
+    if (!first && binding.summary.value?.lineage_id !== status.lineage_id) return false;
+    if (!first && (binding.summary.value?.version ?? 0) >= revision) return false;
+    if (binding.isSaving() && !duringSave) return true;
     const response = await getExamWorkspaceDocument(status.lineage_id);
-    if (pollGeneration !== generation || response.summary.version !== revision) return;
+    if (pollGeneration !== generation || response.summary.version !== revision) return false;
     const local = binding.workspaceDocument.value;
     const base = binding.serverDocument.value;
     if (first) {
@@ -163,6 +165,7 @@ export function useExamWorkspaceConversion(
       binding.applyResponse(response, merged.document, merged.teacherEditsKept);
     }
     shownUnits.value = status.units;
+    return false;
   }
 
   async function applyConversionStatus(
@@ -171,9 +174,11 @@ export function useExamWorkspaceConversion(
   ): Promise<void> {
     if (pollGeneration !== generation) return;
     conversionStatus.value = status;
-    await applyRevision(status, pollGeneration);
+    const deferred = await applyRevision(status, pollGeneration);
     if (pollGeneration !== generation) return;
-    if (status.state === "failed") {
+    if (deferred) {
+      schedulePoll(pollGeneration);
+    } else if (status.state === "failed") {
       isConverting.value = false;
       conversionError.value = null;
       stopPolling();

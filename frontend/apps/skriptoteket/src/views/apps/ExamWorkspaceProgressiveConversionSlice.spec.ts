@@ -183,6 +183,31 @@ describe("Exam workspace progressive conversion", () => {
     ]);
   });
 
+  it("applies the final revision that arrived during a save once the save returns", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    let resolveSave!: (value: ExamWorkspaceDocumentResponse) => void;
+    apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(new Promise((resolve) => { resolveSave = resolve; }));
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+
+    const savedFirst = revision(2, [{ ...converted(1), title: "Lärarens rubrik ett" }, placeholder(2), placeholder(3)]);
+    const finalItems = [{ ...converted(1), title: "Lärarens rubrik ett" }, converted(2), converted(3)];
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 3, ["teacher_kept", "ready", "ready"]));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems));
+    await tick();
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+
+    resolveSave(savedFirst);
+    await flushPromises();
+    await tick();
+
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
+    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+  });
+
   it("saves again on the newer revision when conversion saved one during the teacher's save", async () => {
     const view = await uploadFirstBatch();
     await editTitle(view, "item_001", "Lärarens rubrik ett");
