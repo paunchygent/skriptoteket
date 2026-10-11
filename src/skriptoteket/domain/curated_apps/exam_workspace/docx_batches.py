@@ -4,7 +4,10 @@ A family is one grouped question with its subparts and answer key; it never spli
 Every source chunk has exactly one owning family: its own chunks, the shared instructions
 and passages it owns, a points line the grouping left unplaced (the question before it),
 and the title, headings and other unplaced chunks (the question after them). A shared
-instruction reaches every other family it governs as read-only context. A
+instruction reaches every other family it governs as read-only context. A family that owns
+chunks beyond its own question and answer key, such as a section heading or a points line
+after the section's last question, also reads the other questions of each section it sits
+in, so that it sees which of those chunks serve the whole section. A
 batch holds families of one item kind; only single choice and multiple response share a
 batch (D3).
 """
@@ -71,7 +74,11 @@ def _nearest_question(
 def question_families(
     manifest: ExamManifest, chunks: tuple[DocxChunk, ...]
 ) -> tuple[QuestionFamily, ...]:
-    """Assign every chunk to exactly one family; shared context is read by its other governees."""
+    """Assign every chunk to exactly one family; shared context is read by its other governees.
+
+    A family owning section-level chunks also reads the own chunks of the other questions
+    its multi-question shared contexts govern; their answer keys stay with their owners.
+    """
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     starts = [(positions[q.anchors[0]], q.question_id) for q in manifest.questions]
     claims: dict[str, set[str]] = {
@@ -98,6 +105,14 @@ def question_families(
                 positions[chunk.anchor], starts, trailing=points_line(chunk.text)
             )
             claims[owner].add(chunk.anchor)
+    for q in manifest.questions:
+        if claims[q.question_id] <= {*q.anchors, *q.key_anchors}:
+            continue
+        for context in manifest.contexts:
+            if q.question_id in context.governs and len(context.governs) >= 2:
+                for governed in context.governs:
+                    if governed != q.question_id:
+                        reads[q.question_id].update(manifest.question(governed).anchors)
     return tuple(
         QuestionFamily(
             question_id=q.question_id,
