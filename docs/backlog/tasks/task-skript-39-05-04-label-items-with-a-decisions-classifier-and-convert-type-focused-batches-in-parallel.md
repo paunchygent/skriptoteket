@@ -17,6 +17,12 @@ acceptance_criteria:
 - Grouping and labeling run on all eight corpus exams and their questions, subparts,
   shared-context scope and labels are checked against the source before any conversion
   change
+- The parallelization measurement (D26) runs on frozen grouping and labels and reports
+  time to first batch, time to all ready, cost and exam-conversion-eval quality for
+  every arm before production conversion changes
+- Converted batches reach the exam workspace as they finish, pending questions show
+  as placeholders, and the saved document passes the assembly check against the
+  grouping list before save and QTI export
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -34,16 +40,23 @@ steps decide what each question is:
 2. **Labeler.** One batched Decisions call gives each question one label from
    a closed set: `single_choice`, `multiple_response`, `gap_fill`,
    `free_text`, `matching`, `unsupported`, `unresolved`, with the label
-   probabilities. A probability or top-two margin below the label's threshold
-   sends the question to a second labeling pass with more context, and then
-   to a review item. The labeler sits behind one classifier interface (label,
+   probabilities. A question at or above 0.95 keeps its first-pass label;
+   below 0.95 a second pass (B: Responses, label only) decides alone, and
+   unresolved becomes free_text until the re-tag story lands. The labeler sits behind one classifier interface (label,
    score, threshold, route), so conversion reads labels the same way whatever
    produced them.
 3. **Parallel conversion.** Code packs questions into batches that hold one
    type, or the two choice types together. A question and its subparts never
    split. A shared instruction or passage reaches every batch that holds a
-   question it governs, as read-only context. Batches run concurrently; the
-   document is assembled in source order.
+   question it governs, as read-only context. Batches run concurrently in two
+   waves: questions accepted at 0.95 convert at once, and questions sent to B
+   join second-wave batches as their labels arrive. Converted batches reach
+   the editor as they finish (progressive delivery), pending questions show
+   as placeholders with their source text, and the document is assembled in
+   source order. Before save and QTI export, assembly checks the result
+   against the grouping list: every question once, each child under its
+   named parent, each instruction once, source order. Free_text questions
+   carry a marking guide (rättningsmall / poängmall) in the converter schema.
 4. **Recovery.** A converter that finds a question outside its batch's types
    reports a typed conflict; that question is relabeled and resent, at most
    three attempts in total.
@@ -72,9 +85,11 @@ work done today by the converter or by code:
 
 The parent recommends the placements from that evidence.
 
-This task first builds steps 1 and 2 and runs them on the eight corpus exams
-without converting. Building step 3 and the larger measurement phases follows
-a user decision on that result.
+Steps 1 and 2 are built and measured (feasibility result below and D23).
+Before step 3 changes production, a parallelization measurement (D26)
+compares batch shapes, reasoning efforts, a heading-split comparison and a
+Sol 6.1 escalation for questions below 0.95; building step 3 follows the
+user's decision on its result.
 
 ## Contract Inputs
 
@@ -152,3 +167,12 @@ succeeded on retry.
 | D17 | Fresh test documents for the shapes behind the escalations (a whole sentence on one blank line, labelled answer fields with inline keys) are synthetic DOCX files written by an independent model that never sees the corpus or its gold, as clear teacher-style Word documents; the labeler changes are measured on the corpus and these documents (user decision 2026-10-11). |
 | D18 | The labeler run also measures per-question shape counts (blanks, labelled fields, accepted strings per slot) sent as evidence alone, never as a typing rule in code; splitting the label set into two requests is measured only if escalations remain after D14-D16 (user decision 2026-10-11). |
 | D19 | Shape counts (D18) are dropped from the labeler: measured on 2026-10-11 they left the corpus at 306/314 and lowered the held-out synthetic result from 73/76 to 70/76 (user decision 2026-10-11). |
+| D20 | The second prompt round (probes P1-P4 and full runs with a hold-out set) ran after the D14 input repair was measured; its result is D23 (user decisions 2026-10-11). |
+| D21 | Teachers can edit anything in the workspace, but problems that better model context or output handling can solve are solved there; every admission or prompt option is reported with the teacher work it leaves (user decision 2026-10-11). |
+| D22 | Independent code review is paused while the pipeline is iterated and runs once on the settled pipeline before integration into main (user decision 2026-10-11). |
+| D23 | Labeler prompt P1d in both passes: a type name the teacher writes settles a label, a key marking more than one option correct settles multiple_response, Swedish type names with English counterparts, no evidence wording. Admission: first pass at >= 0.95, otherwise B decides alone; no C, no tie-breaker; unresolved becomes free_text for now (user decisions 2026-10-11). |
+| D24 | The teacher re-tag and rebuild flow for unsettled or wrong types is its own later story, contracted after the parallelization measurement (user decision 2026-10-11). |
+| D25 | Two conversion waves (accepted questions at once, B questions after their labels arrive), progressive delivery to the editor, and a free_text marking-guide field in the converter schema are part of this task (user decisions 2026-10-11). |
+| D26 | The parallelization measurement freezes grouping, labels and B per exam and compares, one exam at a time with all requests sent at once: whole exam (re-measured baseline), type batches of about 16 and about 6 question families, and one family per request, each with gpt-6-luna reasoning none, low and medium, two runs per exam; plus a heading-split comparison without grouping or labels, and Sol 6.1 low and medium for questions below 0.95 both with B's label and deciding the type itself. Per request it records timing, tokens, cost and 429s; batches are assembled and judged with exam-conversion-eval, and an arm counts as faster only when quality holds; the schema stays at docx_exam_build_v9 (user decisions 2026-10-11). |
+| D27 | When questions under one instruction get different labels, consecutive questions of one type form one parent each, following the gold rule; each carries the instruction, and a moved question carries the check-the-type mark (user decision 2026-10-11). |
+| D28 | The gold files are corrected before the measurement: samhallskunskap q14 and kursavslutande Fråga 20 become free_text, each with a note citing the user decision (user decision 2026-10-11). |

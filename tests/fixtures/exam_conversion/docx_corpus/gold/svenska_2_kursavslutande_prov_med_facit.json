@@ -9,7 +9,8 @@
     "Draft transcribed directly from source OOXML and inline facit; 24 source-numbered items, 36 points.",
     "Del 1 has one Fråga 1 heading over numbered questions 1-15; these remain fifteen items.",
     "Individual points for questions 1-15 are inferred from their 15-point section. User confirmation includes this inference.",
-    "Open short-answer rubrics and partial-credit allocation are outside the comparator; no automatic acceptance set is invented."
+    "Open short-answer rubrics and partial-credit allocation are outside the comparator; no automatic acceptance set is invented.",
+    "Fråga 20 is free_text by user decision 2026-10-11 (TASK-SKRIPT-39-05-04 D28): the source states the answers inline without a gap instruction."
   ],
   "items": [
     {
@@ -399,22 +400,12 @@
     },
     {
       "source_label": "Fråga 20",
-      "kind": "gap_fill",
+      "kind": "free_text",
       "points": 2,
-      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
-      "gaps": [
-        {
-          "accepted_values": [
-            "huvudsats"
-          ]
-        },
-        {
-          "accepted_values": [
-            "före"
-          ]
-        }
-      ],
-      "notes": []
+      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en\nb) I bisatsen att de inte väntar står satsadverbialet det finita verbet.",
+      "notes": [
+        "Svar: a) huvudsats b) före"
+      ]
     },
     {
       "source_label": "Fråga 21",
