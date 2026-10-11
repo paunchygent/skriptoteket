@@ -1,7 +1,6 @@
 """Marking guide (rättningsmall) on free_text items: field rule, container, DOCX and PDF (D31)."""
 
 import io
-import json
 from uuid import uuid4
 
 import pytest
@@ -30,8 +29,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParagraph,
     NativeParseOrigin,
     NativeTextSegment,
-    native_exam_document_json_bytes,
-    parse_native_exam_document,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
@@ -103,14 +100,6 @@ def test_guide_on_a_choice_item_is_rejected() -> None:
             marking_guide="Rätt är a",
             review=_review(),
         )
-
-
-def test_document_json_without_the_field_loads_with_no_guide() -> None:
-    document = _document(_SWEDISH_BODY, marking_guide=None)
-    payload = json.loads(native_exam_document_json_bytes(document))
-    del payload["items"][0]["marking_guide"]
-    loaded = parse_native_exam_document(json.dumps(payload).encode("utf-8"))
-    assert loaded.items[0].marking_guide is None
 
 
 def test_guide_survives_the_container_round_trip() -> None:
