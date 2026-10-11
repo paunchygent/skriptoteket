@@ -154,6 +154,64 @@ describe("useEditorWorkingCopy", () => {
     scope.stop();
   });
 
+  it("autosaves the working copy head when only bundle files change, including later sibling edits", async () => {
+    vi.useFakeTimers();
+
+    const baselineBundle: BundleFiles = { "roster.py": rosterPy, "grouping.py": groupingPy };
+    const fields = createFields();
+    fields.bundleFiles.value = { ...baselineBundle };
+    const hasDirtyChanges = ref(true);
+
+    const scope = effectScope();
+    scope.run(() => {
+      useEditorWorkingCopy({
+        userId: ref("user-1"),
+        toolId: ref("tool-1"),
+        baseVersionId: ref("ver-1"),
+        hasDirtyChanges,
+        initialSnapshot: ref(createInitialSnapshot({ bundleFiles: { ...baselineBundle } })),
+        fields,
+        notify: createNotify(),
+      });
+    });
+
+    await flushPromises();
+
+    const editedRoster = rosterPy + "\n# edit 1\n";
+    fields.bundleFiles.value = { ...fields.bundleFiles.value, "roster.py": editedRoster };
+    await nextTick();
+
+    expect(persistenceMocks.saveWorkingCopyHead).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1300);
+    await flushPromises();
+
+    expect(persistenceMocks.saveWorkingCopyHead).toHaveBeenCalledTimes(1);
+    expect(persistenceMocks.saveWorkingCopyHead.mock.calls[0]?.[0].fields).toEqual(
+      expect.objectContaining({
+        sourceCode: "print('hi')",
+        bundleFiles: { "roster.py": editedRoster, "grouping.py": groupingPy },
+      }),
+    );
+
+    const editedGrouping = groupingPy + "\n# edit 2\n";
+    fields.bundleFiles.value = { ...fields.bundleFiles.value, "grouping.py": editedGrouping };
+    await nextTick();
+
+    vi.advanceTimersByTime(1300);
+    await flushPromises();
+
+    expect(persistenceMocks.saveWorkingCopyHead).toHaveBeenCalledTimes(2);
+    expect(persistenceMocks.saveWorkingCopyHead.mock.calls[1]?.[0].fields).toEqual(
+      expect.objectContaining({
+        sourceCode: "print('hi')",
+        bundleFiles: { "roster.py": editedRoster, "grouping.py": editedGrouping },
+      }),
+    );
+
+    scope.stop();
+  });
+
   it("shows a restore prompt when a working copy differs from the baseline", async () => {
     persistenceMocks.getWorkingCopyHead.mockResolvedValue(
       createHeadRecord({ source_code: "print('changed')" }),

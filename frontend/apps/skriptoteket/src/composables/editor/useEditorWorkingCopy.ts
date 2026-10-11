@@ -320,6 +320,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     () => [
       fields.entrypoint.value,
       fields.sourceCode.value,
+      fields.bundleFiles.value,
       fields.settingsSchemaText.value,
       fields.inputSchemaText.value,
       fields.usageInstructions.value,
