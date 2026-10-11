@@ -95,8 +95,8 @@ describe("examWorkspaceItemReadiness", () => {
     const item = buildChoiceItem({
       choices: [],
       gaps: [
-        { accepted_values: ["100"], gap_id: "gap_001", hint: null },
-        { accepted_values: [], gap_id: "gap_002", hint: null },
+        { accepted_values: ["100"], gap_id: "gap_001" },
+        { accepted_values: [], gap_id: "gap_002" },
       ],
       kind: "gap_fill",
       match_left: [],
@@ -140,7 +140,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     const ready = buildChoiceItem();
     const partial = buildChoiceItem({
       choices: [],
-      gaps: [{ accepted_values: [], gap_id: "gap_001", hint: null }],
+      gaps: [{ accepted_values: [], gap_id: "gap_001" }],
       item_id: "item_002",
       kind: "gap_fill",
       match_left: [],
