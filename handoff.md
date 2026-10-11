@@ -21,6 +21,13 @@
     (`evidence/task-skript-39-05-04/labeler/takeover-tables/`); context audit
     admitted (`labeler/context-audit/`). Next: measure v3 tight context, then
     user decides threshold and D16; then grouping/batching D11-D13.
+  - [TASK-SKRIPT-39-05-06](docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md)
+    `in_progress`, owner Claude parent; implementation on
+    `codex/task-skript-39-05-06` adds the saved-document judge and shared eval
+    printing. Five staging captures: 166/166 items; two historical titles
+    fail. Points/title adversaries and five tests pass; Ruff/mypy pass.
+    Proof: retained root `evidence/task-skript-39-05-06/summary.md`.
+    Next: independent review and parent integration.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven

@@ -1,0 +1,84 @@
+"""Challenge the saved-document judge with mutations of recorded corpus conversions."""
+
+import json
+from pathlib import Path
+
+import pytest
+
+from scripts.exam_conversion_eval.judge import main
+from tests.unit.scripts.exam_conversion_corpus_support import replayed, with_item
+
+_STEM = "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit"
+_GAP_STEM = "bf26_diagnostic_grammar_test_ht26_med_facit"
+
+
+@pytest.mark.parametrize("envelope", [False, True])
+def test_changed_points_fail_and_identify_the_question(tmp_path: Path, capsys, envelope: bool):
+    document, _ = replayed(_STEM)
+    path = tmp_path / "document.json"
+
+    def save(value) -> None:
+        payload = value.model_dump(mode="json")
+        path.write_text(
+            json.dumps({"document": payload} if envelope else payload), encoding="utf-8"
+        )
+
+    save(document)
+    assert main([_STEM, str(path)]) == 0
+    baseline = capsys.readouterr().out
+    assert "title ok" in baseline
+    assert "points 0" in baseline
+
+    index, item = next(
+        (i, item) for i, item in enumerate(document.items) if item.points is not None
+    )
+    assert item.points is not None
+    changed = item.model_copy(update={"points": item.points + 1})
+    save(with_item(document, index, changed))
+    assert main([_STEM, str(path)]) == 1
+    output = capsys.readouterr().out
+    assert "points 1" in output
+    assert f"[{index}]" in output
+    assert "points points: expected=" in output
+    assert f"actual={changed.points!r}" in output
+
+
+def test_a_wrong_title_fails_even_when_all_items_match(tmp_path: Path, capsys):
+    document, _ = replayed(_STEM)
+    path = tmp_path / "wrong-title.json"
+    path.write_text(
+        document.model_copy(update={"title": "Wrong exam title"}).model_dump_json(),
+        encoding="utf-8",
+    )
+    assert main([_STEM, str(path)]) == 1
+    output = capsys.readouterr().out
+    assert "title FAIL" in output
+    assert "actual='Wrong exam title'" in output
+    assert f"{len(document.items)}/{len(document.items)} items match" in output
+
+
+def test_every_missing_question_mismatch_is_printed(tmp_path: Path, capsys):
+    document, _ = replayed(_STEM)
+    path = tmp_path / "missing-items.json"
+    changed = document.model_copy(update={"items": document.items[:-2], "parents": ()})
+    path.write_text(changed.model_dump_json(), encoding="utf-8")
+    assert main([_STEM, str(path)]) == 1
+    output = capsys.readouterr().out
+    assert f"[{len(document.items) - 2}]" in output
+    assert f"[{len(document.items) - 1}]" in output
+    assert output.count("segmentation missing_item:") == 2
+
+
+def test_a_long_wrong_answer_is_printed_without_truncation(tmp_path: Path, capsys):
+    document, _ = replayed(_GAP_STEM)
+    index, item = next((i, item) for i, item in enumerate(document.items) if item.gaps)
+    wrong_answer = "wrong answer " * 60 + "final marker"
+    gap = item.gaps[0].model_copy(update={"accepted_values": (wrong_answer,)})
+    changed = item.model_copy(update={"gaps": (gap, *item.gaps[1:])})
+    path = tmp_path / "wrong-answer.json"
+    path.write_text(with_item(document, index, changed).model_dump_json(), encoding="utf-8")
+    assert main([_GAP_STEM, str(path)]) == 1
+    output = capsys.readouterr().out
+    assert "scoring gap 1 misses:" in output
+    assert "scoring gap 1 accepts extra:" in output
+    assert f"actual={(wrong_answer,)!r}" in output
