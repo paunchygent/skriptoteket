@@ -156,13 +156,18 @@ def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
 
 
 def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
-    """One teacher-review item holding the source text of ``chunks``, whatever the model wrote."""
-    text = "\n".join(chunk.text for chunk in chunks if chunk.text)
+    """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
+    chunk in source order, whatever the model wrote."""
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=text or "Tomt källstycke."),)),),
+        body=tuple(
+            NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
+            for chunk in chunks
+            if chunk.text
+        )
+        or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,

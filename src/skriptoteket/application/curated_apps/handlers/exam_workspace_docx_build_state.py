@@ -1,5 +1,7 @@
 """Accepted items, chunk roles, observed failures and usage for one DOCX build."""
 
+import copy
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from uuid import UUID
 
@@ -8,7 +10,10 @@ import structlog
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    assemble_build_result,
+    review_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -18,10 +23,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
     split_section_totals,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    title_without_answer_key,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
     NativeExamItemKind,
 )
+from skriptoteket.domain.errors import DomainError
 
 logger = structlog.get_logger(__name__)
 
@@ -89,6 +98,65 @@ class DocxBuildState:
             for chunk in self.chunks
             if chunk.anchor in owned and chunk.anchor not in self.claimed
         )
+
+    def snapshot(self) -> "DocxBuildState":
+        """A copy a trial merge may change without changing this state; items are frozen."""
+        trial = copy.copy(self)
+        trial.accepted = list(self.accepted)
+        trial.key_anchors = set(self.key_anchors)
+        trial.claimed = set(self.claimed)
+        trial.reasons = dict(self.reasons)
+        trial.conflicts = list(self.conflicts)
+        trial.kept_conflicts = set(self.kept_conflicts)
+        trial.events = list(self.events)
+        return trial
+
+    def review_questions(
+        self,
+        questions: Iterable[tuple[str, ...]],
+        *,
+        keys: frozenset[str],
+        contexts: frozenset[str],
+        title: frozenset[str],
+        reason: str,
+    ) -> None:
+        """Rebuild an unconverted batch from its source alone.
+
+        Each question's unclaimed own chunks become one review item holding their source text
+        at the question's place. Answer-key chunks stay teacher notes, the grouped title stays
+        the title, and shared section text and headings stay section text, each in its source
+        wording.
+        Every other pending chunk becomes a review item with ``reason``.
+        """
+        for anchors in questions:
+            own = tuple(c for c in self.pending if c.anchor in anchors)
+            if own:
+                self.accepted.append(
+                    (review_source_item(own, reason), tuple(c.anchor for c in own))
+                )
+                self.claimed.update(c.anchor for c in own)
+        heading = tuple(c for c in self.pending if c.anchor in title)
+        for chunk in self.pending:
+            if chunk.anchor in keys:
+                self.key_anchors.add(chunk.anchor)
+            elif chunk.anchor not in title and (
+                chunk.anchor in contexts or chunk.kind == "heading"
+            ):
+                section = ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
+                self.instructions = (*self.instructions, section)
+            else:
+                continue
+            self.claimed.add(chunk.anchor)
+        if heading and self.title is None:
+            try:
+                text = title_without_answer_key(" ".join(c.text for c in heading))
+            except DomainError:
+                text = ""
+            if text:
+                anchors = tuple(c.anchor for c in heading)
+                self.title = ProducedMetadata(text=text, source_anchors=anchors)
+                self.claimed.update(anchors)
+        self.fail_all_pending(reason)
 
     def release(self, anchors: frozenset[str]) -> None:
         """Hand anchors back to the pipeline: this batch no longer owns or reports them."""

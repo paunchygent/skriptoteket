@@ -14,8 +14,16 @@ unsupported label converts as free text (D23). The strict schema is the
 only gate on a batch response. A family the converter reports as a type conflict is resent
 with the reported kind, the only resend. A family that still conflicts in its resend is
 kept as converted and carries the type-check mark: its review confidence stays below the
-acceptance threshold. Chunks no batch converts become review items, and a batch that raises
-leaves only its own questions as review items holding their source text.
+acceptance threshold. Chunks no batch converts become review items.
+
+A fault in one question only ever affects that question. Every item a batch admits is
+checked against the native contract inside the batch, and an item that fails becomes a
+review item holding its own source text. A batch that raises, or whose merge into the
+document fails on content, leaves each of its questions as one review item holding the
+question's source text at its place, and every other batch's result stays. The merge runs on
+a copy of the document-wide state, so a failed merge changes nothing. Only infrastructure
+faults stop the conversion: the progress port's database and job-lock faults, and
+cancellation.
 """
 
 from __future__ import annotations
@@ -33,6 +41,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly
     conversion_update,
     merge_batch,
     provisional_result,
+    validated,
     with_confidence,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
@@ -137,6 +146,9 @@ class _Run:
         )
         self.families: tuple[QuestionFamily, ...] = ()
         self.title_anchors: frozenset[str] = frozenset()
+        self.context_anchors: frozenset[str] = frozenset()
+        self.own_anchors: dict[str, tuple[str, ...]] = {}
+        self.key_anchors: dict[str, tuple[str, ...]] = {}
         self.kinds: dict[str, NativeExamItemKind] = {}
         self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
         self.resent: set[str] = set()
@@ -230,6 +242,10 @@ class DocxConversionPipeline:
         manifest = grouping.manifest
         run.families = question_families(manifest, job.chunks)
         run.title_anchors = frozenset(manifest.title_anchors)
+        run.context_anchors = frozenset(context.anchor for context in manifest.contexts)
+        for question in manifest.questions:
+            run.own_anchors[question.question_id] = (*question.anchors, *question.subpart_anchors)
+            run.key_anchors[question.question_id] = question.key_anchors
         await self._outline(run, manifest)
         try:
             async with asyncio.TaskGroup() as tasks:
@@ -341,7 +357,28 @@ class DocxConversionPipeline:
 
     async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:
         started = time.monotonic()
-        job = run.job
+        outcome = await self._converted(run, batch)
+        run.timed(f"batch {batch.batch_id}", started)
+        async with self._uow.lock:
+            try:
+                update = self._merged(run, batch, outcome)
+            except Exception as error:
+                # The merge ran on a copy, so the document-wide state is unchanged (D25).
+                logger.exception(
+                    "DOCX conversion batch merge failed",
+                    job_id=str(run.job.job_id),
+                    batch=batch.batch_id,
+                )
+                outcome = self._failed(run, batch, "batch_merge_failed", error)
+                update = self._merged(run, batch, outcome)
+            await self._progress.batch_ready(
+                worker_id=run.job.worker_id, job_id=run.job.job_id, update=update
+            )
+        if outcome.conflicts:
+            self._dispatch(run, list(outcome.conflicts), f"{batch.batch_id}c", tasks)
+
+    async def _converted(self, run: _Run, batch: ConversionBatch) -> BatchOutcome:
+        """The batch's admitted and contract-checked items, else its questions for review."""
         families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
         try:
             outcome = await convert_batch(
@@ -351,41 +388,53 @@ class DocxConversionPipeline:
                 exchange=self._exchange,
                 profile=self._profile,
             )
+            with_confidence(outcome.state, run.families, run.confidence())
+            validated(outcome.state)
         except Exception as error:
-            # One batch's failure never fails the conversion (D25): its own questions become
-            # review items holding their source text, and every other batch's result stays.
+            # One batch's failure never fails the conversion (D25).
             logger.exception(
-                "DOCX conversion batch failed", job_id=str(job.job_id), batch=batch.batch_id
+                "DOCX conversion batch failed", job_id=str(run.job.job_id), batch=batch.batch_id
             )
-            outcome = BatchOutcome(self._batch_state(run, batch))
-            outcome.state.record("batch", "batch_failed", detail=type(error).__name__)
-            outcome.state.fail_all_pending(_BATCH_FAILED_REASON)
-        state = outcome.state
-        resend = list(outcome.conflicts)
-        run.families = tuple(
+            return self._failed(run, batch, "batch_failed", error)
+        return outcome
+
+    def _failed(
+        self, run: _Run, batch: ConversionBatch, code: str, error: Exception
+    ) -> BatchOutcome:
+        """Each of the batch's questions as one review item holding its source text."""
+        state = self._batch_state(run, batch)
+        state.record("batch", code, detail=type(error).__name__)
+        state.review_questions(
+            (run.own_anchors[qid] for qid in batch.question_ids),
+            keys=frozenset(a for qid in batch.question_ids for a in run.key_anchors[qid]),
+            contexts=run.context_anchors,
+            title=run.title_anchors,
+            reason=_BATCH_FAILED_REASON,
+        )
+        return BatchOutcome(state)
+
+    def _merged(self, run: _Run, batch: ConversionBatch, outcome: BatchOutcome) -> ConversionUpdate:
+        """Merge the batch into a copy of the document and build its provisional update; the
+        run takes the copy only when every step succeeded."""
+        trial = run.state.snapshot()
+        families = tuple(
             replace(f, claims=outcome.released[f.question_id])
             if f.question_id in outcome.released
             else f
             for f in run.families
         )
+        merge_batch(trial, outcome.state, run.title_anchors)
+        filled = (*run.filled, *(q for q in batch.question_ids if q not in outcome.conflicts))
+        pending = tuple(f.question_id for f in families if f.question_id not in filled)
+        provisional = provisional_result(trial, families, frozenset(pending))
+        update = conversion_update(provisional.document, families, filled, pending)
+        run.state = trial
+        run.families = families
+        run.filled = list(filled)
         for qid, kind in outcome.conflicts.items():
             run.kinds[qid] = kind
             run.resent.add(qid)
-        with_confidence(state, run.families, run.confidence())
-        run.timed(f"batch {batch.batch_id}", started)
-        async with self._uow.lock:
-            merge_batch(run.state, state, run.title_anchors)
-            run.filled.extend(qid for qid in batch.question_ids if qid not in outcome.conflicts)
-            provisional = provisional_result(run.state, run.families, frozenset(run.pending))
-            await self._progress.batch_ready(
-                worker_id=job.worker_id,
-                job_id=job.job_id,
-                update=conversion_update(
-                    provisional.document, run.families, tuple(run.filled), run.pending
-                ),
-            )
-        if resend:
-            self._dispatch(run, resend, f"{batch.batch_id}c", tasks)
+        return update
 
     def _final(self, run: _Run, manifest: ExamManifest | None) -> DocxConversionOutcome:
         started = time.monotonic()

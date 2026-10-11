@@ -14,11 +14,19 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 
+from pydantic import ValidationError
+
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+    validation_detail,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     NO_ITEM_REASON,
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    assemble_build_result,
+    review_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -102,6 +110,22 @@ def with_confidence(
             item = item.model_copy(update={"review": review})
         updated.append((item, anchors))
     state.accepted = updated
+
+
+def validated(state: DocxBuildState) -> None:
+    """Check every admitted item against the native contract again, because later updates
+    copy items without validation; an item that fails holds its own source text for review."""
+    checked = []
+    for item, anchors in state.accepted:
+        try:
+            item = NativeExamItem.model_validate(item.model_dump())
+        except ValidationError as error:
+            detail = validation_detail(error)
+            state.record("admission", "native_contract_invalid", anchors=anchors, detail=detail)
+            own = tuple(c for c in state.chunks if c.anchor in anchors)
+            item = review_source_item(own, f"Frågan följer inte provformatet ({detail}).")
+        checked.append((item, anchors))
+    state.accepted = checked
 
 
 def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExamItem:
