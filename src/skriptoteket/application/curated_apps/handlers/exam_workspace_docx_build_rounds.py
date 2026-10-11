@@ -68,12 +68,14 @@ Rules:
 - Student-visible text (title, body, choices, exam title and instructions) is copied from
   the source wording. A cue printed beside a blank, such as a first letter or a word in
   brackets, is body text next to the gap. A cue printed after the sentence, such as a word,
-  translation or word count in brackets, is body text where the source prints it. Keep every
+  translation or word count in brackets, is body text after the sentence's last word, where
+  the source prints it. Keep every
   such cue with its brackets and all of its words, also when it is in another language than
   the sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
   translate, solve or invent. Every word of a question's own chunks that is not facit goes
-  into its title or body, including the words before and after each blank and every label
-  that stays text; never shorten a sentence to the part around its blank.
+  into its title or body, including the words before and after each blank, the words after
+  each cue and every label that stays text; never shorten a sentence to the part around its
+  blank or cue.
 - The exam title is the document's opening heading, copied verbatim, whatever its wording says.
 - A chunk is facit by its position: it stands under a facit heading, or it is a separate
   answer line that follows a question. Never treat a chunk as facit because its wording
@@ -103,7 +105,8 @@ Rules:
      bold or colour, or set apart by position: that place is the gap and those words are its
      accepted_values.
   3. An answer line "Label: value" whose field the question asks the student to produce:
-     the label stays text and the value becomes the gap's accepted_values.
+     the label stays text and the value becomes the gap's accepted_values. A value that
+     prints a label after each of its units or parts follows rule 4 instead.
   4. A facit that prints a sentence with a label after each of its units, or a word split
      into parts joined with + and a label after each part: each label is one gap placed
      right after its unit or part, and that label is the gap's accepted_values. The units, or
@@ -167,7 +170,9 @@ Rules:
   it into that question's body.
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
   Each source chunk belongs to exactly one item, the title, an instruction, or
-  answer_key_anchors.
+  answer_key_anchors. This holds for every chunk up to the last one of chunks, also after
+  the last question: a facit line whose answer became a gap's accepted_values goes in
+  answer_key_anchors, and a heading or points line goes in the title or an instruction.
 - Return every question in the supplied chunks in this one response; context_chunks hold no
   question of this part.
 - When a question cannot be converted faithfully, return outcome review with a short
