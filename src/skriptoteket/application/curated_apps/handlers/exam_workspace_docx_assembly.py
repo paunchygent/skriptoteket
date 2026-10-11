@@ -11,6 +11,7 @@ same-kind questions do not share a parent.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
@@ -37,8 +38,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeTextSegment,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
+from skriptoteket.protocols.item_type_labeler import ACCEPT_THRESHOLD
 
 PLACEHOLDER_REASON = "Frågan konverteras fortfarande."
+_BELOW_ACCEPT = math.nextafter(ACCEPT_THRESHOLD, 0.0)
 
 
 def merge_batch(
@@ -82,13 +85,20 @@ def merge_batch(
 def with_confidence(
     state: DocxBuildState, families: tuple[QuestionFamily, ...], confidence: Mapping[str, float]
 ) -> None:
-    """Record the first-pass probability of the converted label on each converted item."""
+    """Record the first-pass probability of the converted label on each converted item.
+
+    An item kept after a repeated type conflict always carries the type-check mark: its
+    confidence stays below the acceptance threshold.
+    """
     owner = {a: f.question_id for f in families for a in f.question_anchors}
     updated = []
     for item, anchors in state.accepted:
         qid = next((owner[a] for a in anchors if a in owner), None)
         if qid is not None and qid in confidence:
-            review = item.review.model_copy(update={"confidence": confidence[qid]})
+            value = confidence[qid]
+            if state.kept_conflicts.intersection(anchors):
+                value = min(value, _BELOW_ACCEPT)
+            review = item.review.model_copy(update={"confidence": value})
             item = item.model_copy(update={"review": review})
         updated.append((item, anchors))
     state.accepted = updated

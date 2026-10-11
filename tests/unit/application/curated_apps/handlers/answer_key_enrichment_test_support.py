@@ -28,10 +28,12 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamWorkspaceConversionJobView,
 )
 from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
+    ExamWorkspaceConversionProgress,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
@@ -62,8 +64,14 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    RecordingProgress,
+    Replay,
+    build_replay,
+)
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryVaultFileRepository,
     InMemoryVaultStorage,
@@ -129,8 +137,16 @@ class InMemoryEnrichmentJobRepository:
             and current.locked_by != expected_worker_id
         ):
             raise AssertionError("worker lease is no longer owned")
-        self.jobs[job.id] = job
-        return job
+        # Like the PostgreSQL repository, update never writes the conversion progress.
+        self.jobs[job.id] = job.model_copy(
+            update={"conversion_progress": current.conversion_progress if current else None}
+        )
+        return self.jobs[job.id]
+
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        self.jobs[job_id] = self.jobs[job_id].model_copy(update={"conversion_progress": progress})
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         job = self.jobs.get(job_id)
@@ -392,6 +408,9 @@ def _route() -> AnswerKeyProviderRoute:
     return AnswerKeyProviderRoute(primary=_profile(), failover=_failover_profile())
 
 
+DEFAULT_REPLAYED_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+
+
 def docx_job_handler(
     *,
     enrichment_jobs: InMemoryEnrichmentJobRepository,
@@ -402,44 +421,77 @@ def docx_job_handler(
     vault_storage: InMemoryVaultStorage,
     codec: ExamWorkspaceContainerCodecProtocol,
 ) -> ProcessExamWorkspaceDocxJobHandler:
-    """Wire the DOCX import processor the enrichment dispatcher requires."""
+    """The DOCX import processor the dispatcher requires; ``provider`` is unused (replayed)."""
+    handler, _ = replayed_docx_job_handler(
+        enrichment_jobs=enrichment_jobs,
+        proposed_overlays=proposed_overlays,
+        leases=leases,
+        vault_files=vault_files,
+        vault_storage=vault_storage,
+        codec=codec,
+    )
+    return handler
 
+
+def replayed_docx_job_handler(
+    *,
+    enrichment_jobs: InMemoryEnrichmentJobRepository,
+    proposed_overlays: InMemoryProposedOverlayRepository,
+    leases: InMemoryLeaseRepository,
+    vault_files: InMemoryVaultFileRepository,
+    vault_storage: InMemoryVaultStorage,
+    codec: ExamWorkspaceContainerCodecProtocol,
+    exam: str = DEFAULT_REPLAYED_EXAM,
+    store: ExamWorkspaceDocumentStore | None = None,
+    users: UserRepositoryProtocol | None = None,
+    enabled: bool = True,
+) -> tuple[ProcessExamWorkspaceDocxJobHandler, Replay]:
+    """The DOCX processor over ``exam``'s replayed pipeline and the production progress port."""
     uow = FakeUow()
     clock = FixedClock(_NOW)
     id_generator = UUIDGenerator()
-    return ProcessExamWorkspaceDocxJobHandler(
+    users = users or UserRepositoryStub()
+    store = store or ExamWorkspaceDocumentStore(
+        vault_files=vault_files,
+        vault_usage=InMemoryVaultUsageRepository(
+            usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=_NOW)
+        ),
+        vault_storage=vault_storage,
+        uow=uow,
+        clock=clock,
+        settings=Settings.model_construct(
+            VAULT_MAX_FILE_BYTES=5_000_000,
+            VAULT_MAX_TOTAL_BYTES=50_000_000,
+        ),
+        proposal_carry_forward=CarryExamWorkspaceProposals(
+            enrichment_jobs=enrichment_jobs,
+            proposed_overlays=proposed_overlays,
+            clock=clock,
+            id_generator=id_generator,
+        ),
+    )
+    progress = RecordingProgress(
+        inner=ExamWorkspaceConversionProgress(
+            jobs=enrichment_jobs,
+            users=users,
+            vault_files=vault_files,
+            store=store,
+            codec=codec,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+        )
+    )
+    replay = build_replay(exam, progress=progress, leases=leases, enabled=enabled)
+    handler = ProcessExamWorkspaceDocxJobHandler(
         jobs=enrichment_jobs,
         chunker=PythonDocxExamChunker(),
-        converter=DocxAIConverter(
-            provider=provider,
-            profile=_route().primary,
-            leases=leases,
-            uow=uow,
-            clock=clock,
-            enabled=True,
-        ),
-        codec=codec,
-        store=ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=InMemoryVaultUsageRepository(
-                usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=_NOW)
-            ),
-            vault_storage=vault_storage,
-            uow=uow,
-            clock=clock,
-            settings=Settings.model_construct(
-                VAULT_MAX_FILE_BYTES=5_000_000,
-                VAULT_MAX_TOTAL_BYTES=50_000_000,
-            ),
-            proposal_carry_forward=CarryExamWorkspaceProposals(
-                enrichment_jobs=enrichment_jobs,
-                proposed_overlays=proposed_overlays,
-                clock=clock,
-                id_generator=id_generator,
-            ),
-        ),
-        users=UserRepositoryStub(),
+        pipeline=replay.pipeline,
+        progress=progress,
+        store=store,
+        users=users,
         uow=uow,
         clock=clock,
         id_generator=id_generator,
     )
+    return handler, replay

@@ -8,8 +8,9 @@ document is assembled in source order and checked against the grouping.
 
 An unresolved or unsupported label converts as free text (D23). The strict schema is the
 only gate on a batch response. A family the converter reports as a type conflict is resent
-with the reported kind, the only resend; every family is sent at most three times in
-total. Chunks no batch converts become review items.
+with the reported kind, the only resend. A family that still conflicts in its resend is
+kept as converted and carries the type-check mark: its review confidence stays below the
+acceptance threshold. Chunks no batch converts become review items.
 """
 
 from __future__ import annotations
@@ -28,7 +29,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly
     with_confidence,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
-    MAX_ATTEMPTS,
     convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -91,7 +91,6 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
-_CONFLICT_REASON = "AI-tolkningen kunde inte avgöra frågetypen. Kontrollera källtexten manuellt."
 
 
 @dataclass(frozen=True)
@@ -128,7 +127,7 @@ class _Run:
         self.title_anchors: frozenset[str] = frozenset()
         self.kinds: dict[str, NativeExamItemKind] = {}
         self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
-        self.attempts: dict[str, int] = {}
+        self.resent: set[str] = set()
         self.filled: list[str] = []
         self.timings: list[DocxStageTiming] = []
 
@@ -202,7 +201,6 @@ class DocxConversionPipeline:
         manifest = grouping.manifest
         run.families = question_families(manifest, job.chunks)
         run.title_anchors = frozenset(manifest.title_anchors)
-        run.attempts = {f.question_id: 0 for f in run.families}
         await self._outline(run, manifest)
         try:
             async with asyncio.TaskGroup() as tasks:
@@ -301,17 +299,17 @@ class DocxConversionPipeline:
             context_anchors=batch.reads,
             allowed_kinds=batch.kinds,
             batch=batch.batch_id,
+            keep_conflicts=any(qid in run.resent for qid in batch.question_ids),
         )
         families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
         outcome = await convert_batch(
             state=state,
             batch=batch,
             families=families,
-            attempts=run.attempts,
             exchange=self._exchange,
             profile=self._profile,
         )
-        resend: list[str] = []
+        resend = list(outcome.conflicts)
         run.families = tuple(
             replace(f, claims=outcome.released[f.question_id])
             if f.question_id in outcome.released
@@ -320,11 +318,7 @@ class DocxConversionPipeline:
         )
         for qid, kind in outcome.conflicts.items():
             run.kinds[qid] = kind
-            if run.attempts[qid] < MAX_ATTEMPTS:
-                resend.append(qid)
-            else:
-                state.record("fallback", "type_conflict_exhausted", detail=qid)
-                run.state.fail_chunks(tuple(run.family(qid).claims), _CONFLICT_REASON)
+            run.resent.add(qid)
         with_confidence(state, run.families, run.confidence())
         run.timed(f"batch {batch.batch_id}", started)
         async with self._uow.lock:

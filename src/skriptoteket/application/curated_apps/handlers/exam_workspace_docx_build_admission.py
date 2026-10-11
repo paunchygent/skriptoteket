@@ -6,7 +6,7 @@ a schema-valid response. A chunk two entries name stays with the first; the late
 keeps its other chunks. A question the native contract cannot hold, a question the model
 marks for review, and every chunk no entry names become review items that keep their
 source text. A question reported as a type conflict leaves the batch for the pipeline to
-resend with the kind the source shows.
+resend with the kind the source shows, once: in the resend it is kept as converted.
 """
 
 from pydantic import JsonValue, ValidationError
@@ -101,12 +101,18 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
     seen.update(anchors)
     if produced.outcome == "type_conflict":
         kind = produced.conflict_kind
-        if kind is not None and (state.allowed_kinds is None or kind not in state.allowed_kinds):
+        if kind is None or (state.allowed_kinds is not None and kind in state.allowed_kinds):
+            state.accepted.append((review_item(produced, CONFLICT_WITHOUT_KIND_REASON), anchors))
+            return
+        if not state.keep_conflicts:
             state.conflicts.append(TypeConflict(anchors, kind))
             state.record("admission", "type_conflict", item=index, anchors=anchors, detail=kind)
             return
-        state.accepted.append((review_item(produced, CONFLICT_WITHOUT_KIND_REASON), anchors))
-        return
+        # A resent question that conflicts again is kept as converted, as the kind the source
+        # shows, with the type-check mark.
+        state.record("admission", "type_conflict_kept", item=index, anchors=anchors, detail=kind)
+        state.kept_conflicts.update(anchors)
+        produced = produced.model_copy(update={"kind": kind})
     if produced.outcome == "review":
         cause = produced.review_reason or "ingen orsak angavs"
         reason = f"AI-tolkningen markerade frågan för granskning: {cause}"

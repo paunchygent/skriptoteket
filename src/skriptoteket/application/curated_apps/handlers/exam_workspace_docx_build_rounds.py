@@ -51,7 +51,9 @@ Rules:
   brackets, is body text next to the gap. Keep every such cue with its
   brackets where the source prints it, also when it is in another language than the
   sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
-  translate, solve or invent.
+  translate, solve or invent. Every word of a question's own chunks that is not facit goes
+  into its title or body, including the words before and after each blank and every label
+  that stays text; never shorten a sentence to the part around its blank.
 - The exam title is the document's opening heading, copied verbatim, whatever its wording says.
 - A chunk is facit by its position: it stands under a facit heading, or it is a separate
   answer line that follows a question. Never treat a chunk as facit because its wording
@@ -119,7 +121,8 @@ Rules:
   copy its wording without the question number and printed points as the item title (null
   when nothing else remains), and take the points it prints. printed_label copies the
   question's own number or letter as printed, with its word ("Fråga 3", "Question 4", "3",
-  "a"); a number shared by a part heading stays out. title and instructions
+  "a"); a number shared by a part heading stays out, and a part or section name ("Part 2",
+  "Del B") is title wording, never printed_label. title and instructions
   hold only text that belongs to no single question. A section instruction, word box or
   shared passage printed once for a run of questions is an instruction, never part of the
   first question or of any question: the converter groups the questions it serves under

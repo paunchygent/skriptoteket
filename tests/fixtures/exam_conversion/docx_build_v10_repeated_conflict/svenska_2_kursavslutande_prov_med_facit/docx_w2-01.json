@@ -1,0 +1,224 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Poäng: 15 poäng",
+      "source_anchors": [
+        "body:0055"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 2: grammatik och språkstrukturer, 16 poäng",
+      "source_anchors": [
+        "body:0059"
+      ],
+      "points": 16
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0061",
+        "body:0062",
+        "body:0063",
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Morfem",
+      "printed_label": "Fråga 16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nb) I ordet lekfullheten är -full och -het ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nc) I ordet lekfullheten är -en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Fraser",
+      "printed_label": "Fråga 17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "NF"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nb) Frasen på skolgården är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nc) Frasen kan vila är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "VF"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0073",
+        "body:0074",
+        "body:0075"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Satsdelar",
+      "printed_label": "Fråga 18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd S, P, DO, IO, Pf, Adv och SA.\nNoah ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " skrev ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " brevet ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " tydligt ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

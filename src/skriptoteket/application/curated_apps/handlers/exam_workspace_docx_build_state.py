@@ -64,6 +64,8 @@ class DocxBuildState:
     claimed: set[str] = field(default_factory=set)
     reasons: dict[str, str] = field(default_factory=dict)
     conflicts: list[TypeConflict] = field(default_factory=list)
+    keep_conflicts: bool = False
+    kept_conflicts: set[str] = field(default_factory=set)
     events: list[DocxBuildEvent] = field(default_factory=list)
     input_tokens: int | None = None
     output_tokens: int | None = None

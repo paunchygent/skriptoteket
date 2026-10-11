@@ -3,7 +3,7 @@
 A batch sends its own chunks and its read-only context once. The strict schema is the only
 gate: every schema-valid entry is admitted, and every chunk the response leaves out becomes
 a review item. Families reported as type conflicts leave the batch for the pipeline to
-resend with the kind the source shows; a family is sent at most three times in total.
+resend once with the kind the source shows.
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
 )
 
-MAX_ATTEMPTS = 3
 INCOMPLETE_REASON = "AI-tjänstens svar blev ofullständigt. Kontrollera källtexten manuellt."
 
 
@@ -82,14 +81,11 @@ async def convert_batch(
     state: DocxBuildState,
     batch: ConversionBatch,
     families: dict[str, QuestionFamily],
-    attempts: dict[str, int],
     exchange: DocxBuildRoundExchange,
     profile: StructuredLLMProviderProfile,
 ) -> BatchOutcome:
     """Send the batch once and admit the schema-valid response."""
     outcome = BatchOutcome(state)
-    for qid in families:
-        attempts[qid] += 1
     try:
         request = build_batch_request(
             job_id=state.job_id,
