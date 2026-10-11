@@ -21,10 +21,14 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
+    ExamWorkspaceConversionUnit,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
     SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
+    ConversionProgress,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
     CarryExamWorkspaceProposals,
@@ -174,6 +178,22 @@ class ExamWorkspaceDocumentStore:
             raise
         return vault_file
 
+    async def retire_version(self, *, actor: User, retired: VaultFile) -> None:
+        """Soft-delete one superseded revision and release its bytes from vault usage.
+
+        Runs inside the caller's unit of work; the stored payload expires with the row.
+        """
+        now = self._clock.now()
+        await self._vault_files.update(file=retired.model_copy(update={"deleted_at": now}))
+        usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
+        await self._vault_usage.upsert(
+            usage=VaultUsage(
+                user_id=actor.id,
+                bytes_total=max(0, usage.bytes_total - retired.bytes),
+                updated_at=now,
+            )
+        )
+
     async def discard_version_file(self, *, actor: User, file_id: UUID) -> None:
         await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
 
@@ -247,6 +267,7 @@ class ImportExamWorkspaceDocumentHandler:
 
 def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConversionStatus:
     assert job.workspace_lineage_id is not None
+    progress = ConversionProgress.model_validate(job.conversion_progress or {})
     return ExamWorkspaceConversionStatus(
         job_id=job.id,
         lineage_id=job.workspace_lineage_id,
@@ -254,6 +275,19 @@ def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConve
         error_message=job.last_error
         if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
         else None,
+        document_revision=progress.revision,
+        questions_total=progress.questions_total,
+        questions_done=progress.questions_done,
+        units=tuple(
+            ExamWorkspaceConversionUnit(
+                unit_id=unit.unit_id,
+                question=unit.question,
+                state=unit.state.value,
+                item_ids=unit.item_ids,
+            )
+            for unit in progress.units
+            if unit.digest is not None
+        ),
     )
 
 

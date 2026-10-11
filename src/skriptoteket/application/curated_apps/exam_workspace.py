@@ -31,15 +31,39 @@ class ExamWorkspaceDocumentResponse(BaseModel):
     notes: tuple[str, ...] = ()
 
 
+class ExamWorkspaceConversionUnit(BaseModel):
+    """Items conversion last wrote for one question or question-less review item.
+
+    ``converting`` items are placeholders; ``teacher_kept`` means the teacher changed the
+    placeholder, so the late result was dropped.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    unit_id: str
+    question: bool
+    state: Literal["converting", "ready", "teacher_kept"]
+    item_ids: tuple[str, ...]
+
+
 class ExamWorkspaceConversionStatus(BaseModel):
-    """Owner-visible status of one background DOCX import."""
+    """Owner-visible status of one background DOCX import.
+
+    ``document_revision`` is the latest revision conversion saved, absent until the
+    first batch is ready; ``units`` lets the editor merge each new revision into
+    unsaved teacher edits.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     job_id: UUID
     lineage_id: UUID
     state: Literal["queued", "running", "succeeded", "failed"]
-    error_message: str | None = None
+    error_message: str | None
+    document_revision: int | None
+    questions_total: int
+    questions_done: int
+    units: tuple[ExamWorkspaceConversionUnit, ...]
 
 
 class ExamWorkspaceDocumentListResponse(BaseModel):

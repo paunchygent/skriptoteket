@@ -62,6 +62,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     locked_until: datetime | None = None
     last_error: str | None = None
     diagnostics: tuple[dict[str, JsonValue], ...] = ()
+    conversion_progress: dict[str, JsonValue] | None = None
 
     created_at: datetime
     updated_at: datetime
@@ -116,6 +117,7 @@ class ExamWorkspaceConversionJobView(BaseModel):
     status: ExamAnswerKeyEnrichmentJobStatus
     workspace_lineage_id: UUID | None
     last_error: str | None
+    conversion_progress: dict[str, JsonValue] | None = None
 
 
 class ExamAnswerKeyProposedOverlay(BaseModel):

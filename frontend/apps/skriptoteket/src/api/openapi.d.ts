@@ -6050,6 +6050,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6090,6 +6092,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
