@@ -54,10 +54,12 @@ function buildDocument(): NativeExamDocument {
     instructions: [],
     items: [
       {
-        answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
         body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
         gaps: [],
+        match_left: [],
+        match_right: [],
         item_id: "item_001",
         kind: "free_text",
         points: 2,
@@ -78,6 +80,7 @@ function buildDocument(): NativeExamDocument {
       source_filename: "NO_Prov_HT25.docx",
       source_sha256: "abc123",
     },
+    parents: [],
     revision: 1,
     schema_version: "native_exam_document_v1",
     title: "NO-prov HT25",

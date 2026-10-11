@@ -50,7 +50,7 @@ def _document(
     return NativeExamDocument(
         document_id=uuid4(),
         revision=1,
-        title="Prov",
+        title="Prov på svenska",
         items=items,
         assets=assets,
         origin=NativeExamDocumentOrigin(kind="created"),
@@ -259,4 +259,4 @@ class TestAssetMapping:
         assert image.media_type == "image/png"
         assert image.payload == _ASSET_PAYLOAD
         assert image.source_reference == _ASSET_ID
-        assert image.alt_text == "Bild 1 till Fråga 1"
+        assert image.alt_text == "Bild 1"

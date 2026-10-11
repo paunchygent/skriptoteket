@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0021"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0019",
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "symbolism",
+          "correct": false
+        },
+        {
+          "text": "imagery",
+          "correct": true
+        },
+        {
+          "text": "metaphor",
+          "correct": false
+        },
+        {
+          "text": "alliteration",
+          "correct": false
+        }
+      ]
+    }
+  ]
+}

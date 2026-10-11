@@ -47,6 +47,8 @@ from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
+    AnswerKeyViewKind,
+    WorkspaceAnswerKeyProposalsPayload,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
@@ -85,6 +87,10 @@ from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_sup
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryVaultFileRepository,
     InMemoryVaultStorage,
+)
+from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
+    document_of,
+    recorded_matching_items,
 )
 
 pytestmark = pytest.mark.unit
@@ -342,3 +348,57 @@ async def test_invalid_workspace_model_output_fails_without_a_proposal() -> None
     assert leases[0].state is AnswerKeyTokenLeaseState.RECONCILED
     assert harness.proposed_overlays.records == []
     assert harness.producer.calls == 0
+
+
+async def test_matching_workspace_job_persists_pairs_for_recorded_unkeyed_items() -> None:
+    items = recorded_matching_items()
+    document = document_of(*items)
+    harness = _WorkspaceHarness(
+        provider=StubProvider(
+            content={
+                "pairs": [
+                    {"left_id": 1, "right_id": 3},
+                    {"left_id": 2, "right_id": 2},
+                    {"left_id": 3, "right_id": 1},
+                ]
+            },
+            usage=StructuredLLMUsage(total_tokens=120),
+        ),
+        document=document,
+    )
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert harness.provider.call_count == len(items)
+    payload = WorkspaceAnswerKeyProposalsPayload.model_validate(
+        harness.proposed_overlays.records[0].overlay_json
+    )
+    assert [record.item_id for record in payload.items] == [item.item_id for item in items]
+    for record in payload.items:
+        assert record.kind is AnswerKeyViewKind.MATCHING
+        assert record.match_pairs == (
+            ("left_001", "right_003"),
+            ("left_002", "right_002"),
+            ("left_003", "right_001"),
+        )
+        assert record.prompt_template_version == "workspace_matching_answer_key_prompt_v1"
+
+
+async def test_matching_workspace_job_fails_when_a_left_entry_is_left_unpaired() -> None:
+    document = document_of(*recorded_matching_items())
+    harness = _WorkspaceHarness(
+        provider=StubProvider(
+            content={"pairs": [{"left_id": 1, "right_id": 3}, {"left_id": 2, "right_id": 2}]},
+            usage=StructuredLLMUsage(total_tokens=120),
+        ),
+        document=document,
+    )
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "llm_output_invalid"
+    assert harness.proposed_overlays.records == []

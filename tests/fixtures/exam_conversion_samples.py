@@ -32,6 +32,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiManualRepresentation,
+    ExamNetQtiMatchEntry,
     ExamNetQtiMatchPair,
     ExamNetQtiTextEntryGap,
     ExamNetQtiUnsupportedResource,
@@ -254,6 +255,18 @@ def _matching_proof_gated_sample() -> ExamNetQtiSamplePackage:
                     "right_004",
                     "genetisk information",
                 ),
+            ),
+            match_left=(
+                ExamNetQtiMatchEntry("left_001", "kloroplast"),
+                ExamNetQtiMatchEntry("left_002", "mitokondrie"),
+                ExamNetQtiMatchEntry("left_003", "ribosom"),
+                ExamNetQtiMatchEntry("left_004", "cellkärna"),
+            ),
+            match_right=(
+                ExamNetQtiMatchEntry("right_001", "fotosyntes"),
+                ExamNetQtiMatchEntry("right_002", "ATP-produktion"),
+                ExamNetQtiMatchEntry("right_003", "proteinsyntes"),
+                ExamNetQtiMatchEntry("right_004", "genetisk information"),
             ),
         ),
     )

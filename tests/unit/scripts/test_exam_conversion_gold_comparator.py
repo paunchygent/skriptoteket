@@ -1,274 +1,280 @@
-"""Substantive comparison and the shared A10 spelling policy."""
-
-from dataclasses import FrozenInstanceError
-from uuid import uuid4
+"""The principle comparator judged on real gold questions and conversions breaking a principle."""
 
 import pytest
 
-from scripts.exam_conversion_eval.compare import compare_exam, compare_items, compare_native_exam
-from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
-from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
-    is_allowed_answer_spelling_variant,
-    normalize_answer,
+from scripts.exam_conversion_eval.compare import (
+    PRINCIPLES,
+    ExamComparison,
+    compare_exam,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeChoice,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
+from scripts.exam_conversion_eval.gold import GoldExam, GoldGap, GoldItem, GoldParent
+from tests.unit.scripts.exam_conversion_corpus_support import (
+    STEMS,
+    gold_exam,
+    mutated_items,
+    question_index,
 )
 
+_ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
+_SVENSKA = "svenska_2_grammatik_omprov_variant_2_med_facit"
+_POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+_DIAGNOSTIC = "bf26_diagnostic_grammar_test_ht26_med_facit"
+_WORD_BANK = "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit"
 
-def _item(**changes: object) -> GoldItem:
-    return GoldItem.model_validate(
-        {
-            "source_label": "Q1",
-            "kind": "free_text",
-            "points": 2,
-            "prompt": "Explain this.",
-            **changes,
-        }
+
+def _failed(comparison: ExamComparison, index: int) -> set[str]:
+    return set(comparison.items[index].failed_principles())
+
+
+def _first(exam: GoldExam, wanted) -> int | None:
+    return next((i for i, item in enumerate(exam.questions) if wanted(item)), None)
+
+
+def _cases(wanted) -> list[tuple[str, int]]:
+    """The first question per exam that the predicate selects."""
+    cases = []
+    for stem in STEMS:
+        index = _first(gold_exam(stem), wanted)
+        if index is not None:
+            cases.append((stem, index))
+    return cases
+
+
+def _multiline_free_text(item: GoldItem) -> bool:
+    return item.kind == "free_text" and "\n" in item.prompt
+
+
+def _text_between_gaps(item: GoldItem) -> bool:
+    return any(
+        line.count("[___]") >= 2 and line.split("[___]")[1].strip()
+        for line in item.prompt.split("\n")
     )
 
 
-def _gap(*answers: tuple[str, ...]) -> GoldItem:
-    return _item(
-        kind="gap_fill",
-        prompt=" ".join("[___]" for _ in answers),
-        gaps=tuple({"accepted_values": values} for values in answers),
-    )
+def _facit(item: GoldItem) -> str | None:
+    """The teacher's facit for an open question: the text after the last colon of a note line."""
+    if item.kind not in ("free_text", "review"):
+        return None
+    lines = [line for note in item.notes for line in note.split("\n") if ":" in line]
+    return lines[-1].rsplit(":", 1)[1].strip() if lines else None
 
 
-def _exam(*items: GoldItem) -> GoldExam:
-    return GoldExam(source_filename="exam.docx", source_sha256="a" * 64, title="Exam", items=items)
+def test_gold_passes_every_principle_against_itself():
+    for stem in STEMS:
+        exam = gold_exam(stem)
+        comparison = compare_exam(exam, exam.items)
+        assert comparison.passed, stem
+        assert comparison.title.passed
+        assert set(comparison.failures_by_principle()) == set(PRINCIPLES)
+        assert len(comparison.items) == len(exam.questions)
 
 
-def _native(**changes: object) -> NativeExamItem:
-    return NativeExamItem.model_validate(
-        {
-            "item_id": "item_001",
-            "sequence": 1,
-            "kind": "free_text",
-            "points": 2,
-            "body": (NativeParagraph(segments=(NativeTextSegment(text="Explain this."),)),),
-            "answer_key": NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            "review": NativeItemReview(
-                state=NativeItemReviewState.REVIEW_COMPLETE,
-                parse_origin=NativeParseOrigin.DETERMINISTIC,
-            ),
-            **changes,
-        }
-    )
+def test_parent_children_are_reported_under_parent_and_child_label():
+    exam = gold_exam(_ENGLISH)
+    parent = next(item for item in exam.items if isinstance(item, GoldParent))
+    labels = [item.source_label for item in compare_exam(exam, exam.items).items]
+    assert f"{parent.source_label} / {parent.children[0].source_label}" in labels
 
 
-def _document(item: NativeExamItem) -> NativeExamDocument:
-    return NativeExamDocument(
-        document_id=uuid4(),
-        revision=1,
-        title="Exam",
-        items=(item,),
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-
-
-def test_prompt_whitespace_and_source_label_do_not_change_substance() -> None:
-    assert compare_items(_item(), _item(prompt=" Explain\n  this. ", source_label="other")) == ()
-
-
-@pytest.mark.parametrize("prompt", ["explain this.", "Explain this!", "Explain this"])
-def test_prompt_case_and_punctuation_remain_significant(prompt: str) -> None:
-    assert [m.field for m in compare_items(_item(), _item(prompt=prompt))] == ["prompt"]
-
-
-def test_choice_order_and_whitespace_do_not_matter() -> None:
-    expected = _item(
-        kind="multiple_response", choices=("a text", "b", "c"), correct_choices=("a text", "b")
-    )
-    actual = _item(
-        kind="multiple_response",
-        choices=("c", "b", " a  text "),
-        correct_choices=("b", " a  text "),
-    )
-    assert compare_items(expected, actual) == ()
-
-
-def test_gap_order_of_answers_and_casefold_whitespace() -> None:
-    assert compare_items(_gap(("New York", "NY")), _gap(("ny", " new\n YORK "))) == ()
-
-
-@pytest.mark.parametrize(
-    "gold,extra,allowed",
-    [
-        ("planet", "palnet", True),
-        ("planet", "plxny t", False),
-        ("planets", "plxnetsz", True),
-        ("planets", "plxnytsz", False),
-        ("ca", "abc", False),
-        ("cabbbbb", "abcbbbb", True),
-        ("New York", "Nwe Yrok", True),
-        ("New York", "Nwe Yrokx", False),
-    ],
-)
-def test_length_bounds_transpositions_and_whole_string_policy(
-    gold: str, extra: str, allowed: bool
-) -> None:
-    assert is_allowed_answer_spelling_variant(gold, extra) is allowed
-    assert (not compare_items(_gap((gold,)), _gap((gold, extra)))) is allowed
-
-
-def test_true_damerau_distance_supports_overlapping_edits() -> None:
-    # CA -> AC -> ABC, with unchanged suffix; optimal-string-alignment gives 3.
-    assert is_allowed_answer_spelling_variant("cabbbbb", "abcbbbb")
-
-
-def test_spelling_normalization_empty_values_and_other_gold_exclusion() -> None:
-    assert normalize_answer(" STRAẞE\n  TWO ") == "strasse two"
-    assert is_allowed_answer_spelling_variant(" PLANET ", "palnet")
-    assert not is_allowed_answer_spelling_variant("planet", " PLANET ")
-    assert not is_allowed_answer_spelling_variant("", "a")
-    assert not is_allowed_answer_spelling_variant("a", " ")
-    assert not is_allowed_answer_spelling_variant(
-        "planet", "palnet", other_gold_answers=(" PALNET ",)
-    )
-
-
-def test_missing_answer_cannot_be_replaced_by_allowed_typo() -> None:
-    mismatches = compare_items(_gap(("planet",)), _gap(("palnet",)))
-    assert [(m.field, m.reason) for m in mismatches] == [
-        ("gaps[0].accepted_values", "missing_answers")
-    ]
-
-
-def test_extra_equal_to_another_gap_gold_fails() -> None:
-    mismatches = compare_items(
-        _gap(("planet",), ("palnet",)), _gap(("planet", " PALNET "), ("palnet",))
-    )
-    assert [m.reason for m in mismatches] == ["extra_answers"]
-
-
-def test_missing_and_unallowed_extra_accumulate() -> None:
-    mismatches = compare_items(_gap(("planet",)), _gap(("synonym",)))
-    assert [m.reason for m in mismatches] == ["missing_answers", "extra_answers"]
-
-
-def test_all_field_mismatches_accumulate() -> None:
-    expected = _item(kind="single_choice", choices=("a", "b"), correct_choices=("a",))
-    actual = _gap(("x",))
-    actual = GoldItem.model_validate({**actual.model_dump(), "points": 3})
-    assert {m.field for m in compare_items(expected, actual)} == {
-        "kind",
-        "points",
-        "prompt",
-        "choices",
-        "correct_choices",
-        "gaps",
+def test_answer_written_into_the_prompt_leaks_and_loses_the_slot():
+    exam = gold_exam(_ENGLISH)
+    index = question_index(exam, "Grammar and Corrections, Question 7")
+    item = exam.questions[index]
+    answer = item.gaps[0].accepted_values[0]
+    filled = item.prompt.replace("[___]", answer)
+    comparison = compare_exam(exam, mutated_items(exam, index, prompt=filled, gaps=()))
+    assert _failed(comparison, index) == {
+        "no_answer_leakage",
+        "response_slots",
+        "scoring",
+        "content_present",
     }
 
 
-def test_wrong_correct_option_and_options_fail_separately() -> None:
-    expected = _item(kind="single_choice", choices=("a", "b"), correct_choices=("a",))
-    actual = _item(kind="single_choice", choices=("b", "c"), correct_choices=("b",))
-    assert [m.field for m in compare_items(expected, actual)] == ["choices", "correct_choices"]
+def test_typographic_facit_without_its_keyboard_form_fails_scoring():
+    exam = gold_exam(_ENGLISH)
+    index = question_index(exam, "Grammar and Corrections, Question 7")
+    curly = tuple(v for v in exam.questions[index].gaps[0].accepted_values if "’" in v)
+    assert curly
+    gaps = (GoldGap(accepted_values=curly),)
+    comparison = compare_exam(exam, mutated_items(exam, index, gaps=gaps))
+    assert _failed(comparison, index) == {"scoring"}
 
 
-def test_matching_is_directed_and_unordered_with_whitespace_only() -> None:
-    expected = _item(
-        kind="matching", pairs=({"left": "A", "right": "B"}, {"left": "C", "right": "D"})
+def test_wording_differences_the_principles_ignore_pass():
+    exam = gold_exam(_SVENSKA)
+    restyled = exam.questions[3].prompt.upper().replace("\n", " ").replace(".", "")
+    comparison = compare_exam(exam, mutated_items(exam, 3, prompt=restyled))
+    assert comparison.items[3].passed
+
+
+def test_a_dropped_instruction_line_fails_content():
+    exam = gold_exam(_SVENSKA)
+    shortened = "\n".join(exam.questions[3].prompt.split("\n")[1:])
+    comparison = compare_exam(exam, mutated_items(exam, 3, prompt=shortened))
+    assert _failed(comparison, 3) == {"content_present"}
+
+
+def test_defined_abbreviation_term_and_slash_parts_are_admitted_extras():
+    exam = gold_exam(_SVENSKA)
+    item = exam.questions[3]
+    # Each gold gap holds a term and its defined abbreviation; reverse their order.
+    reordered = tuple(
+        GoldGap(accepted_values=tuple(reversed(g.accepted_values))) for g in item.gaps
     )
-    reordered = _item(
-        kind="matching", pairs=({"left": " C ", "right": "D"}, {"left": "A", "right": " B "})
+    comparison = compare_exam(exam, mutated_items(exam, 3, gaps=reordered))
+    assert comparison.items[3].passed
+
+
+def test_another_gaps_gold_answer_fails_and_a_missing_answer_fails():
+    exam = gold_exam(_SVENSKA)
+    first, second, *rest = exam.questions[3].gaps
+    crossed = GoldGap(accepted_values=(*first.accepted_values, second.accepted_values[0]))
+    missing = GoldGap(accepted_values=second.accepted_values[1:])
+    gaps = (crossed, missing, *rest)
+    comparison = compare_exam(exam, mutated_items(exam, 3, gaps=gaps))
+    reasons = {m.reason for m in comparison.items[3].mismatches}
+    assert reasons == {"gap 1 accepts extra", "gap 2 misses"}
+
+
+def test_text_of_the_neighbouring_question_fails_segmentation():
+    """A live round copied question 7's wording into question 8."""
+    exam = gold_exam(_POETRY)
+    seventh = question_index(exam, "Part 1, Question 7")
+    prompt = exam.questions[seventh].prompt
+    comparison = compare_exam(exam, mutated_items(exam, seventh + 1, prompt=prompt))
+    assert _failed(comparison, seventh + 1) == {"segmentation", "content_present"}
+    assert comparison.items[seventh].passed
+
+
+def test_a_single_foreign_word_of_another_questions_phrase_fails_segmentation():
+    exam = gold_exam(_POETRY)
+    seventh = question_index(exam, "Part 1, Question 7")
+    own = exam.questions[seventh + 1].prompt
+    foreign = exam.questions[seventh].prompt.split("\n")[0]
+    comparison = compare_exam(exam, mutated_items(exam, seventh + 1, prompt=f"{own}\n{foreign}"))
+    assert "segmentation" in _failed(comparison, seventh + 1)
+
+
+def test_option_letters_question_numbers_points_and_blanks_fail_labels():
+    exam = gold_exam(_POETRY)
+    index = question_index(exam, "Part 1, Question 7")
+    item = exam.questions[index]
+    lettered = tuple(f"{chr(65 + i)}. {choice}" for i, choice in enumerate(item.choices))
+    for update in (
+        {"choices": lettered, "correct_choices": (lettered[item.choices.index("speaker")],)},
+        {"prompt": f"7. {item.prompt}"},
+        {"prompt": f"{item.prompt}\n2) {item.prompt.split(chr(10))[-1]}"},
+        {"prompt": f"{item.prompt} (1 point)"},
+        {"prompt": f"{item.prompt} ________"},
+    ):
+        comparison = compare_exam(exam, mutated_items(exam, index, **update))
+        assert "no_platform_labels" in _failed(comparison, index), update
+
+
+def test_point_and_kind_differences_fail_their_principles():
+    exam = gold_exam(_ENGLISH)
+    index = question_index(exam, "Vocabulary Matching, Question 1")
+    assert _failed(compare_exam(exam, mutated_items(exam, index, points=1)), index) == {"points"}
+    as_text = mutated_items(exam, index, kind="free_text", pairs=())
+    # The table rows now sit in the open response's text as numbered lines.
+    assert _failed(compare_exam(exam, as_text), index) == {
+        "response_kind",
+        "response_slots",
+        "scoring",
+        "no_platform_labels",
+    }
+
+
+@pytest.mark.parametrize(("stem", "index"), _cases(_multiline_free_text))
+def test_a_duplicated_free_text_prompt_fails_segmentation(stem: str, index: int):
+    exam = gold_exam(stem)
+    prompt = exam.questions[index].prompt
+    comparison = compare_exam(exam, mutated_items(exam, index, prompt=f"{prompt}\n{prompt}"))
+    assert _failed(comparison, index) == {"segmentation"}
+    assert [i.index for i in comparison.items if not i.passed] == [index]
+
+
+@pytest.mark.parametrize(("stem", "index"), _cases(_multiline_free_text))
+def test_reversed_subparts_fail_segmentation(stem: str, index: int):
+    exam = gold_exam(stem)
+    lines = exam.questions[index].prompt.split("\n")
+    reversed_prompt = "\n".join(reversed(lines))
+    comparison = compare_exam(exam, mutated_items(exam, index, prompt=reversed_prompt))
+    assert _failed(comparison, index) == {"segmentation"}
+
+
+@pytest.mark.parametrize(("stem", "index"), _cases(_text_between_gaps))
+def test_a_gap_moved_next_to_the_other_gap_fails_response_slots_only(stem: str, index: int):
+    exam = gold_exam(stem)
+    lines = exam.questions[index].prompt.split("\n")
+    at = next(i for i, line in enumerate(lines) if line.count("[___]") >= 2)
+    parts = lines[at].split("[___]")
+    lines[at] = parts[0] + "[___]" * (len(parts) - 1) + "".join(parts[1:])
+    comparison = compare_exam(exam, mutated_items(exam, index, prompt="\n".join(lines)))
+    assert _failed(comparison, index) == {"response_slots"}
+
+
+@pytest.mark.parametrize(("stem", "index"), _cases(lambda item: len(item.choices) >= 2))
+def test_a_duplicated_or_reordered_choice_fails_response_slots(stem: str, index: int):
+    exam = gold_exam(stem)
+    choices = exam.questions[index].choices
+    duplicated = compare_exam(exam, mutated_items(exam, index, choices=(*choices, choices[0])))
+    assert "response_slots" in _failed(duplicated, index)
+    swapped = (choices[1], choices[0], *choices[2:])
+    reordered = compare_exam(exam, mutated_items(exam, index, choices=swapped))
+    assert _failed(reordered, index) == {"response_slots"}
+
+
+@pytest.mark.parametrize(("stem", "index"), _cases(lambda item: _facit(item) is not None))
+def test_the_teachers_facit_shown_for_an_open_question_leaks(stem: str, index: int):
+    exam = gold_exam(stem)
+    item = exam.questions[index]
+    shown = f"{item.prompt}\n{_facit(item)}"
+    comparison = compare_exam(exam, mutated_items(exam, index, prompt=shown))
+    assert "no_answer_leakage" in _failed(comparison, index)
+
+
+def test_a_question_number_on_a_later_line_fails_labels():
+    exam = gold_exam(_SVENSKA)
+    item = exam.questions[0]
+    first, *rest = item.prompt.split("\n")
+    numbered = "\n".join([first, f"1. {rest[0]}", *rest[1:]])
+    comparison = compare_exam(exam, mutated_items(exam, 0, prompt=numbered))
+    assert "no_platform_labels" in _failed(comparison, 0)
+
+
+def test_a_childs_answer_disclosed_in_its_gold_parent_instruction_leaks():
+    exam = gold_exam(_DIAGNOSTIC)
+    position, parent = next(
+        (i, entry) for i, entry in enumerate(exam.items) if isinstance(entry, GoldParent)
     )
-    assert not compare_items(expected, reordered)
-    reversed_pair = _item(kind="matching", pairs=({"left": "B", "right": "A"},))
-    assert [m.field for m in compare_items(expected, reversed_pair)] == ["pairs"]
+    child = parent.children[0]
+    index = question_index(exam, child.source_label)
+    answer = child.gaps[0].accepted_values[0]
+    assert answer == "play"
+    assert answer not in parent.instruction.lower()
+    assert compare_exam(exam, exam.items).passed
+
+    disclosed = parent.model_copy(update={"instruction": f"{parent.instruction}\n{answer}"})
+    assert disclosed.children is parent.children
+    items = (*exam.items[:position], disclosed, *exam.items[position + 1 :])
+    comparison = compare_exam(exam, items)
+    assert not comparison.passed
+    assert _failed(comparison, index) == {"no_answer_leakage"}
 
 
-def test_exam_order_extra_missing_and_confirmation_metadata() -> None:
-    gold = _exam(_item())
-    report = compare_exam(gold, (_item(),))
-    assert report.passed and report.unconfirmed and report.confirmation_note is None
-    assert compare_exam(gold, ()).items[0].mismatches[0].reason == "missing_item"
-    extra = compare_exam(gold, (_item(), _item(source_label="Q2")))
-    assert not extra.passed
-    assert extra.items[1].mismatches[0].reason == "extra_item"
-    with pytest.raises(FrozenInstanceError):
-        setattr(report, "confirmed", True)
-    with pytest.raises(FrozenInstanceError):
-        setattr(extra.items[1].mismatches[0], "field", "changed")
-    second = _item(source_label="Q2", prompt="Another prompt.")
-    reordered = compare_exam(_exam(_item(), second), (second, _item()))
-    assert all(not item.passed for item in reordered.items)
-
-
-def test_unresolved_gold_fails_even_when_equal_or_missing() -> None:
-    unresolved = _item(teacher_questions=("What points?",))
-    assert compare_items(unresolved, unresolved)[0].reason == "gold_unresolved"
-    report = compare_exam(_exam(unresolved), ())
-    assert [m.reason for m in report.items[0].mismatches] == ["gold_unresolved", "missing_item"]
-
-
-def test_native_matching_unsupported_and_review_requires_review_state() -> None:
-    matching = _item(kind="matching", pairs=({"left": "A", "right": "B"},))
-    assert {
-        m.field
-        for m in compare_native_exam(_exam(matching), _document(_native())).items[0].mismatches
-    } == {"kind", "pairs"}
-    review_gold = _exam(_item(kind="review"))
-    assert not compare_native_exam(review_gold, _document(_native())).passed
-    review = NativeItemReview(
-        state=NativeItemReviewState.REVIEW_REQUIRED, parse_origin=NativeParseOrigin.LLM_PARSED
-    )
-    assert compare_native_exam(review_gold, _document(_native(review=review))).passed
-
-
-def test_native_gap_body_order_overrides_declaration_order() -> None:
-    native = _native(
-        kind=NativeExamItemKind.GAP_FILL,
-        body=(
-            NativeParagraph(
-                segments=(
-                    NativeGapSegment(gap_id="gap_002"),
-                    NativeTextSegment(text=" "),
-                    NativeGapSegment(gap_id="gap_001"),
-                )
-            ),
-        ),
-        gaps=(
-            NativeGap(gap_id="gap_001", accepted_values=("one",)),
-            NativeGap(gap_id="gap_002", accepted_values=("two",)),
-        ),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
-    )
-    assert compare_native_exam(_exam(_gap(("two",), ("one",))), _document(native)).passed
-    assert not compare_native_exam(_exam(_gap(("one",), ("two",))), _document(native)).passed
-
-
-def test_native_choices_project_identifiers_to_text_and_absent_keys_to_mismatches() -> None:
-    native = _native(
-        kind=NativeExamItemKind.SINGLE_CHOICE,
-        choices=(
-            NativeChoice(choice_id="choice_007", text="a"),
-            NativeChoice(choice_id="choice_002", text="b"),
-        ),
-        answer_key=NativeAnswerKey(
-            origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED, correct_choice_ids=("choice_007",)
-        ),
-    )
-    gold = _exam(_item(kind="single_choice", choices=("b", "a"), correct_choices=("a",)))
-    assert compare_native_exam(gold, _document(native)).passed
-    absent = NativeExamItem.model_validate(
-        {**native.model_dump(), "answer_key": {"origin": "absent"}}
-    )
-    assert [m.field for m in compare_native_exam(gold, _document(absent)).items[0].mismatches] == [
-        "correct_choices"
-    ]
+@pytest.mark.parametrize("stem", [_DIAGNOSTIC, _WORD_BANK])
+def test_unchanged_gold_parent_instructions_and_word_banks_do_not_leak(stem: str):
+    exam = gold_exam(stem)
+    parents = [entry for entry in exam.items if isinstance(entry, GoldParent)]
+    assert parents
+    if stem == _WORD_BANK:
+        assert any(
+            value.lower() in parent.instruction.lower()
+            for parent in parents
+            for child in parent.children
+            for gap in child.gaps
+            for value in gap.accepted_values
+        )
+    assert compare_exam(exam, exam.items).passed

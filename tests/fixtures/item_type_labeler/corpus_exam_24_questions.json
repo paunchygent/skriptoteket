@@ -1,0 +1,1866 @@
+{
+ "recorded": "2026-10-11 live run through OpenAIDecisionsItemTypeLabeler",
+ "items": [
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q1",
+   "source_text": "[body:0010] 1. Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?\n[body:0011] A. Hederskultur\nB. Hövisk kärlek\nC. Naturliga rättigheter\nD. Nyttotänkande\n[body:0012] (answer key) Svar: <i>A</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q2",
+   "source_text": "[body:0013] 2. Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?\n[body:0014] A. Centrallyrik stil\nB. Lakonisk stil\nC. Realistisk stil\nD. Satirisk stil\n[body:0015] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q3",
+   "source_text": "[body:0016] 3. Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?\n[body:0017] A. Satir\nB. Allegori\nC. Realism\nD. Humanism\n[body:0018] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q4",
+   "source_text": "[body:0019] 4. Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?\n[body:0020] A. Idealism och realism\nB. Känsla och förnuft\nC. Njutning och plikt\nD. Kristen frälsning och synd\n[body:0021] (answer key) Svar: <i>A</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q5",
+   "source_text": "[body:0022] 5. I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?\n[body:0023] A. Plikt och kärlek\nB. Kraft och list\nC. Känsla och fantasi\nD. Empiri och förnuft\n[body:0024] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q6",
+   "source_text": "[body:0025] 6. Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?\n[body:0026] A. Handlingen\nB. Versmåttet\nC. Huvudkaraktären\nD. Budskapet\n[body:0027] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q7",
+   "source_text": "[body:0028] 7. Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?\n[body:0029] A. Känsla och natur\nB. Förnuft och nytta\nC. Frihet och rättigheter\nD. Sinnevärld och idévärld\n[body:0030] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q8",
+   "source_text": "[body:0031] 8. En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?\n[body:0032] A. Satir\nB. Allegori\nC. Realism\nD. Humanism\n[body:0033] (answer key) Svar: <i>A</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q9",
+   "source_text": "[body:0034] 9. Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om\n[body:0035] A. Naturliga rättigheter\nB. Upplysningens gränser\nC. Rationalism och empirism\nD. Romantikens natursyn\n[body:0036] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q10",
+   "source_text": "[body:0037] 10. I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan\n[body:0038] A. Pliktkänsla och kärlek\nB. Empiri och förnuft\nC. Förnuft och känsla\nD. Rättssamhälle och hederskultur\n[body:0039] (answer key) Svar: <i>C</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q11",
+   "source_text": "[body:0040] 11. I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?\n[body:0041] A. Plikt och kärlek\nB. Vetenskap och ansvar\nC. Förnuft och empiri\nD. Frihet och rättigheter\n[body:0042] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q12",
+   "source_text": "[body:0043] 12. En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?\n[body:0044] A. Upplysningen\nB. Romantiken\nC. Renässansen\nD. Medeltiden\n[body:0045] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q13",
+   "source_text": "[body:0046] 13. Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?\n[body:0047] A. Från förnuftets kritik till känslans sanning\nB. Från Guds ordning till människans möjligheter\nC. Från naturens nytta till naturens känslospegling\nD. Från mäns rättigheter till kvinnors politiska krav\n[body:0048] (answer key) Svar: <i>B</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q14",
+   "source_text": "[body:0049] 14. Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?\n[body:0050] A. Robinson söker kristen frälsning; Werther skriver samhällssatir.\nB. Robinson flyr från förnuftet; Werther mäter naturen empiriskt.\nC. Robinson använder naturen praktiskt; Werther speglar känslor i den.\nD. Robinson styrs av heder och ära; Werther följer riddarens plikt.\n[body:0051] (answer key) Svar: <i>C</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q15",
+   "source_text": "[body:0052] 15. Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?\n[body:0053] A. Den används främst för nytta och kritik, sedan för känsla och inre liv.\nB. Den används främst för kyrklig vägledning, sedan för humanistisk bildning.\nC. Den används främst för riddarideal, sedan för realism och parodi.\nD. Den används främst för hederskultur, sedan för råd om furstemakt.\n[body:0054] (answer key) Svar: <i>A</i>",
+   "parent_instruction": "[body:0009] Skriv rätt bokstav."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q16",
+   "source_text": "[body:0061] Fråga 16. Morfem\n[body:0063] a) I ordet lekfullheten är <i>lek</i> <i>R</i>\nb) I ordet lekfullheten är <i>-full</i> och <i>-het</i> <i>A</i>\nc) I ordet lekfullheten är <i>-en</i> <i>B</i>",
+   "parent_instruction": "[body:0062] Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q17",
+   "source_text": "[body:0067] Fråga 17. Fraser\n[body:0069] a) Frasen <i>tre korta svar</i> är en <i>NF</i>\nb) Frasen <i>på skolgården</i> är en <i>PF</i>\nc) Frasen <i>kan vila</i> är en <i>VF</i>",
+   "parent_instruction": "[body:0068] Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q18",
+   "source_text": "[body:0073] Fråga 18. Satsdelar\n[body:0075] Noah <i>S</i> skrev <i>P</i> brevet <i>DO</i> tydligt <i>Adv</i>.",
+   "parent_instruction": "[body:0074] Använd S, P, DO, IO, Pf, Adv och SA."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q19",
+   "source_text": "[body:0079] Fråga 19. Satsdelar\n[body:0081] Alva <i>S</i> är <i>P</i> inte <i>SA</i> färdig <i>Pf</i>.",
+   "parent_instruction": "[body:0080] Använd S, P, DO, IO, Pf, Adv och SA."
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q20",
+   "source_text": "[body:0085] Fråga 20. Huvudsats, bisats och BIFF\n[body:0086] a) <i>De väntar inte.</i> är en <i>huvudsats</i>\nb) I bisatsen <i>att de inte väntar</i> står satsadverbialet <i>före</i> det finita verbet.",
+   "parent_instruction": null
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q21",
+   "source_text": "[body:0093] Fråga 21. Renässansen\n[body:0094] Vad menas med en renässansmänniska?\n[body:0095] (answer key) Svarsexempel: <i>En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.</i>",
+   "parent_instruction": null
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q22",
+   "source_text": "[body:0099] Fråga 22. Upplysningen och romantiken\n[body:0100] Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.\n[body:0101] (answer key) Svarsexempel: <i>Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.</i>",
+   "parent_instruction": null
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q23",
+   "source_text": "[body:0105] Fråga 23. Språkstruktur\n[body:0106] Vad är en nominalisering?\n[body:0107] (answer key) Svarsexempel: <i>När en handling, egenskap eller process uttrycks som substantiv.</i>",
+   "parent_instruction": null
+  },
+  {
+   "item_id": "svenska_2_kursavslutande_prov_med_facit/q24",
+   "source_text": "[body:0111] Fråga 24. Satsstruktur\n[body:0112] Förklara BIFF-regeln med en mening.\n[body:0113] (answer key) Svarsexempel: <i>I bisats står inte och andra satsadverbial före det finita verbet.</i>",
+   "parent_instruction": null
+  }
+ ],
+ "exchanges": [
+  {
+   "request": {
+    "model": "gpt-6-luna",
+    "input": "### Question q1\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0010] 1. Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?\n[body:0011] A. Hederskultur\nB. Hövisk kärlek\nC. Naturliga rättigheter\nD. Nyttotänkande\n[body:0012] (answer key) Svar: <i>A</i>\n\n### Question q2\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0013] 2. Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?\n[body:0014] A. Centrallyrik stil\nB. Lakonisk stil\nC. Realistisk stil\nD. Satirisk stil\n[body:0015] (answer key) Svar: <i>B</i>\n\n### Question q3\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0016] 3. Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?\n[body:0017] A. Satir\nB. Allegori\nC. Realism\nD. Humanism\n[body:0018] (answer key) Svar: <i>B</i>\n\n### Question q4\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0019] 4. Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?\n[body:0020] A. Idealism och realism\nB. Känsla och förnuft\nC. Njutning och plikt\nD. Kristen frälsning och synd\n[body:0021] (answer key) Svar: <i>A</i>\n\n### Question q5\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0022] 5. I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?\n[body:0023] A. Plikt och kärlek\nB. Kraft och list\nC. Känsla och fantasi\nD. Empiri och förnuft\n[body:0024] (answer key) Svar: <i>B</i>\n\n### Question q6\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0025] 6. Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?\n[body:0026] A. Handlingen\nB. Versmåttet\nC. Huvudkaraktären\nD. Budskapet\n[body:0027] (answer key) Svar: <i>B</i>\n\n### Question q7\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0028] 7. Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?\n[body:0029] A. Känsla och natur\nB. Förnuft och nytta\nC. Frihet och rättigheter\nD. Sinnevärld och idévärld\n[body:0030] (answer key) Svar: <i>B</i>\n\n### Question q8\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0031] 8. En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?\n[body:0032] A. Satir\nB. Allegori\nC. Realism\nD. Humanism\n[body:0033] (answer key) Svar: <i>A</i>\n\n### Question q9\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0034] 9. Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om\n[body:0035] A. Naturliga rättigheter\nB. Upplysningens gränser\nC. Rationalism och empirism\nD. Romantikens natursyn\n[body:0036] (answer key) Svar: <i>B</i>\n\n### Question q10\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0037] 10. I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan\n[body:0038] A. Pliktkänsla och kärlek\nB. Empiri och förnuft\nC. Förnuft och känsla\nD. Rättssamhälle och hederskultur\n[body:0039] (answer key) Svar: <i>C</i>\n\n### Question q11\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0040] 11. I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?\n[body:0041] A. Plikt och kärlek\nB. Vetenskap och ansvar\nC. Förnuft och empiri\nD. Frihet och rättigheter\n[body:0042] (answer key) Svar: <i>B</i>\n\n### Question q12\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0043] 12. En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?\n[body:0044] A. Upplysningen\nB. Romantiken\nC. Renässansen\nD. Medeltiden\n[body:0045] (answer key) Svar: <i>B</i>\n\n### Question q13\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0046] 13. Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?\n[body:0047] A. Från förnuftets kritik till känslans sanning\nB. Från Guds ordning till människans möjligheter\nC. Från naturens nytta till naturens känslospegling\nD. Från mäns rättigheter till kvinnors politiska krav\n[body:0048] (answer key) Svar: <i>B</i>\n\n### Question q14\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0049] 14. Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?\n[body:0050] A. Robinson söker kristen frälsning; Werther skriver samhällssatir.\nB. Robinson flyr från förnuftet; Werther mäter naturen empiriskt.\nC. Robinson använder naturen praktiskt; Werther speglar känslor i den.\nD. Robinson styrs av heder och ära; Werther följer riddarens plikt.\n[body:0051] (answer key) Svar: <i>C</i>\n\n### Question q15\nGoverning context:\n[body:0009] Skriv rätt bokstav.\nSource:\n[body:0052] 15. Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?\n[body:0053] A. Den används främst för nytta och kritik, sedan för känsla och inre liv.\nB. Den används främst för kyrklig vägledning, sedan för humanistisk bildning.\nC. Den används främst för riddarideal, sedan för realism och parodi.\nD. Den används främst för hederskultur, sedan för råd om furstemakt.\n[body:0054] (answer key) Svar: <i>A</i>\n\n### Question q16\nGoverning context:\n[body:0062] Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\nSource:\n[body:0061] Fråga 16. Morfem\n[body:0063] a) I ordet lekfullheten är <i>lek</i> <i>R</i>\nb) I ordet lekfullheten är <i>-full</i> och <i>-het</i> <i>A</i>\nc) I ordet lekfullheten är <i>-en</i> <i>B</i>\n\n### Question q17\nGoverning context:\n[body:0068] Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\nSource:\n[body:0067] Fråga 17. Fraser\n[body:0069] a) Frasen <i>tre korta svar</i> är en <i>NF</i>\nb) Frasen <i>på skolgården</i> är en <i>PF</i>\nc) Frasen <i>kan vila</i> är en <i>VF</i>\n\n### Question q18\nGoverning context:\n[body:0074] Använd S, P, DO, IO, Pf, Adv och SA.\nSource:\n[body:0073] Fråga 18. Satsdelar\n[body:0075] Noah <i>S</i> skrev <i>P</i> brevet <i>DO</i> tydligt <i>Adv</i>.\n\n### Question q19\nGoverning context:\n[body:0080] Använd S, P, DO, IO, Pf, Adv och SA.\nSource:\n[body:0079] Fråga 19. Satsdelar\n[body:0081] Alva <i>S</i> är <i>P</i> inte <i>SA</i> färdig <i>Pf</i>.\n\n### Question q20\nSource:\n[body:0085] Fråga 20. Huvudsats, bisats och BIFF\n[body:0086] a) <i>De väntar inte.</i> är en <i>huvudsats</i>\nb) I bisatsen <i>att de inte väntar</i> står satsadverbialet <i>före</i> det finita verbet.\n\n### Question q21\nSource:\n[body:0093] Fråga 21. Renässansen\n[body:0094] Vad menas med en renässansmänniska?\n[body:0095] (answer key) Svarsexempel: <i>En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.</i>\n\n### Question q22\nSource:\n[body:0099] Fråga 22. Upplysningen och romantiken\n[body:0100] Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.\n[body:0101] (answer key) Svarsexempel: <i>Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.</i>\n\n### Question q23\nSource:\n[body:0105] Fråga 23. Språkstruktur\n[body:0106] Vad är en nominalisering?\n[body:0107] (answer key) Svarsexempel: <i>När en handling, egenskap eller process uttrycks som substantiv.</i>\n\n### Question q24\nSource:\n[body:0111] Fråga 24. Satsstruktur\n[body:0112] Förklara BIFF-regeln med en mening.\n[body:0113] (answer key) Svarsexempel: <i>I bisats står inte och andra satsadverbial före det finita verbet.</i>",
+    "questions": [
+     {
+      "type": "choice",
+      "name": "kind_q1",
+      "instructions": "Which response action does question q1 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q2",
+      "instructions": "Which response action does question q2 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q3",
+      "instructions": "Which response action does question q3 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q4",
+      "instructions": "Which response action does question q4 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q5",
+      "instructions": "Which response action does question q5 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q6",
+      "instructions": "Which response action does question q6 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q7",
+      "instructions": "Which response action does question q7 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q8",
+      "instructions": "Which response action does question q8 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q9",
+      "instructions": "Which response action does question q9 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q10",
+      "instructions": "Which response action does question q10 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q11",
+      "instructions": "Which response action does question q11 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q12",
+      "instructions": "Which response action does question q12 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q13",
+      "instructions": "Which response action does question q13 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q14",
+      "instructions": "Which response action does question q14 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q15",
+      "instructions": "Which response action does question q15 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q16",
+      "instructions": "Which response action does question q16 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q17",
+      "instructions": "Which response action does question q17 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q18",
+      "instructions": "Which response action does question q18 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q19",
+      "instructions": "Which response action does question q19 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q20",
+      "instructions": "Which response action does question q20 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q21",
+      "instructions": "Which response action does question q21 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q22",
+      "instructions": "Which response action does question q22 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q23",
+      "instructions": "Which response action does question q23 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "name": "kind_q24",
+      "instructions": "Which response action does question q24 ask the student to perform? Judge its stem, options, subparts and governing context together as one question. Answer-key lines show keyed answers; they do not change the requested response action.",
+      "choices": [
+       {
+        "value": "single_choice",
+        "description": "The student chooses exactly one of the listed options."
+       },
+       {
+        "value": "multiple_response",
+        "description": "The student chooses several of the listed options, as the question's response instruction asks."
+       },
+       {
+        "value": "gap_fill",
+        "description": "The source fixes the response units: answer slots, blanks or fields the student fills in, including slots filled from a word bank or label list."
+       },
+       {
+        "value": "free_text",
+        "description": "The student writes a response and decides where its units begin and end."
+       },
+       {
+        "value": "matching",
+        "description": "The student pairs entries of one supplied set with entries of another supplied set."
+       },
+       {
+        "value": "unsupported",
+        "description": "The required interaction cannot be represented by any kind above without changing how the student answers."
+       },
+       {
+        "value": "unresolved",
+        "description": "The source is insufficient or contradictory for a reliable choice."
+       }
+      ]
+     }
+    ]
+   },
+   "status_code": 200,
+   "duration_seconds": 0.333,
+   "headers": {
+    "x-request-id": "req_c4dd57c8722245c8a8eac78349545d2f",
+    "openai-processing-ms": "116",
+    "x-ratelimit-limit-requests": "10000",
+    "x-ratelimit-limit-tokens": "10000000",
+    "x-ratelimit-remaining-requests": "9996",
+    "x-ratelimit-remaining-tokens": "9972361"
+   },
+   "body": {
+    "model": "gpt-6-luna",
+    "answers": [
+     {
+      "type": "choice",
+      "name": "kind_q1",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.95
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.94
+     },
+     {
+      "type": "choice",
+      "name": "kind_q2",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.92
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.02
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.02
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.91
+     },
+     {
+      "type": "choice",
+      "name": "kind_q3",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.97
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.97
+     },
+     {
+      "type": "choice",
+      "name": "kind_q4",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.95
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.94
+     },
+     {
+      "type": "choice",
+      "name": "kind_q5",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.95
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.94
+     },
+     {
+      "type": "choice",
+      "name": "kind_q6",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.89
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.02
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.03
+       }
+      ],
+      "confidence": 0.87
+     },
+     {
+      "type": "choice",
+      "name": "kind_q7",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.85
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.03
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.04
+       },
+       {
+        "value": "free_text",
+        "probability": 0.03
+       },
+       {
+        "value": "matching",
+        "probability": 0.02
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.02
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.82
+     },
+     {
+      "type": "choice",
+      "name": "kind_q8",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.94
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.93
+     },
+     {
+      "type": "choice",
+      "name": "kind_q9",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.94
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.93
+     },
+     {
+      "type": "choice",
+      "name": "kind_q10",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.97
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.97
+     },
+     {
+      "type": "choice",
+      "name": "kind_q11",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.92
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.91
+     },
+     {
+      "type": "choice",
+      "name": "kind_q12",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.97
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.97
+     },
+     {
+      "type": "choice",
+      "name": "kind_q13",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.97
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.01
+       },
+       {
+        "value": "free_text",
+        "probability": 0.0
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.97
+     },
+     {
+      "type": "choice",
+      "name": "kind_q14",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.95
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.94
+     },
+     {
+      "type": "choice",
+      "name": "kind_q15",
+      "choice": "single_choice",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.93
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.02
+       },
+       {
+        "value": "free_text",
+        "probability": 0.01
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.92
+     },
+     {
+      "type": "choice",
+      "name": "kind_q16",
+      "choice": "gap_fill",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.05
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.03
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.56
+       },
+       {
+        "value": "free_text",
+        "probability": 0.16
+       },
+       {
+        "value": "matching",
+        "probability": 0.06
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.11
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.03
+       }
+      ],
+      "confidence": 0.49
+     },
+     {
+      "type": "choice",
+      "name": "kind_q17",
+      "choice": "gap_fill",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.03
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.83
+       },
+       {
+        "value": "free_text",
+        "probability": 0.03
+       },
+       {
+        "value": "matching",
+        "probability": 0.04
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.03
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.02
+       }
+      ],
+      "confidence": 0.8
+     },
+     {
+      "type": "choice",
+      "name": "kind_q18",
+      "choice": "gap_fill",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.05
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.5
+       },
+       {
+        "value": "free_text",
+        "probability": 0.25
+       },
+       {
+        "value": "matching",
+        "probability": 0.1
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.04
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.04
+       }
+      ],
+      "confidence": 0.42
+     },
+     {
+      "type": "choice",
+      "name": "kind_q19",
+      "choice": "gap_fill",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.07
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.02
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.79
+       },
+       {
+        "value": "free_text",
+        "probability": 0.06
+       },
+       {
+        "value": "matching",
+        "probability": 0.03
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.02
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.76
+     },
+     {
+      "type": "choice",
+      "name": "kind_q20",
+      "choice": "gap_fill",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.04
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.03
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.68
+       },
+       {
+        "value": "free_text",
+        "probability": 0.14
+       },
+       {
+        "value": "matching",
+        "probability": 0.08
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.02
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.63
+     },
+     {
+      "type": "choice",
+      "name": "kind_q21",
+      "choice": "free_text",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.0
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.07
+       },
+       {
+        "value": "free_text",
+        "probability": 0.91
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.89
+     },
+     {
+      "type": "choice",
+      "name": "kind_q22",
+      "choice": "free_text",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.01
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.04
+       },
+       {
+        "value": "free_text",
+        "probability": 0.92
+       },
+       {
+        "value": "matching",
+        "probability": 0.02
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.91
+     },
+     {
+      "type": "choice",
+      "name": "kind_q23",
+      "choice": "free_text",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.0
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.05
+       },
+       {
+        "value": "free_text",
+        "probability": 0.93
+       },
+       {
+        "value": "matching",
+        "probability": 0.01
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.0
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.0
+       }
+      ],
+      "confidence": 0.92
+     },
+     {
+      "type": "choice",
+      "name": "kind_q24",
+      "choice": "free_text",
+      "probabilities": [
+       {
+        "value": "single_choice",
+        "probability": 0.01
+       },
+       {
+        "value": "multiple_response",
+        "probability": 0.01
+       },
+       {
+        "value": "gap_fill",
+        "probability": 0.07
+       },
+       {
+        "value": "free_text",
+        "probability": 0.82
+       },
+       {
+        "value": "matching",
+        "probability": 0.07
+       },
+       {
+        "value": "unsupported",
+        "probability": 0.01
+       },
+       {
+        "value": "unresolved",
+        "probability": 0.01
+       }
+      ],
+      "confidence": 0.79
+     }
+    ],
+    "usage": {
+     "input_tokens": 9466,
+     "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+     },
+     "output_tokens": 0,
+     "output_tokens_details": {
+      "reasoning_tokens": 0
+     },
+     "total_tokens": 9466
+    }
+   }
+  }
+ ]
+}

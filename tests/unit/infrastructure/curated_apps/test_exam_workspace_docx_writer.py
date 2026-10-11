@@ -27,6 +27,11 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
+from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
+    parent_over,
+    recorded_document,
+    recorded_items,
+)
 
 ExamWorkspaceDocxWriter = exam_workspace_docx_writer.ExamWorkspaceDocxWriter
 
@@ -171,6 +176,40 @@ class TestDocxContent:
         ExamWorkspaceDocxWriter().validate_docx_bytes(
             content, expected_item_count=len(document.items)
         )
+
+
+class TestParents:
+    def test_parent_instruction_is_written_once_before_its_first_child_heading(self) -> None:
+        items = recorded_items()
+        first, second, third = items[0], items[1], items[2]
+        assert len({first.kind, second.kind, third.kind}) == 1
+        parent = parent_over("parent_001", "Shared instruction for the run.", 1, 2, 3)
+
+        content = ExamWorkspaceDocxWriter().build_docx_bytes(
+            recorded_document((parent,), items=items)
+        )
+
+        parsed = Document(io.BytesIO(content))
+        texts = [paragraph.text for paragraph in parsed.paragraphs]
+        assert texts.count("Shared instruction for the run.") == 1
+        headings = [
+            p.text for p in parsed.paragraphs if p.style is not None and p.style.name == "Heading 3"
+        ]
+        instruction_at = texts.index("Shared instruction for the run.")
+        first_heading_at = texts.index(headings[0])
+        assert instruction_at == first_heading_at - 1
+        assert len(headings) == len(items)
+
+    def test_document_without_parents_writes_no_extra_paragraphs(self) -> None:
+        items = recorded_items()
+        plain = ExamWorkspaceDocxWriter().build_docx_bytes(recorded_document(items=items))
+        parent = parent_over("parent_001", "Shared instruction for the run.", 1, 2)
+        with_parent = ExamWorkspaceDocxWriter().build_docx_bytes(
+            recorded_document((parent,), items=items)
+        )
+
+        plain_count = len(Document(io.BytesIO(plain)).paragraphs)
+        assert len(Document(io.BytesIO(with_parent)).paragraphs) == plain_count + 1
 
 
 class TestValidationFailsClosed:

@@ -1,0 +1,2325 @@
+{
+  "title": {
+    "text": "BF26 English 1 Unit Test — 45 minutes — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 59 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Vocabulary: Write the Word or Phrase",
+      "source_anchors": [
+        "body:0005"
+      ],
+      "points": 24
+    },
+    {
+      "text": "Complete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": null
+    },
+    {
+      "text": "Vocabulary Matching",
+      "source_anchors": [
+        "body:0057"
+      ],
+      "points": 9
+    },
+    {
+      "text": "For each definition, select the correct word or phrase. Each correct match is worth 1 point.",
+      "source_anchors": [
+        "body:0058"
+      ],
+      "points": null
+    },
+    {
+      "text": "Vocabulary in Context",
+      "source_anchors": [
+        "body:0073"
+      ],
+      "points": 6
+    },
+    {
+      "text": "Read each sentence. Choose one option that explains the bold word or phrase as it is used in that sentence.",
+      "source_anchors": [
+        "body:0074"
+      ],
+      "points": null
+    },
+    {
+      "text": "Grammar and Corrections",
+      "source_anchors": [
+        "body:0095"
+      ],
+      "points": 14
+    },
+    {
+      "text": "Type only the missing word or the replacement requested in each item. Do not copy the whole sentence.",
+      "source_anchors": [
+        "body:0096"
+      ],
+      "points": null
+    },
+    {
+      "text": "Language Choice",
+      "source_anchors": [
+        "body:0127"
+      ],
+      "points": 6
+    },
+    {
+      "text": "Choose one answer for each question.",
+      "source_anchors": [
+        "body:0128"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0008",
+    "body:0010",
+    "body:0012",
+    "body:0014",
+    "body:0016",
+    "body:0018",
+    "body:0020",
+    "body:0022",
+    "body:0024",
+    "body:0026",
+    "body:0028",
+    "body:0030",
+    "body:0032",
+    "body:0034",
+    "body:0036",
+    "body:0038",
+    "body:0040",
+    "body:0042",
+    "body:0044",
+    "body:0046",
+    "body:0048",
+    "body:0050",
+    "body:0052",
+    "body:0054",
+    "body:0062",
+    "body:0066",
+    "body:0070",
+    "body:0077",
+    "body:0080",
+    "body:0083",
+    "body:0086",
+    "body:0089",
+    "body:0092",
+    "body:0098",
+    "body:0100",
+    "body:0102",
+    "body:0104",
+    "body:0106",
+    "body:0108",
+    "body:0110",
+    "body:0112",
+    "body:0114",
+    "body:0116",
+    "body:0118",
+    "body:0120",
+    "body:0122",
+    "body:0124",
+    "body:0131",
+    "body:0134",
+    "body:0137",
+    "body:0140",
+    "body:0143",
+    "body:0146"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0007"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This job requires the ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "ability"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (förmåga) to work well with other people.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0009"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After the flood, the family faced a ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "forced"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (påtvingad) move.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The family needed time alone to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "grieve"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (sörja) after their loss.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I was ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "astonished"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (häpen) when I won tickets to the final.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0015"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Regular breaks can ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "alleviate"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (lindra) stress during a busy day.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The cake fell onto the floor. ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "needless to say"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (självfallet), nobody wanted a slice.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0019"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After several lessons, I am ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "only now"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (först nu) starting to understand the rules.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0021"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Even a little smoke can ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "trigger"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (utlösa) the alarm.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The store sells ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a range of"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (en rad av) tools for different jobs.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0025"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cars are ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "constantly"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (ständigt) passing our house, even late at night.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0027"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Noise can ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "affect"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (påverka) your concentration while you study.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You do not need to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fret"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (oroa sig) about the cost; the trip is free.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0031"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I sent a message to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "reassure"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (lugna) my parents that I was safe.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0033"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "persistent"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (ihållande) rain kept us indoors for three days.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0035"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Setting up the new computer was ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "plain sailing"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (problemfritt); everything worked the first time.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0037"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The driver made a ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sudden"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (plötslig) stop when a dog ran into the road.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0039"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When I pressed the button, the screen lit up ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "instantly"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (ögonblickligen).",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0041"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The group discussed ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "various"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (olika) ways to solve the problem.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0043"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The jacket looked thin. ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "however"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (emellertid), it kept me warm.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0045"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The stain on the white shirt was ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "noticeable"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (märkbar) from across the room.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0047"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Can you ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "recognize",
+                "recognise"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (känna igen) this song from its first few seconds?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0049"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "22",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Her ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "resilience"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (återhämtningsförmåga) helped her start again after she lost her job.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0051"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "23",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After a hard year, we hope to ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "bounce back"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (repa sig) and enjoy school again.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0053"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "24",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A strong fence can ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "prevent"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " (förhindra) animals from reaching the road.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0059",
+        "body:0060",
+        "body:0061"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "matching",
+      "title": "Select the word or phrase for each definition.",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the letter of the matching option.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [
+        "absence from school without permission",
+        "being kept in a prison or jail",
+        "a feeling that someone deserves no respect"
+      ],
+      "match_right": [
+        "incarceration",
+        "truancy",
+        "disdain"
+      ],
+      "match_pairs": [
+        {
+          "left": "absence from school without permission",
+          "right": "truancy"
+        },
+        {
+          "left": "being kept in a prison or jail",
+          "right": "incarceration"
+        },
+        {
+          "left": "a feeling that someone deserves no respect",
+          "right": "disdain"
+        }
+      ]
+    },
+    {
+      "source_anchors": [
+        "body:0063",
+        "body:0064",
+        "body:0065"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "matching",
+      "title": "Select the word or phrase for each definition.",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the letter of the matching option.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [
+        "short of something that is needed",
+        "very fierce, aggressive, or violent",
+        "fair to both sides in a disagreement"
+      ],
+      "match_right": [
+        "evenhanded",
+        "ferocious",
+        "deficient"
+      ],
+      "match_pairs": [
+        {
+          "left": "short of something that is needed",
+          "right": "deficient"
+        },
+        {
+          "left": "very fierce, aggressive, or violent",
+          "right": "ferocious"
+        },
+        {
+          "left": "fair to both sides in a disagreement",
+          "right": "evenhanded"
+        }
+      ]
+    },
+    {
+      "source_anchors": [
+        "body:0067",
+        "body:0068",
+        "body:0069"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "matching",
+      "title": "Select the word or phrase for each definition.",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the letter of the matching option.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [
+        "an untrue claim made to deceive someone",
+        "another person, whether a friend or a stranger",
+        "a condition surrounding a particular event"
+      ],
+      "match_right": [
+        "circumstance",
+        "false pretense",
+        "fellow man"
+      ],
+      "match_pairs": [
+        {
+          "left": "an untrue claim made to deceive someone",
+          "right": "false pretense"
+        },
+        {
+          "left": "another person, whether a friend or a stranger",
+          "right": "fellow man"
+        },
+        {
+          "left": "a condition surrounding a particular event",
+          "right": "circumstance"
+        }
+      ]
+    },
+    {
+      "source_anchors": [
+        "body:0075",
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Milan tends to boast when he meets new teammates.\n\nWhat does boast mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "talk warmly about others",
+          "correct": false
+        },
+        {
+          "text": "talk proudly about himself",
+          "correct": true
+        },
+        {
+          "text": "talk anxiously about problems",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0078",
+        "body:0079"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Lena made progress through patience and application.\n\nWhat does application mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "steady effort",
+          "correct": true
+        },
+        {
+          "text": "careful planning",
+          "correct": false
+        },
+        {
+          "text": "natural talent",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0081",
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The coach’s reversal on weekend training surprised the players.\n\nWhat does reversal mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "a change to the opposite decision",
+          "correct": true
+        },
+        {
+          "text": "a delay before making a decision",
+          "correct": false
+        },
+        {
+          "text": "a refusal to discuss a decision",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0084",
+        "body:0085"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Sam seemed to recoil as he lifted the lid.\n\nWhat does recoil mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "hold still in place",
+          "correct": false
+        },
+        {
+          "text": "lean forward toward something",
+          "correct": false
+        },
+        {
+          "text": "draw back from something",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0087",
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Between them, the two cousins saved $80.\n\nWhich sentence gives the meaning of between them here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "The two cousins saved $80 each.",
+          "correct": false
+        },
+        {
+          "text": "The two cousins saved $80 altogether.",
+          "correct": true
+        },
+        {
+          "text": "The two cousins divided $80 equally.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0090",
+        "body:0091"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The report gave a distorted picture of school life.\n\nWhat does distorted mean here?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "an incomplete view",
+          "correct": false
+        },
+        {
+          "text": "a negative view",
+          "correct": false
+        },
+        {
+          "text": "an inaccurate view",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0097"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the full form of the bold contraction.\nWe can’t come to the meeting.\nAnswer: ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cannot"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0099"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the full form of the bold contraction.\nWe’re waiting for your reply.\nAnswer: ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "we are"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0101"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use a form of book. Write the whole missing word.\nI borrowed three ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "books"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " from the library.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0103"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use a form of student. Write the whole missing word.\nBoth ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "students"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " finished their work.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0105"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use the present form of walk. Write the whole missing word.\nMia ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "walks"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " to school every day.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0107"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use the present form of play. Write the whole missing word.\nMy friends ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "play"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " soccer after school every Friday.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0109"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The car belongs to one teacher. Complete the sentence with a form of teacher.\nThis is the ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "teacher’s",
+                "teacher's"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " car.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0111"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The bikes belong to three boys. Complete the sentence with a form of boy.\nThese are the ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "boys’",
+                "boys'"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " bikes.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Replace only the bold word. Write one word.\nIts time for lunch.\nAnswer: ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "it’s",
+                "it's"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0115"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write its or it’s.\nThe school changed ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "its"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " lunch menu.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0117"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write most or the most.\n",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "most"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " students in our class take the bus to school.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0119"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write most or the most.\nOf these three questions, this is ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "the most"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " difficult one.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0121"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use can and you once each to complete the statement. Write only the two missing words.\nTomorrow ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "you can"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " bring your notebook.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Correct the spelling of the bold text.\nWe have alot of homework tonight.\nAnswer: ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a lot"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0129",
+        "body:0130"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your e-mail asks the headteacher to put tests on different days. Which subject line states the purpose most clearly?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "A question about test dates",
+          "correct": false
+        },
+        {
+          "text": "Request to spread out tests",
+          "correct": true
+        },
+        {
+          "text": "A message about school tests",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0132",
+        "body:0133"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You are writing a formal e-mail to Ms. Lind. Which greeting follows the class model?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Hi Ms. Lind,",
+          "correct": false
+        },
+        {
+          "text": "Dear Sir or Madam,",
+          "correct": false
+        },
+        {
+          "text": "Dear Ms. Lind,",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0135",
+        "body:0136"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Sam Nilsson is writing a formal e-mail to Ms. Lind. Which complete closing follows the class model?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Sincerely,\nSam Nilsson",
+          "correct": true
+        },
+        {
+          "text": "Yours faithfully,\nSam Nilsson",
+          "correct": false
+        },
+        {
+          "text": "Yours sincerely,\nSam",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0138",
+        "body:0139"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You ask the headteacher to move some test dates. Which sentence clearly asks for a reply?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Could you discuss the new dates with the other teachers?",
+          "correct": false
+        },
+        {
+          "text": "Could you add the new dates to the school calendar?",
+          "correct": false
+        },
+        {
+          "text": "Could you tell me your decision about the new dates?",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0141",
+        "body:0142"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Which sentence uses capital letters correctly?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "When I got home, I did my homework.",
+          "correct": true
+        },
+        {
+          "text": "When i got home, I did my homework.",
+          "correct": false
+        },
+        {
+          "text": "When I got home, i did my homework.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0144",
+        "body:0145"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Which version separates the two complete sentences correctly?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "The bus was late, we missed the first lesson.",
+          "correct": false
+        },
+        {
+          "text": "The bus was late. We missed the first lesson.",
+          "correct": true
+        },
+        {
+          "text": "The bus was late we missed the first lesson.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    }
+  ]
+}

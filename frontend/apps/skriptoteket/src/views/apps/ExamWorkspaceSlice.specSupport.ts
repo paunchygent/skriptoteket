@@ -33,12 +33,14 @@ export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
 
 export function buildFreeTextItem(sequence: number): NativeExamItem {
   return {
-    answer_key: { correct_choice_ids: [], origin: "not_applicable" },
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [
       { segments: [{ kind: "text", text: `Fråga ${sequence}: beskriv med egna ord.` }] },
     ],
     choices: [],
     gaps: [],
+    match_left: [],
+    match_right: [],
     item_id: `item_${String(sequence).padStart(3, "0")}`,
     kind: "free_text",
     points: 2,
@@ -59,7 +61,7 @@ export function buildDocument(): NativeExamDocument {
     buildFreeTextItem(1),
     {
       ...buildFreeTextItem(2),
-      answer_key: { correct_choice_ids: ["choice_a"], origin: "source_provided" },
+      answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "source_provided" },
       choices: [
         { choice_id: "choice_a", text: "Avdunstning" },
         { choice_id: "choice_b", text: "Kondensation" },
@@ -72,6 +74,7 @@ export function buildDocument(): NativeExamDocument {
       ...buildFreeTextItem(3),
       answer_key: {
         correct_choice_ids: ["choice_a", "choice_b"],
+        match_pairs: [],
         origin: "machine_proposed",
       },
       choices: [
@@ -126,6 +129,7 @@ export function buildDocument(): NativeExamDocument {
       source_filename: "NO_Prov_HT25.docx",
       source_sha256: "abc123",
     },
+    parents: [],
     revision: 1,
     schema_version: "native_exam_document_v1",
     title: "NO-prov HT25",

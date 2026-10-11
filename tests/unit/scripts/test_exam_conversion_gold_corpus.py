@@ -39,9 +39,9 @@ def test_gold_schema_source_hash_and_complete_item_counts(stem: str) -> None:
     assert gold.source_sha256 == hashlib.sha256(source.read_bytes()).hexdigest()
     assert gold.source_sha256 == source.with_suffix(".docx.sha256").read_text().split()[0]
     count, points = SOURCE_COUNTS[stem]
-    assert len(gold.items) == count
-    assert sum(item.points or 0 for item in gold.items) == points
-    assert len({item.source_label for item in gold.items}) == count
+    assert len(gold.questions) == count
+    assert sum(item.points or 0 for item in gold.questions) == points
+    assert len({item.source_label for item in gold.questions}) == count
     assert gold.confirmed is True
     assert gold.confirmation_note is not None and "2026-10-10" in gold.confirmation_note
 
@@ -50,13 +50,13 @@ def test_source_matching_tables_and_word_banks_are_preserved() -> None:
     english = GoldExam.model_validate_json(
         (GOLD / "bf26_english_1_unit_test_kap_1_2_med_facit.json").read_bytes()
     )
-    matches = [item for item in english.items if item.kind == "matching"]
+    matches = [item for item in english.questions if item.kind == "matching"]
     assert len(matches) == 3
     assert all(item.points == 3 and len(item.pairs) == 3 for item in matches)
     poetry = GoldExam.model_validate_json(
         (GOLD / "chapter_4_poetry_and_lyrics_quiz_med_facit.json").read_bytes()
     )
-    word_bank_items = [item for item in poetry.items if item.kind == "gap_fill"]
+    word_bank_items = [item for item in poetry.questions if item.kind == "gap_fill"]
     assert len(word_bank_items) == 7
     assert all("alliteration | cherish | diction" in item.prompt for item in word_bank_items)
     assert [item.gaps[0].accepted_values[0] for item in word_bank_items] == [
@@ -74,13 +74,13 @@ def test_multigap_source_questions_remain_single_items() -> None:
     diagnostic = GoldExam.model_validate_json(
         (GOLD / "bf26_diagnostic_grammar_test_ht26_med_facit.json").read_bytes()
     )
-    assert len(diagnostic.items[6].gaps) == 2
-    assert diagnostic.items[6].points == 2
+    assert len(diagnostic.questions[6].gaps) == 2
+    assert diagnostic.questions[6].points == 2
     vocabulary = GoldExam.model_validate_json(
         (GOLD / "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit.json").read_bytes()
     )
-    assert len(vocabulary.items[41].gaps) == 2
-    assert vocabulary.items[41].points == 2
+    assert len(vocabulary.questions[41].gaps) == 2
+    assert vocabulary.questions[41].points == 2
 
 
 @pytest.mark.parametrize("stem", SOURCE_COUNTS)

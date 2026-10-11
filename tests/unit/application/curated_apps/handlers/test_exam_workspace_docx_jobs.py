@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -54,11 +55,19 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
 _QUIZ = Path(
     "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
 )
-_RESPONSE = Path("tests/fixtures/exam_conversion/chapter_4_poetry_docx_build_response.json")
+_RESPONSE = Path(
+    "tests/fixtures/exam_conversion/docx_build_v7/"
+    "chapter_4_poetry_and_lyrics_quiz_med_facit/round1.json"
+)
 _COURSE_EXAM = Path(
     "tests/fixtures/exam_conversion/docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx"
 )
 _COURSE_RESPONSE = Path(
+    "tests/fixtures/exam_conversion/docx_build_v7/"
+    "svenska_2_kursavslutande_prov_med_facit/round1.json"
+)
+# The one recording of this exam in which the model marked questions for review.
+_COURSE_REVIEWS = Path(
     "tests/fixtures/exam_conversion/svenska_2_kursavslutande_prov_docx_build_response_v2.json"
 )
 
@@ -66,8 +75,8 @@ _COURSE_RESPONSE = Path(
 class RecordedRoundsProvider(StubProvider):
     """Replay the recorded live round on every call."""
 
-    def __init__(self, response: Path) -> None:
-        super().__init__(content=json.loads(response.read_text()), usage=StructuredLLMUsage())
+    def __init__(self, response: dict[str, JsonValue]) -> None:
+        super().__init__(content=response, usage=StructuredLLMUsage())
 
 
 class JobEnvironment(_Env):
@@ -80,6 +89,12 @@ class JobEnvironment(_Env):
 
 def environment(
     *, enabled: bool = True, budget: int = 1_000_000, response: Path = _RESPONSE
+) -> JobEnvironment:
+    return environment_replaying(json.loads(response.read_text()), enabled=enabled, budget=budget)
+
+
+def environment_replaying(
+    response: dict[str, JsonValue], *, enabled: bool = True, budget: int = 1_000_000
 ) -> JobEnvironment:
     env = JobEnvironment()
     env.jobs = InMemoryEnrichmentJobRepository()
@@ -157,17 +172,15 @@ async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagn
         (f"choice_{i:03d}",)
         for i in [1, 3, 2, 4, 2, 4, 3, 1, 1, 8, 2, 5, 6, 4, 3, 2, 1, 6, 3, 4, 7]
     ]
+    # A sentence-like answer also accepts the form with the other closing full stop.
     assert [item.gaps[0].accepted_values for item in document.items[21:]] == [
-        (v,)
-        for v in [
-            "cherish",
-            "traverse",
-            "humiliate",
-            "out of the blue",
-            "line",
-            "diction",
-            "alliteration",
-        ]
+        ("cherish",),
+        ("traverse",),
+        ("humiliate",),
+        ("out of the blue", "out of the blue."),
+        ("line",),
+        ("diction",),
+        ("alliteration",),
     ]
     assert all(item.review.parse_origin.value == "llm_parsed" for item in document.items)
     assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
@@ -181,7 +194,16 @@ async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagn
 
 @pytest.mark.asyncio
 async def test_recorded_model_reviews_persist_their_reasons_in_job_diagnostics():
-    env = environment(response=_COURSE_RESPONSE)
+    recorded = json.loads(_COURSE_RESPONSE.read_text())
+    reviews = {
+        tuple(item["source_anchors"]): item
+        for item in json.loads(_COURSE_REVIEWS.read_text())["items"]
+        if item["outcome"] == "review"
+    }
+    assert len(reviews) == 5
+    # Items without printed labels, with the questions the model once sent to review.
+    recorded["items"] = [reviews.get(tuple(i["source_anchors"]), i) for i in recorded["items"]]
+    env = environment_replaying(recorded)
     running = await claim(env, _COURSE_EXAM.read_bytes())
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED

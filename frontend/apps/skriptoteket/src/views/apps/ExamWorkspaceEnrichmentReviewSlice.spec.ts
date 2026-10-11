@@ -68,6 +68,7 @@ describe("ExamWorkspaceView answer-key proposal review decisions", () => {
     const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
     expect(saved?.answer_key).toEqual({
       correct_choice_ids: ["choice_c"],
+      match_pairs: [],
       origin: "reviewed_advisory",
     });
     expect(saved?.review).toEqual({
@@ -135,6 +136,7 @@ describe("ExamWorkspaceView answer-key proposal review decisions", () => {
     const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
     expect(saved?.answer_key).toEqual({
       correct_choice_ids: ["choice_a"],
+      match_pairs: [],
       origin: "teacher_authored",
     });
     expect(saved?.review.state).toBe("review_complete");

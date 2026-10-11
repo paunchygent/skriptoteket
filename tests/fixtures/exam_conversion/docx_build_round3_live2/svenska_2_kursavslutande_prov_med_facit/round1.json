@@ -1,0 +1,1262 @@
+{
+  "title": {
+    "text": "Kursavslutande prov: Svenska 2",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Svenska 2",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 36 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 1: litteraturhistoria, 15 poäng",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 15
+    },
+    {
+      "text": "Fråga 1. Flervalsfrågor",
+      "source_anchors": [
+        "body:0008"
+      ],
+      "points": null
+    },
+    {
+      "text": "Skriv rätt bokstav.",
+      "source_anchors": [
+        "body:0009"
+      ],
+      "points": null
+    },
+    {
+      "text": "Poäng: 15 poäng",
+      "source_anchors": [
+        "body:0055"
+      ],
+      "points": 15
+    },
+    {
+      "text": "Del 2: grammatik och språkstrukturer, 16 poäng",
+      "source_anchors": [
+        "body:0059"
+      ],
+      "points": 16
+    },
+    {
+      "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.",
+      "source_anchors": [
+        "body:0062"
+      ],
+      "points": null
+    },
+    {
+      "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
+      "source_anchors": [
+        "body:0068"
+      ],
+      "points": null
+    },
+    {
+      "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
+      "source_anchors": [
+        "body:0074"
+      ],
+      "points": null
+    },
+    {
+      "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
+      "source_anchors": [
+        "body:0080"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 3: kortsvar, 5 poäng",
+      "source_anchors": [
+        "body:0091"
+      ],
+      "points": 5
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0012",
+    "body:0015",
+    "body:0018",
+    "body:0021",
+    "body:0024",
+    "body:0027",
+    "body:0030",
+    "body:0033",
+    "body:0036",
+    "body:0039",
+    "body:0042",
+    "body:0045",
+    "body:0048",
+    "body:0051",
+    "body:0054",
+    "body:0095",
+    "body:0101",
+    "body:0107",
+    "body:0113"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0010",
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Hederskultur",
+          "correct": true
+        },
+        {
+          "text": "Hövisk kärlek",
+          "correct": false
+        },
+        {
+          "text": "Naturliga rättigheter",
+          "correct": false
+        },
+        {
+          "text": "Nyttotänkande",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Centrallyrik stil",
+          "correct": false
+        },
+        {
+          "text": "Lakonisk stil",
+          "correct": true
+        },
+        {
+          "text": "Realistisk stil",
+          "correct": false
+        },
+        {
+          "text": "Satirisk stil",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Satir",
+          "correct": false
+        },
+        {
+          "text": "Allegori",
+          "correct": true
+        },
+        {
+          "text": "Realism",
+          "correct": false
+        },
+        {
+          "text": "Humanism",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0019",
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Idealism och realism",
+          "correct": true
+        },
+        {
+          "text": "Känsla och förnuft",
+          "correct": false
+        },
+        {
+          "text": "Njutning och plikt",
+          "correct": false
+        },
+        {
+          "text": "Kristen frälsning och synd",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Plikt och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Kraft och list",
+          "correct": true
+        },
+        {
+          "text": "Känsla och fantasi",
+          "correct": false
+        },
+        {
+          "text": "Empiri och förnuft",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Handlingen",
+          "correct": false
+        },
+        {
+          "text": "Versmåttet",
+          "correct": true
+        },
+        {
+          "text": "Huvudkaraktären",
+          "correct": false
+        },
+        {
+          "text": "Budskapet",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Känsla och natur",
+          "correct": false
+        },
+        {
+          "text": "Förnuft och nytta",
+          "correct": true
+        },
+        {
+          "text": "Frihet och rättigheter",
+          "correct": false
+        },
+        {
+          "text": "Sinnevärld och idévärld",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0031",
+        "body:0032"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Satir",
+          "correct": true
+        },
+        {
+          "text": "Allegori",
+          "correct": false
+        },
+        {
+          "text": "Realism",
+          "correct": false
+        },
+        {
+          "text": "Humanism",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0034",
+        "body:0035"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Naturliga rättigheter",
+          "correct": false
+        },
+        {
+          "text": "Upplysningens gränser",
+          "correct": true
+        },
+        {
+          "text": "Rationalism och empirism",
+          "correct": false
+        },
+        {
+          "text": "Romantikens natursyn",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Pliktkänsla och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Empiri och förnuft",
+          "correct": false
+        },
+        {
+          "text": "Förnuft och känsla",
+          "correct": true
+        },
+        {
+          "text": "Rättssamhälle och hederskultur",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0040",
+        "body:0041"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Plikt och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Vetenskap och ansvar",
+          "correct": true
+        },
+        {
+          "text": "Förnuft och empiri",
+          "correct": false
+        },
+        {
+          "text": "Frihet och rättigheter",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0043",
+        "body:0044"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Upplysningen",
+          "correct": false
+        },
+        {
+          "text": "Romantiken",
+          "correct": true
+        },
+        {
+          "text": "Renässansen",
+          "correct": false
+        },
+        {
+          "text": "Medeltiden",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0046",
+        "body:0047"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Från förnuftets kritik till känslans sanning",
+          "correct": false
+        },
+        {
+          "text": "Från Guds ordning till människans möjligheter",
+          "correct": true
+        },
+        {
+          "text": "Från naturens nytta till naturens känslospegling",
+          "correct": false
+        },
+        {
+          "text": "Från mäns rättigheter till kvinnors politiska krav",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0049",
+        "body:0050"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
+          "correct": false
+        },
+        {
+          "text": "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
+          "correct": false
+        },
+        {
+          "text": "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
+          "correct": true
+        },
+        {
+          "text": "Robinson styrs av heder och ära; Werther följer riddarens plikt.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0052",
+        "body:0053"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
+          "correct": true
+        },
+        {
+          "text": "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
+          "correct": false
+        },
+        {
+          "text": "Den används främst för riddarideal, sedan för realism och parodi.",
+          "correct": false
+        },
+        {
+          "text": "Den används främst för hederskultur, sedan för råd om furstemakt.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0061",
+        "body:0063",
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Morfem",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) I ordet lekfullheten är lek ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "hint": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) I ordet lekfullheten är -full och -het ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "hint": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) I ordet lekfullheten är -en ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0067",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Fraser",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Frasen tre korta svar är en ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "NF"
+              ],
+              "hint": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Frasen på skolgården är en ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ],
+              "hint": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Frasen kan vila är en ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "VF"
+              ],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0073",
+        "body:0075",
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Satsdelar",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Noah ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " skrev ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " brevet ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " tydligt ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0079",
+        "body:0081",
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Satsdelar",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Alva ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " är ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " inte ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "SA"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " färdig ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Pf"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086",
+        "body:0087"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Huvudsats, bisats och BIFF",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De väntar inte. är en ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "huvudsats"
+              ],
+              "hint": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) I bisatsen att de inte väntar står satsadverbialet ",
+              "accepted_values": [],
+              "hint": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "före"
+              ],
+              "hint": null
+            },
+            {
+              "kind": "text",
+              "text": " det finita verbet.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0093",
+        "body:0094",
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Renässansen",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad menas med en renässansmänniska?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0099",
+        "body:0100",
+        "body:0102"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Upplysningen och romantiken",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0105",
+        "body:0106",
+        "body:0108"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Språkstruktur",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad är en nominalisering?",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    },
+    {
+      "source_anchors": [
+        "body:0111",
+        "body:0112",
+        "body:0114"
+      ],
+      "outcome": "converted",
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Satsstruktur",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Förklara BIFF-regeln med en mening.",
+              "accepted_values": [],
+              "hint": null
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": []
+    }
+  ]
+}

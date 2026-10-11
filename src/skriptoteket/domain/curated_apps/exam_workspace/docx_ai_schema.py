@@ -40,6 +40,6 @@ def _strict_schema(value: JsonValue) -> JsonValue:
 def docx_build_output_spec() -> StructuredOutputSpec:
     return StructuredOutputSpec(
         schema_name="docx_exam_build",
-        schema_version="docx_exam_build_v4",
+        schema_version="docx_exam_build_v9",
         json_schema=_object(_strict_schema(DocxBuildEnvelope.model_json_schema())),
     )
