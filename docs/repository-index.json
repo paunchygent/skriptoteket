@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2dcd098220167615661c4abde12291df3d9d97ba87560f96c5fa502239964993",
+  "source_set_digest": "998d891868eb26843f4bd4bab34af402ba97fe59039f04931fe0112f4dfaf200",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2244,6 +2244,27 @@
       "title": "AI-first DOCX exam conversion with a gold-corpus eval loop",
       "path": "docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md",
       "status": "ready",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-06",
+      "type": "story",
+      "title": "Teacher authoring of every Exam.net question type with parent and child questions",
+      "path": "docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md",
+      "status": "proposed",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -4590,7 +4611,7 @@
       "type": "task",
       "title": "Carry pending answer-key proposals across exam workspace saves",
       "path": "docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4601,7 +4622,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed the task on 2026-10-11 after the 2026-10-10 Hemma staging walk passed and Sol approved rereview 231a2190 and integration merge e0746f2a."
       }
     },
     {
@@ -5594,7 +5617,25 @@
       "type": "task",
       "title": "Resolve Mina filer app-export labels from the app id prefix",
       "path": "docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md",
-      "status": "proposed",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0037",
+      "type": "task",
+      "title": "Multi-file script-bank tool bundles and the split of four over-long tools",
+      "path": "docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {

@@ -6,39 +6,33 @@
   `01a12706-566c-7480-acc3-427145283942`.
 
   - [TASK-SKRIPT-39-05-01](docs/backlog/tasks/task-skript-39-05-01-walking-skeleton-for-ai-first-docx-conversion-as-a-background-job.md)
-    `in_progress`: producer contract, failure observability and gpt-6-luna
-    medium conversion merged (`929e847a`, Sol rereview approved `fcc094a6`).
-    Staging walk 2026-10-10 at `929e847a`: quiz job succeeded in 59 s, 28
-    items/28 points, QTI created. Live corpus eval (all eight, gpt-6-luna
-    medium): 0/8 pass A7; main causes are comparator projection (title, hint,
-    instructions), review-item fragmentation and a facit leak in review
-    fragments (`evidence/corpus-live-eval-gpt-6-luna/summary.md`). Next: user
-    triage of the eval, then task 2.
+    `in_progress`: merged to main `448bdf50` after three Boy Scout repair
+    rounds (Sol rereview approved `40be487f`,
+    `evidence/reviews/TASK-SKRIPT-39-05-01/review-n4-rereview-40be487f.md`).
+    Staging redeploy to `448bdf50` started 2026-10-11. Next: DOCX upload walk
+    on staging, then user closure.
   - [TASK-SKRIPT-39-05-02](docs/backlog/tasks/task-skript-39-05-02-gold-corpus-and-eval-loop-for-ai-first-docx-conversion.md)
     `in_progress`: gold and comparator approved by Sol rereview and merged;
     the user confirmed all eight gold files (314 items, 398 points) on
     2026-10-10; blind-labelling corrections merged after Sol approval
     (`review-86e495c8.md`). Next: wire the eval runner to the converter.
 
-- [TASK-SKRIPT-39-04-04](docs/backlog/tasks/task-skript-39-04-04-carry-pending-answer-key-proposals-across-exam-workspace-saves.md)
-  is `in_progress` and merged to main: Sol rereview approved `231a2190`
-  (R1-R4 cleared) and Sol approved the integration merge `e0746f2a`.
-  Staging walk passed 2026-10-10 at `929e847a` (quiz doc v3->v5): pending
-  proposal survived a save that edited another item, approve, save, QTI
-  created. Editing the same item's heading drops its proposal (title is in
-  the answer-key view). Next: user closure.
-  Retained session
-  `01a1272e-5d8f-7936-b8d4-e36567440c6d`.
+- [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
+  is `proposed` with a closed contract (P1-P13): teachers create the seven
+  Exam.net types standalone or as parent with children (Deluppgift).
+  All-types Exam.net import 2026-10-10 passed (exam 5310254, 13 tasks, 28p).
+  Retained plan `01a127b9-9597-7303-b076-e5b24e5954d2`. Next: user
+  proposed->ready; sequenced after story 8.
 
-- 2026-10-10 user requirements, not yet planned (major): teachers must add
-  every valid Exam.net QTI 3.0 item type in the workspace (today only free
-  text), and must choose between a standalone item and a parent with child
-  items sharing one instruction (as in the BF26 chapter 2 QTI). Next: GrillMe
-  planning under EPIC-SKRIPT-39.
+- [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
+  is `ready` (user decision 2026-10-11): multi-file tool bundles, then split
+  the four over-long script-bank tools; ADR afterwards, status proposed.
+  Owner: Claude parent; lead Opus 5.5 assignment. Next: lead implementation.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
-  is `proposed` with the fix committed (`8a0fc469`, 8 unit tests); user owns
-  proposed->ready. Follow-up: Mina filer keeps every workspace version
+  is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review
+  F1 (synthetic tests) and F2 (repeated listing queries) repaired, Sol rereview
+  approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
 - 2026-10-09 planning session (Claude): user decisions recorded in
@@ -138,6 +132,10 @@
   entry above.
 
 ## Recent
+
+- TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
+  carried across saves; staging walk 2026-10-10 at `929e847a`, Sol `231a2190`,
+  merge `e0746f2a`.
 
 - 2026-10-10: TASK-SKRIPT-39-04-02 `done` by user acceptance of the
   four-viewport staging walk (`agent-planning:user-closure-gate`); `main`

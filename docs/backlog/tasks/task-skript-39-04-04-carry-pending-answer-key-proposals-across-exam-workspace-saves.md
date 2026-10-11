@@ -7,10 +7,12 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-10'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed the task on 2026-10-11 after the 2026-10-10 Hemma staging walk passed and Sol approved rereview 231a2190 and integration merge e0746f2a.
 task_kind: story
 acceptance_criteria:
   - An answer-key proposal the teacher has not yet approved or rejected stays available after the teacher saves a new version of the exam

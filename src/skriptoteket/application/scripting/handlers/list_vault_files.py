@@ -13,9 +13,7 @@ from skriptoteket.application.scripting.vault import (
     VaultFileInfo,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.models import ToolRun
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -94,48 +92,40 @@ class ListVaultFilesHandler(ListVaultFilesHandlerProtocol):
             if not exists:
                 missing_on_disk_ids.add(item.id)
 
-        run_ids = [
+        run_ids = {
             item.source_run_id
             for item in files
             if item.source_kind is VaultFileSourceKind.RUN_ARTIFACT
             and item.source_run_id is not None
-        ]
+        }
 
-        runs_by_id: dict[UUID, ToolRun] = {}
-        tool_ids: set[UUID] = set()
+        tool_id_by_run_id: dict[UUID, UUID] = {}
         for run_id in run_ids:
             run = await self._runs.get_by_id(run_id=run_id)
-            if run is None:
-                continue
-            if run.requested_by_user_id != actor.id:
-                continue
-            runs_by_id[run_id] = run
-            tool_ids.add(run.tool_id)
+            if run is not None and run.requested_by_user_id == actor.id:
+                tool_id_by_run_id[run_id] = run.tool_id
 
-        tools_by_id: dict[UUID, Tool] = {}
-        if tool_ids:
-            tools_by_id = {
-                tool.id: tool for tool in await self._tools.list_by_ids(tool_ids=list(tool_ids))
-            }
+        title_by_tool_id: dict[UUID, str] = {}
+        catalog_tool_ids: list[UUID] = []
+        for tool_id in set(tool_id_by_run_id.values()):
+            curated = self._curated_apps.get_by_tool_id(tool_id=tool_id)
+            if curated is not None:
+                title_by_tool_id[tool_id] = curated.title
+            else:
+                catalog_tool_ids.append(tool_id)
+        if catalog_tool_ids:
+            for tool in await self._tools.list_by_ids(tool_ids=catalog_tool_ids):
+                title_by_tool_id[tool.id] = tool.title
 
         def source_label_for(item: VaultFile) -> str | None:
             if (
                 item.source_kind is VaultFileSourceKind.RUN_ARTIFACT
                 and item.source_run_id is not None
             ):
-                run = runs_by_id.get(item.source_run_id)
-                if run is None:
+                tool_id = tool_id_by_run_id.get(item.source_run_id)
+                if tool_id is None:
                     return None
-
-                curated = self._curated_apps.get_by_tool_id(tool_id=run.tool_id)
-                if curated is not None:
-                    return curated.title
-
-                tool = tools_by_id.get(run.tool_id)
-                if tool is not None:
-                    return tool.title
-
-                return None
+                return title_by_tool_id.get(tool_id)
 
             if item.source_kind is VaultFileSourceKind.APP_EXPORT:
                 app_id = app_id_from_source_artifact_id(item.source_artifact_id)

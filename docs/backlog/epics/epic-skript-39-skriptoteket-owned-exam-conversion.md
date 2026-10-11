@@ -144,6 +144,13 @@ closes the epic and is not on the critical path.
    ordering, grid/matching layouts, mapping-based scoring). The QTI 2.1
    writer remains the parity/regression baseline until cutover, because
    QTI 2.1 import rides Exam.net's beta auto-conversion layer.
+9. Teacher authoring of every Exam.net question type with parent and child
+   questions (`ST-SKRIPT-39-06`, `proposed`; user decisions 2026-10-10;
+   sequenced after story 8): teachers create the seven proven types as
+   standalone questions or as parents whose children share one instruction,
+   and conversion and the gold corpus move to that structure. Creating every
+   type is new scope; ST-SKRIPT-39-04 closed with free-text creation only
+   and its acceptance stands.
 
 ## Verification
 
