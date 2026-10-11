@@ -298,11 +298,13 @@ def run_tool(input_dir: str, output_dir: str) -> ToolResult:
         promotions = {
             "requests": [
                 {
+                    "request_id": "saved-classes",
                     "kind": "session",
                     "name": session_file,
                     "source_path": f"output/{session_file}",
                 }
-            ]
+            ],
+            "results": [],
         }
 
     outputs: list[dict[str, object]] = [
