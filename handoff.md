@@ -16,11 +16,13 @@
     `evidence/task-skript-39-05-05/staging-walk-ece1b674/`). Next: user closure.
     Prior recorded eval's three item failures match baseline `6bf05757`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `in_progress`, Codex lead `18bb0b85` (thread `01a12ad3`) in worktree
-    `Skriptoteket-task-skript-39-05-04`. v1/v2 sweep and D16 tables done
-    (`evidence/task-skript-39-05-04/labeler/takeover-tables/`); context audit
-    admitted (`labeler/context-audit/`). Next: measure v3 tight context, then
-    user decides threshold and D16; then grouping/batching D11-D13.
+    `in_progress`, Claude parent (session `01a12706`), branch
+    `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
+    Sol review `f9ea4599` changes_requested F1-F8; F1/F3/F4/F7/F8 repaired, F2/F5/F6
+    with R-F256. Next: per-question fault containment (any fault becomes a placed
+    source review item), prompt unit P1 (grouping, filled-in blanks, gold Fråga 20
+    gap_fill), Sol rereview, browser walk, merge. Follow-up task in ST-39-05:
+    label-first review with per-question model retry (user decision 2026-10-11).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
