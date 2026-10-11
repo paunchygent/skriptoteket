@@ -100,9 +100,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.7,
-        "reasons": [
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:4"
     },
@@ -423,9 +421,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:25"
     },
@@ -505,9 +501,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.7,
-        "reasons": [
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:31"
     },
@@ -660,10 +654,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected",
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:38"
     },
@@ -732,10 +723,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected",
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:46"
     },
