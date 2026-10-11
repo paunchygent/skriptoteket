@@ -2,12 +2,12 @@ import { computed, ref, watch, type Ref } from "vue";
 import type { RouteLocationNormalizedLoaded, Router } from "vue-router";
 
 import type { components } from "../../api/openapi";
+import { isEditorFileId } from "./bundleFiles";
 import {
   resolveDefaultCompareTarget,
   resolveMostRecentRejectedReviewVersionId,
 } from "./editorCompareDefaults";
 import { useEditorCompareState, type EditorCompareTarget } from "./useEditorCompareState";
-import { isVirtualFileId } from "./virtualFiles";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
 type SelectedVersion = EditorBootResponse["selected_version"];
@@ -75,7 +75,7 @@ export function useScriptEditorCompareMode(options: UseScriptEditorCompareModeOp
   }
 
   async function handleCompareActiveFileIdUpdate(fileId: unknown): Promise<void> {
-    if (!isVirtualFileId(fileId)) {
+    if (!isEditorFileId(fileId)) {
       return;
     }
     await compare.setActiveFileId(fileId);

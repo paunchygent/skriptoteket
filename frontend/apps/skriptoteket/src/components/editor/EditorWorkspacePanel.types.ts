@@ -1,5 +1,6 @@
 import type { EditorView } from "@codemirror/view";
 import type { components } from "../../api/openapi";
+import type { BundleFiles, EditorFileId } from "../../composables/editor/bundleFiles";
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
 import type { EditOpsPanelState } from "../../composables/editor/editOps/editOpsState";
 import type { EditorCompareTarget } from "../../composables/editor/useEditorCompareState";
@@ -7,7 +8,6 @@ import type { WorkingCopyProvider } from "../../composables/editor/useEditorComp
 import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
-import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
@@ -27,6 +27,7 @@ type EditorWorkspacePanelProps = {
   changeSummary: string;
   entrypoint: string;
   sourceCode: string;
+  bundleFiles: BundleFiles;
   settingsSchemaText: string;
   inputSchemaText: string;
   settingsSchema: ToolSettingsSchema | null;
@@ -91,7 +92,7 @@ type EditorWorkspacePanelProps = {
   maintainersError: string | null;
 
   compareTarget: EditorCompareTarget | null;
-  compareActiveFileId: VirtualFileId | null;
+  compareActiveFileId: EditorFileId | null;
   canCompareWorkingCopy: boolean;
   workingCopyProvider?: WorkingCopyProvider | null;
   localCheckpoints: EditorWorkingCopyCheckpointSummary[];
@@ -132,6 +133,7 @@ type EditorWorkspacePanelEmits = {
   (event: "update:changeSummary", value: string): void;
   (event: "update:entrypoint", value: string): void;
   (event: "update:sourceCode", value: string): void;
+  (event: "update:bundleFiles", value: BundleFiles): void;
   (event: "update:settingsSchemaText", value: string): void;
   (event: "update:inputSchemaText", value: string): void;
   (event: "update:usageInstructions", value: string): void;
@@ -148,7 +150,7 @@ type EditorWorkspacePanelEmits = {
   (event: "editorViewReady", value: EditorView | null): void;
   (event: "closeCompare"): void;
   (event: "update:compareTarget", value: EditorCompareTarget | null): void;
-  (event: "update:compareActiveFileId", value: VirtualFileId): void;
+  (event: "update:compareActiveFileId", value: EditorFileId): void;
   (event: "createCheckpoint", label: string): void;
   (event: "restoreCheckpoint", checkpointId: string): void;
   (event: "removeCheckpoint", checkpointId: string): void;

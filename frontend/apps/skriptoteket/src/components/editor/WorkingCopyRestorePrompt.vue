@@ -1,18 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import type { VirtualFileId } from "../../composables/editor/virtualFiles";
+import type { EditorFileDiffItem, EditorFileId } from "../../composables/editor/bundleFiles";
 import VirtualFileDiffViewer from "./diff/VirtualFileDiffViewer.vue";
-
-type DiffItem = {
-  virtualFileId: VirtualFileId;
-  beforeText: string;
-  afterText: string;
-};
 
 const props = defineProps<{
   isOpen: boolean;
-  diffItems: DiffItem[];
+  diffItems: EditorFileDiffItem[];
   updatedAt: number | null;
 }>();
 
@@ -22,7 +16,7 @@ const emit = defineEmits<{
 }>();
 
 const isDiffOpen = ref(false);
-const activeFileId = ref<VirtualFileId | null>(null);
+const activeFileId = ref<EditorFileId | null>(null);
 
 const updatedAtLabel = computed(() => {
   if (!props.updatedAt) return null;

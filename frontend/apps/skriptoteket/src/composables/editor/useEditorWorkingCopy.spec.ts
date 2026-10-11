@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { effectScope, nextTick, ref } from "vue";
+import { effectScope, nextTick, ref, type Ref } from "vue";
 
 import type { UiNotifier } from "../notify";
+import type { BundleFiles } from "./bundleFiles";
+import type { EditorBaselineSnapshot, WorkingCopyHeadRecord } from "./editorPersistence";
 import { useEditorWorkingCopy } from "./useEditorWorkingCopy";
-import type { WorkingCopyHeadRecord } from "./editorPersistence";
+import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
+import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
 
 const persistenceMocks = vi.hoisted(() => ({
   getWorkingCopyHead: vi.fn(),
@@ -54,6 +57,40 @@ function createHeadRecord(overrides: Partial<WorkingCopyHeadRecord> = {}): Worki
   };
 }
 
+function createInitialSnapshot(
+  overrides: Partial<EditorBaselineSnapshot> = {},
+): EditorBaselineSnapshot {
+  return {
+    entrypoint: "run_tool",
+    sourceCode: "print('hi')",
+    bundleFiles: {},
+    settingsSchemaText: "[]",
+    inputSchemaText: "[]",
+    usageInstructions: "",
+    ...overrides,
+  };
+}
+
+type EditorFieldRefs = {
+  entrypoint: Ref<string>;
+  sourceCode: Ref<string>;
+  bundleFiles: Ref<BundleFiles>;
+  settingsSchemaText: Ref<string>;
+  inputSchemaText: Ref<string>;
+  usageInstructions: Ref<string>;
+};
+
+function createFields(): EditorFieldRefs {
+  return {
+    entrypoint: ref("run_tool"),
+    sourceCode: ref("print('hi')"),
+    bundleFiles: ref<BundleFiles>({}),
+    settingsSchemaText: ref("[]"),
+    inputSchemaText: ref("[]"),
+    usageInstructions: ref(""),
+  };
+}
+
 async function flushPromises(): Promise<void> {
   await nextTick();
   await Promise.resolve();
@@ -77,22 +114,12 @@ describe("useEditorWorkingCopy", () => {
   it("autosaves the working copy head when dirty changes occur", async () => {
     vi.useFakeTimers();
 
-    const entrypoint = ref("run_tool");
-    const sourceCode = ref("print('hi')");
-    const settingsSchemaText = ref("[]");
-    const inputSchemaText = ref("[]");
-    const usageInstructions = ref("");
+    const fields = createFields();
     const hasDirtyChanges = ref(true);
     const userId = ref("user-1");
     const toolId = ref("tool-1");
     const baseVersionId = ref("ver-1");
-    const initialSnapshot = ref({
-      entrypoint: "run_tool",
-      sourceCode: "print('hi')",
-      settingsSchemaText: "[]",
-      inputSchemaText: "[]",
-      usageInstructions: "",
-    });
+    const initialSnapshot = ref(createInitialSnapshot());
 
     const scope = effectScope();
     scope.run(() => {
@@ -102,20 +129,14 @@ describe("useEditorWorkingCopy", () => {
         baseVersionId,
         hasDirtyChanges,
         initialSnapshot,
-        fields: {
-          entrypoint,
-          sourceCode,
-          settingsSchemaText,
-          inputSchemaText,
-          usageInstructions,
-        },
+        fields,
         notify: createNotify(),
       });
     });
 
     await flushPromises();
 
-    sourceCode.value = "print('bye')";
+    fields.sourceCode.value = "print('bye')";
     await nextTick();
 
     vi.advanceTimersByTime(1300);
@@ -127,6 +148,64 @@ describe("useEditorWorkingCopy", () => {
         toolId: "tool-1",
         baseVersionId: "ver-1",
         fields: expect.objectContaining({ sourceCode: "print('bye')" }),
+      }),
+    );
+
+    scope.stop();
+  });
+
+  it("autosaves the working copy head when only bundle files change, including later sibling edits", async () => {
+    vi.useFakeTimers();
+
+    const baselineBundle: BundleFiles = { "roster.py": rosterPy, "grouping.py": groupingPy };
+    const fields = createFields();
+    fields.bundleFiles.value = { ...baselineBundle };
+    const hasDirtyChanges = ref(true);
+
+    const scope = effectScope();
+    scope.run(() => {
+      useEditorWorkingCopy({
+        userId: ref("user-1"),
+        toolId: ref("tool-1"),
+        baseVersionId: ref("ver-1"),
+        hasDirtyChanges,
+        initialSnapshot: ref(createInitialSnapshot({ bundleFiles: { ...baselineBundle } })),
+        fields,
+        notify: createNotify(),
+      });
+    });
+
+    await flushPromises();
+
+    const editedRoster = rosterPy + "\n# edit 1\n";
+    fields.bundleFiles.value = { ...fields.bundleFiles.value, "roster.py": editedRoster };
+    await nextTick();
+
+    expect(persistenceMocks.saveWorkingCopyHead).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1300);
+    await flushPromises();
+
+    expect(persistenceMocks.saveWorkingCopyHead).toHaveBeenCalledTimes(1);
+    expect(persistenceMocks.saveWorkingCopyHead.mock.calls[0]?.[0].fields).toEqual(
+      expect.objectContaining({
+        sourceCode: "print('hi')",
+        bundleFiles: { "roster.py": editedRoster, "grouping.py": groupingPy },
+      }),
+    );
+
+    const editedGrouping = groupingPy + "\n# edit 2\n";
+    fields.bundleFiles.value = { ...fields.bundleFiles.value, "grouping.py": editedGrouping };
+    await nextTick();
+
+    vi.advanceTimersByTime(1300);
+    await flushPromises();
+
+    expect(persistenceMocks.saveWorkingCopyHead).toHaveBeenCalledTimes(2);
+    expect(persistenceMocks.saveWorkingCopyHead.mock.calls[1]?.[0].fields).toEqual(
+      expect.objectContaining({
+        sourceCode: "print('hi')",
+        bundleFiles: { "roster.py": editedRoster, "grouping.py": editedGrouping },
       }),
     );
 
@@ -146,20 +225,8 @@ describe("useEditorWorkingCopy", () => {
         toolId: ref("tool-1"),
         baseVersionId: ref("ver-1"),
         hasDirtyChanges,
-        initialSnapshot: ref({
-          entrypoint: "run_tool",
-          sourceCode: "print('hi')",
-          settingsSchemaText: "[]",
-          inputSchemaText: "[]",
-          usageInstructions: "",
-        }),
-        fields: {
-          entrypoint: ref("run_tool"),
-          sourceCode: ref("print('hi')"),
-          settingsSchemaText: ref("[]"),
-          inputSchemaText: ref("[]"),
-          usageInstructions: ref(""),
-        },
+        initialSnapshot: ref(createInitialSnapshot()),
+        fields: createFields(),
         notify: createNotify(),
       }),
     );
@@ -187,20 +254,8 @@ describe("useEditorWorkingCopy", () => {
         toolId: ref("tool-1"),
         baseVersionId: ref("ver-1"),
         hasDirtyChanges,
-        initialSnapshot: ref({
-          entrypoint: "run_tool",
-          sourceCode: "print('hi')",
-          settingsSchemaText: "[]",
-          inputSchemaText: "[]",
-          usageInstructions: "",
-        }),
-        fields: {
-          entrypoint: ref("run_tool"),
-          sourceCode: ref("print('hi')"),
-          settingsSchemaText: ref("[]"),
-          inputSchemaText: ref("[]"),
-          usageInstructions: ref(""),
-        },
+        initialSnapshot: ref(createInitialSnapshot()),
+        fields: createFields(),
         notify,
       }),
     );
@@ -240,20 +295,8 @@ describe("useEditorWorkingCopy", () => {
         toolId: ref("tool-1"),
         baseVersionId: ref("ver-1"),
         hasDirtyChanges: ref(false),
-        initialSnapshot: ref({
-          entrypoint: "run_tool",
-          sourceCode: "print('hi')",
-          settingsSchemaText: "[]",
-          inputSchemaText: "[]",
-          usageInstructions: "",
-        }),
-        fields: {
-          entrypoint: ref("run_tool"),
-          sourceCode: ref("print('hi')"),
-          settingsSchemaText: ref("[]"),
-          inputSchemaText: ref("[]"),
-          usageInstructions: ref(""),
-        },
+        initialSnapshot: ref(createInitialSnapshot()),
+        fields: createFields(),
         notify: createNotify(),
       }),
     );
@@ -270,17 +313,50 @@ describe("useEditorWorkingCopy", () => {
     scope.stop();
   });
 
+  it("restores the baseline bundle files for a legacy head record without them", async () => {
+    persistenceMocks.getWorkingCopyHead.mockResolvedValue(
+      createHeadRecord({ source_code: "print('changed')" }),
+    );
+
+    const baselineBundleFiles: BundleFiles = {
+      "roster.py": rosterPy,
+      "grouping.py": groupingPy,
+    };
+    const fields = createFields();
+
+    const scope = effectScope();
+    const workingCopyState = scope.run(() =>
+      useEditorWorkingCopy({
+        userId: ref("user-1"),
+        toolId: ref("tool-1"),
+        baseVersionId: ref("ver-1"),
+        hasDirtyChanges: ref(false),
+        initialSnapshot: ref(createInitialSnapshot({ bundleFiles: baselineBundleFiles })),
+        fields,
+        notify: createNotify(),
+      }),
+    );
+
+    await flushPromises();
+
+    expect(workingCopyState?.isRestorePromptOpen.value).toBe(true);
+
+    await workingCopyState?.restoreWorkingCopy();
+    await flushPromises();
+
+    expect(fields.bundleFiles.value).toEqual(baselineBundleFiles);
+    expect(fields.bundleFiles.value).not.toBe(baselineBundleFiles);
+
+    scope.stop();
+  });
+
   it("warns only once if head save fails repeatedly", async () => {
     vi.useFakeTimers();
     persistenceMocks.saveWorkingCopyHead.mockRejectedValue(new Error("boom"));
 
     const notify = createNotify();
 
-    const entrypoint = ref("run_tool");
-    const sourceCode = ref("print('hi')");
-    const settingsSchemaText = ref("[]");
-    const inputSchemaText = ref("[]");
-    const usageInstructions = ref("");
+    const fields = createFields();
     const hasDirtyChanges = ref(true);
 
     const scope = effectScope();
@@ -290,32 +366,20 @@ describe("useEditorWorkingCopy", () => {
         toolId: ref("tool-1"),
         baseVersionId: ref("ver-1"),
         hasDirtyChanges,
-        initialSnapshot: ref({
-          entrypoint: "run_tool",
-          sourceCode: "print('hi')",
-          settingsSchemaText: "[]",
-          inputSchemaText: "[]",
-          usageInstructions: "",
-        }),
-        fields: {
-          entrypoint,
-          sourceCode,
-          settingsSchemaText,
-          inputSchemaText,
-          usageInstructions,
-        },
+        initialSnapshot: ref(createInitialSnapshot()),
+        fields,
         notify,
       });
     });
 
     await flushPromises();
 
-    sourceCode.value = "print('bye')";
+    fields.sourceCode.value = "print('bye')";
     await nextTick();
     vi.advanceTimersByTime(1300);
     await flushPromises();
 
-    sourceCode.value = "print('again')";
+    fields.sourceCode.value = "print('again')";
     await nextTick();
     vi.advanceTimersByTime(1300);
     await flushPromises();
@@ -337,20 +401,8 @@ describe("useEditorWorkingCopy", () => {
         toolId: ref("tool-1"),
         baseVersionId: ref("ver-1"),
         hasDirtyChanges: ref(false),
-        initialSnapshot: ref({
-          entrypoint: "run_tool",
-          sourceCode: "print('hi')",
-          settingsSchemaText: "[]",
-          inputSchemaText: "[]",
-          usageInstructions: "",
-        }),
-        fields: {
-          entrypoint: ref("run_tool"),
-          sourceCode: ref("print('hi')"),
-          settingsSchemaText: ref("[]"),
-          inputSchemaText: ref("[]"),
-          usageInstructions: ref(""),
-        },
+        initialSnapshot: ref(createInitialSnapshot()),
+        fields: createFields(),
         notify,
       }),
     );

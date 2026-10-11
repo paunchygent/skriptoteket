@@ -111,7 +111,7 @@ def _validate_source_code(*, source_code: str) -> str:
     return source_code
 
 
-def _validate_bundle_files(*, bundle_files: dict[str, str]) -> dict[str, str]:
+def validate_bundle_files(*, bundle_files: dict[str, str]) -> dict[str, str]:
     for name in bundle_files:
         if not _BUNDLE_FILE_NAME.fullmatch(name):
             raise validation_error("bundle file name is invalid", details={"name": name})
@@ -144,7 +144,7 @@ def create_draft_version(
     _validate_version_number(version_number=version_number)
     normalized_entrypoint = _validate_entrypoint(entrypoint=entrypoint)
     normalized_source_code = _validate_source_code(source_code=source_code)
-    validated_bundle_files = _validate_bundle_files(bundle_files=bundle_files)
+    validated_bundle_files = validate_bundle_files(bundle_files=bundle_files)
 
     return ToolVersion(
         id=version_id,
@@ -175,6 +175,7 @@ def save_draft_snapshot(
     new_version_id: UUID,
     new_version_number: int,
     source_code: str,
+    bundle_files: dict[str, str],
     entrypoint: str,
     settings_schema: ToolSettingsSchema | None = None,
     input_schema: ToolInputSchema,
@@ -201,6 +202,7 @@ def save_draft_snapshot(
     _validate_version_number(version_number=new_version_number)
     normalized_entrypoint = _validate_entrypoint(entrypoint=entrypoint)
     normalized_source_code = _validate_source_code(source_code=source_code)
+    validated_bundle_files = validate_bundle_files(bundle_files=bundle_files)
 
     return ToolVersion(
         id=new_version_id,
@@ -208,12 +210,12 @@ def save_draft_snapshot(
         version_number=new_version_number,
         state=VersionState.DRAFT,
         source_code=normalized_source_code,
-        bundle_files=previous_version.bundle_files,
+        bundle_files=validated_bundle_files,
         entrypoint=normalized_entrypoint,
         content_hash=compute_content_hash(
             entrypoint=normalized_entrypoint,
             source_code=normalized_source_code,
-            bundle_files=previous_version.bundle_files,
+            bundle_files=validated_bundle_files,
         ),
         settings_schema=normalize_tool_settings_schema(settings_schema=settings_schema),
         input_schema=normalize_tool_input_schema(input_schema=input_schema),

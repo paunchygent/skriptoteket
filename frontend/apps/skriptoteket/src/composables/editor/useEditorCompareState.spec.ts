@@ -70,4 +70,40 @@ describe("useEditorCompareState", () => {
 
     scope.stop();
   });
+
+  it("accepts a bundle file id in the field query value", async () => {
+    const route = reactive({ query: { compare: "ver-1", field: "bundle/roster.py" } });
+    const router = {
+      replace: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Router;
+
+    const scope = effectScope();
+    const state = scope.run(() => useEditorCompareState({ route: route as never, router }));
+
+    await flushPromises();
+
+    expect(state?.activeFileId.value).toBe("bundle/roster.py");
+    expect(router.replace).not.toHaveBeenCalled();
+
+    scope.stop();
+  });
+
+  it("rejects a traversal bundle file id and falls back to the default field", async () => {
+    const route = reactive({ query: { compare: "ver-1", field: "bundle/../x" } });
+    const router = {
+      replace: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Router;
+
+    const scope = effectScope();
+    const state = scope.run(() => useEditorCompareState({ route: route as never, router }));
+
+    await flushPromises();
+
+    expect(state?.activeFileId.value).toBeNull();
+    expect(router.replace).toHaveBeenCalledWith({
+      query: { compare: "ver-1", field: DEFAULT_COMPARE_FIELD },
+    });
+
+    scope.stop();
+  });
 });

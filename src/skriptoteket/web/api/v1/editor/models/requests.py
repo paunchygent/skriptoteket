@@ -73,6 +73,7 @@ class CreateDraftVersionRequest(BaseModel):
 
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: list[UiActionField] | None = None
     input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None
@@ -85,6 +86,7 @@ class SaveDraftVersionRequest(BaseModel):
 
     entrypoint: str = DEFAULT_ENTRYPOINT
     source_code: str
+    bundle_files: dict[str, str] = Field(default_factory=dict)
     settings_schema: list[UiActionField] | None = None
     input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None
