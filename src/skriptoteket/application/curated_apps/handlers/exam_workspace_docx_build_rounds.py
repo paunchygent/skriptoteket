@@ -56,9 +56,11 @@ Rules:
   after a sentence that already has its blank repeats that blank and is no second gap. A gap
   also exists where an answer line
   "Label: value" holds a field the question asks the student to produce: the label stays text
-  and the value becomes the gap's accepted_values. A field that restates context the student
-  already sees, such as the marked part or a clause the question gives, stays text with its
-  value.
+  and the value becomes the gap's accepted_values. What the question asks the student to
+  write decides this, not whether the words appear elsewhere: a field the question asks for
+  is a gap even when its value can be found in the given text. A field the question does not
+  ask for, such as the marked part or a clause the question hands over so the student can
+  answer about it, restates context and stays text with its value.
 - When the facit itself shows that the student decides where units start and end (it rewrites
   a sentence with a label after each unit, or splits a word into parts joined with +), the
   question is free_text with no gaps: keep the question wording and leave the answer line out.

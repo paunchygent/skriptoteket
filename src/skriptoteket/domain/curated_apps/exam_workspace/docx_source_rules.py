@@ -93,15 +93,17 @@ def title_rule_violation(
 _SHORT_FORM = re.compile(r"(?<![^\s(])([^\s=(),;:]{1,6})\s*=\s*")
 
 
-def definition_context(chunks: tuple[DocxChunk, ...], anchors: tuple[str, ...]) -> list[str]:
-    """The item's own text plus the lines above it back to the nearest heading before it."""
+def definition_context(
+    chunks: tuple[DocxChunk, ...], anchors: tuple[str, ...]
+) -> tuple[DocxChunk, ...]:
+    """The item's own chunks plus the lines above it back to the nearest heading before it."""
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    texts = [chunks[positions[anchor]].text for anchor in anchors]
+    context = [chunks[positions[anchor]] for anchor in anchors]
     index = min(positions[anchor] for anchor in anchors) - 1
     while index >= 0 and chunks[index].kind != "heading":
-        texts.append(chunks[index].text)
+        context.append(chunks[index])
         index -= 1
-    return texts
+    return tuple(context)
 
 
 def _defines(rest: str, value: str) -> bool:
@@ -111,25 +113,49 @@ def _defines(rest: str, value: str) -> bool:
     return len(folded) == len(wanted) or not folded[len(wanted)].isalnum()
 
 
-def with_defined_short_forms(item: ProducedItem, texts: Iterable[str]) -> ProducedItem:
-    """Rule 3: a gap whose facit is a defined term also accepts the term's short form."""
+def _definitions(context: Iterable[DocxChunk]) -> list[tuple[str, str]]:
+    """Each "short = term" as (short form, the text from its term to the next definition)."""
     definitions: list[tuple[str, str]] = []
-    for text in texts:
-        matches = list(_SHORT_FORM.finditer(text))
+    for chunk in context:
+        matches = list(_SHORT_FORM.finditer(chunk.text))
         if not matches:
             continue
-        ends = [following.start() for following in matches[1:]] + [len(text)]
+        ends = [following.start() for following in matches[1:]] + [len(chunk.text)]
         definitions.extend(
-            (match.group(1), text[match.end() : end])
+            (match.group(1), chunk.text[match.end() : end])
             for match, end in zip(matches, ends, strict=True)
         )
+    return definitions
+
+
+def with_defined_short_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> ProducedItem:
+    """Rule 3: a gap accepts the facit's own form plus the short form the instructions define.
+
+    A facit term also accepts its short form. When the inline facit marks write the short
+    form, the term is neither the facit's form nor the form students are told to use, so a
+    term the model added is dropped.
+    """
+    context = tuple(context)
+    definitions = _definitions(context)
     if not definitions:
         return item
+    marks = {
+        mark.casefold().strip()
+        for chunk in context
+        if chunk.anchor in item.source_anchors
+        for mark in _ITALIC.findall(chunk.marked_text)
+    }
+
+    def added_term(value: str) -> bool:
+        return value.casefold().strip() not in marks and any(
+            short.casefold() in marks and _defines(rest, value) for short, rest in definitions
+        )
+
     body = []
     for paragraph in item.body:
         segments = []
         for segment in paragraph.segments:
-            facit = segment.accepted_values
+            facit = tuple(value for value in segment.accepted_values if not added_term(value))
             values = list(facit)
             for short, rest in definitions:
                 known = {value.casefold() for value in values}

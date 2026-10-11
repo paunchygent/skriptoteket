@@ -196,3 +196,43 @@ def test_facit_already_in_short_form_gains_no_term():
     # The questions' own instructions define their labels with "=".
     assert sum(chunks[a].text.count("=") for a in chunks) >= 6
     assert _gap_values(recording, "svenska_2_kursavslutande_prov_med_facit") == original
+
+
+def test_term_added_beside_a_short_form_facit_is_dropped():
+    """A live round added each defined term next to the short form the inline facit writes."""
+    chunks = PythonDocxExamChunker().chunk(
+        content=(
+            _FIXTURES / "docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx"
+        ).read_bytes()
+    )
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    item = next(
+        item
+        for item in _items("svenska_2_kursavslutande_prov_docx_build_response.json")
+        if item.source_anchors[0] == "body:0061"
+    )
+    terms = iter(("rotmorfem", "avledningsmorfem", "böjningsmorfem"))
+    padded = item.model_copy(
+        update={
+            "body": tuple(
+                p.model_copy(
+                    update={
+                        "segments": tuple(
+                            s.model_copy(
+                                update={"accepted_values": (*s.accepted_values, next(terms))}
+                            )
+                            if s.kind == "gap"
+                            else s
+                            for s in p.segments
+                        )
+                    }
+                )
+                for p in item.body
+            )
+        }
+    )
+    assert "R = rotmorfem" in by_anchor["body:0062"].text
+
+    widened = with_defined_short_forms(padded, definition_context(chunks, item.source_anchors))
+
+    assert widened == item
