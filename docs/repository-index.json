@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5610b04ebf376b73e7b8bf0f480742b6cbca16ee36b525d50035309340fa7230",
+  "source_set_digest": "9da1af6392752addf294c6b6dccd6dab7409626a127ad2f8f061bc09b3da5a18",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4671,6 +4671,25 @@
       "title": "Fix the conversion defects the staging corpus walk found",
       "path": "docs/backlog/tasks/task-skript-39-05-03-fix-the-conversion-defects-the-staging-corpus-walk-found.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-04",
+      "type": "task",
+      "title": "Label items with a Decisions classifier and convert type-focused batches in parallel",
+      "path": "docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
