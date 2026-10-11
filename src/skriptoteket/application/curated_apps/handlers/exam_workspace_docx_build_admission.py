@@ -157,7 +157,8 @@ def _admit_item(
                     "admission", "model_review", item=index, anchors=anchors, detail=reason
                 )
             else:
-                context = definition_context(state.chunks, anchors)
+                instructions = (a for m in state.instructions for a in m.source_anchors)
+                context = definition_context(state.chunks, anchors, instructions)
                 item = native_item(with_accepted_forms(produced, context))
         except ValidationError as error:
             detail = validation_detail(error)

@@ -132,12 +132,25 @@ _SHORT_FORM = re.compile(r"(?<![^\s(])([^\s=(),;:]{1,6})\s*=\s*")
 
 
 def definition_context(
-    chunks: tuple[DocxChunk, ...], anchors: tuple[str, ...]
+    chunks: tuple[DocxChunk, ...],
+    anchors: tuple[str, ...],
+    instruction_anchors: Iterable[str] = (),
 ) -> tuple[DocxChunk, ...]:
-    """The item's own chunks plus the lines above it back to the nearest heading before it."""
+    """The item's own chunks, the instructions printed among them, and the lines above it.
+
+    An instruction the producer returned separately joins the item when it is printed between
+    the item's first and last chunk. The lines above reach back to the nearest heading.
+    """
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    first = min(positions[anchor] for anchor in anchors)
+    last = max(positions[anchor] for anchor in anchors)
     context = [chunks[positions[anchor]] for anchor in anchors]
-    index = min(positions[anchor] for anchor in anchors) - 1
+    context.extend(
+        chunks[positions[anchor]]
+        for anchor in instruction_anchors
+        if first < positions[anchor] < last and anchor not in anchors
+    )
+    index = first - 1
     while index >= 0 and chunks[index].kind != "heading":
         context.append(chunks[index])
         index -= 1
@@ -165,6 +178,30 @@ def short_form_definitions(texts: Iterable[str]) -> list[tuple[str, str]]:
             for match, end in zip(matches, ends, strict=True)
         )
     return definitions
+
+
+# Where a defined term ends: punctuation or a line break.
+_TERM_END = re.compile(r"[,;:.()\n]")
+
+
+def defined_short_forms(texts: Iterable[str]) -> list[tuple[str, str]]:
+    """Each "short = term" as (short form, term).
+
+    The term runs to the first punctuation or line break. A term that runs straight into the
+    next definition ends with the word that joins the two, such as "och" or "and", which is
+    left out.
+    """
+    pairs: list[tuple[str, str]] = []
+    for text in texts:
+        matches = list(_SHORT_FORM.finditer(text))
+        for match, following in zip(matches, [*matches[1:], None], strict=False):
+            rest = text[match.end() : following.start() if following else len(text)]
+            words = _TERM_END.split(rest, maxsplit=1)[0].split()
+            if following is not None and len(words) > 1 and words[-1].casefold() in {"och", "and"}:
+                words = words[:-1]
+            if words:
+                pairs.append((match.group(1), " ".join(words)))
+    return pairs
 
 
 def slash_alternatives(value: str) -> tuple[str, ...]:
@@ -195,8 +232,10 @@ def _other_closing_stop(form: str) -> str:
 def _accepted_forms(values: tuple[str, ...], definitions: list[tuple[str, str]]) -> tuple[str, ...]:
     forms = list(values)
     forms.extend(part for value in values for part in slash_alternatives(value))
-    for short, rest in definitions:
-        if any(defines(rest, form) for form in forms):
+    for short, term in definitions:
+        if short.casefold() in {form.strip().casefold() for form in forms}:
+            forms.append(term)
+        if any(defines(term, form) for form in forms):
             forms.append(short)
     forms.extend(form.translate(_KEYBOARD_PUNCTUATION) for form in tuple(forms))
     forms.extend(form.replace("'", "\u2019") for form in tuple(forms))
@@ -207,13 +246,13 @@ def _accepted_forms(values: tuple[str, ...], definitions: list[tuple[str, str]])
 def with_accepted_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> ProducedItem:
     """Rule 3: each gap also accepts the forms its facit admits; no model value is removed.
 
-    A gap accepts each part of a facit form that joins alternatives with a slash, the
-    short form an instruction defines ("short = term") for a facit term, the keyboard
+    A gap accepts each part of a facit form that joins alternatives with a slash, both
+    halves of a "short = term" an instruction defines when the facit gives either, the keyboard
     spelling of a form printed with a typographic apostrophe or quote, and the typographic
     apostrophe of a form spelled with the keyboard one. A sentence form of three or
     more words is accepted with and without a closing full stop.
     """
-    definitions = short_form_definitions(chunk.text for chunk in context)
+    definitions = defined_short_forms(chunk.text for chunk in context)
     body = []
     for paragraph in item.body:
         segments = tuple(

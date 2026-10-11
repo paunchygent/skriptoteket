@@ -1,12 +1,26 @@
 """Accepted answer forms a gap gains, judged against real recordings and gold."""
 
+import json
 import re
+from uuid import uuid4
+
+import pytest
 
 from scripts.exam_conversion_eval.gold import GoldExam
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+    admit_batch,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    DocxBuildState,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     with_accepted_forms,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -46,6 +60,7 @@ def test_facit_term_defined_in_the_section_instruction_also_accepts_its_short_fo
     assert item.source_anchors[0] == "body:0037"
     for original, values, gold_values in zip(_gaps(item), _gaps(widened), gold[3], strict=True):
         assert len(values) > len(original)
+        assert set(original) <= set(values)
         # Every gold answer is accepted, including each part of a slash-joined facit form,
         # and nothing outside gold is added.
         assert {g.casefold() for g in gold_values} <= {v.casefold() for v in values}
@@ -56,13 +71,36 @@ def test_facit_term_defined_in_the_section_instruction_also_accepts_its_short_fo
     assert _gaps(widened) == _gaps(item)
 
 
-def test_facit_already_in_short_form_gains_no_term():
-    docx = "svenska_2_kursavslutande_prov_med_facit"
-    chunks = chunks_by_anchor(docx)
-    # The questions' own instructions define their labels with "=".
-    assert sum(chunks[a].text.count("=") for a in chunks) >= 6
-    pairs = _widened("svenska_2_kursavslutande_prov_docx_build_response.json", docx)
-    assert [_gaps(widened) for _, widened in pairs] == [_gaps(item) for item, _ in pairs]
+_COURSE_FINAL = "svenska_2_kursavslutande_prov_med_facit"
+# Live rounds that return the defining instruction inside the item, and as its own instruction.
+_DEFINING_RECORDINGS = ("docx_build_v9", "docx_build_round3_live2")
+
+
+def _defined(chunks: dict[str, DocxChunk], item: ProducedItem) -> dict[str, str]:
+    """Each short form the source defines with " = " in the lines the item spans."""
+    positions = sorted(chunks)
+    first, last = positions.index(item.source_anchors[0]), positions.index(item.source_anchors[-1])
+    text = "\n".join(chunks[a].text for a in positions[first : last + 1])
+    return dict(re.findall(r"(\S+) = (\w+)", text))
+
+
+_Found = tuple[ProducedItem, dict[str, str]]
+
+
+def test_the_separately_returned_instruction_lies_inside_the_defining_items():
+    """The live round returned the defining line as an instruction printed inside each item."""
+    content = json.loads(
+        (FIXTURES / "docx_build_round3_live2" / _COURSE_FINAL / "round1.json").read_text()
+    )
+    _, found = _admitted("docx_build_round3_live2", as_terms=False)
+    assert found
+    for item, _ in found:
+        assert not any(" = " in chunk_text for chunk_text in _own_texts(item))
+        assert any(
+            " = " in m["text"]
+            and item.source_anchors[0] < m["source_anchors"][0] < item.source_anchors[-1]
+            for m in content["instructions"]
+        ), item.source_anchors
 
 
 def test_term_added_beside_a_short_form_facit_is_kept():
@@ -135,3 +173,65 @@ def test_facit_printed_with_a_typographic_apostrophe_also_accepts_the_keyboard_f
         assert all(value in facit for gap in _gaps(item) for value in gap)
         for values, gold_values in zip(_gaps(widened), gold[index], strict=True):
             assert set(gold_values) <= set(values)
+        for original, values in zip(_gaps(item), _gaps(widened), strict=True):
+            assert set(original) <= set(values)
+
+
+def _own_texts(item: ProducedItem) -> list[str]:
+    chunks = chunks_by_anchor(_COURSE_FINAL)
+    return [chunks[a].text for a in item.source_anchors]
+
+
+def _admitted(recording: str, as_terms: bool) -> tuple[NativeExamDocument, list[_Found]]:
+    """The recorded round, admitted and built; ``as_terms`` makes each defined facit the term."""
+    chunks = chunks_by_anchor(_COURSE_FINAL)
+    content = json.loads((FIXTURES / recording / _COURSE_FINAL / "round1.json").read_text())
+    found: list[_Found] = []
+    for raw in content["items"]:
+        item = ProducedItem.model_validate(raw)
+        defined = _defined(chunks, item)
+        if not (_gaps(item) and defined and all(set(g) <= set(defined) for g in _gaps(item))):
+            continue
+        if as_terms:
+            for paragraph in raw["body"]:
+                for segment in paragraph["segments"]:
+                    if segment["kind"] == "gap":
+                        segment["accepted_values"] = [
+                            defined[v] for v in segment["accepted_values"]
+                        ]
+        # Return exactly what admission receives, including the term-only mutation.
+        found.append((ProducedItem.model_validate(raw), defined))
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename=f"{_COURSE_FINAL}.docx",
+        source_sha256="0" * 64,
+        chunks=tuple(chunks.values()),
+    )
+    admit_batch(content, state)
+    return state.result().document, found
+
+
+@pytest.mark.parametrize("as_terms", [False, True], ids=["short_form_facit", "term_facit"])
+@pytest.mark.parametrize("recording", _DEFINING_RECORDINGS)
+def test_admitted_defined_gaps_accept_both_halves(recording: str, as_terms: bool):
+    """D13 through admission and the build: a facit giving either half accepts both."""
+    document, found = _admitted(recording, as_terms)
+    assert len(found) >= 2
+    for item, defined in found:
+        native = next(i for i in document.items if i.source_anchor == item.source_anchors[0])
+        short_by_term = {term: short for short, term in defined.items()}
+        for submitted, gap in zip(_gaps(item), native.gaps, strict=True):
+            if as_terms:
+                assert set(submitted) <= set(short_by_term)
+                short_forms = {short_by_term[term] for term in submitted}
+                terms = set(submitted)
+                assert short_forms.isdisjoint(submitted)
+            else:
+                assert set(submitted) <= set(defined)
+                short_forms = set(submitted)
+                terms = {defined[short] for short in submitted}
+                assert terms.isdisjoint(submitted)
+            assert short_forms <= set(gap.accepted_values)
+            assert terms <= set(gap.accepted_values)
+            assert set(submitted) <= set(gap.accepted_values)
