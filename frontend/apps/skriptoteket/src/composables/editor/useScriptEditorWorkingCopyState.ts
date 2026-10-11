@@ -2,6 +2,7 @@ import { computed, type Ref } from "vue";
 
 import type { components } from "../../api/openapi";
 import type { UiNotifier } from "../notify";
+import type { BundleFiles } from "./bundleFiles";
 import { useEditorWorkingCopy, type EditorBaselineSnapshot } from "./useEditorWorkingCopy";
 
 type EditorBootResponse = components["schemas"]["EditorBootResponse"];
@@ -16,6 +17,7 @@ type UseScriptEditorWorkingCopyStateOptions = {
   fields: {
     entrypoint: Ref<string>;
     sourceCode: Ref<string>;
+    bundleFiles: Ref<BundleFiles>;
     settingsSchemaText: Ref<string>;
     inputSchemaText: Ref<string>;
     usageInstructions: Ref<string>;

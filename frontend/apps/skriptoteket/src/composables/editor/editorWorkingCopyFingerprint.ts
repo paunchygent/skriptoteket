@@ -1,4 +1,5 @@
 import type { EditorWorkingCopyFields } from "./editorPersistence";
+import { bundleFilesFingerprint } from "./bundleFiles";
 
 export function fieldsFingerprint(fields: EditorWorkingCopyFields): string {
   return [
@@ -7,6 +8,7 @@ export function fieldsFingerprint(fields: EditorWorkingCopyFields): string {
     fields.settingsSchemaText,
     fields.inputSchemaText,
     fields.usageInstructions,
+    bundleFilesFingerprint(fields.bundleFiles),
   ].join("\u0000");
 }
 

@@ -1,12 +1,18 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
+import type { BundleFiles } from "./bundleFiles";
+
 export type EditorWorkingCopyFields = {
   entrypoint: string;
   sourceCode: string;
   settingsSchemaText: string;
   inputSchemaText: string;
   usageInstructions: string;
+  bundleFiles: BundleFiles;
 };
+
+/** The editor fields captured when a tool version loads; also the local working-copy field shape. */
+export type EditorBaselineSnapshot = EditorWorkingCopyFields;
 
 export type WorkingCopyHeadRecord = {
   user_id: string;
@@ -17,6 +23,7 @@ export type WorkingCopyHeadRecord = {
   settings_schema: string;
   input_schema: string;
   usage_instructions: string;
+  bundle_files?: BundleFiles;
   updated_at: number;
   expires_at: number;
 };
@@ -35,6 +42,7 @@ export type CheckpointRecord = {
   settings_schema: string;
   input_schema: string;
   usage_instructions: string;
+  bundle_files?: BundleFiles;
   created_at: number;
   expires_at: number | null;
 };
@@ -147,26 +155,35 @@ function normalizeFields(fields: EditorWorkingCopyFields) {
     settings_schema: fields.settingsSchemaText,
     input_schema: fields.inputSchemaText,
     usage_instructions: fields.usageInstructions,
+    bundle_files: { ...fields.bundleFiles },
   };
 }
 
-export function checkpointFieldsFromRecord(record: CheckpointRecord): EditorWorkingCopyFields {
+export function checkpointFieldsFromRecord(
+  record: CheckpointRecord,
+  fallbackBundleFiles: BundleFiles,
+): EditorWorkingCopyFields {
   return {
     entrypoint: record.entrypoint,
     sourceCode: record.source_code,
     settingsSchemaText: record.settings_schema,
     inputSchemaText: record.input_schema,
     usageInstructions: record.usage_instructions,
+    bundleFiles: record.bundle_files ?? fallbackBundleFiles,
   };
 }
 
-export function workingCopyFieldsFromRecord(record: WorkingCopyHeadRecord): EditorWorkingCopyFields {
+export function workingCopyFieldsFromRecord(
+  record: WorkingCopyHeadRecord,
+  fallbackBundleFiles: BundleFiles,
+): EditorWorkingCopyFields {
   return {
     entrypoint: record.entrypoint,
     sourceCode: record.source_code,
     settingsSchemaText: record.settings_schema,
     inputSchemaText: record.input_schema,
     usageInstructions: record.usage_instructions,
+    bundleFiles: record.bundle_files ?? fallbackBundleFiles,
   };
 }
 

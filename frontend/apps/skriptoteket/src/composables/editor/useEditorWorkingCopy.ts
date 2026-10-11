@@ -2,12 +2,18 @@ import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import type { UiNotifier } from "../notify";
 import {
+  bundleDiffItems,
+  type BundleFiles,
+  type EditorFileDiffItem,
+} from "./bundleFiles";
+import {
   PINNED_CHECKPOINT_CAP,
   clearWorkingCopyData,
   getWorkingCopyHead,
   saveWorkingCopyHead,
   workingCopyFieldsFromRecord,
   type CheckpointKind,
+  type EditorBaselineSnapshot,
   type EditorWorkingCopyFields,
   type WorkingCopyHeadRecord,
 } from "./editorPersistence";
@@ -15,19 +21,13 @@ import { areFieldsEqual } from "./editorWorkingCopyFingerprint";
 import { useEditorWorkingCopyCheckpoints } from "./useEditorWorkingCopyCheckpoints";
 import { VIRTUAL_DIFF_FILE_IDS, virtualFileTextFromEditorFields } from "./virtualFiles";
 
+export type { EditorBaselineSnapshot };
+
 export type EditorWorkingCopyCheckpointSummary = {
   id: string;
   kind: CheckpointKind;
   label: string;
   createdAt: number;
-};
-
-export type EditorBaselineSnapshot = {
-  entrypoint: string;
-  sourceCode: string;
-  settingsSchemaText: string;
-  inputSchemaText: string;
-  usageInstructions: string;
 };
 
 type UseEditorWorkingCopyOptions = {
@@ -39,6 +39,7 @@ type UseEditorWorkingCopyOptions = {
   fields: {
     entrypoint: Ref<string>;
     sourceCode: Ref<string>;
+    bundleFiles: Ref<BundleFiles>;
     settingsSchemaText: Ref<string>;
     inputSchemaText: Ref<string>;
     usageInstructions: Ref<string>;
@@ -74,6 +75,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
   const currentFields = computed<EditorWorkingCopyFields>(() => ({
     entrypoint: fields.entrypoint.value,
     sourceCode: fields.sourceCode.value,
+    bundleFiles: fields.bundleFiles.value,
     settingsSchemaText: fields.settingsSchemaText.value,
     inputSchemaText: fields.inputSchemaText.value,
     usageInstructions: fields.usageInstructions.value,
@@ -85,31 +87,40 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     return {
       entrypoint: snapshot.entrypoint,
       sourceCode: snapshot.sourceCode,
+      bundleFiles: snapshot.bundleFiles,
       settingsSchemaText: snapshot.settingsSchemaText,
       inputSchemaText: snapshot.inputSchemaText,
       usageInstructions: snapshot.usageInstructions,
     };
   });
 
+  /** Bundle files a legacy record without them falls back to: the version baseline, else the live editor. */
+  function fallbackBundleFiles(): BundleFiles {
+    return initialSnapshot.value?.bundleFiles ?? fields.bundleFiles.value;
+  }
+
   const hasRestoreCandidate = computed(() => restoreCandidate.value !== null);
 
-  const restoreDiffItems = computed(() => {
+  const restoreDiffItems = computed<EditorFileDiffItem[]>(() => {
     if (!restoreCandidate.value || !baselineFields.value) return [];
-    const beforeFiles = virtualFileTextFromEditorFields(baselineFields.value);
-    const afterFiles = virtualFileTextFromEditorFields(
-      workingCopyFieldsFromRecord(restoreCandidate.value),
-    );
+    const baseline = baselineFields.value;
+    const candidate = workingCopyFieldsFromRecord(restoreCandidate.value, fallbackBundleFiles());
+    const beforeFiles = virtualFileTextFromEditorFields(baseline);
+    const afterFiles = virtualFileTextFromEditorFields(candidate);
 
-    return VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
+    const virtualItems: EditorFileDiffItem[] = VIRTUAL_DIFF_FILE_IDS.map((virtualFileId) => ({
       virtualFileId,
       beforeText: beforeFiles[virtualFileId],
       afterText: afterFiles[virtualFileId],
     }));
+
+    return [...virtualItems, ...bundleDiffItems(baseline.bundleFiles, candidate.bundleFiles)];
   });
 
   function applyFields(nextFields: EditorWorkingCopyFields): void {
     fields.entrypoint.value = nextFields.entrypoint;
     fields.sourceCode.value = nextFields.sourceCode;
+    fields.bundleFiles.value = { ...nextFields.bundleFiles };
     fields.settingsSchemaText.value = nextFields.settingsSchemaText;
     fields.inputSchemaText.value = nextFields.inputSchemaText;
     fields.usageInstructions.value = nextFields.usageInstructions;
@@ -207,7 +218,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
         restoreCandidate.value = null;
         isRestorePromptOpen.value = false;
       } else {
-        const headFields = workingCopyFieldsFromRecord(record);
+        const headFields = workingCopyFieldsFromRecord(record, fallbackBundleFiles());
         if (!areFieldsEqual(headFields, baselineFields.value)) {
           restoreCandidate.value = record;
           isRestorePromptOpen.value = true;
@@ -226,7 +237,7 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
   async function restoreWorkingCopy(): Promise<void> {
     const candidate = restoreCandidate.value;
     if (!candidate) return;
-    const restoredFields = workingCopyFieldsFromRecord(candidate);
+    const restoredFields = workingCopyFieldsFromRecord(candidate, fallbackBundleFiles());
     applyFields(restoredFields);
     isRestorePromptOpen.value = false;
     restoreCandidate.value = null;
@@ -382,11 +393,11 @@ export function useEditorWorkingCopy(options: UseEditorWorkingCopyOptions) {
     createBeforeAiApplyCheckpoint: () => createAutoCheckpoint("AI: före tillämpning", { force: true }),
     workingCopyProvider: async () => {
       if (workingCopyHead.value) {
-        return workingCopyFieldsFromRecord(workingCopyHead.value);
+        return workingCopyFieldsFromRecord(workingCopyHead.value, fallbackBundleFiles());
       }
       if (!canPersist.value || !userId.value || !toolId.value) return null;
       const record = await getWorkingCopyHead({ userId: userId.value, toolId: toolId.value });
-      return record ? workingCopyFieldsFromRecord(record) : null;
+      return record ? workingCopyFieldsFromRecord(record, fallbackBundleFiles()) : null;
     },
   };
 }

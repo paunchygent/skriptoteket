@@ -34,6 +34,7 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
     changeSummary: "",
     entrypoint: "main.py",
     sourceCode: "print('hello')",
+    bundleFiles: {},
     settingsSchemaText: "{}",
     inputSchemaText: "{}",
     settingsSchema: null,

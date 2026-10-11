@@ -33,6 +33,7 @@ describe("useEditorCompareData", () => {
       settingsSchemaText: "[]",
       inputSchemaText: "[]",
       usageInstructions: "",
+      bundleFiles: { "roster.py": "print('roster')" },
     });
 
     const scope = effectScope();
@@ -43,6 +44,27 @@ describe("useEditorCompareData", () => {
     expect(provider).toHaveBeenCalled();
     expect(state?.errorMessage.value).toBeNull();
     expect(state?.compareFiles.value?.["tool.py"]).toBe("print('hi')");
+    expect(state?.compareBundleFiles.value).toEqual({ "roster.py": "print('roster')" });
+
+    scope.stop();
+  });
+
+  it("loads bundle files when comparing a version", async () => {
+    clientMocks.apiGet.mockResolvedValue({
+      source_code: "print('hi')",
+      entrypoint: "run_tool",
+      bundle_files: { "roster.py": "print('roster')" },
+    });
+
+    const compareTarget = ref<EditorCompareTarget | null>({ kind: "version", versionId: "ver-1" });
+
+    const scope = effectScope();
+    const state = scope.run(() => useEditorCompareData(compareTarget));
+
+    await flushPromises();
+
+    expect(clientMocks.apiGet).toHaveBeenCalled();
+    expect(state?.compareBundleFiles.value).toEqual({ "roster.py": "print('roster')" });
 
     scope.stop();
   });
