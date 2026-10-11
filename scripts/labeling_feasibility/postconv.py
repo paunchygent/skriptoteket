@@ -169,7 +169,7 @@ def check_truth(
     gold: GoldExam, recording: dict[str, Any], item: dict[str, Any], gold_index: int
 ) -> dict[str, bool]:
     """Principles 6-8 of TASK-SKRIPT-39-05-03 judged against gold, per converted item."""
-    source = gold.items[gold_index]
+    source = gold.questions[gold_index]
     visible = visible_lines(item)
     visible_tokens = [token for line in visible for token in tokens(line)]
     visible_text = " " + " ".join(visible_tokens) + " "
@@ -225,7 +225,7 @@ def check_truth(
 def failed_items(gold: GoldExam, recording: dict[str, Any], mapping: dict[int, int]) -> list[int]:
     failed = []
     for index, gold_index in mapping.items():
-        item, source = recording["items"][index], gold.items[gold_index]
+        item, source = recording["items"][index], gold.questions[gold_index]
         keyed_wrong = source.kind in {
             "single_choice",
             "multiple_response",
@@ -260,7 +260,7 @@ def score_routes(
         index = int(name.removeprefix("route_i"))
         truth = (
             "relabel"
-            if recording["items"][index]["kind"] != gold.items[mapping[index]].kind
+            if recording["items"][index]["kind"] != gold.questions[mapping[index]].kind
             else "reconvert"
         )
         rows.append({"item": index, "truth": truth, "pred": answer.get("choice")})

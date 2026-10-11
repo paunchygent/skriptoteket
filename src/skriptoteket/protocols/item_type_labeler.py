@@ -15,7 +15,7 @@ Relationships:
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
@@ -40,39 +40,38 @@ class LabelRoute(StrEnum):
     ESCALATE = "escalate"
 
 
-DEFAULT_ACCEPT_THRESHOLD = 0.95
+# The decided acceptance threshold for every label (TASK-SKRIPT-39-05-04 D10).
+ACCEPT_THRESHOLD = 0.95
+
+
+def label_route(probability: float) -> LabelRoute:
+    """Accept a label at or above the acceptance threshold; escalate it below."""
+
+    return LabelRoute.ACCEPT if probability >= ACCEPT_THRESHOLD else LabelRoute.ESCALATE
 
 
 @dataclass(frozen=True)
-class ThresholdPolicy:
-    """Per-label acceptance thresholds; a label without an entry uses the default."""
+class GoverningInstruction:
+    """Shared instruction referenced before a zero-based student-view line."""
 
-    default: float = DEFAULT_ACCEPT_THRESHOLD
-    per_label: Mapping[ItemTypeLabel, float] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        for value in (self.default, *self.per_label.values()):
-            if not 0.0 <= value <= 1.0:
-                raise ValueError("Label thresholds must lie in [0, 1].")
-
-    def threshold_for(self, label: ItemTypeLabel) -> float:
-        return self.per_label.get(label, self.default)
-
-    def route(self, label: ItemTypeLabel, probability: float) -> LabelRoute:
-        """Accept at or above the label's threshold; escalate below it."""
-
-        return (
-            LabelRoute.ACCEPT if probability >= self.threshold_for(label) else LabelRoute.ESCALATE
-        )
+    text: str
+    before_line: int
 
 
 @dataclass(frozen=True)
 class LabelingItem:
-    """One question's source text; a child carries its parent instruction as read-only context."""
+    """One question as the student sees it, its answer key, and read-only context.
+
+    ``governing_instructions`` preserve instruction positions within ``source_text``;
+    ``parent_instruction`` supplies a governing instruction before line zero for current callers.
+    """
 
     item_id: str
     source_text: str
     parent_instruction: str | None = None
+    answer_key: str | None = None
+    governing_instructions: tuple[GoverningInstruction, ...] = ()
+    section_heading: str | None = None
 
 
 @dataclass(frozen=True)
@@ -99,6 +98,8 @@ class ItemTypeLabelResult:
     threshold: float
     route: LabelRoute
     refused: bool = False
+    first_pass: ItemTypeLabelResult | None = None
+    """The batched answer this result replaces after a second pass; None on a first pass."""
 
 
 @dataclass(frozen=True)

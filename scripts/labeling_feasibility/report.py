@@ -128,7 +128,7 @@ def build_report(evidence_dir: Path, converter_recordings: Path) -> dict[str, An
         recording = converter_recordings / docx.stem / "round1.json"
         exams[docx.stem] = {
             "chunks": len(chunks),
-            "gold_items": len(gold.items),
+            "gold_items": len(gold.questions),
             "converter_today": evaluate.converter_baseline(
                 reference, gold, json.loads(recording.read_text())
             )

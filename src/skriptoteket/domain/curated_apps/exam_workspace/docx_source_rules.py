@@ -18,9 +18,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 
 # Where the student writes: an underscore run, a dotted line, or empty brackets.
-_BLANK_MARKER = re.compile(r"_{3,}|\.{4,}|…{2,}|\[\s*\]|\(\s*\)")
+BLANK_MARKER = re.compile(r"_{3,}|\.{4,}|…{2,}|\[\s*\]|\(\s*\)")
 _CHOICE_KINDS = (NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE)
-_ITALIC = re.compile(r"<i>(.*?)</i>", re.DOTALL)
+INLINE_ANSWER_MARK = re.compile(r"<i>(.*?)</i>", re.DOTALL)
 # A mark that splits text into units: units joined with "+", or a label after each unit.
 _PLUS_JOIN = re.compile(r"\S\s*\+\s*\S")
 _UNIT_LABEL = re.compile(r"\(\s*[^()\s][^()]{0,11}\)")
@@ -40,8 +40,8 @@ def _restated_marks(chunk: DocxChunk) -> list[str]:
 
     Only a phrase of two or more words counts, since a lone letter or word recurs by chance.
     """
-    marks = [_normalized(mark).casefold() for mark in _ITALIC.findall(chunk.marked_text)]
-    visible = _normalized(_ITALIC.sub(" ", chunk.marked_text)).casefold()
+    marks = [_normalized(mark).casefold() for mark in INLINE_ANSWER_MARK.findall(chunk.marked_text)]
+    visible = _normalized(INLINE_ANSWER_MARK.sub(" ", chunk.marked_text)).casefold()
     printed = [
         m
         for m in marks
@@ -66,8 +66,8 @@ def item_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str
                 "so it stays text with its value and is no gap"
             )
     texts = [chunk.marked_text for chunk in sources]
-    blanks = sum(len(_BLANK_MARKER.findall(text)) for text in texts)
-    marks = [mark for text in texts for mark in _ITALIC.findall(text)]
+    blanks = sum(len(BLANK_MARKER.findall(text)) for text in texts)
+    marks = [mark for text in texts for mark in INLINE_ANSWER_MARK.findall(text)]
     gaps = sum(1 for p in item.body for s in p.segments if s.kind == "gap")
     if gaps and any(_segments_units(mark) for mark in marks):
         return (
@@ -86,7 +86,7 @@ def item_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> str
             f"it has {gaps} gaps but its source shows {blanks} blank marker(s) and "
             f"{len(marks)} inline answer mark(s): the facit never creates a gap of its own"
         )
-    printed = sum(len(_BLANK_MARKER.findall(s.text or "")) for p in item.body for s in p.segments)
+    printed = sum(len(BLANK_MARKER.findall(s.text or "")) for p in item.body for s in p.segments)
     if gaps and printed:
         return (
             f"its text still prints {printed} blank marker(s): the blank inside the sentence "
@@ -340,7 +340,7 @@ def label_rule_violation(item: ProducedItem, sources: Iterable[DocxChunk]) -> st
                 f"its text still prints the points label that {chunk.anchor} shows: the "
                 "points belong in the points field, so leave the printed label out"
             )
-    printed = sum(len(_BLANK_MARKER.findall(text)) for text in _marker_free_texts(item))
+    printed = sum(len(BLANK_MARKER.findall(text)) for text in _marker_free_texts(item))
     if printed:
         return (
             f"its title, text, options or match lists still print {printed} blank marker(s) "

@@ -214,7 +214,7 @@ def slot_scores(
     owner = reference.owner_of()
     gold_lines: dict[int, list[tuple[list[str], bool]]] = {}
     for item in reference.items:
-        source = gold.items[item.index]
+        source = gold.questions[item.index]
         lines = [(tokens(line), "[___]" in line) for line in source.prompt.split("\n")]
         lines += [(tokens(choice), False) for choice in source.choices]
         gold_lines[item.index] = [(toks, gap) for toks, gap in lines if toks]
@@ -320,7 +320,7 @@ def converter_baseline(
     confusion: Counter[str] = Counter()
     for item in reference.items:
         converted = by_item.get(item.index)
-        source = gold.items[item.index]
+        source = gold.questions[item.index]
         predicted = converted["kind"] if converted else "missing"
         confusion[f"{item.kind}->{predicted}"] += 1
         kind += int(predicted == item.kind)

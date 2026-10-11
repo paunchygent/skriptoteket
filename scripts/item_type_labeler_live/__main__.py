@@ -7,7 +7,9 @@ read from ``OPENAI_LLM_ANSWER_KEY_API_KEY`` and never written or printed.
 
 Usage:
     python -m scripts.item_type_labeler_live --groupings <dir> --out <dir>
-        [--split-exams <stem> <stem> ...]
+        [--corpus <dir>] [--split-exams <stem> ...]
+
+Every escalation is re-asked alone using its own tight source context.
 """
 
 from __future__ import annotations
@@ -19,23 +21,42 @@ import os
 import time
 import uuid
 from pathlib import Path
-from typing import Any
 
 import httpx
+from pydantic import JsonValue, TypeAdapter
 
+from scripts.item_type_labeler_live.records import (
+    CorpusSummary,
+    ExchangeRecord,
+    GroupingRecord,
+    ItemRecord,
+    LabelingRecord,
+    RequestRecord,
+    ResultRecord,
+    RunRecord,
+    RunSummary,
+    SavedGrouping,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.labeler_student_view import (
+    student_view,
+    tight_heading,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
+    build_decisions_payload,
+    split_items,
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.protocols.item_type_labeler import (
+    GoverningInstruction,
     ItemTypeLabelerError,
     ItemTypeLabeling,
+    ItemTypeLabelResult,
     LabelingItem,
     LabelingRequest,
-    ThresholdPolicy,
 )
 
 CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
@@ -50,28 +71,35 @@ KEPT_HEADERS = (
     "x-ratelimit-remaining-tokens",
 )
 DECISIONS_INPUT_USD_PER_MILLION = 0.10  # gpt-6-luna Decisions input price, read 2026-10-11.
+GROUPING_RECORD = TypeAdapter(GroupingRecord)
+REQUEST_RECORD = TypeAdapter(RequestRecord)
 
 
 class RecordingTransport(httpx.AsyncBaseTransport):
     """Forward to the real transport and keep each exchange without credentials."""
 
-    def __init__(self) -> None:
+    def __init__(self, run_started: float) -> None:
         self._inner = httpx.AsyncHTTPTransport()
-        self.exchanges: list[dict[str, Any]] = []
+        self._run_started = run_started
+        self.exchanges: list[ExchangeRecord] = []
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         started = time.perf_counter()
         response = await self._inner.handle_async_request(request)
         content = await response.aread()
         try:
-            body: Any = json.loads(content)
+            body: JsonValue = json.loads(content)
         except ValueError:
             body = content.decode("utf-8", errors="replace")
+        sent = REQUEST_RECORD.validate_json(request.content, strict=True)
+        finished = time.perf_counter()
         self.exchanges.append(
             {
-                "request": json.loads(request.content),
+                "request": sent,
                 "status_code": response.status_code,
-                "duration_seconds": round(time.perf_counter() - started, 3),
+                "duration_seconds": round(finished - started, 3),
+                "start_seconds": started - self._run_started,
+                "finished_seconds": finished - self._run_started,
                 "headers": {k: response.headers[k] for k in KEPT_HEADERS if k in response.headers},
                 "body": body,
             }
@@ -90,28 +118,93 @@ class RecordingTransport(httpx.AsyncBaseTransport):
         await self._inner.aclose()
 
 
-def corpus_items(stem: str, grouping: dict[str, Any]) -> list[LabelingItem]:
-    """One item per grouped question: its source and key lines, governing context as parent."""
+def corpus_items(
+    corpus: Path,
+    stem: str,
+    grouping: SavedGrouping,
+) -> list[LabelingItem]:
+    """Own question/key, source-positioned governing instructions and section heading."""
 
-    chunks = PythonDocxExamChunker().chunk(content=(CORPUS / f"{stem}.docx").read_bytes())
-    text = {chunk.anchor: chunk.marked_text for chunk in chunks}
+    chunks = PythonDocxExamChunker().chunk(content=(corpus / f"{stem}.docx").read_bytes())
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    all_keys = frozenset(a for q in grouping["questions"] for a in q["key_anchors"])
+    all_questions = frozenset(a for q in grouping["questions"] for a in q["anchors"])
+    titles = frozenset(grouping["title"])
     items = []
     for question in grouping["questions"]:
         qid = question["id"]
-        governing = [c["anchor"] for c in grouping["contexts"] if qid in c["governs"]]
-        source = [f"[{a}] {text[a]}" for a in question["anchors"]]
-        source += [f"[{a}] (answer key) {text[a]}" for a in question["key_anchors"]]
+        governing = sorted(
+            {
+                c["anchor"]
+                for c in grouping["contexts"]
+                if qid in c["governs"]
+                and c["scope"] != "exam_metadata"
+                and c["anchor"] not in titles | all_keys
+            },
+            key=positions.__getitem__,
+        )
+        own = set(question["anchors"]) | set(question["key_anchors"])
+        view = student_view(
+            [chunk for chunk in chunks if chunk.anchor in own - titles - set(governing)],
+            [by_anchor[a] for a in question["key_anchors"]],
+        )
+        instructions = []
+        for anchor in governing:
+            text = student_view([by_anchor[anchor]], []).question
+            if text:
+                instructions.append(
+                    GoverningInstruction(
+                        text=text,
+                        before_line=sum(
+                            len(line.text.split("\n"))
+                            for line in view.lines
+                            if positions[line.anchor] < positions[anchor]
+                        ),
+                    )
+                )
         items.append(
             LabelingItem(
                 item_id=f"{stem}/{qid}",
-                source_text="\n".join(source),
-                parent_instruction="\n".join(f"[{a}] {text[a]}" for a in governing) or None,
+                source_text=view.question,
+                answer_key=view.answer_key,
+                governing_instructions=tuple(instructions),
+                section_heading=tight_heading(
+                    chunks, question["anchors"], titles | all_questions | all_keys
+                ),
             )
         )
     return items
 
 
-def labeling_json(labeling: ItemTypeLabeling) -> dict[str, Any]:
+def item_json(item: LabelingItem) -> ItemRecord:
+    return {
+        "item_id": item.item_id,
+        "source_text": item.source_text,
+        "parent_instruction": item.parent_instruction,
+        "answer_key": item.answer_key,
+        "governing_instructions": [
+            {"text": instruction.text, "before_line": instruction.before_line}
+            for instruction in item.governing_instructions
+        ],
+        "section_heading": item.section_heading,
+    }
+
+
+def result_json(result: ItemTypeLabelResult) -> ResultRecord:
+    return {
+        "item_id": result.item_id,
+        "label": result.label.value,
+        "probability": result.probability,
+        "threshold": result.threshold,
+        "route": result.route.value,
+        "refused": result.refused,
+        "probabilities": {k.value: v for k, v in result.probabilities.items()},
+        "first_pass": None if result.first_pass is None else result_json(result.first_pass),
+    }
+
+
+def labeling_json(labeling: ItemTypeLabeling) -> LabelingRecord:
     tokens = labeling.usage.input_tokens
     return {
         "usage": {
@@ -120,23 +213,28 @@ def labeling_json(labeling: ItemTypeLabeling) -> dict[str, Any]:
             "attempts": labeling.usage.attempts,
             "cost_usd": None if tokens is None else tokens * DECISIONS_INPUT_USD_PER_MILLION / 1e6,
         },
-        "results": [
-            {
-                "item_id": r.item_id,
-                "label": r.label.value,
-                "probability": r.probability,
-                "threshold": r.threshold,
-                "route": r.route.value,
-                "refused": r.refused,
-                "probabilities": {k.value: v for k, v in r.probabilities.items()},
-            }
-            for r in labeling.results
-        ],
+        "results": [result_json(r) for r in labeling.results],
     }
 
 
-async def run_one(name: str, items: list[LabelingItem], out: Path, api_key: str) -> dict[str, Any]:
-    transport = RecordingTransport()
+async def run_one(
+    name: str,
+    items: list[LabelingItem],
+    out: Path,
+    api_key: str,
+    *,
+    corpus_started: float,
+) -> RunSummary:
+    run_started = time.perf_counter()
+    transport = RecordingTransport(run_started)
+    record: RunRecord = {
+        "name": name,
+        "items": [item_json(item) for item in items],
+        "exchanges": transport.exchanges,
+        "wall_seconds": 0.0,
+        "start_offset": run_started - corpus_started,
+        "first_pass_wall_seconds": 0.0,
+    }
     async with httpx.AsyncClient(transport=transport) as client:
         labeler = OpenAIDecisionsItemTypeLabeler(
             client=client,
@@ -144,27 +242,44 @@ async def run_one(name: str, items: list[LabelingItem], out: Path, api_key: str)
             api_key=api_key,
             timeout_seconds=60.0,
             sleeper=AsyncioSleeper(),
-            policy=ThresholdPolicy(),
         )
         request = LabelingRequest(job_id=uuid.uuid4(), items=tuple(items))
         started = time.perf_counter()
         try:
-            outcome: dict[str, Any] = labeling_json(await labeler.label(request=request))
+            outcome = labeling_json(await labeler.label(request=request))
+            record["usage"] = outcome["usage"]
+            record["results"] = outcome["results"]
         except ItemTypeLabelerError as error:
-            outcome = {"error": {"code": error.code, "status_code": error.status_code}}
-        outcome["wall_seconds"] = round(time.perf_counter() - started, 3)
-    record = {
-        "name": name,
-        "items": [vars(item) for item in items],
-        "exchanges": transport.exchanges,
-        **outcome,
-    }
+            record["error"] = {"code": error.code, "status_code": error.status_code}
+        record["wall_seconds"] = round(time.perf_counter() - started, 3)
+    record["first_pass_wall_seconds"] = max(
+        (
+            min(
+                (
+                    exchange["finished_seconds"]
+                    for exchange in transport.exchanges
+                    if exchange["request"] == REQUEST_RECORD.validate_python(payload)
+                    and exchange["status_code"] == 200
+                ),
+                default=0.0,
+            )
+            for payload in (build_decisions_payload(chunk) for chunk in split_items(items))
+        ),
+        default=0.0,
+    )
     (out / f"{name}.json").write_text(json.dumps(record, ensure_ascii=False, indent=1))
-    return {
+    summary: RunSummary = {
         "name": name,
         "items": len(items),
-        **{k: v for k, v in outcome.items() if k != "results"},
+        "wall_seconds": record["wall_seconds"],
+        "start_offset": record["start_offset"],
+        "first_pass_wall_seconds": record["first_pass_wall_seconds"],
     }
+    if "usage" in record:
+        summary["usage"] = record["usage"]
+    if "error" in record:
+        summary["error"] = record["error"]
+    return summary
 
 
 async def main() -> None:
@@ -172,27 +287,46 @@ async def main() -> None:
     parser.add_argument("--groupings", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--split-exams", nargs="*", default=[])
+    parser.add_argument("--corpus", type=Path, default=CORPUS)
     args = parser.parse_args()
     api_key = os.environ["OPENAI_LLM_ANSWER_KEY_API_KEY"]
     args.out.mkdir(parents=True, exist_ok=True)
-    stems = sorted(path.stem for path in CORPUS.glob("*.docx"))
+    stems = sorted(path.stem for path in args.corpus.glob("*.docx"))
     items = {
         stem: corpus_items(
-            stem, json.loads((args.groupings / stem / "grouping_a.json").read_text())["output"]
+            args.corpus,
+            stem,
+            GROUPING_RECORD.validate_json(
+                (args.groupings / stem / "grouping_a.json").read_text(), strict=True
+            )["output"],
         )
         for stem in stems
     }
     started = time.perf_counter()
     summaries = await asyncio.gather(
-        *(run_one(stem, items[stem], args.out, api_key) for stem in stems)
+        *(run_one(stem, items[stem], args.out, api_key, corpus_started=started) for stem in stems)
     )
     corpus_wall = round(time.perf_counter() - started, 3)
+    first_pass_wall = max(
+        (run["start_offset"] + run["first_pass_wall_seconds"] for run in summaries),
+        default=0.0,
+    )
     if args.split_exams:
         combined = [item for stem in args.split_exams for item in items[stem]]
         summaries.append(
-            await run_one("split_" + "_".join(args.split_exams[:1]), combined, args.out, api_key)
+            await run_one(
+                "split_" + "_".join(args.split_exams[:1]),
+                combined,
+                args.out,
+                api_key,
+                corpus_started=started,
+            )
         )
-    summary = {"corpus_wall_seconds": corpus_wall, "runs": summaries}
+    summary: CorpusSummary = {
+        "corpus_wall_seconds": corpus_wall,
+        "first_pass_wall_seconds": first_pass_wall,
+        "runs": summaries,
+    }
     (args.out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
 

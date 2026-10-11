@@ -276,7 +276,7 @@ async def _postconv_exam(client: OpenAIClient, docx: Path, run_dir: Path) -> Non
 async def _run(client: OpenAIClient, args: argparse.Namespace) -> None:
     exams = [
         docx
-        for docx in sorted(_CORPUS.glob("*.docx"))
+        for docx in sorted(args.corpus.glob("*.docx"))
         if not args.exams or any(e in docx.stem for e in args.exams)
     ]
     scratch = args.scratch_dir
@@ -333,6 +333,7 @@ def main() -> None:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--scratch-dir", type=Path, default=Path("/tmp/labeling-feasibility"))
     parser.add_argument("--runs", type=int, nargs="+", default=[1])
+    parser.add_argument("--corpus", type=Path, default=_CORPUS)
     parser.add_argument("--exams", nargs="*", default=[])
     parser.add_argument("--methods", nargs="*", default=[])
     parser.add_argument("--converter-recordings", type=Path, default=_CONVERTER_RECORDINGS)

@@ -1,0 +1,390 @@
+{
+  "svenska1_sprakbruk_prov.docx": [
+    {
+      "number": "1",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "2",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "3",
+      "intended_response": "multiple_response",
+      "shape": null
+    },
+    {
+      "number": "4",
+      "intended_response": "matching",
+      "shape": null
+    },
+    {
+      "number": "5",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "6",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "7",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "8",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "9",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "10",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "11",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "12",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "13",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "14",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "15",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "16",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "17",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "18",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "19",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "20",
+      "intended_response": "free_text",
+      "shape": null
+    }
+  ],
+  "samhallskunskap_demokrati_prov.docx": [
+    {
+      "number": "1",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "2",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "3",
+      "intended_response": "multiple_response",
+      "shape": null
+    },
+    {
+      "number": "4",
+      "intended_response": "matching",
+      "shape": null
+    },
+    {
+      "number": "5",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "6",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "7",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "8",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "9",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "10",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "11",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "12",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "13",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "14",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "15",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "16",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "17",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "18",
+      "intended_response": "free_text",
+      "shape": null
+    }
+  ],
+  "english6_grammar_vocabulary_test.docx": [
+    {
+      "number": "1",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "2",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "3",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "4",
+      "intended_response": "multiple_response",
+      "shape": null
+    },
+    {
+      "number": "5",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "6",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "7",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "8",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "9",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "10",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "11",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "12",
+      "intended_response": "matching",
+      "shape": null
+    },
+    {
+      "number": "13",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "14",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "15",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "16",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "17",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "18",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "19",
+      "intended_response": "free_text",
+      "shape": null
+    }
+  ],
+  "biology_cells_energy_quiz.docx": [
+    {
+      "number": "1",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "2",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "3",
+      "intended_response": "multiple_response",
+      "shape": null
+    },
+    {
+      "number": "4",
+      "intended_response": "matching",
+      "shape": null
+    },
+    {
+      "number": "5",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "6",
+      "intended_response": "single_choice",
+      "shape": null
+    },
+    {
+      "number": "7",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "8",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "9",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "10",
+      "intended_response": "fixed_slots",
+      "shape": "labelled_fields"
+    },
+    {
+      "number": "11",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "12",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "13",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "14",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "15",
+      "intended_response": "fixed_slots",
+      "shape": "sentence_on_line"
+    },
+    {
+      "number": "16",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "17",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "18",
+      "intended_response": "free_text",
+      "shape": null
+    },
+    {
+      "number": "19",
+      "intended_response": "free_text",
+      "shape": null
+    }
+  ]
+}

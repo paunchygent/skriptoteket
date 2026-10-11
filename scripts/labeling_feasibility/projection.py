@@ -139,7 +139,7 @@ class Reference:
 class _Projector:
     def __init__(self, exam: str, gold: GoldExam, chunks: tuple[DocxChunk, ...]):
         self.chunks = chunks
-        self.units = [_units(item) for item in gold.items]
+        self.units = [_units(item) for item in gold.questions]
         self.title_tokens = tokens(gold.title)
         counts = Counter(token for chunk in chunks for token in set(tokens(chunk.marked_text)))
         self.frequent = {token for token, count in counts.items() if count >= 3}
@@ -147,7 +147,7 @@ class _Projector:
             exam=exam,
             items=[
                 ReferenceItem(index, item.source_label, item.kind, item.points)
-                for index, item in enumerate(gold.items)
+                for index, item in enumerate(gold.questions)
             ],
             title=[],
             shared={},
@@ -155,7 +155,7 @@ class _Projector:
             letter_keys=[],
             roles={},
         )
-        self.used: list[set[int]] = [set() for _ in gold.items]
+        self.used: list[set[int]] = [set() for _ in gold.questions]
         self.current = -1
         self.content_lines: dict[int, list[list[str]]] = {}
 
