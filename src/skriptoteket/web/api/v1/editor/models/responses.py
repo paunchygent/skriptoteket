@@ -61,6 +61,7 @@ class EditorBootResponse(BaseModel):
     create_draft_from_version_id: UUID | None
     entrypoint: str
     source_code: str
+    bundle_files: dict[str, str]
     settings_schema: list[UiActionField] | None = None
     input_schema: list[ToolInputField] = Field(default_factory=list)
     usage_instructions: str | None = None

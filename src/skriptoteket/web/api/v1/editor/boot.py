@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
@@ -86,33 +87,43 @@ def _to_draft_lock_response(
     )
 
 
-def _resolve_editor_state(
-    selected_version: ToolVersion | None,
-) -> tuple[
-    str,
-    str,
-    list[UiActionField] | None,
-    list[ToolInputField],
-    str | None,
-    EditorSaveMode,
-    UUID | None,
-    UUID | None,
-]:
+@dataclass(frozen=True)
+class _EditorContent:
+    entrypoint: str
+    source_code: str
+    bundle_files: dict[str, str]
+    settings_schema: list[UiActionField] | None
+    input_schema: list[ToolInputField]
+    usage_instructions: str | None
+    save_mode: EditorSaveMode
+    parent_version_id: UUID | None
+    create_draft_from_version_id: UUID | None
+
+
+def _resolve_editor_content(selected_version: ToolVersion | None) -> _EditorContent:
     if selected_version is None:
-        return DEFAULT_ENTRYPOINT, STARTER_TEMPLATE, None, [], None, "create_draft", None, None
+        return _EditorContent(
+            entrypoint=DEFAULT_ENTRYPOINT,
+            source_code=STARTER_TEMPLATE,
+            bundle_files={},
+            settings_schema=None,
+            input_schema=[],
+            usage_instructions=None,
+            save_mode="create_draft",
+            parent_version_id=None,
+            create_draft_from_version_id=None,
+        )
     is_draft = selected_version.state is VersionState.DRAFT
-    save_mode: EditorSaveMode = "snapshot" if is_draft else "create_draft"
-    parent_version_id = selected_version.derived_from_version_id
-    create_draft_from_version_id = None if is_draft else selected_version.id
-    return (
-        selected_version.entrypoint,
-        selected_version.source_code,
-        selected_version.settings_schema,
-        selected_version.input_schema,
-        selected_version.usage_instructions,
-        save_mode,
-        parent_version_id,
-        create_draft_from_version_id,
+    return _EditorContent(
+        entrypoint=selected_version.entrypoint,
+        source_code=selected_version.source_code,
+        bundle_files=selected_version.bundle_files,
+        settings_schema=selected_version.settings_schema,
+        input_schema=selected_version.input_schema,
+        usage_instructions=selected_version.usage_instructions,
+        save_mode="snapshot" if is_draft else "create_draft",
+        parent_version_id=selected_version.derived_from_version_id,
+        create_draft_from_version_id=None if is_draft else selected_version.id,
     )
 
 
@@ -124,30 +135,22 @@ def _build_editor_response(
     draft_head_id: UUID | None,
     draft_lock: DraftLockResponse | None,
 ) -> EditorBootResponse:
-    (
-        entrypoint,
-        source_code,
-        settings_schema,
-        input_schema,
-        usage_instructions,
-        save_mode,
-        parent_version_id,
-        create_draft_from_version_id,
-    ) = _resolve_editor_state(selected_version)
+    content = _resolve_editor_content(selected_version)
     return EditorBootResponse(
         tool=_to_tool_summary(tool),
         versions=[_to_version_summary(v) for v in visible_versions],
         selected_version=_to_version_summary(selected_version) if selected_version else None,
         draft_head_id=draft_head_id,
         draft_lock=draft_lock,
-        save_mode=save_mode,
-        parent_version_id=parent_version_id,
-        create_draft_from_version_id=create_draft_from_version_id,
-        entrypoint=entrypoint,
-        source_code=source_code,
-        settings_schema=settings_schema,
-        input_schema=input_schema,
-        usage_instructions=usage_instructions,
+        save_mode=content.save_mode,
+        parent_version_id=content.parent_version_id,
+        create_draft_from_version_id=content.create_draft_from_version_id,
+        entrypoint=content.entrypoint,
+        source_code=content.source_code,
+        bundle_files=content.bundle_files,
+        settings_schema=content.settings_schema,
+        input_schema=content.input_schema,
+        usage_instructions=content.usage_instructions,
     )
 
 

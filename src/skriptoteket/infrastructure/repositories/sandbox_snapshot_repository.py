@@ -44,6 +44,7 @@ class PostgreSQLSandboxSnapshotRepository(SandboxSnapshotRepositoryProtocol):
             created_by_user_id=snapshot.created_by_user_id,
             entrypoint=snapshot.entrypoint,
             source_code=snapshot.source_code,
+            bundle_files=snapshot.bundle_files,
             settings_schema=settings_schema,
             input_schema=input_schema,
             usage_instructions=snapshot.usage_instructions,
