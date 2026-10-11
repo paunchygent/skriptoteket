@@ -30,7 +30,6 @@ from skriptoteket.domain.scripting.tool_run_jobs import enqueue_job
 from skriptoteket.domain.scripting.tool_settings import (
     normalize_tool_settings_schema,
 )
-from skriptoteket.domain.scripting.tool_versions import validate_bundle_files
 from skriptoteket.observability.tracing import get_tracer, trace_operation
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
@@ -73,7 +72,7 @@ def _apply_version_override(
         updated["source_code"] = source_code
     bundle_files = version.bundle_files
     if "bundle_files" in fields_set and override.bundle_files is not None:
-        bundle_files = validate_bundle_files(bundle_files=override.bundle_files)
+        bundle_files = override.bundle_files
         updated["bundle_files"] = bundle_files
     if "settings_schema" in fields_set:
         updated["settings_schema"] = normalize_tool_settings_schema(
