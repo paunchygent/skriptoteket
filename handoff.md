@@ -19,8 +19,8 @@
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
-  - TASK-SKRIPT-39-05-07 `proposed` (D1-D9 from the 39-04-05 plan, user 2026-10-13):
-    export blocks only on missing values; "(N p)" becomes points. Next: user ready.
+  - TASK-SKRIPT-39-05-07 `ready` (D1-D9 from the 39-04-05 plan, user 2026-10-13):
+    export blocks only on missing values; "(N p)" becomes points. Next: implementation.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
