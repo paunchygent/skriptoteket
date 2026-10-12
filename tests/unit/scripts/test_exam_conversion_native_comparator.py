@@ -81,17 +81,19 @@ def _mutations(mutate, principle: str) -> list[tuple[str, int, ExamComparison, E
     return hits
 
 
-def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
-    def leak(stem: str, index: int, item: NativeExamItem) -> NativeExamItem | None:
-        gold = gold_exam(stem)
-        if len(gold.questions) != len(replayed(stem)[0].items):
-            return None
-        facit = _facit(gold.questions[index])
-        if facit is None or item.kind is not NativeExamItemKind.FREE_TEXT:
-            return None
-        return _text(item, facit)
+def _leak_facit(stem: str, index: int, item: NativeExamItem) -> NativeExamItem | None:
+    """An open question with the teacher's facit appended, when its gold keeps one."""
+    gold = gold_exam(stem)
+    if len(gold.questions) != len(replayed(stem)[0].items):
+        return None
+    facit = _facit(gold.questions[index])
+    if facit is None or item.kind is not NativeExamItemKind.FREE_TEXT:
+        return None
+    return _text(item, facit)
 
-    hits = _mutations(leak, "no_answer_leakage")
+
+def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
+    hits = _mutations(_leak_facit, "no_answer_leakage")
     # Only exams with an open question whose gold keeps a teacher's facit can leak it.
     with_facit = {
         s
@@ -103,6 +105,34 @@ def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
     for stem, index, baseline, mutated in hits:
         assert "no_answer_leakage" not in _failed(baseline, index), stem
         assert "no_answer_leakage" in _failed(mutated, index), stem
+
+
+def _leaked_as(stem: str, index: int, review: NativeItemReview) -> set[str]:
+    """The failed principles of the facit-leaked item when it carries `review`."""
+    recorded, _ = replayed(stem)
+    leaked = _leak_facit(stem, index, recorded.items[index])
+    assert leaked is not None
+    reviewed = leaked.model_copy(update={"review": review})
+    return _failed(_compare(stem, with_item(recorded, index, reviewed)), index)
+
+
+def test_a_review_item_built_from_source_never_leaks_but_a_converted_one_under_review_does():
+    hits = _mutations(_leak_facit, "no_answer_leakage")
+    assert hits
+    from_source = NativeItemReview(
+        state=NativeItemReviewState.REVIEW_REQUIRED,
+        parse_origin=NativeParseOrigin.DETERMINISTIC,
+        reasons=("Frågan behöver granskas.",),
+    )
+    converted_under_review = NativeItemReview(
+        state=NativeItemReviewState.REVIEW_REQUIRED,
+        parse_origin=NativeParseOrigin.LLM_PARSED,
+        reasons=("Frågan behöver granskas.",),
+    )
+    for stem, index, _, mutated in hits:
+        assert "no_answer_leakage" in _failed(mutated, index), stem
+        assert "no_answer_leakage" not in _leaked_as(stem, index, from_source), stem
+        assert "no_answer_leakage" in _leaked_as(stem, index, converted_under_review), stem
 
 
 def _clean_parents() -> list[tuple[str, NativeExamDocument, NativeExamParent, ExamComparison]]:

@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeGapSegment,
     NativeItemReviewState,
+    NativeParseOrigin,
 )
 
 from .compare_text import CELL_SEPARATOR, ENTRY_LABEL, words
@@ -31,6 +32,8 @@ class Question:
     title: str
     instruction: tuple[str, ...]
     body: tuple[str, ...]
+    # Whether a model converted the item; a review item built from source is not converted.
+    converted: bool
     choices: tuple[str, ...] = ()
     correct_choices: tuple[str, ...] = ()
     gaps: tuple[tuple[str, ...], ...] = ()
@@ -92,6 +95,7 @@ def _gold_view(item: GoldItem, label: str, instruction: tuple[str, ...]) -> Ques
         title="",
         instruction=instruction,
         body=body,
+        converted=True,
         choices=item.choices,
         correct_choices=item.correct_choices,
         gaps=tuple(gap.accepted_values for gap in item.gaps),
@@ -133,6 +137,7 @@ def _native_view(item: NativeExamItem, label: str, instruction: tuple[str, ...])
         title=item.title or "",
         instruction=instruction,
         body=item.plain_text_lines(),
+        converted=item.review.parse_origin is NativeParseOrigin.LLM_PARSED,
         choices=tuple(choice.text for choice in item.choices),
         correct_choices=tuple(
             choice.text for choice in item.choices if choice.choice_id in correct_ids

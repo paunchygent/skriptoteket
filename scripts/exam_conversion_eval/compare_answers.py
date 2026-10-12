@@ -111,7 +111,11 @@ def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
     """Principle 4: no facit answer is shown more often than the gold question shows it.
 
     A parent's instruction is printed above each of its children, so it counts on both sides.
+    A review item shows its source as printed, facit included, and blocks every export, so it
+    never leaks to a student.
     """
+    if not actual.converted:
+        return []
     item = gold.item
     answers = {
         *(value for gap in item.gaps for value in gap.accepted_values),
