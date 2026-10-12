@@ -2,11 +2,12 @@
 required; a reply that keeps that material as text stays as converted (D43, user decision
 2026-10-12).
 
-``docx_build_v16_d43_gap_material`` holds three replies for one question, whose chunk sets four
+``docx_build_v16_d43_gap_material`` holds four replies for one question, whose chunk sets four
 phrases in italics: the low-25 live reply that keeps the material as text, the low-26 live reply
-that returns outcome review, and the reply the second staging upload recorded in its captured
-document, which makes all four phrases gaps. It also holds every converted gap_fill item that
-the eval runs low-23 to low-26 recorded for the eight corpus exams.
+that returns outcome review, and two replies that make all four phrases gaps: the low-28 live
+reply and the reply the second staging upload recorded in its captured document. It also holds
+every converted gap_fill item that the eval runs low-23 to low-26 recorded for the eight corpus
+exams.
 """
 
 import json
@@ -70,8 +71,9 @@ def _admitted(reply: dict[str, JsonValue], exam: str, question: tuple[str, ...])
     return state
 
 
-def test_a_reply_that_makes_the_material_a_gap_comes_back_as_review_required():
-    state = _admitted(_reply("staging_second_upload_q20.json"), _EXAM, _QUESTION)
+@pytest.mark.parametrize("name", ["low28_docx_w2-09-01.json", "staging_second_upload_q20.json"])
+def test_a_reply_that_makes_the_material_a_gap_comes_back_as_review_required(name: str):
+    state = _admitted(_reply(name), _EXAM, _QUESTION)
 
     ((item, anchors),) = state.accepted
     assert anchors == _QUESTION

@@ -1,0 +1,85 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086",
+        "body:0087"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Huvudsats, bisats och BIFF",
+      "printed_label": "Fråga 20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "De väntar inte."
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "huvudsats"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nb) I bisatsen ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att de inte väntar"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " står satsadverbialet ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "före"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " det finita verbet.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
