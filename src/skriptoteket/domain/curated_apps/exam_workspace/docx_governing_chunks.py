@@ -6,7 +6,8 @@ where the item prints it as the chunk's source text, and the chunk becomes an in
 which section placement shows once, on the parent. Wording is removed only where it matches
 the chunk's source text after whitespace normalization and stands as whole lines, or at the
 start or end of a title or paragraph text; wording found anywhere else is kept and reported.
-An item that held nothing but governing chunks is dropped. No reply is rejected or resent.
+An item that held nothing but governing chunks is dropped. A governing chunk no entry holds
+becomes an instruction built from its source text. No reply is rejected or resent.
 """
 
 import re
@@ -162,3 +163,21 @@ def release_governing_chunks(
         for anchor in released
     )
     return ReleasedChunks(tuple(kept), (*instructions, *added), tuple(events))
+
+
+def unclaimed_governing(
+    chunks: tuple[DocxChunk, ...],
+    review_reasons: Mapping[str, str],
+    governed: Mapping[str, frozenset[str]],
+) -> tuple[tuple[ProducedMetadata, ...], dict[str, str]]:
+    """Each governing chunk no entry holds as an instruction of its source text, and the
+    review reasons of every other unbuilt chunk."""
+    moved = {
+        chunk.anchor: chunk.text
+        for chunk in chunks
+        if chunk.anchor in review_reasons and chunk.anchor in governed and chunk.text
+    }
+    instructions = tuple(
+        ProducedMetadata(text=text, source_anchors=(anchor,)) for anchor, text in moved.items()
+    )
+    return instructions, {a: r for a, r in review_reasons.items() if a not in moved}

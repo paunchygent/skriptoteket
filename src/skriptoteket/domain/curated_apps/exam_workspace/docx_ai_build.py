@@ -13,6 +13,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
+    unclaimed_governing,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
@@ -185,11 +186,13 @@ def assemble_build_result(
     output_tokens: int | None = None,
 ) -> DocxBuildResult:
     """Keep facit chunks as teacher notes and every unbuilt chunk as a review item; a governing
-    chunk an item lists becomes an instruction for its section parent (D40)."""
+    chunk an item lists or no entry holds becomes an instruction for its section parent (D40)."""
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
+    unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
+    instructions = (*instructions, *unclaimed)
     released = release_governing_chunks(chunks, accepted, instructions, governed)
     instructions = released.instructions
     placed = _ordered_items(chunks, released.accepted, review_reasons, instructions, governed)

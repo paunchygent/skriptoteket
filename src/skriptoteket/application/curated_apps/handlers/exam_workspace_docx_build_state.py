@@ -232,7 +232,8 @@ class DocxBuildState:
             self.output_complete = False
 
     def result(self, governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED) -> DocxBuildResult:
-        """Every chunk not built or used as metadata/facit becomes a review item.
+        """Every chunk not built or used as metadata/facit becomes a review item, except a
+        governing chunk, which becomes its section parent's instruction.
 
         ``governed`` maps each grouping instruction that governs two or more questions to the
         anchors those questions own; it decides which items the instruction is the parent of.
@@ -250,6 +251,11 @@ class DocxBuildState:
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
             if chunk.anchor in points.absorbed:
+                continue
+            if chunk.anchor in governed and chunk.text:
+                # Assembly makes it its section parent's instruction (D40).
+                review_reasons[chunk.anchor] = NO_ITEM_REASON
+                self.record("fallback", "governing_instruction", anchors=(chunk.anchor,))
                 continue
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
