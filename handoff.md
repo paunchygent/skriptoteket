@@ -79,10 +79,10 @@
   staging walk clean). Next: this story's first task (not yet scaffolded)
   syncs 0.1.24 and removes local uses in the same commit, before
   TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
-  (`proposed`, renamed; plan D1-D8 closed in session
-  `01a13061-ff38-7099-aa3d-e23f6e5bba43`) now covers only the exam workspace;
-  approved images in `docs/mockups/exam-workspace-shared-direction/` with
-  REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction.
+  (`proposed`; plan D1-D61 closed in session
+  `01a13061-ff38-7099-aa3d-e23f6e5bba43`) covers only the exam workspace;
+  approved images REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction,
+  prototype REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 

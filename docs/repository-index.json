@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "983eca6742f5bab5b22a15360e20d737c655bbdf1719430399dc942043a7a13f",
+  "source_set_digest": "49347a3b4376f4dd843f96c23cddf1fd9de89f113e37e84724024eca73540e92",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8732,6 +8732,20 @@
       "title": "Exam workspace approved mockups for the shared design direction",
       "path": "docs/reference/ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md",
       "status": "active",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype",
+      "type": "reference",
+      "title": "Exam workspace editor with drawers prototype",
+      "path": "docs/reference/ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md",
+      "status": "draft",
       "reference_kind": "mockup",
       "owners": [
         {

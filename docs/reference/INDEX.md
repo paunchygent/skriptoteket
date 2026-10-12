@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | reference=107
+- total | reference=108
 
 ## Lookup
 
@@ -71,6 +71,7 @@
 - reference | REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | reference_kind=general | summary=Tool editor DX review (source, schemas, runner, sandbox) | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md)
 - reference | REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | reference_kind=general | summary=Tool editor framework codemap (current vs target) | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md)
 - reference | REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | reference_kind=mockup | summary=User-approved images and exclusions for the exam workspace restyle | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md)
+- reference | REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | reference_kind=mockup | summary=Interactive prototype of the exam workspace as one editor with drawers, inline import view, instructions and lettered sub-questions | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md)
 - reference | REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | reference_kind=mockup | summary=# Klassrumskartan SVG Redesign v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md)
 - reference | REF-SKRIPT-MOCKUP-pr-0351-transcript-progress-and-export-workspace-ux | reference_kind=mockup | summary=PR-0351 transcript progress and export workspace UX | [PR-0351 transcript progress and export workspace UX](ref-skript-mockup-pr-0351-transcript-progress-and-export-workspace-ux-pr-0351-transcript-progress-and-export-workspace-ux.md)
 - reference | REF-SKRIPT-MOCKUP-pr-0364-authenticated-home-work-apps-surface | reference_kind=mockup | summary=PR-0364 authenticated home work-apps surface | [PR-0364 authenticated home work-apps surface](ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md)
@@ -181,6 +182,7 @@
 - REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md) | backlog=none
 - REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md) | backlog=none
 - REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md) | backlog=none
+- REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md) | backlog=none
 - REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md) | backlog=none
 - REF-SKRIPT-MOCKUP-pr-0351-transcript-progress-and-export-workspace-ux | [PR-0351 transcript progress and export workspace UX](ref-skript-mockup-pr-0351-transcript-progress-and-export-workspace-ux-pr-0351-transcript-progress-and-export-workspace-ux.md) | backlog=none
 - REF-SKRIPT-MOCKUP-pr-0364-authenticated-home-work-apps-surface | [PR-0364 authenticated home work-apps surface](ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md) | backlog=none
@@ -291,6 +293,7 @@
 - REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md) | references=none | runbooks=none
+- REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-pr-0351-transcript-progress-and-export-workspace-ux | [PR-0351 transcript progress and export workspace UX](ref-skript-mockup-pr-0351-transcript-progress-and-export-workspace-ux-pr-0351-transcript-progress-and-export-workspace-ux.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-pr-0364-authenticated-home-work-apps-surface | [PR-0364 authenticated home work-apps surface](ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md) | references=none | runbooks=none
