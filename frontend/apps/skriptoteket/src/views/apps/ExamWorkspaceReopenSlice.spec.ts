@@ -18,7 +18,10 @@
 import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceDocumentSummary } from "../../api/examWorkspace";
+import type {
+  ExamWorkspaceConversionStatus,
+  ExamWorkspaceDocumentSummary,
+} from "../../api/examWorkspace";
 import {
   buildResponse,
   importFixtureDocument,
@@ -56,16 +59,21 @@ function otherExamResponse() {
   };
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-    document_revision: 1, questions_total: 0, questions_done: 0, units: [],
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      buildResponse({ conversion: succeededConversion, version: 1 }),
+    );
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });

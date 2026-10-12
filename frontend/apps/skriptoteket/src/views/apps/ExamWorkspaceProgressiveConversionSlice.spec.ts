@@ -9,6 +9,7 @@ import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
+import { useToastStore } from "../../stores/toast";
 import type {
   ExamWorkspaceConversionStatus,
   ExamWorkspaceConversionUnit,
@@ -468,6 +469,40 @@ describe("Exam workspace progressive conversion", () => {
     expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
     expect(convertingNoticeShown(view)).toBe(false);
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+  });
+
+  it("keeps the placeholders locked and the import unfinished when the followed exam's revision comes without its conversion", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+
+    // The status names revision 2, but the document read returns it without the conversion that owns its units.
+    const partial = status("running", 2, ["ready", "ready", "converting"]);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(partial);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      revision(2, [converted(1), converted(2), placeholder(3)], null),
+    );
+    await tick();
+
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    for (const itemId of ["item_002", "item_003"]) {
+      await selectItemRow(view, itemId);
+      expect(convertingNoticeShown(view), itemId).toBe(true);
+      expectEditable(view, false);
+    }
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(true);
+    expect(vi.mocked(useToastStore().success)).not.toHaveBeenCalled();
+
+    // The next poll reads the revision with its conversion and merges it.
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(partial);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      revision(2, [converted(1), converted(2), placeholder(3)], partial),
+    );
+    await tick();
+    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(convertingNoticeShown(view)).toBe(false);
+    await selectItemRow(view, "item_003");
+    expect(convertingNoticeShown(view)).toBe(true);
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
   });
 
   it("keeps the teacher's copy when the server refuses a save that changed a converting question", async () => {

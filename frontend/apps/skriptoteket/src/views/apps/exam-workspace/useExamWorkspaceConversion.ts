@@ -209,7 +209,8 @@ export function useExamWorkspaceConversion(
    * with the units its own response names, so a later revision another tab
    * saved on top of the conversion's merges the same way. Returns true when a
    * newer revision waits for an in-flight save, so the caller polls again
-   * before finishing.
+   * before finishing. A fetched revision without its conversion throws like a
+   * failed fetch: the copy, its lock and the shown units stay as they are.
    */
   async function applyRevision(
     status: ExamWorkspaceConversionStatus,
@@ -222,6 +223,11 @@ export function useExamWorkspaceConversion(
     const shown = shownUnits.value ?? [];
     const response = await getExamWorkspaceDocument(status.lineage_id);
     if (pollGeneration !== generation) return false;
+    const conversion = response.conversion;
+    if (conversion === null) {
+      // Only the response's own conversion names the units of its head: reconcile like a failed fetch.
+      throw new Error("The followed exam's revision came without its conversion.");
+    }
     const local = binding.workspaceDocument.value;
     const base = binding.serverDocument.value;
     if (first) {
@@ -234,7 +240,7 @@ export function useExamWorkspaceConversion(
         base,
         baseUnits: shown,
         head: response.document,
-        headUnits: response.conversion?.units ?? status.units,
+        headUnits: conversion.units,
         local,
       });
       binding.applyResponse(response, merged.document, merged.teacherEditsKept);
@@ -304,7 +310,7 @@ export function useExamWorkspaceConversion(
    * revision than the failed save expected, so the caller can save again
    * without losing edits; "unrelated" when conversion wrote no revision newer
    * than the failed save's; and "unknown" when conversion did but it could not
-   * be merged (the fetch failed), so the caller keeps the teacher's copy and
+   * be merged (the fetch failed or came without its conversion), so the caller keeps the teacher's copy and
    * the next poll merges it. Outside conversion it returns "unrelated".
    */
   async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {

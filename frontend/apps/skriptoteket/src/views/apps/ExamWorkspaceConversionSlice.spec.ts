@@ -32,7 +32,9 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) mock.mockReset();
   apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(status("queued"));
-  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+  apiMocks.getExamWorkspaceDocument.mockResolvedValue(
+    buildResponse({ conversion: status("succeeded"), version: 1 }),
+  );
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
     lineage_id: "lineage-1", document_revision: 1, state: "not_requested", proposals: [],
