@@ -1,0 +1,305 @@
+{
+  "model": "gpt-6-luna",
+  "answers": [
+    {
+      "type": "choice",
+      "name": "kind_q1",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.01
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.91
+        },
+        {
+          "value": "free_text",
+          "probability": 0.03
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.02
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.89
+    },
+    {
+      "type": "choice",
+      "name": "kind_q2",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.04
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.83
+        },
+        {
+          "value": "free_text",
+          "probability": 0.05
+        },
+        {
+          "value": "matching",
+          "probability": 0.02
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.02
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.03
+        }
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "choice",
+      "name": "kind_q3",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.04
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.61
+        },
+        {
+          "value": "free_text",
+          "probability": 0.25
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.03
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.05
+        }
+      ],
+      "confidence": 0.54
+    },
+    {
+      "type": "choice",
+      "name": "kind_q4",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.02
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.81
+        },
+        {
+          "value": "free_text",
+          "probability": 0.1
+        },
+        {
+          "value": "matching",
+          "probability": 0.03
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.02
+        }
+      ],
+      "confidence": 0.78
+    },
+    {
+      "type": "choice",
+      "name": "kind_q5",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.02
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.24
+        },
+        {
+          "value": "free_text",
+          "probability": 0.55
+        },
+        {
+          "value": "matching",
+          "probability": 0.02
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.12
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.04
+        }
+      ],
+      "confidence": 0.48
+    },
+    {
+      "type": "choice",
+      "name": "kind_q6",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.01
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.76
+        },
+        {
+          "value": "free_text",
+          "probability": 0.12
+        },
+        {
+          "value": "matching",
+          "probability": 0.02
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.03
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.05
+        }
+      ],
+      "confidence": 0.72
+    },
+    {
+      "type": "choice",
+      "name": "kind_q7",
+      "choice": "gap_fill",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.02
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.75
+        },
+        {
+          "value": "free_text",
+          "probability": 0.15
+        },
+        {
+          "value": "matching",
+          "probability": 0.02
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.03
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.02
+        }
+      ],
+      "confidence": 0.71
+    },
+    {
+      "type": "choice",
+      "name": "kind_q8",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.01
+        },
+        {
+          "value": "free_text",
+          "probability": 0.97
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.97
+    }
+  ],
+  "usage": {
+    "input_tokens": 6461,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens": 0,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 6461
+  }
+}

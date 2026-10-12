@@ -1,0 +1,137 @@
+{
+  "title": {
+    "text": "Del 4: Textanalys, 8 poäng",
+    "source_anchors": [
+      "body:0074"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Läs de två texterna. De beskriver samma händelse men är skrivna i olika stil.",
+      "source_anchors": [
+        "body:0075"
+      ],
+      "points": null
+    },
+    {
+      "text": "Text A: Igår när vi skulle äta lunch märkte vi att det låg svinmycket vatten på golvet i bamba. Någon (tror det var Anna) sa att en diskmaskin hade börjat läcka. Karin och Pelle i köket stängde typ halva matsalen, så kön blev jättelång och vi fick vänta jättelänge innan vi kom fram och kunde äta.",
+      "source_anchors": [
+        "body:0077",
+        "body:0078"
+      ],
+      "points": null
+    },
+    {
+      "text": "Text B: En vattenläcka i anslutning till matsalens diskutrustning orsakade begränsad tillgång till serveringsytan under lunchen. Avspärrningen medförde längre väntetider för eleverna eftersom arbetet med läckan krävde en tillfällig reducering av kökskapaciteten vid lunchserveringen.",
+      "source_anchors": [
+        "body:0081",
+        "body:0082"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086",
+        "body:0087",
+        "body:0088",
+        "body:0089",
+        "body:0090",
+        "body:0091",
+        "body:0092",
+        "body:0093",
+        "body:0094"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Jämför texternas språkliga drag.",
+      "printed_label": "Fråga 8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Beskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Du kan till exempel jämföra:",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "nominaliseringar",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "konkreta och abstrakta uttryck",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "aktörer och perspektiv",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "nominalfraser",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "verb och handlingar",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "formell och informell stil",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 8,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

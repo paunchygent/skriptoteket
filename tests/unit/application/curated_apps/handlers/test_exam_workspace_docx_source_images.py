@@ -25,6 +25,10 @@ from docx.oxml.text.paragraph import CT_P
 from PIL import Image
 from pydantic import BaseModel, JsonValue
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+    DRAWING_SHOWN,
+    LEFT_OUT_REASON,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionJob,
     DocxConversionOutcome,
@@ -426,8 +430,8 @@ async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_cl
         assert placed == [("body:0002", "review_complete"), ("body:0004", "review_complete")]
     else:
         assert placed == [
-            ("body:0002", "review_complete"),
-            ("body:0003", "review_required"),
+            ("body:0002", "review_required"),
             ("body:0004", "review_complete"),
-        ], "an unclaimed picture stays in place as an item for the teacher to review"
+        ], "a picture its question's item leaves out stays with the item under a check mark"
+        assert document.items[0].review.reasons[-2:] == (LEFT_OUT_REASON, DRAWING_SHOWN)
     assert outcome.update.pending == ()

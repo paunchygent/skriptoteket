@@ -7,10 +7,12 @@ keeps its other chunks. A question the native contract cannot hold, a question t
 marks for review, and every chunk no entry names become review items that keep their
 source text; a question's review item shows all its own chunks as printed. A chunk the
 grouping gives a question as its own stays with the item that lists it, also when the reply
-lists it as an answer key. Building one question's item never fails the batch: an item that
-cannot be built becomes a review item holding that question's own source text. A question reported
-as a type conflict leaves the batch for the pipeline to resend with the kind the source
-shows, once: in the resend it is kept as converted.
+lists it as an answer key, and is no answer key when an item lists another chunk of its
+question. A converted item that leaves out own chunks of its question holds them under a check
+mark that shows them as printed (D41). Building one question's item never fails the batch: an
+item that cannot be built becomes a review item holding that question's own source text. A
+question reported as a type conflict leaves the batch for the pipeline to resend with the kind
+the source shows, once: in the resend it is kept as converted.
 """
 
 from collections.abc import Callable
@@ -31,13 +33,22 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
     with_accepted_forms,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+    NativeItemReviewState,
+    NativeParseOrigin,
+)
 from skriptoteket.domain.errors import DomainError
 
 CONFLICT_WITHOUT_KIND_REASON = (
     "AI-tolkningen angav att frågan har en annan svarstyp men inte vilken. "
     "Kontrollera frågan manuellt."
 )
+LEFT_OUT_REASON = (
+    "Delar av källtexten saknas i den konverterade frågan – kontrollera mot källan. "
+    "Källtext som saknas:"
+)
+DRAWING_SHOWN = "[Bild utan text]"
 
 
 def validation_detail(error: ValidationError) -> str:
@@ -98,7 +109,7 @@ def _admit_keys(
 ) -> None:
     listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
     for anchor in _free(listed, state, seen):
-        if anchor in item_held and anchor in state.question_by_anchor:
+        if item_held.intersection(state.question_by_anchor.get(anchor, ())):
             continue
         state.key_anchors.add(anchor)
         seen.add(anchor)
@@ -133,7 +144,46 @@ def _raw_anchors(raw: JsonValue) -> tuple[str, ...]:
     return tuple(a for a in anchors if isinstance(a, str)) if isinstance(anchors, list) else ()
 
 
-def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str]) -> None:
+def _with_left_out(
+    index: int,
+    admitted: Admitted,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+) -> Admitted:
+    """A converted item that leaves out own chunks of its question holds them under a check
+    mark that shows them as printed and blocks export until the teacher handles it (D41).
+
+    A left-out chunk is an own chunk of a question the item touches that no item of the
+    reply lists and no entry holds yet.
+    """
+    item, anchors = admitted
+    if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
+        return admitted
+    own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    left_out = tuple(
+        c.anchor
+        for c in state.pending
+        if c.anchor in own and c.anchor not in item_held and c.anchor not in seen
+    )
+    if not left_out:
+        return admitted
+    seen.update(left_out)
+    state.record("admission", "own_chunks_left_out", item=index, anchors=left_out)
+    chunks = tuple(state.chunk_by_anchor[a] for a in left_out)
+    texts = tuple(c.text or DRAWING_SHOWN for c in chunks if c.text or c.kind == "drawing")
+    review = item.review.model_copy(
+        update={
+            "state": NativeItemReviewState.REVIEW_REQUIRED,
+            "reasons": (*item.review.reasons, LEFT_OUT_REASON, *texts),
+        }
+    )
+    return item.model_copy(update={"review": review}), (*anchors, *left_out)
+
+
+def _admit_item(
+    index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
+) -> None:
     try:
         produced = ProducedItem.model_validate(raw)
     except ValidationError as error:
@@ -182,7 +232,8 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
         context = definition_context(state.chunks, anchors, instructions)
         return native_item(with_accepted_forms(produced, context))
 
-    state.accepted.append(_built(index, anchors, state, seen, build))
+    built = _built(index, anchors, state, seen, build)
+    state.accepted.append(_with_left_out(index, built, state, seen, item_held))
 
 
 def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
@@ -198,7 +249,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
         _admit_metadata(raw, "instructions", state, seen)
     for index, raw in enumerate(items):
-        _admit_item(index, raw, state, seen)
+        _admit_item(index, raw, state, seen, item_held)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}
     state.claimed.update(seen - conflicted)
     # A governing chunk with text becomes its section parent's instruction (D40).
