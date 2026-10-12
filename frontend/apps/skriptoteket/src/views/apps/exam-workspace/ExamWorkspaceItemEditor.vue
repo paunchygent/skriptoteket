@@ -11,8 +11,9 @@
  *   never needs the list. Points that are not greater than zero and an
  *   empty choice text are marked invalid at the field with a Swedish hint,
  *   because the save refuses them. While `disabled` (a save or load is
- *   running) every edit control is disabled so no typed edit is lost;
- *   navigation and the details toggle stay available.
+ *   running, or the item is a placeholder whose batch still converts) every
+ *   edit control is disabled; navigation and the details toggle stay
+ *   available.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.

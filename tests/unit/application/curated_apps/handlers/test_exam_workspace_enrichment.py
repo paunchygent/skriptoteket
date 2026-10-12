@@ -20,7 +20,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceEnrichmentState
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (

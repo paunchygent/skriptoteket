@@ -13,8 +13,10 @@ from dishka import Provider, Scope, provide
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
@@ -239,9 +241,13 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> GetExamWorkspaceDocumentHandlerProtocol:
         """Provide the reopen handler."""
-        return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
+        return GetExamWorkspaceDocumentHandler(
+            vault_files=vault_files, codec=codec, store=store, jobs=jobs, uow=uow
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
@@ -274,8 +280,13 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> SaveExamWorkspaceDocumentHandlerProtocol:
         """Provide the versioned save handler."""
         return SaveExamWorkspaceDocumentHandler(
-            vault_files=vault_files, codec=codec, store=store, id_generator=id_generator
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            id_generator=id_generator,
+            jobs=jobs,
         )

@@ -5012,8 +5012,8 @@ export interface components {
          * ExamWorkspaceConversionUnit
          * @description Items conversion last wrote for one question or question-less review item.
          *
-         *     ``converting`` items are placeholders; ``teacher_kept`` means the teacher changed the
-         *     placeholder, so the late result was dropped.
+         *     ``converting`` items are placeholders that only the unit's later batch may change;
+         *     ``ready`` items are converted and editable.
          */
         ExamWorkspaceConversionUnit: {
             /** Item Ids */
@@ -5024,7 +5024,7 @@ export interface components {
              * State
              * @enum {string}
              */
-            state: "converting" | "ready" | "teacher_kept";
+            state: "converting" | "ready";
             /** Unit Id */
             unit_id: string;
         };
@@ -5039,8 +5039,15 @@ export interface components {
              */
             documents: components["schemas"]["ExamWorkspaceDocumentSummary"][];
         };
-        /** ExamWorkspaceDocumentResponse */
+        /**
+         * ExamWorkspaceDocumentResponse
+         * @description One document revision, with the DOCX import that created its lineage.
+         *
+         *     ``conversion`` is read under the same lock as the document, so its units name exactly
+         *     the placeholders this revision still holds; it is None for a lineage no import created.
+         */
         ExamWorkspaceDocumentResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
             /**
              * Notes

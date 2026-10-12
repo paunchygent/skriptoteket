@@ -4,10 +4,15 @@
  * Domain purpose:
  *   A DOCX import converts in batches. The server saves a revision when the
  *   first batch is ready, with placeholders for the questions still
- *   converting, and a new revision for each later batch. This composable
- *   polls the conversion, opens the first revision, and merges every later
- *   revision into the teacher's copy so that edits made meanwhile are kept;
- *   it also reports progress and which items are still converting.
+ *   converting, and a new revision for each later batch. Every document
+ *   response names the import that created its lineage, read under the same
+ *   lock as the document, and `adoptConversion` takes it from each response
+ *   the open copy stands on: an unfinished conversion is followed, whichever
+ *   browser started it and however the exam was opened. Following polls the
+ *   conversion and merges every newer revision into the teacher's copy: each
+ *   batch replaces its own placeholders, and the teacher's edits of converted
+ *   items are kept. Placeholders of the open copy stay locked, and the import
+ *   is reported done, only once the open copy holds the final revision.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which hands over its document refs
@@ -71,7 +76,7 @@ export function useExamWorkspaceConversion(
   const conversionStatus = ref<ExamWorkspaceConversionStatus | null>(null);
   const isConverting = ref(false);
   const conversionError = ref<string | null>(null);
-  /** Units as of `binding.serverDocument`; null until this import's first revision is shown. */
+  /** Units of `binding.serverDocument` while its conversion runs; null otherwise. */
   const shownUnits = ref<ExamWorkspaceConversionUnit[] | null>(null);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let generation = 0;
@@ -97,18 +102,24 @@ export function useExamWorkspaceConversion(
     return conversionError.value;
   });
 
-  /** The open document is this import's, so the teacher may edit it while batches arrive. */
+  /** The open document is the followed import's, so the teacher may edit it while batches arrive. */
   const isEditingConversion = computed(
     () =>
       shownUnits.value !== null &&
       binding.summary.value?.lineage_id === conversionStatus.value?.lineage_id,
   );
 
+  /**
+   * Placeholders of the revision the open copy stands on. A newer status can
+   * arrive while its revision waits for an in-flight save, so a placeholder
+   * stays locked until its batch is merged into the open copy.
+   */
   const convertingItemIds = computed<ReadonlySet<string>>(() => {
-    const status = conversionStatus.value;
-    if (!isConverting.value || !status || !isEditingConversion.value) return new Set();
+    if (!isEditingConversion.value) return new Set();
     return new Set(
-      status.units.filter((unit) => unit.state === "converting").flatMap((unit) => unit.item_ids),
+      (shownUnits.value ?? [])
+        .filter((unit) => unit.state === "converting")
+        .flatMap((unit) => unit.item_ids),
     );
   });
 
@@ -131,26 +142,92 @@ export function useExamWorkspaceConversion(
     }, delay);
   }
 
+  function isFinished(status: ExamWorkspaceConversionStatus): boolean {
+    return status.state === "succeeded" || status.state === "failed";
+  }
+
+  /** The open copy stands on the status's revision or a later one, so it holds its results. */
+  function holdsRevision(status: ExamWorkspaceConversionStatus): boolean {
+    const revision = status.document_revision;
+    return (
+      revision === null ||
+      (binding.summary.value?.lineage_id === status.lineage_id &&
+        binding.summary.value.version >= revision)
+    );
+  }
+
+  function finish(status: ExamWorkspaceConversionStatus): void {
+    conversionStatus.value = status;
+    isConverting.value = false;
+    shownUnits.value = null;
+    conversionError.value = null;
+    stopPolling();
+    if (status.state === "succeeded") toast.success(IMPORT_SUCCESS_COPY);
+  }
+
   /**
-   * Show a newer conversion revision. The first one replaces the open exam; a
-   * later one is merged into the teacher's copy. A revision is applied only
-   * when the head still is the revision the status describes, so the units
-   * always match the document they index. Returns true when a newer revision
-   * waits for an in-flight save, so the caller polls again before finishing.
+   * Take the conversion state of a server response the open copy now stands
+   * on. Its units name exactly the placeholders that revision holds, so they
+   * become the lock. An unfinished conversion is followed; a finished one
+   * means the response holds every result, so following ends.
+   */
+  function adoptConversion(response: ExamWorkspaceDocumentResponse): void {
+    const conversion = response.conversion;
+    const following =
+      isConverting.value && conversion !== null && conversionStatus.value?.job_id === conversion.job_id;
+    if (conversion !== null && !isFinished(conversion)) {
+      shownUnits.value = conversion.units;
+      // While following, the poll owns the status: a save response can carry an older one.
+      if (!following) {
+        conversionStatus.value = conversion;
+        generation += 1;
+        isConverting.value = true;
+        conversionError.value = null;
+        pollFailures = 0;
+        schedulePoll(generation);
+      }
+      return;
+    }
+    if (following) {
+      finish(conversion);
+      return;
+    }
+    if (isConverting.value) {
+      // The teacher opened another exam: its conversion is followed again when reopened.
+      generation += 1;
+      isConverting.value = false;
+      stopPolling();
+    }
+    shownUnits.value = null;
+    conversionStatus.value = null;
+    conversionError.value = null;
+  }
+
+  /**
+   * Show a newer revision of the followed import's exam. The first one
+   * replaces the open exam; a later one is merged into the teacher's copy
+   * with the units its own response names, so a later revision another tab
+   * saved on top of the conversion's merges the same way. Returns true when a
+   * newer revision waits for an in-flight save, so the caller polls again
+   * before finishing. A fetched revision without its conversion throws like a
+   * failed fetch: the copy, its lock and the shown units stay as they are.
    */
   async function applyRevision(
     status: ExamWorkspaceConversionStatus,
     pollGeneration: number,
     duringSave = false,
   ): Promise<boolean> {
-    const revision = status.document_revision;
-    if (revision === null) return false;
-    const first = shownUnits.value === null;
-    if (!first && binding.summary.value?.lineage_id !== status.lineage_id) return false;
-    if (!first && (binding.summary.value?.version ?? 0) >= revision) return false;
+    if (status.document_revision === null || holdsRevision(status)) return false;
     if (binding.isSaving() && !duringSave) return true;
+    const first = binding.summary.value?.lineage_id !== status.lineage_id;
+    const shown = shownUnits.value ?? [];
     const response = await getExamWorkspaceDocument(status.lineage_id);
-    if (pollGeneration !== generation || response.summary.version !== revision) return false;
+    if (pollGeneration !== generation) return false;
+    const conversion = response.conversion;
+    if (conversion === null) {
+      // Only the response's own conversion names the units of its head: reconcile like a failed fetch.
+      throw new Error("The followed exam's revision came without its conversion.");
+    }
     const local = binding.workspaceDocument.value;
     const base = binding.serverDocument.value;
     if (first) {
@@ -161,14 +238,13 @@ export function useExamWorkspaceConversion(
     } else {
       const merged = mergeConversionRevision({
         base,
-        baseUnits: shownUnits.value ?? [],
+        baseUnits: shown,
         head: response.document,
-        headUnits: status.units,
+        headUnits: conversion.units,
         local,
       });
       binding.applyResponse(response, merged.document, merged.teacherEditsKept);
     }
-    shownUnits.value = status.units;
     return false;
   }
 
@@ -179,18 +255,12 @@ export function useExamWorkspaceConversion(
     if (pollGeneration !== generation) return;
     conversionStatus.value = status;
     const deferred = await applyRevision(status, pollGeneration);
-    if (pollGeneration !== generation) return;
-    if (deferred) {
+    // Adopting the fetched revision may already have ended or replaced this poll chain.
+    if (pollGeneration !== generation || !isConverting.value) return;
+    if (deferred || !holdsRevision(status)) {
       schedulePoll(pollGeneration);
-    } else if (status.state === "failed") {
-      isConverting.value = false;
-      conversionError.value = null;
-      stopPolling();
-    } else if (status.state === "succeeded") {
-      isConverting.value = false;
-      conversionError.value = null;
-      stopPolling();
-      toast.success(IMPORT_SUCCESS_COPY);
+    } else if (isFinished(status)) {
+      finish(status);
     } else {
       pollFailures = 0;
       schedulePoll(pollGeneration);
@@ -202,7 +272,7 @@ export function useExamWorkspaceConversion(
     pollGeneration: number,
   ): Promise<void> {
     try {
-      const next = status.state === "succeeded" || status.state === "failed"
+      const next = isFinished(status)
         ? status
         : await getExamWorkspaceConversionStatus(status.job_id);
       await applyConversionStatus(next, pollGeneration);
@@ -240,9 +310,8 @@ export function useExamWorkspaceConversion(
    * revision than the failed save expected, so the caller can save again
    * without losing edits; "unrelated" when conversion wrote no revision newer
    * than the failed save's; and "unknown" when conversion did but it could not
-   * be merged (the fetch failed, or a later batch moved the head past the
-   * status), so the caller keeps the teacher's copy and the next poll merges
-   * it. Outside conversion it returns "unrelated".
+   * be merged (the fetch failed or came without its conversion), so the caller keeps the teacher's copy and
+   * the next poll merges it. Outside conversion it returns "unrelated".
    */
   async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {
     const pollGeneration = generation;
@@ -306,6 +375,7 @@ export function useExamWorkspaceConversion(
     conversionError,
     conversionMessage,
     conversionProgress,
+    adoptConversion,
     conversionStatus,
     convertingItemIds,
     importDocument,

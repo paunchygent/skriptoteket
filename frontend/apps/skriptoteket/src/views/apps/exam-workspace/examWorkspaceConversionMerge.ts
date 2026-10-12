@@ -4,13 +4,18 @@
  * Domain purpose:
  *   The background DOCX conversion saves newer server revisions while the
  *   teacher keeps editing a local, possibly unsaved copy. This module merges
- *   such a revision into the local copy: a conversion unit (one outline
- *   question, or one review item no question owns) is replaced by the items
- *   conversion wrote only while the teacher has not touched that unit since
- *   the base the local copy started from. Otherwise the teacher's version
- *   stays and the late result is dropped. The title, the instructions and the
- *   parents follow the same rule; items the teacher added belong to no unit
- *   and keep their place.
+ *   such a revision into the local copy, one conversion unit (one outline
+ *   question, or one review item no question owns) at a time. A unit that was
+ *   still converting in the base is a placeholder and belongs to conversion:
+ *   the head's items always replace it, in place, or after the nearest
+ *   preceding unit when the local copy lacks it, whatever the local copy
+ *   holds. A converted unit is replaced by the head's items only while the
+ *   teacher has not touched it since the base the local copy started from;
+ *   otherwise the teacher's version stays. The title, the instructions and
+ *   the parents follow the converted-unit rule. Items the teacher added
+ *   belong to no unit and keep their place; when the head is a later save
+ *   from another tab, its edits of such items follow the same rule and the
+ *   items it added are kept after the head item they follow.
  *
  * Relationships:
  *   - Client twin of `merge_conversion` in
@@ -22,22 +27,19 @@
  */
 
 import type {
+  ExamWorkspaceConversionUnit,
   NativeExamDocument,
   NativeExamItem,
   NativeExamParent,
 } from "../../../api/examWorkspace";
 
-export type ExamWorkspaceConversionUnitIds = {
-  unit_id: string;
-  item_ids: string[];
-};
-
 type MergeArgs = {
   base: NativeExamDocument;
-  baseUnits: ExamWorkspaceConversionUnitIds[];
+  /** The units of `base`, with the state each had in it. */
+  baseUnits: ExamWorkspaceConversionUnit[];
   local: NativeExamDocument;
   head: NativeExamDocument;
-  headUnits: ExamWorkspaceConversionUnitIds[];
+  headUnits: ExamWorkspaceConversionUnit[];
 };
 
 type Entry = { fromHead: boolean; item: NativeExamItem; unit: string | null };
@@ -98,7 +100,7 @@ function pick<T>(base: T, local: T, head: T): { fromHead: boolean; value: T } {
 
 function insertionIndex(
   entries: Entry[],
-  headUnits: ExamWorkspaceConversionUnitIds[],
+  headUnits: ExamWorkspaceConversionUnit[],
   at: number,
 ) {
   for (let index = at - 1; index >= 0; index -= 1) {
@@ -118,9 +120,7 @@ export function mergeConversionRevision({
   headUnits,
   local,
 }: MergeArgs): { document: NativeExamDocument; teacherEditsKept: boolean } {
-  const baseIdsByUnit = new Map(
-    baseUnits.map((unit) => [unit.unit_id, new Set(unit.item_ids)]),
-  );
+  const baseUnitById = new Map(baseUnits.map((unit) => [unit.unit_id, unit]));
   const unitByItemId = new Map(
     baseUnits.flatMap((unit) =>
       unit.item_ids.map((itemId) => [itemId, unit.unit_id] as const),
@@ -132,11 +132,16 @@ export function mergeConversionRevision({
   const replaced = new Map<string, NativeExamItem[]>();
   const inserted: { at: number; items: NativeExamItem[]; unit: string }[] = [];
   headUnits.forEach((headUnit, at) => {
-    const baseIds = baseIdsByUnit.get(headUnit.unit_id) ?? new Set<string>();
+    const baseUnit = baseUnitById.get(headUnit.unit_id);
+    const baseIds = new Set(baseUnit?.item_ids ?? []);
     const baseItems = onlyIds(base.items, baseIds);
     const headItems = onlyIds(head.items, new Set(headUnit.item_ids));
     const localItems = onlyIds(local.items, baseIds);
-    if (sameItems(baseItems, headItems) || !sameItems(localItems, baseItems)) {
+    const placeholder = baseUnit?.state === "converting";
+    if (
+      !placeholder &&
+      (sameItems(baseItems, headItems) || !sameItems(localItems, baseItems))
+    ) {
       return;
     }
     if (localItems.length === 0) {
@@ -146,12 +151,20 @@ export function mergeConversionRevision({
     }
   });
 
+  const unitItemIds = new Set(headUnits.flatMap((unit) => unit.item_ids));
+  const baseById = new Map(base.items.map((item) => [item.item_id, item]));
+  const headById = new Map(head.items.map((item) => [item.item_id, item]));
   const entries: Entry[] = [];
   const placed = new Set<string>();
   for (const item of local.items) {
     const unit = unitByItemId.get(item.item_id) ?? null;
     const headItems = unit === null ? undefined : replaced.get(unit);
-    if (unit === null || headItems === undefined) {
+    const baseItem = baseById.get(item.item_id);
+    const headItem = headById.get(item.item_id);
+    if (unit === null && baseItem && headItem && !unitItemIds.has(item.item_id)) {
+      const chosen = pick(baseItem, item, headItem);
+      entries.push({ fromHead: chosen.fromHead, item: chosen.value, unit });
+    } else if (unit === null || headItems === undefined) {
       entries.push({ fromHead: false, item, unit });
     } else if (!placed.has(unit)) {
       placed.add(unit);
@@ -172,6 +185,17 @@ export function mergeConversionRevision({
       ...items.map((item) => ({ fromHead: true, item, unit })),
     );
   }
+
+  // Items a later save added since the base belong to no unit; keep them after
+  // the head item they follow.
+  head.items.forEach((headItem, at) => {
+    if (unitItemIds.has(headItem.item_id) || baseById.has(headItem.item_id)) {
+      return;
+    }
+    const previous = head.items[at - 1]?.item_id;
+    const index = entries.findIndex((entry) => entry.item.item_id === previous) + 1;
+    entries.splice(index, 0, { fromHead: true, item: headItem, unit: null });
+  });
 
   const headIds = new Set(
     entries.filter((entry) => entry.fromHead).map((e) => e.item.item_id),

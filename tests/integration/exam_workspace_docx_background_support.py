@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (

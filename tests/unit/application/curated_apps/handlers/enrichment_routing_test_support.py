@@ -117,6 +117,11 @@ class InMemoryEnrichmentJobRepository:
         self.jobs[job.id] = job
         return job
 
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        self.jobs[job_id] = self.jobs[job_id].model_copy(update={"conversion_progress": progress})
+
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         job = self.jobs.get(job_id)
         return (
@@ -124,6 +129,18 @@ class InMemoryEnrichmentJobRepository:
             if job
             else None
         )
+
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        for job in self.jobs.values():
+            if (
+                job.source_kind == ExamAnswerKeySourceKind.DOCX_IMPORT
+                and job.owner_user_id == owner_user_id
+                and job.workspace_lineage_id == workspace_lineage_id
+            ):
+                return ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
+        return None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)

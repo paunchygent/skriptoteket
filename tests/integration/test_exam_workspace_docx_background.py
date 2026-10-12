@@ -140,6 +140,8 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
                 vault_files=PostgreSQLUserVaultFileRepository(reader),
                 codec=ExamWorkspaceContainerCodec(),
                 store=document_store(reader, storage=storage, clock=clock, settings=settings),
+                jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader),
+                uow=SQLAlchemyUnitOfWork(reader),
             ).handle(actor=actor, lineage_id=queued.lineage_id)
 
     async def observe(call: str, job_id: UUID) -> None:

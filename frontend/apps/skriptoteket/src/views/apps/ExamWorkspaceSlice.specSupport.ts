@@ -19,6 +19,7 @@ import { ref } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItem,
@@ -136,12 +137,20 @@ export function buildDocument(): NativeExamDocument {
   };
 }
 
+/**
+ * A saved document response for `lineage-1`. `conversion` is the import's
+ * status the server reads with the document: a document fetched while an
+ * import is followed always carries it, so the import's specs pass the status
+ * their conversion poll returns for that revision.
+ */
 export function buildResponse(params: {
+  conversion?: ExamWorkspaceConversionStatus | null;
   title?: string;
   version: number;
 }): ExamWorkspaceDocumentResponse {
   const document = buildDocument();
   return {
+    conversion: params.conversion ?? null,
     document: {
       ...document,
       revision: params.version,

@@ -9,6 +9,8 @@
  *   the editor on desktop and overlays it on tablet and phone. The pane shows
  *   the selected question's save readiness, export blockers, and waiting
  *   answer-key proposal in the drawer and the attention count on the editor.
+ *   A selected placeholder whose batch still converts disables its editor and
+ *   drawer; the question list stays usable.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the open document in Redigera mode.
@@ -45,6 +47,8 @@ const props = defineProps<{
   readinessByItemId: Record<string, string[]>;
   selectedItem: NativeExamItem | null;
   selectedItemId: string | null;
+  /** The selected item is a placeholder whose batch still converts; its editor and drawer are disabled. */
+  selectedItemLocked: boolean;
   selectedPosition: number;
   selectedProposal: ExamWorkspaceAnswerKeyProposal | null;
 }>();
@@ -133,7 +137,7 @@ const redigeraGridClass = computed(() => {
             v-if="selectedItem"
             :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
             :details-open="detailsOpen"
-            :disabled="disabled"
+            :disabled="disabled || selectedItemLocked"
             :item="selectedItem"
             :parent-child="selectedParentChild"
             :position="selectedPosition"
@@ -176,7 +180,7 @@ const redigeraGridClass = computed(() => {
       </div>
       <ExamWorkspaceItemDrawer
         v-if="detailsOpen && selectedItem"
-        :disabled="disabled"
+        :disabled="disabled || selectedItemLocked"
         :item="selectedItem"
         :layout="layout"
         :proposed-item="selectedProposal?.proposed_item ?? null"

@@ -115,6 +115,16 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         """Read the status-poll columns only; never loads the uploaded source bytes."""
         ...
 
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        """Read and share-lock the DOCX import job that created a document lineage.
+
+        The lock holds conversion back until the caller's transaction ends, so a document
+        head read in that transaction matches the job's progress.
+        """
+        ...
+
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         """Lock and refresh the row before publishing a worker's terminal result."""
         ...

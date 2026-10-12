@@ -1,4 +1,4 @@
-"""Progressive conversion merge: converted batches fill only untouched placeholders (D30)."""
+"""Progressive conversion merge: a later batch always replaces its own placeholders (D30)."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     ConversionProgress,
     ConversionUnitState,
     abandon_target,
+    changed_placeholders,
     first_conversion,
     merge_conversion,
     target_from_update,
@@ -16,6 +17,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamItemKind,
+    NativeParseOrigin,
     NativeTextSegment,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
@@ -92,13 +94,113 @@ def test_untouched_placeholder_is_replaced_in_place_by_its_converted_items(
     assert merged.progress.questions_done == 2
 
 
-def test_teacher_edited_placeholder_keeps_teacher_version_and_drops_late_results(
+def test_a_save_that_changes_a_placeholder_is_caught(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
-    edited = head.items[1].model_copy(update={"body": body("Lärarens egen fråga")})
-    teacher_head = _teacher_save(head, items=(head.items[0], edited, head.items[2]))
-    converted_q2 = [choice("p2", "Fråga två")]
+    edited = head.items[1].model_copy(update={"title": "Lärarens rubrik"})
+    saved = _teacher_save(head, items=(head.items[0], edited, head.items[2]))
+
+    assert changed_placeholders(progress=progress, base=head, saved=saved) == ["item_002"]
+
+
+def _sectioned() -> tuple[NativeExamDocument, ConversionProgress]:
+    merged = first_conversion(
+        update=conversion_update(
+            [
+                ("q1", [choice("p1", "Fråga ett")]),
+                ("q2", [placeholder("p2", "Källtext två")]),
+                ("q3", [placeholder("p3", "Källtext tre")]),
+            ],
+            pending=("q2", "q3"),
+            parents=(("section", ("q1", "q2", "q3")),),
+        ),
+        progress=ConversionProgress.from_question_ids(["q1", "q2", "q3"]),
+    )
+    return merged.document, merged.progress
+
+
+def test_deleting_a_parented_placeholder_is_caught() -> None:
+    """Review probe 1: the save removes the middle placeholder and its membership."""
+    head, progress = _sectioned()
+    q1, _, q3 = head.items
+    saved = _teacher_save(
+        head,
+        items=(q1, q3.model_copy(update={"sequence": 2})),
+        parents=(head.parents[0].model_copy(update={"item_ids": (q1.item_id, q3.item_id)}),),
+    )
+
+    assert changed_placeholders(progress=progress, base=head, saved=saved) == ["item_002"]
+
+
+def test_giving_a_placeholder_id_to_a_teacher_question_is_caught() -> None:
+    """Review probe 2: the last placeholder goes and a teacher question takes its id."""
+    head, progress = _sectioned()
+    q1, q2, q3 = head.items
+    teacher_question = q3.model_copy(
+        update={
+            "body": body("Lärarens nya fråga"),
+            "source_anchor": None,
+            "review": q3.review.model_copy(
+                update={"parse_origin": NativeParseOrigin.TEACHER_CREATED, "reasons": ()}
+            ),
+        }
+    )
+    saved = _teacher_save(
+        head,
+        items=(q1, q2, teacher_question),
+        parents=(head.parents[0].model_copy(update={"item_ids": (q1.item_id, q2.item_id)}),),
+    )
+
+    assert changed_placeholders(progress=progress, base=head, saved=saved) == ["item_003"]
+
+
+def test_moving_a_placeholder_out_of_its_parent_or_order_is_caught() -> None:
+    head, progress = _sectioned()
+    q1, q2, q3 = head.items
+    swapped = _teacher_save(
+        head,
+        items=(
+            q1,
+            q3.model_copy(update={"sequence": 2}),
+            q2.model_copy(update={"sequence": 3}),
+        ),
+        parents=(
+            head.parents[0].model_copy(update={"item_ids": (q1.item_id, q3.item_id, q2.item_id)}),
+        ),
+    )
+    unparented = _teacher_save(
+        head, parents=(head.parents[0].model_copy(update={"item_ids": (q1.item_id,)}),)
+    )
+
+    assert changed_placeholders(progress=progress, base=head, saved=swapped) == [
+        "item_002",
+        "item_003",
+    ]
+    assert changed_placeholders(progress=progress, base=head, saved=unparented) == [
+        "item_002",
+        "item_003",
+    ]
+
+
+def test_editing_converted_items_and_adding_questions_leaves_placeholders_alone() -> None:
+    head, progress = _sectioned()
+    q1, q2, q3 = head.items
+    added = q1.model_copy(update={"item_id": "item_004", "sequence": 4, "source_anchor": None})
+    saved = _teacher_save(
+        head,
+        items=(q1.model_copy(update={"title": "Lärarens titel"}), q2, q3, added),
+    )
+
+    assert changed_placeholders(progress=progress, base=head, saved=saved) == []
+
+
+def test_teacher_edit_on_a_converted_item_survives_later_batches(
+    first: tuple[NativeExamDocument, ConversionProgress],
+) -> None:
+    head, progress = first
+    edited = head.items[0].model_copy(update={"body": body("Lärarens fråga ett"), "points": 3})
+    teacher_head = _teacher_save(head, items=(edited, *head.items[1:]))
 
     merged = merge_conversion(
         head=teacher_head,
@@ -106,62 +208,17 @@ def test_teacher_edited_placeholder_keeps_teacher_version_and_drops_late_results
         target=target_from_update(
             conversion_update(
                 [
-                    ("q1", [choice("p1", "Fråga ett")]),
-                    ("q2", converted_q2),
-                    ("q3", [placeholder("p3", "Källtext tre")]),
-                ],
-                pending=("q3",),
-            )
-        ),
-    )
-    assert _texts(merged.document) == ["Fråga ett", "Lärarens egen fråga", "Källtext tre"]
-    unit = next(u for u in merged.progress.units if u.unit_id == "q2")
-    assert unit.state is ConversionUnitState.TEACHER_KEPT
-
-    # A later final result for the same question is dropped as well.
-    final = merge_conversion(
-        head=merged.document,
-        progress=merged.progress,
-        target=target_from_update(
-            conversion_update(
-                [
-                    ("q1", [choice("p1", "Fråga ett")]),
-                    ("q2", [choice("p2", "Fråga två igen")]),
+                    ("q1", [choice("p1", "Fråga ett igen")]),
+                    ("q2", [choice("p2", "Fråga två")]),
                     ("q3", [choice("p3", "Fråga tre")]),
                 ],
                 pending=(),
             )
         ),
     )
-    assert _texts(final.document) == ["Fråga ett", "Lärarens egen fråga", "Fråga tre"]
 
-
-def test_teacher_deleted_placeholder_stays_deleted(
-    first: tuple[NativeExamDocument, ConversionProgress],
-) -> None:
-    head, progress = first
-    teacher_head = _teacher_save(
-        head,
-        items=(
-            head.items[0],
-            head.items[2].model_copy(update={"sequence": 2}),
-        ),
-    )
-    merged = merge_conversion(
-        head=teacher_head,
-        progress=progress,
-        target=target_from_update(
-            conversion_update(
-                [
-                    ("q1", [choice("p1", "Fråga ett")]),
-                    ("q2", [choice("p2", "Fråga två")]),
-                    ("q3", [placeholder("p3", "Källtext tre")]),
-                ],
-                pending=("q3",),
-            )
-        ),
-    )
-    assert _texts(merged.document) == ["Fråga ett", "Källtext tre"]
+    assert _texts(merged.document) == ["Lärarens fråga ett", "Fråga två", "Fråga tre"]
+    assert merged.document.items[0].points == 3
 
 
 def test_teacher_added_item_keeps_its_place_and_fresh_ids_never_collide(
@@ -280,22 +337,22 @@ def test_question_less_review_item_from_the_final_is_inserted_after_its_precedin
     assert _texts(merged.document) == ["Fråga ett", "Fråga två", "Oplacerad källtext", "Fråga tre"]
 
 
-def test_abandon_turns_only_untouched_placeholders_into_review_items(
+def test_abandon_turns_every_still_converting_placeholder_into_a_review_item(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
-    edited = head.items[1].model_copy(update={"body": body("Lärarens egen fråga")})
-    teacher_head = _teacher_save(head, items=(head.items[0], edited, head.items[2]))
+    edited = head.items[0].model_copy(update={"body": body("Lärarens egen fråga")})
+    teacher_head = _teacher_save(head, items=(edited, *head.items[1:]))
 
     merged = merge_conversion(
         head=teacher_head,
         progress=progress,
-        target=abandon_target(
-            head=teacher_head, progress=progress, reason="Konverteringen stoppades."
-        ),
+        target=abandon_target(head=teacher_head, progress=progress, reason="Stoppad."),
     )
+    assert _texts(merged.document)[0] == "Lärarens egen fråga"
     reasons = [item.review.reasons for item in merged.document.items]
-    assert reasons == [(), (PLACEHOLDER_REASON,), ("Konverteringen stoppades.",)]
+    assert reasons == [(), ("Stoppad.",), ("Stoppad.",)]
+    assert all(PLACEHOLDER_REASON not in r for r in reasons)
     assert merged.progress.questions_done == 3
 
 
@@ -337,34 +394,34 @@ def test_teacher_retitled_converted_child_stays_under_the_final_parent(
     assert merged.document.parent_of("item_001") is not None
 
 
-def test_teacher_deleted_sibling_leaves_the_rest_under_the_instruction(
+def test_teacher_deleted_converted_sibling_leaves_the_rest_under_the_instruction(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
-    retitled = head.items[0].model_copy(update={"title": "Lärarens titel"})
+    # q2 converts first; the teacher then deletes the converted q2.
+    q2_ready = merge_conversion(
+        head=head,
+        progress=progress,
+        target=target_from_update(
+            conversion_update(
+                [
+                    ("q1", [choice("p1", "Fråga ett")]),
+                    ("q2", [choice("p2", "Fråga två")]),
+                    ("q3", [placeholder("p3", "Källtext tre")]),
+                ],
+                pending=("q3",),
+            )
+        ),
+    )
+    items = q2_ready.document.items
     teacher_head = _teacher_save(
-        head, items=(retitled, head.items[2].model_copy(update={"sequence": 2}))
+        q2_ready.document, items=(items[0], items[2].model_copy(update={"sequence": 2}))
     )
 
-    merged = _final_with_parent(teacher_head, progress)
+    merged = _final_with_parent(teacher_head, q2_ready.progress)
 
+    assert _texts(merged.document) == ["Fråga ett", "Fråga tre"]
     assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_003")]
-    assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}
-
-
-def test_teacher_retyped_middle_child_stays_in_the_parent_beside_children_of_another_kind(
-    first: tuple[NativeExamDocument, ConversionProgress],
-) -> None:
-    head, progress = first
-    # q2's placeholder edited by the teacher stays free text between two converted choices.
-    edited = head.items[1].model_copy(update={"body": body("Lärarens egen fråga")})
-    teacher_head = _teacher_save(head, items=(head.items[0], edited, head.items[2]))
-
-    merged = _final_with_parent(teacher_head, progress)
-
-    assert _texts(merged.document) == ["Fråga ett", "Lärarens egen fråga", "Fråga tre"]
-    assert len({item.kind for item in merged.document.items}) == 2
-    assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_002", "item_003")]
     assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}
 
 

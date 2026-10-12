@@ -31,7 +31,7 @@ from skriptoteket.application.curated_apps.exam_conversion import ExamConversion
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
@@ -155,6 +155,18 @@ class InMemoryEnrichmentJobRepository:
             if job
             else None
         )
+
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        for job in self.jobs.values():
+            if (
+                job.source_kind == ExamAnswerKeySourceKind.DOCX_IMPORT
+                and job.owner_user_id == owner_user_id
+                and job.workspace_lineage_id == workspace_lineage_id
+            ):
+                return ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
+        return None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)

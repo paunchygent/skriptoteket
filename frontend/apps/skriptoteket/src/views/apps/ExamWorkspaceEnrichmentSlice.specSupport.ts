@@ -18,6 +18,7 @@ import { flushPromises } from "@vue/test-utils";
 import type { Mock } from "vitest";
 
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceEnrichmentStatus,
   NativeExamItem,
@@ -36,9 +37,18 @@ export interface EnrichmentApiMocks {
   startExamWorkspaceEnrichment: Mock;
 }
 
+/** The finished import conversion that every imported revision 1 carries. */
+export const SUCCEEDED_CONVERSION: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 /** Item 2 arrives without a key, so it is the one the provider proposes for. */
-export function buildUnkeyedResponse(version: number): ExamWorkspaceDocumentResponse {
-  const response = buildResponse({ version });
+export function buildUnkeyedResponse(
+  version: number,
+  conversion: ExamWorkspaceConversionStatus | null = null,
+): ExamWorkspaceDocumentResponse {
+  const response = buildResponse({ conversion, version });
   return {
     ...response,
     document: {
@@ -98,12 +108,9 @@ export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-    document_revision: 1, questions_total: 0, questions_done: 0, units: [],
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(SUCCEEDED_CONVERSION);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1, SUCCEEDED_CONVERSION));
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });

@@ -21,7 +21,8 @@
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
  *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry;
- *     `ExamWorkspaceConvertingNotice` marks a question whose batch still converts.
+ *     `ExamWorkspaceConvertingNotice` marks a question whose batch still
+ *     converts, and the editor pane locks it until that batch arrives.
  *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
  *     drawer) render the workspace; phones add a question bar and sheet.
  */
@@ -412,6 +413,7 @@ function handleEditProposal(itemId: string): void {
             :readiness-by-item-id="readinessByItemId"
             :selected-item="selectedItem"
             :selected-item-id="selectedItemId"
+            :selected-item-locked="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
             :selected-position="selectedPosition"
             :selected-proposal="selectedProposal"
             @add="handleAddItem"

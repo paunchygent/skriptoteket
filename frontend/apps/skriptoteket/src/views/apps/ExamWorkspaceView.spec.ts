@@ -16,6 +16,7 @@ import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../api/examWorkspace";
@@ -87,8 +88,16 @@ function buildDocument(): NativeExamDocument {
   };
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
+/** The imported exam's document, fetched once its conversion has succeeded. */
 function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
+    conversion: succeededConversion,
     document: buildDocument(),
     notes: [],
     summary: {
@@ -120,10 +129,7 @@ async function chooseSourceFile(wrapper: ViewWrapper, file: File) {
 }
 
 beforeEach(() => {
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-    document_revision: 1, questions_total: 0, questions_done: 0, units: [],
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();

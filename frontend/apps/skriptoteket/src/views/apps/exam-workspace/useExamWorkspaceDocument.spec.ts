@@ -64,6 +64,7 @@ describe("mergeSavedDocuments", () => {
 
 function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document: {
       assets: [],
       document_id: "doc-1",

@@ -77,6 +77,7 @@ function buildDocument(revision: number): NativeExamDocument {
 
 function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document: buildDocument(revision),
     notes: [],
     summary: {

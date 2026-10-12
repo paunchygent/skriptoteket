@@ -28,7 +28,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     enqueue_enrichment_job,
     enqueue_workspace_enrichment_job,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
 )

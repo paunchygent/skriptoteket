@@ -1,17 +1,17 @@
-"""Exam workspace document handlers: DOCX import, reopen, and versioned save.
+"""Exam workspace document handlers: DOCX import, conversion status, reopen, list, and save.
 
-The native exam document persists as one immutable Mina filer container per
-revision (D2/S3). Version numbers advance under the per-user vault usage
-lock, with the partial unique index on (user, lineage, version) as the
-database backstop; a stale ``expected_revision`` maps to CONFLICT exactly
-like the correction-session precedent.
+Import queues one teacher DOCX as a background conversion; the status handler
+reads that conversion without source bytes. Reopen and list read the head
+revision of each document lineage. Save writes the next revision guarded by
+``expected_revision`` (a stale revision maps to CONFLICT) and, while a
+conversion runs, refuses a save that changes, moves or deletes a converting
+placeholder. Versioned container persistence lives in
+``exam_workspace_document_store``.
 """
 
 from __future__ import annotations
 
 from uuid import UUID
-
-from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -29,9 +29,11 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
     ConversionProgress,
+    changed_placeholders,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
+    EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
+    ExamWorkspaceDocumentStore,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
@@ -43,7 +45,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
+from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
@@ -51,13 +53,9 @@ from skriptoteket.protocols.exam_workspace import (
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.protocols.vault import (
-    VaultFileRepositoryProtocol,
-    VaultStorageProtocol,
-    VaultUsageRepositoryProtocol,
-)
+from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
-EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX = "documents.conversion_hub:exam-workspace"
+_UNFINISHED = (ExamAnswerKeyEnrichmentJobStatus.QUEUED, ExamAnswerKeyEnrichmentJobStatus.RUNNING)
 
 
 def _document_not_found(lineage_id: UUID) -> DomainError:
@@ -66,139 +64,6 @@ def _document_not_found(lineage_id: UUID) -> DomainError:
         message="Provdokumentet finns inte.",
         details={"lineage_id": str(lineage_id)},
     )
-
-
-class ExamWorkspaceDocumentStore:
-    """Persist and load versioned exam workspace containers in Mina filer."""
-
-    def __init__(
-        self,
-        *,
-        vault_files: VaultFileRepositoryProtocol,
-        vault_usage: VaultUsageRepositoryProtocol,
-        vault_storage: VaultStorageProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        proposal_carry_forward: CarryExamWorkspaceProposals,
-    ) -> None:
-        self._vault_files = vault_files
-        self._vault_usage = vault_usage
-        self._vault_storage = vault_storage
-        self._uow = uow
-        self._clock = clock
-        self._settings = settings
-        self._proposal_carry_forward = proposal_carry_forward
-
-    async def save_version(
-        self,
-        *,
-        actor: User,
-        file_id: UUID,
-        name: str,
-        content: bytes,
-        lineage_id: UUID,
-        version: int,
-        previous_document: NativeExamDocument | None = None,
-        document: NativeExamDocument | None = None,
-        rejected_proposal_item_ids: tuple[str, ...] = (),
-    ) -> VaultFile:
-        actual_bytes = len(content)
-        if actual_bytes <= 0:
-            raise validation_error("Dokumentet saknar innehåll.")
-        if actual_bytes > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error(
-                "Dokumentet är större än maxstorleken för Mina filer.",
-                details={
-                    "bytes": actual_bytes,
-                    "max_bytes": self._settings.VAULT_MAX_FILE_BYTES,
-                },
-            )
-
-        now = self._clock.now()
-        stored = False
-        try:
-            async with self._uow:
-                usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-                if usage.bytes_total + actual_bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
-                    raise validation_error(
-                        "Mina filer är fullt; ta bort filer och försök igen.",
-                        details={
-                            "bytes_total": usage.bytes_total,
-                            "attempted_bytes": actual_bytes,
-                            "max_total_bytes": self._settings.VAULT_MAX_TOTAL_BYTES,
-                        },
-                    )
-                vault_file = await self._vault_files.create(
-                    file=VaultFile(
-                        id=file_id,
-                        user_id=actor.id,
-                        name=name,
-                        bytes=actual_bytes,
-                        source_kind=VaultFileSourceKind.APP_EXPORT,
-                        source_run_id=None,
-                        source_artifact_id=(
-                            f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:{lineage_id}:v{version}"
-                        ),
-                        document_lineage_id=lineage_id,
-                        document_version=version,
-                        created_at=now,
-                        deleted_at=None,
-                    )
-                )
-                await self._vault_storage.store_file(
-                    user_id=actor.id, file_id=vault_file.id, content=content
-                )
-                stored = True
-                await self._vault_usage.upsert(
-                    usage=VaultUsage(
-                        user_id=actor.id,
-                        bytes_total=usage.bytes_total + actual_bytes,
-                        updated_at=now,
-                    )
-                )
-                if previous_document is not None and document is not None:
-                    await self._proposal_carry_forward.carry(
-                        owner_user_id=actor.id,
-                        previous_document=previous_document,
-                        document=document,
-                        rejected_item_ids=frozenset(rejected_proposal_item_ids),
-                    )
-        except IntegrityError as error:
-            if stored:
-                await self.discard_version_file(actor=actor, file_id=file_id)
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Dokumentet sparades samtidigt i en annan flik.",
-                details={"lineage_id": str(lineage_id), "version": version},
-            ) from error
-        except Exception:
-            if stored:
-                await self.discard_version_file(actor=actor, file_id=file_id)
-            raise
-        return vault_file
-
-    async def retire_version(self, *, actor: User, retired: VaultFile) -> None:
-        """Soft-delete one superseded revision and release its bytes from vault usage.
-
-        Runs inside the caller's unit of work; the stored payload expires with the row.
-        """
-        now = self._clock.now()
-        await self._vault_files.update(file=retired.model_copy(update={"deleted_at": now}))
-        usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-        await self._vault_usage.upsert(
-            usage=VaultUsage(
-                user_id=actor.id,
-                bytes_total=max(0, usage.bytes_total - retired.bytes),
-                updated_at=now,
-            )
-        )
-
-    async def discard_version_file(self, *, actor: User, file_id: UUID) -> None:
-        await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
-
-    async def load_version(self, *, actor: User, vault_file: VaultFile) -> bytes:
-        return await self._vault_storage.read_file(user_id=actor.id, file_id=vault_file.id)
 
 
 def _summary(vault_file: VaultFile) -> ExamWorkspaceDocumentSummary:
@@ -317,18 +182,27 @@ class GetExamWorkspaceDocumentHandler:
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._codec = codec
         self._store = store
+        self._jobs = jobs
+        self._uow = uow
 
     async def handle(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceDocumentResponse:
-        head = await self._vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if head is None:
-            raise _document_not_found(lineage_id)
-        content = await self._store.load_version(actor=actor, vault_file=head)
+        # The job lock holds conversion back, so the head matches the conversion's units.
+        async with self._uow:
+            job = await self._jobs.lock_conversion_view_by_lineage(
+                owner_user_id=actor.id, workspace_lineage_id=lineage_id
+            )
+            head = await self._vault_files.get_document_head(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            if head is None:
+                raise _document_not_found(lineage_id)
+            content = await self._store.load_version(actor=actor, vault_file=head)
         container = self._codec.parse(content=content)
         if (
             container.document.document_id != lineage_id
@@ -342,6 +216,7 @@ class GetExamWorkspaceDocumentHandler:
             document=container.document,
             summary=_summary(head),
             notes=container.notes,
+            conversion=None if job is None else conversion_status(job),
         )
 
 
@@ -369,11 +244,13 @@ class SaveExamWorkspaceDocumentHandler:
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._codec = codec
         self._store = store
         self._id_generator = id_generator
+        self._jobs = jobs
 
     async def handle(
         self,
@@ -418,6 +295,10 @@ class SaveExamWorkspaceDocumentHandler:
             or head_container.document.revision != request.expected_revision
         ):
             raise validation_error("Den sparade dokumentversionen är skadad.")
+        job = await self._jobs.lock_conversion_view_by_lineage(
+            owner_user_id=actor.id, workspace_lineage_id=lineage_id
+        )
+        self._refuse_placeholder_changes(job=job, base=head_container.document, saved=document)
         assets_by_id: dict[str, bytes] = {}
         if document.assets:
             missing = {
@@ -454,5 +335,36 @@ class SaveExamWorkspaceDocumentHandler:
             rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(vault_file), notes=head_container.notes
+            document=document,
+            summary=_summary(vault_file),
+            notes=head_container.notes,
+            conversion=None if job is None else conversion_status(job),
         )
+
+    @staticmethod
+    def _refuse_placeholder_changes(
+        *,
+        job: ExamWorkspaceConversionJobView | None,
+        base: NativeExamDocument,
+        saved: NativeExamDocument,
+    ) -> None:
+        """While conversion runs, a save keeps every placeholder of its base as it is (D30)."""
+        if job is None or job.status not in _UNFINISHED:
+            return
+        progress = ConversionProgress.model_validate(job.conversion_progress or {})
+        if (progress.revision or 0) > base.revision:
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message="Dokumentet har ändrats sedan det öppnades.",
+                details={
+                    "expected_revision": base.revision,
+                    "current_revision": progress.revision,
+                },
+            )
+        changed = changed_placeholders(progress=progress, base=base, saved=saved)
+        if changed:
+            raise validation_error(
+                "Provet sparades inte: frågor som fortfarande konverteras går inte att ändra, "
+                "flytta eller ta bort förrän de är klara.",
+                details={"item_ids": changed},
+            )

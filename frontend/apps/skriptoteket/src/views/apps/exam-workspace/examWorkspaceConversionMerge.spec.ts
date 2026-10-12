@@ -2,25 +2,25 @@
  * Exam workspace conversion merge.
  *
  * Expected behavior:
- *   A conversion unit the teacher has not touched since the base is replaced by
- *   the items the server wrote, in place; a unit the teacher edited or deleted
- *   keeps the teacher's version and drops the late result. Items the teacher
- *   added keep their place and get a fresh id when a converted item claims
- *   theirs. Title, instructions and parents follow the same rule. The result
- *   carries the head's revision and reports whether the teacher's edits differ
- *   from the head.
+ *   A unit that was still converting in the base (a placeholder) is always
+ *   replaced by the items the server wrote, whatever the local copy holds for
+ *   it: in place, or after the nearest preceding unit when the local copy
+ *   lacks it. A converted unit the teacher has not touched since the base is
+ *   replaced the same way; a converted unit the teacher edited keeps the
+ *   teacher's version. Items the teacher added keep their place and get a
+ *   fresh id when a converted item claims theirs. Title, instructions and
+ *   parents follow the converted-unit rule. The result carries the head's
+ *   revision and reports whether the document differs from the head.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type {
+  ExamWorkspaceConversionUnit,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
-import {
-  mergeConversionRevision,
-  type ExamWorkspaceConversionUnitIds,
-} from "./examWorkspaceConversionMerge";
+import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
 
 function buildItem(itemId: string, text: string): NativeExamItem {
   return {
@@ -68,25 +68,33 @@ function buildDocument(
   };
 }
 
+function unit(
+  unitId: string,
+  state: ExamWorkspaceConversionUnit["state"],
+  itemIds: string[],
+): ExamWorkspaceConversionUnit {
+  return { item_ids: itemIds, question: true, state, unit_id: unitId };
+}
+
 const placeholder = buildItem("item_002", "Konverteras …");
 const baseItems = [
   buildItem("item_001", "Fråga 1"),
   placeholder,
   buildItem("item_003", "Fråga 3"),
 ];
-const baseUnits: ExamWorkspaceConversionUnitIds[] = [
-  { unit_id: "q1", item_ids: ["item_001"] },
-  { unit_id: "q2", item_ids: ["item_002"] },
-  { unit_id: "q3", item_ids: ["item_003"] },
+const baseUnits = [
+  unit("q1", "ready", ["item_001"]),
+  unit("q2", "converting", ["item_002"]),
+  unit("q3", "ready", ["item_003"]),
 ];
 const convertedItems = [
   buildItem("item_002", "Fråga 2a"),
   buildItem("item_004", "Fråga 2b"),
 ];
-const headUnits: ExamWorkspaceConversionUnitIds[] = [
-  { unit_id: "q1", item_ids: ["item_001"] },
-  { unit_id: "q2", item_ids: ["item_002", "item_004"] },
-  { unit_id: "q3", item_ids: ["item_003"] },
+const headUnits = [
+  unit("q1", "ready", ["item_001"]),
+  unit("q2", "ready", ["item_002", "item_004"]),
+  unit("q3", "ready", ["item_003"]),
 ];
 
 const base = buildDocument(1, baseItems);
@@ -129,9 +137,9 @@ describe("mergeConversionRevision", () => {
     expect(document).toEqual(head);
   });
 
-  it("keeps a placeholder whose body the teacher edited", () => {
-    const edited = buildItem("item_002", "Lärarens egen text");
-    const local = buildDocument(1, [baseItems[0]!, edited, baseItems[2]!]);
+  it("replaces a placeholder whose local copy differs from the base by the converted items", () => {
+    const changed = buildItem("item_002", "Lärarens egen text");
+    const local = buildDocument(1, [baseItems[0]!, changed, baseItems[2]!]);
 
     const { document, teacherEditsKept } = mergeConversionRevision({
       base,
@@ -143,14 +151,16 @@ describe("mergeConversionRevision", () => {
 
     expect(document.items.map(textOf)).toEqual([
       "Fråga 1",
-      "Lärarens egen text",
+      "Fråga 2a",
+      "Fråga 2b",
       "Fråga 3",
     ]);
     expect(document.revision).toBe(2);
-    expect(teacherEditsKept).toBe(true);
+    expect(teacherEditsKept).toBe(false);
+    expect(document).toEqual(head);
   });
 
-  it("keeps a placeholder the teacher deleted deleted", () => {
+  it("inserts the converted items of a placeholder missing from the local copy in its place", () => {
     const local = buildDocument(1, [baseItems[0]!, baseItems[2]!]);
 
     const { document, teacherEditsKept } = mergeConversionRevision({
@@ -163,7 +173,37 @@ describe("mergeConversionRevision", () => {
 
     expect(document.items.map((item) => item.item_id)).toEqual([
       "item_001",
+      "item_002",
+      "item_004",
       "item_003",
+    ]);
+    expect(document.items.map(textOf)).toEqual([
+      "Fråga 1",
+      "Fråga 2a",
+      "Fråga 2b",
+      "Fråga 3",
+    ]);
+    expect(teacherEditsKept).toBe(false);
+  });
+
+  it("replaces only the placeholder and keeps the teacher's edit of a converted unit the server left alone", () => {
+    const changed = buildItem("item_002", "Lärarens egen text");
+    const edited = buildItem("item_001", "Lärarens ändring av fråga 1");
+    const local = buildDocument(1, [edited, changed, baseItems[2]!]);
+
+    const { document, teacherEditsKept } = mergeConversionRevision({
+      base,
+      baseUnits,
+      head,
+      headUnits,
+      local,
+    });
+
+    expect(document.items.map(textOf)).toEqual([
+      "Lärarens ändring av fråga 1",
+      "Fråga 2a",
+      "Fråga 2b",
+      "Fråga 3",
     ]);
     expect(teacherEditsKept).toBe(true);
   });
@@ -223,7 +263,7 @@ describe("mergeConversionRevision", () => {
     expect(teacherEditsKept).toBe(true);
   });
 
-  it("drops a late conversion result for a unit the teacher edited while the server changed it", () => {
+  it("keeps the teacher's edit of a converted unit the server changed meanwhile", () => {
     const serverChangedQ3 = buildDocument(2, [
       baseItems[0]!,
       ...convertedItems,
@@ -258,12 +298,12 @@ describe("mergeConversionRevision", () => {
       baseItems[2]!,
       newLast,
     ]);
-    const units: ExamWorkspaceConversionUnitIds[] = [
-      { unit_id: "q1", item_ids: ["item_001"] },
-      { unit_id: "qx", item_ids: ["item_005"] },
-      { unit_id: "q2", item_ids: ["item_002"] },
-      { unit_id: "q3", item_ids: ["item_003"] },
-      { unit_id: "qy", item_ids: ["item_006"] },
+    const units = [
+      unit("q1", "ready", ["item_001"]),
+      unit("qx", "ready", ["item_005"]),
+      unit("q2", "converting", ["item_002"]),
+      unit("q3", "ready", ["item_003"]),
+      unit("qy", "ready", ["item_006"]),
     ];
     const local = buildDocument(1, [baseItems[0]!, placeholder, baseItems[2]!]);
 
@@ -291,7 +331,7 @@ describe("mergeConversionRevision", () => {
   it("inserts a new first unit at the start when no preceding unit has local items", () => {
     const first = buildItem("item_005", "Ny första");
     const firstHead = buildDocument(2, [first, ...baseItems]);
-    const units = [{ unit_id: "q0", item_ids: ["item_005"] }, ...baseUnits];
+    const units = [unit("q0", "ready", ["item_005"]), ...baseUnits];
 
     const { document } = mergeConversionRevision({
       base,
@@ -370,5 +410,30 @@ describe("mergeConversionRevision", () => {
     expect(document.parents.map((parent) => parent.item_ids)).toEqual([
       ["item_002", "item_004"],
     ]);
+  });
+  it("keeps what a later save from another tab added or changed among the teacher's own items", () => {
+    const converted = buildItem("item_001", "Fråga ett");
+    const teacherOwn = buildItem("item_003", "Lärarens fråga");
+    const base = buildDocument(1, [converted, placeholder, teacherOwn]);
+    const baseUnits = [unit("q1", "ready", ["item_001"]), unit("q2", "converting", ["item_002"])];
+    const local = buildDocument(1, [{ ...converted, title: "Lokal rubrik" }, placeholder, teacherOwn]);
+    const otherTabAdded = buildItem("item_004", "Andra flikens fråga");
+    const head = buildDocument(3, [
+      converted,
+      buildItem("item_002", "Fråga två"),
+      { ...teacherOwn, title: "Andra flikens rubrik" },
+      otherTabAdded,
+    ]);
+    const headUnits = [unit("q1", "ready", ["item_001"]), unit("q2", "ready", ["item_002"])];
+
+    const { document } = mergeConversionRevision({ base, baseUnits, head, headUnits, local });
+
+    expect(document.items.map((item) => [item.item_id, item.title, item.body[0]?.segments[0]])).toEqual([
+      ["item_001", "Lokal rubrik", { kind: "text", text: "Fråga ett" }],
+      ["item_002", null, { kind: "text", text: "Fråga två" }],
+      ["item_003", "Andra flikens rubrik", { kind: "text", text: "Lärarens fråga" }],
+      ["item_004", null, { kind: "text", text: "Andra flikens fråga" }],
+    ]);
+    expect(document.revision).toBe(3);
   });
 });

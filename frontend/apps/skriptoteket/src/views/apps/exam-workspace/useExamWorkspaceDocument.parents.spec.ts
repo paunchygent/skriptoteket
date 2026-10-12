@@ -33,6 +33,7 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document,
     notes: [],
     summary: {

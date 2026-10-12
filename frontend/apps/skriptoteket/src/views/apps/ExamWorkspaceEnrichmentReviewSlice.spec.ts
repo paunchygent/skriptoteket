@@ -18,6 +18,7 @@ import {
   lastSavedItem,
   resetEnrichmentApiMocks,
   SUCCEEDED,
+  SUCCEEDED_CONVERSION,
 } from "./ExamWorkspaceEnrichmentSlice.specSupport";
 import {
   importFixtureDocument,
@@ -80,7 +81,7 @@ describe("ExamWorkspaceView answer-key proposal review decisions", () => {
   });
 
   it("keeps parse-confidence review required after approving a proposal", async () => {
-    const parseReviewResponse = buildUnkeyedResponse(1);
+    const parseReviewResponse = buildUnkeyedResponse(1, SUCCEEDED_CONVERSION);
     parseReviewResponse.document.items = parseReviewResponse.document.items.map((item) =>
       item.item_id === "item_002"
         ? {

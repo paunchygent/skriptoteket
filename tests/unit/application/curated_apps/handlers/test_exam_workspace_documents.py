@@ -11,8 +11,10 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
     SaveExamWorkspaceDocumentRequest,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
     ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
@@ -121,7 +123,11 @@ class _Env:
             ),
         )
         self.get_handler = GetExamWorkspaceDocumentHandler(
-            vault_files=self.vault_files, codec=self.codec, store=self.store
+            vault_files=self.vault_files,
+            codec=self.codec,
+            store=self.store,
+            jobs=self.enrichment_jobs,
+            uow=FakeUow(),
         )
         self.list_handler = ListExamWorkspaceDocumentsHandler(vault_files=self.vault_files)
         self.save_handler = SaveExamWorkspaceDocumentHandler(
@@ -129,6 +135,7 @@ class _Env:
             codec=self.codec,
             store=self.store,
             id_generator=self.ids,
+            jobs=self.enrichment_jobs,
         )
 
     async def seed_document(self, *, actor: User) -> ExamWorkspaceDocumentResponse:
@@ -149,7 +156,9 @@ class _Env:
             lineage_id=document.document_id,
             version=1,
         )
-        return ExamWorkspaceDocumentResponse(document=document, summary=_summary(file))
+        return ExamWorkspaceDocumentResponse(
+            document=document, summary=_summary(file), conversion=None
+        )
 
 
 @pytest.fixture()
