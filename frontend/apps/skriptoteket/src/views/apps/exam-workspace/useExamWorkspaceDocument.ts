@@ -261,12 +261,13 @@ export function useExamWorkspaceDocument() {
     selectedItemId.value = itemId;
   }
 
+  /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
   ): void {
     const current = workspaceDocument.value;
-    if (!current || isBusy.value) {
+    if (!current || isBusy.value || convertingItemIds.value.has(itemId)) {
       return;
     }
     let changed = false;

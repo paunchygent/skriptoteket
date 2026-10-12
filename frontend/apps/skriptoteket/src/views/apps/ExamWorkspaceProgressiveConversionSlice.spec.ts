@@ -1,7 +1,9 @@
 /**
  * Progressive DOCX conversion at the real workspace view boundary (D30): the
- * first saved batch opens for editing while later batches arrive, and the
- * teacher's edits survive every later revision and a conflicting save.
+ * first saved batch opens for editing while later batches arrive. A
+ * placeholder cannot be changed until its batch is merged into the open copy,
+ * each later batch replaces its own placeholders, and the teacher's edits of
+ * converted items survive every later revision and a conflicting save.
  */
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -127,6 +129,41 @@ async function titleOf(view: ViewWrapper, itemId: string): Promise<string> {
   return (view.get('[data-test="exam-workspace-item-title-input"]').element as HTMLInputElement).value;
 }
 
+/** Dispatch an input event straight on the element, past its `disabled` attribute. */
+async function forceInput(view: ViewWrapper, control: string, value: string) {
+  const element = view.get(`[data-test="${control}"]`).element as HTMLInputElement;
+  element.value = value;
+  element.dispatchEvent(new Event("input"));
+  await flushPromises();
+}
+
+const EDIT_CONTROLS = [
+  "exam-workspace-item-title-input",
+  "exam-workspace-item-points-input",
+  "exam-workspace-marking-guide-input",
+];
+
+/** Every edit control of the selected item's editor is enabled, or every one is disabled. */
+function expectEditable(view: ViewWrapper, editable: boolean) {
+  for (const control of EDIT_CONTROLS) {
+    expect(view.get(`[data-test="${control}"]`).attributes("disabled"), control).toBe(editable ? undefined : "");
+  }
+  const body = view.get('[data-test="exam-workspace-body-paragraph-0"]').attributes("contenteditable");
+  if (editable) {
+    expect(body).not.toBe("false");
+  } else {
+    expect(body).toBe("false");
+  }
+  const markReviewed = view.find('[data-test="exam-workspace-mark-reviewed"]');
+  if (markReviewed.exists()) {
+    expect(markReviewed.attributes("disabled")).toBe(editable ? undefined : "");
+  }
+}
+
+function convertingNoticeShown(view: ViewWrapper): boolean {
+  return view.find('[data-test="exam-workspace-converting-notice"]').exists();
+}
+
 describe("Exam workspace progressive conversion", () => {
   it("opens the first batch for editing, marks converting questions and fills them as batches arrive", async () => {
     const view = await uploadFirstBatch();
@@ -136,19 +173,21 @@ describe("Exam workspace progressive conversion", () => {
     );
     expect(view.get('[data-test="exam-workspace-summary-title"]').text()).toBe("NO-prov HT25");
     await selectItemRow(view, "item_001");
-    expect(view.find('[data-test="exam-workspace-converting-notice"]').exists()).toBe(false);
-    expect(view.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeUndefined();
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
     await selectItemRow(view, "item_002");
-    expect(view.find('[data-test="exam-workspace-converting-notice"]').exists()).toBe(true);
+    expect(convertingNoticeShown(view)).toBe(true);
     expect(view.text()).toContain("Källtext 2");
-    expect(view.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeUndefined();
+    expect(view.find('[data-test="exam-workspace-mark-reviewed"]').exists()).toBe(true);
+    expectEditable(view, false);
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
     await tick();
 
     expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain("3 av 3 frågor klara.");
-    expect(view.find('[data-test="exam-workspace-converting-notice"]').exists()).toBe(false);
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
     expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 2, ["ready", "ready", "ready"]));
@@ -158,10 +197,28 @@ describe("Exam workspace progressive conversion", () => {
     expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps unsaved teacher edits, including an edited placeholder, when a later batch arrives", async () => {
+  it("refuses every change to a converting placeholder, even one dispatched past its disabled controls", async () => {
+    const view = await uploadFirstBatch();
+    await selectItemRow(view, "item_002");
+    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik två");
+    await forceInput(view, "exam-workspace-item-points-input", "7");
+    await forceInput(view, "exam-workspace-marking-guide-input", "Lärarens bedömningsstöd");
+
+    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBe("");
+    await selectItemRow(view, "item_001");
+    await selectItemRow(view, "item_002");
+    expect((view.get('[data-test="exam-workspace-item-title-input"]').element as HTMLInputElement).value).toBe("Fråga 2");
+    expect((view.get('[data-test="exam-workspace-item-points-input"]').element as HTMLInputElement).value).toBe("2");
+  });
+
+  it("keeps unsaved edits of converted items and fills a placeholder from its batch when it arrives", async () => {
     const view = await uploadFirstBatch();
     await editTitle(view, "item_001", "Lärarens rubrik ett");
-    await editTitle(view, "item_003", "Lärarens rubrik tre");
+    await selectItemRow(view, "item_003");
+    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik tre");
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await titleOf(view, "item_003")).toBe("Fråga 3");
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
@@ -169,7 +226,8 @@ describe("Exam workspace progressive conversion", () => {
 
     expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
     expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
-    expect(await titleOf(view, "item_003")).toBe("Lärarens rubrik tre");
+    expect(await titleOf(view, "item_003")).toBe("Konverterad 3");
+    expectEditable(view, true);
 
     apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(3, SECOND.document.items));
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
@@ -179,11 +237,11 @@ describe("Exam workspace progressive conversion", () => {
     expect(params.document.items.map((item: NativeExamItem) => item.title)).toEqual([
       "Lärarens rubrik ett",
       "Konverterad 2",
-      "Lärarens rubrik tre",
+      "Konverterad 3",
     ]);
   });
 
-  it("applies the final revision that arrived during a save once the save returns", async () => {
+  it("keeps a placeholder locked until the final revision that arrived during a save is merged", async () => {
     const view = await uploadFirstBatch();
     await editTitle(view, "item_001", "Lärarens rubrik ett");
     let resolveSave!: (value: ExamWorkspaceDocumentResponse) => void;
@@ -192,14 +250,20 @@ describe("Exam workspace progressive conversion", () => {
 
     const savedFirst = revision(2, [{ ...converted(1), title: "Lärarens rubrik ett" }, placeholder(2), placeholder(3)]);
     const finalItems = [{ ...converted(1), title: "Lärarens rubrik ett" }, converted(2), converted(3)];
-    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 3, ["teacher_kept", "ready", "ready"]));
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 3, ["ready", "ready", "ready"]));
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems));
     await tick();
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
     resolveSave(savedFirst);
     await flushPromises();
+    // The status already reports every batch ready, but its revision is not merged yet.
+    await selectItemRow(view, "item_002");
+    expect(convertingNoticeShown(view)).toBe(true);
+    expectEditable(view, false);
     await tick();
+
+    expect(convertingNoticeShown(view)).toBe(false);
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);

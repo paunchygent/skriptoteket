@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * Placeholder notice for a question whose conversion batch is still running.
- * The item shows its source text until the batch fills it; a teacher edit
- * keeps the teacher's version and the late conversion result is dropped.
+ * The item shows its source text and cannot be changed until its batch
+ * replaces it.
  */
 </script>
 
@@ -12,7 +12,7 @@
     role="note"
     data-test="exam-workspace-converting-notice"
   >
-    Frågan konverteras fortfarande. Källtexten visas tills den är klar. Ändrar du frågan
-    behålls din version och konverteringens resultat används inte.
+    Frågan konverteras fortfarande. Källtexten visas tills den är klar och går inte att ändra
+    under tiden.
   </p>
 </template>

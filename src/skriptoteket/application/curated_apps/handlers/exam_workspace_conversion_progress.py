@@ -2,9 +2,10 @@
 
 The first admitted batch saves revision 1 with placeholders for the questions still
 converting. Each later batch, the final document and a failed job's abandonment save
-the next revision through ``merge_conversion``, so a teacher's edits always win. A
-conversion revision the teacher never saved on is retired when conversion supersedes
-it, so intermediate revisions never accumulate in the teacher's vault usage.
+the next revision through ``merge_conversion``: each batch replaces its own placeholders,
+and the teacher's edits on converted items stay. A conversion revision the teacher never
+saved on is retired when conversion supersedes it, so intermediate revisions never
+accumulate in the teacher's vault usage.
 """
 
 from __future__ import annotations

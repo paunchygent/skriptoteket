@@ -6,8 +6,10 @@
  *   first batch is ready, with placeholders for the questions still
  *   converting, and a new revision for each later batch. This composable
  *   polls the conversion, opens the first revision, and merges every later
- *   revision into the teacher's copy so that edits made meanwhile are kept;
- *   it also reports progress and which items are still converting.
+ *   revision into the teacher's copy: each batch replaces its own
+ *   placeholders, and the teacher's edits of converted items are kept. It
+ *   also reports progress and which items are still placeholders in the open
+ *   copy; those stay locked until their batch is merged into it.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which hands over its document refs
@@ -104,11 +106,17 @@ export function useExamWorkspaceConversion(
       binding.summary.value?.lineage_id === conversionStatus.value?.lineage_id,
   );
 
+  /**
+   * Placeholders of the revision the open copy stands on. A newer status can
+   * arrive while its revision waits for an in-flight save, so a placeholder
+   * stays locked until its batch is merged into the open copy.
+   */
   const convertingItemIds = computed<ReadonlySet<string>>(() => {
-    const status = conversionStatus.value;
-    if (!isConverting.value || !status || !isEditingConversion.value) return new Set();
+    if (!isConverting.value || !isEditingConversion.value) return new Set();
     return new Set(
-      status.units.filter((unit) => unit.state === "converting").flatMap((unit) => unit.item_ids),
+      (shownUnits.value ?? [])
+        .filter((unit) => unit.state === "converting")
+        .flatMap((unit) => unit.item_ids),
     );
   });
 

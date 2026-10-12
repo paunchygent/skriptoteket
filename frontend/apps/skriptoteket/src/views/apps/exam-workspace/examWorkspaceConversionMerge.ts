@@ -4,13 +4,16 @@
  * Domain purpose:
  *   The background DOCX conversion saves newer server revisions while the
  *   teacher keeps editing a local, possibly unsaved copy. This module merges
- *   such a revision into the local copy: a conversion unit (one outline
- *   question, or one review item no question owns) is replaced by the items
- *   conversion wrote only while the teacher has not touched that unit since
- *   the base the local copy started from. Otherwise the teacher's version
- *   stays and the late result is dropped. The title, the instructions and the
- *   parents follow the same rule; items the teacher added belong to no unit
- *   and keep their place.
+ *   such a revision into the local copy, one conversion unit (one outline
+ *   question, or one review item no question owns) at a time. A unit that was
+ *   still converting in the base is a placeholder and belongs to conversion:
+ *   the head's items always replace it, in place, or after the nearest
+ *   preceding unit when the local copy lacks it, whatever the local copy
+ *   holds. A converted unit is replaced by the head's items only while the
+ *   teacher has not touched it since the base the local copy started from;
+ *   otherwise the teacher's version stays. The title, the instructions and
+ *   the parents follow the converted-unit rule; items the teacher added
+ *   belong to no unit and keep their place.
  *
  * Relationships:
  *   - Client twin of `merge_conversion` in
@@ -22,22 +25,19 @@
  */
 
 import type {
+  ExamWorkspaceConversionUnit,
   NativeExamDocument,
   NativeExamItem,
   NativeExamParent,
 } from "../../../api/examWorkspace";
 
-export type ExamWorkspaceConversionUnitIds = {
-  unit_id: string;
-  item_ids: string[];
-};
-
 type MergeArgs = {
   base: NativeExamDocument;
-  baseUnits: ExamWorkspaceConversionUnitIds[];
+  /** The units of `base`, with the state each had in it. */
+  baseUnits: ExamWorkspaceConversionUnit[];
   local: NativeExamDocument;
   head: NativeExamDocument;
-  headUnits: ExamWorkspaceConversionUnitIds[];
+  headUnits: ExamWorkspaceConversionUnit[];
 };
 
 type Entry = { fromHead: boolean; item: NativeExamItem; unit: string | null };
@@ -98,7 +98,7 @@ function pick<T>(base: T, local: T, head: T): { fromHead: boolean; value: T } {
 
 function insertionIndex(
   entries: Entry[],
-  headUnits: ExamWorkspaceConversionUnitIds[],
+  headUnits: ExamWorkspaceConversionUnit[],
   at: number,
 ) {
   for (let index = at - 1; index >= 0; index -= 1) {
@@ -118,9 +118,7 @@ export function mergeConversionRevision({
   headUnits,
   local,
 }: MergeArgs): { document: NativeExamDocument; teacherEditsKept: boolean } {
-  const baseIdsByUnit = new Map(
-    baseUnits.map((unit) => [unit.unit_id, new Set(unit.item_ids)]),
-  );
+  const baseUnitById = new Map(baseUnits.map((unit) => [unit.unit_id, unit]));
   const unitByItemId = new Map(
     baseUnits.flatMap((unit) =>
       unit.item_ids.map((itemId) => [itemId, unit.unit_id] as const),
@@ -132,11 +130,16 @@ export function mergeConversionRevision({
   const replaced = new Map<string, NativeExamItem[]>();
   const inserted: { at: number; items: NativeExamItem[]; unit: string }[] = [];
   headUnits.forEach((headUnit, at) => {
-    const baseIds = baseIdsByUnit.get(headUnit.unit_id) ?? new Set<string>();
+    const baseUnit = baseUnitById.get(headUnit.unit_id);
+    const baseIds = new Set(baseUnit?.item_ids ?? []);
     const baseItems = onlyIds(base.items, baseIds);
     const headItems = onlyIds(head.items, new Set(headUnit.item_ids));
     const localItems = onlyIds(local.items, baseIds);
-    if (sameItems(baseItems, headItems) || !sameItems(localItems, baseItems)) {
+    const placeholder = baseUnit?.state === "converting";
+    if (
+      !placeholder &&
+      (sameItems(baseItems, headItems) || !sameItems(localItems, baseItems))
+    ) {
       return;
     }
     if (localItems.length === 0) {

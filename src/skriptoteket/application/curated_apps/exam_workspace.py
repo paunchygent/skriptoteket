@@ -34,15 +34,15 @@ class ExamWorkspaceDocumentResponse(BaseModel):
 class ExamWorkspaceConversionUnit(BaseModel):
     """Items conversion last wrote for one question or question-less review item.
 
-    ``converting`` items are placeholders; ``teacher_kept`` means the teacher changed the
-    placeholder, so the late result was dropped.
+    ``converting`` items are placeholders that only the unit's later batch may change;
+    ``ready`` items are converted and editable.
     """
 
     model_config = ConfigDict(frozen=True)
 
     unit_id: str
     question: bool
-    state: Literal["converting", "ready", "teacher_kept"]
+    state: Literal["converting", "ready"]
     item_ids: tuple[str, ...]
 
 

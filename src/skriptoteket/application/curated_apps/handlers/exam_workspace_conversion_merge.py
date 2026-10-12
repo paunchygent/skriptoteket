@@ -2,11 +2,12 @@
 
 A conversion unit is one outline question, or one review item for a source chunk no
 question owns. Each unit remembers the item ids and a digest of the items conversion
-last wrote. A later result replaces a unit's items in the head only while the head still
-holds exactly those items; once the teacher changed, removed or reordered them, the
-teacher's version stays and the late result is dropped. The document title, the
-instructions and the parents follow the same rule. Items the teacher added belong to no
-unit and keep their place.
+last wrote. A still-converting unit's placeholders belong to conversion: a later result
+replaces them whatever a save did to them. A converted unit belongs to the teacher: a
+later result replaces its items only while the head still holds exactly those items, and
+once the teacher changed, removed or reordered them, the teacher's version stays. The
+document title, the instructions and the parents follow the converted-unit rule. Items
+the teacher added belong to no unit and keep their place.
 """
 
 from __future__ import annotations
@@ -36,7 +37,6 @@ _ITEM_ID_CEILING = 9999
 class ConversionUnitState(StrEnum):
     CONVERTING = "converting"
     READY = "ready"
-    TEACHER_KEPT = "teacher_kept"
 
 
 class ConversionUnit(BaseModel):
@@ -248,7 +248,7 @@ def _ordered_units(
 def merge_conversion(
     *, head: NativeExamDocument, progress: ConversionProgress, target: ConversionTarget
 ) -> ConversionMerge:
-    """Apply ``target`` to ``head`` unit by unit; the teacher's edits always win."""
+    """Apply ``target`` to ``head`` unit by unit (see the module docstring for the rule)."""
     head_by_id = {item.item_id: item for item in head.items}
     known = {unit.unit_id: unit for unit in progress.units}
     ids = _ItemIds(head_by_id)
@@ -285,16 +285,21 @@ def merge_conversion(
             continue
         head_items = tuple(head_by_id[i] for i in prior.item_ids if i in head_by_id)
         intact = len(head_items) == len(prior.item_ids) and items_digest(head_items) == prior.digest
-        if intact and candidate_digest != prior.digest:
-            new_ids = [*prior.item_ids[: len(candidate.items)]]
+        placeholders = prior.state is ConversionUnitState.CONVERTING
+        if placeholders or (intact and candidate_digest != prior.digest):
+            # Only ids still in the head are reserved, so only those are reused.
+            present = [item.item_id for item in head_items]
+            new_ids = present[: len(candidate.items)]
             new_ids.extend(ids.fresh() for _ in range(len(candidate.items) - len(new_ids)))
             placed = tuple(
                 item.model_copy(update={"item_id": item_id})
                 for item, item_id in zip(candidate.items, new_ids, strict=True)
             )
-            if placed:
-                replacements[prior.item_ids[0]] = placed
-            removed.update(prior.item_ids)
+            if placed and present:
+                replacements[present[0]] = placed
+            elif placed:
+                inserts.append((previous_last, placed))
+            removed.update(present)
             written[candidate.unit_id] = prior.model_copy(
                 update={
                     "state": candidate.state,
@@ -309,16 +314,12 @@ def merge_conversion(
             id_map.update(zip((i.item_id for i in candidate.items), prior.item_ids, strict=True))
             written[candidate.unit_id] = prior.model_copy(update={"state": candidate.state})
         else:
-            # The teacher's items stay, and stay under the parents conversion gives them.
+            # The teacher's converted items stay, under the parents conversion gives them.
             id_map.update(
                 (item.item_id, item_id)
                 for item, item_id in zip(candidate.items, prior.item_ids, strict=False)
                 if item_id in head_by_id
             )
-            if prior.state is ConversionUnitState.CONVERTING:
-                written[candidate.unit_id] = prior.model_copy(
-                    update={"state": ConversionUnitState.TEACHER_KEPT}
-                )
         previous_last = head_items[-1].item_id if head_items else previous_last
 
     ordered: list[NativeExamItem] = []

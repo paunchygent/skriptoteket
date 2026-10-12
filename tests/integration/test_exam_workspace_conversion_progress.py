@@ -38,6 +38,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carr
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+    NativeExamItemKind,
     NativeTextSegment,
 )
 from skriptoteket.domain.identity.models import User
@@ -180,7 +181,7 @@ def _batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpd
     )
 
 
-async def test_batches_fill_placeholders_teacher_edits_win_and_usage_holds_one_conversion_copy(
+async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_one_copy(
     session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
     actor = await create_owner(session_factory)
@@ -242,13 +243,17 @@ async def test_batches_fill_placeholders_teacher_edits_win_and_usage_holds_one_c
         )
         assert (await world.open(actor, lineage_id)).revision == 1
 
-    # The teacher rewrites the q2 placeholder in another session and saves revision 2.
+    # In another session the teacher edits converted q1 and, from a client that did not
+    # lock it, also rewrites the q2 placeholder, and saves revision 2.
     async with session_factory() as teacher_session:
         teacher = _World(teacher_session, storage, clock)
         opened = await teacher.open(actor, lineage_id)
-        edited = opened.items[1].model_copy(update={"body": body("Lärarens fråga två")})
+        q1 = opened.items[0].model_copy(update={"body": body("Lärarens fråga ett")})
+        q2 = opened.items[1].model_copy(
+            update={"body": body("Lärarens fråga två"), "title": "Lärarens rubrik"}
+        )
         await teacher.teacher_save(
-            actor, opened.model_copy(update={"items": (opened.items[0], edited, opened.items[2])})
+            actor, opened.model_copy(update={"items": (q1, q2, opened.items[2])})
         )
 
     async with session_factory() as session:
@@ -258,10 +263,12 @@ async def test_batches_fill_placeholders_teacher_edits_win_and_usage_holds_one_c
             job_id=queued.job_id,
             update=_batch(lineage_id, q2="Fråga två", q3=None),
         )
-        # q2's late result is dropped and nothing else changed, so no revision is written.
+        # q2's batch replaces its placeholder; the teacher's q1 stays.
         third = await world.open(actor, lineage_id)
-        assert third.revision == 2
-        assert _texts(third) == ["Fråga ett", "Lärarens fråga två", "Källtext tre"]
+        assert third.revision == 3
+        assert _texts(third) == ["Lärarens fråga ett", "Fråga två", "Källtext tre"]
+        assert third.items[1].title is None
+        assert third.items[1].kind is NativeExamItemKind.SINGLE_CHOICE
 
         await world.progress.batch_ready(
             worker_id=_WORKER,
@@ -269,18 +276,19 @@ async def test_batches_fill_placeholders_teacher_edits_win_and_usage_holds_one_c
             update=_batch(lineage_id, q2="Fråga två", q3="Fråga tre"),
         )
         fourth = await world.open(actor, lineage_id)
-        assert _texts(fourth) == ["Fråga ett", "Lärarens fråga två", "Fråga tre"]
+        assert _texts(fourth) == ["Lärarens fråga ett", "Fråga två", "Fråga tre"]
         status = await world.status.handle(actor=actor, job_id=queued.job_id)
-        assert (status.document_revision, status.questions_done) == (3, 3)
+        assert (status.document_revision, status.questions_done) == (4, 3)
         assert {unit.unit_id: unit.state for unit in status.units} == {
             "q1": "ready",
-            "q2": "teacher_kept",
+            "q2": "ready",
             "q3": "ready",
         }
 
-    # Revisions the teacher saved on (1, the base of their save, and 2, their own) stay.
+    # Revisions the teacher saved on (1, the base of their save, and 2, their own) stay;
+    # conversion-only revision 3 was superseded by revision 4, so it is retired.
     live = await _live_versions(session_factory, lineage_id)
-    assert [version for version, _ in live] == [1, 2, 3]
+    assert [version for version, _ in live] == [1, 2, 4]
     assert await _usage(session_factory, actor) == sum(size for _, size in live)
 
     async with session_factory() as session:
@@ -298,9 +306,9 @@ async def test_batches_fill_placeholders_teacher_edits_win_and_usage_holds_one_c
                 notes=("Facit: 1 Ja",),
             )
         final = await world.open(actor, lineage_id)
-        assert _texts(final) == ["Fråga ett", "Lärarens fråga två", "Fråga tre slutlig"]
+        assert _texts(final) == ["Lärarens fråga ett", "Fråga två", "Fråga tre slutlig"]
 
-    # Conversion-only revision 3 was superseded by the final revision 4, so it is retired.
+    # Conversion-only revision 4 was superseded by the final revision 5, so it is retired.
     live = await _live_versions(session_factory, lineage_id)
-    assert [version for version, _ in live] == [1, 2, 4]
+    assert [version for version, _ in live] == [1, 2, 5]
     assert await _usage(session_factory, actor) == sum(size for _, size in live)
