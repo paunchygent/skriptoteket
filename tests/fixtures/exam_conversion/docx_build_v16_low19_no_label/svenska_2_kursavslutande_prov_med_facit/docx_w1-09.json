@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0036"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0034",
+        "body:0035"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Naturliga rättigheter",
+          "correct": false
+        },
+        {
+          "text": "Upplysningens gränser",
+          "correct": true
+        },
+        {
+          "text": "Rationalism och empirism",
+          "correct": false
+        },
+        {
+          "text": "Romantikens natursyn",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

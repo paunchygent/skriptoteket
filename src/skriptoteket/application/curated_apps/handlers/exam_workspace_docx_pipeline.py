@@ -10,7 +10,8 @@ Each question reaches the labeler as its faithful source: markdown, with an imag
 block markdown cannot carry (D14). A question holding a block of which no faithful image
 could be made is not labeled: the event names the block, and the question converts as free
 text with no label confidence, so it carries the type-check mark. A question neither labeling
-pass gave any label converts the same way. An unsupported label converts as free text; a
+pass gave any label is not converted: it becomes one review item holding its own source text
+at its place, for the teacher to label. An unsupported label converts as free text; a
 question the second pass leaves unresolved arrives with the first pass's top label (D23).
 The strict schema is the
 only gate on a batch response. A family the converter reports as a type conflict is resent
@@ -113,6 +114,7 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
 _BATCH_FAILED_REASON = "Frågan kunde inte tolkas. Kontrollera källtexten manuellt."
+UNLABELED_REASON = "Frågetypen kunde inte avgöras. Välj frågetyp och kontrollera källtexten."
 
 logger = structlog.get_logger(__name__)
 
@@ -314,29 +316,34 @@ class DocxConversionPipeline:
             self._dispatch(run, unlabeled, "wi-", tasks)
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
-            for result in results:
-                if result.label is ItemTypeLabel.UNRESOLVED:
-                    # Neither pass gave this question a label: it converts like a question
-                    # the labeler never saw.
-                    run.state.record(
-                        "labeling",
-                        "no_label",
-                        anchors=run.own_anchors[result.item_id],
-                        detail=result.failure_code or "",
-                    )
-                    run.kinds[result.item_id] = NativeExamItemKind.FREE_TEXT
-                    continue
-                run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
-                run.first_pass[result.item_id] = (result.first_pass or result).probabilities
-            if results and results[0].decided_by is LabelPass.FIRST:
+            if not results:
+                return
+            if results[0].decided_by is LabelPass.FIRST:
                 run.timed("labeling_first_pass", started)
-                self._dispatch(run, [r.item_id for r in results], "w1-", tasks)
-            elif results:
+                prefix = "w1-"
+            else:
                 # Each second-pass label converts at once; a per-dispatch number keeps
                 # every second-wave batch id unique.
                 run.second_wave_dispatches += 1
                 prefix = f"w2-{run.second_wave_dispatches:02d}-"
-                self._dispatch(run, [r.item_id for r in results], prefix, tasks)
+            labeled: list[str] = []
+            unlabeled: list[str] = []
+            for result in results:
+                if result.label is ItemTypeLabel.UNRESOLVED:
+                    run.state.record(
+                        "labeling",
+                        "question_unlabeled",
+                        anchors=run.own_anchors[result.item_id],
+                        detail=result.failure_code or "",
+                    )
+                    unlabeled.append(result.item_id)
+                    continue
+                run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
+                run.first_pass[result.item_id] = (result.first_pass or result).probabilities
+                labeled.append(result.item_id)
+            self._dispatch(run, labeled, prefix, tasks)
+            if unlabeled:
+                tasks.create_task(self._unlabeled(run, unlabeled, f"{prefix}u", tasks))
 
         try:
             await self._labeler.label(request=request, on_results=settle)
@@ -376,6 +383,26 @@ class DocxConversionPipeline:
         started = time.monotonic()
         outcome = await self._converted(run, batch)
         run.timed(f"batch {batch.batch_id}", started)
+        await self._deliver(run, batch, outcome, tasks)
+
+    async def _unlabeled(
+        self, run: _Run, question_ids: list[str], batch_id: str, tasks: asyncio.TaskGroup
+    ) -> None:
+        """Questions no labeling pass labeled, each as one review item of its source text."""
+        chosen = set(question_ids)
+        families = tuple(f for f in run.families if f.question_id in chosen)
+        batch = ConversionBatch(
+            batch_id=batch_id,
+            kinds=frozenset(),
+            question_ids=tuple(f.question_id for f in families),
+            claims=frozenset().union(*(f.claims for f in families)),
+            reads=frozenset(),
+        )
+        await self._deliver(run, batch, self._reviewed(run, batch, UNLABELED_REASON), tasks)
+
+    async def _deliver(
+        self, run: _Run, batch: ConversionBatch, outcome: BatchOutcome, tasks: asyncio.TaskGroup
+    ) -> None:
         async with self._uow.lock:
             try:
                 update = self._merged(run, batch, outcome)
@@ -419,14 +446,18 @@ class DocxConversionPipeline:
         self, run: _Run, batch: ConversionBatch, code: str, error: Exception
     ) -> BatchOutcome:
         """Each of the batch's questions as one review item holding its source text."""
+        outcome = self._reviewed(run, batch, _BATCH_FAILED_REASON)
+        outcome.state.record("batch", code, detail=type(error).__name__)
+        return outcome
+
+    def _reviewed(self, run: _Run, batch: ConversionBatch, reason: str) -> BatchOutcome:
         state = self._batch_state(run, batch)
-        state.record("batch", code, detail=type(error).__name__)
         state.review_questions(
             (run.own_anchors[qid] for qid in batch.question_ids),
             keys=frozenset(a for qid in batch.question_ids for a in run.key_anchors[qid]),
             contexts=run.context_anchors,
             title=run.title_anchors,
-            reason=_BATCH_FAILED_REASON,
+            reason=reason,
         )
         return BatchOutcome(state)
 
