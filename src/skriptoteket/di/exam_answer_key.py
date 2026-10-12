@@ -17,7 +17,7 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
     GetAnswerKeyLeaseStatusHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (

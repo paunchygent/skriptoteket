@@ -25,7 +25,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     merge_conversion,
     target_from_update,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
