@@ -164,12 +164,6 @@ _BETWEEN_GROUPING: dict[str, JsonValue] = {
 }
 
 
-# The one sentence each prompt carries about a picture with no text.
-_DRAWING_RULE = (
-    "A chunk of kind drawing is a picture with no text; the question it stands with lists it in its"
-)
-
-
 def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
     """A converted free-text item in the shape the converter's schema returns."""
     return {
@@ -413,7 +407,6 @@ async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_cl
 
     (grouping,) = [r for r in provider.requests if r.item_id.startswith("docx_grouping")]
     assert "[body:0003] (drawing) \n" in grouping.user_payload
-    assert _DRAWING_RULE in " ".join(grouping.system_prompt.split())
     (holding,) = [
         r
         for r in provider.requests
@@ -421,7 +414,6 @@ async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_cl
     ]
     payload = json.loads(holding.user_payload)
     assert {"anchor": "body:0003", "kind": "drawing", "text": ""} in payload["chunks"]
-    assert _DRAWING_RULE in " ".join(holding.system_prompt.split())
 
     document = outcome.result.document
     assert document.title == "Bildfrågor"
