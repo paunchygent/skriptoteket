@@ -12,8 +12,10 @@
  *   holds. A converted unit is replaced by the head's items only while the
  *   teacher has not touched it since the base the local copy started from;
  *   otherwise the teacher's version stays. The title, the instructions and
- *   the parents follow the converted-unit rule; items the teacher added
- *   belong to no unit and keep their place.
+ *   the parents follow the converted-unit rule. Items the teacher added
+ *   belong to no unit and keep their place; when the head is a later save
+ *   from another tab, its edits of such items follow the same rule and the
+ *   items it added are kept after the head item they follow.
  *
  * Relationships:
  *   - Client twin of `merge_conversion` in
@@ -149,12 +151,20 @@ export function mergeConversionRevision({
     }
   });
 
+  const unitItemIds = new Set(headUnits.flatMap((unit) => unit.item_ids));
+  const baseById = new Map(base.items.map((item) => [item.item_id, item]));
+  const headById = new Map(head.items.map((item) => [item.item_id, item]));
   const entries: Entry[] = [];
   const placed = new Set<string>();
   for (const item of local.items) {
     const unit = unitByItemId.get(item.item_id) ?? null;
     const headItems = unit === null ? undefined : replaced.get(unit);
-    if (unit === null || headItems === undefined) {
+    const baseItem = baseById.get(item.item_id);
+    const headItem = headById.get(item.item_id);
+    if (unit === null && baseItem && headItem && !unitItemIds.has(item.item_id)) {
+      const chosen = pick(baseItem, item, headItem);
+      entries.push({ fromHead: chosen.fromHead, item: chosen.value, unit });
+    } else if (unit === null || headItems === undefined) {
       entries.push({ fromHead: false, item, unit });
     } else if (!placed.has(unit)) {
       placed.add(unit);
@@ -175,6 +185,17 @@ export function mergeConversionRevision({
       ...items.map((item) => ({ fromHead: true, item, unit })),
     );
   }
+
+  // Items a later save added since the base belong to no unit; keep them after
+  // the head item they follow.
+  head.items.forEach((headItem, at) => {
+    if (unitItemIds.has(headItem.item_id) || baseById.has(headItem.item_id)) {
+      return;
+    }
+    const previous = head.items[at - 1]?.item_id;
+    const index = entries.findIndex((entry) => entry.item.item_id === previous) + 1;
+    entries.splice(index, 0, { fromHead: true, item: headItem, unit: null });
+  });
 
   const headIds = new Set(
     entries.filter((entry) => entry.fromHead).map((e) => e.item.item_id),

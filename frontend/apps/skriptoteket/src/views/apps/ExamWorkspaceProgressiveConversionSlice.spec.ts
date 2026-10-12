@@ -56,9 +56,14 @@ function converted(sequence: number): NativeExamItem {
   return { ...buildFreeTextItem(sequence), title: `Konverterad ${sequence}` };
 }
 
-function revision(version: number, items: NativeExamItem[]): ExamWorkspaceDocumentResponse {
+/** A saved revision with the conversion state the server reads under the same lock. */
+function revision(
+  version: number,
+  items: NativeExamItem[],
+  conversion: ExamWorkspaceConversionStatus | null,
+): ExamWorkspaceDocumentResponse {
   const response = buildResponse({ version });
-  return { ...response, document: { ...response.document, items } };
+  return { ...response, conversion, document: { ...response.document, items } };
 }
 
 function status(
@@ -83,10 +88,10 @@ function status(
   };
 }
 
-const FIRST = revision(1, [converted(1), placeholder(2), placeholder(3)]);
 const FIRST_STATUS = status("running", 1, ["ready", "converting", "converting"]);
-const SECOND = revision(2, [converted(1), converted(2), converted(3)]);
+const FIRST = revision(1, [converted(1), placeholder(2), placeholder(3)], FIRST_STATUS);
 const SECOND_STATUS = status("running", 2, ["ready", "ready", "ready"]);
+const SECOND = revision(2, [converted(1), converted(2), converted(3)], SECOND_STATUS);
 
 let wrapper: ViewWrapper | undefined;
 
@@ -229,7 +234,7 @@ describe("Exam workspace progressive conversion", () => {
     expect(await titleOf(view, "item_003")).toBe("Konverterad 3");
     expectEditable(view, true);
 
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(3, SECOND.document.items));
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(3, SECOND.document.items, SECOND_STATUS));
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
     const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0];
@@ -248,10 +253,15 @@ describe("Exam workspace progressive conversion", () => {
     apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(new Promise((resolve) => { resolveSave = resolve; }));
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
 
-    const savedFirst = revision(2, [{ ...converted(1), title: "Lärarens rubrik ett" }, placeholder(2), placeholder(3)]);
+    const savedFirst = revision(
+      2,
+      [{ ...converted(1), title: "Lärarens rubrik ett" }, placeholder(2), placeholder(3)],
+      FIRST_STATUS,
+    );
     const finalItems = [{ ...converted(1), title: "Lärarens rubrik ett" }, converted(2), converted(3)];
-    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 3, ["ready", "ready", "ready"]));
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems));
+    const succeeded = status("succeeded", 3, ["ready", "ready", "ready"]);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(succeeded);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems, succeeded));
     await tick();
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
@@ -278,7 +288,7 @@ describe("Exam workspace progressive conversion", () => {
 
     apiMocks.saveExamWorkspaceDocument
       .mockRejectedValueOnce(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }))
-      .mockResolvedValueOnce(revision(3, SECOND.document.items));
+      .mockResolvedValueOnce(revision(3, SECOND.document.items, SECOND_STATUS));
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
@@ -306,7 +316,7 @@ describe("Exam workspace progressive conversion", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(SECOND);
     apiMocks.saveExamWorkspaceDocument
       .mockRejectedValueOnce(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }))
-      .mockResolvedValueOnce(revision(3, SECOND.document.items));
+      .mockResolvedValueOnce(revision(3, SECOND.document.items, SECOND_STATUS));
     await tick();
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
@@ -324,33 +334,25 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
 
-  it("keeps the teacher's copy and merges it later when another batch moves the head past the conflict's status", async () => {
+  it("merges and saves again at once when another batch moves the head past the conflict's status", async () => {
     const view = await uploadFirstBatch();
     await editTitle(view, "item_001", "Lärarens rubrik ett");
 
     // The save from revision 1 conflicts; the status then describes revision 2,
-    // but another batch commits revision 3 before the document is read.
-    const third = revision(3, [converted(1), converted(2), converted(3)]);
+    // but another batch commits revision 3 before the document is read. The
+    // document response names revision 3's own units, so it merges directly.
+    const thirdStatus = status("running", 3, ["ready", "ready", "ready"]);
+    const third = revision(3, [converted(1), converted(2), converted(3)], thirdStatus);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(third);
-    apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
-      new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }),
-    );
+    apiMocks.saveExamWorkspaceDocument
+      .mockRejectedValueOnce(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }))
+      .mockResolvedValueOnce(revision(4, third.document.items, thirdStatus));
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
-
-    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("running", 3, ["ready", "ready", "ready"]));
-    await tick();
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
-
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(4, third.document.items));
-    await view.get('[data-test="exam-workspace-save"]').trigger("click");
-    await flushPromises();
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
     expect(retry.expectedRevision).toBe(3);
     expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
@@ -374,5 +376,117 @@ describe("Exam workspace progressive conversion", () => {
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+  });
+  it("keeps the placeholders locked when the unfinished exam is opened from its address, until their batch arrives", async () => {
+    apiMocks.getExamWorkspaceConversionStatus.mockReset();
+    apiMocks.getExamWorkspaceDocument.mockReset();
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(FIRST);
+    const mounted = await mountExamWorkspace({ document: "lineage-1" });
+    wrapper = mounted.wrapper;
+    const view = mounted.wrapper;
+
+    await selectItemRow(view, "item_002");
+    expect(convertingNoticeShown(view)).toBe(true);
+    expectEditable(view, false);
+    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik två");
+    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    await selectItemRow(view, "item_001");
+    expectEditable(view, true);
+
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
+    await tick();
+
+    expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledWith("job-1");
+    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+  });
+
+  it("opens a finished import without a lock and without following its conversion", async () => {
+    apiMocks.getExamWorkspaceConversionStatus.mockReset();
+    apiMocks.getExamWorkspaceDocument.mockReset();
+    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(2, SECOND.document.items, done));
+    const mounted = await mountExamWorkspace({ document: "lineage-1" });
+    wrapper = mounted.wrapper;
+
+    await selectItemRow(mounted.wrapper, "item_002");
+    expect(convertingNoticeShown(mounted.wrapper)).toBe(false);
+    expectEditable(mounted.wrapper, true);
+    await tick();
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+    expect(mounted.wrapper.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+  });
+
+  it("merges the final batch through a later teacher revision before it reports the import done", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+
+    // Conversion finished at revision 2; another tab then saved revision 3 on top of it.
+    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    const otherTab = revision(
+      3,
+      [converted(1), { ...converted(2), title: "Andra flikens rubrik" }, converted(3)],
+      done,
+    );
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(done);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(otherTab);
+    await tick();
+
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await titleOf(view, "item_002")).toBe("Andra flikens rubrik");
+    expect(await titleOf(view, "item_003")).toBe("Konverterad 3");
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(4, otherTab.document.items, done));
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0];
+    expect(params.expectedRevision).toBe(3);
+    await tick();
+    expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the placeholders locked after a final status while its revision cannot be read", async () => {
+    const view = await uploadFirstBatch();
+    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(done);
+    apiMocks.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("offline"));
+    await tick();
+
+    await selectItemRow(view, "item_002");
+    expect(convertingNoticeShown(view)).toBe(true);
+    expectEditable(view, false);
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(true);
+
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(2, SECOND.document.items, done));
+    await tick();
+    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(convertingNoticeShown(view)).toBe(false);
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+  });
+
+  it("keeps the teacher's copy when the server refuses a save that changed a converting question", async () => {
+    const view = await uploadFirstBatch();
+    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
+      new ApiError({
+        code: "VALIDATION_ERROR",
+        message: "Vägrad",
+        status: 422,
+        details: { item_ids: ["item_002"] },
+      }),
+    );
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+
+    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
 });

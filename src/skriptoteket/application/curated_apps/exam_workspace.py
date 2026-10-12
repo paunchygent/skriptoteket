@@ -23,14 +23,6 @@ class ExamWorkspaceDocumentSummary(BaseModel):
     saved_at: datetime
 
 
-class ExamWorkspaceDocumentResponse(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    document: NativeExamDocument
-    summary: ExamWorkspaceDocumentSummary
-    notes: tuple[str, ...] = ()
-
-
 class ExamWorkspaceConversionUnit(BaseModel):
     """Items conversion last wrote for one question or question-less review item.
 
@@ -64,6 +56,21 @@ class ExamWorkspaceConversionStatus(BaseModel):
     questions_total: int
     questions_done: int
     units: tuple[ExamWorkspaceConversionUnit, ...]
+
+
+class ExamWorkspaceDocumentResponse(BaseModel):
+    """One document revision, with the DOCX import that created its lineage.
+
+    ``conversion`` is read under the same lock as the document, so its units name exactly
+    the placeholders this revision still holds; it is None for a lineage no import created.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    document: NativeExamDocument
+    summary: ExamWorkspaceDocumentSummary
+    notes: tuple[str, ...] = ()
+    conversion: ExamWorkspaceConversionStatus | None
 
 
 class ExamWorkspaceDocumentListResponse(BaseModel):

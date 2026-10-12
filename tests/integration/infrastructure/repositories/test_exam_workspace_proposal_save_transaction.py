@@ -108,7 +108,7 @@ async def test_workspace_save_persists_only_pending_overlay_and_preserves_previo
             await jobs.create(job=job)
             await overlays.create(proposed_overlay=overlay)
         await SaveExamWorkspaceDocumentHandler(
-            vault_files=files, codec=codec, store=store, id_generator=UUIDGenerator()
+            vault_files=files, codec=codec, store=store, id_generator=UUIDGenerator(), jobs=jobs
         ).handle(
             actor=owner,
             lineage_id=document.document_id,
@@ -219,6 +219,7 @@ async def test_overlay_failure_rolls_back_document_job_usage_and_storage(
                 codec=codec,
                 store=failing_store,
                 id_generator=SequenceIdGenerator([new_file_id]),
+                jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
             ).handle(
                 actor=owner,
                 lineage_id=document.document_id,
@@ -285,6 +286,7 @@ async def test_unreadable_overlay_fails_the_save_and_rolls_back_document_and_sto
                 codec=codec,
                 store=store,
                 id_generator=SequenceIdGenerator([new_file_id]),
+                jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
             ).handle(
                 actor=owner,
                 lineage_id=document.document_id,

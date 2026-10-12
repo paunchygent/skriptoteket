@@ -239,9 +239,13 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> GetExamWorkspaceDocumentHandlerProtocol:
         """Provide the reopen handler."""
-        return GetExamWorkspaceDocumentHandler(vault_files=vault_files, codec=codec, store=store)
+        return GetExamWorkspaceDocumentHandler(
+            vault_files=vault_files, codec=codec, store=store, jobs=jobs, uow=uow
+        )
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
@@ -274,8 +278,13 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> SaveExamWorkspaceDocumentHandlerProtocol:
         """Provide the versioned save handler."""
         return SaveExamWorkspaceDocumentHandler(
-            vault_files=vault_files, codec=codec, store=store, id_generator=id_generator
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            id_generator=id_generator,
+            jobs=jobs,
         )

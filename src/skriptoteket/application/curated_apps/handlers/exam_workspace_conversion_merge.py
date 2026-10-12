@@ -2,12 +2,13 @@
 
 A conversion unit is one outline question, or one review item for a source chunk no
 question owns. Each unit remembers the item ids and a digest of the items conversion
-last wrote. A still-converting unit's placeholders belong to conversion: a later result
-replaces them whatever a save did to them. A converted unit belongs to the teacher: a
-later result replaces its items only while the head still holds exactly those items, and
-once the teacher changed, removed or reordered them, the teacher's version stays. The
-document title, the instructions and the parents follow the converted-unit rule. Items
-the teacher added belong to no unit and keep their place.
+last wrote. A still-converting unit's placeholders belong to conversion: the save handler
+refuses a save that changes, moves or removes one (``changed_placeholders``), so a later
+result always finds them intact and replaces them. A converted unit belongs to the
+teacher: a later result replaces its items only while the head still holds exactly those
+items, and once the teacher changed, removed or reordered them, the teacher's version
+stays. The document title, the instructions and the parents follow the converted-unit
+rule. Items the teacher added belong to no unit and keep their place.
 """
 
 from __future__ import annotations
@@ -245,6 +246,48 @@ def _ordered_units(
     return (*known, *(unit for unit_id, unit in written.items() if unit_id not in known_ids))
 
 
+def changed_placeholders(
+    *, progress: ConversionProgress, base: NativeExamDocument, saved: NativeExamDocument
+) -> list[str]:
+    """Placeholder ids of ``base`` that ``saved`` changed, moved or removed, in base order.
+
+    A placeholder moves when its parent or the order of the items both revisions hold
+    around it changes; items the teacher added elsewhere move nothing.
+    """
+    locked = {
+        item_id
+        for unit in progress.units
+        if unit.state is ConversionUnitState.CONVERTING and unit.digest is not None
+        for item_id in unit.item_ids
+    }
+    saved_by_id = {item.item_id: item for item in saved.items}
+    base_ids = {item.item_id for item in base.items}
+    shared = [item.item_id for item in base.items if item.item_id in saved_by_id]
+    saved_order = [item.item_id for item in saved.items if item.item_id in base_ids]
+
+    def preceding(order: list[str], item_id: str) -> set[str]:
+        return set(order[: order.index(item_id)])
+
+    changed: list[str] = []
+    for item in base.items:
+        if item.item_id not in locked:
+            continue
+        counterpart = saved_by_id.get(item.item_id)
+        if (
+            counterpart is None
+            or items_digest([counterpart]) != items_digest([item])
+            or _parent_id(saved, item.item_id) != _parent_id(base, item.item_id)
+            or preceding(saved_order, item.item_id) != preceding(shared, item.item_id)
+        ):
+            changed.append(item.item_id)
+    return changed
+
+
+def _parent_id(document: NativeExamDocument, item_id: str) -> str | None:
+    parent = document.parent_of(item_id)
+    return None if parent is None else parent.parent_id
+
+
 def merge_conversion(
     *, head: NativeExamDocument, progress: ConversionProgress, target: ConversionTarget
 ) -> ConversionMerge:
@@ -285,21 +328,18 @@ def merge_conversion(
             continue
         head_items = tuple(head_by_id[i] for i in prior.item_ids if i in head_by_id)
         intact = len(head_items) == len(prior.item_ids) and items_digest(head_items) == prior.digest
-        placeholders = prior.state is ConversionUnitState.CONVERTING
-        if placeholders or (intact and candidate_digest != prior.digest):
-            # Only ids still in the head are reserved, so only those are reused.
-            present = [item.item_id for item in head_items]
-            new_ids = present[: len(candidate.items)]
+        if intact and candidate_digest != prior.digest:
+            new_ids = list(prior.item_ids[: len(candidate.items)])
             new_ids.extend(ids.fresh() for _ in range(len(candidate.items) - len(new_ids)))
             placed = tuple(
                 item.model_copy(update={"item_id": item_id})
                 for item, item_id in zip(candidate.items, new_ids, strict=True)
             )
-            if placed and present:
-                replacements[present[0]] = placed
+            if placed and prior.item_ids:
+                replacements[prior.item_ids[0]] = placed
             elif placed:
                 inserts.append((previous_last, placed))
-            removed.update(present)
+            removed.update(prior.item_ids)
             written[candidate.unit_id] = prior.model_copy(
                 update={
                     "state": candidate.state,

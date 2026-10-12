@@ -19,6 +19,7 @@
 import { computed, ref } from "vue";
 
 import { isApiError } from "../../../api/client";
+import type { ApiError } from "../../../api/client";
 import {
   getExamWorkspaceDocument,
   listExamWorkspaceDocuments,
@@ -49,6 +50,17 @@ const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
 const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
+
+/** A save refused because it changed questions that still convert (D30). */
+function refusedPlaceholderChange(error: unknown): error is ApiError {
+  return (
+    isApiError(error) &&
+    error.status === 422 &&
+    typeof error.details === "object" &&
+    error.details !== null &&
+    "item_ids" in error.details
+  );
+}
 
 /** A teacher edit keys the item only while it still carries key data. */
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
@@ -89,6 +101,7 @@ export function useExamWorkspaceDocument() {
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
 
   const {
+    adoptConversion,
     conversionError,
     conversionMessage,
     conversionProgress,
@@ -145,6 +158,7 @@ export function useExamWorkspaceDocument() {
       : [response.summary, ...savedDocuments.value];
     notes.value = response.notes;
     isDirty.value = dirty;
+    adoptConversion(response);
     const items = local.items;
     selectedItemId.value = items.some((item) => item.item_id === selectedItemId.value)
       ? selectedItemId.value
@@ -223,7 +237,10 @@ export function useExamWorkspaceDocument() {
       if (sync === "merged") {
         return await saveDocument(rejectedProposalItemIds, true);
       }
-      if (sync === "unknown") {
+      if (refusedPlaceholderChange(error)) {
+        // The server names the converting questions the save changed; the copy stays.
+        toast.failure(error.message);
+      } else if (sync === "unknown") {
         // Reloading would replace the teacher's copy with a revision never merged into it.
         toast.failure(SAVE_FAILURE_COPY);
       } else if (conflict) {

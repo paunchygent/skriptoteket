@@ -89,6 +89,7 @@ function buildDocument(): NativeExamDocument {
 
 function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document: buildDocument(),
     notes: [],
     summary: {

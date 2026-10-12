@@ -29,6 +29,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
     ConversionProgress,
+    changed_placeholders,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
     CarryExamWorkspaceProposals,
@@ -58,6 +59,7 @@ from skriptoteket.protocols.vault import (
 )
 
 EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX = "documents.conversion_hub:exam-workspace"
+_UNFINISHED = (ExamAnswerKeyEnrichmentJobStatus.QUEUED, ExamAnswerKeyEnrichmentJobStatus.RUNNING)
 
 
 def _document_not_found(lineage_id: UUID) -> DomainError:
@@ -317,18 +319,27 @@ class GetExamWorkspaceDocumentHandler:
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._codec = codec
         self._store = store
+        self._jobs = jobs
+        self._uow = uow
 
     async def handle(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceDocumentResponse:
-        head = await self._vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if head is None:
-            raise _document_not_found(lineage_id)
-        content = await self._store.load_version(actor=actor, vault_file=head)
+        # The job lock holds conversion back, so the head matches the conversion's units.
+        async with self._uow:
+            job = await self._jobs.lock_conversion_view_by_lineage(
+                owner_user_id=actor.id, workspace_lineage_id=lineage_id
+            )
+            head = await self._vault_files.get_document_head(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            if head is None:
+                raise _document_not_found(lineage_id)
+            content = await self._store.load_version(actor=actor, vault_file=head)
         container = self._codec.parse(content=content)
         if (
             container.document.document_id != lineage_id
@@ -342,6 +353,7 @@ class GetExamWorkspaceDocumentHandler:
             document=container.document,
             summary=_summary(head),
             notes=container.notes,
+            conversion=None if job is None else conversion_status(job),
         )
 
 
@@ -369,11 +381,13 @@ class SaveExamWorkspaceDocumentHandler:
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._codec = codec
         self._store = store
         self._id_generator = id_generator
+        self._jobs = jobs
 
     async def handle(
         self,
@@ -418,6 +432,10 @@ class SaveExamWorkspaceDocumentHandler:
             or head_container.document.revision != request.expected_revision
         ):
             raise validation_error("Den sparade dokumentversionen är skadad.")
+        job = await self._jobs.lock_conversion_view_by_lineage(
+            owner_user_id=actor.id, workspace_lineage_id=lineage_id
+        )
+        self._refuse_placeholder_changes(job=job, base=head_container.document, saved=document)
         assets_by_id: dict[str, bytes] = {}
         if document.assets:
             missing = {
@@ -454,5 +472,36 @@ class SaveExamWorkspaceDocumentHandler:
             rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(vault_file), notes=head_container.notes
+            document=document,
+            summary=_summary(vault_file),
+            notes=head_container.notes,
+            conversion=None if job is None else conversion_status(job),
         )
+
+    @staticmethod
+    def _refuse_placeholder_changes(
+        *,
+        job: ExamWorkspaceConversionJobView | None,
+        base: NativeExamDocument,
+        saved: NativeExamDocument,
+    ) -> None:
+        """While conversion runs, a save keeps every placeholder of its base as it is (D30)."""
+        if job is None or job.status not in _UNFINISHED:
+            return
+        progress = ConversionProgress.model_validate(job.conversion_progress or {})
+        if (progress.revision or 0) > base.revision:
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message="Dokumentet har ändrats sedan det öppnades.",
+                details={
+                    "expected_revision": base.revision,
+                    "current_revision": progress.revision,
+                },
+            )
+        changed = changed_placeholders(progress=progress, base=base, saved=saved)
+        if changed:
+            raise validation_error(
+                "Provet sparades inte: frågor som fortfarande konverteras går inte att ändra, "
+                "flytta eller ta bort förrän de är klara.",
+                details={"item_ids": changed},
+            )

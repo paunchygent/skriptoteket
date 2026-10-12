@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from pydantic import JsonValue
 from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJob
@@ -177,7 +178,19 @@ class RefusingEnrichmentJobRepository:
         del expected_worker_id
         raise AssertionError("Enrichment jobs must not be updated in this lane.")
 
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        del job_id, progress
+        raise AssertionError("Enrichment job progress must not be set in this lane.")
+
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
+        return None
+
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        del owner_user_id, workspace_lineage_id
         return None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:

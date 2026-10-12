@@ -5039,8 +5039,15 @@ export interface components {
              */
             documents: components["schemas"]["ExamWorkspaceDocumentSummary"][];
         };
-        /** ExamWorkspaceDocumentResponse */
+        /**
+         * ExamWorkspaceDocumentResponse
+         * @description One document revision, with the DOCX import that created its lineage.
+         *
+         *     ``conversion`` is read under the same lock as the document, so its units name exactly
+         *     the placeholders this revision still holds; it is None for a lineage no import created.
+         */
         ExamWorkspaceDocumentResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
             /**
              * Notes

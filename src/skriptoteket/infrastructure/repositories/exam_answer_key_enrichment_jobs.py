@@ -126,6 +126,34 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             else None
         )
 
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        stmt = (
+            select(
+                ExamAnswerKeyEnrichmentJobModel.id,
+                ExamAnswerKeyEnrichmentJobModel.owner_user_id,
+                ExamAnswerKeyEnrichmentJobModel.source_kind,
+                ExamAnswerKeyEnrichmentJobModel.status,
+                ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
+                ExamAnswerKeyEnrichmentJobModel.last_error,
+                ExamAnswerKeyEnrichmentJobModel.conversion_progress,
+            )
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.source_kind
+                == ExamAnswerKeySourceKind.DOCX_IMPORT.value,
+                ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
+                ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
+            )
+            .with_for_update(read=True)
+        )
+        row = (await self._session.execute(stmt)).one_or_none()
+        return (
+            ExamWorkspaceConversionJobView.model_validate(row, from_attributes=True)
+            if row
+            else None
+        )
+
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         stmt = (
             select(ExamAnswerKeyEnrichmentJobModel)

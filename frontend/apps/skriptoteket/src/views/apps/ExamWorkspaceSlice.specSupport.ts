@@ -142,6 +142,7 @@ export function buildResponse(params: {
 }): ExamWorkspaceDocumentResponse {
   const document = buildDocument();
   return {
+    conversion: null,
     document: {
       ...document,
       revision: params.version,
