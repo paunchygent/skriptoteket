@@ -1,7 +1,8 @@
 """A question that conflicts twice is resent once, then kept as converted with the type mark.
 
-Replays the live recordings of ``docx_build_v10_repeated_conflict``, where batch ``w2-05-01``
-reports a type conflict and its resend ``w2-05-01c01`` reports one again.
+Replays the recordings of ``docx_build_v10_repeated_conflict`` (one second-pass reply edited,
+see its README), where batch ``w2-05-01`` reports a type conflict and its resend
+``w2-05-01c01`` reports one again.
 """
 
 import pytest

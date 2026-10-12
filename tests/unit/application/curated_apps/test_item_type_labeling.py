@@ -38,12 +38,14 @@ from skriptoteket.protocols.item_type_labeler import (
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     CORPUS_24,
+    Body,
     Harness,
     always,
     load,
     replay,
     request_for,
     unavailable,
+    with_mutated_body,
 )
 
 pytestmark = pytest.mark.unit
@@ -152,6 +154,17 @@ def _outage_setup() -> _Setup:
     return _Setup(always(unavailable(503)))
 
 
+def _recorded_top(item_id: str) -> ItemTypeLabel:
+    """The most probable label other than unresolved in the recorded first-pass answer."""
+    request = request_for(load(CORPUS_24))
+    answers = load(CORPUS_24)["exchanges"][0]["body"]["answers"]
+    (answer,) = [
+        a for item, a in zip(request.items, answers, strict=True) if item.item_id == item_id
+    ]
+    ranked = [e for e in answer["probabilities"] if e["value"] != ItemTypeLabel.UNRESOLVED]
+    return ItemTypeLabel(max(ranked, key=lambda e: e["probability"])["value"])
+
+
 async def test_refused_first_pass_lease_stops_before_any_network_call() -> None:
     request, _ = _recorded()
     setup = _recorded_setup()
@@ -238,7 +251,7 @@ async def test_second_pass_result_keeps_first_pass_probabilities_and_decides_alo
         assert result.probability == first.probabilities.get(_B_LABEL, 0.0)
 
 
-async def test_second_pass_failure_leaves_one_question_unresolved_and_keeps_the_rest() -> None:
+async def test_second_pass_failure_gives_one_question_its_first_pass_top_label() -> None:
     request, below = _recorded()
     failing = sorted(below)[0]
     setup = _recorded_setup(
@@ -251,7 +264,8 @@ async def test_second_pass_failure_leaves_one_question_unresolved_and_keeps_the_
 
     assert len(labeling.results) == len(request.items)
     broken = next(r for r in labeling.results if r.item_id == failing)
-    assert broken.label is ItemTypeLabel.UNRESOLVED
+    assert broken.label is _recorded_top(failing)
+    assert broken.label is not ItemTypeLabel.UNRESOLVED
     assert broken.failure_code == "provider_unavailable"
     assert broken.decided_by is LabelPass.SECOND
     assert broken.first_pass is not None
@@ -262,7 +276,7 @@ async def test_second_pass_failure_leaves_one_question_unresolved_and_keeps_the_
     assert labeling.usage.input_tokens is None
 
 
-async def test_refused_second_pass_lease_leaves_that_question_unresolved_without_calling_b() -> (
+async def test_refused_second_pass_lease_gives_that_question_its_top_label_without_calling_b() -> (
     None
 ):
     request, below = _recorded()
@@ -273,7 +287,7 @@ async def test_refused_second_pass_lease_leaves_that_question_unresolved_without
     labeling = await setup.label(request)
 
     result = next(r for r in labeling.results if r.item_id == starved)
-    assert result.label is ItemTypeLabel.UNRESOLVED
+    assert result.label is _recorded_top(starved)
     assert result.failure_code == "lease_refused"
     assert starved not in setup.second.asked
     assert sorted(setup.second.asked) == sorted(below - {starved})
@@ -306,8 +320,46 @@ async def test_refused_second_pass_answer_is_carried_as_refused() -> None:
 
     result = next(r for r in labeling.results if r.item_id == refused)
     assert result.refused is True
-    assert result.label is ItemTypeLabel.UNRESOLVED
+    assert result.label is _recorded_top(refused)
     assert result.failure_code is None
+
+
+async def test_an_unresolved_second_pass_answer_converts_with_the_first_pass_top_label() -> None:
+    request, below = _recorded()
+    unresolved = sorted(below)[0]
+    setup = _recorded_setup(
+        _FakeSecondPass({unresolved: SecondPassLabel(ItemTypeLabel.UNRESOLVED, _B_INPUT_TOKENS, 0)})
+    )
+
+    labeling = await setup.label(request)
+
+    result = next(r for r in labeling.results if r.item_id == unresolved)
+    assert result.label is _recorded_top(unresolved)
+    assert result.decided_by is LabelPass.SECOND
+    assert result.probability == dict(result.probabilities)[result.label]
+    assert result.probability < ACCEPT_THRESHOLD
+
+
+async def test_a_first_pass_unresolved_label_above_the_threshold_goes_to_the_second_pass() -> None:
+    request, below = _recorded()
+    index, settled = next(
+        (n, i.item_id) for n, i in enumerate(request.items) if i.item_id not in below
+    )
+
+    def unresolved_first(body: Body) -> None:
+        answer = body["answers"][index]
+        answer["choice"] = ItemTypeLabel.UNRESOLVED.value
+        for entry in answer["probabilities"]:
+            entry["probability"] = 0.97 if entry["value"] == "unresolved" else 0.005
+
+    setup = _Setup(with_mutated_body(unresolved_first))
+
+    labeling = await setup.label(request)
+
+    assert settled in setup.second.asked
+    result = next(r for r in labeling.results if r.item_id == settled)
+    assert result.label is _B_LABEL
+    assert result.decided_by is LabelPass.SECOND
 
 
 async def test_on_results_receives_each_question_exactly_once_accepted_before_escalated() -> None:
@@ -351,7 +403,7 @@ async def test_failed_first_pass_sends_every_question_to_the_second_pass() -> No
     assert labeling.usage.input_tokens is None
 
 
-async def test_failed_first_pass_with_failing_second_pass_leaves_every_question_unresolved() -> (
+async def test_failed_first_pass_with_failing_second_pass_leaves_every_question_without_label() -> (
     None
 ):
     request, _ = _recorded()

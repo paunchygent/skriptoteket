@@ -1,10 +1,12 @@
 """Two-pass item-type classifier behind the daily token lease (TASK-SKRIPT-39-05-04 D23).
 
 Purpose:
-    The batched first pass labels every question. A label at or above the acceptance
-    threshold is settled at once; every other question is decided alone by the second
-    pass (B), all such questions concurrently. A second pass that fails leaves the
-    question unresolved, which conversion treats as free text. Each call reserves its
+    The batched first pass labels every question. A label other than unresolved at or
+    above the acceptance threshold is settled at once; every other question is decided
+    alone by the second pass (B), all such questions concurrently. A question B leaves
+    unresolved, by its answer, a refusal or a failure, takes the first pass's top label,
+    and the converter's type_conflict resend corrects a wrong one (D23). Only a question
+    neither pass gave any label stays unresolved. Each call reserves its
     estimated tokens before any network access and reconciles the measured tokens after;
     a failed or unmeasured call keeps its reservation charged, as every lease does.
 
@@ -64,10 +66,32 @@ def _first_pass_failed(item: LabelingItem, code: str) -> ItemTypeLabelResult:
     )
 
 
+def _settled(result: ItemTypeLabelResult) -> bool:
+    """A first-pass label is settled at once when accepted and not unresolved."""
+    return result.route is LabelRoute.ACCEPT and result.label is not ItemTypeLabel.UNRESOLVED
+
+
+def _top_label(first: ItemTypeLabelResult) -> ItemTypeLabel:
+    """The first pass's most probable label other than unresolved; unresolved when the
+    first pass gave no probabilities."""
+    ranked = {
+        label: probability
+        for label, probability in first.probabilities.items()
+        if label is not ItemTypeLabel.UNRESOLVED
+    }
+    return max(ranked, key=ranked.__getitem__, default=ItemTypeLabel.UNRESOLVED)
+
+
 def _decided(
-    first: ItemTypeLabelResult, label: ItemTypeLabel, *, refused: bool, failure: str | None
+    first: ItemTypeLabelResult,
+    answer: ItemTypeLabel,
+    *,
+    refused: bool,
+    failure: str | None,
 ) -> ItemTypeLabelResult:
-    """The second pass decides alone; the first-pass probability of its label is kept."""
+    """The second pass decides alone; a question it leaves unresolved takes the first pass's
+    top label (D23). The first-pass probability of the label is kept."""
+    label = _top_label(first) if answer is ItemTypeLabel.UNRESOLVED else answer
     return ItemTypeLabelResult(
         item_id=first.item_id,
         label=label,
@@ -106,13 +130,13 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         if not request.items:
             return ItemTypeLabeling(results=())
         first, first_tokens = await self._first_pass(request)
-        accepted = tuple(r for r in first if r.route is LabelRoute.ACCEPT)
+        accepted = tuple(r for r in first if _settled(r))
         if on_results is not None and accepted:
             on_results(accepted)
         escalated = [
             (index, item)
             for index, (item, result) in enumerate(zip(request.items, first, strict=True))
-            if result.route is LabelRoute.ESCALATE
+            if not _settled(result)
         ]
         decided = await asyncio.gather(
             *(
@@ -179,7 +203,7 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         except ItemTypeLabelerError as error:
             failure = error.code
             logger.warning(
-                "Item-type second pass failed; the question stays unresolved",
+                "Item-type second pass failed; the question takes the first pass's top label",
                 job_id=str(job_id),
                 code=error.code,
                 status_code=error.status_code,

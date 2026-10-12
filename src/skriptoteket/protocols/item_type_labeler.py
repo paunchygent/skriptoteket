@@ -103,7 +103,7 @@ class ItemTypeLabelResult:
     """The batched answer this result replaces after a second pass; None on a first pass."""
     decided_by: LabelPass = LabelPass.FIRST
     failure_code: str | None = None
-    """Set when the second pass failed and the label fell back to unresolved."""
+    """Set when the second pass failed; the label is then the first pass's top label."""
 
 
 @dataclass(frozen=True)

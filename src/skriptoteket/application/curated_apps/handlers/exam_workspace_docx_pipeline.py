@@ -9,8 +9,10 @@ document is assembled in source order and checked against the grouping.
 Each question reaches the labeler as its faithful source: markdown, with an image of each
 block markdown cannot carry (D14). A question holding a block of which no faithful image
 could be made is not labeled: the event names the block, and the question converts as free
-text with no label confidence, so it carries the type-check mark. An unresolved or
-unsupported label converts as free text (D23). The strict schema is the
+text with no label confidence, so it carries the type-check mark. A question neither labeling
+pass gave any label converts the same way. An unsupported label converts as free text; a
+question the second pass leaves unresolved arrives with the first pass's top label (D23).
+The strict schema is the
 only gate on a batch response. A family the converter reports as a type conflict is resent
 with the reported kind, the only resend. A family that still conflicts in its resend is
 kept as converted and carries the type-check mark: its review confidence stays below the
@@ -107,7 +109,6 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
     ItemTypeLabel.FREE_TEXT: NativeExamItemKind.FREE_TEXT,
     ItemTypeLabel.MATCHING: NativeExamItemKind.MATCHING,
     ItemTypeLabel.UNSUPPORTED: NativeExamItemKind.FREE_TEXT,
-    ItemTypeLabel.UNRESOLVED: NativeExamItemKind.FREE_TEXT,
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
@@ -314,6 +315,17 @@ class DocxConversionPipeline:
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
             for result in results:
+                if result.label is ItemTypeLabel.UNRESOLVED:
+                    # Neither pass gave this question a label: it converts like a question
+                    # the labeler never saw.
+                    run.state.record(
+                        "labeling",
+                        "no_label",
+                        anchors=run.own_anchors[result.item_id],
+                        detail=result.failure_code or "",
+                    )
+                    run.kinds[result.item_id] = NativeExamItemKind.FREE_TEXT
+                    continue
                 run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
                 run.first_pass[result.item_id] = (result.first_pass or result).probabilities
             if results and results[0].decided_by is LabelPass.FIRST:
