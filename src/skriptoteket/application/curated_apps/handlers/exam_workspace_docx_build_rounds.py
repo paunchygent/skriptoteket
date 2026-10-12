@@ -93,6 +93,13 @@ Rules:
   word, stays student-visible text without the tags. Tell them apart by the sentence:
   italic words that complete the statement the student is asked to complete or decide, so
   that the statement without them is the question, are facit.
+  When a question sets several phrases apart in the same way, decide for each phrase whether
+  the student writes it or reads it. A phrase the rest of the line names, describes or
+  classifies, such as a sentence the line goes on to say something about or a phrase right
+  after a word that names what it is, is material the student reads: it stays text. Only a
+  phrase that states what the student is asked for becomes a gap, and every line keeps the
+  material its gaps ask about. When you cannot tell which phrases the student writes, return
+  outcome review with a review_reason that names those phrases.
 - A blank in a question with options marks the place the options fill: copy it into the body
   as text exactly as printed; it is no gap.
 - A gap is a place where the student writes an answer the facit keys. The facit gives the

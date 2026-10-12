@@ -11,9 +11,10 @@ lists it as an answer key, the title or an instruction, and is no answer key whe
 another chunk of its question. A title or instruction holding an own chunk no item lists is an
 instruction that stands only where assembly places it at its question (D42); the title keeps
 its other chunks. A converted item that leaves out own chunks of its question holds them under
-a check mark that shows them as printed (D41). Building one question's item never fails the
-batch: an item that cannot be built becomes a review item holding that question's own source
-text. A question reported as a type conflict leaves the
+a check mark that shows them as printed (D41). A gap_fill item that makes a gap of material its
+line talks about becomes a review item showing its question as printed (D43). Building one
+question's item never fails the batch: an item that cannot be built becomes a review item
+holding that question's own source text. A question reported as a type conflict leaves the
 batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
 as converted.
 """
@@ -31,6 +32,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
+    GAPPED_MATERIAL_REASON,
+    gapped_material,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     with_left_out_mark,
 )
@@ -41,6 +46,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
+    NativeExamItemKind,
     NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError
@@ -247,6 +253,13 @@ def _admit_item(
         state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
         state.accepted.append(state.printed(anchors, reason, seen))
         return
+    if produced.kind is NativeExamItemKind.GAP_FILL:
+        material = gapped_material(produced, (state.chunk_by_anchor[a] for a in anchors))
+        if material:
+            reason = f"{GAPPED_MATERIAL_REASON} {', '.join(f'”{m}”' for m in material)}"
+            state.record("admission", "gapped_material", item=index, anchors=anchors, detail=reason)
+            state.accepted.append(state.printed(anchors, reason, seen))
+            return
     instructions = (
         *(a for m in state.instructions for a in m.source_anchors),
         *state.context_anchors,
