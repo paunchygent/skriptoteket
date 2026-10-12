@@ -64,7 +64,6 @@ copied repo-local skills.
 - `handoff.md`: current-state handoff; keep it under 200 lines.
 - `.codex/long-term-memory/index.md`: durable session-history doorway.
 - `.codex/long-term-memory/entries/`: retained session-history entries.
-- `CLAUDE.md`: Claude specialist memory only.
 
 When compacting `handoff.md`, move durable session history to
 `.codex/long-term-memory/entries/` first.
@@ -101,10 +100,3 @@ Default close-out:
 
 Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
 `docker compose up -d db` should not be stopped unless the user asks.
-
-## Claude Boundary
-
-`CLAUDE.md` is not a second implementation handbook. It is a narrow specialist
-file for Claude UI layout/design review and idiomatic Swedish copy. Keep Codex
-and engineering work routed through this file, skills, rules, runbooks, and
-docs-as-code.
