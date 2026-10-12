@@ -4,8 +4,9 @@
 ``docx_build_v12_low14_model_review`` holds the live recordings of a one-family-per-batch run
 in which the model returned ``outcome: review`` for a question whose lettered parts carry their
 answers inline. The review item holds every chunk the question owns, in source order, facit
-included, between its neighbouring questions and under the same section parent as they are,
-and the document stays blocked for export while it is there.
+included, between its neighbouring questions. The grouping gives no shared context governing
+two or more of those three questions, so none of them sits under a section parent. The
+document stays blocked for export while the review item is there.
 """
 
 import pytest
@@ -22,6 +23,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     build_replay,
     corpus_chunks,
+    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
@@ -31,6 +33,7 @@ _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _QUESTION = ("body:0085", "body:0086", "body:0087")
 _PREVIOUS_QUESTION = "body:0079"
 _NEXT_QUESTION = "body:0093"
+_SECTION = ("q19", "q20", "q21")
 
 
 def _paragraphs(item: NativeExamItem) -> list[str]:
@@ -63,11 +66,17 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     previous, following = by_anchor[_PREVIOUS_QUESTION], by_anchor[_NEXT_QUESTION]
     assert not previous.review.reasons and not following.review.reasons
     assert previous.sequence + 1 == item.sequence == following.sequence - 1
-    assert (
-        document.parent_of(previous.item_id)
-        == document.parent_of(item.item_id)
-        == document.parent_of(following.item_id)
-    )
+    contexts = recording(_EXAM, "docx_grouping_1", root=_ROOT)["shared_contexts"]
+    assert isinstance(contexts, list)
+    shared = [
+        c
+        for c in contexts
+        if isinstance(c, dict)
+        and isinstance(c["governs"], list)
+        and len(set(c["governs"]) & set(_SECTION)) >= 2
+    ]
+    assert shared == [], "the grouping governs this section; assert its parent instead"
+    assert [document.parent_of(i.item_id) for i in (previous, item, following)] == [None] * 3
     assert ("review_required", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }

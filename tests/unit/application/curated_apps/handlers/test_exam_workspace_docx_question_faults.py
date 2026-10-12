@@ -93,8 +93,9 @@ def _by_anchor(outcome: DocxConversionOutcome) -> dict[str | None, NativeExamIte
     return {item.source_anchor: item for item in outcome.result.document.items}
 
 
-def _comparable(item: NativeExamItem) -> dict[str, object]:
-    return item.model_dump(exclude={"item_id", "sequence"})
+def _comparable(item: NativeExamItem) -> NativeExamItem:
+    """The item with its document-position id and sequence set to those of a first item."""
+    return item.model_copy(update={"item_id": "item_001", "sequence": 1})
 
 
 def _text(item: NativeExamItem) -> list[str]:
