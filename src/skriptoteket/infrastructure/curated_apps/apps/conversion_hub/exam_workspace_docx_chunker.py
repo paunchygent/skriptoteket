@@ -1,4 +1,4 @@
-"""Segment DOCX body text without interpreting exam content."""
+"""Segment DOCX body blocks, text or drawn, without interpreting exam content."""
 
 import io
 import zipfile
