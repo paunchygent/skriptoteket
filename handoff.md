@@ -10,18 +10,17 @@
     edit, QTI export; retained root
     `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
   - [TASK-SKRIPT-39-05-05](docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md)
-    `in_progress`: titles drop answer-key wording. Rereview approved `83501383`,
-    merged `ece1b674`, pushed; staging walk 2026-10-11 on `ece1b674`: sa24 editor
-    and QTI title "Test Unit 3 Discuss and Argue" (retained root
+    `in_progress`: titles drop answer-key wording. Approved `83501383`, merged
+    `ece1b674`; staging walk 2026-10-11 passed (retained
     `evidence/task-skript-39-05-05/staging-walk-ece1b674/`). Next: user closure.
     Prior recorded eval's three item failures match baseline `6bf05757`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `done` (user closure 2026-10-12 after the staging walk on `63de8094`;
-    retained `evidence/staging-walk/walk-63de8094.md`); worktree and branch
-    retired. Next in ST-39-05:
-    scaffold and plan the follow-up task (story Tasks item 6): label-first
+    `done` (user closure 2026-10-12, staging walk `63de8094`, retained
+    `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
+  - TASK-SKRIPT-39-05-07 `proposed` (D1-D9 from the 39-04-05 plan, user 2026-10-13):
+    export blocks only on missing values; "(N p)" becomes points. Next: user ready.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
