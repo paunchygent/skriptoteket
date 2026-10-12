@@ -23,8 +23,10 @@ import httpx
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
-    DocxConversionJob,
     DocxConversionPipeline,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionJob,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,

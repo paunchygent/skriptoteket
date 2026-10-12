@@ -17,7 +17,7 @@ from skriptoteket.application.curated_apps.handlers import exam_workspace_docx_p
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionOutcome,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (

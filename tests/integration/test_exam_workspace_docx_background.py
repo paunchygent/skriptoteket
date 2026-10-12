@@ -41,7 +41,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
 )
 from skriptoteket.config import Settings

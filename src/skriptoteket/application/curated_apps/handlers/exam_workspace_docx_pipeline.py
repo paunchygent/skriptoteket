@@ -33,9 +33,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import Mapping
-from dataclasses import dataclass, replace
-from uuid import UUID
+from dataclasses import replace
 
 import structlog
 
@@ -58,6 +56,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ro
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionJob,
+    DocxConversionOutcome,
+    DocxConversionRun,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
@@ -65,20 +68,13 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
     StructuredLLMProviderProfile,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildResult,
-    DocxStageTiming,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
-    QuestionFamily,
     pack_batches,
     question_families,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
-    SharedContext,
     question_source_anchors,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -117,69 +113,6 @@ _BATCH_FAILED_REASON = "Frågan kunde inte tolkas. Kontrollera källtexten manue
 UNLABELED_REASON = "Frågetypen kunde inte avgöras. Välj frågetyp och kontrollera källtexten."
 
 logger = structlog.get_logger(__name__)
-
-
-@dataclass(frozen=True)
-class DocxConversionOutcome:
-    """The final build result and its mapping of grouped questions to items."""
-
-    result: DocxBuildResult
-    update: ConversionUpdate
-
-
-@dataclass(frozen=True)
-class DocxConversionJob:
-    """Identity and source of one conversion."""
-
-    job_id: UUID
-    worker_id: str
-    document_id: UUID
-    filename: str
-    source_sha256: str
-    source_docx: bytes
-    chunks: tuple[DocxChunk, ...]
-
-
-class _Run:
-    """Mutable bookkeeping of one conversion; every mutation happens under the UoW lock."""
-
-    def __init__(self, job: DocxConversionJob, started: float) -> None:
-        self.job = job
-        self.started = started
-        self.state = DocxBuildState(
-            job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
-        )
-        self.families: tuple[QuestionFamily, ...] = ()
-        self.title_anchors: frozenset[str] = frozenset()
-        self.context_anchors: frozenset[str] = frozenset()
-        self.contexts: tuple[SharedContext, ...] = ()
-        self.own_anchors: dict[str, tuple[str, ...]] = {}
-        self.key_anchors: dict[str, tuple[str, ...]] = {}
-        self.kinds: dict[str, NativeExamItemKind] = {}
-        self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
-        self.resent: set[str] = set()
-        self.second_wave_dispatches = 0
-        self.filled: list[str] = []
-        self.timings: list[DocxStageTiming] = []
-
-    def family(self, question_id: str) -> QuestionFamily:
-        return next(f for f in self.families if f.question_id == question_id)
-
-    def timed(self, stage: str, started: float) -> None:
-        self.timings.append(
-            DocxStageTiming(stage, started - self.started, time.monotonic() - self.started)
-        )
-
-    def confidence(self) -> dict[str, float]:
-        """The first-pass probability of the label each question converts with."""
-        return {
-            qid: self.first_pass.get(qid, {}).get(ItemTypeLabel(kind.value), 0.0)
-            for qid, kind in self.kinds.items()
-        }
-
-    @property
-    def pending(self) -> tuple[str, ...]:
-        return tuple(f.question_id for f in self.families if f.question_id not in self.filled)
 
 
 def _labeling_item(
@@ -227,7 +160,7 @@ class DocxConversionPipeline:
     async def convert(
         self, *, job: DocxConversionJob, fallback_reason: str | None = None
     ) -> DocxConversionOutcome:
-        run = _Run(job, time.monotonic())
+        run = DocxConversionRun(job, time.monotonic())
         if fallback_reason or not self._enabled:
             reason = fallback_reason or _DISABLED_REASON
             run.state.record(
@@ -261,7 +194,7 @@ class DocxConversionPipeline:
             raise group.exceptions[0] from group
         return self._final(run, manifest)
 
-    async def _outline(self, run: _Run, manifest: ExamManifest) -> None:
+    async def _outline(self, run: DocxConversionRun, manifest: ExamManifest) -> None:
         questions = tuple(
             OutlineQuestion(
                 question_id=family.question_id,
@@ -282,7 +215,7 @@ class DocxConversionPipeline:
             )
 
     def _labeling_request(
-        self, run: _Run, manifest: ExamManifest
+        self, run: DocxConversionRun, manifest: ExamManifest
     ) -> tuple[LabelingRequest, list[str]]:
         """Each question's faithful source (D14), and the questions holding a block of which
         no faithful image could be made; those are recorded and never labeled."""
@@ -306,7 +239,7 @@ class DocxConversionPipeline:
         return LabelingRequest(job_id=run.job.job_id, items=tuple(items)), unlabeled
 
     async def _label_and_convert(
-        self, run: _Run, manifest: ExamManifest, tasks: asyncio.TaskGroup
+        self, run: DocxConversionRun, manifest: ExamManifest, tasks: asyncio.TaskGroup
     ) -> None:
         started = time.monotonic()
         request, unlabeled = self._labeling_request(run, manifest)
@@ -354,7 +287,7 @@ class DocxConversionPipeline:
         run.timed("labeling", started)
 
     def _dispatch(
-        self, run: _Run, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
+        self, run: DocxConversionRun, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
     ) -> None:
         chosen = set(question_ids)
         families = tuple(f for f in run.families if f.question_id in chosen)
@@ -363,7 +296,7 @@ class DocxConversionPipeline:
         ):
             tasks.create_task(self._convert(run, batch, tasks))
 
-    def _batch_state(self, run: _Run, batch: ConversionBatch) -> DocxBuildState:
+    def _batch_state(self, run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildState:
         job = run.job
         return DocxBuildState(
             job.job_id,
@@ -380,14 +313,20 @@ class DocxConversionPipeline:
             governing=frozenset(governed_anchors(run.contexts, run.families)),
         )
 
-    async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:
+    async def _convert(
+        self, run: DocxConversionRun, batch: ConversionBatch, tasks: asyncio.TaskGroup
+    ) -> None:
         started = time.monotonic()
         outcome = await self._converted(run, batch)
         run.timed(f"batch {batch.batch_id}", started)
         await self._deliver(run, batch, outcome, tasks)
 
     async def _unlabeled(
-        self, run: _Run, question_ids: list[str], batch_id: str, tasks: asyncio.TaskGroup
+        self,
+        run: DocxConversionRun,
+        question_ids: list[str],
+        batch_id: str,
+        tasks: asyncio.TaskGroup,
     ) -> None:
         """Questions no labeling pass labeled, each as one review item of its source text."""
         chosen = set(question_ids)
@@ -402,7 +341,11 @@ class DocxConversionPipeline:
         await self._deliver(run, batch, self._reviewed(run, batch, UNLABELED_REASON), tasks)
 
     async def _deliver(
-        self, run: _Run, batch: ConversionBatch, outcome: BatchOutcome, tasks: asyncio.TaskGroup
+        self,
+        run: DocxConversionRun,
+        batch: ConversionBatch,
+        outcome: BatchOutcome,
+        tasks: asyncio.TaskGroup,
     ) -> None:
         async with self._uow.lock:
             try:
@@ -422,7 +365,7 @@ class DocxConversionPipeline:
         if outcome.conflicts:
             self._dispatch(run, list(outcome.conflicts), f"{batch.batch_id}c", tasks)
 
-    async def _converted(self, run: _Run, batch: ConversionBatch) -> BatchOutcome:
+    async def _converted(self, run: DocxConversionRun, batch: ConversionBatch) -> BatchOutcome:
         """The batch's admitted and contract-checked items, else its questions for review."""
         families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
         try:
@@ -444,14 +387,16 @@ class DocxConversionPipeline:
         return outcome
 
     def _failed(
-        self, run: _Run, batch: ConversionBatch, code: str, error: Exception
+        self, run: DocxConversionRun, batch: ConversionBatch, code: str, error: Exception
     ) -> BatchOutcome:
         """Each of the batch's questions as one review item holding its source text."""
         outcome = self._reviewed(run, batch, _BATCH_FAILED_REASON)
         outcome.state.record("batch", code, detail=type(error).__name__)
         return outcome
 
-    def _reviewed(self, run: _Run, batch: ConversionBatch, reason: str) -> BatchOutcome:
+    def _reviewed(
+        self, run: DocxConversionRun, batch: ConversionBatch, reason: str
+    ) -> BatchOutcome:
         state = self._batch_state(run, batch)
         state.review_questions(
             (run.own_anchors[qid] for qid in batch.question_ids),
@@ -462,7 +407,9 @@ class DocxConversionPipeline:
         )
         return BatchOutcome(state)
 
-    def _merged(self, run: _Run, batch: ConversionBatch, outcome: BatchOutcome) -> ConversionUpdate:
+    def _merged(
+        self, run: DocxConversionRun, batch: ConversionBatch, outcome: BatchOutcome
+    ) -> ConversionUpdate:
         """Merge the batch into a copy of the document and build its provisional update; the
         run takes the copy only when every step succeeded."""
         trial = run.state.snapshot()
@@ -487,7 +434,9 @@ class DocxConversionPipeline:
             run.resent.add(qid)
         return update
 
-    def _final(self, run: _Run, manifest: ExamManifest | None) -> DocxConversionOutcome:
+    def _final(
+        self, run: DocxConversionRun, manifest: ExamManifest | None
+    ) -> DocxConversionOutcome:
         started = time.monotonic()
         result = run.state.result(
             governed_anchors(run.contexts, run.families),

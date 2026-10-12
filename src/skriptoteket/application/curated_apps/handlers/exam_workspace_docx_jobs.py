@@ -17,8 +17,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
-    DocxConversionJob,
     DocxConversionPipeline,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionJob,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.errors import DomainError

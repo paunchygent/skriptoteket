@@ -25,7 +25,7 @@ from docx.oxml.text.paragraph import CT_P
 from PIL import Image
 from pydantic import BaseModel, JsonValue
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
     DocxConversionOutcome,
 )

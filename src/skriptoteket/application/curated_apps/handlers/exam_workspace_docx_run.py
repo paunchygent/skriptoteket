@@ -1,0 +1,87 @@
+"""The input, the result and the per-run state of one DOCX conversion."""
+
+from __future__ import annotations
+
+import time
+from collections.abc import Mapping
+from dataclasses import dataclass
+from uuid import UUID
+
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    DocxBuildState,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
+    DocxBuildResult,
+    DocxStageTiming,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import SharedContext
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItemKind,
+)
+from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
+from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
+
+
+@dataclass(frozen=True)
+class DocxConversionOutcome:
+    """The final build result and its mapping of grouped questions to items."""
+
+    result: DocxBuildResult
+    update: ConversionUpdate
+
+
+@dataclass(frozen=True)
+class DocxConversionJob:
+    """Identity and source of one conversion."""
+
+    job_id: UUID
+    worker_id: str
+    document_id: UUID
+    filename: str
+    source_sha256: str
+    source_docx: bytes
+    chunks: tuple[DocxChunk, ...]
+
+
+class DocxConversionRun:
+    """Mutable bookkeeping of one conversion; every mutation happens under the UoW lock."""
+
+    def __init__(self, job: DocxConversionJob, started: float) -> None:
+        self.job = job
+        self.started = started
+        self.state = DocxBuildState(
+            job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
+        )
+        self.families: tuple[QuestionFamily, ...] = ()
+        self.title_anchors: frozenset[str] = frozenset()
+        self.context_anchors: frozenset[str] = frozenset()
+        self.contexts: tuple[SharedContext, ...] = ()
+        self.own_anchors: dict[str, tuple[str, ...]] = {}
+        self.key_anchors: dict[str, tuple[str, ...]] = {}
+        self.kinds: dict[str, NativeExamItemKind] = {}
+        self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
+        self.resent: set[str] = set()
+        self.second_wave_dispatches = 0
+        self.filled: list[str] = []
+        self.timings: list[DocxStageTiming] = []
+
+    def family(self, question_id: str) -> QuestionFamily:
+        return next(f for f in self.families if f.question_id == question_id)
+
+    def timed(self, stage: str, started: float) -> None:
+        self.timings.append(
+            DocxStageTiming(stage, started - self.started, time.monotonic() - self.started)
+        )
+
+    def confidence(self) -> dict[str, float]:
+        """The first-pass probability of the label each question converts with."""
+        return {
+            qid: self.first_pass.get(qid, {}).get(ItemTypeLabel(kind.value), 0.0)
+            for qid, kind in self.kinds.items()
+        }
+
+    @property
+    def pending(self) -> tuple[str, ...]:
+        return tuple(f.question_id for f in self.families if f.question_id not in self.filled)

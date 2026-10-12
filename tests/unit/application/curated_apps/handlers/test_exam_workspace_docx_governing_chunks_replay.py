@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionOutcome,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
