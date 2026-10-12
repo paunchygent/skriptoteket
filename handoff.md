@@ -71,9 +71,12 @@
   after the modal closes.
 - ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
   (rule 045 replacement, shadow and panel sweep, per-app token passes).
-  Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S5
-  closed, S6 open with the user: the shared release itself ships the brutal
-  shadow tokens, utilities and press offset. TASK-SKRIPT-39-04-05
+  Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S7
+  closed. Release first (user 2026-10-12): skill-repository
+  `TASK-SKILL-REP-0279` (0.1.24 without offset shadows; implementation lead
+  running) with HuleEdu `TASK-HULE-REP-0142`; then this story's first task
+  syncs 0.1.24 and removes local uses in the same commit, before
+  TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
   (`proposed`, renamed; plan D1-D8 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`) now covers only the exam workspace;
   approved images in `docs/mockups/exam-workspace-shared-direction/` with
