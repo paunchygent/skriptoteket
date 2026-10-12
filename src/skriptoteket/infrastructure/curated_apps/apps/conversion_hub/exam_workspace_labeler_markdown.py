@@ -1,4 +1,4 @@
-"""Faithful DOCX markdown for the item-type labeler (D14); the converter chunker stays unchanged.
+"""Faithful DOCX markdown for the item-type labeler (D14), projected from the converter chunks.
 
 Each chunk keeps the converter's anchor, kind and text. Only ``marked_text`` changes: it
 renders the block as the teacher sees it in Word, with heading level, indentation, Word
@@ -30,6 +30,7 @@ from docx.text.run import Run
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
+    drawn,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
     DocxBlockImageRenderer,
@@ -37,11 +38,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.protocols.exam_workspace import LabelerSource, LabelerSourceProtocol
 
-# Content markdown cannot carry faithfully; such a block needs an image of that part.
-_IMAGE_ONLY = tuple(
-    qn(tag)
-    for tag in ("w:drawing", "w:pict", "w:object", "w:txbxContent", "w:gridSpan", "w:vMerge")
-)
+# Merged table cells markdown cannot carry faithfully; like drawn content, such a block
+# needs an image of that part.
+_MERGED = (qn("w:gridSpan"), qn("w:vMerge"))
 _TWIPS_PER_SPACE = 180  # 9 pt per rendered space
 
 
@@ -209,7 +208,7 @@ class PythonDocxLabelerMarkdown(LabelerSourceProtocol):
 
 
 def _markdown(element: BaseOxmlElement, document: DocxDocument) -> str:
-    if any(next(element.iter(tag), None) is not None for tag in _IMAGE_ONLY):
+    if drawn(element) or any(next(element.iter(tag), None) is not None for tag in _MERGED):
         raise _ImageRequired
     if isinstance(element, CT_P):
         return _paragraph(Paragraph(element, document), document)
