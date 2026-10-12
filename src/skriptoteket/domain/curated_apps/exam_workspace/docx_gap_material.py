@@ -1,10 +1,10 @@
 """A gap holds what the student supplies, never the material the line talks about (D43).
 
 When a line sets several phrases apart in the same way, one of them can be the material the
-line talks about. A set-apart phrase that ends a sentence while its line goes on in lowercase
-is such material: the line treats the whole sentence as a name it says something about, so
-the student reads it and never writes it. A gap_fill reply that makes such a phrase a gap
-could not tell the phrases apart, and the question goes to teacher review.
+line talks about. A set-apart phrase of several words that ends a sentence while its line goes
+on in lowercase is such material: the line treats the whole sentence as a name it says
+something about, so the student reads it and never writes it. A gap_fill reply that makes such
+a phrase a gap could not tell the phrases apart, and the question goes to teacher review.
 """
 
 import re
@@ -24,8 +24,9 @@ GAPPED_MATERIAL_REASON = (
 
 
 def _mentioned_sentences(chunk: DocxChunk) -> frozenset[str]:
-    """Set-apart phrases of ``chunk`` that end a sentence while their line goes on in
-    lowercase; only a chunk that sets several phrases apart has them."""
+    """Set-apart phrases of several words in ``chunk`` that end a sentence while their line
+    goes on in lowercase; only a chunk that sets several phrases apart has them. One word with a
+    full stop, such as an ordinal or an abbreviation, is no sentence."""
     runs = tuple(_SET_APART.finditer(chunk.marked_text))
     if len(runs) < 2:
         return frozenset()
@@ -33,7 +34,8 @@ def _mentioned_sentences(chunk: DocxChunk) -> frozenset[str]:
     for run in runs:
         phrase = run.group(1).strip()
         following = chunk.marked_text[run.end() :].lstrip(" \t")[:1]
-        if phrase.endswith(_SENTENCE_END) and following.isalpha() and following.islower():
+        sentence = " " in phrase and phrase.endswith(_SENTENCE_END)
+        if sentence and following.isalpha() and following.islower():
             found.add(phrase)
     return frozenset(found)
 
