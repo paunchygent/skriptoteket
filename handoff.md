@@ -18,14 +18,14 @@
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Claude parent (session `01a12706`), branch
     `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
-    Rereview `ee3dc365` (at `aa8016f6`): F1/F2/F3/F6/F8 fixed; F4/F5/F7/F9/F10
-    repaired since (R2 units, P6). D23 revised and D40 added 2026-10-12, built
-    by P7 (`de0c816e`, `1c9093fa`). Live runs low-17..20: 304-305/314.
-    Now: P8 (question keeps its own chunks, whole-question review items,
-    unlabeled question -> review item, unclaimed governing chunk -> parent).
-    Next: fresh Sol rereview, browser walk (incl. D31 Exam.net rubric check),
-    merge. Follow-up task in ST-39-05: label-first review with per-question
-    model retry (user decision 2026-10-11).
+    D23 revised, D40 and D41 (2026-10-12) built by P7-P9 (`de0c816e`,
+    `1c9093fa`, `810610c6`). Live runs low-17..24: 302-309/314. Sol rereview
+    at `e1471e2c` (retained `evidence/reviews/TASK-SKRIPT-39-05-04/rereview-e1471e2c.md`):
+    F4/F5/F7/F9/F10 fixed; changes_requested for F11 (own chunk listed only as
+    metadata skips the D41 mark) and F12 (test pins prompt prose).
+    Now: P10 repairs F11/F12. Next: rereview of P10, browser walk (incl. D31
+    Exam.net rubric check), merge. Follow-up task in ST-39-05: label-first
+    review with per-question model retry, picture in review items and marks.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
