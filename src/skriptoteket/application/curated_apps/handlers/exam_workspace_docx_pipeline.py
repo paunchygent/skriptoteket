@@ -369,6 +369,7 @@ class DocxConversionPipeline:
             allowed_kinds=batch.kinds,
             batch=batch.batch_id,
             keep_conflicts=any(qid in run.resent for qid in batch.question_ids),
+            questions=tuple(f.question_anchors for f in run.families),
         )
 
     async def _convert(self, run: _Run, batch: ConversionBatch, tasks: asyncio.TaskGroup) -> None:

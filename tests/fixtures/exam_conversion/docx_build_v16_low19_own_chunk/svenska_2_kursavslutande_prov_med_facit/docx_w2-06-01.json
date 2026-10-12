@@ -1,0 +1,47 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Del 3: kortsvar",
+      "source_anchors": [
+        "body:0091"
+      ],
+      "points": 5
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0095"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0093",
+        "body:0094",
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Renässansen",
+      "printed_label": "Fråga 21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad menas med en renässansmänniska?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap."
+    }
+  ]
+}

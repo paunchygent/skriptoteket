@@ -5,7 +5,9 @@ batch's own chunks and every kind to the batch's kinds. Admission never rejects 
 a schema-valid response. A chunk two entries name stays with the first; the later entry
 keeps its other chunks. A question the native contract cannot hold, a question the model
 marks for review, and every chunk no entry names become review items that keep their
-source text. Building one question's item never fails the batch: an item that cannot be
+source text. A chunk the grouping gives a question as its own stays with the item that lists
+it, also when the reply lists it as an answer key. Building one question's item never fails
+the batch: an item that cannot be
 built becomes a review item holding that question's own source text. A question reported
 as a type conflict leaves the batch for the pipeline to resend with the kind the source
 shows, once: in the resend it is kept as converted.
@@ -88,9 +90,13 @@ def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tu
     )
 
 
-def _admit_keys(raw: JsonValue, state: DocxBuildState, seen: set[str]) -> None:
+def _admit_keys(
+    raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
+) -> None:
     listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
     for anchor in _free(listed, state, seen):
+        if anchor in item_held and anchor in state.question_by_anchor:
+            continue
         state.key_anchors.add(anchor)
         seen.add(anchor)
 
@@ -180,14 +186,16 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
 def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     """Admit every entry once; chunks no entry names become review items."""
     seen: set[str] = set()
-    _admit_keys(content.get("answer_key_anchors"), state, seen)
+    raw_items = content.get("items")
+    items = raw_items if isinstance(raw_items, list) else []
+    item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
+    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
         _admit_metadata(content["title"], "title", state, seen)
     raw_instructions = content.get("instructions")
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
         _admit_metadata(raw, "instructions", state, seen)
-    raw_items = content.get("items")
-    for index, raw in enumerate(raw_items if isinstance(raw_items, list) else ()):
+    for index, raw in enumerate(items):
         _admit_item(index, raw, state, seen)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}
     state.claimed.update(seen - conflicted)

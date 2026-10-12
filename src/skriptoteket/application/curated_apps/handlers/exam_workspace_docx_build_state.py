@@ -53,7 +53,8 @@ class DocxBuildState:
     ``chunks`` is always the whole document, because the opening heading, definitions and
     section totals are document-wide. A type batch claims only ``claimable`` anchors (None:
     every anchor), reads ``context_anchors`` as read-only instructions, and admits only
-    ``allowed_kinds`` (None: every kind).
+    ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
+    anchors, never its answer keys.
     """
 
     job_id: UUID
@@ -65,8 +66,10 @@ class DocxBuildState:
     context_anchors: frozenset[str] = frozenset()
     allowed_kinds: frozenset[NativeExamItemKind] | None = None
     batch: str | None = None
+    questions: tuple[tuple[str, ...], ...] = ()
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
+    question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
@@ -86,6 +89,7 @@ class DocxBuildState:
         # Chunks are fixed for the state's lifetime, so the anchor index is built once.
         self.chunk_by_anchor = {chunk.anchor: chunk for chunk in self.chunks}
         self.known_anchors = frozenset(self.chunk_by_anchor)
+        self.question_by_anchor = {a: own for own in self.questions for a in own}
 
     @property
     def owned(self) -> frozenset[str]:
