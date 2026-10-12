@@ -83,7 +83,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@e70b61cfed19da01fd3830c0347e111563b71e8a#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@61798274ebe2c3a2ea1a8743400f60d633642f3d#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
