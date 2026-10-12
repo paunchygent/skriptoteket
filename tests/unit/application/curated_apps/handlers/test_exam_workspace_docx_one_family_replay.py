@@ -7,11 +7,24 @@ provider failures and leave their questions as review items.
 """
 
 import json
-from typing import Any
 
 import pytest
 
 from skriptoteket.application.curated_apps.handlers import exam_workspace_docx_pipeline
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import BatchOutcome
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
+    DocxBuildRoundExchange,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    DocxBuildState,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
+    ConversionBatch,
+    QuestionFamily,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
     NativeExamItemKind,
@@ -107,17 +120,33 @@ async def test_a_choice_batch_schema_offers_no_gap_segment():
     await replay.pipeline.convert(job=replay.job())
 
     request = next(r for r in replay.provider.requests if r.item_id == "docx_w1-02")
-    schema: Any = request.output_spec.json_schema
-    assert schema["$defs"]["ProducedSegment"]["properties"]["kind"]["enum"] == ["text"]
+    defs = request.output_spec.json_schema["$defs"]
+    assert isinstance(defs, dict)
+    segment = defs["ProducedSegment"]
+    assert isinstance(segment, dict)
+    properties = segment["properties"]
+    assert isinstance(properties, dict)
+    kind = properties["kind"]
+    assert isinstance(kind, dict)
+    assert kind["enum"] == ["text"]
 
 
 async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
     convert_batch = exam_workspace_docx_pipeline.convert_batch
 
-    async def failing_batch(**kwargs):
-        if kwargs["batch"].batch_id == "w1-02":
+    async def failing_batch(
+        *,
+        state: DocxBuildState,
+        batch: ConversionBatch,
+        families: dict[str, QuestionFamily],
+        exchange: DocxBuildRoundExchange,
+        profile: StructuredLLMProviderProfile,
+    ) -> BatchOutcome:
+        if batch.batch_id == "w1-02":
             raise RuntimeError("unexpected failure inside the batch")
-        return await convert_batch(**kwargs)
+        return await convert_batch(
+            state=state, batch=batch, families=families, exchange=exchange, profile=profile
+        )
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "convert_batch", failing_batch)
     replay = build_replay(_COURSE_EXAM, root=_ROOT, families_per_batch=1)

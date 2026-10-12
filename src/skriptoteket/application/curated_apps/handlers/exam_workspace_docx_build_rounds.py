@@ -81,8 +81,8 @@ Rules:
   answer line that follows a question. Never treat a chunk as facit because its wording
   mentions answers. A chunk that holds question text as well as its inline answer belongs to
   the question: list it in that item's source_anchors, never in answer_key_anchors.
-  Facit chunks are never student-visible text, title or instructions. List their anchors in
-  answer_key_anchors and nowhere else.
+  Facit chunks are never student-visible text, title or instructions, except the units and
+  parts gap rule 4 keeps as text. List their anchors in answer_key_anchors and nowhere else.
 - Answers come only from the teacher's facit or answer lines in the source: mark a choice
   correct, or give a gap's accepted_values, only when the facit keys it. Without a facit entry
   leave every choice false and accepted_values empty; never guess.
@@ -112,7 +112,8 @@ Rules:
      right after its unit or part, and that label is the gap's accepted_values. The units, or
      the parts and the + signs, stay text segments in their order, also when the question
      prints the sentence or word whole; they are the only facit words that become
-     student-visible text. A part with no label after it is text with no gap.
+     student-visible text, and the labels never do. A part with no label after it is text
+     with no gap.
   What the question asks the student to write decides which answer places are gaps, never
   formatting and never whether the words appear elsewhere: a field the question asks for is
   a gap even when its value can be found in the given text. A field or value the question
@@ -122,10 +123,10 @@ Rules:
   to read stays question text. A facit that copies out one word, phrase or clause per field
   the question asks for is a gap per field. Each field or unit the question asks for is one
   gap, also when one facit label answers for several units the source lists together.
-- Facit words are never student-visible text, whatever the kind. In gap_fill they are the
-  accepted_values of their gaps. In a kind without gaps, leave them out of the body, keep the
-  rest of the sentence with its part label, and for free_text copy them, each after its part
-  label, into the marking_guide.
+- Facit words are never student-visible text, whatever the kind, except the units and parts
+  gap rule 4 keeps as text. In gap_fill they are the accepted_values of their gaps. In a kind
+  without gaps, leave them out of the body, keep the rest of the sentence with its part label,
+  and for free_text copy them, each after its part label, into the marking_guide.
 - A gap's accepted_values hold the forms the facit gives, including variants it lists as also
   accepted. The converter itself adds each part of a form that joins alternatives with a
   slash, the short form an instruction defines ("short form = term") for a facit term,

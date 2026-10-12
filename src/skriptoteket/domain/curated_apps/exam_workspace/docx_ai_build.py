@@ -1,6 +1,5 @@
 """Map produced items to the native contract and assemble the build result."""
 
-from collections.abc import Iterator
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -8,7 +7,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
-    ProducedParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
@@ -107,49 +105,6 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,
-        ),
-        source_anchor=produced.source_anchors[0],
-    )
-
-
-def _review_segments(paragraph: ProducedParagraph) -> Iterator[NativeSegment]:
-    for segment in paragraph.segments:
-        if segment.kind == "gap":
-            yield _BLANK
-        elif segment.text:
-            yield NativeTextSegment(text=segment.text)
-
-
-def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
-    """One teacher-review item for a question the model could not convert.
-
-    Gap answers, choice keys and match pairs never become text; a gap shows as a blank line.
-    """
-    paragraphs = [
-        NativeParagraph(segments=segments)
-        for paragraph in produced.body
-        if (segments := tuple(_review_segments(paragraph)))
-    ]
-    if produced.choices:
-        lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
-        paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
-    for entries in (produced.match_left, produced.match_right):
-        if entries:
-            lines = "\n".join(entries)
-            paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        title=produced.title,
-        printed_label=produced.printed_label,
-        body=tuple(paragraphs),
-        points=produced.points,
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.LLM_PARSED,
-            reasons=(reason,),
         ),
         source_anchor=produced.source_anchors[0],
     )

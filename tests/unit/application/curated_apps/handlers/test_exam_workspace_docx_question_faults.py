@@ -7,8 +7,8 @@ text at their place; every other item equals the uncorrupted run, and the conver
 finishes. A lost job lease still stops the conversion.
 """
 
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Mapping
+from uuid import UUID
 
 import pytest
 from pydantic import JsonValue
@@ -25,7 +25,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildResult
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
     NativeExamItem,
     NativeExamItemKind,
     NativeItemReviewState,
@@ -44,7 +47,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 _EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
-Corruption = Callable[[dict[str, Any]], None]
+Corruption = Callable[[dict[str, JsonValue]], None]
 
 
 class _CorruptedProvider(ReplayProvider):
@@ -61,15 +64,23 @@ class _CorruptedProvider(ReplayProvider):
         response = await super().complete_structured(request=request, profile=profile)
         if request.item_id != self._request_id:
             return response
-        content: dict[str, Any] = dict(response.content)
+        content = dict(response.content)
         self._corrupt(content)
-        corrupted: dict[str, JsonValue] = content
-        return StructuredLLMResponse(corrupted, response.finish_reason, response.usage)
+        return StructuredLLMResponse(content, response.finish_reason, response.usage)
 
 
-def _item_at(content: dict[str, Any], anchor: str) -> dict[str, Any]:
-    items: list[dict[str, Any]] = content["items"]
-    found: dict[str, Any] = next(i for i in items if i["source_anchors"][0] == anchor)
+def _first_anchor(entry: JsonValue) -> JsonValue:
+    assert isinstance(entry, dict)
+    anchors = entry["source_anchors"]
+    assert isinstance(anchors, list)
+    return anchors[0]
+
+
+def _item_at(content: dict[str, JsonValue], anchor: str) -> dict[str, JsonValue]:
+    items = content["items"]
+    assert isinstance(items, list)
+    found = next(i for i in items if _first_anchor(i) == anchor)
+    assert isinstance(found, dict)
     return found
 
 
@@ -82,7 +93,7 @@ def _by_anchor(outcome: DocxConversionOutcome) -> dict[str | None, NativeExamIte
     return {item.source_anchor: item for item in outcome.result.document.items}
 
 
-def _comparable(item: NativeExamItem) -> dict[str, Any]:
+def _comparable(item: NativeExamItem) -> dict[str, object]:
     return item.model_dump(exclude={"item_id", "sequence"})
 
 
@@ -134,7 +145,7 @@ async def baseline() -> DocxConversionOutcome:
 
 
 async def test_a_review_reply_with_an_empty_body_reviews_only_its_question(baseline):
-    def corrupt(content: dict[str, Any]) -> None:
+    def corrupt(content: dict[str, JsonValue]) -> None:
         entry = _item_at(content, "body:0015")
         entry.update(outcome="review", review_reason="oklar", body=[])
 
@@ -146,7 +157,7 @@ async def test_a_review_reply_with_an_empty_body_reviews_only_its_question(basel
 
 
 async def test_a_choice_reply_pairing_undeclared_texts_reviews_only_its_question(baseline):
-    def corrupt(content: dict[str, Any]) -> None:
+    def corrupt(content: dict[str, JsonValue]) -> None:
         entry = _item_at(content, "body:0081")
         entry["match_pairs"] = [{"left": "not listed", "right": "not listed either"}]
 
@@ -156,7 +167,7 @@ async def test_a_choice_reply_pairing_undeclared_texts_reviews_only_its_question
 
 
 async def test_a_title_of_answer_key_wording_alone_leaves_every_question_converted(baseline):
-    def corrupt(content: dict[str, Any]) -> None:
+    def corrupt(content: dict[str, JsonValue]) -> None:
         content["title"] = {"text": "(Answer key)", "source_anchors": ["body:0002"], "points": None}
 
     outcome = await _convert(_CorruptedProvider("docx_w1-01", corrupt))
@@ -183,7 +194,7 @@ _W1_02 |= {"body:0105", "body:0107", "body:0109", "body:0111"}
 async def test_a_merge_failing_on_one_batch_reviews_only_that_batch(baseline, monkeypatch):
     merge = exam_workspace_docx_pipeline.merge_batch
 
-    def failing_merge(target: DocxBuildState, batch: DocxBuildState, title: frozenset[str]):
+    def failing_merge(target: DocxBuildState, batch: DocxBuildState, title: frozenset[str]) -> None:
         if _converted_at(batch, "body:0039"):
             raise ValueError("merge met content it cannot hold")
         merge(target, batch, title)
@@ -200,10 +211,12 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
 ):
     build = exam_workspace_docx_pipeline.provisional_result
 
-    def failing_build(state: DocxBuildState, *args: Any, **kwargs: Any):
+    def failing_build(
+        state: DocxBuildState, families: tuple[QuestionFamily, ...], pending: frozenset[str]
+    ) -> DocxBuildResult:
         if _converted_at(state, "body:0039"):
             raise KeyError("provisional build met content it cannot hold")
-        return build(state, *args, **kwargs)
+        return build(state, families, pending)
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "provisional_result", failing_build)
     outcome = await _convert()
@@ -216,7 +229,12 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
 ):
     update = exam_workspace_docx_pipeline.conversion_update
 
-    def failing_update(document: Any, families: Any, filled: tuple[str, ...], pending: Any):
+    def failing_update(
+        document: NativeExamDocument,
+        families: tuple[QuestionFamily, ...],
+        filled: tuple[str, ...],
+        pending: tuple[str, ...],
+    ) -> ConversionUpdate:
         converted = any(
             i.source_anchor == "body:0039" and i.review.parse_origin is NativeParseOrigin.LLM_PARSED
             for i in document.items
@@ -234,8 +252,12 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
 async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseline, monkeypatch):
     confidence = exam_workspace_docx_pipeline.with_confidence
 
-    def breaking_confidence(state: DocxBuildState, *args: Any) -> None:
-        confidence(state, *args)
+    def breaking_confidence(
+        state: DocxBuildState,
+        families: tuple[QuestionFamily, ...],
+        scores: Mapping[str, float],
+    ) -> None:
+        confidence(state, families, scores)
         state.accepted = [
             (
                 item.model_copy(update={"points": -1})
@@ -254,7 +276,9 @@ async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseli
 
 async def test_a_lost_job_lease_still_stops_the_conversion():
     class LostLease(RecordingProgress):
-        async def batch_ready(self, *, worker_id: str, job_id: Any, update: Any) -> None:
+        async def batch_ready(
+            self, *, worker_id: str, job_id: UUID, update: ConversionUpdate
+        ) -> None:
             raise DomainError(code=ErrorCode.CONFLICT, message="lease is no longer owned")
 
     replay = build_replay(_EXAM, progress=LostLease())

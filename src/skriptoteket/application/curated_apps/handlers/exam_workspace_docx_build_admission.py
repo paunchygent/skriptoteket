@@ -21,7 +21,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     native_item,
-    review_item,
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -51,14 +50,18 @@ def validation_detail(error: ValidationError) -> str:
     )
 
 
+def _printed(anchors: tuple[str, ...], state: DocxBuildState, reason: str) -> NativeExamItem:
+    """The question's own chunks as printed, facit included, as one review item."""
+    owned = set(anchors)
+    return review_source_item(tuple(c for c in state.chunks if c.anchor in owned), reason)
+
+
 def _source_review(
     index: int, anchors: tuple[str, ...], state: DocxBuildState, code: str, detail: str
 ) -> NativeExamItem:
     """The question's own source text as a review item, whatever the model wrote."""
     state.record("admission", code, item=index, anchors=anchors, detail=detail)
-    owned = set(anchors)
-    reason = f"Frågan följer inte provformatet ({detail})."
-    return review_source_item(tuple(c for c in state.chunks if c.anchor in owned), reason)
+    return _printed(anchors, state, f"Frågan följer inte provformatet ({detail}).")
 
 
 def _built(
@@ -145,10 +148,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
     if produced.outcome == "type_conflict":
         kind = produced.conflict_kind
         if kind is None or (state.allowed_kinds is not None and kind in state.allowed_kinds):
-            item = _built(
-                index, anchors, state, lambda: review_item(produced, CONFLICT_WITHOUT_KIND_REASON)
-            )
-            state.accepted.append((item, anchors))
+            state.accepted.append((_printed(anchors, state, CONFLICT_WITHOUT_KIND_REASON), anchors))
             return
         if not state.keep_conflicts:
             state.conflicts.append(TypeConflict(anchors, kind))
@@ -163,9 +163,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
         cause = produced.review_reason or "ingen orsak angavs"
         reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
         state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
-        state.accepted.append(
-            (_built(index, anchors, state, lambda: review_item(produced, reason)), anchors)
-        )
+        state.accepted.append((_printed(anchors, state, reason), anchors))
         return
     instructions = (
         *(a for m in state.instructions for a in m.source_anchors),

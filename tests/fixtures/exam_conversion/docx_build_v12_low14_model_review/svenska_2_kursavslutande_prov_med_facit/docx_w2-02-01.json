@@ -1,0 +1,78 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Fraser",
+      "printed_label": "Fråga 17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Frasen tre korta svar är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "NF"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nb) Frasen på skolgården är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nc) Frasen kan vila är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "VF"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
