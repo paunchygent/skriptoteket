@@ -49,3 +49,5 @@ async def test_an_unclaimed_governing_chunk_is_its_section_parent_s_instruction(
     assert list(parent.item_ids) == governed
     assert all(item.source_anchor != _UNCLAIMED for item in document.items)
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []
+    recorded = [e.code for e in outcome.result.events if _UNCLAIMED in e.anchors]
+    assert recorded == ["governing_instruction"], "the events name what happens to the chunk"

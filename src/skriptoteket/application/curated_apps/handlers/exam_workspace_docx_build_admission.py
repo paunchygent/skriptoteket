@@ -201,8 +201,12 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         _admit_item(index, raw, state, seen)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}
     state.claimed.update(seen - conflicted)
+    # A governing chunk with text becomes its section parent's instruction (D40).
     unnamed = tuple(
-        c.anchor for c in state.pending if c.anchor not in conflicted | state.reasons.keys()
+        c.anchor
+        for c in state.pending
+        if c.anchor not in conflicted | state.reasons.keys()
+        and not (c.anchor in state.governing and c.text)
     )
     if unnamed:
         state.record("admission", "chunk_unclaimed", anchors=unnamed)

@@ -54,7 +54,8 @@ class DocxBuildState:
     section totals are document-wide. A type batch claims only ``claimable`` anchors (None:
     every anchor), reads ``context_anchors`` as read-only instructions, and admits only
     ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
-    anchors, never its answer keys.
+    anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
+    or more questions; one no entry holds becomes its section parent's instruction (D40).
     """
 
     job_id: UUID
@@ -67,6 +68,7 @@ class DocxBuildState:
     allowed_kinds: frozenset[NativeExamItemKind] | None = None
     batch: str | None = None
     questions: tuple[tuple[str, ...], ...] = ()
+    governing: frozenset[str] = frozenset()
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
