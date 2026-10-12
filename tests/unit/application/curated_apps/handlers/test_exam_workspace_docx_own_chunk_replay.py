@@ -10,6 +10,7 @@ included.
 """
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeParseOrigin,
@@ -30,17 +31,23 @@ _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _OWN = ["body:0085", "body:0086"]
 
 
-def _grouped_question() -> dict[str, object]:
+def _grouped_question() -> dict[str, JsonValue]:
     questions = recording(_EXAM, "docx_grouping_1", root=_ROOT)["questions"]
     assert isinstance(questions, list)
-    (question,) = [q for q in questions if isinstance(q, dict) and "body:0086" in q["anchors"]]
+    (question,) = [
+        q
+        for q in questions
+        if isinstance(q, dict) and isinstance(q["anchors"], list) and "body:0086" in q["anchors"]
+    ]
     return question
 
 
 async def test_a_question_s_own_chunk_a_reply_also_lists_as_an_answer_key_stays_with_its_item():
     question = _grouped_question()
     assert question["anchors"] == _OWN
-    assert "body:0086" not in question["answer_key_anchors"]
+    answer_key_anchors = question["answer_key_anchors"]
+    assert isinstance(answer_key_anchors, list)
+    assert "body:0086" not in answer_key_anchors
     reply = recording(_EXAM, "docx_w2-09-01", root=_ROOT)
     assert reply["answer_key_anchors"] == ["body:0086"]
     items = reply["items"]

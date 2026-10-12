@@ -276,7 +276,7 @@ def test_instruction_already_printed_in_the_item_is_not_repeated():
         if _prints(item := build.item(str(anchor)), build.wording(_COPIED))
     }
     assert set(carried) == set(_COPY_CARRIERS)
-    assert not any(build.parent_with(anchor) for anchor in carried)
+    assert not any(build.parent_with(str(anchor)) for anchor in carried)
 
     # Assemble again from the items that already carry the instruction.
     again = assemble_build_result(

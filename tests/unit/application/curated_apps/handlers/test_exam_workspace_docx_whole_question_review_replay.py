@@ -30,7 +30,11 @@ _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 async def test_a_failed_item_listing_part_of_its_question_becomes_a_review_item_of_the_whole():
     questions = recording(_EXAM, "docx_grouping_1", root=_ROOT)["questions"]
     assert isinstance(questions, list)
-    (question,) = [q for q in questions if isinstance(q, dict) and "body:0085" in q["anchors"]]
+    (question,) = [
+        q
+        for q in questions
+        if isinstance(q, dict) and isinstance(q["anchors"], list) and "body:0085" in q["anchors"]
+    ]
     assert question["anchors"] == ["body:0085", "body:0086"]
     reply = recording(_EXAM, "docx_w2-09-01", root=_ROOT)
     items = reply["items"]
