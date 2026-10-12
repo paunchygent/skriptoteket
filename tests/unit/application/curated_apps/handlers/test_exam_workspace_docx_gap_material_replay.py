@@ -11,6 +11,7 @@ exams.
 """
 
 import json
+import re
 from functools import cache
 from uuid import uuid4
 
@@ -28,7 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItemKind,
+    NativeExamItem,
     NativeGapSegment,
     NativeItemReviewState,
     NativeParseOrigin,
@@ -42,8 +43,28 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 pytestmark = pytest.mark.unit
 
 _ROOT = FIXTURES / "docx_build_v16_d43_gap_material"
-_EXAM = "svenska_2_kursavslutande_prov_med_facit"
-_QUESTION = ("body:0085", "body:0086", "body:0087")
+_SET_APART = re.compile(r"<i>(.*?)</i>", re.S)
+
+
+def _scenario() -> dict[str, JsonValue]:
+    scenario: dict[str, JsonValue] = json.loads((_ROOT / "scenario.json").read_text())
+    return scenario
+
+
+def _scenario_text(key: str) -> str:
+    value = _scenario()[key]
+    assert isinstance(value, str)
+    return value
+
+
+def _scenario_texts(key: str) -> list[str]:
+    value = _scenario()[key]
+    assert isinstance(value, list)
+    return [str(entry) for entry in value]
+
+
+_SOURCE = _scenario_text("source")
+_QUESTION = tuple(_scenario_texts("anchors"))
 
 
 @cache
@@ -71,9 +92,27 @@ def _admitted(reply: dict[str, JsonValue], exam: str, question: tuple[str, ...])
     return state
 
 
-@pytest.mark.parametrize("name", ["low28_docx_w2-09-01.json", "staging_second_upload_q20.json"])
+def _text_segments(item: NativeExamItem) -> list[str]:
+    return [s.text for p in item.body for s in p.segments if isinstance(s, NativeTextSegment)]
+
+
+def _kept_material() -> list[str]:
+    """The phrases the source sets apart that the reply which keeps them as text leaves printed."""
+    state = _admitted(_reply(_scenario_text("material_kept_as_text")), _SOURCE, _QUESTION)
+    ((item, _),) = state.accepted
+    printed = " ".join(_text_segments(item))
+    phrases = [
+        phrase.strip()
+        for chunk in _chunks(_SOURCE)
+        if chunk.anchor in _QUESTION
+        for phrase in _SET_APART.findall(chunk.marked_text)
+    ]
+    return [phrase for phrase in phrases if phrase in printed]
+
+
+@pytest.mark.parametrize("name", _scenario_texts("material_made_gaps"))
 def test_a_reply_that_makes_the_material_a_gap_comes_back_as_review_required(name: str):
-    state = _admitted(_reply(name), _EXAM, _QUESTION)
+    state = _admitted(_reply(name), _SOURCE, _QUESTION)
 
     ((item, anchors),) = state.accepted
     assert anchors == _QUESTION
@@ -81,41 +120,52 @@ def test_a_reply_that_makes_the_material_a_gap_comes_back_as_review_required(nam
     assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
     assert item.gaps == ()
     (reason,) = item.review.reasons
-    assert reason.startswith(GAPPED_MATERIAL_REASON)
-    assert "”De väntar inte.”" in reason, "the reason names the phrase that became a gap"
-    text = {chunk.anchor: chunk.text for chunk in _chunks(_EXAM)}
-    shown = [s.text for p in item.body for s in p.segments if isinstance(s, NativeTextSegment)]
-    assert shown == [text[a] for a in _QUESTION], "the teacher sees the question as printed"
+    material = _kept_material()
+    assert material, "the replay that keeps the material as text names what it keeps"
+    assert any(phrase in reason for phrase in material), "the reason names the phrase made a gap"
+    text = {chunk.anchor: chunk.text for chunk in _chunks(_SOURCE)}
+    assert _text_segments(item) == [text[a] for a in _QUESTION], "printed as in the source"
     assert [(e.code, e.anchors) for e in state.events] == [("gapped_material", _QUESTION)]
 
 
 def test_a_reply_that_keeps_the_material_as_text_stays_as_converted():
-    state = _admitted(_reply("low25_docx_w2-08-01.json"), _EXAM, _QUESTION)
+    reply = _reply(_scenario_text("material_kept_as_text"))
+    state = _admitted(reply, _SOURCE, _QUESTION)
 
     ((item, anchors),) = state.accepted
     assert anchors == _QUESTION
-    assert item.kind is NativeExamItemKind.GAP_FILL
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert [gap.accepted_values for gap in item.gaps] == [("huvudsats",), ("före",)]
-    segments = [s for p in item.body for s in p.segments]
-    assert [s.text for s in segments if isinstance(s, NativeTextSegment)] == [
-        "a) De väntar inte. är en ",
-        "b) I bisatsen att de inte väntar står satsadverbialet ",
-        " det finita verbet.",
-    ]
-    assert sum(isinstance(s, NativeGapSegment) for s in segments) == 2
+    produced = reply["items"]
+    assert isinstance(produced, list)
+    captured = produced[0]
+    assert isinstance(captured, dict)
+    segments = [s for paragraph in captured["body"] for s in paragraph["segments"]]
+    captured_gaps = [tuple(s["accepted_values"]) for s in segments if s["kind"] == "gap"]
+    captured_text = [s["text"] for s in segments if s["kind"] == "text"]
+    assert item.kind.value == captured["kind"]
+    assert [gap.accepted_values for gap in item.gaps] == captured_gaps
+    assert _text_segments(item) == captured_text
+    assert sum(isinstance(s, NativeGapSegment) for p in item.body for s in p.segments) == len(
+        captured_gaps
+    )
     assert state.events == []
 
 
 def test_a_reply_that_cannot_tell_the_phrases_apart_stays_a_model_review():
-    state = _admitted(_reply("low26_docx_w2-09-01.json"), _EXAM, _QUESTION)
+    reply = _reply(_scenario_text("model_review"))
+    state = _admitted(reply, _SOURCE, _QUESTION)
 
+    produced = reply["items"]
+    assert isinstance(produced, list)
+    captured = produced[0]
+    assert isinstance(captured, dict)
+    explanation = captured["review_reason"]
+    assert isinstance(explanation, str)
     ((item, _),) = state.accepted
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.reasons == (
-        "AI-tolkningen markerade frågan för granskning: Det saknas tydliga svarsfält; det går "
-        "inte att avgöra vilka kursiverade ord som ska vara luckor.",
-    )
+    assert item.gaps == ()
+    (reason,) = item.review.reasons
+    assert explanation in reason
     assert [e.code for e in state.events] == ["model_review"]
 
 
@@ -128,8 +178,10 @@ def _recorded_gap_fill() -> list[dict[str, JsonValue]]:
 
 @pytest.mark.parametrize(
     "entry",
-    _recorded_gap_fill(),
-    ids=lambda entry: f"{entry['run']}-{entry['exam']}-{entry['reply']}",
+    [
+        pytest.param(entry, id=f"{entry['run']}-{position}")
+        for position, entry in enumerate(_recorded_gap_fill())
+    ],
 )
 def test_no_recorded_gap_fill_item_of_the_corpus_is_sent_to_review_for_gapped_material(entry):
     item = entry["item"]

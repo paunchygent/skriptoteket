@@ -10,7 +10,7 @@ are the answers.
   returns outcome review because it cannot tell which italic phrases are gaps.
 - `low28_docx_w2-09-01.json`: unedited live reply of the eval run d26-real-1fam-low-28, made
   with the D43 prompt. It makes all four italic phrases gaps, as the second staging upload did.
-- `staging_second_upload_q20.json`: the second staging upload of 1ed611cb made all four
+- `staging_reconstruction_material_gapped.json`: the second staging upload of 1ed611cb made all four
   italic phrases gaps and kept the item as reviewed. That upload kept no raw reply. This file
   writes the reply the captured document records
   (`.artifacts/staging-walk/39-05-04-1ed611cb/evidence/exam-document-edited.json`, item
@@ -20,3 +20,4 @@ are the answers.
 - `gap_fill_items_low23_to_low26.json`: every converted gap_fill item of the recorded replies
   of the eval runs d26-real-1fam-low-23 to d26-real-1fam-low-26 across the eight corpus
   exams, unedited, one entry per line with its run, exam and reply file.
+- `scenario.json`: the source exam, the question's anchors, and which reply file shows which outcome.
