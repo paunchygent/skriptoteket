@@ -39,6 +39,7 @@ import structlog
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     assembly_check,
     conversion_update,
+    governed_anchors,
     merge_batch,
     provisional_result,
     validated,
@@ -74,6 +75,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
+    SharedContext,
     question_source_anchors,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -147,6 +149,7 @@ class _Run:
         self.families: tuple[QuestionFamily, ...] = ()
         self.title_anchors: frozenset[str] = frozenset()
         self.context_anchors: frozenset[str] = frozenset()
+        self.contexts: tuple[SharedContext, ...] = ()
         self.own_anchors: dict[str, tuple[str, ...]] = {}
         self.key_anchors: dict[str, tuple[str, ...]] = {}
         self.kinds: dict[str, NativeExamItemKind] = {}
@@ -243,6 +246,7 @@ class DocxConversionPipeline:
         run.families = question_families(manifest, job.chunks)
         run.title_anchors = frozenset(manifest.title_anchors)
         run.context_anchors = frozenset(context.anchor for context in manifest.contexts)
+        run.contexts = manifest.contexts
         for question in manifest.questions:
             run.own_anchors[question.question_id] = (*question.anchors, *question.subpart_anchors)
             run.key_anchors[question.question_id] = question.key_anchors
@@ -426,7 +430,9 @@ class DocxConversionPipeline:
         merge_batch(trial, outcome.state, run.title_anchors)
         filled = (*run.filled, *(q for q in batch.question_ids if q not in outcome.conflicts))
         pending = tuple(f.question_id for f in families if f.question_id not in filled)
-        provisional = provisional_result(trial, families, frozenset(pending))
+        provisional = provisional_result(
+            trial, families, frozenset(pending), governed_anchors(run.contexts, families)
+        )
         update = conversion_update(provisional.document, families, filled, pending)
         run.state = trial
         run.families = families
@@ -438,7 +444,7 @@ class DocxConversionPipeline:
 
     def _final(self, run: _Run, manifest: ExamManifest | None) -> DocxConversionOutcome:
         started = time.monotonic()
-        result = run.state.result()
+        result = run.state.result(governed_anchors(run.contexts, run.families))
         update = conversion_update(result.document, run.families, tuple(run.filled), ())
         checks = assembly_check(result.document, manifest, run.families, update) if manifest else ()
         run.timed("assembly", started)

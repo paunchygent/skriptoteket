@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0048"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0046",
+        "body:0047"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Från förnuftets kritik till känslans sanning",
+          "correct": false
+        },
+        {
+          "text": "Från Guds ordning till människans möjligheter",
+          "correct": true
+        },
+        {
+          "text": "Från naturens nytta till naturens känslospegling",
+          "correct": false
+        },
+        {
+          "text": "Från mäns rättigheter till kvinnors politiska krav",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

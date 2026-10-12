@@ -212,11 +212,14 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
     build = exam_workspace_docx_pipeline.provisional_result
 
     def failing_build(
-        state: DocxBuildState, families: tuple[QuestionFamily, ...], pending: frozenset[str]
+        state: DocxBuildState,
+        families: tuple[QuestionFamily, ...],
+        pending: frozenset[str],
+        governed: Mapping[str, frozenset[str]],
     ) -> DocxBuildResult:
         if _converted_at(state, "body:0039"):
             raise KeyError("provisional build met content it cannot hold")
-        return build(state, families, pending)
+        return build(state, families, pending, governed)
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "provisional_result", failing_build)
     outcome = await _convert()

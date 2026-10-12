@@ -1,7 +1,7 @@
 """Accepted items, chunk roles, observed failures and usage for one DOCX build."""
 
 import copy
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from uuid import UUID
 
@@ -11,6 +11,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    NOTHING_GOVERNED,
     assemble_build_result,
     review_source_item,
 )
@@ -209,8 +210,11 @@ class DocxBuildState:
         else:
             self.output_complete = False
 
-    def result(self) -> DocxBuildResult:
+    def result(self, governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item.
+
+        ``governed`` maps each grouping instruction that governs two or more questions to the
+        anchors those questions own; it decides which items the instruction is the parent of.
 
         A printed section total gives each question that prints no points of its own a
         share marked for checking (D38). A section's points line the split absorbs is
@@ -240,6 +244,7 @@ class DocxBuildState:
             key_anchors=frozenset(self.key_anchors),
             title=self.title,
             instructions=self.instructions,
+            governed=governed,
             events=tuple(self.events),
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,

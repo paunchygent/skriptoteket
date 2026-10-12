@@ -2,13 +2,15 @@
 
 Exam.net carries only items, so an instruction that serves a run of questions becomes the
 parent of that run, whatever kinds its questions have, review items included (D27). An
+instruction the grouping marks as governing several questions serves exactly the items of
+those questions, wherever the converter placed the chunks around it (step 3). An
 instruction that reaches a single item, or a reach that skips an item between two reached
 ones, is copied into exactly the items it reaches. An instruction printed inside an item's
 own chunks keeps its source position there.
 """
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
@@ -54,6 +56,7 @@ class _Run:
     sources: tuple[DocxChunk, ...]
     span: tuple[int, ...] = ()
     reach: tuple[int, ...] = ()
+    governs: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -166,8 +169,12 @@ def _runs(
     instructions: tuple[ProducedMetadata, ...],
     item_sources: list[list[DocxChunk]],
     positions: dict[str, int],
+    governed: Mapping[str, frozenset[str]],
 ) -> tuple[list[_Run], dict[int, list[_Joined]], set[int]]:
-    """The instruction runs, the text joined into the item that prints it, and its instructions."""
+    """The instruction runs, the text joined into the item that prints it, and its instructions.
+
+    An instruction the grouping marks as governing questions is never joined into an item.
+    """
     spans = [(positions[s[0].anchor], positions[s[-1].anchor]) for s in item_sources]
     joined: dict[int, list[_Joined]] = {}
     joined_origins: set[int] = set()
@@ -175,8 +182,13 @@ def _runs(
     for origin, instruction in enumerate(instructions):
         at = sorted(positions[a] for a in instruction.source_anchors)
         sources = tuple(chunks[i] for i in at)
+        governs = frozenset(
+            anchor for a in instruction.source_anchors for anchor in governed.get(a, ())
+        )
         owner = next((k for k, (lo, hi) in enumerate(spans) if lo < at[0] and at[-1] < hi), None)
-        if owner is not None:
+        if governs:
+            runs.append(_Run(origin, at[-1], sources, governs=governs))
+        elif owner is not None:
             own = [c for c in item_sources[owner] if c.kind != "heading"]
             joined.setdefault(owner, []).append(
                 _Joined(
@@ -223,6 +235,12 @@ def _reaches(
         if not sources:
             reached.append(_Run(run.origin, run.start, ()))
             continue
+        if run.governs:
+            reach = tuple(
+                k for k, (_, anchors, _) in enumerate(ordered) if run.governs.intersection(anchors)
+            )
+            reached.append(_Run(run.origin, run.start, sources, reach, reach, run.governs))
+            continue
         following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
         first_item = next(
             (ordered[k][0] for k in following if ordered[k][0] > run.start), len(chunks)
@@ -268,8 +286,13 @@ def place_section_instructions(
     chunks: tuple[DocxChunk, ...],
     ordered: list[Placed],
     instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
+
+    ``governed`` maps each instruction anchor the grouping marks as governing two or more
+    questions to every anchor those questions own. Such an instruction reaches exactly the
+    items holding one of those anchors, whatever headings and instructions lie between them.
 
     An instruction printed inside an item's own chunks joins that item. Any other instruction
     opens the items of its run, which ends at the next section heading (a heading no item
@@ -289,7 +312,7 @@ def place_section_instructions(
     item_sources = [
         [chunks[i] for i in sorted(positions[a] for a in anchors)] for _, anchors, _ in ordered
     ]
-    runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions)
+    runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions, governed)
     reached = _reaches(chunks, ordered, runs, item_sources, positions)
     groups = _parent_groups(reached)
     parented: dict[tuple[int | None, int], set[int]] = {}

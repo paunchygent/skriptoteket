@@ -1,5 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
+from collections.abc import Mapping
+from types import MappingProxyType
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -38,6 +40,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 
 _BLANK = NativeTextSegment(text="____")
+
+
+# No shared context governs two or more questions: every instruction is placed by its run.
+NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 
 
 def native_item(produced: ProducedItem) -> NativeExamItem:
@@ -142,6 +148,7 @@ def _ordered_items(
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
     review_reasons: dict[str, str],
     instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -155,7 +162,7 @@ def _ordered_items(
         if chunk.anchor in review_reasons
     )
     ordered.sort(key=lambda entry: entry[0])
-    return place_section_instructions(chunks, ordered, instructions)
+    return place_section_instructions(chunks, ordered, instructions, governed)
 
 
 def assemble_build_result(
@@ -169,6 +176,7 @@ def assemble_build_result(
     key_anchors: frozenset[str] = frozenset(),
     title: ProducedMetadata | None = None,
     instructions: tuple[ProducedMetadata, ...] = (),
+    governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
     events: tuple[DocxBuildEvent, ...] = (),
     input_tokens: int | None = None,
     output_tokens: int | None = None,
@@ -178,7 +186,7 @@ def assemble_build_result(
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
-    placed = _ordered_items(chunks, accepted, review_reasons, instructions)
+    placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
     items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))

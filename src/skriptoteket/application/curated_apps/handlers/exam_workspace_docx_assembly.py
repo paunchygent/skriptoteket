@@ -32,7 +32,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
-from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
+    ExamManifest,
+    SharedContext,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
@@ -149,8 +152,23 @@ def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExa
     )
 
 
+def governed_anchors(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> dict[str, frozenset[str]]:
+    """Each shared context that governs two or more questions, with every anchor they own."""
+    claims = {family.question_id: family.claims for family in families}
+    return {
+        context.anchor: frozenset().union(*(claims[q] for q in context.governs if q in claims))
+        for context in contexts
+        if len(context.governs) >= 2
+    }
+
+
 def provisional_result(
-    state: DocxBuildState, families: tuple[QuestionFamily, ...], pending: frozenset[str]
+    state: DocxBuildState,
+    families: tuple[QuestionFamily, ...],
+    pending: frozenset[str],
+    governed: Mapping[str, frozenset[str]],
 ) -> DocxBuildResult:
     """Converted batches plus one placeholder per pending question; nothing else is shown."""
     placeholders = [
@@ -175,6 +193,7 @@ def provisional_result(
         key_anchors=frozenset(state.key_anchors),
         title=state.title,
         instructions=state.instructions,
+        governed=governed,
     )
 
 
