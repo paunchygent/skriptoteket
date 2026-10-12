@@ -18,15 +18,16 @@
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Claude parent (session `01a12706`), branch
     `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
-    D23-D42 built, merged `d9efae20`. Walk 2026-10-12 found the redirect remount;
-    repair `56a1670f` approved, merged `1ed611cb`; re-walk on staging passed
-    (retained `evidence/staging-walk/walk-1ed611cb.md`). It also showed D30's
-    kept placeholder turns a child into unfixable free text: D30 amended
-    `6f201c06` (placeholder locked until its batch arrives; user decision
-    2026-10-12). Now: lead implements the lock on the branch. Next: review,
-    merge, staging rebuild, re-walk of editing during conversion, D31 Exam.net
-    check (user go-ahead pending), user closure. Follow-up task in ST-39-05: label-first
-    review with per-question model retry, picture in review items and marks.
+    D23-D42 merged `d9efae20`; remount repair merged `1ed611cb`. D30 lock
+    (amended `6f201c06`) and D43 gap-fill material (`f23728a9`) reviewed
+    (approved `92541183`), merged `63de8094`, pushed. Staging walk 2026-10-12
+    on `63de8094` passed: kursavslutande 24/24, Fråga 20 correct,
+    placeholder locked in importing and reloaded pages, export 200 and gate 422
+    (retained `evidence/staging-walk/walk-63de8094.md`). Open: user decision on
+    grammatik v1 Fråga 6 (is the "Bisats:" clause given or student-written;
+    low-27 gapped it), D31 Exam.net check (user go-ahead pending), user closure.
+    Follow-up task in ST-39-05: label-first review with per-question model
+    retry, picture in review items and marks.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
@@ -53,22 +54,11 @@
   approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
-- 2026-10-09 planning session (Claude): user decisions recorded in
-  EPIC-SKRIPT-39 — new story 8 converges the product exporter on the proven
-  native QTI 3.0 Exam.net contract (HuleEduOS `examnet-qti-import` skill,
-  probe rounds V1-V44) after story 5 and before story 7, with the QTI 2.1
-  writer as the parity baseline until cutover (terms E13-E14); story-5
-  breadth candidates add accepted-spelling variants, case-insensitive maps,
-  letter hints, and the proven ordering type. ADR-SKRIPT-0066 gained an
-  ADR-0090 amendment pointer. Verified on current sir-convert-a-lot main:
-  the stale pre-beta QTI contract reference and the whole Sir exam domain
-  are already removed (TASK-SIRCON-07-04-01); the residual hazard was
-  EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
-  on sir-convert branch `claude/supersede-retired-exam-epics` pending
-  merge and governed terminal closure. The HuleEduOS producer stays a
-  deliberately separate hand-tool for now (E15). ADR-SKRIPT-0091 and
-  ST-SKRIPT-39-04 were accepted by user decision 2026-10-09 (user-closure
-  gate): ADR-0091 is `accepted` and the story is `ready`.
+- EPIC-SKRIPT-39 decisions 2026-10-09 (E13-E15): story 8 converges the exporter
+  on the native QTI 3.0 Exam.net contract after story 5, QTI 2.1 is the parity
+  baseline until cutover. Open: sir-convert branch
+  `claude/supersede-retired-exam-epics` (EPIC-SIRCON-07/08 supersession notes)
+  awaits merge and governed terminal closure.
 
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
