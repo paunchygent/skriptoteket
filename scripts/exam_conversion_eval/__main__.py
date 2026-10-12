@@ -22,7 +22,7 @@ import httpx
 from pydantic import JsonValue
 from pydantic_core import to_jsonable_python
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
