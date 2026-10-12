@@ -18,14 +18,14 @@
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Claude parent (session `01a12706`), branch
     `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
-    D23-D42 built; Sol rereview approved `763fa33d`, merged `d9efae20` and pushed;
-    staging `skriptoteket-dev` rebuilt on it (live runs low-23..26: 302-310/314).
-    Staging walk 2026-10-12 failed: after a redirect entry (sign-in) the first
-    query change rebuilds the page (`App.vue` transition `v-if`/`v-else` swap) and
-    stops conversion polling (retained `evidence/staging-walk/defect-redirect-remount-d9efae20.md`).
-    User decision 2026-10-12: repair under this task. Now: repair lead on the
-    branch. Next: rereview, merge, staging rebuild, full re-walk (incl. D31
-    Exam.net rubric check), user closure. Follow-up task in ST-39-05: label-first
+    D23-D42 built, merged `d9efae20`. Walk 2026-10-12 found the redirect remount;
+    repair `56a1670f` approved, merged `1ed611cb`; re-walk on staging passed
+    (retained `evidence/staging-walk/walk-1ed611cb.md`). It also showed D30's
+    kept placeholder turns a child into unfixable free text: D30 amended
+    `6f201c06` (placeholder locked until its batch arrives; user decision
+    2026-10-12). Now: lead implements the lock on the branch. Next: review,
+    merge, staging rebuild, re-walk of editing during conversion, D31 Exam.net
+    check (user go-ahead pending), user closure. Follow-up task in ST-39-05: label-first
     review with per-question model retry, picture in review items and marks.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
