@@ -73,8 +73,9 @@
   (rule 045 replacement, shadow and panel sweep, per-app token passes).
   Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S7
   closed. Release first (user 2026-10-12): skill-repository
-  `TASK-SKILL-REP-0279` (0.1.24 without offset shadows; implementation lead
-  running) with HuleEdu `TASK-HULE-REP-0142`; then this story's first task
+  `TASK-SKILL-REP-0279` and HuleEdu `TASK-HULE-REP-0142` are done
+  (0.1.24 without offset shadows, in repository-governance 0.11.109; HuleEdu
+  staging walk clean). Next: this story's first task (not yet scaffolded)
   syncs 0.1.24 and removes local uses in the same commit, before
   TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
   (`proposed`, renamed; plan D1-D8 closed in session
