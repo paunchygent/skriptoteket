@@ -221,22 +221,19 @@
             {
               "kind": "text",
               "text": "The most famous bands ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "play"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (spelar) at the festival every summer.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -245,7 +242,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -261,22 +259,19 @@
             {
               "kind": "text",
               "text": "They looked ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "for"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (efter) the keys everywhere but they couldn’t find them.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -285,7 +280,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -301,22 +297,19 @@
             {
               "kind": "text",
               "text": "After ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "breakfast"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (frukosten) we immediately left for the meeting.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -325,7 +318,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -341,8 +335,7 @@
             {
               "kind": "text",
               "text": "It ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -351,14 +344,12 @@
                 "is snowing",
                 "’s snowing",
                 "'s snowing"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (snöar), so make sure you put on your boots!",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -367,7 +358,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -383,22 +375,19 @@
             {
               "kind": "text",
               "text": "During the meeting of the ministers, their ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "wives"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (fruar) and one husband participated in a special programme.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -407,7 +396,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -423,22 +413,19 @@
             {
               "kind": "text",
               "text": "Everything was revealed ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "at the end of the book"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (i slutet av boken).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -447,7 +434,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -463,36 +451,31 @@
             {
               "kind": "text",
               "text": "She ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "was running"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (sprang) through the park when the tree ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "fell"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (föll) on her.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -501,7 +484,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -519,14 +503,12 @@
               "text": null,
               "accepted_values": [
                 "These are"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Det här är) the only seats left for tonight’s performance.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -535,7 +517,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -551,22 +534,19 @@
             {
               "kind": "text",
               "text": "He ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "worked"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (arbetade) abroad for many years to support his family.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -575,7 +555,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -591,8 +572,7 @@
             {
               "kind": "text",
               "text": "The photographer ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -600,14 +580,12 @@
               "accepted_values": [
                 "put",
                 "laid"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (lade) the photographs on the table.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -616,7 +594,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -632,22 +611,19 @@
             {
               "kind": "text",
               "text": "He ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "studied"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (studerade) physics at the University of California.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -656,7 +632,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -675,14 +652,12 @@
               "accepted_values": [
                 "The boys’",
                 "The boys'"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Pojkarnas) changing room is over there to the left.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -691,7 +666,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -710,14 +686,12 @@
               "accepted_values": [
                 "The children’s",
                 "The children's"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Barnens) toys were all over the floor.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -726,7 +700,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -742,8 +717,7 @@
             {
               "kind": "text",
               "text": "He gave me ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -756,14 +730,12 @@
                 "a 50-dollar bill",
                 "a 50 dollar bill",
                 "a $50 bill"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en femtiodollarssedel).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -772,7 +744,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -788,8 +761,7 @@
             {
               "kind": "text",
               "text": "They said that they ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -798,14 +770,12 @@
                 "would come",
                 "’d come",
                 "'d come"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle komma) in the early afternoon.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -814,7 +784,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -830,22 +801,19 @@
             {
               "kind": "text",
               "text": "How many ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "mice"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (möss) has our cat caught today?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -854,7 +822,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -870,8 +839,7 @@
             {
               "kind": "text",
               "text": "I ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -883,14 +851,12 @@
                 "'d been waiting",
                 "’d waited",
                 "'d waited"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (hade väntat) for the train for two hours, when they announced that there would be no trains that day.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -899,7 +865,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -915,8 +882,7 @@
             {
               "kind": "text",
               "text": "I ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -925,14 +891,12 @@
                 "would buy",
                 "’d buy",
                 "'d buy"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle köpa) that computer if I were you.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -941,7 +905,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -957,8 +922,7 @@
             {
               "kind": "text",
               "text": "Det slutade med att alla betalade fem dollar var. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -972,8 +936,7 @@
                 "In the end everyone paid five dollars each.",
                 "In the end, everybody paid five dollars each",
                 "In the end, everybody paid five dollars each."
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -982,7 +945,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -998,22 +962,19 @@
             {
               "kind": "text",
               "text": "I bought ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "this furniture"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de här möblerna) in the sale.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1022,7 +983,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1040,14 +1002,12 @@
               "text": null,
               "accepted_values": [
                 "Politics is"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Politik är) important.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1056,7 +1016,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1072,22 +1033,19 @@
             {
               "kind": "text",
               "text": "We have ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "planned"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (planerat) to go on a trip to the Bahamas this winter.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1096,7 +1054,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1112,22 +1071,19 @@
             {
               "kind": "text",
               "text": "I bought ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "these"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de här) shoes really cheaply.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1136,7 +1092,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1152,22 +1109,19 @@
             {
               "kind": "text",
               "text": "She was not used ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "to working"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (vid att arbeta) so late.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1176,7 +1130,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1192,22 +1147,19 @@
             {
               "kind": "text",
               "text": "I don’t want the red jumper. I prefer ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "the blue one"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (den blåa).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1216,7 +1168,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1234,14 +1187,12 @@
               "text": null,
               "accepted_values": [
                 "Those are"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Det där är) the only sweaters we have in your size.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1250,7 +1201,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1268,14 +1220,12 @@
               "text": null,
               "accepted_values": [
                 "History"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Historien) often repeats itself.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1284,7 +1234,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1300,8 +1251,7 @@
             {
               "kind": "text",
               "text": "I was very suspicious ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1309,14 +1259,12 @@
               "accepted_values": [
                 "of",
                 "about"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (mot) his behaviour.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1325,7 +1273,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1341,22 +1290,19 @@
             {
               "kind": "text",
               "text": "He speaks English very ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "badly"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (dåligt).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1365,7 +1311,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1381,8 +1328,7 @@
             {
               "kind": "text",
               "text": "I would like ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1391,14 +1337,12 @@
                 "some advice",
                 "a piece of advice",
                 "a bit of advice"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ett råd).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1407,7 +1351,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1423,22 +1368,19 @@
             {
               "kind": "text",
               "text": "Both ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "the young and the old"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de unga och de gamla) feel that they have too little influence.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1447,7 +1389,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1463,8 +1406,7 @@
             {
               "kind": "text",
               "text": "I’m so tired. I ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1476,14 +1418,12 @@
                 "'ve been working",
                 "’ve worked",
                 "'ve worked"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (har arbetat) hard all day.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1492,7 +1432,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1508,22 +1449,19 @@
             {
               "kind": "text",
               "text": "She is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "the only one"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (den enda) who can help us in this situation.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1532,7 +1470,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1548,8 +1487,7 @@
             {
               "kind": "text",
               "text": "I’m sure this is my ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1557,14 +1495,12 @@
               "accepted_values": [
                 "boyfriend’s",
                 "boyfriend's"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (pojkväns) umbrella.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1573,7 +1509,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1589,22 +1526,19 @@
             {
               "kind": "text",
               "text": "They ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "lost"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (förlorade) the match by 1–0.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1613,7 +1547,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1632,14 +1567,12 @@
               "accepted_values": [
                 "Protestants",
                 "the Protestants"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (protestanterna) will be a minority in Northern Ireland.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1648,7 +1581,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1664,8 +1598,7 @@
             {
               "kind": "text",
               "text": "If you ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1677,14 +1610,12 @@
                 "should happen to win",
                 "win",
                 "ever win"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle vinna) a million pounds, please let me know!",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1693,7 +1624,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1711,14 +1643,12 @@
               "text": null,
               "accepted_values": [
                 "Ten years ago"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (För tio år sedan) he wrote his first book.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1727,7 +1657,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1748,14 +1679,12 @@
                 "The city’s",
                 "The town’s",
                 "The town's"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Stadens) finances are in good order.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1764,7 +1693,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1780,22 +1710,19 @@
             {
               "kind": "text",
               "text": "It ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "rains"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (regnar) a lot in Seattle.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1804,7 +1731,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1822,14 +1750,12 @@
               "text": null,
               "accepted_values": [
                 "Most"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (De flesta) immigrants tend to live together in the same neighbourhoods.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1838,7 +1764,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1854,8 +1781,7 @@
             {
               "kind": "text",
               "text": "It is just ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1865,14 +1791,12 @@
                 "a ten minute",
                 "a 10-minute",
                 "a 10 minute"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en tio minuters) boat trip.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1881,7 +1805,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1897,22 +1822,19 @@
             {
               "kind": "text",
               "text": "It was ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "an"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en) honour to carry the flag in the parade.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1921,7 +1843,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1939,14 +1862,12 @@
               "text": null,
               "accepted_values": [
                 "Most"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (De flesta) visitors stay in the exhibition for only half an hour.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1955,7 +1876,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1971,22 +1893,19 @@
             {
               "kind": "text",
               "text": "We really should give more money to ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "the poor"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de fattiga).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1995,7 +1914,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2011,22 +1931,19 @@
             {
               "kind": "text",
               "text": "John Grisham ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "writes"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skriver) one novel a year.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2035,7 +1952,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2051,22 +1969,19 @@
             {
               "kind": "text",
               "text": "Many people blame ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "society"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (samhället) when something goes wrong.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2075,7 +1990,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2094,14 +2010,12 @@
               "accepted_values": [
                 "The five-year-old",
                 "The five year old"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Den fem år gamla) boy got lost in the deep forest.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2110,7 +2024,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2126,22 +2041,19 @@
             {
               "kind": "text",
               "text": "More sun and light would be good for ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "most of us"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de flesta av oss).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2150,7 +2062,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2166,22 +2079,19 @@
             {
               "kind": "text",
               "text": "Where did you download ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "those"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (de där) films?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2190,7 +2100,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2206,8 +2117,7 @@
             {
               "kind": "text",
               "text": "That was ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2216,14 +2126,12 @@
                 "good news",
                 "a piece of good news",
                 "some good news"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en god nyhet).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2232,7 +2140,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2250,14 +2159,12 @@
               "text": null,
               "accepted_values": [
                 "The interesting thing"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Det intressanta) is that the number of users increases all the time.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2266,7 +2173,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2282,8 +2190,7 @@
             {
               "kind": "text",
               "text": "He has opened ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2291,14 +2198,12 @@
               "accepted_values": [
                 "a restaurant of his own",
                 "his own restaurant"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en egen restaurang) in New York.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2307,7 +2212,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2323,22 +2229,19 @@
             {
               "kind": "text",
               "text": "We had dinner at the ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Italian"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (italienska) restaurant down the road.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2347,7 +2250,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2363,8 +2267,7 @@
             {
               "kind": "text",
               "text": "Om vi hade tränat mer hade vi kanske vunnit matchen. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2379,8 +2282,7 @@
                 "If we’d trained more, we might have won the match",
                 "If we’d trained more, we might have won the match.",
                 "If we'd trained more, we might have won the match"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -2389,7 +2291,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2409,14 +2312,12 @@
                 "Those who",
                 "People who",
                 "The people who"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (De som) work on the top floors have bought parachutes.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2425,7 +2326,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2441,8 +2343,7 @@
             {
               "kind": "text",
               "text": "Robert sade att han efter två månader hade glömt allt han hade lärt sig. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2456,8 +2357,7 @@
                 "Robert said that after two months, he had forgotten everything he had learned.",
                 "Robert said that he had forgotten everything he had learned after two months",
                 "Robert said that he had forgotten everything he had learned after two months."
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -2466,7 +2366,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2484,14 +2385,12 @@
               "text": null,
               "accepted_values": [
                 "The most important thing"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Det viktigaste) is not to lose one’s temper.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2500,7 +2399,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2516,22 +2416,19 @@
             {
               "kind": "text",
               "text": "It was ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "easier"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (lättare) to buy a new TV than repair the old one.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2540,7 +2437,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2556,22 +2454,19 @@
             {
               "kind": "text",
               "text": "She ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "works"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (arbetar) long hours every day.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2580,7 +2475,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2600,14 +2496,12 @@
                 "Those who",
                 "People who",
                 "The people who"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (De som) order immediately will get an extra bonus.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2616,7 +2510,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2632,8 +2527,7 @@
             {
               "kind": "text",
               "text": "She ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2642,14 +2536,12 @@
                 "was going to open",
                 "was about to open",
                 "was just about to open"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle öppna) the door when she was attacked from behind.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2658,7 +2550,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2674,22 +2567,19 @@
             {
               "kind": "text",
               "text": "My sister is married ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "to"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (med) a Frenchman.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2698,7 +2588,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2714,22 +2605,19 @@
             {
               "kind": "text",
               "text": "She ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "chose"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (valde) the yellow cab.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2738,7 +2626,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2756,14 +2645,12 @@
               "text": null,
               "accepted_values": [
                 "The money is"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (Pengarna är) not in my purse.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2772,7 +2659,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2788,22 +2676,19 @@
             {
               "kind": "text",
               "text": "It turned out to be ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "a"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ett) UN decision that was accepted by all countries.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2812,7 +2697,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2828,22 +2714,19 @@
             {
               "kind": "text",
               "text": "She always ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "lay"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (låg) in bed till late in the morning.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2852,7 +2735,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2868,22 +2752,19 @@
             {
               "kind": "text",
               "text": "It was an ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "unusually"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ovanligt) bad storm.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2892,7 +2773,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2908,22 +2790,19 @@
             {
               "kind": "text",
               "text": "She gave him ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "a"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ett) youthful smile.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2932,7 +2811,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2948,8 +2828,7 @@
             {
               "kind": "text",
               "text": "She moved around ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2957,14 +2836,12 @@
               "accepted_values": [
                 "carefully",
                 "cautiously"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (försiktigt) in order not to disturb anyone.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -2973,7 +2850,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2989,22 +2867,19 @@
             {
               "kind": "text",
               "text": "The kids threw snowballs ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "at"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (på) the passers-by.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3013,7 +2888,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3029,8 +2905,7 @@
             {
               "kind": "text",
               "text": "We live in ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3038,14 +2913,12 @@
               "accepted_values": [
                 "a house of our own",
                 "our own house"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ett eget hus).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3054,7 +2927,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3070,8 +2944,7 @@
             {
               "kind": "text",
               "text": "She thought she ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3081,14 +2954,12 @@
                 "would be",
                 "’d be",
                 "'d be"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle bli) late for her own wedding.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3097,7 +2968,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3113,22 +2985,19 @@
             {
               "kind": "text",
               "text": "Every evening, the children ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "wait"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (väntar) for their mother to come home.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3137,7 +3006,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3153,22 +3023,19 @@
             {
               "kind": "text",
               "text": "We must get more ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "women"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (kvinnor) into politics.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3177,7 +3044,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3193,22 +3061,19 @@
             {
               "kind": "text",
               "text": "She took the ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "thinnest"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (tunnaste) book she could find.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3217,7 +3082,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3233,8 +3099,7 @@
             {
               "kind": "text",
               "text": "The majority of visitors to this museum are ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3242,14 +3107,12 @@
               "accepted_values": [
                 "Americans",
                 "American"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (amerikaner).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3258,7 +3121,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3276,14 +3140,12 @@
               "text": null,
               "accepted_values": [
                 "Most of us"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (De flesta av oss) left the party at midnight.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3292,7 +3154,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3308,22 +3171,19 @@
             {
               "kind": "text",
               "text": "The elephant is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "an"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (ett) animal with large flapping ears and a trunk.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3332,7 +3192,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3348,22 +3209,19 @@
             {
               "kind": "text",
               "text": "The train ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "stopped"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (stannade) in the middle of nowhere.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3372,7 +3230,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3388,22 +3247,19 @@
             {
               "kind": "text",
               "text": "There are more ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "sheep"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (får) than people in Wales.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3412,7 +3268,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3428,22 +3285,19 @@
             {
               "kind": "text",
               "text": "We think there is no reason ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "for"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (till) such an exaggerated reaction.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3452,7 +3306,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3468,22 +3323,19 @@
             {
               "kind": "text",
               "text": "There has been an increase ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "in"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (av) crimes committed by young people.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3492,7 +3344,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3508,8 +3361,7 @@
             {
               "kind": "text",
               "text": "There will be no admittance for ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3517,14 +3369,12 @@
               "accepted_values": [
                 "those who",
                 "people who"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (dem som) arrive late.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3533,7 +3383,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3549,8 +3400,7 @@
             {
               "kind": "text",
               "text": "John bad om ursäkt för att han kom för sent. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3564,8 +3414,7 @@
                 "John apologized for arriving late.",
                 "John apologised for arriving late",
                 "John apologised for arriving late."
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -3574,7 +3423,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3590,22 +3440,19 @@
             {
               "kind": "text",
               "text": "They accused him ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "of"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (för) the robbery.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3614,7 +3461,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3630,22 +3478,19 @@
             {
               "kind": "text",
               "text": "He aimed ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "at"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (mot) the front of the car and fired.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3654,7 +3499,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3670,22 +3516,19 @@
             {
               "kind": "text",
               "text": "They can only blame ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "themselves"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (sig själva).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3694,7 +3537,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3710,8 +3554,7 @@
             {
               "kind": "text",
               "text": "They suggested that he ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3719,14 +3562,12 @@
               "accepted_values": [
                 "should sell",
                 "sell"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle sälja) the house before prices started to drop.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3735,7 +3576,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3751,22 +3593,19 @@
             {
               "kind": "text",
               "text": "His grandmother is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "seriously"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (allvarligt) ill.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3775,7 +3614,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3791,22 +3631,19 @@
             {
               "kind": "text",
               "text": "This is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "an"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en) interesting solution.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3815,7 +3652,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3831,22 +3669,19 @@
             {
               "kind": "text",
               "text": "This pack of meat smells ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "bad"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (dåligt).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3855,7 +3690,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3871,8 +3707,7 @@
             {
               "kind": "text",
               "text": "This show is for ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3880,14 +3715,12 @@
               "accepted_values": [
                 "those who",
                 "people who"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (dem som) want irreverent stand-up comedy.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3896,7 +3729,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3912,22 +3746,19 @@
             {
               "kind": "text",
               "text": "To learn more about ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "nature"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (naturen) has always been one of my great interests.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3936,7 +3767,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3952,8 +3784,7 @@
             {
               "kind": "text",
               "text": "Trains ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -3961,14 +3792,12 @@
               "accepted_values": [
                 "leave",
                 "depart"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (avgår) for the airport every half hour.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -3977,7 +3806,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -3993,8 +3823,7 @@
             {
               "kind": "text",
               "text": "We are going to stay in our ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4002,14 +3831,12 @@
               "accepted_values": [
                 "friends’",
                 "friends'"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (vänners) house in Wales.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4018,7 +3845,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4034,8 +3862,7 @@
             {
               "kind": "text",
               "text": "I have brought ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4043,14 +3870,12 @@
               "accepted_values": [
                 "my own food",
                 "food of my own"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (egen mat) today.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4059,7 +3884,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4075,22 +3901,19 @@
             {
               "kind": "text",
               "text": "We arrived ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "in"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (till) South Africa on the first of June.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4099,7 +3922,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4115,22 +3939,19 @@
             {
               "kind": "text",
               "text": "What are you going to do after ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "school"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skolan)?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4139,7 +3960,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4155,8 +3977,7 @@
             {
               "kind": "text",
               "text": "It ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4168,14 +3989,12 @@
                 "'s been raining",
                 "’s rained",
                 "'s rained"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (har regnat) for weeks now. The flooding along the valley will continue.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4184,7 +4003,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4200,22 +4020,19 @@
             {
               "kind": "text",
               "text": "They hadn’t met since ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Christmas"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (jul).",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4224,7 +4041,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4240,8 +4058,7 @@
             {
               "kind": "text",
               "text": "Hon hade aldrig gått dit om de inte hade bett henne. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4258,8 +4075,7 @@
                 "She would never have gone there if they hadn't asked her",
                 "She'd never have gone there if they hadn't asked her",
                 "She never would have gone there if they hadn't asked her"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -4268,7 +4084,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4284,8 +4101,7 @@
             {
               "kind": "text",
               "text": "You ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4293,14 +4109,12 @@
               "accepted_values": [
                 "should be",
                 "ought to be"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (skulle vara) more careful about your health.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -4309,7 +4123,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -4325,8 +4140,7 @@
             {
               "kind": "text",
               "text": "Cathy hade till sin stora förvåning gått ut utan skor. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -4340,8 +4154,7 @@
                 "Cathy had, to her great surprise, gone out without shoes.",
                 "To her great surprise, Cathy had gone out without any shoes",
                 "To her great surprise, Cathy had gone out without any shoes."
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -4350,7 +4163,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

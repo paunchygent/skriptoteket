@@ -1,0 +1,63 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0097",
+    "body:0098"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "42",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "balanced",
+                "ballanced"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (b…) ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diet"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (d…) is enough, but not too much, of the right kinds of food.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

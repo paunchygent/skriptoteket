@@ -1,203 +1,287 @@
-"""Admit produced items through the native contract and chunk-role bookkeeping."""
+"""Admit one schema-valid batch response into the build state (TASK-SKRIPT-39-05-04).
 
-import json
-from collections import Counter
+The strict output schema is the only gate on model output: it limits every anchor to the
+batch's own chunks and every kind to the batch's kinds. Admission never rejects or retries
+a schema-valid response. A chunk two entries name stays with the first; the later entry
+keeps its other chunks. A question the native contract cannot hold, a question the model
+marks for review, and every chunk no entry names become review items that keep their
+source text; a question's review item shows all its own chunks as printed. A chunk the
+grouping gives a question as its own stays with the item that lists it, also when the reply
+lists it as an answer key, the title or an instruction, and is no answer key when an item lists
+another chunk of its question. A title or instruction holding an own chunk no item lists is an
+instruction that stands only where assembly places it at its question (D42); the title keeps
+its other chunks. A converted item that leaves out own chunks of its question holds them under
+a check mark that shows them as printed (D41). Building one question's item never fails the
+batch: an item that cannot be built becomes a review item holding that question's own source
+text. A question reported as a type conflict leaves the
+batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
+as converted.
+"""
 
-from pydantic import BaseModel, JsonValue, ValidationError
+from collections.abc import Callable
+
+from pydantic import JsonValue, ValidationError
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
+    TypeConflict,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    native_item,
-    review_item,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildEnvelope,
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    with_left_out_mark,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    OPENING_HEADING_IS_TITLE,
     definition_context,
-    item_rule_violation,
-    label_rule_violation,
-    opening_heading,
-    title_rule_violation,
     title_without_answer_key,
     with_accepted_forms,
-    with_printed_hints,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+    NativeParseOrigin,
+)
+from skriptoteket.domain.errors import DomainError
 
-_ENVELOPE_FIELDS = set(DocxBuildEnvelope.model_fields)
-
-
-class _Rejected(Exception):
-    def __init__(self, code: str, detail: str, reason: str) -> None:
-        super().__init__(detail)
-        self.code = code
-        self.detail = detail
-        self.reason = reason
+CONFLICT_WITHOUT_KIND_REASON = (
+    "AI-tolkningen angav att frågan har en annan svarstyp men inte vilken. "
+    "Kontrollera frågan manuellt."
+)
 
 
 def validation_detail(error: ValidationError) -> str:
-    """Field location and message only; the offending input is never included."""
+    """Field locations, error types and the invariant a validator names; never the input."""
     return "; ".join(
-        f"{'.'.join(str(part) for part in entry['loc']) or '<root>'}: {entry['msg']}"
-        for entry in error.errors(include_url=False, include_input=False)
-    )[:500]
+        f"{'.'.join(str(part) for part in entry['loc'])}: "
+        + (entry["msg"] if entry["type"] == "value_error" else entry["type"])
+        for entry in error.errors()
+    )
 
 
-def _parse[T: BaseModel](model: type[T], raw: JsonValue) -> T:
+Admitted = tuple[NativeExamItem, tuple[str, ...]]
+
+
+def _source_review(
+    index: int,
+    anchors: tuple[str, ...],
+    state: DocxBuildState,
+    seen: set[str],
+    code: str,
+    detail: str,
+) -> Admitted:
+    """The whole question's source text as a review item, whatever the model wrote."""
+    state.record("admission", code, item=index, anchors=anchors, detail=detail)
+    return state.printed(anchors, f"Frågan följer inte provformatet ({detail}).", seen)
+
+
+def _built(
+    index: int,
+    anchors: tuple[str, ...],
+    state: DocxBuildState,
+    seen: set[str],
+    build: Callable[[], NativeExamItem],
+) -> Admitted:
+    """The item ``build`` makes, or its source review item when the item cannot be built."""
     try:
-        return model.model_validate_json(json.dumps(raw), strict=True)
+        return build(), anchors
     except ValidationError as error:
-        detail = validation_detail(error)
-        raise _Rejected(
-            "item_schema_invalid", detail, f"Svaret följer inte AI-kontraktet ({detail})."
-        ) from error
-
-
-def _without_key_anchors(produced: ProducedItem, state: DocxBuildState) -> ProducedItem:
-    """A chunk already admitted as facit stays facit; the item keeps its other chunks."""
-    kept = tuple(a for a in produced.source_anchors if a not in state.key_anchors)
-    if not kept or kept == produced.source_anchors:
-        return produced
-    return produced.model_copy(update={"source_anchors": kept})
-
-
-def _require_anchors(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> None:
-    unknown = [a for a in anchors if a not in state.known_anchors]
-    if unknown:
-        detail = f"unknown anchors {unknown}"
-        raise _Rejected("anchor_unknown", detail, f"Okända källankare ({detail}).")
-    counts = Counter(anchors)
-    taken = [a for a in anchors if a in state.claimed or a in state.key_anchors or a in seen] + [
-        a for a in anchors if counts[a] > 1
-    ]
-    if taken:
-        detail = f"anchors already used {sorted(set(taken))}"
-        raise _Rejected(
-            "anchor_conflict", detail, f"Källstycket används redan av annat innehåll ({detail})."
+        return _source_review(
+            index, anchors, state, seen, "native_contract_invalid", validation_detail(error)
         )
+    except Exception as error:
+        # Model output that breaks an assumption of the item builder affects only its question.
+        return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
 
 
-def _admit_keys(raw: JsonValue, state: DocxBuildState) -> None:
-    """Facit is decided by position; the opening heading stays pending as the title."""
-    anchors = raw if isinstance(raw, list) else []
-    valid = [a for a in anchors if isinstance(a, str) and a in state.known_anchors]
-    if len(valid) != len(anchors):
-        state.record(
-            "admission", "answer_key_anchor_unknown", detail=f"{len(anchors) - len(valid)} unknown"
+def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tuple[str, ...]:
+    """The anchors no earlier entry of this batch or an earlier batch already holds."""
+    return tuple(
+        dict.fromkeys(
+            a for a in anchors if a not in seen and a not in state.claimed and a in state.owned
         )
-    heading = opening_heading(state.chunks)
-    if heading is not None and heading.anchor in valid:
-        valid.remove(heading.anchor)
-        detail = f"answer_key_anchors {heading.anchor} {OPENING_HEADING_IS_TITLE}"
-        state.record("admission", "answer_key_source_rule", anchors=(heading.anchor,))
-        state.failures = (*state.failures, detail)
-    for anchor in valid:
-        if anchor not in state.claimed:
-            state.key_anchors.add(anchor)
-            state.claimed.add(anchor)
+    )
 
 
-def _require_title_rule(title: ProducedMetadata, state: DocxBuildState) -> None:
-    sources = (state.chunk_by_anchor[a] for a in title.source_anchors)
-    violation = title_rule_violation(title, sources, opening_heading(state.chunks))
-    if violation:
-        state.failures = (*state.failures, violation)
-        raise _Rejected("source_rule", violation, "Titeln följer inte källans rubrik.")
-
-
-def _admit_metadata(content: dict[str, JsonValue], state: DocxBuildState, seen: set[str]) -> None:
-    raw_title = content["title"]
-    raw_instructions = content["instructions"]
-    candidates: list[tuple[str, JsonValue]] = [("title", raw_title)] if raw_title else []
-    if isinstance(raw_instructions, list):
-        candidates.extend(("instructions", value) for value in raw_instructions)
-    for field_name, raw in candidates:
-        try:
-            metadata = _parse(ProducedMetadata, raw)
-            _require_anchors(metadata.source_anchors, state, seen)
-            if field_name == "title" and state.title is None:
-                _require_title_rule(metadata, state)
-                metadata = metadata.model_copy(
-                    update={"text": title_without_answer_key(metadata.text)}
-                )
-        except _Rejected as rejected:
-            state.record("admission", f"{field_name}_{rejected.code}", detail=rejected.detail)
-            continue
-        if field_name == "title" and state.title is None:
-            state.title = metadata
-        else:
-            state.instructions = (*state.instructions, metadata)
-        seen.update(metadata.source_anchors)
-
-
-def _admit_item(
-    index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], rejected_anchors: set[str]
+def _admit_keys(
+    raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
 ) -> None:
-    anchors: tuple[str, ...] = ()
+    listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
+    for anchor in _free(listed, state, seen):
+        if item_held.intersection(state.question_by_anchor.get(anchor, ())):
+            continue
+        state.key_anchors.add(anchor)
+        seen.add(anchor)
+
+
+def _source(
+    metadata: ProducedMetadata, anchors: tuple[str, ...], state: DocxBuildState
+) -> ProducedMetadata:
+    """``metadata`` narrowed to ``anchors``, showing their source text: the reply's text may
+    hold the wording of chunks it no longer holds."""
+    text = "\n".join(state.chunk_by_anchor[a].text for a in anchors)
+    return metadata.model_copy(update={"text": text, "source_anchors": anchors})
+
+
+def _admit_metadata(
+    raw: JsonValue,
+    field_name: str,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+) -> None:
     try:
-        produced = _without_key_anchors(_parse(ProducedItem, raw), state)
-        anchors = produced.source_anchors
-        _require_anchors(anchors, state, seen)
-        own = tuple(state.chunk_by_anchor[a] for a in anchors)
-        produced = with_printed_hints(produced, own)
-        violation = item_rule_violation(produced, own) or label_rule_violation(produced, own)
-        if violation:
-            raise _Rejected(
-                "source_rule",
-                violation,
-                "Frågans luckor, svarstyp eller etiketter följer inte källans struktur.",
-            )
-        try:
-            if produced.outcome == "review":
-                cause = produced.review_reason or "ingen orsak angavs"
-                reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
-                item = review_item(produced, reason)
-                state.record(
-                    "admission", "model_review", item=index, anchors=anchors, detail=reason
-                )
-            else:
-                instructions = (a for m in state.instructions for a in m.source_anchors)
-                context = definition_context(state.chunks, anchors, instructions)
-                item = native_item(with_accepted_forms(produced, context))
-        except ValidationError as error:
-            detail = validation_detail(error)
-            raise _Rejected(
-                "native_contract_invalid", detail, f"Frågan följer inte provformatet ({detail})."
-            ) from error
-    except _Rejected as rejected:
-        state.record(
-            "admission", rejected.code, item=index, anchors=anchors, detail=rejected.detail
-        )
-        state.fail_chunks(anchors, rejected.reason)
-        rejected_anchors.update(anchors)
-        state.failures = (*state.failures, f"items[{index}] {rejected.code}: {rejected.detail}")
+        metadata = ProducedMetadata.model_validate(raw)
+    except ValidationError as error:
+        state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
         return
-    state.accepted.append((item, anchors))
+    listed = _free(metadata.source_anchors, state, seen)
+    # The grouping decides ownership: a question's own chunk an item of the reply lists stays
+    # with that item. A title or instruction holding another own chunk is an instruction that
+    # stands only where assembly places it at its question (D42).
+    own = frozenset(a for a in listed if a in state.question_by_anchor) - state.governing
+    anchors = tuple(a for a in listed if a not in own.intersection(item_held))
+    if not anchors:
+        state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
+        return
+    if len(anchors) < len(listed):
+        metadata = _source(metadata, anchors, state)
+    else:
+        metadata = metadata.model_copy(update={"source_anchors": anchors})
+    if field_name == "title" and own.intersection(anchors):
+        moved = tuple(a for a in anchors if a in own)
+        state.instructions = (*state.instructions, _source(metadata, moved, state))
+        seen.update(moved)
+        anchors = tuple(a for a in anchors if a not in own)
+        if not anchors:
+            return
+        metadata = _source(metadata, anchors, state)
+    if field_name == "title" and state.title is None:
+        try:
+            text = title_without_answer_key(metadata.text)
+        except DomainError as error:
+            # A title of answer-key wording alone names no title; its chunks stay unclaimed.
+            state.record("admission", "title_unparsed", anchors=anchors, detail=error.code.value)
+            return
+        state.title = metadata.model_copy(update={"text": text})
+    else:
+        state.instructions = (*state.instructions, metadata)
     seen.update(anchors)
 
 
-def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
-    """Freeze converted items; leave failing and unclaimed chunks pending for retry."""
-    state.failures = ()
-    if set(content) != _ENVELOPE_FIELDS or not isinstance(content["items"], list):
-        detail = f"top-level fields {sorted(content)}"
-        state.record("admission", "envelope_invalid", detail=detail)
-        state.fail_all_pending(f"Svaret följer inte AI-kontraktet ({detail}).")
-        state.failures = (f"envelope_invalid: {detail}",)
+def _raw_anchors(raw: JsonValue) -> tuple[str, ...]:
+    anchors = raw.get("source_anchors") if isinstance(raw, dict) else None
+    return tuple(a for a in anchors if isinstance(a, str)) if isinstance(anchors, list) else ()
+
+
+def _with_left_out(
+    index: int,
+    admitted: Admitted,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+) -> Admitted:
+    """A converted item that leaves out own chunks of its question holds them under a check
+    mark that shows them as printed and blocks export until the teacher handles it (D41).
+
+    A left-out chunk is an own chunk of a question the item touches that no item of the
+    reply lists and no entry holds yet.
+    """
+    item, anchors = admitted
+    if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
+        return admitted
+    own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    left_out = tuple(
+        c.anchor
+        for c in state.pending
+        if c.anchor in own and c.anchor not in item_held and c.anchor not in seen
+    )
+    if not left_out:
+        return admitted
+    seen.update(left_out)
+    state.record("admission", "own_chunks_left_out", item=index, anchors=left_out)
+    marked = with_left_out_mark(item, [state.chunk_by_anchor[a] for a in left_out])
+    return marked, (*anchors, *left_out)
+
+
+def _admit_item(
+    index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
+) -> None:
+    try:
+        produced = ProducedItem.model_validate(raw)
+    except ValidationError as error:
+        # The question the entry names becomes one review item holding its source text.
+        anchors = _free(_raw_anchors(raw), state, seen)
+        detail = validation_detail(error)
+        if not anchors:
+            state.record("admission", "item_unparsed", item=index, detail=detail)
+            return
+        seen.update(anchors)
+        state.accepted.append(_source_review(index, anchors, state, seen, "item_unparsed", detail))
         return
+    anchors = _free(produced.source_anchors, state, seen)
+    if anchors != produced.source_anchors:
+        state.record("admission", "anchor_conflict", item=index, anchors=produced.source_anchors)
+    if not anchors:
+        return
+    produced = produced.model_copy(update={"source_anchors": anchors})
+    seen.update(anchors)
+    if produced.outcome == "type_conflict":
+        kind = produced.conflict_kind
+        if kind is None or (state.allowed_kinds is not None and kind in state.allowed_kinds):
+            state.accepted.append(state.printed(anchors, CONFLICT_WITHOUT_KIND_REASON, seen))
+            return
+        if not state.keep_conflicts:
+            state.conflicts.append(TypeConflict(anchors, kind))
+            state.record("admission", "type_conflict", item=index, anchors=anchors, detail=kind)
+            return
+        # A resent question that conflicts again is kept as converted, as the kind the source
+        # shows, with the type-check mark.
+        state.record("admission", "type_conflict_kept", item=index, anchors=anchors, detail=kind)
+        state.kept_conflicts.update(anchors)
+        produced = produced.model_copy(update={"kind": kind})
+    if produced.outcome == "review":
+        cause = produced.review_reason or "ingen orsak angavs"
+        reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
+        state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
+        state.accepted.append(state.printed(anchors, reason, seen))
+        return
+    instructions = (
+        *(a for m in state.instructions for a in m.source_anchors),
+        *state.context_anchors,
+    )
+
+    def build() -> NativeExamItem:
+        context = definition_context(state.chunks, anchors, instructions)
+        return native_item(with_accepted_forms(produced, context))
+
+    built = _built(index, anchors, state, seen, build)
+    state.accepted.append(_with_left_out(index, built, state, seen, item_held))
+
+
+def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
+    """Admit every entry once; chunks no entry names become review items."""
     seen: set[str] = set()
-    rejected_anchors: set[str] = set()
-    _admit_keys(content["answer_key_anchors"], state)
-    _admit_metadata(content, state, seen)
-    for index, raw in enumerate(content["items"]):
-        _admit_item(index, raw, state, seen, rejected_anchors)
-    state.claimed.update(seen)
-    uncovered = tuple(c.anchor for c in state.pending if c.anchor not in rejected_anchors)
-    if uncovered:
-        state.record("admission", "chunk_unclaimed", anchors=uncovered)
-        state.failures = (*state.failures, f"chunks without item or metadata: {list(uncovered)}")
+    raw_items = content.get("items")
+    items = raw_items if isinstance(raw_items, list) else []
+    item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
+    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
+    if content.get("title"):
+        _admit_metadata(content["title"], "title", state, seen, item_held)
+    raw_instructions = content.get("instructions")
+    for raw in raw_instructions if isinstance(raw_instructions, list) else ():
+        _admit_metadata(raw, "instructions", state, seen, item_held)
+    for index, raw in enumerate(items):
+        _admit_item(index, raw, state, seen, item_held)
+    conflicted = {a for conflict in state.conflicts for a in conflict.anchors}
+    state.claimed.update(seen - conflicted)
+    # A governing chunk with text becomes its section parent's instruction (D40).
+    unnamed = tuple(
+        c.anchor
+        for c in state.pending
+        if c.anchor not in conflicted | state.reasons.keys()
+        and not (c.anchor in state.governing and c.text)
+    )
+    if unnamed:
+        state.record("admission", "chunk_unclaimed", anchors=unnamed)

@@ -1,0 +1,687 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0183"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0179",
+    "body:0185",
+    "body:0187",
+    "body:0189",
+    "body:0191",
+    "body:0193",
+    "body:0195",
+    "body:0197",
+    "body:0199",
+    "body:0201",
+    "body:0203",
+    "body:0205",
+    "body:0207",
+    "body:0209",
+    "body:0211",
+    "body:0213"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0178"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "84",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There will be no admittance for ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "those who",
+                "people who"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (dem som) arrive late.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0184"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "86",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They accused him ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "of"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (för) the robbery.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0186"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "87",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He aimed ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "at"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (mot) the front of the car and fired.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0188"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "88",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They can only blame ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "themselves"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (sig själva).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0190"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "89",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They suggested that he ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "should sell",
+                "sell"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skulle sälja) the house before prices started to drop.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0192"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "90",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His grandmother is ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "seriously"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (allvarligt) ill.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0194"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "91",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This is ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "an"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en) interesting solution.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0196"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "92",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This pack of meat smells ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "bad"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (dåligt).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0198"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "93",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This show is for ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "those who",
+                "people who"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (dem som) want irreverent stand-up comedy.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0200"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "94",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "To learn more about ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "nature"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (naturen) has always been one of my great interests.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0202"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "95",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Trains ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "leave",
+                "depart"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (avgår) for the airport every half hour.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0204"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "96",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We are going to stay in our ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "friends’",
+                "friends'"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (vänners) house in Wales.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0206"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "97",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I have brought ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "my own food",
+                "food of my own"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (egen mat) today.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0208"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "98",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We arrived ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (till) South Africa on the first of June.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0210"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "99",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "What are you going to do after ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "school"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skolan)?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0212"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "100",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "has been raining",
+                "has been raining.",
+                "has rained",
+                "has rained.",
+                "’s been raining",
+                "'s been raining",
+                "’s been raining.",
+                "'s been raining.",
+                "’s rained",
+                "'s rained"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (har regnat) for weeks now. The flooding along the valley will continue.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

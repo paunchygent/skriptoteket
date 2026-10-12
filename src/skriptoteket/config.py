@@ -338,17 +338,31 @@ class Settings(BaseSettings):
     LLM_ANSWER_KEY_JOB_LEASE_TTL_SECONDS: int = 900
     # DOCX exam conversion (TASK-SKRIPT-39-05-01): GPT-6 Luna medium reasoning
     # on the answer-key Responses endpoint, key, verbosity and daily token
-    # lease. Context and output limits are the GPT-6 Luna model limits. One
-    # whole-exam round has taken 95.7 s, so its timeout is its own.
+    # lease. The context limit is the GPT-6 Luna model limit. One whole-exam
+    # round has taken 95.7 s, so its timeout is its own.
     LLM_DOCX_CONVERSION_MODEL: str = "gpt-6-luna"
-    LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "medium"
+    LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS: int = 1_050_000
-    LLM_DOCX_CONVERSION_MAX_OUTPUT_TOKENS: int = 128_000
     LLM_DOCX_CONVERSION_TIMEOUT_SECONDS: int = 300
     # Item-type labeler (TASK-SKRIPT-39-05-04): Decisions on the answer-key
     # base URL, key and daily token lease. Its model and acceptance threshold
     # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
+    # Type-batched DOCX conversion (TASK-SKRIPT-39-05-04 D29): question families
+    # per converter batch, set after the D26 measurement: one family per batch at
+    # low converter effort (LLM_DOCX_CONVERSION_REASONING_EFFORT) matched 302 of
+    # 314 corpus items with every exam ready within 35 s (2026-10-11). The
+    # grouping pass and the label-only second pass (D23 pass B) observed at most
+    # 566 output tokens per call.
+    LLM_DOCX_BATCH_FAMILIES: int = Field(default=1, ge=1)
+    # Output allowance per question family in a converter batch; each batch
+    # reserves and caps its output at this times its families (TASK-SKRIPT-39-05-04
+    # R-F2). The largest recorded one-family response body is about 17.5 KB, and
+    # a whole 104-family exam used at most 30k output tokens (2026-10-11), so a
+    # 104-family exam reserves about 2.1M tokens at once against the daily limit.
+    LLM_DOCX_BATCH_OUTPUT_TOKENS_PER_FAMILY: int = Field(default=16_000, ge=1)
+    LLM_DOCX_GROUPING_MAX_OUTPUT_TOKENS: int = 60_000
+    LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS: int = 4_000
 
     # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
     # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect

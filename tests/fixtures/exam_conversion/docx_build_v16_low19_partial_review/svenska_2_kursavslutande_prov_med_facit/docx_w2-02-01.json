@@ -1,0 +1,39 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0107"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0105",
+        "body:0106",
+        "body:0108"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Språkstruktur",
+      "printed_label": "Fråga 23",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad är en nominalisering?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "När en handling, egenskap eller process uttrycks som substantiv."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "gap_fill",
+      "review_reason": null,
+      "kind": "free_text",
+      "title": "Huvudsats, bisats och BIFF",
+      "printed_label": "Fråga 20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De väntar inte. är en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) I bisatsen att de inte väntar står satsadverbialet ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": []
+            },
+            {
+              "kind": "text",
+              "text": " det finita verbet.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

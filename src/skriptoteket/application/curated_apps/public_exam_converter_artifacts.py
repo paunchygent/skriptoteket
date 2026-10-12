@@ -20,9 +20,6 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterJobStatus,
     PublicExamConverterUpload,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
-    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-)
 
 
 def upload_mime_types(
@@ -62,8 +59,7 @@ def project_public_exam_converter_manifest(
             if isinstance(entry, dict)
         ]
     return PublicExamConverterArtifactManifestResponse(
-        schema_version=_string_value(manifest.get("schema_version"))
-        or DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
+        schema_version=manifest["schema_version"],
         public_job_id=public_job_id,
         status=status,
         expires_at=expires_at,

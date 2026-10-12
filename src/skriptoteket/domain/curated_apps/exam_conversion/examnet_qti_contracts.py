@@ -161,9 +161,10 @@ class ExamNetQtiUnsupportedResource:
 class ExamNetQtiItem:
     """One QTI item request in the Exam.net target profile.
 
-    A parent item carries ``children`` (items of one interaction type, in order)
-    and the ``instruction_lines`` they share; it exports as one assessment item
-    holding one interaction per child. Its ``image_resources`` are the children's
+    A parent item carries ``children`` (items of any mix of interaction types, in
+    order) and the ``instruction_lines`` they share; it exports as one assessment
+    item holding one interaction per child, each with its own response, and every
+    reader takes each child's own ``interaction_type``. Its ``image_resources`` are the children's
     in order, so package planning writes every image once under the parent.
     """
 

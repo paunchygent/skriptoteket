@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0167"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0166"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "l",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When a dog ran across the street, the car in front of us stopped suddenly, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "thereby"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " causing a collision.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

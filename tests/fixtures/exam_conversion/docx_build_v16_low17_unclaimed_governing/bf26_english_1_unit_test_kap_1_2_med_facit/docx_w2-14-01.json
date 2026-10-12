@@ -1,0 +1,60 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0089"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0087",
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Between them, the two cousins saved $80.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Which sentence gives the meaning of between them here?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "The two cousins saved $80 each.",
+          "correct": false
+        },
+        {
+          "text": "The two cousins saved $80 altogether.",
+          "correct": true
+        },
+        {
+          "text": "The two cousins divided $80 equally.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

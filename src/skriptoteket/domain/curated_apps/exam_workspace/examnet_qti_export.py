@@ -134,7 +134,6 @@ def _parent_qti_item(
             if manual
             else ExamNetQtiEvaluationMode.AUTOMATIC
         ),
-        source_item_type=first.source_item_type,
         image_resources=tuple(image for child in qti_children for image in child.image_resources),
         instruction_lines=parent.instruction,
         children=tuple(qti_children),

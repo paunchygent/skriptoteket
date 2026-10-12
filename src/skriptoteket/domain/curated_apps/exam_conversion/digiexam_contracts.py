@@ -6,7 +6,6 @@ Purpose:
     and warning provenance.
 
 Relationships:
-    - Used by `domain.digiexam_parser` for PDF text fallback parser output.
     - Used by `domain.digiexam_dxe_parser` for canonical `.dxe` parser output.
     - Source-line and metadata value objects also describe result-PDF
       handoff from PyMuPDF extraction.
@@ -40,8 +39,6 @@ class DigiExamWarningCode(StrEnum):
     """Typed parser warning categories required by DigiExam parser tasks."""
 
     MISSING_ANSWER_KEY_PROVENANCE = "missing_answer_key_provenance"
-    MISSING_REQUIRED_ANCHOR = "missing_required_anchor"
-    LOSSY_SWEDISH_TEXT_EXTRACTION = "lossy_swedish_text_extraction"
     MALFORMED_SOURCE = "malformed_source"
     UNKNOWN_SOURCE_SHAPE = "unknown_source_shape"
     UNSUPPORTED_STRUCTURE = "unsupported_structure"

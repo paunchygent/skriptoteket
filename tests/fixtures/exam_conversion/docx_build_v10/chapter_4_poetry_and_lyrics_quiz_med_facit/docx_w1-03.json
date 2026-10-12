@@ -1,0 +1,269 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Word box:",
+      "source_anchors": [
+        "body:0108"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0114",
+    "body:0120",
+    "body:0126",
+    "body:0132",
+    "body:0138",
+    "body:0144"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0111",
+        "body:0112",
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cherish"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " the letters her grandmother wrote her, and she keeps them in a wooden box.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0117",
+        "body:0118",
+        "body:0119"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "traverse"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " the desert from east to west.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0123",
+        "body:0124",
+        "body:0125"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "humiliate"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " other players by mocking them.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0129",
+        "body:0130",
+        "body:0131"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "out of the blue"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", the chorus changes key without warning, and everyone looks up in surprise.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0135",
+        "body:0136",
+        "body:0137"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "line"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " in the first stanza has eight syllables.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0141",
+        "body:0142",
+        "body:0143"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3,",
+      "printed_label": "Question 6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diction"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", are all common and concrete.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

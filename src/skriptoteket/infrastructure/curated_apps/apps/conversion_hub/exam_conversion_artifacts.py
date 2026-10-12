@@ -111,7 +111,7 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
         except json.JSONDecodeError as exc:
             raise validation_error("Exam Converter artifact metadata is invalid.") from exc
 
-        raw_named_artifacts = metadata.get("named_artifacts", [])
+        raw_named_artifacts = metadata.get("named_artifacts")
         if not isinstance(raw_named_artifacts, list):
             raise validation_error("Exam Converter named artifact metadata is invalid.")
         named_artifacts = tuple(
@@ -120,10 +120,10 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
             if isinstance(entry, dict)
         )
         return ExamConversionStoredArtifact(
-            filename=str(metadata.get("filename") or ""),
-            content_type=str(metadata.get("content_type") or ""),
+            filename=_required_text(metadata, "filename"),
+            content_type=_required_text(metadata, "content_type"),
             content=content_path.read_bytes(),
-            source_filename=str(metadata.get("source_filename") or ""),
+            source_filename=_required_text(metadata, "source_filename"),
             source_content=source_path.read_bytes(),
             named_artifacts=named_artifacts,
         )
@@ -163,8 +163,8 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
             raise not_found("ExamConversionNamedArtifact", artifact_key)
         return ExamConversionNamedArtifact(
             artifact_key=artifact_key,
-            filename=str(entry.get("filename") or ""),
-            content_type=str(entry.get("content_type") or ""),
+            filename=_required_text(entry, "filename"),
+            content_type=_required_text(entry, "content_type"),
             content=content_path.read_bytes(),
         )
 
@@ -192,6 +192,13 @@ class FilesystemExamConversionArtifactStore(ExamConversionArtifactStoreProtocol)
         if generations_root not in generation_dir.parents:
             raise validation_error("Exam Converter artifact pointer is invalid.")
         return generation_dir
+
+
+def _required_text(source: dict[str, JsonValue], key: str) -> str:
+    value = source.get(key)
+    if not isinstance(value, str):
+        raise validation_error("Exam Converter artifact metadata is invalid.")
+    return value
 
 
 def _atomic_write_bytes(*, path: Path, content: bytes) -> None:

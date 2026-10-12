@@ -71,6 +71,7 @@ dependencies = [
     "molmass>=2026.1.8",
     "starlette-dishka>=1.0.2",
     "xlrd>=2.0.1",
+    "pypdfium2>=5.6.0",
 ]
 
 [project.optional-dependencies]
@@ -207,6 +208,7 @@ module = [
     "yaml.*",
     "pypdf.*",
     "pandas.*",
+    "pypdfium2.*",
 ]
 ignore_missing_imports = true
 

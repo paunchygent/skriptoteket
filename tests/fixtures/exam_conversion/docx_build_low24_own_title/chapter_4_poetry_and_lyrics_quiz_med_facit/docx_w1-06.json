@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0024"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Love is a locked room with no windows.” Which term names the direct equation of two unlike things without using like or as?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "imagery",
+          "correct": false
+        },
+        {
+          "text": "symbolism",
+          "correct": false
+        },
+        {
+          "text": "alliteration",
+          "correct": false
+        },
+        {
+          "text": "metaphor",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

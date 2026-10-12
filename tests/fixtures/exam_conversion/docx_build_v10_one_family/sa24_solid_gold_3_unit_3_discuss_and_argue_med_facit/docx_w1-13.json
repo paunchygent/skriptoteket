@@ -1,0 +1,45 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0041"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0040"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "tenant",
+                "tennant"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (t…t) – Someone who lives in a house, room etc. and pays rent to the person who owns it.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

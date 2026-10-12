@@ -1,0 +1,1110 @@
+{
+  "title": {
+    "text": "Vetenskaplig metod - metodprov — med facit",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Totalt: 20 poäng",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0010",
+    "body:0018",
+    "body:0026",
+    "body:0034",
+    "body:0042",
+    "body:0050",
+    "body:0058",
+    "body:0066",
+    "body:0074",
+    "body:0082",
+    "body:0090",
+    "body:0098",
+    "body:0106",
+    "body:0114",
+    "body:0122",
+    "body:0130"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0005",
+        "body:0006",
+        "body:0007",
+        "body:0008",
+        "body:0009"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Läsning på fritiden",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill undersöka hur stor andel av skolans tvåor som har läst skönlitteratur på fritiden under den senaste veckan. Gruppen har slumpat fram 120 tvåor från en fullständig elevlista.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilket sätt att samla in och bearbeta information passar bäst för att besvara frågan?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Låt eleverna beskriva sina bästa läsupplevelser och jämför vilka återkommande teman som finns i deras berättelser.",
+          "correct": false
+        },
+        {
+          "text": "Låt eleverna ange om de läst skönlitteratur på fritiden senaste veckan och beräkna andelen som svarar ja.",
+          "correct": true
+        },
+        {
+          "text": "Låt eleverna uppskatta hur viktigt de tycker att läsning är och jämför fördelningen mellan deras olika svar.",
+          "correct": false
+        },
+        {
+          "text": "Låt eleverna ange hur många böcker de äger hemma och beräkna hur stor andel som har böcker.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014",
+        "body:0015",
+        "body:0016",
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "multiple_response",
+      "title": "Tidningsartiklar",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp undersöker 40 tidningsartiklar om ungdomars fritid. Först räknar de hur många artiklar som nämner föreningsidrott. Sedan undersöker de hur ungdomarna beskrivs i artiklarna och vilka egenskaper de tillskrivs.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilka två beskrivningar av undersökningen stämmer?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera två svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [
+        {
+          "text": "Den första delen är kvalitativ, eftersom materialet består av texter som journalister har skrivit om ungdomar.",
+          "correct": false
+        },
+        {
+          "text": "Den andra delen är kvantitativ, eftersom samma fyrtio artiklar kan räknas och sorteras i flera olika grupper.",
+          "correct": false
+        },
+        {
+          "text": "Den första delen är kvantitativ, eftersom gruppen räknar hur ofta ett bestämt innehåll förekommer i artiklarna.",
+          "correct": true
+        },
+        {
+          "text": "Den andra delen är kvalitativ, eftersom gruppen tolkar hur ungdomarna framställs genom språket i de olika artiklarna.",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0021",
+        "body:0022",
+        "body:0023",
+        "body:0024",
+        "body:0025"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Statistik om extrajobb",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill jämföra hur vanligt extrajobb är bland gymnasieelever i tre kommuner. De hittar färdig statistik för samma år. Extrajobb har definierats på samma sätt och motsvarande elevgrupper har undersökts i alla tre kommunerna.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilket arbetssätt ger en egen analys som besvarar gruppens jämförelsefråga?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Jämför andelarna mellan kommunerna och diskutera vilka skillnader statistiken visar i förhållande till gruppens egen frågeställning.",
+          "correct": true
+        },
+        {
+          "text": "Sammanfatta rapporternas slutsatser med egna ord och använd sammanfattningen i stället för en egen jämförelse mellan kommunerna.",
+          "correct": false
+        },
+        {
+          "text": "Räkna ihop antalet elever med extrajobb i kommunerna och använd totalsumman som svar på frågan om skillnader.",
+          "correct": false
+        },
+        {
+          "text": "Byt ut statistiken mot intervjuer med några bekanta och använd deras erfarenheter för att uppskatta kommunernas olika andelar.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0029",
+        "body:0030",
+        "body:0031",
+        "body:0032",
+        "body:0033"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "AI och lärande",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill ta reda på om en AI-tjänst förbättrar elevernas lärande. De frågar 100 elever: ”Tycker du att du lär dig mer när du använder tjänsten?” Åttio elever svarar ja. Gruppen undersöker inte elevernas kunskaper på något annat sätt.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken beskrivning stämmer bäst med vad gruppen faktiskt har fått information om?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Resultatet visar elevernas faktiska lärande, eftersom de själva kan jämföra hur mycket de lär sig med olika hjälpmedel.",
+          "correct": false
+        },
+        {
+          "text": "Resultatet visar enkätens reliabilitet, eftersom en stor majoritet av eleverna har valt samma svar på den aktuella frågan.",
+          "correct": false
+        },
+        {
+          "text": "Resultatet visar hur representativt urvalet är, eftersom hundra elever har fått samma fråga om sina erfarenheter av AI.",
+          "correct": false
+        },
+        {
+          "text": "Resultatet visar elevernas uppfattning om sitt lärande, eftersom enkäten frågar efter deras bedömning snarare än deras kunskaper.",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Resor till skolan",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp skriver att arbetet ska undersöka hur svenska gymnasieelever tar sig till skolan. De frågar samtliga 72 tvåor på ett program på sin egen skola. Alla 72 svarar.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken beskrivning skiljer rätt mellan populationen i syftet och de elever som faktiskt har undersökts?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Populationen är skolans elever, eftersom det är på den egna skolan som gruppen har delat ut sin enkät.",
+          "correct": false
+        },
+        {
+          "text": "Populationen är svenska gymnasieelever, men urvalet från ett program ger inte tillräckligt stöd för slutsatser om hela gruppen.",
+          "correct": true
+        },
+        {
+          "text": "Populationen är de 72 tvåorna, eftersom alla som ingår i den grupp som tillfrågats också har besvarat enkäten.",
+          "correct": false
+        },
+        {
+          "text": "Populationen är svenska gymnasieelever, och urvalet kan representera dem eftersom samtliga elever som gruppen har tillfrågat har svarat.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046",
+        "body:0047",
+        "body:0048",
+        "body:0049"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Besökare i biblioteket",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill undersöka vad alla elever på skolan tycker om skolbiblioteket. Gruppen ställer sig i biblioteket och frågar de första 100 besökarna. Samtliga tillfrågade svarar.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken bedömning av urvalet är mest rimlig?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Det är ett slumpmässigt urval, eftersom gruppen inte på förhand vet vilka elever som kommer att besöka biblioteket.",
+          "correct": false
+        },
+        {
+          "text": "Det är ett representativt urval, eftersom biblioteksbesökarna har egna erfarenheter av det bibliotek som undersökningen handlar om.",
+          "correct": false
+        },
+        {
+          "text": "Det är ett bekvämlighetsurval, eftersom gruppen frågar lättillgängliga elever och därmed riskerar att missa dem som undviker biblioteket.",
+          "correct": true
+        },
+        {
+          "text": "Det är ett strategiskt urval som passar syftet, eftersom biblioteksbesökarna kan beskriva verksamheten mer ingående än andra elever.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0053",
+        "body:0054",
+        "body:0055",
+        "body:0056",
+        "body:0057"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "multiple_response",
+      "title": "En enkät till hela skolan",
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En skola har 900 elever. En grupp skickar en enkät om skolmaten till samtliga elever, men 180 svarar. Av de svarande är 70 procent missnöjda. Gruppen vet inte vad eleverna som avstod från att svara tycker.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilka två bedömningar av resultatet är försvarbara?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera två svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [
+        {
+          "text": "Resultatet behöver tolkas försiktigt, eftersom de som svarade kan ha andra åsikter om skolmaten än de som avstod.",
+          "correct": true
+        },
+        {
+          "text": "Resultatet kan generaliseras till skolan, eftersom samtliga elever fick samma möjlighet att delta och besvara enkätens frågor.",
+          "correct": false
+        },
+        {
+          "text": "Resultatet underskattar sannolikt missnöjet, eftersom de elever som avstod från att svara brukar vara mer negativa än deltagarna.",
+          "correct": false
+        },
+        {
+          "text": "Resultatet beskriver missnöjet bland de svarande, men visar inte säkert hur stor andel av skolans elever som är missnöjda.",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0061",
+        "body:0062",
+        "body:0063",
+        "body:0064",
+        "body:0065"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "20 eller 200 elever",
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Två grupper undersöker hur stor andel av en skolas 1 000 elever som cyklar till skolan. Båda lottar deltagare från samma fullständiga elevlista och använder samma tydliga fråga. Alla tillfrågade svarar. Den ena gruppen frågar 20 elever och den andra 200.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken skillnad kan man främst förvänta sig mellan undersökningarna?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Det större urvalet minskar normalt slumpens betydelse för den uppskattade andelen, när frågorna och sättet att välja deltagare är desamma.",
+          "correct": true
+        },
+        {
+          "text": "Det större urvalet minskar normalt risken att frågan mäter fel sak, när fler elever får besvara samma fråga i enkäten.",
+          "correct": false
+        },
+        {
+          "text": "Det mindre urvalet ger normalt mer tillförlitliga enkätsvar, eftersom varje enskild elev då får större betydelse för undersökningens samlade resultat.",
+          "correct": false
+        },
+        {
+          "text": "Det mindre urvalet ger normalt samma säkerhet i andelen, eftersom slumpmässigt valda deltagare återspeglar populationen oavsett hur många de är.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0069",
+        "body:0070",
+        "body:0071",
+        "body:0072",
+        "body:0073"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Samma svar sorteras olika",
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Två elever sorterar samma 30 intervjusvar i grupperna positiv, negativ och blandad. De använder olika regler för vad blandad betyder och placerar därför samma svar i olika grupper.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken förändring angriper problemet med analysens tillförlitlighet mest direkt?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Samla in fler intervjusvar och fortsätt sortera materialet var för sig med de regler som var och en använder.",
+          "correct": false
+        },
+        {
+          "text": "Välj intervjupersoner genom lottning och behåll de regler för sorteringen som var och en redan använder i analysen.",
+          "correct": false
+        },
+        {
+          "text": "Redovisa bådas sorteringar i metoddelen och använd sedan genomsnittet av resultaten utan att ändra de olika reglerna för sorteringen.",
+          "correct": false
+        },
+        {
+          "text": "Formulera gemensamma regler för sorteringen och pröva dem på samma intervjusvar innan ni går vidare med resten av materialet.",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0077",
+        "body:0078",
+        "body:0079",
+        "body:0080",
+        "body:0081"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Att räkna lästa sidor",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill jämföra hur väl elever förstår en novell. De räknar hur många sidor varje elev läser på tio minuter. Två personer kontrollräknar sidantalet oberoende av varandra och får samma resultat. Ingen undersöker hur eleverna har förstått innehållet.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken bedömning skiljer rätt mellan reliabilitet och validitet i den här mätningen?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Räkningen har god validitet, men låg reliabilitet eftersom elever kan läsa lika många sidor och ändå förstå olika mycket av novellen.",
+          "correct": false
+        },
+        {
+          "text": "Räkningen har god reliabilitet och validitet, eftersom två oberoende kontrollräkningar visar att varje elevs sidantal har registrerats korrekt i undersökningen.",
+          "correct": false
+        },
+        {
+          "text": "Räkningen verkar tillförlitlig, men antalet lästa sidor ger inte i sig ett mått på hur väl eleverna förstår innehållet i novellen.",
+          "correct": true
+        },
+        {
+          "text": "Räkningen har låg reliabilitet och validitet, eftersom en undersökning av förståelse behöver bygga på elevernas egna beskrivningar av sin läsning.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086",
+        "body:0087",
+        "body:0088",
+        "body:0089"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Skolans introduktionsplan",
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill ta reda på hur nya elever tas emot på en skola. De analyserar skolans introduktionsplan, där det står att varje ny elev ska erbjudas ett mentorssamtal. Gruppen skriver sedan: ”Alla nya elever får ett mentorssamtal.” Inget annat material har samlats in.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken bedömning av vad planen kan belägga är mest rimlig?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Planen visar vilket stöd eleverna får, eftersom dokumentet har skrivits av den skola som ansvarar för att ordna introduktionen.",
+          "correct": false
+        },
+        {
+          "text": "Planen visar hur regelbundet stödet ges, eftersom ett skriftligt dokument gör genomförandet lika från elev till elev på skolan.",
+          "correct": false
+        },
+        {
+          "text": "Planen ger belägg för stödets effekter, eftersom tydligt beskrivna samtal visar hur skolan förbättrar elevernas övergång till gymnasiet.",
+          "correct": false
+        },
+        {
+          "text": "Planen visar vilket stöd skolan avser att erbjuda, men ger inte i sig belägg för vilket stöd eleverna faktiskt får.",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0093",
+        "body:0094",
+        "body:0095",
+        "body:0096",
+        "body:0097"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "multiple_response",
+      "title": "En fråga om avfallssortering",
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill undersöka elevernas vanor vid avfallssortering. I enkäten står: ”Visst sorterar du ditt avfall, som en ansvarsfull elev bör göra?” Eleverna skriver sina namn och lämnar svaren direkt till sin lärare.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilka två ändringar riktar sig mot risken att svaren påverkas av formuleringen eller av hur eleverna vill framstå?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera två svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [
+        {
+          "text": "Formulera frågan neutralt och be eleven ange hur ofta hen har sorterat sitt avfall under den senaste veckan.",
+          "correct": true
+        },
+        {
+          "text": "Låt eleverna besvara enkäten utan namn och se till att läraren inte kan koppla svaren till enskilda elever.",
+          "correct": true
+        },
+        {
+          "text": "Samla in fler svar med samma fråga och låt läraren fortsätta kontrollera vilka elever som har svarat på enkäten.",
+          "correct": false
+        },
+        {
+          "text": "Förklara vilka sorteringsvanor skolan förväntar sig och be eleverna bedöma sina egna vanor i förhållande till skolans förväntningar.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0101",
+        "body:0102",
+        "body:0103",
+        "body:0104",
+        "body:0105"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Att byta program",
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp vill förstå hur elever som har bytt gymnasieprogram upplevde bytet och stödet från skolan. De har tid att genomföra åtta längre intervjuer.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilket urval passar frågeställningen bäst?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Välj åtta elever genom lottning från hela skolan, eftersom skolans samtliga elever bör ha samma chans att komma med.",
+          "correct": false
+        },
+        {
+          "text": "Välj åtta elever som har bytt program och har olika erfarenheter, eftersom de kan berätta om det som undersöks.",
+          "correct": true
+        },
+        {
+          "text": "Välj åtta klassrepresentanter från olika program, eftersom de kan företräda elevernas erfarenheter av hur det är att byta program.",
+          "correct": false
+        },
+        {
+          "text": "Välj åtta elever från den egna klassen, eftersom gemensamma lärare och lokaler gör deras erfarenheter av skolan lättare att jämföra.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0109",
+        "body:0110",
+        "body:0111",
+        "body:0112",
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Följdfrågor i intervjuer",
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Två elever intervjuar andra elever om hur de planerar sitt skolarbete. Alla får samma öppna huvudfrågor. Följdfrågorna hjälper var och en att utveckla sina egna svar utan att intervjuaren föreslår svar. Intervjuerna spelas in och analyseras efter samma principer.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken bedömning av genomförandet är mest rimlig?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Följdfrågorna kan fördjupa relevanta svar, samtidigt som gemensamma huvudfrågor och tydliga principer för analysen ger struktur åt arbetet.",
+          "correct": true
+        },
+        {
+          "text": "Följdfrågorna gör jämförelsen otillförlitlig, eftersom en tillförlitlig kvalitativ intervju kräver att alla deltagare får exakt samma frågor under samtalet.",
+          "correct": false
+        },
+        {
+          "text": "Inspelningarna gör tolkningarna tillförlitliga, eftersom en ordagrann dokumentation säkerställer att olika undersökare förstår deltagarnas svar på samma sätt.",
+          "correct": false
+        },
+        {
+          "text": "Huvudfrågorna gör resultatet generaliserbart, eftersom en gemensam intervjustruktur gör de intervjuade eleverna representativa för skolans elever som helhet.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0117",
+        "body:0118",
+        "body:0119",
+        "body:0120",
+        "body:0121"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Att använda restiden",
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En grupp intervjuar sex elever som valts ut därför att de har mer än en timmes resa till skolan. Fyra berättar att de ibland använder restiden till skolarbete. Gruppen överväger slutsatsen: ”Två av tre långpendlande elever använder restiden till skolarbete.”",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken alternativ slutsats har tydligast stöd i materialet?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera ett svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Långpendlande elever brukar använda restiden till skolarbete, eftersom en majoritet av de intervjuade eleverna beskriver att de gör det.",
+          "correct": false
+        },
+        {
+          "text": "Intervjuerna ger för lite underlag för att beskriva pendlande elevers erfarenheter, eftersom gruppen bara har intervjuat sex personer om frågan.",
+          "correct": false
+        },
+        {
+          "text": "Flera av de intervjuade använder enligt egna berättelser restiden till skolarbete, vilket ger exempel på hur pendlingen kan hanteras.",
+          "correct": true
+        },
+        {
+          "text": "Lång pendling får elever att studera under resan, eftersom fyra av de sex intervjuade berättar att de använder tiden så.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0125",
+        "body:0126",
+        "body:0127",
+        "body:0128",
+        "body:0129"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "multiple_response",
+      "title": "Spelande och sömn",
+      "printed_label": "16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I en enkät uppger 240 elever hur länge de brukar spela datorspel och hur länge de brukar sova. De som uppger mer spelande uppger också kortare sömn. Gruppen har inte undersökt vad som kom först eller hur andra vanor hänger ihop med spelandet och sömnen.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilka två bedömningar är försvarbara utifrån undersökningen?",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Markera två svar.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [
+        {
+          "text": "Spelandet orsakar den kortare sömnen hos eleverna, eftersom de som spelar fler timmar också rapporterar mindre tid för sömn.",
+          "correct": false
+        },
+        {
+          "text": "Speltid och sömntid hänger samman i enkätsvaren, men jämförelsen visar inte i sig vad som orsakar den kortare sömnen.",
+          "correct": true
+        },
+        {
+          "text": "Andra förhållanden kan bidra till sambandet, exempelvis att elever med vissa vanor på kvällen både spelar mer och sover mindre.",
+          "correct": true
+        },
+        {
+          "text": "Den kortare sömnen orsakar det ökade spelandet, eftersom elever som sover mindre får mer tid över till att spela datorspel.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

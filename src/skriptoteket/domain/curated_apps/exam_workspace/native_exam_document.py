@@ -156,7 +156,6 @@ class NativeGap(BaseModel):
 
     gap_id: str = Field(pattern=_GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
-    hint: str | None = None
 
     @field_validator("accepted_values")
     @classmethod
@@ -226,6 +225,7 @@ class NativeExamItem(BaseModel):
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
+    marking_guide: str | None = None  # rättningsmall: only free_text carries one (D31)
     review: NativeItemReview
     source_anchor: str | None = None
 
@@ -276,6 +276,8 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
+        if self.marking_guide and self.kind is not NativeExamItemKind.FREE_TEXT:
+            raise ValueError("only free_text items carry a marking guide")
 
         self._answer_key_invariants(frozenset(choice_ids))
         self._body_gap_invariants(gap_ids)

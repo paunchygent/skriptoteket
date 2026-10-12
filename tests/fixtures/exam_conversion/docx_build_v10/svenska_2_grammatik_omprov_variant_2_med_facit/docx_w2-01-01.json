@@ -1,0 +1,95 @@
+{
+  "title": {
+    "text": "Omprov: grammatik och språkstrukturer",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Svenska 2",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 38 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 1: Morfem och fraser",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 12
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0008",
+        "body:0009",
+        "body:0010",
+        "body:0011",
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "free_text",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Dela upp orden i morfem.",
+      "printed_label": "Fråga 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) solrosornas",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) läsbarheten",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) handbollsspelarnas",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

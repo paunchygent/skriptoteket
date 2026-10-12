@@ -1,0 +1,44 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0165"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0164"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "k",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "In conclusion"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " “, I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

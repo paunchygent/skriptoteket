@@ -15,6 +15,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from uuid import UUID
 
+from pydantic import JsonValue
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -90,12 +91,23 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model.locked_until = job.locked_until
         model.last_error = job.last_error
         model.diagnostics = list(job.diagnostics)
+        # conversion_progress is written only by set_conversion_progress.
         model.updated_at = job.updated_at
         model.started_at = job.started_at
         model.finished_at = job.finished_at
         await self._session.flush()
         await self._session.refresh(model)
         return ExamAnswerKeyEnrichmentJob.model_validate(model)
+
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        """Replace the job's persisted conversion progress; never commits."""
+        model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
+        if model is None:
+            raise not_found("ExamAnswerKeyEnrichmentJob", str(job_id))
+        model.conversion_progress = progress
+        await self._session.flush()
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         stmt = select(
@@ -105,6 +117,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             ExamAnswerKeyEnrichmentJobModel.status,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.last_error,
+            ExamAnswerKeyEnrichmentJobModel.conversion_progress,
         ).where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
         row = (await self._session.execute(stmt)).one_or_none()
         return (

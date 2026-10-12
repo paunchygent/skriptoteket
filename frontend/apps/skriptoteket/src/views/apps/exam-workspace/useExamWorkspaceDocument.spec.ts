@@ -65,10 +65,19 @@ describe("mergeSavedDocuments", () => {
 function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
     document: {
+      assets: [],
       document_id: "doc-1",
+      instructions: [],
       items: [buildMatchingItem()],
+      origin: {
+        extractor_version: "docx-extractor-1",
+        kind: "docx_import",
+        source_filename: "english-1.docx",
+        source_sha256: "abc123",
+      },
+      parents: [],
       revision: 1,
-      schema_version: 1,
+      schema_version: "native_exam_document_v1",
       title: "English 1",
     },
     notes: [],
@@ -79,7 +88,7 @@ function buildResponse(): ExamWorkspaceDocumentResponse {
       vault_file_id: "file-1",
       version: 1,
     },
-  } as unknown as ExamWorkspaceDocumentResponse;
+  };
 }
 
 async function openMatchingDocument() {

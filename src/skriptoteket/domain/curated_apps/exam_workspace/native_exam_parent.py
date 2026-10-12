@@ -21,9 +21,10 @@ _PARENT_ID_PATTERN = r"^parent_[0-9]{3}$"
 
 
 class NativeExamParent(BaseModel):
-    """Shared instruction for a run of consecutive child items of one kind.
+    """Shared instruction for a run of consecutive child items of any mix of kinds.
 
-    A parent owns no points and no answer key: each child item keeps its own.
+    A parent owns no points and no answer key: each child item keeps its own kind, points
+    and answer key, as an Exam.net information block holds questions of any type (D27).
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -45,7 +46,7 @@ def validate_parent_structure(
     parents: tuple[NativeExamParent, ...],
     items: tuple[NativeExamItem, ...],
 ) -> None:
-    """Children exist, belong to one parent, are consecutive in order and share one kind."""
+    """Children exist, belong to one parent and are consecutive in sequence order."""
     parent_ids = [parent.parent_id for parent in parents]
     if len(set(parent_ids)) != len(parent_ids):
         raise ValueError("parent ids must be unique")
@@ -65,8 +66,6 @@ def validate_parent_structure(
             raise ValueError(
                 f"parent {parent.parent_id} children must be consecutive items in sequence order"
             )
-        if len({child.kind for child in children}) != 1:
-            raise ValueError(f"parent {parent.parent_id} children must share one item kind")
 
 
 def parent_points(document: NativeExamDocument, parent: NativeExamParent) -> int | float | None:

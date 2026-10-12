@@ -1,0 +1,70 @@
+{
+  "title": {
+    "text": "E Choose the words (15 points)",
+    "source_anchors": [
+      "body:0106"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Choose a word to fill the gaps. Three of the words will not be used.",
+      "source_anchors": [
+        "body:0107"
+      ],
+      "points": null
+    },
+    {
+      "text": "booming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable | \nfatal | infant | rewarding |",
+      "source_anchors": [
+        "body:0108"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0110"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0109"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "a",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) My aunt is a great believer in Chinese ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "herbal"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " medicines.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

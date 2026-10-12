@@ -4,13 +4,17 @@ Purpose:
     Ask one ``choice`` question per item on ``POST /v1/decisions`` and route
     each answer through the label thresholds. Requests hold at most 200
     questions; larger inputs split into concurrent requests that each carry
-    only their own items. 503 and 504 retry with bounded backoff.
+    only their own items. This is the batched first pass; an escalated
+    question is decided by the Responses second pass (D23). 503 and 504
+    retry with bounded backoff.
 
 Relationships:
     Implements ``protocols.item_type_labeler.MeteredItemTypeLabelerProtocol``.
-    Label descriptions, question instructions and the rendered question shape
-    are the ones measured in the labeling feasibility run (2026-10-11); a
-    rewording invalidates that measurement. Request and answer shapes follow
+    Label descriptions define gap and free text by how the answer is scored
+    (D15); the instruction and descriptions are prompt P1d, sent in both passes
+    (D23), and each question retains its source text and inline keys
+    (amended D14); a new measurement is required after the input repair and
+    a rewording invalidates that measurement. Request and answer shapes follow
     the official Decisions guide (developers.openai.com/api/docs/guides/decisions,
     read 2026-10-11) and the recorded responses.
 """
@@ -20,13 +24,16 @@ from __future__ import annotations
 import asyncio
 import json
 import math
-from collections.abc import Sequence
+from collections.abc import Coroutine, Iterable, Sequence
 
 import httpx
 from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    IMAGE_INPUT_TOKEN_ESTIMATE,
+    SourceImage,
     estimate_prompt_tokens,
+    input_content,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
@@ -44,26 +51,66 @@ from skriptoteket.protocols.item_type_labeler import (
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
 _JsonObject = dict[str, JsonValue]
+_ChunkOutcome = tuple[list[ItemTypeLabelResult], int | None, int]
 
 DECISIONS_MODEL = "gpt-6-luna"
 MAX_QUESTIONS_PER_REQUEST = 200  # The API answers 400 array_above_max_length above 200.
 RETRYABLE_STATUS_CODES = frozenset({503, 504})
 
+CLASSIFICATION_INSTRUCTION = (
+    "Classify the response action the student performs and how that response is scored. "
+    "Read the question as the teacher wrote it, including its instructions, inline answers "
+    "and key labels. A type name the teacher writes for the question, as listed under each "
+    "label, settles the label, and a key that marks more than one option as correct settles "
+    "multiple_response. For single_choice the student selects exactly one printed option; "
+    "for multiple_response the student selects several. For gap_fill each response slot is "
+    "checked against one or more accepted strings, including a whole sentence or a word "
+    "from a supplied bank. For free_text the teacher judges a written response using a "
+    "sample answer, analysis or grading guidance rather than exact accepted strings for "
+    "each slot. Response length alone does not distinguish these labels. Matching pairs "
+    "entries from two supplied sets. Unsupported means the required interaction falls "
+    "outside those supported types; unresolved means the source does not establish a "
+    "reliable choice."
+)
+
+# Flervalsfråga names both choice labels; the number of options to choose decides (D23).
+_MULTIPLE_CHOICE_NAME = (
+    "Flervalsfråga (multiple choice) names both single_choice and multiple_response; "
+    "the number of options the student must choose decides between them."
+)
+
 LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
-    ItemTypeLabel.SINGLE_CHOICE: "The student chooses exactly one of the listed options.",
+    ItemTypeLabel.SINGLE_CHOICE: (
+        "The student chooses exactly one of the listed options, also when asked to write "
+        "the option's letter or number. Type names: välj ett alternativ (choose one option), "
+        "ett rätt svar (one correct answer), sant eller falskt / rätt eller fel (true or "
+        f"false). {_MULTIPLE_CHOICE_NAME}"
+    ),
     ItemTypeLabel.MULTIPLE_RESPONSE: (
-        "The student chooses several of the listed options, "
-        "as the question's response instruction asks."
+        "The student chooses several of the listed options, as the question's response "
+        "instruction asks. Type names: flera rätt (more than one correct), välj alla som "
+        "stämmer (select all that apply). A key that marks more than one option as correct "
+        f"settles this label. {_MULTIPLE_CHOICE_NAME}"
     ),
     ItemTypeLabel.GAP_FILL: (
-        "The source fixes the response units: answer slots, blanks or fields the student "
-        "fills in, including slots filled from a word bank or label list."
+        "Each response slot (a blank, a blank line or a labelled field) is keyed by one or "
+        "more accepted strings of any length, including slots filled from a word bank. "
+        "In a source with answers, a blank may be printed already filled with its answer, "
+        "marked by formatting such as italics, bold or colour, or set apart by position: "
+        "that place is a slot keyed by those words. When the key prints a sentence with a "
+        "label after each of its units, or a word split into parts joined with + and a "
+        "label after each part, each label is one slot after its unit or part, keyed by "
+        "that label. Type names: lucktext (gap text, cloze), fyll i luckan / luckorna "
+        "(fill in the gap / gaps)."
     ),
     ItemTypeLabel.FREE_TEXT: (
-        "The student writes a response and decides where its units begin and end."
+        "The student writes a response whose key is a sample answer, an analysis or "
+        "grading guidance. Type names: fritt svar (open answer), öppen fråga (open "
+        "question)."
     ),
     ItemTypeLabel.MATCHING: (
-        "The student pairs entries of one supplied set with entries of another supplied set."
+        "The student pairs entries of one supplied set with entries of another supplied set. "
+        "Type names: para ihop (pair up), matchning (matching)."
     ),
     ItemTypeLabel.UNSUPPORTED: (
         "The required interaction cannot be represented by any kind above without changing "
@@ -111,7 +158,8 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
 
     def estimate_input_tokens(self, *, request: LabelingRequest) -> int:
         return sum(
-            estimate_prompt_tokens(json.dumps(build_decisions_payload(chunk)))
+            estimate_prompt_tokens(json.dumps(_payload(render_items(chunk), (), len(chunk))))
+            + IMAGE_INPUT_TOKEN_ESTIMATE * sum(len(item.images) for item in chunk)
             for chunk in split_items(request.items)
         )
 
@@ -122,32 +170,37 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             raise ItemTypeLabelerError(
                 code="config_missing", message="Decisions labeler API key is not configured."
             )
-        outcomes = await asyncio.gather(
-            *(self._label_chunk(chunk) for chunk in split_items(request.items)),
-            return_exceptions=True,
+        outcomes = await self._gather(
+            self._label_chunk(build_decisions_payload(chunk), chunk)
+            for chunk in split_items(request.items)
         )
-        results: list[ItemTypeLabelResult] = []
-        tokens: list[int | None] = []
-        attempts = 0
-        for outcome in outcomes:
-            if isinstance(outcome, BaseException):
-                raise outcome
-            chunk_results, chunk_tokens, chunk_attempts = outcome
-            results.extend(chunk_results)
-            tokens.append(chunk_tokens)
-            attempts += chunk_attempts
-        input_tokens = None if any(t is None for t in tokens) else sum(t or 0 for t in tokens)
+        results = [result for outcome in outcomes for result in outcome[0]]
+        tokens = [outcome[1] for outcome in outcomes]
         return ItemTypeLabeling(
             results=tuple(results),
             usage=LabelingUsage(
-                input_tokens=input_tokens, requests=len(outcomes), attempts=attempts
+                input_tokens=None if None in tokens else sum(t or 0 for t in tokens),
+                requests=len(outcomes),
+                attempts=sum(outcome[2] for outcome in outcomes),
             ),
         )
 
+    @staticmethod
+    async def _gather(
+        calls: Iterable[Coroutine[None, None, _ChunkOutcome]],
+    ) -> list[_ChunkOutcome]:
+        """Run every call to completion, then raise the first failure in call order."""
+
+        outcomes = await asyncio.gather(*calls, return_exceptions=True)
+        for outcome in outcomes:
+            if isinstance(outcome, BaseException):
+                raise outcome
+        return [outcome for outcome in outcomes if not isinstance(outcome, BaseException)]
+
     async def _label_chunk(
-        self, items: Sequence[LabelingItem]
-    ) -> tuple[list[ItemTypeLabelResult], int | None, int]:
-        body, attempts = await self._post(build_decisions_payload(items))
+        self, payload: _JsonObject, items: Sequence[LabelingItem]
+    ) -> _ChunkOutcome:
+        body, attempts = await self._post(payload)
         results, input_tokens = parse_decisions_answers(body, items)
         return results, input_tokens, attempts
 
@@ -228,20 +281,24 @@ def _question_id(index: int) -> str:
     return f"q{index + 1}"
 
 
-def render_items(items: Sequence[LabelingItem]) -> str:
-    """Render each item as a numbered question block; ids are request-local."""
+def layout_items(items: Sequence[LabelingItem]) -> tuple[str, tuple[SourceImage, ...]]:
+    """Each question's faithful source under a routing heading, nothing else; each source
+    image stands at its own place in the rendered text."""
 
-    blocks = []
+    text = CLASSIFICATION_INSTRUCTION
+    images: list[SourceImage] = []
     for index, item in enumerate(items):
-        lines = [f"### Question {_question_id(index)}"]
-        if item.parent_instruction:
-            lines += ["Governing context:", item.parent_instruction]
-        lines += ["Source:", item.source_text]
-        blocks.append("\n".join(lines))
-    return "\n\n".join(blocks)
+        text += f"\n\n### Question {_question_id(index)}\n"
+        images.extend(SourceImage(image.png, len(text) + image.offset) for image in item.images)
+        text += item.source_text
+    return text, tuple(images)
 
 
-def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
+def render_items(items: Sequence[LabelingItem]) -> str:
+    return layout_items(items)[0]
+
+
+def _payload(rendered: str, images: tuple[SourceImage, ...], count: int) -> _JsonObject:
     choices: list[JsonValue] = [
         {"value": label.value, "description": LABEL_DESCRIPTIONS[label]} for label in ItemTypeLabel
     ]
@@ -251,15 +308,21 @@ def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
             "name": f"kind_{_question_id(index)}",
             "instructions": (
                 f"Which response action does question {_question_id(index)} ask the student "
-                "to perform? Judge its stem, options, subparts and governing context together "
-                "as one question. Answer-key lines show keyed answers; they do not change the "
-                "requested response action."
+                "to perform, and how is that answer scored?"
             ),
             "choices": choices,
         }
-        for index in range(len(items))
+        for index in range(count)
     ]
-    return {"model": DECISIONS_MODEL, "input": render_items(items), "questions": questions}
+    source: JsonValue = (
+        [{"role": "user", "content": input_content(rendered, images)}] if images else rendered
+    )
+    return {"model": DECISIONS_MODEL, "input": source, "questions": questions}
+
+
+def build_decisions_payload(items: Sequence[LabelingItem]) -> _JsonObject:
+    text, images = layout_items(items)
+    return _payload(text, images, len(items))
 
 
 def parse_decisions_answers(

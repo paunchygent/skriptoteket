@@ -1,0 +1,72 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0053"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0050",
+        "body:0051",
+        "body:0052"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: ineffable",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “ineffable”.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": false
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": true
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

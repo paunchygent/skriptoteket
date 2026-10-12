@@ -10,14 +10,14 @@ confirmation. Unresolved `teacher_questions` prevent confirmation and produce co
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`,
 `schema_version` `exam_conversion_gold_v2`). `items` holds standalone items and
-parents. A parent (`kind: "parent"`) groups consecutive questions of one response
-kind that sit under one source section instruction. It carries `source_label`,
+parents. A parent (`kind: "parent"`) groups the consecutive questions that sit
+under one source section instruction, of any mix of response kinds, as an Exam.net
+information block holds questions of any type. It carries `source_label`,
 the shared `instruction` and `children`, each a complete item whose `prompt`
 omits the instruction lines. A parent's points are the sum of its children's
 points and are not stored. A question that shares its instruction with no
 neighbour stays a standalone item. Source labels are unique across standalone
-items, parents and children. `scripts/exam_conversion_eval/move_gold_to_parents.py`
-performed the one-off move from v1.
+items, parents and children.
 The comparator is `scripts/exam_conversion_eval/compare.py`. A gold file is one
 correct conversion, so the comparator judges the eight conversion principles of
 TASK-SKRIPT-39-05-03 against it rather than textual identity. Reports keep the
@@ -41,6 +41,12 @@ Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
 a native free-text item requiring review. `matching` corresponds to the native
 matching kind, whose two lists and directed pairs the comparator reads.
+A facit that prints a label after each unit of a sentence, or after each part
+of a word joined with +, makes each label one gap after its unit or part,
+accepting that label (D39). Every question has points: printed points stay,
+and what remains of a section total after them is split over the section's
+questions that print none, in whole points as evenly as possible, earlier
+questions taking the extra point (D38). Both are user decisions of 2026-10-11.
 
 A conversion is correct when a student on Exam.net meets the same questions,
 answers them the same way and is scored the same as on paper, and the

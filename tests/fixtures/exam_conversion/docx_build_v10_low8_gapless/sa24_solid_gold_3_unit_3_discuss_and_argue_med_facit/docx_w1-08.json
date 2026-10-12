@@ -1,0 +1,51 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0030"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It’s almost impossible to avoid any ___ damage during heavy bombing raids.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "collateral",
+          "correct": true
+        },
+        {
+          "text": "extra",
+          "correct": false
+        },
+        {
+          "text": "essential",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

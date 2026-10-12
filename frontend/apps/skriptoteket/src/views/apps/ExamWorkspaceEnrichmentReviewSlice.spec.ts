@@ -95,7 +95,8 @@ describe("ExamWorkspaceView answer-key proposal review decisions", () => {
     );
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(parseReviewResponse);
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(SUCCEEDED);
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));

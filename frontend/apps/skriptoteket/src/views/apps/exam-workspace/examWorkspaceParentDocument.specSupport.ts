@@ -34,7 +34,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
         return { kind: "text" as const, text: segment.text ?? "" };
       }
       const gapId = `gap_${String(gaps.length + 1).padStart(3, "0")}`;
-      gaps.push({ accepted_values: segment.accepted_values, gap_id: gapId, hint: null });
+      gaps.push({ accepted_values: segment.accepted_values, gap_id: gapId });
       return { gap_id: gapId, kind: "gap" as const };
     }),
   }));

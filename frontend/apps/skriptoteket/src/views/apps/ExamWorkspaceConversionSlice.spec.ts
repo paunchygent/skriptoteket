@@ -19,7 +19,10 @@ const apiMocks = vi.hoisted(() => ({
 vi.mock("../../api/examWorkspace", () => apiMocks);
 
 function status(state: ExamWorkspaceConversionStatus["state"], error_message: string | null = null): ExamWorkspaceConversionStatus {
-  return { job_id: "job-1", lineage_id: "lineage-1", state, error_message };
+  return {
+    job_id: "job-1", lineage_id: "lineage-1", state, error_message,
+    document_revision: state === "succeeded" ? 1 : null, questions_total: 0, questions_done: 0, units: [],
+  };
 }
 
 let wrapper: Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"] | undefined;

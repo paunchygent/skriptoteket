@@ -1,0 +1,51 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0143"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0141",
+        "body:0142"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Which sentence uses capital letters correctly?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "When I got home, I did my homework.",
+          "correct": true
+        },
+        {
+          "text": "When i got home, I did my homework.",
+          "correct": false
+        },
+        {
+          "text": "When I got home, i did my homework.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

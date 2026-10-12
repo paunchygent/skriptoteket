@@ -4976,10 +4976,16 @@ export interface components {
         /**
          * ExamWorkspaceConversionStatus
          * @description Owner-visible status of one background DOCX import.
+         *
+         *     ``document_revision`` is the latest revision conversion saved, absent until the
+         *     first batch is ready; ``units`` lets the editor merge each new revision into
+         *     unsaved teacher edits.
          */
         ExamWorkspaceConversionStatus: {
+            /** Document Revision */
+            document_revision: number | null;
             /** Error Message */
-            error_message?: string | null;
+            error_message: string | null;
             /**
              * Job Id
              * Format: uuid
@@ -4990,11 +4996,37 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+            /** Questions Done */
+            questions_done: number;
+            /** Questions Total */
+            questions_total: number;
             /**
              * State
              * @enum {string}
              */
             state: "queued" | "running" | "succeeded" | "failed";
+            /** Units */
+            units: components["schemas"]["ExamWorkspaceConversionUnit"][];
+        };
+        /**
+         * ExamWorkspaceConversionUnit
+         * @description Items conversion last wrote for one question or question-less review item.
+         *
+         *     ``converting`` items are placeholders; ``teacher_kept`` means the teacher changed the
+         *     placeholder, so the late result was dropped.
+         */
+        ExamWorkspaceConversionUnit: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Question */
+            question: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "converting" | "ready" | "teacher_kept";
+            /** Unit Id */
+            unit_id: string;
         };
         /**
          * ExamWorkspaceDocumentListResponse
@@ -6050,6 +6082,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6090,6 +6124,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6120,9 +6156,10 @@ export interface components {
         NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of one kind.
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
          *
-         *     A parent owns no points and no answer key: each child item keeps its own.
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
          */
         NativeExamParent: {
             /** Instruction */
@@ -6141,8 +6178,6 @@ export interface components {
             accepted_values: string[];
             /** Gap Id */
             gap_id: string;
-            /** Hint */
-            hint?: string | null;
         };
         /** NativeGapSegment */
         NativeGapSegment: {

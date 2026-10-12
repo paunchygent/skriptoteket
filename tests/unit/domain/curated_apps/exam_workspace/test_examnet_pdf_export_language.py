@@ -14,7 +14,7 @@ import pytest
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (

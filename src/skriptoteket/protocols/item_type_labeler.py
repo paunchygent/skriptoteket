@@ -8,17 +8,23 @@ Purpose:
 
 Relationships:
     ``infrastructure.llm.openai.decisions_item_labeler`` implements the
-    metered model port; ``application.curated_apps.item_type_labeling`` wraps
-    it with the daily token lease.
+    metered first pass, ``infrastructure.llm.openai.responses_item_labeler``
+    the single-question second pass (D23 pass B), and
+    ``application.curated_apps.item_type_labeling`` composes both behind the
+    daily token lease.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
+
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    SourceImage,
+)
 
 
 class ItemTypeLabel(StrEnum):
@@ -40,6 +46,13 @@ class LabelRoute(StrEnum):
     ESCALATE = "escalate"
 
 
+class LabelPass(StrEnum):
+    """Which pass settled a label: the batched first pass, or the single-question second pass."""
+
+    FIRST = "first"
+    SECOND = "second"
+
+
 # The decided acceptance threshold for every label (TASK-SKRIPT-39-05-04 D10).
 ACCEPT_THRESHOLD = 0.95
 
@@ -52,11 +65,14 @@ def label_route(probability: float) -> LabelRoute:
 
 @dataclass(frozen=True)
 class LabelingItem:
-    """One question's source text; a child carries its parent instruction as read-only context."""
+    """One question's own source text as markdown, with inline answers, key labels,
+    governing instructions and section heading where they stand (D14). A source part
+    markdown cannot carry is an image standing at its offset in ``source_text``.
+    """
 
     item_id: str
     source_text: str
-    parent_instruction: str | None = None
+    images: tuple[SourceImage, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -83,6 +99,11 @@ class ItemTypeLabelResult:
     threshold: float
     route: LabelRoute
     refused: bool = False
+    first_pass: ItemTypeLabelResult | None = None
+    """The batched answer this result replaces after a second pass; None on a first pass."""
+    decided_by: LabelPass = LabelPass.FIRST
+    failure_code: str | None = None
+    """Set when the second pass failed; the label is then the first pass's top label."""
 
 
 @dataclass(frozen=True)
@@ -111,16 +132,51 @@ class ItemTypeLabelerError(Exception):
         self.status_code = status_code
 
 
+LabelSink = Callable[[tuple[ItemTypeLabelResult, ...]], None]
+"""Receives settled labels as they arrive: the accepted first-pass labels at once, then each
+second-pass label as its call returns."""
+
+
 class ItemTypeLabelerProtocol(Protocol):
-    """Label every item of a request, in request order."""
+    """Label every item of a request, in request order.
 
-    async def label(self, *, request: LabelingRequest) -> ItemTypeLabeling: ...
+    ``on_results`` receives each settled label once, as soon as it is settled.
+    """
+
+    async def label(
+        self, *, request: LabelingRequest, on_results: LabelSink | None = None
+    ) -> ItemTypeLabeling: ...
 
 
-class MeteredItemTypeLabelerProtocol(ItemTypeLabelerProtocol, Protocol):
-    """A labeler that spends provider tokens and estimates them before any network call."""
+class MeteredItemTypeLabelerProtocol(Protocol):
+    """The batched first pass: spends provider tokens and estimates them before any call."""
 
     @property
     def provider_profile_id(self) -> str: ...
 
+    async def label(self, *, request: LabelingRequest) -> ItemTypeLabeling: ...
+
     def estimate_input_tokens(self, *, request: LabelingRequest) -> int: ...
+
+
+@dataclass(frozen=True)
+class SecondPassLabel:
+    """One label decided alone by the second pass, with its measured provider usage."""
+
+    label: ItemTypeLabel
+    input_tokens: int | None
+    output_tokens: int | None
+    refused: bool = False
+
+
+class SecondPassItemTypeLabelerProtocol(Protocol):
+    """Decide one question's label alone (D23 pass B); spends input and output tokens."""
+
+    @property
+    def provider_profile_id(self) -> str: ...
+
+    def estimate_tokens(self, *, item: LabelingItem) -> int:
+        """Estimated input tokens plus the output allowance of one call."""
+        ...
+
+    async def label_one(self, *, job_id: UUID, item: LabelingItem) -> SecondPassLabel: ...

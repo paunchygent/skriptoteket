@@ -76,6 +76,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     diagnostics: Mapped[list[dict[str, JsonValue]]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
+    conversion_progress: Mapped[dict[str, JsonValue] | None] = mapped_column(JSONB, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

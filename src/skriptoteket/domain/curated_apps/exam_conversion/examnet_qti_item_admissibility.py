@@ -79,8 +79,6 @@ def _parent_errors(parent: ExamNetQtiItem) -> tuple[str, ...]:
     child_ids = tuple(child.item_id for child in parent.children)
     if len(set(child_ids)) != len(child_ids):
         errors.append(f"Item {parent.item_id} has duplicate child identifiers.")
-    if len({child.interaction_type for child in parent.children}) != 1:
-        errors.append(f"Item {parent.item_id} has children of different interaction types.")
     for child in parent.children:
         if child.children:
             errors.append(f"Item {child.item_id} cannot nest inside parent {parent.item_id}.")

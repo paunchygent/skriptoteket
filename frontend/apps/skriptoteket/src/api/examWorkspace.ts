@@ -46,6 +46,7 @@ export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceEnrichmentStatus = Schemas["ExamWorkspaceEnrichmentStatusResponse"];
 export type ExamWorkspaceConversionStatus = Schemas["ExamWorkspaceConversionStatus"];
+export type ExamWorkspaceConversionUnit = Schemas["ExamWorkspaceConversionUnit"];
 export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProposalItem"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */

@@ -136,8 +136,7 @@
             {
               "kind": "text",
               "text": "This sentence is somewhat ___. It could be interpreted in two ways. You’d better rewrite it to make it clearer.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -156,7 +155,8 @@
           "text": "unreliable",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -173,8 +173,7 @@
             {
               "kind": "text",
               "text": "My brother was so hungry that he ___ half of his burger in one bite.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -193,7 +192,8 @@
           "text": "scooped up",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -210,8 +210,7 @@
             {
               "kind": "text",
               "text": "Susan Berry isn’t a friend really. She’s just ___ of mine.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -230,7 +229,8 @@
           "text": "an acquaintance",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -247,8 +247,7 @@
             {
               "kind": "text",
               "text": "Our new washing-machine cost over £400. Fortunately, there wasn’t ___ for delivery.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -267,7 +266,8 @@
           "text": "a postage",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -284,8 +284,7 @@
             {
               "kind": "text",
               "text": "Their victory over Real Madrid in the European Cup means that Bayern Munich are now ___ of a place in the final.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -304,7 +303,8 @@
           "text": "secure",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -321,8 +321,7 @@
             {
               "kind": "text",
               "text": "Gerald couldn’t remember a thing after the accident. He was obviously suffering from ___.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -341,7 +340,8 @@
           "text": "anaemia",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -358,8 +358,7 @@
             {
               "kind": "text",
               "text": "The children were very poor and most of them were dressed in ___.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -378,7 +377,8 @@
           "text": "rags",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -395,8 +395,7 @@
             {
               "kind": "text",
               "text": "The situation is dangerous and the UN is ___ caution.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -415,7 +414,8 @@
           "text": "urging",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -432,8 +432,7 @@
             {
               "kind": "text",
               "text": "It’s almost impossible to avoid any ___ damage during heavy bombing raids.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -452,7 +451,8 @@
           "text": "essential",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -469,8 +469,7 @@
             {
               "kind": "text",
               "text": "The new drug is undergoing clinical ___.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -489,7 +488,8 @@
           "text": "experiments",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -508,20 +508,19 @@
               "accepted_values": [
                 "stimulant",
                 "stimmulant"
-              ],
-              "hint": "(s…t)"
+              ]
             },
             {
               "kind": "text",
               "text": " – A drug or substance that makes you feel more awake and gives you more energy.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -539,20 +538,19 @@
               "text": null,
               "accepted_values": [
                 "reside"
-              ],
-              "hint": "(r…e)"
+              ]
             },
             {
               "kind": "text",
               "text": " – A formal word meaning ‘to live in a particular place’.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -571,20 +569,19 @@
               "accepted_values": [
                 "eminent",
                 "emminent"
-              ],
-              "hint": "(e…t)"
+              ]
             },
             {
               "kind": "text",
               "text": " – Famous and respected, especially in a particular profession. (An … architect.)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -603,20 +600,19 @@
               "accepted_values": [
                 "tenant",
                 "tennant"
-              ],
-              "hint": "(t…t)"
+              ]
             },
             {
               "kind": "text",
               "text": " – Someone who lives in a house, room etc. and pays rent to the person who owns it.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -634,20 +630,19 @@
               "text": null,
               "accepted_values": [
                 "bladder"
-              ],
-              "hint": "(b…r)"
+              ]
             },
             {
               "kind": "text",
               "text": " – An organ, like a bag, inside the body of a person or animal, where urine is stored before it leaves the body.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -666,20 +661,19 @@
               "accepted_values": [
                 "melancholy",
                 "mellancholy"
-              ],
-              "hint": "(m…y)"
+              ]
             },
             {
               "kind": "text",
               "text": " – A deep feeling of sadness that lasts for a long time, often without any obvious reasons.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -697,20 +691,19 @@
               "text": null,
               "accepted_values": [
                 "plump"
-              ],
-              "hint": "(p…p)"
+              ]
             },
             {
               "kind": "text",
               "text": " – Slightly fat in a fairly pleasant way. Often used to avoid saying the word fat.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -729,20 +722,19 @@
               "accepted_values": [
                 "carcass",
                 "carcas"
-              ],
-              "hint": "(c…s)"
+              ]
             },
             {
               "kind": "text",
               "text": " – The body of a dead animal, especially a large one that is soon to be cut up as meat or eaten by wild animals.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -760,20 +752,19 @@
               "text": null,
               "accepted_values": [
                 "straightforward"
-              ],
-              "hint": "(s…d)"
+              ]
             },
             {
               "kind": "text",
               "text": " – Easy to do or to understand; not complicated.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -791,20 +782,19 @@
               "text": null,
               "accepted_values": [
                 "aisle"
-              ],
-              "hint": "(a…e)"
+              ]
             },
             {
               "kind": "text",
               "text": " – A passage between rows of seats in a church, theatre, train, etc., or between rows of shelves in a supermarket.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -820,28 +810,26 @@
             {
               "kind": "text",
               "text": "Don’t be ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "discouraged"
-              ],
-              "hint": "(d…)"
+              ]
             },
             {
               "kind": "text",
               "text": " by the first failure – try again! (modfälld; nedslagen)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -857,28 +845,26 @@
             {
               "kind": "text",
               "text": "We’re all ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "liable"
-              ],
-              "hint": "(l…)"
+              ]
             },
             {
               "kind": "text",
               "text": " to make mistakes when we’re tired. (riskerar /att/)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -894,8 +880,7 @@
             {
               "kind": "text",
               "text": "Books and articles about robots have ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -903,20 +888,19 @@
               "accepted_values": [
                 "proliferated",
                 "prolifferated"
-              ],
-              "hint": "(p…)"
+              ]
             },
             {
               "kind": "text",
               "text": " over the last year. (snabbt ökat i antal)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -932,28 +916,26 @@
             {
               "kind": "text",
               "text": "We took our dog to the vet because it had injured one of its ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "hind"
-              ],
-              "hint": "(h…)"
+              ]
             },
             {
               "kind": "text",
               "text": " legs. (bakre)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -971,20 +953,19 @@
               "text": null,
               "accepted_values": [
                 "Obesity"
-              ],
-              "hint": "(O…)"
+              ]
             },
             {
               "kind": "text",
               "text": " can increase the risk of heart disease. (fetma)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1000,8 +981,7 @@
             {
               "kind": "text",
               "text": "The doctor advised her to take extra vitamin ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1011,20 +991,19 @@
                 "supplement",
                 "suplements",
                 "suplement"
-              ],
-              "hint": "(s…)"
+              ]
             },
             {
               "kind": "text",
               "text": ". (tillägg, tillskott)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1040,28 +1019,26 @@
             {
               "kind": "text",
               "text": "“It really wasn’t your fault, Emma! So why do you ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "persist"
-              ],
-              "hint": "(p…)"
+              ]
             },
             {
               "kind": "text",
               "text": " in blaming yourself for what happened?” (envisas)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1077,8 +1054,7 @@
             {
               "kind": "text",
               "text": "She was given an injection to ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1086,20 +1062,19 @@
               "accepted_values": [
                 "lessen",
                 "lesen"
-              ],
-              "hint": "(l…)"
+              ]
             },
             {
               "kind": "text",
               "text": " the pain. (minska)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1115,28 +1090,26 @@
             {
               "kind": "text",
               "text": "The ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "overwhelming"
-              ],
-              "hint": "(o…)"
+              ]
             },
             {
               "kind": "text",
               "text": " majority of those present were in favour of the plan. (överväldigande)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1152,8 +1125,7 @@
             {
               "kind": "text",
               "text": "His earnings are said to amount to £300 000 ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1161,20 +1133,19 @@
               "accepted_values": [
                 "per annum",
                 "per anum"
-              ],
-              "hint": "(p…)"
+              ]
             },
             {
               "kind": "text",
               "text": ". (årligen /2 words/)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1190,28 +1161,26 @@
             {
               "kind": "text",
               "text": "Several people were injured in ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "skirmishes"
-              ],
-              "hint": "(s…)"
+              ]
             },
             {
               "kind": "text",
               "text": " during the night. (mindre sammandrabbningar)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1227,28 +1196,26 @@
             {
               "kind": "text",
               "text": "She’s being ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "touted"
-              ],
-              "hint": "(t…)"
+              ]
             },
             {
               "kind": "text",
               "text": " as the next leader of the party. (framhållen vitt och brett)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1264,28 +1231,26 @@
             {
               "kind": "text",
               "text": "Cycling is a totally ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "sustainable"
-              ],
-              "hint": "(s…)"
+              ]
             },
             {
               "kind": "text",
               "text": " form of transport. (hållbar)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1301,8 +1266,7 @@
             {
               "kind": "text",
               "text": "“Harold has been absent from class six times this term, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1310,20 +1274,19 @@
               "accepted_values": [
                 "according",
                 "acording"
-              ],
-              "hint": "(a…)"
+              ]
             },
             {
               "kind": "text",
               "text": " to our records,” said the head teacher to his parents. (enligt)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1339,28 +1302,26 @@
             {
               "kind": "text",
               "text": "Charles has ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "embarked"
-              ],
-              "hint": "(e…)"
+              ]
             },
             {
               "kind": "text",
               "text": " on a new career as a teacher. (gett sig in i)",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1378,20 +1339,19 @@
               "text": null,
               "accepted_values": [
                 "calcium"
-              ],
-              "hint": "(c…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is the most abundant. It helps the body form bones and teeth.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1409,20 +1369,19 @@
               "text": null,
               "accepted_values": [
                 "Indigestion"
-              ],
-              "hint": "(I…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is pain caused by difficulty in digesting food.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1441,20 +1400,19 @@
               "accepted_values": [
                 "Malnutrition",
                 "mallnutrition"
-              ],
-              "hint": "(M…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is a poor condition of health caused by a lack of food or a lack of the right type of food.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1470,28 +1428,26 @@
             {
               "kind": "text",
               "text": "The common usage of the word ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "diet"
-              ],
-              "hint": "(d…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is a limited variety or amount of food that you eat for medical reasons or because you want to lose weight.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1507,8 +1463,7 @@
             {
               "kind": "text",
               "text": "A ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1516,20 +1471,19 @@
               "accepted_values": [
                 "calorie",
                 "callorie"
-              ],
-              "hint": "(c…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is a unit of measurement for energy. We use this term to define the amount of energy in the food we eat. They are found in fats, carbohydrates, proteins and alcohol.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1548,20 +1502,19 @@
               "accepted_values": [
                 "Fibre",
                 "fiber"
-              ],
-              "hint": "(F…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is the indigestible part of plants. It helps to keep your gut healthy and prevent constipation.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1577,8 +1530,7 @@
             {
               "kind": "text",
               "text": "A ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1586,34 +1538,31 @@
               "accepted_values": [
                 "balanced",
                 "ballanced"
-              ],
-              "hint": "(b…)"
+              ]
             },
             {
               "kind": "text",
               "text": " ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "diet"
-              ],
-              "hint": "(d…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is enough, but not too much, of the right kinds of food.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 2,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1631,20 +1580,19 @@
               "text": null,
               "accepted_values": [
                 "Carbohydrates"
-              ],
-              "hint": "(C…)"
+              ]
             },
             {
               "kind": "text",
               "text": " are one of several substances such as sugar or starch, which provide the body with energy, or foods containing these substances, such as bread, potatoes, pasta and rice.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1663,20 +1611,19 @@
               "accepted_values": [
                 "Additives",
                 "aditives"
-              ],
-              "hint": "(A…)"
+              ]
             },
             {
               "kind": "text",
               "text": " are substances added to food, to preserve or enhance flavours or appearance.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1692,28 +1639,26 @@
             {
               "kind": "text",
               "text": "A ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "nutrient"
-              ],
-              "hint": "(n…)"
+              ]
             },
             {
               "kind": "text",
               "text": " is the part of a food that is used by our bodies, such as protein, fat, carbohydrates, vitamins, and minerals.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1729,28 +1674,26 @@
             {
               "kind": "text",
               "text": "a) My aunt is a great believer in Chinese ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "herbal"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " medicines.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1766,28 +1709,26 @@
             {
               "kind": "text",
               "text": "b) Many celebrities become ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "hooked"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " on cocaine and other drugs.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1803,8 +1744,7 @@
             {
               "kind": "text",
               "text": "c) The operation was only ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1812,20 +1752,19 @@
               "accepted_values": [
                 "partially",
                 "partialy"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " successful.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1841,28 +1780,26 @@
             {
               "kind": "text",
               "text": "d) Business is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "booming"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " at the moment. Our profits are up 25% on last year.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1878,28 +1815,26 @@
             {
               "kind": "text",
               "text": "e) Textbook writing can be an intellectually and socially ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "rewarding"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " activity.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1915,8 +1850,7 @@
             {
               "kind": "text",
               "text": "f) When buying health products, you should only ever buy ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -1924,20 +1858,19 @@
               "accepted_values": [
                 "reputable",
                 "repputable"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " brands.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1953,28 +1886,26 @@
             {
               "kind": "text",
               "text": "g) Hepatitis is a potentially ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "fatal"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " disease.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1990,28 +1921,26 @@
             {
               "kind": "text",
               "text": "h) Separated from his mother when he was just an ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "infant"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", the boy was brought up in a children’s home.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2027,8 +1956,7 @@
             {
               "kind": "text",
               "text": "i) After some ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2036,20 +1964,19 @@
               "accepted_values": [
                 "consideration",
                 "considderation"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", we’ve decided to sell our house in London and move to Scotland.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2065,28 +1992,26 @@
             {
               "kind": "text",
               "text": "j) Many people have fled to Europe to escape war and ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "persecution"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " in their own country.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2102,28 +2027,26 @@
             {
               "kind": "text",
               "text": "k) “You can’t sit on the ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "fence"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " any longer – you have to decide whose side you’re on!”",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2139,28 +2062,26 @@
             {
               "kind": "text",
               "text": "l) Her words left a ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "lasting"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " impression on me. I will never forget them.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2176,28 +2097,26 @@
             {
               "kind": "text",
               "text": "m) My grandfather died of a ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "stroke"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " at the age of ninety-three.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2213,8 +2132,7 @@
             {
               "kind": "text",
               "text": "n) Protein is ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
@@ -2222,20 +2140,19 @@
               "accepted_values": [
                 "essential",
                 "esential"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " for healthy body tissues.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2251,28 +2168,26 @@
             {
               "kind": "text",
               "text": "o) Under her teacher’s ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "guidance"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", Ludmilla has developed into an accomplished pianist.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2288,28 +2203,26 @@
             {
               "kind": "text",
               "text": "a) Using cannabis regularly can be addictive. ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Moreover"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", it can lead to taking harder drugs such as heroin.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2328,20 +2241,19 @@
               "accepted_values": [
                 "Unless",
                 "unles"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " the government does something about the National Health Service now, things will only get worse in the future.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2357,28 +2269,26 @@
             {
               "kind": "text",
               "text": "a) A lot of money has already been spent on education. A lot more, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "however"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " will have to be spent in the future.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2394,28 +2304,26 @@
             {
               "kind": "text",
               "text": "d) She went to work in Paris as an au pair ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "in order to"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " improve her French.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2433,20 +2341,19 @@
               "text": null,
               "accepted_values": [
                 "In spite of"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " all the mistakes you’ve made, this is still a very good essay.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2462,28 +2369,26 @@
             {
               "kind": "text",
               "text": "f) James had too much to eat and drink last night and, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "consequently"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", he had a bad night’s sleep.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2501,20 +2406,19 @@
               "text": null,
               "accepted_values": [
                 "Whereas"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Tom is very good at science, his brother is absolutely hopeless.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2530,28 +2434,26 @@
             {
               "kind": "text",
               "text": "“Are you in favour of fox hunting?” “No, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "on the contrary"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", I believe it’s cruel, barbaric and should be banned!”",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2567,28 +2469,26 @@
             {
               "kind": "text",
               "text": "i) Soldiers are taught to be obedient – ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "in other words"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", to obey orders without question.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2604,28 +2504,26 @@
             {
               "kind": "text",
               "text": "j) There are many different ways of getting rich. You could, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "for instance"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", win £1 million on the National Lottery.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2643,20 +2541,19 @@
               "text": null,
               "accepted_values": [
                 "In conclusion"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ", I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2672,28 +2569,26 @@
             {
               "kind": "text",
               "text": "l) When a dog ran across the street, the car in front of us stopped suddenly, ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "thereby"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " causing a collision.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -2711,20 +2606,19 @@
               "text": null,
               "accepted_values": [
                 "No sooner"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " had the Prime Minister started his speech when some of the audience started booing loudly.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     }
   ]
 }

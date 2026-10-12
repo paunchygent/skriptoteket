@@ -20,6 +20,8 @@ from datetime import date, datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
+from pydantic import JsonValue
+
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
@@ -102,6 +104,12 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         job: ExamAnswerKeyEnrichmentJob,
         expected_worker_id: str | None = None,
     ) -> ExamAnswerKeyEnrichmentJob: ...
+
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        """Replace the job's persisted conversion progress; update never writes it."""
+        ...
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         """Read the status-poll columns only; never loads the uploaded source bytes."""

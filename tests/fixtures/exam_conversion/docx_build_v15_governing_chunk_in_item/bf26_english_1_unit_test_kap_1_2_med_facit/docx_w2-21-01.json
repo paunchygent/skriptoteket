@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0044"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0043"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The jacket looked thin. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "however"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (emellertid), it kept me warm.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

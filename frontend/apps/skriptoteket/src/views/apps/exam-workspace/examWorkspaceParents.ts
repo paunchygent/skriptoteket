@@ -2,8 +2,9 @@
  * Exam workspace parent presentation.
  *
  * Domain purpose:
- *   A parent is a shared instruction over consecutive child questions of one
- *   kind. The editor shows the instruction once above the first child with
+ *   A parent is a shared instruction over consecutive child questions of any
+ *   mix of kinds, as an Exam.net information block holds questions of any type.
+ *   The editor shows the instruction once above the first child with
  *   the parent's points, the sum of its children's points, and tells the
  *   teacher that a child cannot be moved, removed or retyped here. Parent
  *   authoring belongs to ST-SKRIPT-39-06; this module only reads parents.

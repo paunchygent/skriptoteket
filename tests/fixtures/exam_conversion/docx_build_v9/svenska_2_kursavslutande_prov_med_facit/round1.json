@@ -102,8 +102,7 @@
             {
               "kind": "text",
               "text": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -129,7 +128,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -147,8 +147,7 @@
             {
               "kind": "text",
               "text": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -174,7 +173,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -192,8 +192,7 @@
             {
               "kind": "text",
               "text": "Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -219,7 +218,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -237,8 +237,7 @@
             {
               "kind": "text",
               "text": "Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -264,7 +263,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -282,8 +282,7 @@
             {
               "kind": "text",
               "text": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -309,7 +308,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -327,8 +327,7 @@
             {
               "kind": "text",
               "text": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -354,7 +353,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -372,8 +372,7 @@
             {
               "kind": "text",
               "text": "Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -399,7 +398,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -417,8 +417,7 @@
             {
               "kind": "text",
               "text": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -444,7 +443,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -462,8 +462,7 @@
             {
               "kind": "text",
               "text": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -489,7 +488,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -507,8 +507,7 @@
             {
               "kind": "text",
               "text": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -534,7 +533,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -552,8 +552,7 @@
             {
               "kind": "text",
               "text": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -579,7 +578,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -597,8 +597,7 @@
             {
               "kind": "text",
               "text": "En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -624,7 +623,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -642,8 +642,7 @@
             {
               "kind": "text",
               "text": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -669,7 +668,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -687,8 +687,7 @@
             {
               "kind": "text",
               "text": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -714,7 +713,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -732,8 +732,7 @@
             {
               "kind": "text",
               "text": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -759,7 +758,8 @@
       ],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -779,8 +779,7 @@
             {
               "kind": "text",
               "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -789,16 +788,14 @@
             {
               "kind": "text",
               "text": "a) I ordet lekfullheten är lek ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "R"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -807,16 +804,14 @@
             {
               "kind": "text",
               "text": "b) I ordet lekfullheten är -full och -het ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "A"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -825,16 +820,14 @@
             {
               "kind": "text",
               "text": "c) I ordet lekfullheten är -en ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "B"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -843,7 +836,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -863,8 +857,7 @@
             {
               "kind": "text",
               "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -873,16 +866,14 @@
             {
               "kind": "text",
               "text": "a) Frasen tre korta svar är en ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "NF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -891,16 +882,14 @@
             {
               "kind": "text",
               "text": "b) Frasen på skolgården är en ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "PF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -909,16 +898,14 @@
             {
               "kind": "text",
               "text": "c) Frasen kan vila är en ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "VF"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -927,7 +914,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -947,8 +935,7 @@
             {
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -957,64 +944,55 @@
             {
               "kind": "text",
               "text": "Noah ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "S"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " skrev ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "P"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " brevet ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "DO"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " tydligt ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Adv"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ".",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1023,7 +1001,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1043,8 +1022,7 @@
             {
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -1053,64 +1031,55 @@
             {
               "kind": "text",
               "text": "Alva ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "S"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " är ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "P"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " inte ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "SA"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " färdig ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Pf"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": ".",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1119,7 +1088,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1138,16 +1108,14 @@
             {
               "kind": "text",
               "text": "a) De väntar inte. är en ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "huvudsats"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -1156,22 +1124,19 @@
             {
               "kind": "text",
               "text": "b) I bisatsen att de inte väntar står satsadverbialet ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "före"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " det finita verbet.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1180,7 +1145,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1199,8 +1165,7 @@
             {
               "kind": "text",
               "text": "Vad menas med en renässansmänniska?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1209,7 +1174,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1228,8 +1194,7 @@
             {
               "kind": "text",
               "text": "Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1238,7 +1203,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1257,8 +1223,7 @@
             {
               "kind": "text",
               "text": "Vad är en nominalisering?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1267,7 +1232,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1286,8 +1252,7 @@
             {
               "kind": "text",
               "text": "Förklara BIFF-regeln med en mening.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1296,7 +1261,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

@@ -20,8 +20,7 @@
             {
               "kind": "text",
               "text": "“The kitchen smelled of cinnamon and warm bread.” Which term names the technique that appeals to the reader’s sense of smell?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -44,7 +43,8 @@
           "text": "alliteration",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     }
   ]
 }

@@ -1,0 +1,51 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0138"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0135",
+        "body:0136",
+        "body:0137"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3",
+      "printed_label": "Question 5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "line"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " in the first stanza has eight syllables.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
-from collections.abc import Iterator
+from collections.abc import Mapping
+from types import MappingProxyType
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -8,9 +9,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
-    ProducedParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
+    release_governing_chunks,
+    unclaimed_governing,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    return_misplaced_own_chunks,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
@@ -39,7 +46,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeTextSegment,
 )
 
-_REVIEW_BLANK = NativeTextSegment(text="____")
+_BLANK = NativeTextSegment(text="____")
+
+
+# No shared context governs two or more questions: every instruction is placed by its run.
+NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 
 
 def native_item(produced: ProducedItem) -> NativeExamItem:
@@ -58,13 +69,12 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     for paragraph in produced.body:
         segments: list[NativeSegment] = []
         for segment in paragraph.segments:
-            if segment.kind == "gap":
+            if segment.kind == "gap" and produced.kind is not NativeExamItemKind.GAP_FILL:
+                # Only gap_fill answers in a gap; another kind shows a printed blank as text.
+                segments.append(_BLANK)
+            elif segment.kind == "gap":
                 gap_id = f"gap_{len(gaps) + 1:03d}"
-                gaps.append(
-                    NativeGap(
-                        gap_id=gap_id, accepted_values=segment.accepted_values, hint=segment.hint
-                    )
-                )
+                gaps.append(NativeGap(gap_id=gap_id, accepted_values=segment.accepted_values))
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
                 segments.append(NativeTextSegment(text=segment.text))
@@ -102,6 +112,9 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         match_left=match_left,
         match_right=match_right,
         answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct, match_pairs=pairs),
+        marking_guide=(
+            produced.marking_guide if produced.kind is NativeExamItemKind.FREE_TEXT else None
+        ),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,
@@ -110,65 +123,31 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     )
 
 
-def _review_segments(paragraph: ProducedParagraph) -> Iterator[NativeSegment]:
-    for segment in paragraph.segments:
-        if segment.kind == "gap":
-            yield _REVIEW_BLANK
-        elif segment.text:
-            yield NativeTextSegment(text=segment.text)
-
-
-def review_item(produced: ProducedItem, reason: str) -> NativeExamItem:
-    """One teacher-review item for a question the model could not convert.
-
-    Gap answers, choice keys and match pairs never become text; a gap shows as a blank line.
-    """
-    paragraphs = [
-        NativeParagraph(segments=segments)
-        for paragraph in produced.body
-        if (segments := tuple(_review_segments(paragraph)))
-    ]
-    if produced.choices:
-        lines = "\n".join(f"{chr(ord('A') + i)}. {c.text}" for i, c in enumerate(produced.choices))
-        paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
-    for entries in (produced.match_left, produced.match_right):
-        if entries:
-            lines = "\n".join(entries)
-            paragraphs.append(NativeParagraph(segments=(NativeTextSegment(text=lines),)))
+def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
+    """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
+    chunk in source order, whatever the model wrote."""
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
-        title=produced.title,
-        printed_label=produced.printed_label,
-        body=tuple(paragraphs),
-        points=produced.points,
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.LLM_PARSED,
-            reasons=(reason,),
-        ),
-        source_anchor=produced.source_anchors[0],
-    )
-
-
-def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        body=(
-            NativeParagraph(segments=(NativeTextSegment(text=chunk.text or "Tomt källstycke."),)),
-        ),
+        body=tuple(
+            NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
+            for chunk in chunks
+            if chunk.text
+        )
+        or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
             parse_origin=NativeParseOrigin.DETERMINISTIC,
             reasons=(reason,),
         ),
-        source_anchor=chunk.anchor,
+        source_anchor=chunks[0].anchor,
     )
+
+
+def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
+    return review_source_item((chunk,), reason)
 
 
 def _ordered_items(
@@ -176,6 +155,7 @@ def _ordered_items(
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
     review_reasons: dict[str, str],
     instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -189,7 +169,7 @@ def _ordered_items(
         if chunk.anchor in review_reasons
     )
     ordered.sort(key=lambda entry: entry[0])
-    return place_section_instructions(chunks, ordered, instructions)
+    return place_section_instructions(chunks, ordered, instructions, governed)
 
 
 def assemble_build_result(
@@ -203,16 +183,35 @@ def assemble_build_result(
     key_anchors: frozenset[str] = frozenset(),
     title: ProducedMetadata | None = None,
     instructions: tuple[ProducedMetadata, ...] = (),
+    governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+    questions: tuple[tuple[str, ...], ...] = (),
     events: tuple[DocxBuildEvent, ...] = (),
     input_tokens: int | None = None,
     output_tokens: int | None = None,
 ) -> DocxBuildResult:
-    """Keep facit chunks as teacher notes and every unbuilt chunk as a review item."""
+    """Keep facit chunks as teacher notes and every unbuilt chunk as a review item; a governing
+    chunk an item lists or no entry holds becomes an instruction for its section parent (D40).
+
+    ``questions`` holds each grouped question's own anchors. An own chunk listed as an
+    instruction that placement does not put at its question goes back to its question's item,
+    and placement runs again without it (D42).
+    """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
-    placed = _ordered_items(chunks, accepted, review_reasons, instructions)
+    unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
+    instructions = (*instructions, *unclaimed)
+    released = release_governing_chunks(chunks, accepted, instructions, governed)
+    accepted, instructions = released.accepted, released.instructions
+    events = (*events, *released.events)
+    placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
+    while returned := return_misplaced_own_chunks(
+        chunks, accepted, instructions, placed.landed, questions, governed
+    ):
+        accepted, instructions = returned.accepted, returned.instructions
+        events = (*events, *returned.events)
+        placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
     items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
@@ -227,7 +226,7 @@ def assemble_build_result(
         document_id=document_id,
         revision=1,
         title=document_title,
-        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.reaching),
+        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.landed),
         items=items,
         parents=placed.parents,
         origin=NativeExamDocumentOrigin(
@@ -237,6 +236,4 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(
-        document, tuple(notes), input_tokens, output_tokens, (*events, *placed.events)
-    )
+    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)

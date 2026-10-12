@@ -1,0 +1,648 @@
+{
+  "title": {
+    "text": "E Choose the words",
+    "source_anchors": [
+      "body:0106"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Choose a word to fill the gaps. Three of the words will not be used.",
+      "source_anchors": [
+        "body:0107"
+      ],
+      "points": null
+    },
+    {
+      "text": "booming | fence | lasting | self-conscious\nconsideration | guidance | partially | stroke\ndepict | herbal | persecution | target\nessential | hooked | reputable\nfatal | infant | rewarding",
+      "source_anchors": [
+        "body:0108"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0110",
+    "body:0112",
+    "body:0114",
+    "body:0116",
+    "body:0118",
+    "body:0120",
+    "body:0122",
+    "body:0124",
+    "body:0126",
+    "body:0128",
+    "body:0130",
+    "body:0132",
+    "body:0134",
+    "body:0136",
+    "body:0138"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0109"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "a",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "My aunt is a great believer in Chinese ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "herbal"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " medicines.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0111"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "b",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Many celebrities become ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "hooked"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " on cocaine and other drugs.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "c",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The operation was only ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "partially",
+                "partialy"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " successful.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0115"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "d",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Business is ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "booming"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " at the moment. Our profits are up 25% on last year.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0117"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "e",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Textbook writing can be an intellectually and socially ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "rewarding"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " activity.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0119"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "f",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When buying health products, you should only ever buy ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "reputable",
+                "repputable"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " brands.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0121"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "g",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Hepatitis is a potentially ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fatal"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " disease.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "h",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Separated from his mother when he was just an ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "infant"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", the boy was brought up in a children’s home.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0125"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "i",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After some ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "consideration",
+                "considderation"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", we’ve decided to sell our house in London and move to Scotland.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0127"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "j",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Many people have fled to Europe to escape war and ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "persecution"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " in their own country.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0129"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "k",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“You can’t sit on the ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fence"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " any longer – you have to decide whose side you’re on!”",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0131"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "l",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Her words left a ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lasting"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " impression on me. I will never forget them.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0133"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "m",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "My grandfather died of a ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "stroke"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " at the age of ninety-three.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0135"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "n",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Protein is ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "essential",
+                "esential"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " for healthy body tissues.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0137"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "o",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Under her teacher’s ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "guidance"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", Ludmilla has developed into an accomplished pianist.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

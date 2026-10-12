@@ -92,8 +92,7 @@
             {
               "kind": "text",
               "text": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -116,7 +115,8 @@
           "text": "Nyttotänkande",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -133,8 +133,7 @@
             {
               "kind": "text",
               "text": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -157,7 +156,8 @@
           "text": "Satirisk stil",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -174,8 +174,7 @@
             {
               "kind": "text",
               "text": "Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -198,7 +197,8 @@
           "text": "Humanism",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -215,8 +215,7 @@
             {
               "kind": "text",
               "text": "Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -239,7 +238,8 @@
           "text": "Kristen frälsning och synd",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -256,8 +256,7 @@
             {
               "kind": "text",
               "text": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -280,7 +279,8 @@
           "text": "Empiri och förnuft",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -297,8 +297,7 @@
             {
               "kind": "text",
               "text": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -321,7 +320,8 @@
           "text": "Budskapet",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -338,8 +338,7 @@
             {
               "kind": "text",
               "text": "Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -362,7 +361,8 @@
           "text": "Sinnevärld och idévärld",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -379,8 +379,7 @@
             {
               "kind": "text",
               "text": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -403,7 +402,8 @@
           "text": "Humanism",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -420,8 +420,7 @@
             {
               "kind": "text",
               "text": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -444,7 +443,8 @@
           "text": "Romantikens natursyn",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -461,8 +461,7 @@
             {
               "kind": "text",
               "text": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -485,7 +484,8 @@
           "text": "Rättssamhälle och hederskultur",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -502,8 +502,7 @@
             {
               "kind": "text",
               "text": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -526,7 +525,8 @@
           "text": "Frihet och rättigheter",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -543,8 +543,7 @@
             {
               "kind": "text",
               "text": "En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -567,7 +566,8 @@
           "text": "Medeltiden",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -584,8 +584,7 @@
             {
               "kind": "text",
               "text": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -608,7 +607,8 @@
           "text": "Från mäns rättigheter till kvinnors politiska krav",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -625,8 +625,7 @@
             {
               "kind": "text",
               "text": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -649,7 +648,8 @@
           "text": "Robinson styrs av heder och ära; Werther följer riddarens plikt.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -666,8 +666,7 @@
             {
               "kind": "text",
               "text": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -690,7 +689,8 @@
           "text": "Den används främst för hederskultur, sedan för råd om furstemakt.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -709,8 +709,7 @@
             {
               "kind": "text",
               "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -719,14 +718,14 @@
             {
               "kind": "text",
               "text": "a) I ordet lekfullheten är lek R\nb) I ordet lekfullheten är -full och -het A\nc) I ordet lekfullheten är -en B",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 3,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -745,8 +744,7 @@
             {
               "kind": "text",
               "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -755,14 +753,14 @@
             {
               "kind": "text",
               "text": "a) Frasen tre korta svar är en NF\nb) Frasen på skolgården är en PF\nc) Frasen kan vila är en VF",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 3,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -781,8 +779,7 @@
             {
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -791,14 +788,14 @@
             {
               "kind": "text",
               "text": "Noah S skrev P brevet DO tydligt Adv.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 4,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -817,8 +814,7 @@
             {
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -827,14 +823,14 @@
             {
               "kind": "text",
               "text": "Alva S är P inte SA färdig Pf.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 4,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -852,14 +848,14 @@
             {
               "kind": "text",
               "text": "a) De väntar inte. är en huvudsats\nb) I bisatsen att de inte väntar står satsadverbialet före det finita verbet.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 2,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -877,14 +873,14 @@
             {
               "kind": "text",
               "text": "Vad menas med en renässansmänniska?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -902,14 +898,14 @@
             {
               "kind": "text",
               "text": "Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 2,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -927,14 +923,14 @@
             {
               "kind": "text",
               "text": "Vad är en nominalisering?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -952,14 +948,14 @@
             {
               "kind": "text",
               "text": "Förklara BIFF-regeln med en mening.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
       ],
       "points": 1,
-      "choices": []
+      "choices": [],
+      "marking_guide": null
     }
   ]
 }

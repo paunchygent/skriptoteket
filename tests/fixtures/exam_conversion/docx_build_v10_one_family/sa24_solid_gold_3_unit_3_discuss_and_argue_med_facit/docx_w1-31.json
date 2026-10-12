@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0077"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "32",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She’s being ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "touted"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (t…) as the next leader of the party. (framhållen vitt och brett)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

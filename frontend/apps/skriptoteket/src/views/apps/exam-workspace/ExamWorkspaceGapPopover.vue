@@ -111,11 +111,5 @@ onMounted(() => {
         @keydown="handleKeydown"
       >
     </label>
-    <span
-      v-if="gap?.hint"
-      class="text-[11px] leading-snug text-navy/65"
-    >
-      Ledtråd: {{ gap.hint }}
-    </span>
   </div>
 </template>

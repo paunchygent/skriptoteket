@@ -1,5 +1,7 @@
 """Protocol seams for the native exam workspace (ST-SKRIPT-39-04)."""
 
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
@@ -26,6 +28,26 @@ class DocxExamChunkerProtocol(Protocol):
     """Segment ordered source text without interpreting exam items."""
 
     def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]: ...
+
+
+@dataclass(frozen=True)
+class LabelerSource:
+    """The labeler's faithful source of one DOCX (D14), block by block in source order.
+
+    Each chunk carries its block's markdown. A block markdown cannot carry has empty
+    markdown and either a PNG of that block in ``images`` or, when no faithful image could
+    be made, the reason in ``unavailable``; both are keyed by chunk anchor.
+    """
+
+    chunks: tuple[DocxChunk, ...]
+    images: Mapping[str, bytes]
+    unavailable: Mapping[str, str]
+
+
+class LabelerSourceProtocol(Protocol):
+    """Project a DOCX into the labeler's faithful source."""
+
+    def source(self, *, content: bytes) -> LabelerSource: ...
 
 
 class ExamWorkspaceContainerCodecProtocol(Protocol):

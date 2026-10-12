@@ -20,7 +20,8 @@
  *     .docx files through `useExamWorkspaceSourceFile`; selects the
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
- *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry.
+ *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry;
+ *     `ExamWorkspaceConvertingNotice` marks a question whose batch still converts.
  *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
  *     drawer) render the workspace; phones add a question bar and sheet.
  */
@@ -31,6 +32,7 @@ import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
 import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
+import ExamWorkspaceConvertingNotice from "./exam-workspace/ExamWorkspaceConvertingNotice.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
@@ -59,6 +61,8 @@ const {
   conflictNotice,
   conversionError,
   conversionMessage,
+  conversionProgress,
+  convertingItemIds,
   isConverting,
   retryConversionStatus,
   importDocument,
@@ -78,6 +82,7 @@ const {
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  updateItemMarkingGuide,
   updateItemMatchEntryText,
   updateItemMatchPairs,
   updateItemParagraphSegments,
@@ -341,6 +346,7 @@ function handleEditProposal(itemId: string): void {
       <ExamWorkspaceConversionStatus
         :conversion-message="conversionMessage"
         :conversion-error="conversionError"
+        :conversion-progress="conversionProgress"
         :is-converting="isConverting"
         @retry="retryConversionStatus"
       />
@@ -391,6 +397,9 @@ function handleEditProposal(itemId: string): void {
           aria-label="Redigera"
           data-test="exam-workspace-workspace"
         >
+          <ExamWorkspaceConvertingNotice
+            v-if="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
+          />
           <ExamWorkspaceEditorPane
             v-if="workspaceDocument"
             v-model:details-open="detailsOpen"
@@ -415,6 +424,7 @@ function handleEditProposal(itemId: string): void {
             @update-choice-text="updateItemChoiceText"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
+            @update-marking-guide="updateItemMarkingGuide"
             @update-match-entry-text="updateItemMatchEntryText"
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"

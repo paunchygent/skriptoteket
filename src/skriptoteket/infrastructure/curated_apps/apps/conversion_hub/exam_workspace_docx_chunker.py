@@ -1,12 +1,14 @@
-"""Segment DOCX body text without interpreting exam content."""
+"""Segment DOCX body blocks, text or drawn, without interpreting exam content."""
 
 import io
 import zipfile
 
 from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
+from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
+from docx.oxml.xmlchemy import BaseOxmlElement
 from docx.table import Table, _Cell
 from docx.text.hyperlink import Hyperlink
 from docx.text.paragraph import Paragraph
@@ -14,6 +16,14 @@ from docx.text.run import Run
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
+
+# Drawn content: pictures, text boxes and embedded objects. Its words, if any, are not in
+# the block's plain text, so a block holding only drawn content is still source.
+DRAWN = tuple(qn(tag) for tag in ("w:drawing", "w:pict", "w:object", "w:txbxContent"))
+
+
+def drawn(element: BaseOxmlElement) -> bool:
+    return any(next(element.iter(tag), None) is not None for tag in DRAWN)
 
 
 def _marked_paragraph(paragraph: Paragraph) -> str:
@@ -77,6 +87,8 @@ class PythonDocxExamChunker:
                     marked_text = _marked_paragraph(paragraph)
                     style_name = paragraph.style.name if paragraph.style is not None else ""
                     kind = "heading" if style_name.startswith(("Heading", "Title")) else "paragraph"
+                    if not text.strip() and drawn(element):
+                        kind = "drawing"
                 elif isinstance(element, CT_Tbl):
                     table = Table(element, document)
                     text = _table_text(table, marked=False)
@@ -84,7 +96,7 @@ class PythonDocxExamChunker:
                     kind = "table"
                 else:
                     continue
-                if text.strip():
+                if text.strip() or drawn(element):
                     chunks.append(
                         DocxChunk(
                             anchor=f"body:{ordinal:04d}",

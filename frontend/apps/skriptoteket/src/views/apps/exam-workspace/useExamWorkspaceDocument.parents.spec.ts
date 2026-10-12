@@ -4,7 +4,7 @@
  * Expected behavior:
  *   Every edit the editor offers on a child (title, points, text, gap
  *   answers, review) and adding a question leave the parents untouched and the
- *   children consecutive, in sequence order and of one kind, so a save never
+ *   children consecutive and in sequence order, so a save never
  *   sends a parent the server would refuse. A new question is appended after
  *   the last item and never becomes a child.
  */
@@ -67,7 +67,6 @@ function expectParentsValid(document: NativeExamDocument): void {
     expect(children.map((child) => child.sequence)).toEqual(
       children.map((_, index) => first + index),
     );
-    expect(new Set(children.map((child) => child.kind)).size).toBe(1);
   }
 }
 

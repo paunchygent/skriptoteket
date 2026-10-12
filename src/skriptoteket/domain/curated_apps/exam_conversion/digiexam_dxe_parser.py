@@ -7,7 +7,6 @@ Purpose:
 
 Relationships:
     - Uses `domain.digiexam_contracts` for renderer-neutral parser output.
-    - Complements the PDF text fallback parser in `domain.digiexam_parser`.
     - Can consume typed result-PDF answer evidence when a caller provides it
       without depending on PyMuPDF or renderer/import concerns.
 """

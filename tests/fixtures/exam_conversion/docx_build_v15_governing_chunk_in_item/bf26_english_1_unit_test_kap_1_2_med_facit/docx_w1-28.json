@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0122"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0121"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": null,
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use can and you once each to complete the statement. Write only the two missing words.\nTomorrow ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "you can"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

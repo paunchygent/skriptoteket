@@ -1,19 +1,20 @@
 """Place a section's instructions: one native parent per run of questions, else a copy per item.
 
 Exam.net carries only items, so an instruction that serves a run of questions becomes the
-parent of that run. An instruction that reaches a single item, a reach that skips an item
-between two reached ones, or a reach of mixed kinds is copied into exactly the items it
-reaches. An instruction printed inside an item's own chunks keeps its source position there.
+parent of that run, whatever kinds its questions have, review items included (D27). An
+instruction the grouping marks as governing several questions serves exactly the items of
+those questions, wherever the converter placed the chunks around it (step 3). An
+instruction that reaches a single item, or a reach that skips an item between two reached
+ones, is copied into exactly the items it reaches. An instruction printed inside an item's
+own chunks keeps its source position there.
 """
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildEvent,
-    ProducedMetadata,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -40,12 +41,15 @@ _GAP_MARKER = "[___]"
 
 @dataclass(frozen=True)
 class SectionInstructions:
-    """Items with ids and sequence, their parents, and the instructions that reached an item."""
+    """Items with ids and sequence, their parents, and where each instruction landed.
+
+    ``landed`` maps the index of each instruction that reached an item to the anchors of the
+    items it reached, in their bodies or under their parent.
+    """
 
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
-    reaching: frozenset[int]
-    events: tuple[DocxBuildEvent, ...]
+    landed: Mapping[int, frozenset[str]]
 
 
 @dataclass(frozen=True)
@@ -57,12 +61,14 @@ class _Run:
     sources: tuple[DocxChunk, ...]
     span: tuple[int, ...] = ()
     reach: tuple[int, ...] = ()
+    governs: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
 class _Joined:
     """An instruction printed inside an item's own chunks, and where in the item it belongs."""
 
+    origin: int
     texts: tuple[str, ...]
     later: tuple[str, ...]
     opens: bool
@@ -169,26 +175,34 @@ def _runs(
     instructions: tuple[ProducedMetadata, ...],
     item_sources: list[list[DocxChunk]],
     positions: dict[str, int],
-) -> tuple[list[_Run], dict[int, list[_Joined]], set[int]]:
-    """The instruction runs, the text joined into the item that prints it, and its instructions."""
+    governed: Mapping[str, frozenset[str]],
+) -> tuple[list[_Run], dict[int, list[_Joined]]]:
+    """The instruction runs, the text joined into the item that prints it, and its instructions.
+
+    An instruction the grouping marks as governing questions is never joined into an item.
+    """
     spans = [(positions[s[0].anchor], positions[s[-1].anchor]) for s in item_sources]
     joined: dict[int, list[_Joined]] = {}
-    joined_origins: set[int] = set()
     runs: list[_Run] = []
     for origin, instruction in enumerate(instructions):
         at = sorted(positions[a] for a in instruction.source_anchors)
         sources = tuple(chunks[i] for i in at)
+        governs = frozenset(
+            anchor for a in instruction.source_anchors for anchor in governed.get(a, ())
+        )
         owner = next((k for k, (lo, hi) in enumerate(spans) if lo < at[0] and at[-1] < hi), None)
-        if owner is not None:
+        if governs:
+            runs.append(_Run(origin, at[-1], sources, governs=governs))
+        elif owner is not None:
             own = [c for c in item_sources[owner] if c.kind != "heading"]
             joined.setdefault(owner, []).append(
                 _Joined(
+                    origin=origin,
                     texts=tuple(chunk.text for chunk in sources),
                     later=tuple(_folded(c.text) for c in own if positions[c.anchor] > at[-1]),
                     opens=not any(positions[c.anchor] < at[0] for c in own),
                 )
             )
-            joined_origins.add(origin)
         else:
             runs.append(_Run(origin, at[-1], sources))
     for item_chunks in item_sources:
@@ -196,7 +210,7 @@ def _runs(
         numbered = next((i for i, c in enumerate(lines) if _NUMBERED.match(c.text)), 0)
         if numbered:
             runs.append(_Run(None, positions[lines[numbered - 1].anchor], tuple(lines[:numbered])))
-    return runs, joined, joined_origins
+    return runs, joined
 
 
 def _reaches(
@@ -218,13 +232,24 @@ def _reaches(
     starts = sorted(run.start for run in runs)
     reached: list[_Run] = []
     for run in sorted(runs, key=lambda r: r.start):
-        sources = tuple(
-            c
-            for c in run.sources
-            if not points_line(c.text) and (c.kind != "heading" or positions[c.anchor] in labels)
+        sources = (
+            tuple(c for c in run.sources if c.text.strip())
+            if run.governs
+            else tuple(
+                c
+                for c in run.sources
+                if not points_line(c.text)
+                and (c.kind != "heading" or positions[c.anchor] in labels)
+            )
         )
         if not sources:
             reached.append(_Run(run.origin, run.start, ()))
+            continue
+        if run.governs:
+            reach = tuple(
+                k for k, (_, anchors, _) in enumerate(ordered) if run.governs.intersection(anchors)
+            )
+            reached.append(_Run(run.origin, run.start, sources, reach, reach, run.governs))
             continue
         following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
         first_item = next(
@@ -251,54 +276,45 @@ def _reaches(
     return reached
 
 
-def _parent_groups(
-    reached: list[_Run], ordered: list[Placed]
-) -> tuple[list[list[_Run]], list[DocxBuildEvent]]:
-    """Runs whose instruction reaches the same two or more consecutive items of one kind."""
+def _parent_groups(reached: list[_Run]) -> list[list[_Run]]:
+    """Runs whose instruction reaches the same two or more consecutive items, of any kinds."""
     candidates: dict[tuple[int, ...], list[_Run]] = {}
     for run in reached:
         consecutive = all(b - a == 1 for a, b in zip(run.reach, run.reach[1:], strict=False))
         if run.origin is not None and len(run.reach) >= 2 and consecutive:
             candidates.setdefault(run.reach, []).append(run)
     groups: list[list[_Run]] = []
-    events: list[DocxBuildEvent] = []
     taken: set[int] = set()
     for span, group in sorted(candidates.items()):
-        if taken.intersection(span):
-            continue
-        if len({ordered[k][2].kind for k in span}) > 1:
-            ids = ", ".join(_item_id(k) for k in span)
-            events.append(
-                DocxBuildEvent(
-                    stage="admission",
-                    code="parent_kinds_mixed",
-                    anchors=tuple(c.anchor for run in group for c in run.sources),
-                    detail=f"a section instruction serves items of different kinds ({ids}): "
-                    "it is copied into each item",
-                )
-            )
-            continue
-        taken.update(span)
-        groups.append(group)
-    return groups, events
+        if not taken.intersection(span):
+            taken.update(span)
+            groups.append(group)
+    return groups
 
 
 def place_section_instructions(
     chunks: tuple[DocxChunk, ...],
     ordered: list[Placed],
     instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
+
+    ``governed`` maps each instruction anchor the grouping marks as governing two or more
+    questions to every anchor those questions own. Such an instruction reaches exactly the
+    items holding one of those anchors, whatever headings and instructions lie between them.
 
     An instruction printed inside an item's own chunks joins that item. Any other instruction
     opens the items of its run, which ends at the next section heading (a heading no item
     owns, other than a lead-in label) or at the next instruction printed after one of the
     run's items. Section headings and points lines are structure and are never instruction
-    text. The instructions that reach two or more consecutive items of one kind become the
-    parent of exactly those items. An instruction that defines terms reaches only the run's items
-    whose own chunks use one; lines an item prints before its numbered question line are such
-    an instruction too; a lead-in ending in a colon that introduces a question opening with
-    quoted material reaches only the run's items that open with quotes. Every other
+    text, except in a chunk the grouping marks as governing, which keeps its whole text (D40).
+    The instructions that reach two or more consecutive items become the parent of
+    exactly those items, whatever their kinds. An instruction that defines terms reaches only
+    the run's items whose own chunks use one; lines an item prints before its numbered
+    question line are such an instruction too; a lead-in ending in a colon that introduces a
+    question opening with quoted material reaches only the run's items that open with quotes.
+    Every other
     instruction, and every instruction whose reach cannot be a parent, is copied into the items
     it reaches. An instruction an item prints inside its own chunks is placed at that position
     in the item's body, and text the item already prints as whole lines is never repeated.
@@ -307,20 +323,27 @@ def place_section_instructions(
     item_sources = [
         [chunks[i] for i in sorted(positions[a] for a in anchors)] for _, anchors, _ in ordered
     ]
-    runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions)
+    runs, joined = _runs(chunks, instructions, item_sources, positions, governed)
     reached = _reaches(chunks, ordered, runs, item_sources, positions)
-    groups, events = _parent_groups(reached, ordered)
-    parented = {id(run) for group in groups for run in group}
+    groups = _parent_groups(reached)
+    parented: dict[tuple[int | None, int], set[int]] = {}
+    for group in groups:
+        for run in group:
+            parented.setdefault((run.origin, run.start), set()).update(run.reach)
     carried: dict[int, list[str]] = {}
-    reaching = set(joined_origins)
+    landed: dict[int, set[str]] = {}
+    for k, entries in joined.items():
+        for entry in entries:
+            landed.setdefault(entry.origin, set()).update(ordered[k][1])
     for run in reached:
         if run.origin is not None and run.reach:
-            reaching.add(run.origin)
-        if id(run) in parented:
-            continue
+            for k in run.reach:
+                landed.setdefault(run.origin, set()).update(ordered[k][1])
+        covered = parented.get((run.origin, run.start), set())
         wording = "\n".join(chunk.text for chunk in run.sources)
         for k in run.reach:
-            carried.setdefault(k, []).append(wording)
+            if k not in covered:
+                carried.setdefault(k, []).append(wording)
     items = tuple(
         _with_paragraphs(_with_joined(item, joined.get(k, [])), carried.get(k, [])).model_copy(
             update={"item_id": _item_id(k), "sequence": k + 1}
@@ -342,4 +365,6 @@ def place_section_instructions(
         )
         for number, group in enumerate(groups, start=1)
     )
-    return SectionInstructions(items, parents, frozenset(reaching), tuple(events))
+    return SectionInstructions(
+        items, parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
+    )

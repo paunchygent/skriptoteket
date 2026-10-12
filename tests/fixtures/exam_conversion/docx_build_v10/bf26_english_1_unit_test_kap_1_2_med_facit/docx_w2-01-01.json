@@ -1,0 +1,68 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "For each definition, select the correct word or phrase. Each correct match is worth 1 point.",
+      "source_anchors": [
+        "body:0058"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0062"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0059",
+        "body:0060",
+        "body:0061"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "matching",
+      "title": "Select the word or phrase for each definition.",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the letter of the matching option.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [
+        "absence from school without permission",
+        "being kept in a prison or jail",
+        "a feeling that someone deserves no respect"
+      ],
+      "match_right": [
+        "incarceration",
+        "truancy",
+        "disdain"
+      ],
+      "match_pairs": [
+        {
+          "left": "absence from school without permission",
+          "right": "truancy"
+        },
+        {
+          "left": "being kept in a prison or jail",
+          "right": "incarceration"
+        },
+        {
+          "left": "a feeling that someone deserves no respect",
+          "right": "disdain"
+        }
+      ],
+      "marking_guide": null
+    }
+  ]
+}

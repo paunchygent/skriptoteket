@@ -1,0 +1,68 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0077"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0074",
+        "body:0075",
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2B: style",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “style”.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": true
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

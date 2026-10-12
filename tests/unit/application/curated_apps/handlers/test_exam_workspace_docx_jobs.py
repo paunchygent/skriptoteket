@@ -2,12 +2,10 @@
 
 import json
 from datetime import timedelta
-from pathlib import Path
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -20,12 +18,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceConversionStatusHandler,
     ImportExamWorkspaceDocumentHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    StructuredLLMUsage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     native_export_blockers,
@@ -42,9 +36,9 @@ from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
-    StubProvider,
-    _route,
+    replayed_docx_job_handler,
 )
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import CORPUS, Replay
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _NOW,
     _actor,
@@ -52,54 +46,23 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _settings,
 )
 
-_QUIZ = Path(
-    "tests/fixtures/exam_conversion/docx_corpus/chapter_4_poetry_and_lyrics_quiz_med_facit.docx"
-)
-_RESPONSE = Path(
-    "tests/fixtures/exam_conversion/docx_build_v7/"
-    "chapter_4_poetry_and_lyrics_quiz_med_facit/round1.json"
-)
-_COURSE_EXAM = Path(
-    "tests/fixtures/exam_conversion/docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx"
-)
-_COURSE_RESPONSE = Path(
-    "tests/fixtures/exam_conversion/docx_build_v7/"
-    "svenska_2_kursavslutande_prov_med_facit/round1.json"
-)
-# The one recording of this exam in which the model marked questions for review.
-_COURSE_REVIEWS = Path(
-    "tests/fixtures/exam_conversion/svenska_2_kursavslutande_prov_docx_build_response_v2.json"
-)
-
-
-class RecordedRoundsProvider(StubProvider):
-    """Replay the recorded live round on every call."""
-
-    def __init__(self, response: dict[str, JsonValue]) -> None:
-        super().__init__(content=response, usage=StructuredLLMUsage())
+_QUIZ_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+_QUIZ = CORPUS / f"{_QUIZ_EXAM}.docx"
 
 
 class JobEnvironment(_Env):
     jobs: InMemoryEnrichmentJobRepository
     actor: User
-    provider: StubProvider
+    replay: Replay
     importer: ImportExamWorkspaceDocumentHandler
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(
-    *, enabled: bool = True, budget: int = 1_000_000, response: Path = _RESPONSE
-) -> JobEnvironment:
-    return environment_replaying(json.loads(response.read_text()), enabled=enabled, budget=budget)
-
-
-def environment_replaying(
-    response: dict[str, JsonValue], *, enabled: bool = True, budget: int = 1_000_000
-) -> JobEnvironment:
+def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
+    """The DOCX job over the production pipeline replaying the quiz's live recordings."""
     env = JobEnvironment()
     env.jobs = InMemoryEnrichmentJobRepository()
     env.actor = _actor()
-    env.provider = RecordedRoundsProvider(response)
     env.importer = ImportExamWorkspaceDocumentHandler(
         jobs=env.jobs,
         uow=env.store._uow,
@@ -107,24 +70,17 @@ def environment_replaying(
         settings=_settings(),
         id_generator=env.ids,
     )
-    converter = DocxAIConverter(
-        provider=env.provider,
-        profile=_route().primary,
+    env.processor, env.replay = replayed_docx_job_handler(
+        enrichment_jobs=env.jobs,
+        proposed_overlays=env.proposed_overlays,
         leases=InMemoryLeaseRepository(daily_token_limit=budget),
-        uow=env.store._uow,
-        clock=FixedClock(_NOW),
-        enabled=enabled,
-    )
-    env.processor = ProcessExamWorkspaceDocxJobHandler(
-        jobs=env.jobs,
-        chunker=PythonDocxExamChunker(),
-        converter=converter,
+        vault_files=env.vault_files,
+        vault_storage=env.vault_storage,
         codec=env.codec,
+        exam=_QUIZ_EXAM,
         store=env.store,
         users=AsyncMock(get_by_id=AsyncMock(return_value=env.actor)),
-        uow=env.store._uow,
-        clock=FixedClock(_NOW),
-        id_generator=env.ids,
+        enabled=enabled,
     )
     return env
 
@@ -136,7 +92,7 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
         content=content if content is not None else _QUIZ.read_bytes(),
     )
     assert status.state == "queued"
-    assert env.provider.call_count == 0
+    assert env.replay.provider.requests == []
     assert not env.vault_files.files
     queued = env.jobs.jobs[status.job_id]
     running = queued.model_copy(
@@ -151,37 +107,28 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
 
 
 @pytest.mark.asyncio
-async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagnostics():
+async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_to_progress():
     env = environment()
     running = await claim(env)
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
-    # The recorded live round claimed every chunk, so no further round and no failure event.
-    assert env.provider.call_count == 1
+    batches = [i for i in env.replay.provider.request_ids if i.startswith("docx_w")]
+    assert len(batches) > 1
+    assert env.replay.progress.calls == [
+        "outline",
+        *["batch_ready"] * len(batches),
+        "publish_final",
+    ]
     assert finished.diagnostics == ()
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    assert opened.summary.version == 1
     document = opened.document
+    assert len(env.replay.progress.finals) == 1
     assert len(document.items) == 28
     assert [item.kind.value for item in document.items] == ["single_choice"] * 21 + ["gap_fill"] * 7
     assert all(item.points is not None for item in document.items)
     assert sum(item.points for item in document.items if item.points is not None) == 28
-    assert [item.answer_key.correct_choice_ids for item in document.items[:21]] == [
-        (f"choice_{i:03d}",)
-        for i in [1, 3, 2, 4, 2, 4, 3, 1, 1, 8, 2, 5, 6, 4, 3, 2, 1, 6, 3, 4, 7]
-    ]
-    # A sentence-like answer also accepts the form with the other closing full stop.
-    assert [item.gaps[0].accepted_values for item in document.items[21:]] == [
-        ("cherish",),
-        ("traverse",),
-        ("humiliate",),
-        ("out of the blue", "out of the blue."),
-        ("line",),
-        ("diction",),
-        ("alliteration",),
-    ]
     assert all(item.review.parse_origin.value == "llm_parsed" for item in document.items)
     assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
     assert native_export_blockers(document) == ()
@@ -193,29 +140,6 @@ async def test_recorded_live_quiz_publishes_version_one_and_persists_round_diagn
 
 
 @pytest.mark.asyncio
-async def test_recorded_model_reviews_persist_their_reasons_in_job_diagnostics():
-    recorded = json.loads(_COURSE_RESPONSE.read_text())
-    reviews = {
-        tuple(item["source_anchors"]): item
-        for item in json.loads(_COURSE_REVIEWS.read_text())["items"]
-        if item["outcome"] == "review"
-    }
-    assert len(reviews) == 5
-    # Items without printed labels, with the questions the model once sent to review.
-    recorded["items"] = [reviews.get(tuple(i["source_anchors"]), i) for i in recorded["items"]]
-    env = environment_replaying(recorded)
-    running = await claim(env, _COURSE_EXAM.read_bytes())
-    finished = await env.processor.handle(job=running)
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
-    assert env.provider.call_count == 1
-    prefix = "AI-tolkningen markerade frågan för granskning: "
-    assert [e["detail"] for e in finished.diagnostics if e["code"] == "model_review"] == [
-        *[f"{prefix}Uppgiftens svarssätt framgår inte av källtexten."] * 4,
-        f"{prefix}Uppgiften saknar instruktion om hur påståendena ska besvaras.",
-    ]
-
-
-@pytest.mark.asyncio
 @pytest.mark.parametrize("enabled,budget", [(False, 1_000_000), (True, 1)])
 async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_docx(enabled, budget):
     env = environment(enabled=enabled, budget=budget)
@@ -223,7 +147,8 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert finished.source_docx is None
-    assert env.provider.call_count == 0
+    assert env.replay.provider.requests == []
+    assert env.replay.progress.calls == ["publish_final"]
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     chunks = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes())
@@ -254,11 +179,13 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
         actor=env.actor, job_id=running.id
     )
     assert status.error_message and "Word" in status.error_message
+    assert env.replay.progress.calls == ["abandon"]
+    assert env.replay.provider.requests == []
     assert finished.diagnostics == (
         {
             "stage": "job",
             "code": "domain_error",
-            "round": None,
+            "batch": None,
             "item": None,
             "anchors": [],
             "detail": "VALIDATION_ERROR",

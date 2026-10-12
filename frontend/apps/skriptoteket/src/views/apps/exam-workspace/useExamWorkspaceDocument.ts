@@ -34,6 +34,7 @@ import type {
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
+import { nextItemId } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 
@@ -42,7 +43,6 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
 
-const IMPORT_SUCCESS_COPY = "Provet är inläst.";
 const SAVE_SUCCESS_COPY = "Provet är sparat.";
 const SAVE_FAILURE_COPY = "Det gick inte att spara provet. Försök igen.";
 const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
@@ -53,22 +53,6 @@ const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
 /** A teacher edit keys the item only while it still carries key data. */
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
-}
-
-function nextItemId(items: NativeExamItem[]): string {
-  const usedIds = new Set(items.map((item) => item.item_id));
-  let highest = 0;
-  for (const item of items) {
-    const match = /^item_(\d+)$/.exec(item.item_id);
-    if (match) {
-      highest = Math.max(highest, Number(match[1]));
-    }
-  }
-  let candidate = highest + 1;
-  while (usedIds.has(`item_${String(candidate).padStart(3, "0")}`)) {
-    candidate += 1;
-  }
-  return `item_${String(candidate).padStart(3, "0")}`;
 }
 
 /**
@@ -95,6 +79,7 @@ export function useExamWorkspaceDocument() {
   const toast = useToast();
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
+  const serverDocument = ref<NativeExamDocument | null>(null);
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
   const notes = ref<string[]>([]);
   const isDirty = ref(false);
@@ -106,19 +91,33 @@ export function useExamWorkspaceDocument() {
   const {
     conversionError,
     conversionMessage,
+    conversionProgress,
     conversionStatus,
+    convertingItemIds,
     importDocument,
     isConverting,
+    isEditingConversion,
     isImporting,
     retryConversionStatus,
-  } = useExamWorkspaceConversion(() => isBusy.value, (response) => {
-    selectedItemId.value = null;
-    applyResponse(response);
-    conflictNotice.value = null;
-    toast.success(IMPORT_SUCCESS_COPY);
+    syncAfterConflict,
+  } = useExamWorkspaceConversion(() => isBusy.value, {
+    applyResponse,
+    beforeFirstRevision: () => {
+      selectedItemId.value = null;
+      conflictNotice.value = null;
+    },
+    isDirty,
+    isSaving: () => operationBusy.value,
+    serverDocument,
+    summary,
+    workspaceDocument,
   });
+  // While its batches convert, the imported exam is already editable.
   const isBusy = computed(
-    () => operationBusy.value || isImporting.value || isConverting.value,
+    () =>
+      operationBusy.value ||
+      isImporting.value ||
+      (isConverting.value && !isEditingConversion.value),
   );
 
   const selectedItem = computed<NativeExamItem | null>(() => {
@@ -129,8 +128,13 @@ export function useExamWorkspaceDocument() {
     return current.items.find((item) => item.item_id === selectedItemId.value) ?? null;
   });
 
-  function applyResponse(response: ExamWorkspaceDocumentResponse): void {
-    workspaceDocument.value = response.document;
+  function applyResponse(
+    response: ExamWorkspaceDocumentResponse,
+    local: NativeExamDocument = response.document,
+    dirty = false,
+  ): void {
+    workspaceDocument.value = local;
+    serverDocument.value = response.document;
     summary.value = response.summary;
     savedDocuments.value = savedDocuments.value.some(
       (entry) => entry.lineage_id === response.summary.lineage_id,
@@ -140,8 +144,8 @@ export function useExamWorkspaceDocument() {
         )
       : [response.summary, ...savedDocuments.value];
     notes.value = response.notes;
-    isDirty.value = false;
-    const items = response.document.items;
+    isDirty.value = dirty;
+    const items = local.items;
     selectedItemId.value = items.some((item) => item.item_id === selectedItemId.value)
       ? selectedItemId.value
       : (items[0]?.item_id ?? null);
@@ -184,10 +188,13 @@ export function useExamWorkspaceDocument() {
     }
   }
 
-  async function saveDocument(rejectedProposalItemIds: string[] = []): Promise<boolean> {
+  async function saveDocument(
+    rejectedProposalItemIds: string[] = [],
+    afterConversionConflict = false,
+  ): Promise<boolean> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
-    if (!current || !currentSummary || isBusy.value) {
+    if (!current || !currentSummary || (isBusy.value && !afterConversionConflict)) {
       return false;
     }
     const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
@@ -209,7 +216,17 @@ export function useExamWorkspaceDocument() {
       toast.success(SAVE_SUCCESS_COPY);
       return true;
     } catch (error) {
-      if (isApiError(error) && error.status === 409) {
+      // A batch saved meanwhile: merge it and save again on top of it. Each
+      // retry stands on a strictly newer revision, so batches bound the loop.
+      const conflict = isApiError(error) && error.status === 409;
+      const sync = conflict ? await syncAfterConflict(expectedRevision) : "unrelated";
+      if (sync === "merged") {
+        return await saveDocument(rejectedProposalItemIds, true);
+      }
+      if (sync === "unknown") {
+        // Reloading would replace the teacher's copy with a revision never merged into it.
+        toast.failure(SAVE_FAILURE_COPY);
+      } else if (conflict) {
         conflictNotice.value = EXAM_WORKSPACE_CONFLICT_COPY;
         toast.failure(EXAM_WORKSPACE_CONFLICT_COPY);
         await reloadAfterConflict(currentSummary.lineage_id);
@@ -272,6 +289,10 @@ export function useExamWorkspaceDocument() {
       ...item,
       title: title.trim().length > 0 ? title : null,
     }));
+  }
+
+  function updateItemMarkingGuide(itemId: string, guide: string | null): void {
+    patchItem(itemId, (item) => ({ ...item, marking_guide: guide }));
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
@@ -412,7 +433,7 @@ export function useExamWorkspaceDocument() {
     if (!current || isBusy.value) {
       return;
     }
-    const itemId = nextItemId(current.items);
+    const itemId = nextItemId(current.items.map((item) => item.item_id));
     const newItem: NativeExamItem = {
       answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
       body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
@@ -444,7 +465,9 @@ export function useExamWorkspaceDocument() {
     conflictNotice,
     conversionError,
     conversionMessage,
+    conversionProgress,
     conversionStatus,
+    convertingItemIds,
     isConverting,
     retryConversionStatus,
     importDocument,
@@ -465,6 +488,7 @@ export function useExamWorkspaceDocument() {
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,
+    updateItemMarkingGuide,
     updateItemMatchEntryText,
     updateItemMatchPairs,
     updateItemPoints,

@@ -1,4 +1,4 @@
-"""Wording as token streams: what the comparator searches, orders and counts.
+"""Wording as token streams: what the comparator searches and counts.
 
 A token is a casefolded word or a response-gap marker. Punctuation, whitespace, case, quote
 style and line breaks never reach a token stream, so they never count in a comparison.
@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
-from dataclasses import dataclass
 
 GAP_MARKER = "[___]"
 CELL_SEPARATOR = " | "
@@ -33,13 +32,6 @@ def stream(texts: Iterable[str], *, gaps: bool = False) -> str:
     return f" {joined} "
 
 
-def end_of(haystack: str, phrase: str, start: int = 0) -> int:
-    """Where the phrase ends in the stream at or after the start, or -1 when it is absent."""
-    needle = f" {phrase} "
-    at = haystack.find(needle, start)
-    return -1 if at < 0 else at + len(needle) - 1
-
-
 def occurrences(haystack: str, phrase: str) -> int:
     needle = f" {phrase} "
     count = 0
@@ -50,24 +42,11 @@ def occurrences(haystack: str, phrase: str) -> int:
     return count
 
 
-@dataclass(frozen=True)
-class Piece:
-    """One prompt line or table cell as a phrase, with and without its gap markers."""
-
-    plain: str
-    gapped: str
-
-    @property
-    def has_gap(self) -> bool:
-        return self.gapped != self.plain
+def word_set(texts: Iterable[str]) -> frozenset[str]:
+    """Every word across the texts; gap markers are not words."""
+    return frozenset(token for text in texts for token in tokens(text, gaps=False))
 
 
-def pieces(lines: Iterable[str]) -> tuple[Piece, ...]:
-    """Each line and table cell of a gold prompt, without its list label."""
-    found: list[Piece] = []
-    for line in lines:
-        for cell in line.split(CELL_SEPARATOR):
-            text = ENTRY_LABEL.sub("", cell)
-            if gapped := " ".join(tokens(text)):
-                found.append(Piece(" ".join(tokens(text, gaps=False)), gapped))
-    return tuple(found)
+def without_list_labels(lines: Iterable[str]) -> tuple[str, ...]:
+    """Each line and table cell of a gold prompt without its list label."""
+    return tuple(ENTRY_LABEL.sub("", cell) for line in lines for cell in line.split(CELL_SEPARATOR))
