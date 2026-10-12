@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0039"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Pliktkänsla och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Empiri och förnuft",
+          "correct": false
+        },
+        {
+          "text": "Förnuft och känsla",
+          "correct": true
+        },
+        {
+          "text": "Rättssamhälle och hederskultur",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

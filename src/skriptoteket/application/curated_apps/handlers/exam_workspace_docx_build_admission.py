@@ -8,8 +8,9 @@ marks for review, and every chunk no entry names become review items that keep t
 source text; a question's review item shows all its own chunks as printed. A chunk the
 grouping gives a question as its own stays with the item that lists it, also when the reply
 lists it as an answer key, and is no answer key when an item lists another chunk of its
-question. A converted item that leaves out own chunks of its question holds them under a check
-mark that shows them as printed (D41). Building one question's item never fails the batch: an
+question. It is never a title or instruction, whatever the reply lists. A converted item that
+leaves out own chunks of its question holds them under a check mark that shows them as printed
+(D41). Building one question's item never fails the batch: an
 item that cannot be built becomes a review item holding that question's own source text. A
 question reported as a type conflict leaves the batch for the pipeline to resend with the kind
 the source shows, once: in the resend it is kept as converted.
@@ -121,11 +122,19 @@ def _admit_metadata(raw: JsonValue, field_name: str, state: DocxBuildState, seen
     except ValidationError as error:
         state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
         return
-    anchors = _free(metadata.source_anchors, state, seen)
+    listed = _free(metadata.source_anchors, state, seen)
+    # The grouping decides ownership: a question's own chunk stays with its question (D41).
+    own = tuple(a for a in listed if a in state.question_by_anchor and a not in state.governing)
+    if own:
+        state.record("admission", f"{field_name}_own_chunk", anchors=own)
+    anchors = tuple(a for a in listed if a not in own)
     if not anchors:
-        state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
+        if not own:
+            state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
         return
-    metadata = metadata.model_copy(update={"source_anchors": anchors})
+    # The reply's text may hold the withheld chunks' wording, so the rest shows its source text.
+    text = "\n".join(state.chunk_by_anchor[a].text for a in anchors) if own else metadata.text
+    metadata = metadata.model_copy(update={"text": text, "source_anchors": anchors})
     if field_name == "title" and state.title is None:
         try:
             text = title_without_answer_key(metadata.text)

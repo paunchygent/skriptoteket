@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0051"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0049",
+        "body:0050"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
+          "correct": false
+        },
+        {
+          "text": "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
+          "correct": false
+        },
+        {
+          "text": "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
+          "correct": true
+        },
+        {
+          "text": "Robinson styrs av heder och ära; Werther följer riddarens plikt.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

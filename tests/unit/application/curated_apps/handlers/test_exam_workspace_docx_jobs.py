@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeItemReviewState,
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError
@@ -120,7 +121,12 @@ async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_
         *["batch_ready"] * len(batches),
         "publish_final",
     ]
-    assert finished.diagnostics == ()
+    # Reply w1-01 lists q5's own lead-in body:0018 only as an instruction; it stays with q5 under
+    # the item's check mark (D41).
+    assert [(d["code"], d["anchors"]) for d in finished.diagnostics] == [
+        ("instructions_own_chunk", ["body:0018"]),
+        ("own_chunks_left_out", ["body:0018"]),
+    ]
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     document = opened.document
@@ -131,9 +137,26 @@ async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_
     assert sum(item.points for item in document.items if item.points is not None) == 28
     assert all(item.review.parse_origin.value == "llm_parsed" for item in document.items)
     assert all(item.answer_key.origin.value == "source_provided" for item in document.items)
-    assert native_export_blockers(document) == ()
+    assert [(b.item_id, b.reason) for b in native_export_blockers(document)] == [
+        ("item_005", "review_required")
+    ]
+    # The teacher handles the check mark; then the quiz exports.
+    reviewed = tuple(
+        item.model_copy(
+            update={
+                "review": item.review.model_copy(
+                    update={"state": NativeItemReviewState.REVIEW_COMPLETE}
+                )
+            }
+        )
+        if item.item_id == "item_005"
+        else item
+        for item in document.items
+    )
     package_bytes, report_bytes = build_native_examnet_qti_package(
-        document, package_name="poetry", qti_writer=ExamNetQtiPackageWriter()
+        document.model_copy(update={"items": reviewed}),
+        package_name="poetry",
+        qti_writer=ExamNetQtiPackageWriter(),
     )
     assert package_bytes.startswith(b"PK")
     assert json.loads(report_bytes)["package_status"] == "passed"

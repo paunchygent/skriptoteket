@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0042"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0040",
+        "body:0041"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Plikt och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Vetenskap och ansvar",
+          "correct": true
+        },
+        {
+          "text": "Förnuft och empiri",
+          "correct": false
+        },
+        {
+          "text": "Frihet och rättigheter",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
