@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "40de23fc9f6f730480c7c345b9a4e984366121232b3a75b3a696a1b4f58d6dd9",
+  "source_set_digest": "92dff492f9707a2b22e18124f963625dbd1bbd3f5c538b7771beaa713f0919ca",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4674,6 +4674,44 @@
       "type": "task",
       "title": "Restyle the exam workspace to the shared design direction",
       "path": "docs/backlog/tasks/task-skript-39-04-05-restyle-the-exam-workspace-to-the-shared-design-direction.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-06",
+      "type": "task",
+      "title": "Send each converted question's original wording and build steps to the exam workspace",
+      "path": "docs/backlog/tasks/task-skript-39-04-06-send-each-converted-question-s-original-wording-and-build-steps-to-the-exam-workspace.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-07",
+      "type": "task",
+      "title": "Back the exam workspace editor with per-question key suggestions, kept suggestions, Mina filer saving and automatic QTI titles",
+      "path": "docs/backlog/tasks/task-skript-39-04-07-back-the-exam-workspace-editor-with-per-question-key-suggestions-kept-suggestions-mina-filer-saving-and-automatic-qti-titles.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",

@@ -78,10 +78,10 @@
   staging walk clean). Next: this story's first task (not yet scaffolded)
   syncs 0.1.24 and removes local uses in the same commit, before
   TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
-  (`proposed`; plan D1-D61 closed in session
-  `01a13061-ff38-7099-aa3d-e23f6e5bba43`) covers only the exam workspace;
-  approved images REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction,
-  prototype REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype.
+  (`proposed`, contract C1-C24 written; plan D1-D66 closed in session
+  `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
+  waits on 40-01-03, the 0.1.24 sync, 39-05-07 and the new backend tasks
+  TASK-SKRIPT-39-04-06 and 39-04-07 (scaffolded, contracts not written).
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
