@@ -42,7 +42,8 @@ steps decide what each question is:
    `free_text`, `matching`, `unsupported`, `unresolved`, with the label
    probabilities. A question at or above 0.95 keeps its first-pass label;
    below 0.95 a second pass (B: Responses, label only) decides alone, and
-   unresolved becomes free_text until the re-tag story lands. The labeler sits behind one classifier interface (label,
+   a question B leaves unresolved converts with the first pass's top label, and
+   the type_conflict resend (step 4) corrects a wrong label. The labeler sits behind one classifier interface (label,
    score, threshold, route), so conversion reads labels the same way whatever
    produced them.
 3. **Parallel conversion.** Code packs questions into batches that hold one
@@ -172,7 +173,7 @@ succeeded on retry.
 | D20 | The second prompt round (probes P1-P4 and full runs with a hold-out set) ran after the D14 input repair was measured; its result is D23 (user decisions 2026-10-11). |
 | D21 | Teachers can edit anything in the workspace, but problems that better model context or output handling can solve are solved there; every admission or prompt option is reported with the teacher work it leaves (user decision 2026-10-11). |
 | D22 | Independent code review is paused while the pipeline is iterated and runs once on the settled pipeline before integration into main (user decision 2026-10-11). |
-| D23 | Labeler prompt P1d in both passes: a type name the teacher writes settles a label, a key marking more than one option correct settles multiple_response, Swedish type names with English counterparts, no evidence wording. Admission: first pass at >= 0.95, otherwise B decides alone; no C, no tie-breaker; unresolved becomes free_text for now (user decisions 2026-10-11). |
+| D23 | Labeler prompt P1d in both passes: a type name the teacher writes settles a label, a key marking more than one option correct settles multiple_response, Swedish type names with English counterparts, no evidence wording. Admission: first pass at >= 0.95, otherwise B decides alone; no C, no tie-breaker; a question B leaves unresolved converts with the first pass's top label, and the type_conflict resend corrects a wrong label (user decisions 2026-10-11 and 2026-10-12). |
 | D24 | The teacher re-tag and rebuild flow for unsettled or wrong types is its own later story, contracted after the parallelization measurement (user decision 2026-10-11). |
 | D25 | Two conversion waves (accepted questions at once, B questions after their labels arrive), progressive delivery to the editor, and a free_text marking-guide field in the converter schema are part of this task (user decisions 2026-10-11). |
 | D26 | The parallelization measurement runs the production pipeline per setting, starting with one small exam: batch size (whole exam, about 16 or 6 question families, one family per request) and gpt-6-luna reasoning low or medium; reasoning none is dropped. Settings that are clearly bad are stopped early instead of run on every exam. It records timing, cost and 429s per request; quality is read as in D34. The frozen-input harness is discarded (user decisions 2026-10-11). |
@@ -189,3 +190,4 @@ succeeded on retry.
 | D37 | The conversion default is one question family per request at gpt-6-luna low reasoning: the real pipeline converted 302 of 314 corpus questions with every exam ready within about 34 s, against 300 of 314 and up to 60 s for about 6 families at medium; medium bought no measurable quality (user decision 2026-10-11). |
 | D38 | Every question gets points. A question's printed points stay. A section total is split over the section's questions that print no points of their own: what remains of the total after printed points is split into whole points as evenly as possible, earlier questions taking the extra point; when nothing remains, the model's own reading stands. Each question whose points are not printed carries a check-points review mark (user decisions 2026-10-11). |
 | D39 | When the answer key prints a label after each unit of a sentence, or after each part of a word joined with +, each label is one gap placed after its unit or part, accepting that label (user decisions 2026-10-11). |
+| D40 | A chunk the grouping marks as a shared context governing several questions belongs to the section parent: assembly shows it once as the parent's instruction, also when a converter reply lists it in a question's source_anchors, and a governing heading keeps its text. The section parent holds exactly the items of the questions the grouping says it governs. No reply is rejected or resent (user decision 2026-10-12). |
