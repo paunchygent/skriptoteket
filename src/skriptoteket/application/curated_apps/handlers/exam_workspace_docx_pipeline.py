@@ -489,7 +489,10 @@ class DocxConversionPipeline:
 
     def _final(self, run: _Run, manifest: ExamManifest | None) -> DocxConversionOutcome:
         started = time.monotonic()
-        result = run.state.result(governed_anchors(run.contexts, run.families))
+        result = run.state.result(
+            governed_anchors(run.contexts, run.families),
+            tuple(f.question_anchors for f in run.families),
+        )
         update = conversion_update(result.document, run.families, tuple(run.filled), ())
         checks = assembly_check(result.document, manifest, run.families, update) if manifest else ()
         run.timed("assembly", started)

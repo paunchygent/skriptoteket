@@ -8,12 +8,13 @@ marks for review, and every chunk no entry names become review items that keep t
 source text; a question's review item shows all its own chunks as printed. A chunk the
 grouping gives a question as its own stays with the item that lists it, also when the reply
 lists it as an answer key, and is no answer key when an item lists another chunk of its
-question. It is never a title or instruction, whatever the reply lists. A converted item that
-leaves out own chunks of its question holds them under a check mark that shows them as printed
-(D41). Building one question's item never fails the batch: an
-item that cannot be built becomes a review item holding that question's own source text. A
-question reported as a type conflict leaves the batch for the pipeline to resend with the kind
-the source shows, once: in the resend it is kept as converted.
+question. It is never a title, whatever the reply lists; an instruction holding it stands only
+where assembly places it at its question (D42). A converted item that leaves out own chunks of
+its question holds them under a check mark that shows them as printed (D41). Building one
+question's item never fails the batch: an item that cannot be built becomes a review item
+holding that question's own source text. A question reported as a type conflict leaves the
+batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
+as converted.
 """
 
 from collections.abc import Callable
@@ -29,6 +30,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    with_left_out_mark,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     title_without_answer_key,
@@ -36,7 +40,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
-    NativeItemReviewState,
     NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError
@@ -45,11 +48,6 @@ CONFLICT_WITHOUT_KIND_REASON = (
     "AI-tolkningen angav att frågan har en annan svarstyp men inte vilken. "
     "Kontrollera frågan manuellt."
 )
-LEFT_OUT_REASON = (
-    "Delar av källtexten saknas i den konverterade frågan – kontrollera mot källan. "
-    "Källtext som saknas:"
-)
-DRAWING_SHOWN = "[Bild utan text]"
 
 
 def validation_detail(error: ValidationError) -> str:
@@ -123,10 +121,15 @@ def _admit_metadata(raw: JsonValue, field_name: str, state: DocxBuildState, seen
         state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
         return
     listed = _free(metadata.source_anchors, state, seen)
-    # The grouping decides ownership: a question's own chunk stays with its question (D41).
-    own = tuple(a for a in listed if a in state.question_by_anchor and a not in state.governing)
+    # The grouping decides ownership: a question's own chunk is never the title (D41); an
+    # instruction keeps it until assembly sees where the instruction lands (D42).
+    own = tuple(
+        a
+        for a in listed
+        if field_name == "title" and a in state.question_by_anchor and a not in state.governing
+    )
     if own:
-        state.record("admission", f"{field_name}_own_chunk", anchors=own)
+        state.record("admission", "title_own_chunk", anchors=own)
     anchors = tuple(a for a in listed if a not in own)
     if not anchors:
         if not own:
@@ -179,15 +182,8 @@ def _with_left_out(
         return admitted
     seen.update(left_out)
     state.record("admission", "own_chunks_left_out", item=index, anchors=left_out)
-    chunks = tuple(state.chunk_by_anchor[a] for a in left_out)
-    texts = tuple(c.text or DRAWING_SHOWN for c in chunks if c.text or c.kind == "drawing")
-    review = item.review.model_copy(
-        update={
-            "state": NativeItemReviewState.REVIEW_REQUIRED,
-            "reasons": (*item.review.reasons, LEFT_OUT_REASON, *texts),
-        }
-    )
-    return item.model_copy(update={"review": review}), (*anchors, *left_out)
+    marked = with_left_out_mark(item, [state.chunk_by_anchor[a] for a in left_out])
+    return marked, (*anchors, *left_out)
 
 
 def _admit_item(

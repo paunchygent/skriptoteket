@@ -15,6 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
     release_governing_chunks,
     unclaimed_governing,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    return_misplaced_own_chunks,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
@@ -181,12 +184,18 @@ def assemble_build_result(
     title: ProducedMetadata | None = None,
     instructions: tuple[ProducedMetadata, ...] = (),
     governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+    questions: tuple[tuple[str, ...], ...] = (),
     events: tuple[DocxBuildEvent, ...] = (),
     input_tokens: int | None = None,
     output_tokens: int | None = None,
 ) -> DocxBuildResult:
     """Keep facit chunks as teacher notes and every unbuilt chunk as a review item; a governing
-    chunk an item lists or no entry holds becomes an instruction for its section parent (D40)."""
+    chunk an item lists or no entry holds becomes an instruction for its section parent (D40).
+
+    ``questions`` holds each grouped question's own anchors. An own chunk listed as an
+    instruction that placement does not put at its question goes back to its question's item,
+    and placement runs again without it (D42).
+    """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
@@ -194,8 +203,15 @@ def assemble_build_result(
     unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
     instructions = (*instructions, *unclaimed)
     released = release_governing_chunks(chunks, accepted, instructions, governed)
-    instructions = released.instructions
-    placed = _ordered_items(chunks, released.accepted, review_reasons, instructions, governed)
+    accepted, instructions = released.accepted, released.instructions
+    events = (*events, *released.events)
+    placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
+    while returned := return_misplaced_own_chunks(
+        chunks, accepted, instructions, placed.landed, questions, governed
+    ):
+        accepted, instructions = returned.accepted, returned.instructions
+        events = (*events, *returned.events)
+        placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
     items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
@@ -210,7 +226,7 @@ def assemble_build_result(
         document_id=document_id,
         revision=1,
         title=document_title,
-        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.reaching),
+        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.landed),
         items=items,
         parents=placed.parents,
         origin=NativeExamDocumentOrigin(
@@ -220,6 +236,4 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(
-        document, tuple(notes), input_tokens, output_tokens, (*events, *released.events)
-    )
+    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)

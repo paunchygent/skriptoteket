@@ -8,13 +8,15 @@ import pytest
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
-    LEFT_OUT_REASON,
     admit_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    LEFT_OUT_REASON,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeItemReviewState,
     NativeParseOrigin,

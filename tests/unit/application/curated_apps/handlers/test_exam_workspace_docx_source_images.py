@@ -25,10 +25,6 @@ from docx.oxml.text.paragraph import CT_P
 from PIL import Image
 from pydantic import BaseModel, JsonValue
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
-    DRAWING_SHOWN,
-    LEFT_OUT_REASON,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionJob,
     DocxConversionOutcome,
@@ -43,6 +39,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
     StructuredLLMUsage,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    DRAWING_SHOWN,
+    LEFT_OUT_REASON,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,

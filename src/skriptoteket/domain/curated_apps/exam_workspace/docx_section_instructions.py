@@ -12,6 +12,7 @@ own chunks keeps its source position there.
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
@@ -40,11 +41,15 @@ _GAP_MARKER = "[___]"
 
 @dataclass(frozen=True)
 class SectionInstructions:
-    """Items with ids and sequence, their parents, and the instructions that reached an item."""
+    """Items with ids and sequence, their parents, and where each instruction landed.
+
+    ``landed`` maps the index of each instruction that reached an item to the anchors of the
+    items it reached, in their bodies or under their parent.
+    """
 
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
-    reaching: frozenset[int]
+    landed: Mapping[int, frozenset[str]]
 
 
 @dataclass(frozen=True)
@@ -63,6 +68,7 @@ class _Run:
 class _Joined:
     """An instruction printed inside an item's own chunks, and where in the item it belongs."""
 
+    origin: int
     texts: tuple[str, ...]
     later: tuple[str, ...]
     opens: bool
@@ -170,14 +176,13 @@ def _runs(
     item_sources: list[list[DocxChunk]],
     positions: dict[str, int],
     governed: Mapping[str, frozenset[str]],
-) -> tuple[list[_Run], dict[int, list[_Joined]], set[int]]:
+) -> tuple[list[_Run], dict[int, list[_Joined]]]:
     """The instruction runs, the text joined into the item that prints it, and its instructions.
 
     An instruction the grouping marks as governing questions is never joined into an item.
     """
     spans = [(positions[s[0].anchor], positions[s[-1].anchor]) for s in item_sources]
     joined: dict[int, list[_Joined]] = {}
-    joined_origins: set[int] = set()
     runs: list[_Run] = []
     for origin, instruction in enumerate(instructions):
         at = sorted(positions[a] for a in instruction.source_anchors)
@@ -192,12 +197,12 @@ def _runs(
             own = [c for c in item_sources[owner] if c.kind != "heading"]
             joined.setdefault(owner, []).append(
                 _Joined(
+                    origin=origin,
                     texts=tuple(chunk.text for chunk in sources),
                     later=tuple(_folded(c.text) for c in own if positions[c.anchor] > at[-1]),
                     opens=not any(positions[c.anchor] < at[0] for c in own),
                 )
             )
-            joined_origins.add(origin)
         else:
             runs.append(_Run(origin, at[-1], sources))
     for item_chunks in item_sources:
@@ -205,7 +210,7 @@ def _runs(
         numbered = next((i for i, c in enumerate(lines) if _NUMBERED.match(c.text)), 0)
         if numbered:
             runs.append(_Run(None, positions[lines[numbered - 1].anchor], tuple(lines[:numbered])))
-    return runs, joined, joined_origins
+    return runs, joined
 
 
 def _reaches(
@@ -318,7 +323,7 @@ def place_section_instructions(
     item_sources = [
         [chunks[i] for i in sorted(positions[a] for a in anchors)] for _, anchors, _ in ordered
     ]
-    runs, joined, joined_origins = _runs(chunks, instructions, item_sources, positions, governed)
+    runs, joined = _runs(chunks, instructions, item_sources, positions, governed)
     reached = _reaches(chunks, ordered, runs, item_sources, positions)
     groups = _parent_groups(reached)
     parented: dict[tuple[int | None, int], set[int]] = {}
@@ -326,10 +331,14 @@ def place_section_instructions(
         for run in group:
             parented.setdefault((run.origin, run.start), set()).update(run.reach)
     carried: dict[int, list[str]] = {}
-    reaching = set(joined_origins)
+    landed: dict[int, set[str]] = {}
+    for k, entries in joined.items():
+        for entry in entries:
+            landed.setdefault(entry.origin, set()).update(ordered[k][1])
     for run in reached:
         if run.origin is not None and run.reach:
-            reaching.add(run.origin)
+            for k in run.reach:
+                landed.setdefault(run.origin, set()).update(ordered[k][1])
         covered = parented.get((run.origin, run.start), set())
         wording = "\n".join(chunk.text for chunk in run.sources)
         for k in run.reach:
@@ -356,4 +365,6 @@ def place_section_instructions(
         )
         for number, group in enumerate(groups, start=1)
     )
-    return SectionInstructions(items, parents, frozenset(reaching))
+    return SectionInstructions(
+        items, parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
+    )

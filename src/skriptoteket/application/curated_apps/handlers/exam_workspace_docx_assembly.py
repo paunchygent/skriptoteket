@@ -192,6 +192,7 @@ def provisional_result(
         title=state.title,
         instructions=state.instructions,
         governed=governed,
+        questions=tuple(family.question_anchors for family in families),
     )
 
 

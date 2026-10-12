@@ -233,12 +233,18 @@ class DocxBuildState:
         else:
             self.output_complete = False
 
-    def result(self, governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED) -> DocxBuildResult:
+    def result(
+        self,
+        governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+        questions: tuple[tuple[str, ...], ...] = (),
+    ) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item, except a
         governing chunk, which becomes its section parent's instruction.
 
         ``governed`` maps each grouping instruction that governs two or more questions to the
         anchors those questions own; it decides which items the instruction is the parent of.
+        ``questions`` holds each grouped question's own anchors; an instruction holding one
+        stands only where it lands at that question (D42).
 
         A printed section total gives each question that prints no points of its own a
         share marked for checking (D38). A section's points line the split absorbs is
@@ -274,6 +280,7 @@ class DocxBuildState:
             title=self.title,
             instructions=self.instructions,
             governed=governed,
+            questions=questions,
             events=tuple(self.events),
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,
