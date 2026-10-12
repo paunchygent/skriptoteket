@@ -170,6 +170,8 @@ Rules:
   is that question's text, also when other questions print the same wording: copy all of
   it into that question's body.
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
+  A chunk of kind drawing is a picture with no text; the question it stands with lists it in
+  its source_anchors.
   Each source chunk belongs to exactly one item, the title, an instruction, or
   answer_key_anchors. This holds for every chunk up to the last one of chunks, also after
   the last question: a facit line whose answer became a gap's accepted_values goes in

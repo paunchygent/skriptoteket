@@ -51,6 +51,8 @@ GROUPING_INSTRUCTIONS = (
     "Rules:\n"
     "- A question is one student task. Its anchors are its number or heading line, "
     "stem, options, tables, answer lines or blanks, and all its subparts.\n"
+    "- A chunk of kind drawing is a picture with no text; the question it stands with "
+    "lists it in its anchors.\n"
     "- Subparts (a), b), 1., 2. inside one task) stay inside their parent question. "
     "List them in the question's anchors and also in subpart_anchors.\n"
     "- One question carries at most one set of choices and one answer key. A "
