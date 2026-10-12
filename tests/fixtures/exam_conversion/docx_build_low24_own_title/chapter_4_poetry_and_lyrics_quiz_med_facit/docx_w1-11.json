@@ -1,0 +1,72 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0047"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0044",
+        "body:0045",
+        "body:0046"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "Part 2A: enrich",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the Swedish translation of “enrich”.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "begrundande",
+          "correct": false
+        },
+        {
+          "text": "berika",
+          "correct": true
+        },
+        {
+          "text": "fördom",
+          "correct": false
+        },
+        {
+          "text": "glömska",
+          "correct": false
+        },
+        {
+          "text": "obeskrivlig",
+          "correct": false
+        },
+        {
+          "text": "outgrundlig",
+          "correct": false
+        },
+        {
+          "text": "sparsam",
+          "correct": false
+        },
+        {
+          "text": "värdig",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

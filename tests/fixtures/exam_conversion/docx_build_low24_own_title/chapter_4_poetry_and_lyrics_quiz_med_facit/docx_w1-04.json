@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0017"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0015",
+        "body:0016"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "crossed from one side to the other",
+          "correct": false
+        },
+        {
+          "text": "kept it as something precious",
+          "correct": false
+        },
+        {
+          "text": "made it richer or better",
+          "correct": false
+        },
+        {
+          "text": "refused to give up his position",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

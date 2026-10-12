@@ -1,0 +1,59 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Word box:",
+      "source_anchors": [
+        "body:0108"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0114"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0111",
+        "body:0112",
+        "body:0113"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "title": "Part 3",
+      "printed_label": "Question 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cherish"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " the letters her grandmother wrote her, and she keeps them in a wooden box.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

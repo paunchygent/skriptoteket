@@ -7,12 +7,13 @@ keeps its other chunks. A question the native contract cannot hold, a question t
 marks for review, and every chunk no entry names become review items that keep their
 source text; a question's review item shows all its own chunks as printed. A chunk the
 grouping gives a question as its own stays with the item that lists it, also when the reply
-lists it as an answer key, and is no answer key when an item lists another chunk of its
-question. It is never a title, whatever the reply lists; an instruction holding it stands only
-where assembly places it at its question (D42). A converted item that leaves out own chunks of
-its question holds them under a check mark that shows them as printed (D41). Building one
-question's item never fails the batch: an item that cannot be built becomes a review item
-holding that question's own source text. A question reported as a type conflict leaves the
+lists it as an answer key, the title or an instruction, and is no answer key when an item lists
+another chunk of its question. A title or instruction holding an own chunk no item lists is an
+instruction that stands only where assembly places it at its question (D42); the title keeps
+its other chunks. A converted item that leaves out own chunks of its question holds them under
+a check mark that shows them as printed (D41). Building one question's item never fails the
+batch: an item that cannot be built becomes a review item holding that question's own source
+text. A question reported as a type conflict leaves the
 batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
 as converted.
 """
@@ -114,30 +115,48 @@ def _admit_keys(
         seen.add(anchor)
 
 
-def _admit_metadata(raw: JsonValue, field_name: str, state: DocxBuildState, seen: set[str]) -> None:
+def _source(
+    metadata: ProducedMetadata, anchors: tuple[str, ...], state: DocxBuildState
+) -> ProducedMetadata:
+    """``metadata`` narrowed to ``anchors``, showing their source text: the reply's text may
+    hold the wording of chunks it no longer holds."""
+    text = "\n".join(state.chunk_by_anchor[a].text for a in anchors)
+    return metadata.model_copy(update={"text": text, "source_anchors": anchors})
+
+
+def _admit_metadata(
+    raw: JsonValue,
+    field_name: str,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+) -> None:
     try:
         metadata = ProducedMetadata.model_validate(raw)
     except ValidationError as error:
         state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
         return
     listed = _free(metadata.source_anchors, state, seen)
-    # The grouping decides ownership: a question's own chunk is never the title (D41); an
-    # instruction keeps it until assembly sees where the instruction lands (D42).
-    own = tuple(
-        a
-        for a in listed
-        if field_name == "title" and a in state.question_by_anchor and a not in state.governing
-    )
-    if own:
-        state.record("admission", "title_own_chunk", anchors=own)
-    anchors = tuple(a for a in listed if a not in own)
+    # The grouping decides ownership: a question's own chunk an item of the reply lists stays
+    # with that item. A title or instruction holding another own chunk is an instruction that
+    # stands only where assembly places it at its question (D42).
+    own = frozenset(a for a in listed if a in state.question_by_anchor) - state.governing
+    anchors = tuple(a for a in listed if a not in own.intersection(item_held))
     if not anchors:
-        if not own:
-            state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
+        state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
         return
-    # The reply's text may hold the withheld chunks' wording, so the rest shows its source text.
-    text = "\n".join(state.chunk_by_anchor[a].text for a in anchors) if own else metadata.text
-    metadata = metadata.model_copy(update={"text": text, "source_anchors": anchors})
+    if len(anchors) < len(listed):
+        metadata = _source(metadata, anchors, state)
+    else:
+        metadata = metadata.model_copy(update={"source_anchors": anchors})
+    if field_name == "title" and own.intersection(anchors):
+        moved = tuple(a for a in anchors if a in own)
+        state.instructions = (*state.instructions, _source(metadata, moved, state))
+        seen.update(moved)
+        anchors = tuple(a for a in anchors if a not in own)
+        if not anchors:
+            return
+        metadata = _source(metadata, anchors, state)
     if field_name == "title" and state.title is None:
         try:
             text = title_without_answer_key(metadata.text)
@@ -249,10 +268,10 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
     _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
-        _admit_metadata(content["title"], "title", state, seen)
+        _admit_metadata(content["title"], "title", state, seen, item_held)
     raw_instructions = content.get("instructions")
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
-        _admit_metadata(raw, "instructions", state, seen)
+        _admit_metadata(raw, "instructions", state, seen, item_held)
     for index, raw in enumerate(items):
         _admit_item(index, raw, state, seen, item_held)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}

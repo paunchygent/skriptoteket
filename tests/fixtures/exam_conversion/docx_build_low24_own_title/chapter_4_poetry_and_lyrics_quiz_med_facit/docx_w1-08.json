@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0030"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Read the stanza: We played all day in the sand (A) / You and I across the land (A) / The sea at night is wide and deep (B) / We hear it in our sleep (B). Which term names the arrangement of the same end sounds in the lines?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "rhyme scheme",
+          "correct": true
+        },
+        {
+          "text": "rhythm",
+          "correct": false
+        },
+        {
+          "text": "stanza",
+          "correct": false
+        },
+        {
+          "text": "line",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

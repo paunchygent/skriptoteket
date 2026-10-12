@@ -1,0 +1,76 @@
+{
+  "title": {
+    "text": "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 28 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": 28
+    },
+    {
+      "text": "Part 1",
+      "source_anchors": [
+        "body:0005"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0008"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0006",
+        "body:0007"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "deep",
+          "correct": true
+        },
+        {
+          "text": "strange",
+          "correct": false
+        },
+        {
+          "text": "dignified",
+          "correct": false
+        },
+        {
+          "text": "thrifty",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

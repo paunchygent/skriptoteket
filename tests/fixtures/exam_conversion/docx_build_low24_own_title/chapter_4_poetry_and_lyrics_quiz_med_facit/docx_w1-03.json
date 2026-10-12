@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0014"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "indescribable",
+          "correct": false
+        },
+        {
+          "text": "strange",
+          "correct": true
+        },
+        {
+          "text": "dignified",
+          "correct": false
+        },
+        {
+          "text": "deep",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

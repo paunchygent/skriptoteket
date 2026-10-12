@@ -1,0 +1,55 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0011"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0009",
+        "body:0010"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "title": null,
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "mysterious",
+          "correct": false
+        },
+        {
+          "text": "deep",
+          "correct": false
+        },
+        {
+          "text": "thrifty",
+          "correct": true
+        },
+        {
+          "text": "strange",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
