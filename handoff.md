@@ -17,8 +17,8 @@
     Prior recorded eval's three item failures match baseline `6bf05757`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12 after the staging walk on `63de8094`;
-    retained `evidence/staging-walk/walk-63de8094.md`). Worktree
-    `Skriptoteket-task-skript-39-05-04` awaits retirement. Next in ST-39-05:
+    retained `evidence/staging-walk/walk-63de8094.md`); worktree and branch
+    retired. Next in ST-39-05:
     scaffold and plan the follow-up task (story Tasks item 6): label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
