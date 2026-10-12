@@ -69,6 +69,17 @@
   waits on. TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Open defect
   from the walk: Klassrumskartan returns focus to the sidebar, not "Ny klass",
   after the modal closes.
+- ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
+  (rule 045 replacement, shadow and panel sweep, per-app token passes).
+  Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S5
+  closed, S6 open with the user: the shared release itself ships the brutal
+  shadow tokens, utilities and press offset. TASK-SKRIPT-39-04-05
+  (`proposed`, renamed; plan D1-D8 closed in session
+  `01a13061-ff38-7099-aa3d-e23f6e5bba43`) now covers only the exam workspace;
+  approved images in `docs/mockups/exam-workspace-shared-direction/` with
+  REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction.
+  EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
+  becomes a secondary input mode of the workspace.
 
 - 2026-09-05 reconciliation (docs/planning only, no code): the user-approved
   native editable exam workspace is recorded in

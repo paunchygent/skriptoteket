@@ -151,6 +151,12 @@ closes the epic and is not on the critical path.
    and conversion and the gold corpus move to that structure. Creating every
    type is new scope; ST-SKRIPT-39-04 closed with free-text creation only
    and its acceptance stands.
+10. DigiExam conversion as a secondary input mode (`ST-SKRIPT-39-07`,
+   `proposed`; user decision 2026-10-12): the exam workspace is the main exam
+   conversion and editing app, and DigiExam export becomes one secondary
+   input mode of it, edited in the same editor and exported as QTI, PDF or
+   DOCX. The separate DigiExam converter views retire with it. Scoped after
+   the DOCX, PDF and Markdown routes exist.
 
 ## Verification
 
@@ -212,3 +218,4 @@ closes the epic and is not on the critical path.
 | E13 | The product QTI exporter converges on the native QTI 3.0 Exam.net contract proven in HuleEduOS, in a dedicated slice (story 8) sequenced after story 5 and before story 7; the QTI 2.1 writer stays as the parity/regression baseline until cutover (user decision 2026-10-09). |
 | E14 | The story-5 breadth contract carries as candidates the HuleEduOS-proven teacher-grade scoring features — accepted-spelling variants under the hand-picked-misspelling rule, case-insensitive answer mappings, expected-length and letter-hint conventions — and the Exam.net-proven ordering (ordningsföljd) item type as an extension of the E3 subset (user decision 2026-10-09). |
 | E15 | The HuleEduOS `examnet-qti-import` producer remains a deliberately separate hand-tool for now: story 8 ports its proven contract and shapes into the product exporter but creates no consumption or consolidation obligation for HuleEduOS (user decision 2026-10-09). |
+| E16 | The exam workspace is the main exam conversion and editing app. DigiExam conversion is a secondary input mode inside it, not the start mode, and uses the same editor; the separate DigiExam converter views get no layout work of their own and retire when story 10 lands (user decision 2026-10-12). |

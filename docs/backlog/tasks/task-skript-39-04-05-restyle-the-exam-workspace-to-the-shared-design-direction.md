@@ -1,8 +1,7 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-05
-title: Restyle the exam workspace to the shared design direction and replace the brutalist
-  design rule
+title: Restyle the exam workspace to the shared design direction
 repository: skriptoteket
 owners:
 - kind: service
@@ -14,9 +13,9 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Every control in the exam workspace follows the shared integrated-frontend-stack
-  visual authority on phone, tablet and desktop, and the Skriptoteket design rule
-  no longer prescribes the brutalist style
+- Every control and panel in the exam workspace follows the shared integrated-frontend-stack
+  visual authority and the approved mockups in docs/mockups/exam-workspace-shared-direction
+  on phone, tablet and desktop
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---

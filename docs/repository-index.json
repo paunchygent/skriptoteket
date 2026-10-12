@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4bad25851fb4f3897df835bcc7b08498f5439ef5b3492315cb4ac1e9a7f3e500",
+  "source_set_digest": "ecaf886fbe18eaf2f862f963ead39ecd43144a11e35a36f58498ca34f942a5aa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2281,6 +2281,27 @@
       }
     },
     {
+      "id": "ST-SKRIPT-39-07",
+      "type": "story",
+      "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
+      "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "ST-SKRIPT-40-01",
       "type": "story",
       "title": "Converge tokens, components and action buttons onto the shared package",
@@ -2307,6 +2328,27 @@
       "title": "Converge icons onto the shared glyph vocabulary",
       "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
       "status": "ready",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-03",
+      "type": "story",
+      "title": "Bring every Skriptoteket screen onto the shared visual direction",
+      "path": "docs/backlog/stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md",
+      "status": "proposed",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -4630,8 +4672,8 @@
     {
       "id": "TASK-SKRIPT-39-04-05",
       "type": "task",
-      "title": "Restyle the exam workspace to the shared design direction and replace the brutalist design rule",
-      "path": "docs/backlog/tasks/task-skript-39-04-05-restyle-the-exam-workspace-to-the-shared-design-direction-and-replace-the-brutalist-design-rule.md",
+      "title": "Restyle the exam workspace to the shared design direction",
+      "path": "docs/backlog/tasks/task-skript-39-04-05-restyle-the-exam-workspace-to-the-shared-design-direction.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
@@ -8682,6 +8724,20 @@
       ],
       "retired_ids": [
         "REF-tool-editor-framework-codemap"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction",
+      "type": "reference",
+      "title": "Exam workspace approved mockups for the shared design direction",
+      "path": "docs/reference/ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md",
+      "status": "active",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {
