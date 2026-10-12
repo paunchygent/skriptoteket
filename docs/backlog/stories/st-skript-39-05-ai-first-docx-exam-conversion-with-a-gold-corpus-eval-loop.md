@@ -110,6 +110,9 @@ Planned order; each task is scaffolded and contracted before work starts.
    import of a QTI file carrying a free-text marking guide as a scorer rubric,
    which D31 requires before the QTI export includes the rubric (user decision
    2026-10-12).
+7. `TASK-SKRIPT-39-05-07`: export is blocked only by missing values and unbuilt
+   questions; printed "(N p)" markers become points; possible parsing issues
+   fire only where wording is lost (user decisions 2026-10-13).
 
 ## Verification
 
