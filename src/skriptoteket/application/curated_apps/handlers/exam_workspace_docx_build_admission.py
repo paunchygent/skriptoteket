@@ -5,10 +5,10 @@ batch's own chunks and every kind to the batch's kinds. Admission never rejects 
 a schema-valid response. A chunk two entries name stays with the first; the later entry
 keeps its other chunks. A question the native contract cannot hold, a question the model
 marks for review, and every chunk no entry names become review items that keep their
-source text. A chunk the grouping gives a question as its own stays with the item that lists
-it, also when the reply lists it as an answer key. Building one question's item never fails
-the batch: an item that cannot be
-built becomes a review item holding that question's own source text. A question reported
+source text; a question's review item shows all its own chunks as printed. A chunk the
+grouping gives a question as its own stays with the item that lists it, also when the reply
+lists it as an answer key. Building one question's item never fails the batch: an item that
+cannot be built becomes a review item holding that question's own source text. A question reported
 as a type conflict leaves the batch for the pipeline to resend with the kind the source
 shows, once: in the resend it is kept as converted.
 """
@@ -21,10 +21,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
     TypeConflict,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    native_item,
-    review_source_item,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
@@ -52,33 +49,39 @@ def validation_detail(error: ValidationError) -> str:
     )
 
 
-def _printed(anchors: tuple[str, ...], state: DocxBuildState, reason: str) -> NativeExamItem:
-    """The question's own chunks as printed, facit included, as one review item."""
-    owned = set(anchors)
-    return review_source_item(tuple(c for c in state.chunks if c.anchor in owned), reason)
+Admitted = tuple[NativeExamItem, tuple[str, ...]]
 
 
 def _source_review(
-    index: int, anchors: tuple[str, ...], state: DocxBuildState, code: str, detail: str
-) -> NativeExamItem:
-    """The question's own source text as a review item, whatever the model wrote."""
+    index: int,
+    anchors: tuple[str, ...],
+    state: DocxBuildState,
+    seen: set[str],
+    code: str,
+    detail: str,
+) -> Admitted:
+    """The whole question's source text as a review item, whatever the model wrote."""
     state.record("admission", code, item=index, anchors=anchors, detail=detail)
-    return _printed(anchors, state, f"Frågan följer inte provformatet ({detail}).")
+    return state.printed(anchors, f"Frågan följer inte provformatet ({detail}).", seen)
 
 
 def _built(
-    index: int, anchors: tuple[str, ...], state: DocxBuildState, build: Callable[[], NativeExamItem]
-) -> NativeExamItem:
+    index: int,
+    anchors: tuple[str, ...],
+    state: DocxBuildState,
+    seen: set[str],
+    build: Callable[[], NativeExamItem],
+) -> Admitted:
     """The item ``build`` makes, or its source review item when the item cannot be built."""
     try:
-        return build()
+        return build(), anchors
     except ValidationError as error:
         return _source_review(
-            index, anchors, state, "native_contract_invalid", validation_detail(error)
+            index, anchors, state, seen, "native_contract_invalid", validation_detail(error)
         )
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
-        return _source_review(index, anchors, state, "item_unbuildable", type(error).__name__)
+        return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
 
 
 def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tuple[str, ...]:
@@ -141,8 +144,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
             state.record("admission", "item_unparsed", item=index, detail=detail)
             return
         seen.update(anchors)
-        item = _source_review(index, anchors, state, "item_unparsed", detail)
-        state.accepted.append((item, anchors))
+        state.accepted.append(_source_review(index, anchors, state, seen, "item_unparsed", detail))
         return
     anchors = _free(produced.source_anchors, state, seen)
     if anchors != produced.source_anchors:
@@ -154,7 +156,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
     if produced.outcome == "type_conflict":
         kind = produced.conflict_kind
         if kind is None or (state.allowed_kinds is not None and kind in state.allowed_kinds):
-            state.accepted.append((_printed(anchors, state, CONFLICT_WITHOUT_KIND_REASON), anchors))
+            state.accepted.append(state.printed(anchors, CONFLICT_WITHOUT_KIND_REASON, seen))
             return
         if not state.keep_conflicts:
             state.conflicts.append(TypeConflict(anchors, kind))
@@ -169,7 +171,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
         cause = produced.review_reason or "ingen orsak angavs"
         reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
         state.record("admission", "model_review", item=index, anchors=anchors, detail=reason)
-        state.accepted.append((_printed(anchors, state, reason), anchors))
+        state.accepted.append(state.printed(anchors, reason, seen))
         return
     instructions = (
         *(a for m in state.instructions for a in m.source_anchors),
@@ -180,7 +182,7 @@ def _admit_item(index: int, raw: JsonValue, state: DocxBuildState, seen: set[str
         context = definition_context(state.chunks, anchors, instructions)
         return native_item(with_accepted_forms(produced, context))
 
-    state.accepted.append((_built(index, anchors, state, build), anchors))
+    state.accepted.append(_built(index, anchors, state, seen, build))
 
 
 def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:

@@ -116,6 +116,25 @@ class DocxBuildState:
         trial.events = list(self.events)
         return trial
 
+    def printed(
+        self, anchors: tuple[str, ...], reason: str, taken: set[str]
+    ) -> tuple[NativeExamItem, tuple[str, ...]]:
+        """The question ``anchors`` belong to as printed, facit included, as one review item.
+
+        The item shows every own chunk of each grouped question ``anchors`` touch and every
+        chunk in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no
+        entry holds yet, which join ``taken``.
+        """
+        shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        extra = tuple(
+            c.anchor
+            for c in self.pending
+            if c.anchor in shown and c.anchor not in anchors and c.anchor not in taken
+        )
+        taken.update(extra)
+        item = review_source_item(tuple(c for c in self.chunks if c.anchor in shown), reason)
+        return item, (*anchors, *extra)
+
     def review_questions(
         self,
         questions: Iterable[tuple[str, ...]],
@@ -127,19 +146,17 @@ class DocxBuildState:
     ) -> None:
         """Rebuild an unconverted batch from its source alone.
 
-        Each question's unclaimed own chunks become one review item holding their source text
-        at the question's place. Answer-key chunks stay teacher notes, the grouped title stays
-        the title, and shared section text and headings stay section text, each in its source
-        wording.
+        Each question with an unclaimed own chunk becomes one review item holding the source
+        text of all its own chunks at the question's place. Answer-key chunks stay teacher
+        notes, the grouped title stays the title, and shared section text and headings stay
+        section text, each in its source wording.
         Every other pending chunk becomes a review item with ``reason``.
         """
         for anchors in questions:
-            own = tuple(c for c in self.pending if c.anchor in anchors)
+            own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
             if own:
-                self.accepted.append(
-                    (review_source_item(own, reason), tuple(c.anchor for c in own))
-                )
-                self.claimed.update(c.anchor for c in own)
+                self.accepted.append(self.printed(own, reason, self.claimed))
+                self.claimed.update(own)
         heading = tuple(c for c in self.pending if c.anchor in title)
         for chunk in self.pending:
             if chunk.anchor in keys:

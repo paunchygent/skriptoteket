@@ -23,10 +23,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     NO_ITEM_REASON,
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    assemble_build_result,
-    review_source_item,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -117,7 +114,8 @@ def with_confidence(
 
 def validated(state: DocxBuildState) -> None:
     """Check every admitted item against the native contract again, because later updates
-    copy items without validation; an item that fails holds its own source text for review."""
+    copy items without validation; an item that fails holds its whole question's source text
+    for review."""
     checked = []
     for item, anchors in state.accepted:
         try:
@@ -125,8 +123,8 @@ def validated(state: DocxBuildState) -> None:
         except ValidationError as error:
             detail = validation_detail(error)
             state.record("admission", "native_contract_invalid", anchors=anchors, detail=detail)
-            own = tuple(c for c in state.chunks if c.anchor in anchors)
-            item = review_source_item(own, f"Frågan följer inte provformatet ({detail}).")
+            reason = f"Frågan följer inte provformatet ({detail})."
+            item, anchors = state.printed(anchors, reason, state.claimed)
         checked.append((item, anchors))
     state.accepted = checked
 
