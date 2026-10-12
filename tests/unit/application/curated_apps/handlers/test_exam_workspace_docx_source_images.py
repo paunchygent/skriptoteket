@@ -110,17 +110,27 @@ _TEXT_BOX = (
 
 def _drawn_exam() -> bytes:
     """Each drawn block sits in a paragraph with no text of its own: body:0003 a PNG,
-    body:0005 a text box, body:0007 an EMF picture."""
+    body:0006 a text box, body:0008 an EMF picture."""
     document = Document()
     document.add_paragraph("Bildfrågor", style="Title")
     document.add_paragraph(f"1. {_PICTURE_STEM}")
     document.add_picture(io.BytesIO(_png()))
+    document.add_paragraph("Svara med en mening.")
     document.add_paragraph("2. Vad står i rutan?")
     document.add_paragraph().add_run()._r.append(parse_xml(_TEXT_BOX))
     document.add_paragraph("3. Beskriv figuren.")
     document.add_picture(io.BytesIO(_png()))
     _emf(document, document.element.body.findall(qn("w:p"))[-1])
-    document.add_paragraph("Svara med en mening.")
+    return _save(document)
+
+
+def _between_exam() -> bytes:
+    """body:0003 a picture alone in its paragraph, between two questions."""
+    document = Document()
+    document.add_paragraph("Bildfrågor", style="Title")
+    document.add_paragraph(f"1. {_PICTURE_STEM}")
+    document.add_picture(io.BytesIO(_png()))
+    document.add_paragraph("2. Beskriv vädret i dag.")
     return _save(document)
 
 
@@ -135,10 +145,38 @@ def _question(question_id: str, *anchors: int) -> dict[str, JsonValue]:
 
 _DRAWN_GROUPING: dict[str, JsonValue] = {
     "title_anchors": ["body:0001"],
-    "questions": [_question("q1", 2, 3), _question("q2", 4, 5), _question("q3", 6, 7, 8)],
+    "questions": [_question("q1", 2, 3, 4), _question("q2", 5, 6), _question("q3", 7, 8)],
     "shared_contexts": [],
     "other_anchors": [],
 }
+
+
+_BETWEEN_GROUPING: dict[str, JsonValue] = {
+    "title_anchors": ["body:0001"],
+    "questions": [_question("q1", 2, 3), _question("q2", 4)],
+    "shared_contexts": [],
+    "other_anchors": [],
+}
+
+
+def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
+    """A converted free-text item in the shape the converter's schema returns."""
+    return {
+        "source_anchors": [f"body:{anchor:04d}" for anchor in anchors],
+        "outcome": "converted",
+        "conflict_kind": None,
+        "review_reason": None,
+        "kind": "free_text",
+        "title": text,
+        "printed_label": text[0],
+        "body": [{"segments": [{"kind": "text", "text": text[3:], "accepted_values": []}]}],
+        "points": 1,
+        "choices": [],
+        "match_left": [],
+        "match_right": [],
+        "match_pairs": [],
+        "marking_guide": "",
+    }
 
 
 _GROUPING: dict[str, JsonValue] = {
@@ -163,10 +201,18 @@ _GROUPING: dict[str, JsonValue] = {
 
 
 class _Provider:
-    """Answer grouping with the exam's questions and every converter batch with no items."""
+    """Answer grouping with the exam's questions and every converter batch with the given
+    title and items whose first source anchor the batch holds."""
 
-    def __init__(self, grouping: Mapping[str, JsonValue]) -> None:
+    def __init__(
+        self,
+        grouping: Mapping[str, JsonValue],
+        items: tuple[dict[str, JsonValue], ...] = (),
+        title: dict[str, JsonValue] | None = None,
+    ) -> None:
         self.grouping = grouping
+        self.items = items
+        self.title = title
         self.requests: list[StructuredLLMRequest] = []
 
     async def complete_structured(
@@ -176,11 +222,22 @@ class _Provider:
         content: Mapping[str, JsonValue] = (
             self.grouping
             if request.item_id.startswith("docx_grouping")
-            else {"title": None, "instructions": [], "answer_key_anchors": [], "items": []}
+            else {
+                "title": self.title if self.title and self._holds(request, self.title) else None,
+                "instructions": [],
+                "answer_key_anchors": [],
+                "items": [item for item in self.items if self._holds(request, item)],
+            }
         )
         return StructuredLLMResponse(
             content=dict(content), finish_reason="completed", usage=StructuredLLMUsage()
         )
+
+    @staticmethod
+    def _holds(request: StructuredLLMRequest, item: dict[str, JsonValue]) -> bool:
+        anchors = item["source_anchors"]
+        assert isinstance(anchors, list)
+        return f'"{anchors[0]}"' in request.user_payload
 
 
 def _free_text(name: str) -> dict[str, JsonValue]:
@@ -218,7 +275,10 @@ class _DecisionsBody(BaseModel):
 
 
 async def _convert(
-    content: bytes, grouping: Mapping[str, JsonValue]
+    content: bytes,
+    grouping: Mapping[str, JsonValue],
+    items: tuple[dict[str, JsonValue], ...] = (),
+    title: dict[str, JsonValue] | None = None,
 ) -> tuple[list[_DecisionsBody], _Provider, DocxConversionOutcome]:
     decisions: list[_DecisionsBody] = []
 
@@ -228,7 +288,7 @@ async def _convert(
         answers = [_free_text(question.name) for question in body.questions]
         return httpx.Response(200, json={"answers": answers})
 
-    provider = _Provider(grouping)
+    provider = _Provider(grouping, items, title)
     pipeline = build_docx_conversion_pipeline(
         client=httpx.AsyncClient(transport=httpx.MockTransport(answer)),
         provider=provider,
@@ -288,8 +348,8 @@ def test_a_block_with_only_a_drawing_is_projected_at_its_source_position():
     source = PythonDocxLabelerMarkdown().source(content=_drawn_exam())
 
     assert [chunk.anchor for chunk in source.chunks] == [f"body:{i:04d}" for i in range(1, 9)]
-    assert sorted(source.images) == ["body:0003", "body:0005"]
-    assert list(source.unavailable) == ["body:0007"]
+    assert sorted(source.images) == ["body:0003", "body:0006"]
+    assert list(source.unavailable) == ["body:0008"]
 
 
 @pytest.mark.asyncio
@@ -297,7 +357,7 @@ async def test_a_picture_or_text_box_alone_in_its_paragraph_reaches_the_labeler_
     decisions, provider, outcome = await _convert(_drawn_exam(), _DRAWN_GROUPING)
 
     (grouping,) = [r for r in provider.requests if r.item_id.startswith("docx_grouping")]
-    for anchor in ("body:0003", "body:0005", "body:0007"):
+    for anchor in ("body:0003", "body:0006", "body:0008"):
         assert f"[{anchor}]" in grouping.user_payload, "grouping must see every drawn block"
 
     (labeling,) = decisions
@@ -307,21 +367,48 @@ async def test_a_picture_or_text_box_alone_in_its_paragraph_reaches_the_labeler_
     parts = message.content
     assert [part.type for part in parts] == ["input_text", "input_image"] * 2
     assert parts[0].text.endswith(f"### Question q1\n1. {_PICTURE_STEM}")
+    assert parts[2].text.startswith("\nSvara med en mening."), "the picture stands before it"
     assert parts[2].text.endswith("### Question q2\n2. Vad står i rutan?")
     assert all("Ja eller nej" not in part.text for part in parts), "a text box is drawn, not typed"
     assert _image(parts[1]).width > 0 and _image(parts[3]).width > 0
 
     events = [e for e in outcome.result.events if e.code == "labeler_source_image_unavailable"]
-    assert [e.anchors for e in events] == [("body:0007",)]
+    assert [e.anchors for e in events] == [("body:0008",)]
     batches = {
         r.item_id: r.user_payload for r in provider.requests if r.item_id.startswith("docx_w")
     }
     (unlabeled,) = [
         payload for item_id, payload in batches.items() if item_id.startswith("docx_wi")
     ]
-    assert '"body:0007"' in unlabeled, "the unlabeled question still converts with its picture"
+    assert '"body:0008"' in unlabeled, "the unlabeled question still converts with its picture"
     labeled = "".join(
         payload for item_id, payload in batches.items() if item_id.startswith("docx_w1")
     )
-    assert '"body:0003"' in labeled and '"body:0005"' in labeled
+    assert '"body:0003"' in labeled and '"body:0006"' in labeled
+    assert outcome.update.pending == ()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("claimed", [True, False], ids=["question-claims", "converter-skips"])
+async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_claimed(
+    claimed: bool,
+):
+    first = _converted(f"1. {_PICTURE_STEM}", *((2, 3) if claimed else (2,)))
+    items = (first, _converted("2. Beskriv vädret i dag.", 4))
+
+    title: dict[str, JsonValue] = {"text": "Bildfrågor", "source_anchors": ["body:0001"]}
+
+    _, _, outcome = await _convert(_between_exam(), _BETWEEN_GROUPING, items, title)
+
+    document = outcome.result.document
+    assert document.title == "Bildfrågor"
+    placed = [(item.source_anchor, item.review.state.value) for item in document.items]
+    if claimed:
+        assert placed == [("body:0002", "review_complete"), ("body:0004", "review_complete")]
+    else:
+        assert placed == [
+            ("body:0002", "review_complete"),
+            ("body:0003", "review_required"),
+            ("body:0004", "review_complete"),
+        ], "an unclaimed picture stays in place as an item for the teacher to review"
     assert outcome.update.pending == ()
