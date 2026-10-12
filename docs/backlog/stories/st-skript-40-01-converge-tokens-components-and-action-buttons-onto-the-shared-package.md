@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -54,7 +54,7 @@ is locally patched.
 | Order | Task | Outcome |
 | --- | --- | --- |
 | 0 | TASK-SKILL-REP-0186 | All promotions, explicit spinner export, released SystemMessage contract, HuleEdu sync and checks. |
-| 1 | TASK-SKRIPT-40-01-01 | Three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook. |
+| 1 | TASK-SKRIPT-40-01-01 | Done 2026-10-12: three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook; Hemma staging walk passed at fc42b918. |
 | 2 | TASK-SKRIPT-40-01-02 | Complete shared Vue subtree, glyph peer/runtime, import migration, message adaptation and toast adapter. |
 | 3 | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules. |
 

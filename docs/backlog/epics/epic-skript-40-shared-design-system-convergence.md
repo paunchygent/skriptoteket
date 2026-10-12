@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -50,7 +50,7 @@ call-site migration and removal of `lucide-vue-next`.
 
 | Story | Slice |
 | --- | --- |
-| ST-SKRIPT-40-01 | Tokens, theme, logo, dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer. |
+| ST-SKRIPT-40-01 | In progress: tokens, theme and logo adopted through sync (TASK-SKRIPT-40-01-01 done 2026-10-12). Remaining: dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer. |
 | ST-SKRIPT-40-02 | Expanded shared meaning vocabulary, complete icon migration, and old Lucide dependency removal. |
 
 ## Verification
