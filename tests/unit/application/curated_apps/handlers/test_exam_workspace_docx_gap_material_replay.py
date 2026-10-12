@@ -72,6 +72,25 @@ def _chunks(exam: str) -> tuple[DocxChunk, ...]:
     return corpus_chunks(exam)
 
 
+def _string(value: JsonValue) -> str:
+    assert isinstance(value, str)
+    return value
+
+
+def _strings(value: JsonValue) -> list[str]:
+    assert isinstance(value, list)
+    return [_string(entry) for entry in value]
+
+
+def _objects(value: JsonValue) -> list[dict[str, JsonValue]]:
+    assert isinstance(value, list)
+    objects: list[dict[str, JsonValue]] = []
+    for entry in value:
+        assert isinstance(entry, dict)
+        objects.append(entry)
+    return objects
+
+
 def _reply(name: str) -> dict[str, JsonValue]:
     reply: dict[str, JsonValue] = json.loads((_ROOT / name).read_text())
     return reply
@@ -139,9 +158,11 @@ def test_a_reply_that_keeps_the_material_as_text_stays_as_converted():
     assert isinstance(produced, list)
     captured = produced[0]
     assert isinstance(captured, dict)
-    segments = [s for paragraph in captured["body"] for s in paragraph["segments"]]
-    captured_gaps = [tuple(s["accepted_values"]) for s in segments if s["kind"] == "gap"]
-    captured_text = [s["text"] for s in segments if s["kind"] == "text"]
+    segments = [
+        s for paragraph in _objects(captured["body"]) for s in _objects(paragraph["segments"])
+    ]
+    captured_gaps = [tuple(_strings(s["accepted_values"])) for s in segments if s["kind"] == "gap"]
+    captured_text = [_string(s["text"]) for s in segments if s["kind"] == "text"]
     assert item.kind.value == captured["kind"]
     assert [gap.accepted_values for gap in item.gaps] == captured_gaps
     assert _text_segments(item) == captured_text
