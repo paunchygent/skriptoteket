@@ -227,10 +227,15 @@ def _reaches(
     starts = sorted(run.start for run in runs)
     reached: list[_Run] = []
     for run in sorted(runs, key=lambda r: r.start):
-        sources = tuple(
-            c
-            for c in run.sources
-            if not points_line(c.text) and (c.kind != "heading" or positions[c.anchor] in labels)
+        sources = (
+            tuple(c for c in run.sources if c.text.strip())
+            if run.governs
+            else tuple(
+                c
+                for c in run.sources
+                if not points_line(c.text)
+                and (c.kind != "heading" or positions[c.anchor] in labels)
+            )
         )
         if not sources:
             reached.append(_Run(run.origin, run.start, ()))
@@ -298,7 +303,8 @@ def place_section_instructions(
     opens the items of its run, which ends at the next section heading (a heading no item
     owns, other than a lead-in label) or at the next instruction printed after one of the
     run's items. Section headings and points lines are structure and are never instruction
-    text. The instructions that reach two or more consecutive items become the parent of
+    text, except in a chunk the grouping marks as governing, which keeps its whole text (D40).
+    The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
     the run's items whose own chunks use one; lines an item prints before its numbered
     question line are such an instruction too; a lead-in ending in a colon that introduces a

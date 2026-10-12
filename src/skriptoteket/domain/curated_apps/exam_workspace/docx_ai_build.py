@@ -11,6 +11,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
+    release_governing_chunks,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
@@ -181,12 +184,15 @@ def assemble_build_result(
     input_tokens: int | None = None,
     output_tokens: int | None = None,
 ) -> DocxBuildResult:
-    """Keep facit chunks as teacher notes and every unbuilt chunk as a review item."""
+    """Keep facit chunks as teacher notes and every unbuilt chunk as a review item; a governing
+    chunk an item lists becomes an instruction for its section parent (D40)."""
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
-    placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
+    released = release_governing_chunks(chunks, accepted, instructions, governed)
+    instructions = released.instructions
+    placed = _ordered_items(chunks, released.accepted, review_reasons, instructions, governed)
     items = placed.items
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
@@ -211,4 +217,6 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)
+    return DocxBuildResult(
+        document, tuple(notes), input_tokens, output_tokens, (*events, *released.events)
+    )

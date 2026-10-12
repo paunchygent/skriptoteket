@@ -6,22 +6,19 @@ question must reach the converter and the editor while it is still outstanding.
 """
 
 import asyncio
-import json
 
 import pytest
-from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
     StructuredLLMResponse,
-    StructuredLLMUsage,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     ReplayProvider,
+    SecondWaveByAnchor,
     build_replay,
-    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
@@ -31,17 +28,7 @@ _ESCALATED = sorted(p.stem.removeprefix("label_b_") for p in (RECORDINGS / _EXAM
 _HELD = _ESCALATED[0]
 
 
-def _anchors(reply: JsonValue) -> set[str]:
-    assert isinstance(reply, dict) and isinstance(reply["items"], list)
-    return {
-        str(anchor)
-        for item in reply["items"]
-        if isinstance(item, dict) and isinstance(item["source_anchors"], list)
-        for anchor in item["source_anchors"]
-    }
-
-
-class _HeldLabel(ReplayProvider):
+class _HeldLabel(SecondWaveByAnchor):
     """Hold one question's second-pass label until the test releases it.
 
     Holding a label changes the order second-pass labels arrive in, and with it the
@@ -58,19 +45,7 @@ class _HeldLabel(ReplayProvider):
     ) -> StructuredLLMResponse:
         if request.item_id == f"label_b:{_HELD}":
             await self.release.wait()
-        if not request.item_id.startswith("docx_w2-"):
-            return await super().complete_structured(request=request, profile=profile)
-        self.requests.append(request)
-        chunks = json.loads(request.user_payload)["chunks"]
-        pending = {chunk["anchor"] for chunk in chunks}
-        replies = [
-            recording(_EXAM, path.stem)
-            for path in sorted((RECORDINGS / _EXAM).glob("docx_w2-*.json"))
-        ]
-        (reply,) = [r for r in replies if _anchors(r) & pending]
-        return StructuredLLMResponse(
-            content=reply, finish_reason="completed", usage=StructuredLLMUsage()
-        )
+        return await super().complete_structured(request=request, profile=profile)
 
 
 def _second_wave(provider: ReplayProvider) -> list[str]:

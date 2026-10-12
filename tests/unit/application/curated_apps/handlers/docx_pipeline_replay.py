@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
@@ -119,6 +120,47 @@ class ReplayProvider:
             content=json.loads(path.read_text()),
             finish_reason="completed",
             usage=StructuredLLMUsage(),
+        )
+
+
+_SECOND_WAVE = re.compile(r"docx_w2-\d+-\d+")
+
+
+def _claimed(reply: Mapping[str, JsonValue]) -> set[str]:
+    items = reply["items"]
+    assert isinstance(items, list)
+    return {
+        str(anchor)
+        for item in items
+        if isinstance(item, dict) and isinstance(item["source_anchors"], list)
+        for anchor in item["source_anchors"]
+    }
+
+
+class SecondWaveByAnchor(ReplayProvider):
+    """Serve each first second-wave request the recorded second-wave reply that claims one of
+    its chunks; every other request is served by its request id.
+
+    Second-wave batch ids follow the order in which second-pass labels arrive, which a replay
+    does not reproduce, so a second-wave request is matched to its own question's reply.
+    """
+
+    async def complete_structured(
+        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> StructuredLLMResponse:
+        if not _SECOND_WAVE.fullmatch(request.item_id):
+            return await super().complete_structured(request=request, profile=profile)
+        self.requests.append(request)
+        payload = json.loads(request.user_payload)
+        pending = {chunk["anchor"] for chunk in payload["chunks"]}
+        replies = [
+            recording(self._exam, path.stem, root=self._root)
+            for path in sorted((self._root / self._exam).glob("docx_w2-*.json"))
+            if _SECOND_WAVE.fullmatch(path.stem)
+        ]
+        (reply,) = [r for r in replies if _claimed(r) & pending]
+        return StructuredLLMResponse(
+            content=reply, finish_reason="completed", usage=StructuredLLMUsage()
         )
 
 
