@@ -70,7 +70,8 @@
   from the walk: Klassrumskartan returns focus to the sidebar, not "Ny klass",
   after the modal closes.
 - ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
-  (rule 045 replacement, shadow and panel sweep, per-app token passes).
+  (rules removal: all of .codex/rules moves into skills, user 2026-10-12;
+  shadow and panel sweep, per-app token passes).
   Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S7
   closed. Release first (user 2026-10-12): skill-repository
   `TASK-SKILL-REP-0279` and HuleEdu `TASK-HULE-REP-0142` are done
