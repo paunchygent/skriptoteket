@@ -4,8 +4,8 @@
 ``docx_build_v12_low14_model_review`` holds the live recordings of a one-family-per-batch run
 in which the model returned ``outcome: review`` for a question whose lettered parts carry their
 answers inline. The review item holds every chunk the question owns, in source order, facit
-included, under the same section parent as the converted question would be, and the document
-stays blocked for export while it is there.
+included, between its neighbouring questions and under the same section parent as they are,
+and the document stays blocked for export while it is there.
 """
 
 import pytest
@@ -30,6 +30,7 @@ _ROOT = FIXTURES / "docx_build_v12_low14_model_review"
 _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _QUESTION = ("body:0085", "body:0086", "body:0087")
 _PREVIOUS_QUESTION = "body:0079"
+_NEXT_QUESTION = "body:0093"
 
 
 def _paragraphs(item: NativeExamItem) -> list[str]:
@@ -59,9 +60,14 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     assert _paragraphs(item) == [text[anchor] for anchor in _QUESTION]
     assert item.title is None, "the review item shows a generated title"
     assert item.points is None, "the review item shows generated points beside the printed line"
-    previous = by_anchor[_PREVIOUS_QUESTION]
-    assert not previous.review.reasons
-    assert document.parent_of(item.item_id) == document.parent_of(previous.item_id)
+    previous, following = by_anchor[_PREVIOUS_QUESTION], by_anchor[_NEXT_QUESTION]
+    assert not previous.review.reasons and not following.review.reasons
+    assert previous.sequence + 1 == item.sequence == following.sequence - 1
+    assert (
+        document.parent_of(previous.item_id)
+        == document.parent_of(item.item_id)
+        == document.parent_of(following.item_id)
+    )
     assert ("review_required", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }
