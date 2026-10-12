@@ -18,13 +18,14 @@
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `in_progress`, Claude parent (session `01a12706`), branch
     `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
-    D23 revised, D40 and D41 (2026-10-12) built by P7-P9 (`de0c816e`,
-    `1c9093fa`, `810610c6`). Live runs low-17..24: 302-309/314. Sol rereview
-    at `e1471e2c` (retained `evidence/reviews/TASK-SKRIPT-39-05-04/rereview-e1471e2c.md`):
-    F4/F5/F7/F9/F10 fixed; changes_requested for F11 (own chunk listed only as
-    metadata skips the D41 mark) and F12 (test pins prompt prose).
-    Now: P10 repairs F11/F12. Next: rereview of P10, browser walk (incl. D31
-    Exam.net rubric check), merge. Follow-up task in ST-39-05: label-first
+    D23-D42 built; Sol rereview approved `763fa33d`, merged `d9efae20` and pushed;
+    staging `skriptoteket-dev` rebuilt on it (live runs low-23..26: 302-310/314).
+    Staging walk 2026-10-12 failed: after a redirect entry (sign-in) the first
+    query change rebuilds the page (`App.vue` transition `v-if`/`v-else` swap) and
+    stops conversion polling (retained `evidence/staging-walk/defect-redirect-remount-d9efae20.md`).
+    User decision 2026-10-12: repair under this task. Now: repair lead on the
+    branch. Next: rereview, merge, staging rebuild, full re-walk (incl. D31
+    Exam.net rubric check), user closure. Follow-up task in ST-39-05: label-first
     review with per-question model retry, picture in review items and marks.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
