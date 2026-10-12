@@ -8,10 +8,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 39-05-04 on 2026-10-12 after the staging walk on main 63de8094, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/staging-walk/walk-63de8094.md (kursavslutande 24/24, Fråga 20 correct, placeholder locked in importing and reloaded pages, export 200 and gate 422); the D44 low-27 miss and the D31 Exam.net rubric test move to the ST-SKRIPT-39-05 follow-up task
 task_kind: story
 acceptance_criteria:
 - Grouping and labeling run on all eight corpus exams and their questions, subparts,

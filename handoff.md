@@ -16,18 +16,12 @@
     `evidence/task-skript-39-05-05/staging-walk-ece1b674/`). Next: user closure.
     Prior recorded eval's three item failures match baseline `6bf05757`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `in_progress`, Claude parent (session `01a12706`), branch
-    `codex/task-skript-39-05-04` in worktree `Skriptoteket-task-skript-39-05-04`.
-    D23-D42 merged `d9efae20`; remount repair merged `1ed611cb`. D30 lock
-    (amended `6f201c06`) and D43 gap-fill material (`f23728a9`) reviewed
-    (approved `92541183`), merged `63de8094`, pushed. Staging walk 2026-10-12
-    on `63de8094` passed: kursavslutande 24/24, Fråga 20 correct,
-    placeholder locked in importing and reloaded pages, export 200 and gate 422
-    (retained `evidence/staging-walk/walk-63de8094.md`). Open: user decision on
-    grammatik v1 Fråga 6 (is the "Bisats:" clause given or student-written;
-    low-27 gapped it), D31 Exam.net check (user go-ahead pending), user closure.
-    Follow-up task in ST-39-05: label-first review with per-question model
-    retry, picture in review items and marks.
+    `done` (user closure 2026-10-12 after the staging walk on `63de8094`;
+    retained `evidence/staging-walk/walk-63de8094.md`). Worktree
+    `Skriptoteket-task-skript-39-05-04` awaits retirement. Next in ST-39-05:
+    scaffold and plan the follow-up task (story Tasks item 6): label-first
+    review with per-question retry, picture in review items and marks, the D44
+    low-27 miss and the D31 Exam.net rubric test import.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
