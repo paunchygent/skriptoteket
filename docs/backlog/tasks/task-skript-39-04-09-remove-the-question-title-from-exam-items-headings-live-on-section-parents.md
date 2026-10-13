@@ -7,12 +7,15 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-13'
-status: proposed
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User decision 2026-10-13 to cancel this task; question-title removal stays with the exam-workspace parent's existing planned work, so this scaffold duplicates it.
 task_kind: story
-acceptance_criteria: []
+acceptance_criteria:
+- Exam questions carry no title anywhere; a printed heading over several questions belongs to the section parent.
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---

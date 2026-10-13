@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b10772aeda2569a641349e40a9bcb339e880711679d82009d1aef691a3d3f851",
+  "source_set_digest": "dd38f13c8adc5d25e1c579382ad9ce47837e425814c2b11b6c0e3a97a74a4386",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4771,7 +4771,7 @@
       "type": "task",
       "title": "Remove the question title from exam items; headings live on section parents",
       "path": "docs/backlog/tasks/task-skript-39-04-09-remove-the-question-title-from-exam-items-headings-live-on-section-parents.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4782,7 +4782,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User decision 2026-10-13 to cancel this task; question-title removal stays with the exam-workspace parent's existing planned work, so this scaffold duplicates it."
       }
     },
     {

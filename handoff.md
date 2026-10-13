@@ -19,10 +19,6 @@
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
-  - TASK-SKRIPT-39-04-09 `proposed` (scaffold): remove the question title
-    ("Rubrik") from exam items end to end, no compatibility path; a heading over
-    several questions goes to the section parent (user decisions 2026-10-13).
-    Next: GrillMe on the remaining frontier, then the contract.
   - TASK-SKRIPT-39-05-07 `in_progress`: export blocks only on missing values.
     Owner: Claude session 566dc36a. Merged to main; review approved `58dabe3f`;
     D9 eval and staging walk (ebc2a9c7, passed) under retained `evidence/`.
