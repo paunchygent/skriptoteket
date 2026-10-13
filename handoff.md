@@ -79,11 +79,9 @@
   (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
   waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
-  39-04-07 (`in_progress`, T1-T6: AI key suggestions kept on each question;
-  plan P1-P9 in `01a133f5-7568-7aa9-8c03-d65722dbff09`; lead Pi
-  `meta/muse-wonder-1.0` in `Skriptoteket-task-skript-39-04-07`, user
-  2026-10-13) and 39-04-08 (scaffold: Mina filer exports, pruning). Also
-  scaffolded: 39-05-08 (no titles at import), ST-SKRIPT-39-08 (metadata).
+  39-04-08 (scaffold: Mina filer exports, pruning) and 39-05-08 (no titles
+  at import; next: contract and plan, owner Dobby session `a0e6b5f5`).
+  ST-SKRIPT-39-08 (metadata) is scaffolded.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
@@ -151,6 +149,11 @@
 
 ## Recent
 
+- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (user closure; user waived review
+  of final repair `ace0cc39`, earlier rounds `changes_requested`): merged
+  main `838baea9`; T7 staging walk passed: suggestion on unsaved edits ->
+  `machine_proposed` key -> reviewed -> saved -> kept on reopen (retained
+  `01a133f5…/evidence/staging-walk-838baea9/README.md`).
 - TASK-SKRIPT-39-05-07 `done` 2026-10-13 (user closure): export blocks only on
   missing values; review approved `58dabe3f`; staging walk on ebc2a9c7 passed
   (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).

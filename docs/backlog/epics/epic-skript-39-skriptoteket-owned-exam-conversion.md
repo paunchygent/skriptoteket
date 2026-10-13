@@ -125,6 +125,10 @@ closes the epic and is not on the critical path.
    walking skeleton (import, native edit/create, save/reopen, export).
    Cleanup tasks 02-03, 03-03, and 03-04 are done and the ADR-0091/story
    review was accepted 2026-10-09, so the skeleton is unblocked.
+   TASK-SKRIPT-39-04-07 (done 2026-10-13) keeps each AI answer-key
+   suggestion on its question in the saved exam; a suggestion becomes the
+   key only when the question has none or follows an unreviewed earlier
+   suggestion, and never when it no longer fits the question.
 5. Word/DOCX ingestion breadth (`ST-SKRIPT-39-05`, `proposed`): AI-first
    conversion where code only segments the DOCX into chunks and batched
    Decisions and Responses calls build contract-validated native items,

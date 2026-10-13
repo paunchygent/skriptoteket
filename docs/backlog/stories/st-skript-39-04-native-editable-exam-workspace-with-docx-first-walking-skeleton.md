@@ -81,9 +81,19 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    Redigera). Done 2026-10-10.
 3. `TASK-SKRIPT-39-04-03`: AI item interpretation at DOCX import (canceled;
    superseded by ST-SKRIPT-39-05, user decision 2026-10-10).
-4. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves
-   (proposed).
-5. Later slices (unscarffolded until this story is reviewed): digital-PDF
+4. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves.
+   Done; its workspace carry-forward was replaced by 39-04-07.
+5. `TASK-SKRIPT-39-04-05`: restyle the exam workspace to the shared design
+   direction (proposed).
+6. `TASK-SKRIPT-39-04-06`: send each converted question's original wording
+   and build steps to the exam (proposed).
+7. `TASK-SKRIPT-39-04-07`: keep AI answer-key suggestions on each question
+   and request them per question. Done 2026-10-13: the suggestion is stored
+   on the question, becomes the key only under T5/P12/P13, survives save
+   and reopen, and the workspace no longer uses the proposed-overlay table.
+8. `TASK-SKRIPT-39-04-08`: save exported exam files in Mina filer, list each
+   exam once and prune autosaves (proposed).
+9. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.
 

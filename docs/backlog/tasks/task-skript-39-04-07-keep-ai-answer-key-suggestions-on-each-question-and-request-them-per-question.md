@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-13'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 39-04-07 on 2026-10-13 and waived independent review of the final F11/F12 repair ace0cc39. Ruthless-reviewer rereviews ended at changes_requested on c5c98fbc with only F11/F12 open (retained evidence/reviews/TASK-SKRIPT-39-04-07/rereview-c5c98fbc.md); repair evidence/implementation/TASK-SKRIPT-39-04-07/repair4/report.md; merged main 838baea9; T7 staging walk evidence/staging-walk-838baea9/README.md, all in session 01a133f5-7568-7aa9-8c03-d65722dbff09.
 task_kind: story
 acceptance_criteria:
 - Each question keeps its AI answer-key suggestion in the saved exam after the key is accepted
