@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-13'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-13'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 39-05-07 on 2026-10-13 and kept both export copy strings as implemented. Independent review approved 58dabe3f (retained evidence/reviews/TASK-SKRIPT-39-05-07/rereview-58dabe3f.md); D9 eval evidence/task-skript-39-05-07-d9-eval/README.md; staging walk on main ebc2a9c7 evidence/staging-walk-ebc2a9c7/README.md, all in session 01a13274-4a76-75e2-a17f-2e05fa66bd3a.
 task_kind: story
 acceptance_criteria:
 - An imported exam blocks export only on missing points, a missing answer key, an

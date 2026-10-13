@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3d63033143a5535c78028eb52003997c2a76bd254749935fe7f339267e2b2b0b",
+  "source_set_digest": "bcc05a74b5ea4aba11156913d3dc56a64e4ede63b00121a4fe4a5d2e9a024897",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4893,7 +4893,7 @@
       "type": "task",
       "title": "Block export only on missing values and flag possible parsing issues only where wording is lost",
       "path": "docs/backlog/tasks/task-skript-39-05-07-block-export-only-on-missing-values-and-flag-possible-parsing-issues-only-where-wording-is-lost.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4904,7 +4904,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-13",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-07 on 2026-10-13 and kept both export copy strings as implemented. Independent review approved 58dabe3f (retained evidence/reviews/TASK-SKRIPT-39-05-07/rereview-58dabe3f.md); D9 eval evidence/task-skript-39-05-07-d9-eval/README.md; staging walk on main ebc2a9c7 evidence/staging-walk-ebc2a9c7/README.md, all in session 01a13274-4a76-75e2-a17f-2e05fa66bd3a."
       }
     },
     {

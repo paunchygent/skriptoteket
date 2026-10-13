@@ -19,10 +19,6 @@
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
-  - TASK-SKRIPT-39-05-07 `in_progress`: export blocks only on missing values.
-    Owner: Claude session 566dc36a. Merged to main; review approved `58dabe3f`;
-    D9 eval and staging walk (ebc2a9c7, passed) under retained `evidence/`.
-    Next: user decision on the two changed export copy strings; closure.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
@@ -82,7 +78,7 @@
   TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
   (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
-  waits on 40-01-03, the 0.1.24 sync, 39-05-07, 39-04-06 (scaffold),
+  waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
   39-04-07 (`in_progress`, T1-T6: AI key suggestions kept on each question;
   plan P1-P9 in `01a133f5-7568-7aa9-8c03-d65722dbff09`; lead Pi
   `meta/muse-wonder-1.0` in `Skriptoteket-task-skript-39-04-07`, user
@@ -155,6 +151,9 @@
 
 ## Recent
 
+- TASK-SKRIPT-39-05-07 `done` 2026-10-13 (user closure): export blocks only on
+  missing values; review approved `58dabe3f`; staging walk on ebc2a9c7 passed
+  (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
 - TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
