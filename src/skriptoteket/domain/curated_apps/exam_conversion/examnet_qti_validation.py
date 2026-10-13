@@ -279,7 +279,7 @@ def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str,
     )
     # An item with several block interactions is a parent: its shared instruction is the
     # information block before the first child, each child stem sits in its own prompt,
-    # and a gap-fill child's sentences sit before their gap-match separator.
+    # and a gap-fill child's sentences follow their gap-match separator.
     block_interactions = sum(
         1 for child in body.iter() if child.tag in (*interaction_tags, _GAP_MATCH_TAG)
     )

@@ -44,6 +44,12 @@ const EXPORT_TARGET_LABELS: Record<ExamWorkspaceExportTarget, string> = {
   qti: "QTI-paketet",
 };
 
+const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
+  docx: "Word-filen är skapad.",
+  pdf: "PDF-filen är skapad.",
+  qti: "QTI-paketet är skapat.",
+};
+
 const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
   docx: "prov.docx",
   pdf: "prov-examnet.pdf",
@@ -110,7 +116,7 @@ export function useExamWorkspaceExports(summary: Ref<ExamWorkspaceDocumentSummar
       const response = await downloadExamWorkspaceExport(currentSummary.lineage_id, target);
       triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
       clearExportFeedback();
-      toast.success(`${EXPORT_TARGET_LABELS[target]} är skapad.`);
+      toast.success(EXPORT_CREATED_MESSAGES[target]);
     } catch (error) {
       const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
       if (blockers.length > 0) {

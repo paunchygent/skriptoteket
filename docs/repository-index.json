@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "667dae50bb61249b1e06b3fae4955f1afb5ebb85ad11b8a65a8163285e9be233",
+  "source_set_digest": "d3c6d21bf0e3696b8556c1fd3891f556e35009e3039ddad7bea8dd6661a86086",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4941,7 +4941,7 @@
       "type": "task",
       "title": "Stop producing question titles at import and turn printed group headings into instructions",
       "path": "docs/backlog/tasks/task-skript-39-05-08-stop-producing-question-titles-at-import-and-turn-printed-group-headings-into-instructions.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4952,7 +4952,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-14",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer approved 5e532690 after findings F1-F6 and T7 were resolved, and approved the walk fix 3411b5ec (QTI preflight counts gap-match interactions); merged cc89175b. Staging walk at cc89175b after T6 deletion of 34 exams: biology import 19 questions without titles, section headings open each group instruction, QTI export 5,743 bytes, Exam.net import exam 5326264 with 4 information blocks carrying the headings and 19 sub-questions (matching as categorizingItems, gap fills, free text). Records in Skriptoteket session 01a13559-bf2e-760d-a690-3a3dea446cd5 evidence/review/TASK-SKRIPT-39-05-08/ and evidence/walk/TASK-SKRIPT-39-05-08/staging-walk.md."
       }
     },
     {

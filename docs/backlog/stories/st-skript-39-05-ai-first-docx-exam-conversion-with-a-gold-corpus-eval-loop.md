@@ -113,6 +113,9 @@ Planned order; each task is scaffolded and contracted before work starts.
 7. `TASK-SKRIPT-39-05-07`: export is blocked only by missing values and unbuilt
    questions; printed "(N p)" markers become points; possible parsing issues
    fire only where wording is lost (user decisions 2026-10-13).
+8. `TASK-SKRIPT-39-05-08` (done 2026-10-14): imported questions carry no
+   title; printed group headings open the group instruction or the question
+   body; one gap_fill/free_text definition; Exam.net imports the result.
 
 ## Verification
 

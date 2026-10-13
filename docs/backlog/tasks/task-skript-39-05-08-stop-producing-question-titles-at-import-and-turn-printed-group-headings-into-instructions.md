@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-13'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-14'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer approved 5e532690 after findings F1-F6 and T7 were resolved, and approved the walk fix 3411b5ec (QTI preflight counts gap-match interactions); merged cc89175b. Staging walk at cc89175b after T6 deletion of 34 exams: biology import 19 questions without titles, section headings open each group instruction, QTI export 5,743 bytes, Exam.net import exam 5326264 with 4 information blocks carrying the headings and 19 sub-questions (matching as categorizingItems, gap fills, free text). Records in Skriptoteket session 01a13559-bf2e-760d-a690-3a3dea446cd5 evidence/review/TASK-SKRIPT-39-05-08/ and evidence/walk/TASK-SKRIPT-39-05-08/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
   - Imported questions carry no title and a printed heading above a group of questions becomes that group's instruction

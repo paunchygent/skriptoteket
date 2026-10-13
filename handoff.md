@@ -25,16 +25,10 @@
   2026-10-13) changing a question's type plus "Gör om till [type]". Next: user
   proposed->ready; after story 8.
 
-- Owner Dobby (session `a0e6b5f5`, retained `01a13559-bf2e-760d-a690-3a3dea446cd5`):
-  TASK-SKRIPT-39-05-08 implemented on `codex/task-skript-39-05-08` (Muse Wonder
-  Full lead, 2026-10-13): item title removed end to end, headings to body/parent
-  instruction, shared gap/free-text definition, O1-O3 fixes; recordings stripped
-  by script, two title-only replay tests deleted (user decision). Local proof:
-  lint/typecheck clean, 1817 exam-workspace tests, Vitest 399, live q4/q15
-  replay 10/10 each — see `evidence/implementation/TASK-SKRIPT-39-05-08/result.md`.
-  Next (parent): independent review, merge, staging exam deletion (T6), staging
-  walk. Then: suggestion accuracy as a scored gold-corpus eval metric (user
-  decision 2026-10-13; not scaffolded).
+- TASK-SKRIPT-39-05-08 `done` 2026-10-14 (merged cc89175b, staging walk at
+  cc89175b; Exam.net import exam 5326264 — evidence in retained
+  `01a13559-bf2e-760d-a690-3a3dea446cd5`). Next: suggestion accuracy as a
+  scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
@@ -88,7 +82,7 @@
   (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
   waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
-  39-04-08 (scaffold: Mina filer exports, pruning) and 39-05-08 (see Dobby entry).
+  39-04-08 (scaffold: Mina filer exports, pruning); 39-05-08 is done.
   ST-SKRIPT-39-08 (metadata) is scaffolded.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
