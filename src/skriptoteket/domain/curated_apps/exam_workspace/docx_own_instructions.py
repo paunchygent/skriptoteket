@@ -50,7 +50,11 @@ _NUMBERING = re.compile(
     r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)])\s*",
     re.IGNORECASE,
 )
-_ANSWER_LINE = re.compile(r"^\s*(?:svar|facit|answer|answers|key)\s*:", re.IGNORECASE)
+_ANSWER_LINE = re.compile(
+    r"^\s*\(?\s*(?:(?:correct|right|rätt|korrekt)\s+)?"
+    r"(?:svar|svarsexempel|facit|answers?(?:\s+key)?|key)\s*:",
+    re.IGNORECASE,
+)
 # Words of two or more characters: a lone option letter or digit is numbering, not wording.
 _WORD = re.compile(r"\w{2,}")
 

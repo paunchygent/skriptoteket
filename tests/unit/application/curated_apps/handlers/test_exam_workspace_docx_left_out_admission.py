@@ -98,6 +98,38 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     assert state.pending == ()
 
 
+@pytest.mark.parametrize(
+    "facit",
+    [
+        "Correct answer: syfte, urval och frågor",
+        "Rätt svar: syfte, urval och frågor",
+        "(Answer key: syfte, urval och frågor)",
+        "Svarsexempel: syfte, urval och frågor",
+        "Facit: syfte, urval och frågor",
+    ],
+)
+def test_an_own_facit_line_the_reply_leaves_out_is_not_flagged_in_any_printed_form(facit):
+    state = _state(_STEM, facit)
+
+    admit_batch({"items": [_item(["body:0001"])]}, state)
+
+    ((admitted, anchors),) = state.accepted
+    assert anchors == ("body:0001", "body:0002")
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert admitted.review.reasons == ()
+
+
+def test_an_answer_options_line_the_reply_leaves_out_is_still_flagged():
+    options = "Svarsalternativ: intervju, enkät eller observation"
+    state = _state(_STEM, options)
+
+    admit_batch({"items": [_item(["body:0001"])]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert admitted.review.reasons == (LEFT_OUT_REASON, options)
+
+
 def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_flagged():
     lead = "Läs dikten nedan och svara på frågan."
     state = _state(lead, _STEM)
