@@ -33,9 +33,15 @@ defects in the exam workspace:
   silently: the file input is disabled only while the page is busy, and the
   line "Spara det öppna provet innan du importerar ett annat." is only shown;
 - the worker logs DOCX imports as "Answer-key enrichment job claimed" and
-  "finished", so imports and suggestions cannot be told apart.
+  "finished", so imports and suggestions cannot be told apart;
+- a gap-fill suggestion answered the wrong label. For "Kingdom of
+  mushrooms: ___    Domain of bacteria: ___" it suggested "Eukarya". The
+  request squeezes both pairs onto one line and sends each gap as a bare
+  number, so the model reads gap 1 as the domain. 19 of 30
+  production-identical requests were right; with each gap carrying its
+  label, 30 of 30 were.
 
-This task fixes all three.
+This task fixes all four.
 
 - **Finding a lost job.** The server gains an owner-only lookup that returns
   the latest suggestion job requested for an exam lineage against its
@@ -56,11 +62,18 @@ This task fixes all three.
 - **Blocked import.** While the open exam has unsaved changes the file
   picker is disabled and dropped files are ignored. One rule decides this
   for both paths, and the existing line explains why.
+- **Gap labels in suggestion requests.** Each gap sent to the suggestion
+  model carries the text printed before its marker, taken from the
+  existing numbered cloze text. The answer-key view, its cloze text and the
+  suggestion fingerprint stay unchanged, so no stored suggestion becomes out
+  of date. The DigiExam lane squeezes whitespace the same way
+  (`digiexam_answer_key_prompts.py:246`); the lead checks whether it sends
+  gaps without labels and fixes it the same way if so.
 - **Log events.** The worker's claimed and finished events name the job's
   source kind (`docx_import`, `workspace`, `dxe`), in wording that fits
   every kind.
 
-Out of scope: the suggestion's content and accuracy, DOCX import quality
+Out of scope: DOCX import quality
 (TASK-SKRIPT-39-05-08), and the editor's presentation of suggestions
 (TASK-SKRIPT-39-04-05).
 
@@ -84,6 +97,11 @@ Out of scope: the suggestion's content and accuracy, DOCX import quality
     do not check unsaved changes;
   - `workers/exam_answer_key_enrichment.py:87-92` and `113-118` emit the
     log events.
+- Suggestion accuracy evidence: `evidence/suggestion-accuracy/README.md`
+  in retained session `01a13559-bf2e-760d-a690-3a3dea446cd5`. The squeeze
+  happens at `answer_key_view.py:171`, the bare gap entries at
+  `answer_key_prompts.py:187`, and reasoning effort is `low`
+  (`config.py:331`).
 - The repository has a unique index on `(workspace_lineage_id,
   workspace_document_revision)` for enrichment jobs
   (`exam_answer_key_enrichment_job.py:31-36`). Staging nevertheless ran
@@ -118,6 +136,10 @@ cost of a suggestion.
   3. Request, save, then reload; the old job does not apply.
   4. With unsaved changes, the picker is disabled and a drop does nothing.
   5. The worker log names `docx_import` for an import.
+  6. Empty both gaps of biology question 10 and request a suggestion; it
+     gives Fungi and Bacteria.
+- A replay of the production gap-fill request with gap labels, run against
+  the real provider, scores at least 29 of 30.
 
 ## Stop Conditions
 
@@ -135,3 +157,4 @@ cost of a suggestion.
 | P3  | Föreslå facit while a job for the same saved version and the same questions is queued or running returns that job, and no second model call starts (user decision 2026-10-13). |
 | P4  | While the open exam has unsaved changes, importing is impossible: the picker is disabled and drops are ignored by one shared rule, and the existing line explains why (user decision 2026-10-13). |
 | P5  | The worker's claimed and finished events name the job's source kind. |
+| P6  | Each gap sent to the suggestion model carries the text printed before its marker; the answer-key view, its cloze text and the fingerprint stay unchanged (defect found 2026-10-13, user instruction to fix every observed cause). |
