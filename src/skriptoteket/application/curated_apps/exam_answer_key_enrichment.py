@@ -53,6 +53,10 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     source_docx: bytes | None = Field(default=None, min_length=1)
     workspace_lineage_id: UUID | None = None
     workspace_document_revision: int | None = Field(default=None, ge=1)
+    # Editor-sent answer-key views a workspace suggestion job runs on, and the
+    # suggestions it produced; both stay on the job, never in an overlay table.
+    workspace_request_json: dict[str, JsonValue] | None = None
+    workspace_suggestions_json: dict[str, JsonValue] | None = None
     retry_identity: str | None = Field(default=None, max_length=255)
 
     attempts: int = 0
@@ -87,6 +91,10 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
             return self
         if self.source_docx is not None:
             raise ValueError("only docx import jobs carry source_docx")
+        if self.source_kind is not ExamAnswerKeySourceKind.WORKSPACE and (
+            self.workspace_request_json is not None or self.workspace_suggestions_json is not None
+        ):
+            raise ValueError("only workspace jobs carry sent content or suggestions")
         if self.source_kind is ExamAnswerKeySourceKind.DXE:
             if self.conversion_job_id is None or self.source_dxe is None:
                 raise ValueError("dxe enrichment jobs require conversion_job_id and source_dxe")
@@ -96,11 +104,8 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
             ):
                 raise ValueError("dxe enrichment jobs carry no workspace binding")
         else:
-            if self.workspace_lineage_id is None or self.workspace_document_revision is None:
-                raise ValueError(
-                    "workspace enrichment jobs require workspace_lineage_id and "
-                    "workspace_document_revision"
-                )
+            if self.workspace_lineage_id is None:
+                raise ValueError("workspace enrichment jobs require workspace_lineage_id")
             if self.conversion_job_id is not None or self.source_dxe is not None:
                 raise ValueError("workspace enrichment jobs carry no dxe binding")
         return self
@@ -171,11 +176,11 @@ def enqueue_workspace_enrichment_job(
     owner_user_id: UUID,
     input_filename: str,
     workspace_lineage_id: UUID,
-    workspace_document_revision: int,
+    workspace_request_json: dict[str, JsonValue],
     now: datetime,
     retry_identity: str | None = None,
 ) -> ExamAnswerKeyEnrichmentJob:
-    """Build one queued enrichment job for a native workspace document revision."""
+    """Build one queued suggestion job running on editor-sent content."""
 
     return ExamAnswerKeyEnrichmentJob(
         id=job_id,
@@ -186,7 +191,8 @@ def enqueue_workspace_enrichment_job(
         input_filename=input_filename,
         source_dxe=None,
         workspace_lineage_id=workspace_lineage_id,
-        workspace_document_revision=workspace_document_revision,
+        workspace_document_revision=None,
+        workspace_request_json=workspace_request_json,
         retry_identity=retry_identity,
         available_at=now,
         created_at=now,

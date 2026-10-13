@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * Answer-key proposal request in the exam workspace rail.
+ * Answer-key suggestion request in the exam workspace rail.
  *
  * Domain purpose:
- *   Let the teacher ask for advisory answer-key proposals for the saved
- *   version and show the job's current status message.
+ *   Let the teacher ask for AI answer-key suggestions for the questions as
+ *   the editor shows them and show the job's current status message.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; emits `request` and the view starts
@@ -30,7 +30,7 @@ const emit = defineEmits<{
       Facitförslag
     </h2>
     <p class="text-xs leading-snug text-navy/65">
-      AI kan föreslå facit för frågor som saknar facit. Du granskar varje förslag innan det används.
+      AI kan föreslå facit för frågor som saknar facit. Förslagen läggs in på frågorna och behöver granskas av dig.
     </p>
     <button
       type="button"

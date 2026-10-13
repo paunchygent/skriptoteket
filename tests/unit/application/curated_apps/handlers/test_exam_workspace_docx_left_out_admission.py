@@ -136,7 +136,7 @@ def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_f
     lead = "Läs dikten nedan och svara på frågan."
     state = _state(lead, _STEM)
 
-    body = [{"segments": [_text(lead)]}, {"segments": [_text(_STEM[3:])]}]
+    body: JsonValue = [{"segments": [_text(lead)]}, {"segments": [_text(_STEM[3:])]}]
     admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
 
     ((admitted, anchors),) = state.accepted
@@ -149,7 +149,7 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
     lead = "Läs dikten nedan. Tänk särskilt på diktens rytm och rim."
     state = _state(lead, _STEM)
 
-    body = [{"segments": [_text("Läs dikten nedan.")]}, {"segments": [_text(_STEM[3:])]}]
+    body: JsonValue = [{"segments": [_text("Läs dikten nedan.")]}, {"segments": [_text(_STEM[3:])]}]
     admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
 
     ((admitted, _),) = state.accepted
@@ -201,7 +201,7 @@ def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(drop
 def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
     stem = "1. The bands ____ (spelar) at the festival."
     state = _state("Fyll i rätt form.", stem)
-    body = [
+    body: JsonValue = [
         {"segments": [_text("Fyll i rätt form.")]},
         {
             "segments": [
@@ -279,7 +279,7 @@ def test_a_dropped_table_is_read_cell_by_cell(stem, flagged):
 def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
     stem = "Vilket ord är ett substantiv?"
     state = _state("Läs meningen.", stem)
-    body = [
+    body: JsonValue = [
         {"segments": [_text("Läs meningen.")]},
         {"segments": [_text("Vilket ord är ett sub"), _text("stantiv?")]},
     ]
@@ -293,7 +293,7 @@ def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
 def test_a_points_label_split_across_text_segments_leaves_the_stem():
     stem = "Vilket ord är ett substantiv? (1 p)"
     state = _state(stem)
-    body = [{"segments": [_text("Vilket ord är ett substantiv? (1"), _text(" p)")]}]
+    body: JsonValue = [{"segments": [_text("Vilket ord är ett substantiv? (1"), _text(" p)")]}]
 
     admit_batch({"items": [_item(["body:0001"], body=body, points=None)]}, state)
 

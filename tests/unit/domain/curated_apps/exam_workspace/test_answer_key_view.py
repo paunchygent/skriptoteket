@@ -5,11 +5,11 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
-    MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
+    AnswerKeyItemProposal,
     AnswerKeyViewKind,
     answer_key_item_views,
-    apply_proposal_to_item,
     proposal_from_model_content,
+    suggestion_from_proposal,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
@@ -27,9 +27,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
-from skriptoteket.domain.errors import DomainError
 
 pytestmark = pytest.mark.unit
+
+
+def _suggestion(view, proposal: AnswerKeyItemProposal):
+    return suggestion_from_proposal(
+        view=view,
+        proposal=proposal,
+        provider_profile_id="profile",
+        model="model",
+        prompt_template_version="v1",
+    )
 
 
 def _review() -> NativeItemReview:
@@ -185,40 +194,27 @@ class TestProposalValidation:
         assert proposal_from_model_content(view=view, content={"1": "gap_001", "2": "x"}) is None
 
 
-class TestApplyProposal:
-    def test_choice_proposal_marks_machine_proposed_and_review_required(self) -> None:
+class TestSuggestionFromProposal:
+    def test_choice_suggestion_names_native_choice_ids(self) -> None:
         item = _choice_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"correct_alternative_ids": [2]})
         assert proposal is not None
 
-        proposed = apply_proposal_to_item(item, proposal)
+        suggestion = _suggestion(view, proposal)
 
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.answer_key.correct_choice_ids == ("choice_002",)
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON in proposed.review.reasons
-        assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
+        assert suggestion.correct_choice_ids == ("choice_002",)
+        assert suggestion.gap_accepted_values == ()
+        assert suggestion.match_pairs == ()
 
-    def test_gap_proposal_fills_accepted_values_per_gap(self) -> None:
+    def test_gap_suggestion_carries_accepted_values_per_gap(self) -> None:
         item = _gap_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"1": "Maja", "2": "Lund"})
         assert proposal is not None
 
-        proposed = apply_proposal_to_item(item, proposal)
+        suggestion = _suggestion(view, proposal)
 
-        accepted = {gap.gap_id: gap.accepted_values for gap in proposed.gaps}
+        accepted = {entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values}
         assert accepted == {"gap_002": ("Maja",), "gap_001": ("Lund",)}
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-
-    def test_proposal_for_another_item_is_rejected(self) -> None:
-        item = _choice_item(sequence=1, item_id="item_001")
-        view = answer_key_item_views(_document(item))[0]
-        proposal = proposal_from_model_content(view=view, content={"correct_alternative_ids": [2]})
-        assert proposal is not None
-        other = _choice_item(sequence=1, item_id="item_002")
-
-        with pytest.raises(DomainError):
-            apply_proposal_to_item(other, proposal)
+        assert suggestion.correct_choice_ids == ()

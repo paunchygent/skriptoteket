@@ -61,10 +61,8 @@ from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
 )
-from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
 
 
 class ProcessExamAnswerKeyEnrichmentJobHandler:
@@ -84,9 +82,6 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        vault_files: VaultFileRepositoryProtocol,
-        vault_storage: VaultStorageProtocol,
-        workspace_codec: ExamWorkspaceContainerCodecProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
@@ -119,15 +114,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         )
         self._workspace_lane = ExamAnswerKeyEnrichmentWorkspaceLane(
             enrichment_jobs=enrichment_jobs,
-            proposed_overlays=proposed_overlays,
             provider_selector=provider_selector,
             uow=uow,
             clock=clock,
-            id_generator=id_generator,
             ledger=ledger,
-            vault_files=vault_files,
-            vault_storage=vault_storage,
-            workspace_codec=workspace_codec,
         )
 
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:

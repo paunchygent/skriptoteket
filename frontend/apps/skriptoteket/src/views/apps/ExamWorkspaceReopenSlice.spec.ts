@@ -32,12 +32,10 @@ import {
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -78,12 +76,6 @@ beforeEach(() => {
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
 });
 
 describe("ExamWorkspaceView reopen slice", () => {

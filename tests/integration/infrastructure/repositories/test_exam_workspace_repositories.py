@@ -14,7 +14,6 @@ from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from skriptoteket.application.curated_apps.conversion_hub import (
@@ -32,9 +31,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
@@ -46,9 +42,6 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
-    PostgreSQLExamAnswerKeyProposedOverlayRepository,
-)
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
@@ -59,9 +52,6 @@ from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStor
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
-)
-from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-    UUIDGenerator,
 )
 
 pytestmark = [
@@ -232,12 +222,6 @@ async def test_duplicate_document_version_maps_to_conflict_without_writing_a_fil
                 uow=SQLAlchemyUnitOfWork(session),
                 clock=FixedClock(datetime.now(UTC)),
                 settings=settings,
-                proposal_carry_forward=CarryExamWorkspaceProposals(
-                    enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
-                    proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
-                    clock=FixedClock(datetime.now(UTC)),
-                    id_generator=UUIDGenerator(),
-                ),
             )
             return await store.save_version(
                 actor=owner,
@@ -290,60 +274,39 @@ async def _create_conversion_job(
     return job
 
 
-async def test_workspace_enrichment_jobs_are_unique_per_lineage_revision(
+async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
+    """Per-question and per-exam requests are separate jobs on sent content."""
     owner = await create_owner(session_factory)
     lineage_id = uuid4()
     now = datetime.now(UTC)
 
-    def workspace_job(revision: int) -> ExamAnswerKeyEnrichmentJob:
+    def workspace_job() -> ExamAnswerKeyEnrichmentJob:
         return enqueue_workspace_enrichment_job(
             job_id=uuid4(),
             owner_user_id=owner.id,
             input_filename="prov.provdokument.zip",
             workspace_lineage_id=lineage_id,
-            workspace_document_revision=revision,
+            workspace_request_json={"views": []},
             now=now,
         )
 
-    revision_one = workspace_job(1)
+    first = workspace_job()
+    second = workspace_job()
     async with session_factory() as session, session.begin():
         repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        await repository.create(job=revision_one)
-        await repository.create(job=workspace_job(2))
+        await repository.create(job=first)
+        await repository.create(job=second)
 
     async with session_factory() as session:
         repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        found = await repository.get_by_workspace_revision(
-            owner_user_id=owner.id,
-            workspace_lineage_id=lineage_id,
-            workspace_document_revision=1,
-        )
-        assert found is not None and found.id == revision_one.id
-        assert (
-            await repository.get_by_workspace_revision(
-                owner_user_id=owner.id,
-                workspace_lineage_id=lineage_id,
-                workspace_document_revision=3,
-            )
-            is None
-        )
-        assert (
-            await repository.get_by_workspace_revision(
-                owner_user_id=uuid4(),
-                workspace_lineage_id=lineage_id,
-                workspace_document_revision=1,
-            )
-            is None
-        )
-
-    with pytest.raises(IntegrityError) as exc_info:
-        async with session_factory() as session, session.begin():
-            await PostgreSQLExamAnswerKeyEnrichmentJobRepository(session).create(
-                job=workspace_job(1)
-            )
-    assert "uq_exam_answer_key_enrichment_jobs_workspace_revision" in str(exc_info.value)
+        found = await repository.get_by_id(job_id=first.id)
+        assert found is not None
+        assert found.workspace_lineage_id == lineage_id
+        assert found.workspace_document_revision is None
+        assert found.workspace_request_json == {"views": []}
+        assert await repository.get_by_id(job_id=uuid4()) is None
 
 
 async def test_dxe_enrichment_jobs_are_outside_the_workspace_unique_index(

@@ -1,10 +1,11 @@
-"""Exam workspace answer-key enrichment routes (TASK-SKRIPT-39-04-01).
+"""Exam workspace answer-key suggestion routes (TASK-SKRIPT-39-04-07).
 
 Purpose:
-  Start one advisory machine answer-key enrichment job for the head
-  revision of a native exam workspace document, and read its status plus
-  the MACHINE_PROPOSED prefill proposals once finished. Proposals stay
-  behind teacher review; they are never applied to a saved revision.
+  Request AI answer-key suggestions for the questions exactly as the editor
+  shows them — one named question, or every keyed-kind question without a
+  key — and read the job's status plus the suggestions that arrived.
+  Suggestions are written onto the editor's questions by the editor; they
+  are never applied to a saved revision here.
 
 Relationships:
   - Shares Conversion Hub app access with `apps_conversion_hub_exam_workspace`.
@@ -17,18 +18,14 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from skriptoteket.application.curated_apps.exam_workspace import (
-    ExamWorkspaceEnrichmentState,
-    ExamWorkspaceEnrichmentStatusResponse,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    NOT_ELIGIBLE_MESSAGE,
+    ExamWorkspaceAnswerKeySuggestionsResponse,
+    RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
-    EnqueueExamWorkspaceEnrichmentHandlerProtocol,
-    GetExamWorkspaceDocumentHandlerProtocol,
-    GetExamWorkspaceEnrichmentStatusHandlerProtocol,
+    GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol,
+    RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
 )
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
@@ -41,44 +38,34 @@ router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
 
 
 @router.post(
-    "/exam-workspace/documents/{lineage_id}/enrichment",
-    response_model=ExamWorkspaceEnrichmentStatusResponse,
+    "/exam-workspace/documents/{lineage_id}/answer-key-suggestions",
+    response_model=ExamWorkspaceAnswerKeySuggestionsResponse,
 )
-async def start_exam_workspace_enrichment(
+async def request_exam_workspace_answer_key_suggestions(
     lineage_id: UUID,
+    request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    documents: FromDishka[GetExamWorkspaceDocumentHandlerProtocol],
-    enqueue: FromDishka[EnqueueExamWorkspaceEnrichmentHandlerProtocol],
-    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandlerProtocol],
+    handler: FromDishka[RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol],
     user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceEnrichmentStatusResponse:
-    """Start enrichment for the head revision, idempotent per revision."""
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    """Start one suggestion job on the editor-sent document content."""
 
     require_conversion_hub_access(registry=registry, user=user)
-    document_response = await documents.handle(actor=user, lineage_id=lineage_id)
-    enqueued = await enqueue.handle(actor=user, document=document_response.document)
-    response = await status.handle(actor=user, lineage_id=lineage_id)
-    if not enqueued and response.state is ExamWorkspaceEnrichmentState.NOT_REQUESTED:
-        return response.model_copy(
-            update={
-                "state": ExamWorkspaceEnrichmentState.NOT_ELIGIBLE,
-                "message": NOT_ELIGIBLE_MESSAGE,
-            }
-        )
-    return response
+    return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
 
 
 @router.get(
-    "/exam-workspace/documents/{lineage_id}/enrichment",
-    response_model=ExamWorkspaceEnrichmentStatusResponse,
+    "/exam-workspace/documents/{lineage_id}/answer-key-suggestions/{job_id}",
+    response_model=ExamWorkspaceAnswerKeySuggestionsResponse,
 )
-async def get_exam_workspace_enrichment(
+async def get_exam_workspace_answer_key_suggestions(
     lineage_id: UUID,
+    job_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    status: FromDishka[GetExamWorkspaceEnrichmentStatusHandlerProtocol],
+    handler: FromDishka[GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol],
     user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceEnrichmentStatusResponse:
-    """Read enrichment status and proposals for the head revision."""
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    """Read one suggestion job's status and its arrived suggestions."""
 
     require_conversion_hub_access(registry=registry, user=user)
-    return await status.handle(actor=user, lineage_id=lineage_id)
+    return await handler.handle(actor=user, lineage_id=lineage_id, job_id=job_id)

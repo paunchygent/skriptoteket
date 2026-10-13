@@ -193,6 +193,10 @@ class RefusingEnrichmentJobRepository:
         del owner_user_id, workspace_lineage_id
         return None
 
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        del job_id
+        return None
+
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return None
 

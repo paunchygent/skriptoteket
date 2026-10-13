@@ -1490,7 +1490,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/enrichment": {
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Exam Workspace Answer Key Suggestions
+         * @description Start one suggestion job on the editor-sent document content.
+         */
+        post: operations["request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions/{job_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1498,16 +1518,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Exam Workspace Enrichment
-         * @description Read enrichment status and proposals for the head revision.
+         * Get Exam Workspace Answer Key Suggestions
+         * @description Read one suggestion job's status and its arrived suggestions.
          */
-        get: operations["get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get"];
+        get: operations["get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get"];
         put?: never;
-        /**
-         * Start Exam Workspace Enrichment
-         * @description Start enrichment for the head revision, idempotent per revision.
-         */
-        post: operations["start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4959,19 +4975,34 @@ export interface components {
             warning_count: number;
         };
         /**
-         * ExamWorkspaceAnswerKeyProposalItem
-         * @description One advisory prefill proposal with its provider candidate lineage.
+         * ExamWorkspaceAnswerKeySuggestionItem
+         * @description One AI suggestion that arrived for one question.
          */
-        ExamWorkspaceAnswerKeyProposalItem: {
+        ExamWorkspaceAnswerKeySuggestionItem: {
             /** Item Id */
             item_id: string;
-            /** Model */
-            model: string;
-            /** Prompt Template Version */
-            prompt_template_version: string;
-            proposed_item: components["schemas"]["NativeExamItem-Output"];
-            /** Provider Profile Id */
-            provider_profile_id: string;
+            suggestion: components["schemas"]["NativeAnswerKeySuggestion"];
+        };
+        /**
+         * ExamWorkspaceAnswerKeySuggestionsResponse
+         * @description Status of one suggestion job, plus its suggestions once finished.
+         */
+        ExamWorkspaceAnswerKeySuggestionsResponse: {
+            /** Job Id */
+            job_id?: string | null;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Message */
+            message?: string | null;
+            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
+            /**
+             * Suggestions
+             * @default []
+             */
+            suggestions: components["schemas"]["ExamWorkspaceAnswerKeySuggestionItem"][];
         };
         /**
          * ExamWorkspaceConversionStatus
@@ -5080,31 +5111,10 @@ export interface components {
         };
         /**
          * ExamWorkspaceEnrichmentState
-         * @description Teacher-facing state of the enrichment lane for one head revision.
+         * @description Teacher-facing state of one answer-key suggestion job.
          * @enum {string}
          */
-        ExamWorkspaceEnrichmentState: "not_requested" | "not_eligible" | "queued" | "running" | "succeeded" | "failed";
-        /**
-         * ExamWorkspaceEnrichmentStatusResponse
-         * @description Status plus advisory proposals for one document head revision.
-         */
-        ExamWorkspaceEnrichmentStatusResponse: {
-            /** Document Revision */
-            document_revision: number;
-            /**
-             * Lineage Id
-             * Format: uuid
-             */
-            lineage_id: string;
-            /** Message */
-            message?: string | null;
-            /**
-             * Proposals
-             * @default []
-             */
-            proposals: components["schemas"]["ExamWorkspaceAnswerKeyProposalItem"][];
-            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
-        };
+        ExamWorkspaceEnrichmentState: "not_eligible" | "queued" | "running" | "succeeded" | "failed";
         /**
          * ExamWorkspaceExportTarget
          * @enum {string}
@@ -5950,6 +5960,40 @@ export interface components {
          * @enum {string}
          */
         NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        /**
+         * NativeAnswerKeySuggestion
+         * @description One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+         *
+         *     Holds the proposed key, a SHA-256 fingerprint of the question's
+         *     answer-relevant content when the suggestion was made, and the provider
+         *     lineage that produced it. It lives apart from the item's answer key so
+         *     it survives the teacher accepting or replacing that key.
+         */
+        NativeAnswerKeySuggestion: {
+            /**
+             * Correct Choice Ids
+             * @default []
+             */
+            correct_choice_ids: string[];
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Gap Accepted Values
+             * @default []
+             */
+            gap_accepted_values: components["schemas"]["NativeGapAcceptedValues"][];
+            /**
+             * Match Pairs
+             * @default []
+             */
+            match_pairs: components["schemas"]["NativeMatchPair"][];
+            /** Model */
+            model: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+        };
         /** NativeAssetSegment */
         NativeAssetSegment: {
             /** Asset Id */
@@ -6073,6 +6117,7 @@ export interface components {
         };
         /** NativeExamItem */
         "NativeExamItem-Input": {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6120,6 +6165,7 @@ export interface components {
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6192,6 +6238,16 @@ export interface components {
              * Accepted Values
              * @default []
              */
+            accepted_values: string[];
+            /** Gap Id */
+            gap_id: string;
+        };
+        /**
+         * NativeGapAcceptedValues
+         * @description The accepted values one AI suggestion proposes for one gap.
+         */
+        NativeGapAcceptedValues: {
+            /** Accepted Values */
             accepted_values: string[];
             /** Gap Id */
             gap_id: string;
@@ -7498,6 +7554,19 @@ export interface components {
             message?: string | null;
         };
         /**
+         * RequestExamWorkspaceAnswerKeySuggestionsRequest
+         * @description Editor-sent content for one suggestion request (TASK-SKRIPT-39-04-07).
+         *
+         *     ``document`` is the exam exactly as the editor shows it, saved or not.
+         *     With ``item_id`` the request covers that one question, with or without
+         *     a key; without it, it covers every keyed-kind question without a key.
+         */
+        RequestExamWorkspaceAnswerKeySuggestionsRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Item Id */
+            item_id?: string | null;
+        };
+        /**
          * ResolvePlanDraftRequest
          * @description Deserialize the landing-page resolve request.
          */
@@ -7866,11 +7935,6 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Input"];
             /** Expected Revision */
             expected_revision: number;
-            /**
-             * Rejected Proposal Item Ids
-             * @default []
-             */
-            rejected_proposal_item_ids: string[];
         };
         /** SaveResult */
         SaveResult: {
@@ -12194,7 +12258,7 @@ export interface operations {
             };
         };
     };
-    get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get: {
+    request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -12203,7 +12267,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestExamWorkspaceAnswerKeySuggestionsRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -12211,7 +12279,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -12225,12 +12293,13 @@ export interface operations {
             };
         };
     };
-    start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post: {
+    get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 lineage_id: string;
+                job_id: string;
             };
             cookie?: never;
         };
@@ -12242,7 +12311,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
                 };
             };
             /** @description Validation Error */

@@ -20,7 +20,7 @@ import type {
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
-import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
+import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversionMerge";
 
 function buildItem(itemId: string, text: string): NativeExamItem {
   return {
@@ -112,7 +112,7 @@ function textOf(item: NativeExamItem): string {
 
 describe("mergeConversionRevision", () => {
   it("replaces an untouched placeholder by the converted items in place", () => {
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -134,7 +134,7 @@ describe("mergeConversionRevision", () => {
     ]);
     expect(document.items.map((item) => item.sequence)).toEqual([1, 2, 3, 4]);
     expect(document.revision).toBe(2);
-    expect(teacherEditsKept).toBe(false);
+    expect(sameDocument(document, head)).toBe(true);
     expect(document).toEqual(head);
   });
 
@@ -142,7 +142,7 @@ describe("mergeConversionRevision", () => {
     const changed = buildItem("item_002", "Lärarens egen text");
     const local = buildDocument(1, [baseItems[0]!, changed, baseItems[2]!]);
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -157,14 +157,14 @@ describe("mergeConversionRevision", () => {
       "Fråga 3",
     ]);
     expect(document.revision).toBe(2);
-    expect(teacherEditsKept).toBe(false);
+    expect(sameDocument(document, head)).toBe(true);
     expect(document).toEqual(head);
   });
 
   it("inserts the converted items of a placeholder missing from the local copy in its place", () => {
     const local = buildDocument(1, [baseItems[0]!, baseItems[2]!]);
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -184,7 +184,7 @@ describe("mergeConversionRevision", () => {
       "Fråga 2b",
       "Fråga 3",
     ]);
-    expect(teacherEditsKept).toBe(false);
+    expect(sameDocument(document, head)).toBe(true);
   });
 
   it("replaces only the placeholder and keeps the teacher's edit of a converted unit the server left alone", () => {
@@ -192,7 +192,7 @@ describe("mergeConversionRevision", () => {
     const edited = buildItem("item_001", "Lärarens ändring av fråga 1");
     const local = buildDocument(1, [edited, changed, baseItems[2]!]);
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -206,7 +206,7 @@ describe("mergeConversionRevision", () => {
       "Fråga 2b",
       "Fråga 3",
     ]);
-    expect(teacherEditsKept).toBe(true);
+    expect(sameDocument(document, head)).toBe(false);
   });
 
   it("renames a teacher-added item whose id a converted item claims, including its parent", () => {
@@ -221,7 +221,7 @@ describe("mergeConversionRevision", () => {
       ],
     });
 
-    const { document } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -247,7 +247,7 @@ describe("mergeConversionRevision", () => {
     const edited = buildItem("item_003", "Lärarens ändring av fråga 3");
     const local = buildDocument(1, [baseItems[0]!, placeholder, edited]);
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head,
@@ -261,7 +261,7 @@ describe("mergeConversionRevision", () => {
       "Fråga 2b",
       "Lärarens ändring av fråga 3",
     ]);
-    expect(teacherEditsKept).toBe(true);
+    expect(sameDocument(document, head)).toBe(false);
   });
 
   it("keeps the teacher's edit of a converted unit the server changed meanwhile", () => {
@@ -273,7 +273,7 @@ describe("mergeConversionRevision", () => {
     const edited = buildItem("item_003", "Lärarens ändring av fråga 3");
     const local = buildDocument(1, [baseItems[0]!, placeholder, edited]);
 
-    const { document } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head: serverChangedQ3,
@@ -308,7 +308,7 @@ describe("mergeConversionRevision", () => {
     ];
     const local = buildDocument(1, [baseItems[0]!, placeholder, baseItems[2]!]);
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head: newUnitsHead,
@@ -326,7 +326,7 @@ describe("mergeConversionRevision", () => {
     expect(document.items.map((item) => item.sequence)).toEqual([
       1, 2, 3, 4, 5,
     ]);
-    expect(teacherEditsKept).toBe(false);
+    expect(sameDocument(document, newUnitsHead)).toBe(true);
   });
 
   it("inserts a new first unit at the start when no preceding unit has local items", () => {
@@ -334,7 +334,7 @@ describe("mergeConversionRevision", () => {
     const firstHead = buildDocument(2, [first, ...baseItems]);
     const units = [unit("q0", "ready", ["item_005"]), ...baseUnits];
 
-    const { document } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head: firstHead,
@@ -354,7 +354,7 @@ describe("mergeConversionRevision", () => {
     const retitled = { ...head, title: "Serverns titel" };
     const local = buildDocument(1, baseItems, { title: "Lärarens titel" });
 
-    const { document, teacherEditsKept } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head: retitled,
@@ -363,7 +363,7 @@ describe("mergeConversionRevision", () => {
     });
 
     expect(document.title).toBe("Lärarens titel");
-    expect(teacherEditsKept).toBe(true);
+    expect(sameDocument(document, retitled)).toBe(false);
   });
 
   it("takes the head's title and instructions when the teacher left them, and prunes parents", () => {
@@ -398,7 +398,7 @@ describe("mergeConversionRevision", () => {
     );
     const copy = { ...withParent, parents: base.parents };
 
-    const { document } = mergeConversionRevision({
+    const document = mergeConversionRevision({
       base,
       baseUnits,
       head: changedHead,
@@ -427,7 +427,7 @@ describe("mergeConversionRevision", () => {
     ]);
     const headUnits = [unit("q1", "ready", ["item_001"]), unit("q2", "ready", ["item_002"])];
 
-    const { document } = mergeConversionRevision({ base, baseUnits, head, headUnits, local });
+    const document = mergeConversionRevision({ base, baseUnits, head, headUnits, local });
 
     expect(document.items.map((item) => [item.item_id, item.title, item.body[0]?.segments[0]])).toEqual([
       ["item_001", "Lokal rubrik", { kind: "text", text: "Fråga ett" }],

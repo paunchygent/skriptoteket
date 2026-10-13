@@ -35,9 +35,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_u
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
@@ -63,7 +60,6 @@ from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgre
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ExamAnswerKeyProposedOverlayRepositoryProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
@@ -184,22 +180,6 @@ class ExamWorkspaceProvider(Provider):
         return ExamWorkspaceContainerCodec()
 
     @provide(scope=Scope.REQUEST)
-    def proposal_carry_forward(
-        self,
-        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-    ) -> CarryExamWorkspaceProposals:
-        """Provide save-time copying of pending proposals without execution."""
-        return CarryExamWorkspaceProposals(
-            enrichment_jobs=enrichment_jobs,
-            proposed_overlays=proposed_overlays,
-            clock=clock,
-            id_generator=id_generator,
-        )
-
-    @provide(scope=Scope.REQUEST)
     def document_store(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -208,7 +188,6 @@ class ExamWorkspaceProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
-        proposal_carry_forward: CarryExamWorkspaceProposals,
     ) -> ExamWorkspaceDocumentStore:
         """Provide the versioned Mina filer document store."""
         return ExamWorkspaceDocumentStore(
@@ -218,7 +197,6 @@ class ExamWorkspaceProvider(Provider):
             uow=uow,
             clock=clock,
             settings=settings,
-            proposal_carry_forward=proposal_carry_forward,
         )
 
     @provide(scope=Scope.REQUEST)

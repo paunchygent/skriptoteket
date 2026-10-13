@@ -8,8 +8,8 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeAnswerKeySuggestion,
     NativeExamDocument,
-    NativeExamItem,
 )
 
 
@@ -86,13 +86,11 @@ class SaveExamWorkspaceDocumentRequest(BaseModel):
 
     expected_revision: int = Field(ge=1)
     document: NativeExamDocument
-    rejected_proposal_item_ids: tuple[str, ...] = ()
 
 
 class ExamWorkspaceEnrichmentState(StrEnum):
-    """Teacher-facing state of the enrichment lane for one head revision."""
+    """Teacher-facing state of one answer-key suggestion job."""
 
-    NOT_REQUESTED = "not_requested"
     NOT_ELIGIBLE = "not_eligible"
     QUEUED = "queued"
     RUNNING = "running"
@@ -100,28 +98,39 @@ class ExamWorkspaceEnrichmentState(StrEnum):
     FAILED = "failed"
 
 
-class ExamWorkspaceAnswerKeyProposalItem(BaseModel):
-    """One advisory prefill proposal with its provider candidate lineage."""
+class RequestExamWorkspaceAnswerKeySuggestionsRequest(BaseModel):
+    """Editor-sent content for one suggestion request (TASK-SKRIPT-39-04-07).
+
+    ``document`` is the exam exactly as the editor shows it, saved or not.
+    With ``item_id`` the request covers that one question, with or without
+    a key; without it, it covers every keyed-kind question without a key.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    document: NativeExamDocument
+    item_id: str | None = None
+
+
+class ExamWorkspaceAnswerKeySuggestionItem(BaseModel):
+    """One AI suggestion that arrived for one question."""
 
     model_config = ConfigDict(frozen=True)
 
     item_id: str
-    proposed_item: NativeExamItem
-    provider_profile_id: str
-    model: str
-    prompt_template_version: str
+    suggestion: NativeAnswerKeySuggestion
 
 
-class ExamWorkspaceEnrichmentStatusResponse(BaseModel):
-    """Status plus advisory proposals for one document head revision."""
+class ExamWorkspaceAnswerKeySuggestionsResponse(BaseModel):
+    """Status of one suggestion job, plus its suggestions once finished."""
 
     model_config = ConfigDict(frozen=True)
 
+    job_id: UUID | None = None
     lineage_id: UUID
-    document_revision: int = Field(ge=1)
     state: ExamWorkspaceEnrichmentState
     message: str | None = None
-    proposals: tuple[ExamWorkspaceAnswerKeyProposalItem, ...] = ()
+    suggestions: tuple[ExamWorkspaceAnswerKeySuggestionItem, ...] = ()
 
 
 class ExamWorkspaceExportTarget(StrEnum):

@@ -47,17 +47,13 @@ const IMPORT_SUCCESS_COPY = "Provet är inläst.";
 
 /** The document owner's state that conversion revisions are applied to. */
 export type ExamWorkspaceConversionBinding = {
-  isDirty: Ref<boolean>;
+  isDirty: Readonly<Ref<boolean>>;
   /** The server document the local copy started from. */
   serverDocument: Ref<NativeExamDocument | null>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   workspaceDocument: Ref<NativeExamDocument | null>;
   /** Replace the local copy with a server response; `local` keeps merged teacher edits. */
-  applyResponse: (
-    response: ExamWorkspaceDocumentResponse,
-    local?: NativeExamDocument,
-    dirty?: boolean,
-  ) => void;
+  applyResponse: (response: ExamWorkspaceDocumentResponse, local?: NativeExamDocument) => void;
   /** Called once before the first revision of a new import is shown. */
   beforeFirstRevision: () => void;
   /** A save is in flight; its response replaces the copy, so merging waits. */
@@ -243,7 +239,7 @@ export function useExamWorkspaceConversion(
         headUnits: conversion.units,
         local,
       });
-      binding.applyResponse(response, merged.document, merged.teacherEditsKept);
+      binding.applyResponse(response, merged);
     }
     return false;
   }

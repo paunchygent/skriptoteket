@@ -155,6 +155,43 @@ class NativeAnswerKey(BaseModel):
     match_pairs: tuple[NativeMatchPair, ...] = ()
 
 
+class NativeGapAcceptedValues(BaseModel):
+    """The accepted values one AI suggestion proposes for one gap."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
+    accepted_values: tuple[str, ...] = Field(min_length=1)
+
+    @field_validator("accepted_values")
+    @classmethod
+    def _non_empty_values(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        for value in values:
+            if not value.strip():
+                raise ValueError("accepted_values entries must be non-empty")
+        return values
+
+
+class NativeAnswerKeySuggestion(BaseModel):
+    """One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+
+    Holds the proposed key, a SHA-256 fingerprint of the question's
+    answer-relevant content when the suggestion was made, and the provider
+    lineage that produced it. It lives apart from the item's answer key so
+    it survives the teacher accepting or replacing that key.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    correct_choice_ids: tuple[str, ...] = ()
+    match_pairs: tuple[NativeMatchPair, ...] = ()
+    gap_accepted_values: tuple[NativeGapAcceptedValues, ...] = ()
+    fingerprint: str = Field(pattern=_SHA256_PATTERN)
+    provider_profile_id: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    prompt_template_version: str = Field(min_length=1)
+
+
 class NativeItemReview(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -207,6 +244,7 @@ class NativeExamItem(BaseModel):
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
+    ai_suggestion: NativeAnswerKeySuggestion | None = None
     marking_guide: str | None = None  # rättningsmall: only free_text carries one (D31)
     review: NativeItemReview
     source_anchor: str | None = None
@@ -264,6 +302,7 @@ class NativeExamItem(BaseModel):
             raise ValueError("only free_text items carry a marking guide")
 
         self._answer_key_invariants(frozenset(choice_ids))
+        self._suggestion_invariants()
         self._body_gap_invariants(gap_ids)
         return self
 
@@ -308,10 +347,51 @@ class NativeExamItem(BaseModel):
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
+    def _suggestion_invariants(self) -> None:
+        """Check the kept suggestion's own shape, never its currency.
+
+        A suggestion is historical data for the question its fingerprint
+        describes: after an answer-relevant edit — including a change of
+        the question's kind — it may propose a key for another kind, name
+        choices, match entries or gaps the question no longer declares,
+        and it stays stored so the fingerprint can report it out of date.
+        Only the suggestion's own shape is invariant here: exactly one
+        payload family carries the proposed key (choice ids, match pairs
+        or gap accepted values) and no entry is named twice within it.
+        Producer validation against the requested question and the current
+        answer key's constraints live in their own checks, so a stored
+        historical suggestion never becomes a valid active key by storage.
+        """
+
+        suggestion = self.ai_suggestion
+        if suggestion is None:
+            return
+        families = (
+            bool(suggestion.correct_choice_ids),
+            bool(suggestion.match_pairs),
+            bool(suggestion.gap_accepted_values),
+        )
+        if sum(families) != 1:
+            raise ValueError("a kept suggestion proposes exactly one kind of key")
+        if len(set(suggestion.correct_choice_ids)) != len(suggestion.correct_choice_ids):
+            raise ValueError("suggested choice ids must be unique")
+        paired_left = [pair.left_id for pair in suggestion.match_pairs]
+        if len(set(paired_left)) != len(paired_left):
+            raise ValueError("a suggestion pairs each left entry at most once")
+        paired_right = [pair.right_id for pair in suggestion.match_pairs]
+        if len(set(paired_right)) != len(paired_right):
+            raise ValueError("a suggestion pairs each right entry at most once")
+        suggested_gap_ids = [entry.gap_id for entry in suggestion.gap_accepted_values]
+        if len(set(suggested_gap_ids)) != len(suggested_gap_ids):
+            raise ValueError("a suggestion names each gap at most once")
+
     def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         """Every left entry is paired once; unpaired right entries are distractors."""
         if self.answer_key.correct_choice_ids:
             raise ValueError("matching items key pairs, not choices")
+        self._match_pairs_valid(pairs)
+
+    def _match_pairs_valid(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         left_ids = {entry.left_id for entry in self.match_left}
         right_ids = {entry.right_id for entry in self.match_right}
         paired_left = [pair.left_id for pair in pairs]

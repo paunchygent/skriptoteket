@@ -4,8 +4,8 @@
  * Domain purpose:
  *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
  *   list and reopen saved documents, edit items locally with immutable
- *   updates, move advisory answer-key proposals into the editor, refuse a
- *   save the server would reject with Swedish copy naming the questions,
+ *   updates, refuse a save the server would reject with Swedish copy naming
+ *   the questions,
  *   save versioned revisions, and recover from stale-save conflicts by reloading
  *   the latest saved version.
  *
@@ -14,10 +14,15 @@
  *   - Delegates transport to `api/examWorkspace.ts`.
  *   - Applies item edits from `examWorkspaceItemEdits` through one patch path.
  *   - Checks a save against `examWorkspaceItemSaveRules` before sending it.
+ *   - Writes arriving AI suggestions and keeps their single effect across
+ *     saves through `useExamWorkspaceSaveArrivals`, only into the exam
+ *     opening that requested them.
+ *   - Dirty state is derived: the copy differs from the last server document
+ *     (`sameDocument`).
  *   - Reports outcomes through the shared toast store.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 
 import { isApiError } from "../../../api/client";
 import type { ApiError } from "../../../api/client";
@@ -35,7 +40,7 @@ import type {
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { nextItemId } from "./examWorkspaceConversionMerge";
+import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
 import {
   newTeacherItem,
   reviewed,
@@ -47,11 +52,12 @@ import {
   withMatchPairs,
   withParagraphSegments,
   withPoints,
-  withProposal,
+  withRestoredSuggestion,
   withTitle,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -96,6 +102,13 @@ export function mergeSavedDocuments(
   return [...localOnly, ...merged];
 }
 
+/**
+ * One opening of an exam: created when a document of another lineage is
+ * installed, kept while revisions of the same lineage replace the copy.
+ * Compared by identity, so reopening an exam later is a new opening.
+ */
+export type ExamWorkspaceOpening = { readonly lineageId: string };
+
 export function useExamWorkspaceDocument() {
   const toast = useToast();
 
@@ -103,12 +116,12 @@ export function useExamWorkspaceDocument() {
   const serverDocument = ref<NativeExamDocument | null>(null);
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
   const notes = ref<string[]>([]);
-  const isDirty = ref(false);
+  const openExam = shallowRef<ExamWorkspaceOpening | null>(null);
+  const isDirty = computed(() => !sameDocument(workspaceDocument.value, serverDocument.value));
   const operationBusy = ref(false);
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
-
   const {
     adoptConversion,
     conversionError,
@@ -134,6 +147,8 @@ export function useExamWorkspaceDocument() {
     summary,
     workspaceDocument,
   });
+  const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
+  const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
   const isBusy = computed(
     () =>
@@ -150,11 +165,18 @@ export function useExamWorkspaceDocument() {
     return current.items.find((item) => item.item_id === selectedItemId.value) ?? null;
   });
 
+  /** Whether `opening` is the exam opening in front of the teacher now. */
+  function isOpen(opening: ExamWorkspaceOpening): boolean {
+    return openExam.value === opening;
+  }
+
   function applyResponse(
     response: ExamWorkspaceDocumentResponse,
     local: NativeExamDocument = response.document,
-    dirty = false,
   ): void {
+    if (openExam.value?.lineageId !== response.summary.lineage_id) {
+      openExam.value = { lineageId: response.summary.lineage_id };
+    }
     workspaceDocument.value = local;
     serverDocument.value = response.document;
     summary.value = response.summary;
@@ -166,7 +188,6 @@ export function useExamWorkspaceDocument() {
         )
       : [response.summary, ...savedDocuments.value];
     notes.value = response.notes;
-    isDirty.value = dirty;
     adoptConversion(response);
     const items = local.items;
     selectedItemId.value = items.some((item) => item.item_id === selectedItemId.value)
@@ -202,19 +223,19 @@ export function useExamWorkspaceDocument() {
     }
   }
 
-  async function reloadAfterConflict(lineageId: string): Promise<void> {
+  /** Returns whether the reloaded revision replaced the teacher's copy. */
+  async function reloadAfterConflict(lineageId: string): Promise<boolean> {
     try {
       const response = await getExamWorkspaceDocument(lineageId);
       applyResponse(response);
+      return true;
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
+      return false;
     }
   }
 
-  async function saveDocument(
-    rejectedProposalItemIds: string[] = [],
-    afterConversionConflict = false,
-  ): Promise<boolean> {
+  async function saveDocument(afterConversionConflict = false): Promise<boolean> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || (isBusy.value && !afterConversionConflict)) {
@@ -227,14 +248,17 @@ export function useExamWorkspaceDocument() {
     }
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
+    const payloadMark = arrivals.payloadMark();
+    const openedArrivals = arrivals.beginSave();
     operationBusy.value = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
-        rejectedProposalItemIds: [...rejectedProposalItemIds],
       });
       applyResponse(response);
+      // The response holds the payload; arrivals that landed after it was read run again on it.
+      arrivals.replayAfterResponse(payloadMark);
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
       return true;
@@ -244,7 +268,7 @@ export function useExamWorkspaceDocument() {
       const conflict = isApiError(error) && error.status === 409;
       const sync = conflict ? await syncAfterConflict(expectedRevision) : "unrelated";
       if (sync === "merged") {
-        return await saveDocument(rejectedProposalItemIds, true);
+        return await saveDocument(true);
       }
       if (refusedPlaceholderChange(error)) {
         // The server names the converting questions the save changed; the copy stays.
@@ -255,12 +279,17 @@ export function useExamWorkspaceDocument() {
       } else if (conflict) {
         conflictNotice.value = EXAM_WORKSPACE_CONFLICT_COPY;
         toast.failure(EXAM_WORKSPACE_CONFLICT_COPY);
-        await reloadAfterConflict(currentSummary.lineage_id);
+        if (await reloadAfterConflict(currentSummary.lineage_id)) {
+          // The reloaded head never held them: arrivals since the save began run again on it.
+          arrivals.replayAfterReload();
+        }
       } else {
         toast.failure(SAVE_FAILURE_COPY);
       }
+      // Every other failure left the teacher's copy, and each arrival's single effect, in place.
       return false;
     } finally {
+      arrivals.endSave(openedArrivals);
       operationBusy.value = false;
     }
   }
@@ -308,7 +337,6 @@ export function useExamWorkspaceDocument() {
       return;
     }
     workspaceDocument.value = { ...current, items };
-    isDirty.value = true;
   }
 
   function updateItemTitle(itemId: string, title: string): void {
@@ -360,8 +388,8 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, reviewed);
   }
 
-  function applyProposal(itemId: string, proposedItem: NativeExamItem, approve: boolean): void {
-    patchItem(itemId, (item) => withProposal(item, proposedItem, approve));
+  function restoreItemSuggestion(itemId: string): void {
+    patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
   function addItem(): void {
@@ -373,12 +401,11 @@ export function useExamWorkspaceDocument() {
     const newItem = newTeacherItem(itemId, current.items.length + 1);
     workspaceDocument.value = { ...current, items: [...current.items, newItem] };
     selectedItemId.value = itemId;
-    isDirty.value = true;
   }
 
   return {
     addItem,
-    applyProposal,
+    applyArrivingSuggestions,
     conflictNotice,
     conversionError,
     conversionMessage,
@@ -390,11 +417,14 @@ export function useExamWorkspaceDocument() {
     importDocument,
     isBusy,
     isDirty,
+    isOpen,
     loadSavedDocuments,
     markItemReviewed,
     notes,
     openDocument,
+    openExam: computed(() => openExam.value),
     reloadDocument,
+    restoreItemSuggestion,
     saveDocument,
     savedDocuments,
     selectItem,

@@ -61,6 +61,12 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     source_docx: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     workspace_lineage_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     workspace_document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    workspace_request_json: Mapped[dict[str, JsonValue] | None] = mapped_column(
+        JSONB, nullable=True
+    )
+    workspace_suggestions_json: Mapped[dict[str, JsonValue] | None] = mapped_column(
+        JSONB, nullable=True
+    )
     retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")

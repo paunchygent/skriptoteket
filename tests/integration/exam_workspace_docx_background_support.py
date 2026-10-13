@@ -28,9 +28,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
@@ -44,15 +41,8 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxLabelerMarkdown,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
-)
-from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
-    PostgreSQLExamAnswerKeyEnrichmentJobRepository,
-)
-from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
-    PostgreSQLExamAnswerKeyProposedOverlayRepository,
 )
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -280,10 +270,4 @@ def document_store(
         uow=uow or SQLAlchemyUnitOfWork(session),
         clock=clock,
         settings=settings,
-        proposal_carry_forward=CarryExamWorkspaceProposals(
-            enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
-            proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
-            clock=clock,
-            id_generator=UUID4Generator(),
-        ),
     )
