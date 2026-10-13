@@ -247,7 +247,7 @@ class DocxBuildState:
         stands only where it lands at that question (D42).
 
         A printed section total gives each question that prints no points of its own a
-        share marked for checking (D38). A section's points line the split absorbs is
+        share marked as estimated (D38, D6). A section's points line the split absorbs is
         metadata, never a review item.
         """
         points = split_section_totals(

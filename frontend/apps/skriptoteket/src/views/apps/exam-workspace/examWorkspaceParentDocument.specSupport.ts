@@ -58,6 +58,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     match_left: [],
     match_right: [],
     points: recorded.points,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

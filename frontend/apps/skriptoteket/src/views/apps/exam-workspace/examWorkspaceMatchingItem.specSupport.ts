@@ -37,6 +37,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
       { right_id: "right_003", text: "disdain" },
     ],
     points: 3,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

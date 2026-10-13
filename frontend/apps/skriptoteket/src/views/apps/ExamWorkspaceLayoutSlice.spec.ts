@@ -115,15 +115,19 @@ describe("ExamWorkspaceView two-mode layout", () => {
     await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
 
     const readiness = wrapper.get('[data-test="exam-workspace-readiness"]');
-    expect(readiness.text()).toContain("2 frågor behöver åtgärdas");
-    expect(readiness.text()).toContain("Frågan behöver granskas.");
+    // Question 4 only needs review, which never stops an export (D1).
+    expect(readiness.text()).toContain("1 fråga behöver åtgärdas");
+    expect(readiness.text()).toContain("Facitförslaget är inte godkänt.");
+    expect(wrapper.find('[data-test="exam-workspace-readiness-item-item_004"]').exists()).toBe(
+      false,
+    );
 
-    await wrapper.get('[data-test="exam-workspace-readiness-item-item_004"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-readiness-item-item_003"]').trigger("click");
 
     expect(isShown(wrapper, "exam-workspace-workspace")).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-item-editor"]').text()).toContain("Fråga 4");
+    expect(wrapper.get('[data-test="exam-workspace-item-editor"]').text()).toContain("Fråga 3");
     expect(wrapper.get('[data-test="exam-workspace-item-drawer"]').text()).toContain(
-      "Frågan behöver granskas.",
+      "Facitförslaget är inte godkänt.",
     );
   });
 

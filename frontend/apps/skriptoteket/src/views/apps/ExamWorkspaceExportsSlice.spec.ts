@@ -124,13 +124,13 @@ describe("ExamWorkspaceView export slice", () => {
         code: "VALIDATION_ERROR",
         details: {
           blockers: [
-            { item_id: "item_003", reason: "review_required" },
+            { item_id: "item_003", reason: "unbuilt_question" },
             { item_id: "item_003", reason: "machine_proposed_key_unreviewed" },
-            { item_id: "item_004", reason: "review_required" },
+            { item_id: "item_004", reason: "unbuilt_question" },
             { item_id: "item_005", reason: "missing_points" },
           ],
         },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );
@@ -142,7 +142,7 @@ describe("ExamWorkspaceView export slice", () => {
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
     const item3 = wrapper.find('[data-test="exam-workspace-item-blockers-item_003"]').text();
-    expect(item3).toContain("Frågan behöver granskas.");
+    expect(item3).toContain("Frågan kunde inte konverteras och visas som i källan.");
     expect(item3).toContain("Facitförslaget är inte godkänt.");
     expect(
       wrapper.find('[data-test="exam-workspace-item-blockers-item_005"]').text(),
@@ -160,7 +160,7 @@ describe("ExamWorkspaceView export slice", () => {
       new ApiError({
         code: "VALIDATION_ERROR",
         details: { blockers: [{ item_id: "item_002", reason: "missing_answer_key" }] },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );

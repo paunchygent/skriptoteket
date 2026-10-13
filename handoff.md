@@ -20,9 +20,11 @@
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
   - TASK-SKRIPT-39-05-07 `in_progress` (D1-D9 from the 39-04-05 plan): export
-    blocks only on missing values; "(N p)" becomes points. Owner: the Codex
-    session on branch `codex/task-skript-39-05-07` (review F1-F4 and the F1
-    rereview fix `a42b0af6`, not merged).
+    blocks only on missing values; "(N p)" becomes points. Owner: Claude session
+    566dc36a (branch `codex/task-skript-39-05-07`, merged to main 2026-10-13;
+    review approved `58dabe3f`, retained `evidence/reviews/TASK-SKRIPT-39-05-07/`;
+    D9 eval `evidence/task-skript-39-05-07-d9-eval/README.md`). Next: staging
+    walk on main; user decision on the two changed export copy strings; closure.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven

@@ -3,8 +3,9 @@
 
 Each fixture holds unedited live replies (see its README). An instruction placed in its
 question's body, or on a parent holding the question, stands as placed. One that would land
-anywhere else is no instruction: its chunk goes back to the question, which stays converted and
-shows the chunk as printed in its check mark (D41), blocking export until the teacher handles it.
+anywhere else is no instruction: its chunk goes back to the question, which stays converted. The
+check mark shows the chunk as printed only when the item lacks its wording (D41, D4); a parsing
+issue never blocks export (D1).
 """
 
 import pytest
@@ -14,9 +15,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
-    NativeExportBlocker,
     NativeItemReviewState,
     NativeParseOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -57,11 +59,11 @@ async def test_an_own_heading_a_reply_lists_as_an_instruction_stays_in_the_check
     (item,) = [i for i in document.items if i.item_id == item_id]
     assert item.kind is NativeExamItemKind.GAP_FILL
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    # The item lacks the heading's wording, so the check mark shows it as printed (D4).
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert item.review.reasons[-2:] == (LEFT_OUT_REASON, heading)
     assert heading not in document.instructions
-    blocker = NativeExportBlocker(item_id=item.item_id, reason="review_required")
-    assert blocker in native_export_blockers(document)
+    assert all(b.item_id != item.item_id for b in native_export_blockers(document))
 
 
 async def test_an_own_lead_in_a_reply_lists_as_an_instruction_stands_on_the_parent_it_opens():

@@ -44,7 +44,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly
     merge_batch,
     provisional_result,
     validated,
-    with_confidence,
+    with_type_check_mark,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
@@ -272,7 +272,6 @@ class DocxConversionPipeline:
                     unlabeled.append(result.item_id)
                     continue
                 run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
-                run.first_pass[result.item_id] = (result.first_pass or result).probabilities
                 labeled.append(result.item_id)
             self._dispatch(run, labeled, prefix, tasks)
             if unlabeled:
@@ -376,7 +375,7 @@ class DocxConversionPipeline:
                 exchange=self._exchange,
                 profile=self._profile,
             )
-            with_confidence(outcome.state, run.families, run.confidence())
+            with_type_check_mark(outcome.state)
             validated(outcome.state)
         except Exception as error:
             # One batch's failure never fails the conversion (D25).

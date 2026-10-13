@@ -7,6 +7,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     item_has_trusted_key,
 )
 

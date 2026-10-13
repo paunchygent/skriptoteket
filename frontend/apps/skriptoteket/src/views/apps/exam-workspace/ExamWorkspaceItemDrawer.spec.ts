@@ -26,6 +26,7 @@ const ITEM: NativeExamItem = {
   match_left: [],
   match_right: [],
   points: 2,
+  points_estimated: false,
   review: {
     confidence: 0.9,
     parse_origin: "deterministic",
@@ -176,7 +177,7 @@ describe("ExamWorkspaceItemDrawer focus", () => {
   });
 
   it("names the parse notes by review state", async () => {
-    const reasons = { ...ITEM.review, reasons: ["missing_points"] };
+    const reasons = { ...ITEM.review, reasons: ["machine_proposed_answer_key"] };
     const required = await mountDrawer("desktop", {
       item: { ...ITEM, review: { ...reasons, state: "review_required" } },
     });
@@ -189,7 +190,7 @@ describe("ExamWorkspaceItemDrawer focus", () => {
     expect(reviewed.text()).not.toContain("Att granska");
     expect(reviewed.text()).toContain("Anteckningar från inläsningen");
     expect(reviewed.get('[data-test="exam-workspace-review-reasons"]').text()).toContain(
-      "Poäng saknas",
+      "Facit är ett maskinellt förslag",
     );
     reviewed.unmount();
   });

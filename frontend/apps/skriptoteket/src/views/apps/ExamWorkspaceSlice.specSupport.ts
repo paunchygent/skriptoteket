@@ -45,6 +45,7 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     item_id: `item_${String(sequence).padStart(3, "0")}`,
     kind: "free_text",
     points: 2,
+    points_estimated: false,
     review: {
       confidence: 0.9,
       parse_origin: "deterministic",

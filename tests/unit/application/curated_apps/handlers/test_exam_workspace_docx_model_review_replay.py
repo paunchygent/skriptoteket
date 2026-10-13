@@ -17,6 +17,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeItemReviewState,
     NativeParseOrigin,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -77,7 +79,7 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     ]
     assert shared == [], "the grouping governs this section; assert its parent instead"
     assert [document.parent_of(i.item_id) for i in (previous, item, following)] == [None] * 3
-    assert ("review_required", item.item_id) in {
+    assert ("unbuilt_question", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }
     events = [e for e in outcome.result.events if e.code == "model_review"]

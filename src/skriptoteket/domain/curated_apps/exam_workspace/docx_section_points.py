@@ -9,14 +9,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     points_line,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+)
 
 AcceptedItem = tuple[NativeExamItem, tuple[str, ...]]
-
-CHECK_POINTS_REASON = (
-    "Frågan anger inga egna poäng, så poängen är en uppskattning utifrån avsnittets "
-    "totalpoäng – kontrollera frågans poäng."
-)
 
 
 @dataclass(frozen=True)
@@ -94,8 +91,8 @@ def split_section_totals(
     Printed points stay. The total less the points of members that print them is split
     over the members that print none, in document order, in whole points as evenly as
     possible, earlier members taking the extra point. A member whose share is no point,
-    because nothing remains, keeps the model's own reading. Every member that prints no
-    points carries the check-points reason.
+    because nothing remains, keeps the model's own reading. A member given a share has its
+    points marked as estimated (D6).
     """
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     starts = [min(positions[anchor] for anchor in anchors) for _, anchors in accepted]
@@ -146,8 +143,7 @@ def split_section_totals(
         for rank, i in enumerate(unprinted):
             item, anchors = accepted[i]
             guess = share + 1 if rank < extra else share
-            reasons = tuple(dict.fromkeys((*item.review.reasons, CHECK_POINTS_REASON)))
-            review = item.review.model_copy(update={"reasons": reasons})
-            points = guess if guess > 0 else item.points
-            updated[i] = (item.model_copy(update={"points": points, "review": review}), anchors)
+            if guess > 0:
+                item = item.model_copy(update={"points": guess, "points_estimated": True})
+            updated[i] = (item, anchors)
     return SectionPoints(tuple(updated), frozenset(absorbed))

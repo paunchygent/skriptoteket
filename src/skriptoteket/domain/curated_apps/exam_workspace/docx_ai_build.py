@@ -213,8 +213,8 @@ def assemble_build_result(
         events = (*events, *returned.events)
         placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
     items = placed.items
+    # Document-level notes only: each item shows its own reasons (D8).
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
-    notes.extend(dict.fromkeys(reason for item in items for reason in item.review.reasons))
     if title is not None:
         document_title = title.text
     else:

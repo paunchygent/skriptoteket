@@ -32,6 +32,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     match_left: [],
     match_right: [],
     points: 2,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -100,8 +101,8 @@ describe("examWorkspaceRows", () => {
   });
 
   it("maps review reason codes to Swedish text and passes prose through", () => {
-    expect(examWorkspaceReviewReasonLabel("missing_points")).toBe(
-      "Poäng saknas – ange poäng för frågan.",
+    expect(examWorkspaceReviewReasonLabel("machine_proposed_answer_key")).toBe(
+      "Facit är ett maskinellt förslag – kontrollera det innan du godkänner.",
     );
     expect(examWorkspaceReviewReasonLabel("osäker tolkning av frågetexten")).toBe(
       "osäker tolkning av frågetexten",

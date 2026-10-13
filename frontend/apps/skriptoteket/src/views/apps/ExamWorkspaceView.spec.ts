@@ -64,6 +64,7 @@ function buildDocument(): NativeExamDocument {
         item_id: "item_001",
         kind: "free_text",
         points: 2,
+        points_estimated: false,
         review: {
           confidence: 0.9,
           parse_origin: "deterministic",

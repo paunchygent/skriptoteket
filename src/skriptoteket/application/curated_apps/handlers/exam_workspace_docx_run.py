@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -21,7 +20,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
-from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 
 
 @dataclass(frozen=True)
@@ -61,7 +59,6 @@ class DocxConversionRun:
         self.own_anchors: dict[str, tuple[str, ...]] = {}
         self.key_anchors: dict[str, tuple[str, ...]] = {}
         self.kinds: dict[str, NativeExamItemKind] = {}
-        self.first_pass: dict[str, Mapping[ItemTypeLabel, float]] = {}
         self.resent: set[str] = set()
         self.second_wave_dispatches = 0
         self.filled: list[str] = []
@@ -74,13 +71,6 @@ class DocxConversionRun:
         self.timings.append(
             DocxStageTiming(stage, started - self.started, time.monotonic() - self.started)
         )
-
-    def confidence(self) -> dict[str, float]:
-        """The first-pass probability of the label each question converts with."""
-        return {
-            qid: self.first_pass.get(qid, {}).get(ItemTypeLabel(kind.value), 0.0)
-            for qid, kind in self.kinds.items()
-        }
 
     @property
     def pending(self) -> tuple[str, ...]:

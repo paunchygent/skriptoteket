@@ -9,8 +9,10 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamParent,
-    native_exam_document_json_bytes,
     parent_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
+    native_exam_document_json_bytes,
 )
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_document,

@@ -10,13 +10,12 @@ no source type codes, and no source page/line spans.
 
 from __future__ import annotations
 
-import json
 import math
 from enum import StrEnum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -64,24 +63,6 @@ class NativeAnswerKeyOrigin(StrEnum):
     TEACHER_AUTHORED = "teacher_authored"
     MACHINE_PROPOSED = "machine_proposed"
     REVIEWED_ADVISORY = "reviewed_advisory"
-
-
-_TRUSTED_KEY_ORIGINS = frozenset(
-    {
-        NativeAnswerKeyOrigin.SOURCE_PROVIDED,
-        NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-        NativeAnswerKeyOrigin.REVIEWED_ADVISORY,
-    }
-)
-
-_KEYED_KINDS = frozenset(
-    {
-        NativeExamItemKind.SINGLE_CHOICE,
-        NativeExamItemKind.MULTIPLE_RESPONSE,
-        NativeExamItemKind.GAP_FILL,
-        NativeExamItemKind.MATCHING,
-    }
-)
 
 
 class NativeTextSegment(BaseModel):
@@ -220,6 +201,7 @@ class NativeExamItem(BaseModel):
     printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
+    points_estimated: bool = False  # points split from a printed section total (D6)
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
@@ -242,6 +224,8 @@ class NativeExamItem(BaseModel):
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> "NativeExamItem":
+        if self.points_estimated and self.points is None:
+            raise ValueError("estimated points require points")
         choice_ids = [choice.choice_id for choice in self.choices]
         gap_ids = [gap.gap_id for gap in self.gaps]
         if len(set(choice_ids)) != len(choice_ids):
@@ -426,70 +410,3 @@ class NativeExamDocument(BaseModel):
             message="Exam item not found.",
             details={"item_id": item_id},
         )
-
-
-class NativeExportBlocker(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    item_id: str
-    reason: Literal[
-        "review_required",
-        "machine_proposed_key_unreviewed",
-        "missing_points",
-        "missing_answer_key",
-    ]
-
-
-def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
-    """S4 gate: LLM output and low-confidence items need review before export.
-
-    Keyed kinds without an answer key block export: Exam.net QTI would carry an
-    automatic item with no correct response and the Exam.net PDF prints the key.
-    """
-    blockers: list[NativeExportBlocker] = []
-    for item in document.items:
-        if item.review.state is NativeItemReviewState.REVIEW_REQUIRED:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="review_required"))
-        if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
-            blockers.append(
-                NativeExportBlocker(
-                    item_id=item.item_id,
-                    reason="machine_proposed_key_unreviewed",
-                )
-            )
-        if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
-        if item.points is None:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
-    return tuple(blockers)
-
-
-def item_has_trusted_key(item: NativeExamItem) -> bool:
-    if item.kind not in _KEYED_KINDS:
-        return False
-    return item.answer_key.origin in _TRUSTED_KEY_ORIGINS
-
-
-def native_exam_document_json_bytes(document: NativeExamDocument) -> bytes:
-    payload = document.model_dump(mode="json")
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
-
-
-def parse_native_exam_document(data: bytes) -> NativeExamDocument:
-    try:
-        payload = json.loads(data.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload is not valid JSON.",
-        ) from error
-    try:
-        return NativeExamDocument.model_validate(payload)
-    except ValidationError as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload failed validation.",
-            details={"errors": error.error_count()},
-        ) from error

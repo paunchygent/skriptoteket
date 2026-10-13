@@ -90,23 +90,16 @@ def merge_batch(
             setattr(target, f"{mine.split('_')[0]}_complete", False)
 
 
-def with_confidence(
-    state: DocxBuildState, families: tuple[QuestionFamily, ...], confidence: Mapping[str, float]
-) -> None:
-    """Record the first-pass probability of the converted label on each converted item.
+def with_type_check_mark(state: DocxBuildState) -> None:
+    """Mark each item kept after a repeated type conflict for a type check (D7).
 
-    An item kept after a repeated type conflict always carries the type-check mark: its
-    confidence stays below the acceptance threshold.
+    Its confidence stays below the acceptance threshold; no other item carries a confidence,
+    because the first-pass label probability says nothing once conversion settles the type.
     """
-    owner = {a: f.question_id for f in families for a in f.question_anchors}
     updated = []
     for item, anchors in state.accepted:
-        qid = next((owner[a] for a in anchors if a in owner), None)
-        if qid is not None and qid in confidence:
-            value = confidence[qid]
-            if state.kept_conflicts.intersection(anchors):
-                value = min(value, _BELOW_ACCEPT)
-            review = item.review.model_copy(update={"confidence": value})
+        if state.kept_conflicts.intersection(anchors):
+            review = item.review.model_copy(update={"confidence": _BELOW_ACCEPT})
             item = item.model_copy(update={"review": review})
         updated.append((item, anchors))
     state.accepted = updated

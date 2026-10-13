@@ -8,11 +8,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
-    CHECK_POINTS_REASON,
     SectionPoints,
     split_section_totals,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -83,7 +84,7 @@ def _points(accepted: Accepted) -> list[int | float | None]:
 
 
 def _marked(accepted: Accepted) -> list[bool]:
-    return [CHECK_POINTS_REASON in item.review.reasons for item, _ in accepted]
+    return [item.points_estimated for item, _ in accepted]
 
 
 def _split(
@@ -201,17 +202,17 @@ def test_question_left_without_a_whole_point_keeps_the_models_reading():
     # 30 less the printed 18 leaves 12 for 14 questions: the last two keep the model's
     # reading, none for question 13 and 2 for question 14.
     assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 12 + [None, 2] + [2]
-    assert _marked(split.accepted) == [False] * 5 + [True] * 14 + [False]
+    assert _marked(split.accepted) == [False] * 5 + [True] * 12 + [False] * 3
 
 
-def test_when_nothing_remains_the_models_reading_stands_and_is_marked():
+def test_when_nothing_remains_the_models_reading_stands_and_is_not_estimated():
     chunks = _chunks(_SECTIONED)
     accepted, _ = _sectioned_inputs(chunks, printing_member=3)
 
     split = _split(chunks, accepted, (_line(_anchor(6), 16),))
 
     assert _points(split.accepted) == [3, 3, 4, 4, 2] + [None] * 3 + [2] + [None] * 11
-    assert _marked(split.accepted) == [False] * 5 + [True] * 14 + [False]
+    assert _marked(split.accepted) == [False] * 20
 
 
 def test_unbuilt_chunk_inside_the_section_does_not_withhold_the_split():

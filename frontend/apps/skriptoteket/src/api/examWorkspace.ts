@@ -51,7 +51,7 @@ export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProp
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceExportBlockerReason =
-  | "review_required"
+  | "unbuilt_question"
   | "machine_proposed_key_unreviewed"
   | "missing_points"
   | "missing_answer_key";

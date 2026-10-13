@@ -117,4 +117,19 @@ describe("parents in useExamWorkspaceDocument", () => {
     expect(document.items.map((item) => item.points)).toEqual([1, 1, null, 1]);
     expect(document.parents).toEqual(buildParentDocument().parents);
   });
+
+  it("clears the estimate mark when the teacher sets the points", async () => {
+    const estimated = buildParentDocument();
+    estimated.items = estimated.items.map((item) => ({ ...item, points_estimated: true }));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
+    const state = effectScope().run(() => useExamWorkspaceDocument())!;
+    await state.openDocument("lineage-1");
+    await flushPromises();
+
+    state.updateItemPoints("item_002", 3);
+
+    const items = state.workspaceDocument.value!.items;
+    expect(items.map((item) => item.points_estimated)).toEqual([true, false, true, true]);
+    expect(items[1]!.points).toBe(3);
+  });
 });
