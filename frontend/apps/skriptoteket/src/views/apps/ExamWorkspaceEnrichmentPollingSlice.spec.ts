@@ -49,6 +49,14 @@ vi.mock("../../api/examWorkspace", () => apiMocks);
 
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((pendingResolve) => {
+    resolve = pendingResolve;
+  });
+  return { promise, resolve };
+}
+
 function statusFailureToastCount(): number {
   return vi
     .mocked(useToastStore().failure)
@@ -220,6 +228,39 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
 
     expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(3);
     expect(statusFailureToastCount()).toBe(2);
+  });
+
+  it("does not start polling when the view unmounts while the request is in flight", async () => {
+    const pendingRequest = deferred<ReturnType<typeof status>>();
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValue(pendingRequest.promise);
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await requestProposals(wrapper);
+    wrapper.unmount();
+    pendingRequest.resolve(status("queued"));
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
+
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(0);
+  });
+
+  it("does not schedule another poll when the view unmounts while a poll is in flight", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    const pendingPoll = deferred<ReturnType<typeof status>>();
+    apiMocks.getExamWorkspaceAnswerKeySuggestions.mockReturnValueOnce(pendingPoll.promise);
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+    pendingPoll.resolve(status("running"));
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
+
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
   });
 
   it("stops polling when the view unmounts", async () => {

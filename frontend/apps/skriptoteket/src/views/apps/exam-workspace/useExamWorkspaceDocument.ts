@@ -111,6 +111,25 @@ export function useExamWorkspaceDocument() {
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
+  // Suggestions that arrived while a save was in flight. That save's
+  // response holds the document as sent, so it cannot contain them;
+  // they are reapplied onto the returned revision and stay unsaved.
+  let saveInFlight = false;
+  let arrivalsDuringSave: ExamWorkspaceAnswerKeySuggestionItem[] = [];
+
+  function rememberArrivalDuringSave(entry: ExamWorkspaceAnswerKeySuggestionItem): void {
+    arrivalsDuringSave = [
+      ...arrivalsDuringSave.filter((candidate) => candidate.item_id !== entry.item_id),
+      entry,
+    ];
+  }
+
+  function takeArrivalsDuringSave(): ExamWorkspaceAnswerKeySuggestionItem[] {
+    const arrivals = arrivalsDuringSave;
+    arrivalsDuringSave = [];
+    saveInFlight = false;
+    return arrivals;
+  }
 
   const {
     adoptConversion,
@@ -228,12 +247,17 @@ export function useExamWorkspaceDocument() {
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
     operationBusy.value = true;
+    saveInFlight = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
       });
+      const arrivals = takeArrivalsDuringSave();
       applyResponse(response);
+      if (arrivals.length > 0) {
+        applyArrivingSuggestions(arrivals);
+      }
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
       return true;
@@ -258,8 +282,16 @@ export function useExamWorkspaceDocument() {
       } else {
         toast.failure(SAVE_FAILURE_COPY);
       }
+      // A failed or reloaded save did not persist arrivals that landed
+      // while it ran; put them back on the copy now in front of the
+      // teacher (idempotent where that copy never lost them).
+      const arrivals = takeArrivalsDuringSave();
+      if (arrivals.length > 0) {
+        applyArrivingSuggestions(arrivals);
+      }
       return false;
     } finally {
+      saveInFlight = false;
       operationBusy.value = false;
     }
   }
@@ -373,6 +405,9 @@ export function useExamWorkspaceDocument() {
         return item;
       }
       changed = true;
+      if (saveInFlight) {
+        rememberArrivalDuringSave({ item_id: item.item_id, suggestion });
+      }
       return withArrivingSuggestion(item, suggestion);
     });
     if (!changed) {

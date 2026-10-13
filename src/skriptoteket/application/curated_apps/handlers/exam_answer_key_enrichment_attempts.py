@@ -145,6 +145,53 @@ class AnswerKeyAttemptLedger:
             proposals.append(proposal)
         return tuple(proposals), serving_profile
 
+    async def collect_valid_proposals[P, R](
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        route: AnswerKeyProviderRoute,
+        plans: tuple[P, ...],
+        attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
+        leases_by_item: dict[str, AnswerKeyTokenLease],
+        proposal_from: Callable[[P, ProviderAttempt], R | None],
+    ) -> tuple[tuple[tuple[str, R], ...], StructuredLLMProviderProfile] | EnrichmentFailure:
+        """Collect every valid proposal, keyed by its candidate's item id.
+
+        Workspace-only policy: one question's invalid model output neither
+        discards the valid proposals already collected nor stops the later
+        questions; processing continues in plan order. A provider failure
+        still fails the collection at once, and when no question produced a
+        valid proposal the collection fails as ``llm_output_invalid``. The
+        DigiExam lane keeps the all-or-nothing ``collect_proposals`` above.
+        """
+
+        proposals: list[tuple[str, R]] = []
+        serving_profile = route.primary
+        saw_invalid_output = False
+        for plan, candidate in zip(plans, attempt_candidates, strict=True):
+            attempt = await self._attempts.attempt_with_failover(
+                job=job,
+                candidate=candidate,
+                route=route,
+                primary_lease=leases_by_item[candidate.item_id],
+            )
+            if isinstance(attempt, EnrichmentFailure):
+                return attempt
+            if attempt.profile is route.failover:
+                serving_profile = route.failover
+            await self._reconcile_attempt_usage(attempt=attempt)
+            proposal = proposal_from(plan, attempt)
+            if proposal is None:
+                saw_invalid_output = True
+                continue
+            proposals.append((candidate.item_id, proposal))
+        if not proposals and saw_invalid_output:
+            return EnrichmentFailure(
+                teacher_message=MANUAL_COMPLETION_MESSAGE,
+                last_error="llm_output_invalid",
+            )
+        return tuple(proposals), serving_profile
+
     async def _reconcile_attempt_usage(self, *, attempt: ProviderAttempt) -> None:
         usable_tokens = attempt.response.usage.usable_total_tokens
         if usable_tokens is None:

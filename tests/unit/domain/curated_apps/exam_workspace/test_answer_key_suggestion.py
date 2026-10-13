@@ -29,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeExamParent,
     NativeGap,
+    NativeGapAcceptedValues,
     NativeGapSegment,
     NativeItemReview,
     NativeItemReviewState,
@@ -305,9 +306,94 @@ class TestRestoreAndOutdated:
 
 
 class TestSuggestionStorage:
-    def test_suggestion_with_undeclared_choice_is_rejected(self) -> None:
+    def test_historical_suggestion_with_a_removed_choice_is_kept(self) -> None:
+        item = _choice_item(
+            choices=(
+                NativeChoice(choice_id="choice_001", text="vägen"),
+                NativeChoice(choice_id="choice_003", text="skolan"),
+            ),
+            answer_key=NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+                correct_choice_ids=("choice_001",),
+            ),
+            ai_suggestion=_suggestion("choice_002"),
+        )
+
+        assert item.ai_suggestion is not None
+        assert item.ai_suggestion.correct_choice_ids == ("choice_002",)
+        assert item.answer_key.correct_choice_ids == ("choice_001",)
+        assert suggestion_is_outdated(item, None) is True
+
+    def test_historical_matching_suggestion_with_a_removed_entry_is_kept(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.MATCHING,
+            body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
+            points=1,
+            match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
+            match_right=(
+                NativeMatchRight(right_id="right_001", text="dog"),
+                NativeMatchRight(right_id="right_002", text="cat"),
+            ),
+            answer_key=NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+                match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
+            ),
+            ai_suggestion=NativeAnswerKeySuggestion(
+                match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_009"),),
+                fingerprint=_FINGERPRINT,
+                provider_profile_id="profile",
+                model="model",
+                prompt_template_version="v1",
+            ),
+            review=_review(),
+        )
+
+        assert item.ai_suggestion is not None
+        assert item.ai_suggestion.match_pairs[0].right_id == "right_009"
+
+    def test_historical_gap_suggestion_for_a_removed_gap_is_kept(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.GAP_FILL,
+            body=(
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Hon heter "),
+                        NativeGapSegment(gap_id="gap_001"),
+                        NativeTextSegment(text="."),
+                    )
+                ),
+            ),
+            points=1,
+            gaps=(NativeGap(gap_id="gap_001", accepted_values=("Anna",)),),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+            ai_suggestion=NativeAnswerKeySuggestion(
+                gap_accepted_values=(
+                    NativeGapAcceptedValues(gap_id="gap_002", accepted_values=("Bo",)),
+                ),
+                fingerprint=_FINGERPRINT,
+                provider_profile_id="profile",
+                model="model",
+                prompt_template_version="v1",
+            ),
+            review=_review(),
+        )
+
+        assert item.ai_suggestion is not None
+        assert item.ai_suggestion.gap_accepted_values[0].gap_id == "gap_002"
+        assert item.gaps[0].accepted_values == ("Anna",)
+
+    def test_active_key_with_undeclared_choice_is_still_rejected(self) -> None:
         with pytest.raises(ValidationError):
-            _choice_item(ai_suggestion=_suggestion("choice_009"))
+            _choice_item(
+                answer_key=NativeAnswerKey(
+                    origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+                    correct_choice_ids=("choice_009",),
+                )
+            )
 
     def test_save_and_reopen_keep_the_suggestion(self) -> None:
         item = apply_suggestion_to_item(_choice_item(), _suggestion("choice_002"))

@@ -124,7 +124,7 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         except AnswerKeyTokenLeaseRefused:
             return await self.fail(job=job, last_error="daily_token_lease_exhausted")
 
-        collected = await self._ledger.collect_proposals(
+        collected = await self._ledger.collect_valid_proposals(
             job=job,
             route=route,
             plans=plans,
@@ -138,8 +138,8 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
 
         payload = WorkspaceAnswerKeySuggestionsPayload(
             suggestions=tuple(
-                ExamWorkspaceAnswerKeySuggestionItem(item_id=view.item_id, suggestion=suggestion)
-                for view, suggestion in zip(views, suggestions, strict=True)
+                ExamWorkspaceAnswerKeySuggestionItem(item_id=item_id, suggestion=suggestion)
+                for item_id, suggestion in suggestions
             )
         )
         now = self._clock.now()

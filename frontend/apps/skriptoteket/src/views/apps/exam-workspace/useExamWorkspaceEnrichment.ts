@@ -158,6 +158,9 @@ export function useExamWorkspaceEnrichment(
       );
       applyStatus(currentSummary.lineage_id, pollGeneration, status);
     } catch {
+      if (pollGeneration !== generation) {
+        return;
+      }
       toast.failure(REQUEST_FAILURE_COPY);
     } finally {
       isRequesting.value = false;
@@ -185,7 +188,13 @@ export function useExamWorkspaceEnrichment(
     },
   );
 
-  onScopeDispose(stopPolling);
+  // Disposal invalidates every outstanding request and poll: a late
+  // completion or failure must not apply results, toast, or schedule a
+  // new poll for a view that no longer exists.
+  onScopeDispose(() => {
+    generation += 1;
+    stopPolling();
+  });
 
   return {
     enrichmentMessage,

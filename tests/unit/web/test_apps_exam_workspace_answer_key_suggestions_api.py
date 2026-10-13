@@ -14,7 +14,8 @@ Relationships:
 from __future__ import annotations
 
 from types import SimpleNamespace
-from uuid import uuid4
+from typing import Protocol, TypeGuard
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -23,15 +24,11 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceEnrichmentState,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_enrichment as api
 from tests.fixtures.identity_fixtures import make_user
 
 pytestmark = pytest.mark.unit
-
-
-def _unwrap_dishka(fn: object) -> object:
-    return getattr(fn, "__dishka_orig_func__", fn)
 
 
 class FakeRegistry:
@@ -48,6 +45,54 @@ class CapturingRequestHandler:
     async def handle(self, **kwargs: object) -> ExamWorkspaceAnswerKeySuggestionsResponse:
         self.calls.append(kwargs)
         return self.result
+
+
+class _RequestSuggestionsEndpoint(Protocol):
+    """The unwrapped request route with this test's capturing doubles."""
+
+    async def __call__(
+        self,
+        *,
+        lineage_id: UUID,
+        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
+        registry: FakeRegistry,
+        handler: CapturingRequestHandler,
+        user: User,
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
+
+
+class _StatusSuggestionsEndpoint(Protocol):
+    """The unwrapped status route with this test's capturing doubles."""
+
+    async def __call__(
+        self,
+        *,
+        lineage_id: UUID,
+        job_id: UUID,
+        registry: FakeRegistry,
+        handler: CapturingStatusHandler,
+        user: User,
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
+
+
+def _is_request_endpoint(value: object) -> TypeGuard[_RequestSuggestionsEndpoint]:
+    return callable(value)
+
+
+def _is_status_endpoint(value: object) -> TypeGuard[_StatusSuggestionsEndpoint]:
+    return callable(value)
+
+
+def _unwrap_request_endpoint(fn: object) -> _RequestSuggestionsEndpoint:
+    candidate = getattr(fn, "__dishka_orig_func__", fn)
+    assert _is_request_endpoint(candidate)
+    return candidate
+
+
+def _unwrap_status_endpoint(fn: object) -> _StatusSuggestionsEndpoint:
+    candidate = getattr(fn, "__dishka_orig_func__", fn)
+    assert _is_status_endpoint(candidate)
+    return candidate
 
 
 class CapturingStatusHandler:
@@ -100,8 +145,8 @@ async def test_request_route_delegates_the_editor_sent_document() -> None:
         }
     )
 
-    route = _unwrap_dishka(api.request_exam_workspace_answer_key_suggestions)
-    response = await route(  # type: ignore[operator]
+    route = _unwrap_request_endpoint(api.request_exam_workspace_answer_key_suggestions)
+    response = await route(
         lineage_id=lineage_id,
         request=request,
         registry=FakeRegistry(),
@@ -125,8 +170,8 @@ async def test_status_route_delegates_the_job_read() -> None:
         )
     )
 
-    route = _unwrap_dishka(api.get_exam_workspace_answer_key_suggestions)
-    response = await route(  # type: ignore[operator]
+    route = _unwrap_status_endpoint(api.get_exam_workspace_answer_key_suggestions)
+    response = await route(
         lineage_id=lineage_id,
         job_id=job_id,
         registry=FakeRegistry(),

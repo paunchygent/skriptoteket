@@ -15,6 +15,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
+  NativeAnswerKeySuggestion,
 } from "../../../api/examWorkspace";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { mergeSavedDocuments, useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
@@ -113,6 +114,49 @@ beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
+});
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((pendingResolve) => {
+    resolve = pendingResolve;
+  });
+  return { promise, resolve };
+}
+
+describe("arriving suggestions during a save", () => {
+  it("keeps a suggestion that arrives while the save is in flight and stays dirty", async () => {
+    const state = await openMatchingDocument();
+    const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
+    const suggestion: NativeAnswerKeySuggestion = {
+      correct_choice_ids: [],
+      fingerprint: "a".repeat(64),
+      gap_accepted_values: [],
+      match_pairs: [{ left_id: "left_001", right_id: "right_001" }],
+      model: "model",
+      prompt_template_version: "v1",
+      provider_profile_id: "profile",
+    };
+
+    state.updateItemTitle("item_001", "Ändrad titel");
+    const saving = state.saveDocument();
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    expect(currentItem(state).ai_suggestion).toEqual(suggestion);
+
+    const savedDocument = apiMocks.saveExamWorkspaceDocument.mock.calls[0][1].document;
+    expect(savedDocument.items[0].ai_suggestion ?? null).toBeNull();
+    pendingSave.resolve({
+      ...buildResponse(),
+      document: savedDocument,
+      summary: { ...buildResponse().summary, version: 2 },
+    });
+    await saving;
+
+    expect(currentItem(state).ai_suggestion).toEqual(suggestion);
+    expect(currentItem(state).answer_key.origin).toBe("source_provided");
+    expect(state.isDirty.value).toBe(true);
+  });
 });
 
 describe("matching edits in useExamWorkspaceDocument", () => {

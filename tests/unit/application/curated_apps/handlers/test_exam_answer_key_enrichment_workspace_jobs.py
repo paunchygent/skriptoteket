@@ -21,6 +21,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -40,6 +41,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     WorkspaceAnswerKeySuggestionsPayload,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+    StructuredLLMRequest,
+    StructuredLLMResponse,
     StructuredLLMUsage,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
@@ -264,6 +268,64 @@ async def test_workspace_job_stores_suggestions_on_the_job_without_an_overlay() 
     assert arrived.suggestion.model == "gpt-5.6-luna"
     assert arrived.suggestion.prompt_template_version == "digiexam_choice_answer_key_prompt_v1"
     assert arrived.suggestion.fingerprint == answer_key_fingerprint(document.items[0], None)
+
+
+class _SequenceProvider(StubProvider):
+    """Provider double answering each call with the next scripted content."""
+
+    def __init__(self, contents: list[dict[str, JsonValue]]) -> None:
+        super().__init__(content={}, usage=StructuredLLMUsage(total_tokens=50))
+        self._contents = contents
+
+    async def complete_structured(
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+    ) -> StructuredLLMResponse:
+        del request, profile
+        self.call_count += 1
+        return StructuredLLMResponse(
+            content=self._contents[self.call_count - 1],
+            finish_reason="completed",
+            usage=StructuredLLMUsage(total_tokens=50),
+        )
+
+
+def _three_unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
+    document = _unkeyed_choice_document(document_id=document_id)
+    first = document.items[0]
+    items = tuple(
+        first.model_copy(update={"item_id": f"item_{index:03d}", "sequence": index})
+        for index in (1, 2, 3)
+    )
+    return document.model_copy(update={"items": items})
+
+
+async def test_one_invalid_answer_keeps_valid_answers_and_continues_to_later_questions() -> None:
+    document = _three_unkeyed_choice_document(document_id=uuid4())
+    provider = _SequenceProvider(
+        [
+            {"correct_alternative_ids": [2]},
+            {"correct_alternative_ids": [9]},
+            {"correct_alternative_ids": [1]},
+        ]
+    )
+    harness = _WorkspaceHarness(provider=provider, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert provider.call_count == 3
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001", "item_003"]
+    assert payload.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
+    assert payload.suggestions[1].suggestion.correct_choice_ids == ("choice_001",)
+    assert harness.proposed_overlays.records == []
+    assert harness.producer.calls == 0
 
 
 async def test_workspace_lease_refusal_fails_closed_with_zero_provider_calls() -> None:
