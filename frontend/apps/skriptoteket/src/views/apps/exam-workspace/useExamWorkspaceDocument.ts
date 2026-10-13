@@ -12,6 +12,7 @@
  * Relationships:
  *   - Used by `ExamWorkspaceView`.
  *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Applies item edits from `examWorkspaceItemEdits` through one patch path.
  *   - Checks a save against `examWorkspaceItemSaveRules` before sending it.
  *   - Reports outcomes through the shared toast store.
  */
@@ -28,7 +29,6 @@ import {
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
-  NativeExamAnswerKeyOrigin,
   NativeExamBodySegment,
   NativeExamDocument,
   NativeExamItem,
@@ -36,6 +36,20 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { nextItemId } from "./examWorkspaceConversionMerge";
+import {
+  newTeacherItem,
+  reviewed,
+  withChoiceText,
+  withCorrectChoices,
+  withGapValues,
+  withMarkingGuide,
+  withMatchEntryText,
+  withMatchPairs,
+  withParagraphSegments,
+  withPoints,
+  withProposal,
+  withTitle,
+} from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 
@@ -60,11 +74,6 @@ function refusedPlaceholderChange(error: unknown): error is ApiError {
     error.details !== null &&
     "item_ids" in error.details
   );
-}
-
-/** A teacher edit keys the item only while it still carries key data. */
-function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
-  return hasKeyData ? "teacher_authored" : "absent";
 }
 
 /**
@@ -303,53 +312,31 @@ export function useExamWorkspaceDocument() {
   }
 
   function updateItemTitle(itemId: string, title: string): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      title: title.trim().length > 0 ? title : null,
-    }));
+    patchItem(itemId, (item) => withTitle(item, title));
   }
 
   function updateItemMarkingGuide(itemId: string, guide: string | null): void {
-    patchItem(itemId, (item) => ({ ...item, marking_guide: guide }));
+    patchItem(itemId, (item) => withMarkingGuide(item, guide));
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
-    // A points value the teacher sets is no estimate from a section total.
-    patchItem(itemId, (item) => ({ ...item, points, points_estimated: false }));
+    patchItem(itemId, (item) => withPoints(item, points));
   }
 
-  /** Replace one paragraph's segments, as serialized by the inline body editor. */
   function updateItemParagraphSegments(
     itemId: string,
     paragraphIndex: number,
     segments: NativeExamBodySegment[],
   ): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      body: item.body.map((paragraph, candidateParagraphIndex) =>
-        candidateParagraphIndex === paragraphIndex ? { segments } : paragraph,
-      ),
-    }));
+    patchItem(itemId, (item) => withParagraphSegments(item, paragraphIndex, segments));
   }
 
   function updateItemChoiceText(itemId: string, choiceId: string, text: string): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      choices: item.choices.map((choice) =>
-        choice.choice_id === choiceId ? { ...choice, text } : choice,
-      ),
-    }));
+    patchItem(itemId, (item) => withChoiceText(item, choiceId, text));
   }
 
   function updateItemCorrectChoices(itemId: string, correctChoiceIds: string[]): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      answer_key: {
-        ...item.answer_key,
-        correct_choice_ids: correctChoiceIds,
-        origin: teacherKeyOrigin(correctChoiceIds.length > 0),
-      },
-    }));
+    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds));
   }
 
   function updateItemMatchEntryText(
@@ -358,93 +345,23 @@ export function useExamWorkspaceDocument() {
     entryId: string,
     text: string,
   ): void {
-    patchItem(itemId, (item) =>
-      side === "left"
-        ? {
-            ...item,
-            match_left: item.match_left.map((entry) =>
-              entry.left_id === entryId ? { ...entry, text } : entry,
-            ),
-          }
-        : {
-            ...item,
-            match_right: item.match_right.map((entry) =>
-              entry.right_id === entryId ? { ...entry, text } : entry,
-            ),
-          },
-    );
+    patchItem(itemId, (item) => withMatchEntryText(item, side, entryId, text));
   }
 
   function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      answer_key: {
-        ...item.answer_key,
-        match_pairs: pairs,
-        origin: teacherKeyOrigin(pairs.length > 0),
-      },
-    }));
+    patchItem(itemId, (item) => withMatchPairs(item, pairs));
   }
 
-  function updateItemGapValues(
-    itemId: string,
-    gapId: string,
-    acceptedValues: string[],
-  ): void {
-    patchItem(itemId, (item) => {
-      const gaps = item.gaps.map((gap) =>
-        gap.gap_id === gapId ? { ...gap, accepted_values: acceptedValues } : gap,
-      );
-      const hasKeyData = gaps.some((gap) => gap.accepted_values.length > 0);
-      return {
-        ...item,
-        answer_key: { ...item.answer_key, origin: teacherKeyOrigin(hasKeyData) },
-        gaps,
-      };
-    });
+  function updateItemGapValues(itemId: string, gapId: string, acceptedValues: string[]): void {
+    patchItem(itemId, (item) => withGapValues(item, gapId, acceptedValues));
   }
 
   function markItemReviewed(itemId: string): void {
-    patchItem(itemId, (item) => ({
-      ...item,
-      answer_key:
-        item.answer_key.origin === "machine_proposed"
-          ? { ...item.answer_key, origin: "reviewed_advisory" }
-          : item.answer_key,
-      review: { ...item.review, state: "review_complete" },
-    }));
+    patchItem(itemId, reviewed);
   }
 
-  /**
-   * Move an advisory proposal into the editor as an unreviewed prefill
-   * (`machine_proposed`, item marked `review_required`). With `approve`, the
-   * teacher accepts the key unchanged in the same step, which records it as
-   * `reviewed_advisory` and leaves the item's review state and reasons as
-   * they were: parse-confidence review still needs the explicit
-   * "mark reviewed" action.
-   */
   function applyProposal(itemId: string, proposedItem: NativeExamItem, approve: boolean): void {
-    patchItem(itemId, (item) => {
-      const gaps = item.gaps.map((gap) => {
-        const proposedGap = proposedItem.gaps.find(
-          (candidate) => candidate.gap_id === gap.gap_id,
-        );
-        return proposedGap ? { ...gap, accepted_values: proposedGap.accepted_values } : gap;
-      });
-      if (approve) {
-        return {
-          ...item,
-          answer_key: { ...proposedItem.answer_key, origin: "reviewed_advisory" },
-          gaps,
-        };
-      }
-      return {
-        ...item,
-        answer_key: { ...proposedItem.answer_key, origin: "machine_proposed" },
-        gaps,
-        review: { ...item.review, state: "review_required" },
-      };
-    });
+    patchItem(itemId, (item) => withProposal(item, proposedItem, approve));
   }
 
   function addItem(): void {
@@ -453,27 +370,7 @@ export function useExamWorkspaceDocument() {
       return;
     }
     const itemId = nextItemId(current.items.map((item) => item.item_id));
-    const newItem: NativeExamItem = {
-      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-      body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
-      choices: [],
-      gaps: [],
-      item_id: itemId,
-      kind: "free_text",
-      match_left: [],
-      match_right: [],
-      points: null,
-      points_estimated: false,
-      review: {
-        confidence: null,
-        parse_origin: "teacher_created",
-        reasons: [],
-        state: "review_complete",
-      },
-      sequence: current.items.length + 1,
-      source_anchor: null,
-      title: null,
-    };
+    const newItem = newTeacherItem(itemId, current.items.length + 1);
     workspaceDocument.value = { ...current, items: [...current.items, newItem] };
     selectedItemId.value = itemId;
     isDirty.value = true;

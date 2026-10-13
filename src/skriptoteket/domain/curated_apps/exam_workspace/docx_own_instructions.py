@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
+    NativeGapSegment,
     NativeItemReviewState,
     NativeParseOrigin,
     NativeTextSegment,
@@ -45,7 +46,7 @@ class ReturnedChunks:
     events: tuple[DocxBuildEvent, ...]
 
 
-# A line's own number or letter, such as "3.", "b)" or "Fråga 3:", and an answer or facit line.
+# A unit's own number or letter, such as "3.", "b)" or "Fråga 3:", and an answer or facit line.
 _NUMBERING = re.compile(
     r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)])\s*",
     re.IGNORECASE,
@@ -55,44 +56,83 @@ _ANSWER_LINE = re.compile(
     r"(?:svar|svarsexempel|facit|answers?(?:\s+key)?|key)\s*:",
     re.IGNORECASE,
 )
-# Words of two or more characters: a lone option letter or digit is numbering, not wording.
-_WORD = re.compile(r"\w{2,}")
+# Where a printed line holds several units: a table cell boundary or an inline option letter.
+_UNIT_BREAK = re.compile(r"\s\|\s|\s(?=[a-z]\s*[.)]\s)", re.IGNORECASE)
+# Words, numbers and single letters, and the symbols that carry mathematical content.
+_TOKEN = re.compile(r"[^\W_]+|[+=<>≤≥×÷*/^%]")
+
+Gap = tuple[tuple[str, ...], ...]
+# A picture in the body: no printed unit reads across it.
+_PICTURE = ""
+Stream = tuple[str | Gap, ...]
 
 
-def _words(texts: Iterable[str | None]) -> set[str]:
-    return {word.casefold() for text in texts if text for word in _WORD.findall(text)}
+def _tokens(text: str | None) -> tuple[str, ...]:
+    return tuple(token.casefold() for token in _TOKEN.findall(text or ""))
 
 
-def _wording(chunk: DocxChunk) -> set[str]:
-    """The chunk's words without points labels, numbering and answer or facit lines."""
-    lines = (
-        _NUMBERING.sub("", POINT_LABEL.sub(" ", line))
-        for line in chunk.text.splitlines()
-        if not _ANSWER_LINE.match(line)
-    )
-    return _words(lines)
+def _units(chunk: DocxChunk) -> tuple[tuple[str, ...], ...]:
+    """The chunk's printed units in order, without points labels, numbering and facit lines."""
+    units = []
+    for line in chunk.text.splitlines():
+        for part in _UNIT_BREAK.split(POINT_LABEL.sub(" ", line)):
+            unit = _NUMBERING.sub("", part)
+            if not _ANSWER_LINE.match(unit) and (tokens := _tokens(unit)):
+                units.append(tokens)
+    return tuple(units)
 
 
-def _item_words(item: NativeExamItem) -> set[str]:
-    texts: list[str | None] = [item.title, item.marking_guide]
-    texts.extend(
-        segment.text
-        for paragraph in item.body
-        for segment in paragraph.segments
-        if isinstance(segment, NativeTextSegment)
-    )
-    texts.extend(value for gap in item.gaps for value in gap.accepted_values)
-    texts.extend(choice.text for choice in item.choices)
-    texts.extend(entry.text for entry in item.match_left)
-    texts.extend(entry.text for entry in item.match_right)
-    return _words(texts)
+def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
+    """The item's texts in order; a gap reads as nothing or as one of its accepted values."""
+    gaps = {gap.gap_id: tuple(_tokens(value) for value in gap.accepted_values) for gap in item.gaps}
+    body: list[str | Gap] = []
+    for paragraph in item.body:
+        for segment in paragraph.segments:
+            if isinstance(segment, NativeTextSegment):
+                body.extend(_tokens(segment.text))
+            elif isinstance(segment, NativeGapSegment):
+                body.append(gaps.get(segment.gap_id, ()))
+            else:
+                body.append(_PICTURE)
+    texts = [
+        item.title,
+        item.marking_guide,
+        *(value for gap in item.gaps for value in gap.accepted_values),
+        *(choice.text for choice in item.choices),
+        *(entry.text for entry in item.match_left),
+        *(entry.text for entry in item.match_right),
+    ]
+    return (tuple(body), (*_tokens(item.title), *body), *(_tokens(text) for text in texts))
+
+
+def _occurs(unit: tuple[str, ...], stream: Stream) -> bool:
+    """Whether ``unit`` reads in order, without a break, somewhere in ``stream``."""
+    matched: set[int] = set()
+    for token in stream:
+        matched.add(0)
+        if isinstance(token, tuple):
+            matched |= {
+                k + len(value)
+                for k in matched
+                for value in token
+                if value and unit[k : k + len(value)] == value
+            }
+        else:
+            matched = {k + 1 for k in matched if k < len(unit) and unit[k] == token}
+        if len(unit) in matched:
+            return True
+    return False
 
 
 def wording_left_out(item: NativeExamItem, chunks: Iterable[DocxChunk]) -> tuple[DocxChunk, ...]:
-    """The chunks whose wording the item lacks (D4); a drawing is never wording the item holds."""
-    held = _item_words(item)
+    """The chunks with a unit the item does not read in order (D4); a drawing is never wording
+    the item holds."""
+    streams = _streams(item)
     return tuple(
-        chunk for chunk in chunks if chunk.kind == "drawing" or not _wording(chunk) <= held
+        chunk
+        for chunk in chunks
+        if chunk.kind == "drawing"
+        or not all(any(_occurs(unit, s) for s in streams) for unit in _units(chunk))
     )
 
 

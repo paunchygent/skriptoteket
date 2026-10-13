@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
     EXAM_WORKSPACE_CONTAINER_SCHEMA_VERSION,
     ExamWorkspaceContainerContent,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
     parse_native_exam_document,
 )

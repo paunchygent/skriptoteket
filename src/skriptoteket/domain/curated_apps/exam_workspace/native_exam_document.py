@@ -10,13 +10,12 @@ no source type codes, and no source page/line spans.
 
 from __future__ import annotations
 
-import json
 import math
 from enum import StrEnum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -64,24 +63,6 @@ class NativeAnswerKeyOrigin(StrEnum):
     TEACHER_AUTHORED = "teacher_authored"
     MACHINE_PROPOSED = "machine_proposed"
     REVIEWED_ADVISORY = "reviewed_advisory"
-
-
-_TRUSTED_KEY_ORIGINS = frozenset(
-    {
-        NativeAnswerKeyOrigin.SOURCE_PROVIDED,
-        NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-        NativeAnswerKeyOrigin.REVIEWED_ADVISORY,
-    }
-)
-
-_KEYED_KINDS = frozenset(
-    {
-        NativeExamItemKind.SINGLE_CHOICE,
-        NativeExamItemKind.MULTIPLE_RESPONSE,
-        NativeExamItemKind.GAP_FILL,
-        NativeExamItemKind.MATCHING,
-    }
-)
 
 
 class NativeTextSegment(BaseModel):
@@ -429,80 +410,3 @@ class NativeExamDocument(BaseModel):
             message="Exam item not found.",
             details={"item_id": item_id},
         )
-
-
-class NativeExportBlocker(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    item_id: str
-    reason: Literal[
-        "unbuilt_question",
-        "machine_proposed_key_unreviewed",
-        "missing_points",
-        "missing_answer_key",
-    ]
-
-
-def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
-    """S4 gate: export needs every value the export carries, never a parsing doubt (D1).
-
-    An unbuilt question, printed from source because the import could not convert it, blocks
-    until the teacher marks it reviewed (D2). A converted item that needs review does not block.
-    Keyed kinds without an answer key block export: Exam.net QTI would carry an
-    automatic item with no correct response and the Exam.net PDF prints the key.
-    """
-    blockers: list[NativeExportBlocker] = []
-    for item in document.items:
-        if is_unbuilt_question(item):
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="unbuilt_question"))
-        if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
-            blockers.append(
-                NativeExportBlocker(
-                    item_id=item.item_id,
-                    reason="machine_proposed_key_unreviewed",
-                )
-            )
-        if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
-        if item.points is None:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
-    return tuple(blockers)
-
-
-def is_unbuilt_question(item: NativeExamItem) -> bool:
-    """An item printed from source that the teacher has not marked reviewed (D2)."""
-    return (
-        item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
-        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    )
-
-
-def item_has_trusted_key(item: NativeExamItem) -> bool:
-    if item.kind not in _KEYED_KINDS:
-        return False
-    return item.answer_key.origin in _TRUSTED_KEY_ORIGINS
-
-
-def native_exam_document_json_bytes(document: NativeExamDocument) -> bytes:
-    payload = document.model_dump(mode="json")
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
-
-
-def parse_native_exam_document(data: bytes) -> NativeExamDocument:
-    try:
-        payload = json.loads(data.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload is not valid JSON.",
-        ) from error
-    try:
-        return NativeExamDocument.model_validate(payload)
-    except ValidationError as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload failed validation.",
-            details={"errors": error.error_count()},
-        ) from error

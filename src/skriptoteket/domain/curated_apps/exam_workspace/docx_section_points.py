@@ -9,7 +9,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     points_line,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
+)
 
 AcceptedItem = tuple[NativeExamItem, tuple[str, ...]]
 

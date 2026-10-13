@@ -17,6 +17,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeItemReviewState,
     NativeParseOrigin,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

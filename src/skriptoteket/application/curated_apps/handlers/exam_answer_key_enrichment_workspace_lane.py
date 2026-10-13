@@ -55,7 +55,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_item_views,
     proposal_from_model_content,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
 )
 from skriptoteket.domain.errors import DomainError

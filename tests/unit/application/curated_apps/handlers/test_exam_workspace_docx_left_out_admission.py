@@ -106,6 +106,8 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
         "(Answer key: syfte, urval och frågor)",
         "Svarsexempel: syfte, urval och frågor",
         "Facit: syfte, urval och frågor",
+        "1. Correct answer: syfte, urval och frågor",
+        "b) Svar: syfte, urval och frågor",
     ],
 )
 def test_an_own_facit_line_the_reply_leaves_out_is_not_flagged_in_any_printed_form(facit):
@@ -154,6 +156,97 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
     assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert admitted.review.reasons == (LEFT_OUT_REASON, lead)
     assert [(e.code, e.anchors) for e in state.events] == [("own_chunks_left_out", ("body:0001",))]
+
+
+@pytest.mark.parametrize(
+    ("dropped", "kept"),
+    [
+        ("x + y = 7", "Beräkna summan."),
+        ("Förklara hur ånga blir vatten.", "Förklara hur vatten blir ånga."),
+        ("Skriv i meter.", "Skriv meter."),
+    ],
+    ids=["formula", "reversed-sentence", "one-letter-word"],
+)
+def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(dropped, kept):
+    state = _state(dropped, kept)
+
+    admit_batch(
+        {"items": [_item(["body:0002"], body=[{"segments": [_text(kept)]}])]},
+        state,
+    )
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert admitted.review.reasons == (LEFT_OUT_REASON, dropped)
+
+
+def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
+    stem = "1. The bands ____ (spelar) at the festival."
+    state = _state("Fyll i rätt form.", stem)
+    body = [
+        {"segments": [_text("Fyll i rätt form.")]},
+        {
+            "segments": [
+                _text("The bands "),
+                {"kind": "gap", "text": None, "accepted_values": ["play"]},
+                _text(" (spelar) at the festival."),
+            ]
+        },
+    ]
+
+    admit_batch({"items": [_item(["body:0001"], kind="gap_fill", body=body)]}, state)
+
+    ((admitted, anchors),) = state.accepted
+    assert anchors == ("body:0001", "body:0002")
+    assert admitted.review.reasons == ()
+
+
+def test_a_dropped_line_of_inline_options_is_read_option_by_option():
+    options = "A) play B) plays"
+    state = _state(_STEM, options)
+    choices: list[JsonValue] = [
+        {"text": "play", "correct": True},
+        {"text": "plays", "correct": False},
+    ]
+
+    admit_batch(
+        {
+            "items": [
+                _item(["body:0001"], kind="single_choice", choices=choices, marking_guide=None)
+            ]
+        },
+        state,
+    )
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.reasons == ()
+
+
+@pytest.mark.parametrize(
+    ("stem", "flagged"),
+    [("absence without permission", True), ("absence without permission: truancy", False)],
+    ids=["one-cell-missing", "every-cell-read"],
+)
+def test_a_dropped_table_is_read_cell_by_cell(stem, flagged):
+    table = "1. absence without permission | ____ | A. truancy"
+    state = _state(stem, table)
+
+    admit_batch({"items": [_item(["body:0001"], body=[{"segments": [_text(stem)]}])]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.reasons == ((LEFT_OUT_REASON, table) if flagged else ())
+
+
+def test_a_points_label_split_across_text_segments_leaves_the_stem():
+    stem = "Vilket ord är ett substantiv? (1 p)"
+    state = _state(stem)
+    body = [{"segments": [_text("Vilket ord är ett substantiv? (1"), _text(" p)")]}]
+
+    admit_batch({"items": [_item(["body:0001"], body=body, points=None)]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.points == 1
+    assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
 
 
 def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_label():

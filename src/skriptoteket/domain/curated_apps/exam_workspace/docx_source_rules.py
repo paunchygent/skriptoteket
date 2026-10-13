@@ -8,7 +8,10 @@ point labels and defined terms of source instructions.
 import re
 from collections.abc import Iterable
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
+    ProducedItem,
+    ProducedSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import validation_error
 
@@ -255,6 +258,19 @@ def _without_label(text: str) -> str:
     return stripped.lstrip() if _LABEL_RUN.match(text) else stripped
 
 
+def _joined_text_runs(segments: Iterable[ProducedSegment]) -> list[ProducedSegment]:
+    """Adjacent text segments as one, so a label split across them leaves as a whole."""
+    joined: list[ProducedSegment] = []
+    for segment in segments:
+        last = joined[-1] if joined else None
+        if segment.kind == "text" and last is not None and last.kind == "text":
+            text = (last.text or "") + (segment.text or "")
+            joined[-1] = last.model_copy(update={"text": text})
+        else:
+            joined.append(segment)
+    return joined
+
+
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
     """D3: a reply without points takes the one points label its own chunks print.
 
@@ -273,7 +289,7 @@ def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> Produce
             segment.model_copy(update={"text": _without_label(segment.text)})
             if segment.kind == "text" and segment.text
             else segment
-            for segment in paragraph.segments
+            for segment in _joined_text_runs(paragraph.segments)
         )
         body.append(paragraph.model_copy(update={"segments": segments}))
     title = _without_label(item.title).strip() if item.title else item.title
