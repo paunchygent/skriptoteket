@@ -5,8 +5,9 @@
 in which the model returned ``outcome: review`` for a question whose lettered parts carry their
 answers inline. The review item holds every chunk the question owns, in source order, facit
 included, between its neighbouring questions. The grouping gives no shared context governing
-two or more of those three questions, so none of them sits under a section parent. The
-document stays blocked for export while the review item is there.
+two or more of those three questions; the printed section headings still parent them, the
+review item included (T2, D27). The document stays blocked for export while the review
+item is there.
 """
 
 import pytest
@@ -79,7 +80,13 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
         and len(set(c["governs"]) & set(_SECTION)) >= 2
     ]
     assert shared == [], "the grouping governs this section; assert its parent instead"
-    assert [document.parent_of(i.item_id) for i in (previous, item, following)] == [None] * 3
+    # The printed section headings parent the questions, the review item included
+    # (T2, D27): the review item and its predecessor share the Del 2 parent, and the
+    # following question opens Del 3.
+    parents = [document.parent_of(i.item_id) for i in (previous, item, following)]
+    assert parents[0] is not None and parents[0] == parents[1]
+    assert parents[0].instruction == ("Del 2: grammatik och språkstrukturer",)
+    assert parents[2] is not None and parents[2].instruction == ("Del 3: kortsvar",)
     assert ("unbuilt_question", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }

@@ -6,6 +6,7 @@ schema forbids empty text segments, and null text in a batch without gaps.
 """
 
 import pytest
+from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.handlers import (
@@ -57,21 +58,36 @@ def _object(value: object) -> dict[str, object]:
 def _segment_schema(kind: NativeExamItemKind) -> dict[str, object]:
     spec = docx_build_output_spec(anchors=["body:0001"], kinds=[kind])
     definitions = _object(spec.json_schema["$defs"])
-    return _object(_object(definitions["ProducedSegment"])["properties"])
+    return _object(definitions["ProducedSegment"])
+
+
+def _segment_errors(kind: NativeExamItemKind, segment: dict[str, object]) -> list[str]:
+    validator = Draft202012Validator(_segment_schema(kind))
+    return [error.message for error in validator.iter_errors(segment)]
 
 
 def test_schema_forbids_empty_text_and_null_text_without_gaps() -> None:
-    text = _object(_segment_schema(NativeExamItemKind.FREE_TEXT)["text"])
+    properties = _object(_segment_schema(NativeExamItemKind.FREE_TEXT)["properties"])
+    text = _object(properties["text"])
     assert text["type"] == "string"
     assert text["minLength"] == 1
+    assert _object(properties["kind"])["enum"] == ["text"]
 
 
-def test_schema_forbids_empty_text_with_gaps() -> None:
-    text = _object(_segment_schema(NativeExamItemKind.GAP_FILL)["text"])
-    allowed = text["anyOf"]
-    assert isinstance(allowed, list)
-    assert {"type": "string", "minLength": 1} in allowed
-    assert {"type": "null"} in allowed  # gap segments carry no text
+def test_gap_batch_schema_admits_only_the_text_and_gap_segment_shapes() -> None:
+    admitted: list[dict[str, object]] = [
+        {"kind": "text", "text": "Cellen har", "accepted_values": []},
+        {"kind": "gap", "text": None, "accepted_values": ["en kärna"]},
+    ]
+    rejected: list[dict[str, object]] = [
+        {"kind": "text", "text": None, "accepted_values": []},
+        {"kind": "text", "text": "", "accepted_values": []},
+        {"kind": "gap", "text": "en kärna", "accepted_values": []},
+    ]
+    for segment in admitted:
+        assert _segment_errors(NativeExamItemKind.GAP_FILL, segment) == []
+    for segment in rejected:
+        assert _segment_errors(NativeExamItemKind.GAP_FILL, segment) != []
 
 
 def test_schema_has_no_item_title() -> None:

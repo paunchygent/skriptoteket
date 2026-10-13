@@ -191,8 +191,10 @@ def test_questions_of_different_kinds_under_one_instruction_share_one_parent():
     kinds = {build.item(a).kind for a in ("body:0037", "body:0045")}
     assert len(kinds) == 2
 
-    (parent,) = build.result.document.parents
-    assert parent.instruction == (wording,)
+    parent = build.parent_with("body:0037")
+    assert parent is not None
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert parent.instruction == ("Del 2: Satsdelar", wording)
     assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
     assert _carrying(build, wording) == set()
     assert not [e for e in build.result.events if "kind" in e.code]
@@ -205,7 +207,8 @@ def test_term_defining_instruction_reaches_only_the_items_naming_its_terms():
     assert terms
 
     parent = build.parent_with("body:0037")
-    assert parent is not None and parent.instruction == (wording,)
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert parent is not None and parent.instruction == ("Del 2: Satsdelar", wording)
     assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
     for anchor in ("body:0037", "body:0045"):
         assert uses_term(terms, build.own_chunks(anchor))
@@ -260,7 +263,9 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
             # A heading chunk stands on its parent without its printed total and
             # question number (T2).
             shown = texts + [
-                _NUMBERED_LINE.sub("", " ".join(POINT_LABEL.sub(" ", text).split()), count=1)
+                _NUMBERED_LINE.sub(
+                    "", " ".join(POINT_LABEL.sub(" ", text).split()), count=1
+                ).rstrip(" ,;")
                 for text in texts
             ]
             reached = any(text in kept or _carrying(build, text) for text in shown)
@@ -272,7 +277,7 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
         # form from a printed heading alone (T2), holding only heading wording.
         bare = _build(stem, carry=False).result.document
         headings = {
-            " ".join(POINT_LABEL.sub(" ", chunk.text).split())
+            " ".join(POINT_LABEL.sub(" ", chunk.text).split()).rstrip(" ,;")
             for chunk in build.state.chunks
             if chunk.kind == "heading"
         } | {chunk.text for chunk in build.state.chunks if chunk.kind == "heading"}

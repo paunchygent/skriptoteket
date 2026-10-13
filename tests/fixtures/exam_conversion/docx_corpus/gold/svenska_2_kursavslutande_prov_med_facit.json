@@ -291,170 +291,184 @@
       ]
     },
     {
-      "source_label": "Fråga 16",
-      "kind": "gap_fill",
-      "points": 3,
-      "prompt": "Morfem\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek [___]\nb) I ordet lekfullheten är -full och -het [___]\nc) I ordet lekfullheten är -en [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 16–20",
+      "instruction": "Del 2: grammatik och språkstrukturer",
+      "children": [
         {
-          "accepted_values": [
-            "R"
+          "source_label": "Fråga 16",
+          "kind": "gap_fill",
+          "points": 3,
+          "prompt": "Morfem\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek [___]\nb) I ordet lekfullheten är -full och -het [___]\nc) I ordet lekfullheten är -en [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "R"
+              ]
+            },
+            {
+              "accepted_values": [
+                "A"
+              ]
+            },
+            {
+              "accepted_values": [
+                "B"
+              ]
+            }
+          ],
+          "notes": [
+            "Subpart b groups -full and -het under one answer A, as printed; whole-item points stay 3. No partial-credit rule is inferred."
           ]
         },
         {
-          "accepted_values": [
-            "A"
-          ]
+          "source_label": "Fråga 17",
+          "kind": "gap_fill",
+          "points": 3,
+          "prompt": "Fraser\nAnvänd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en [___]\nb) Frasen på skolgården är en [___]\nc) Frasen kan vila är en [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "NF"
+              ]
+            },
+            {
+              "accepted_values": [
+                "PF"
+              ]
+            },
+            {
+              "accepted_values": [
+                "VF"
+              ]
+            }
+          ],
+          "notes": []
         },
         {
-          "accepted_values": [
-            "B"
-          ]
+          "source_label": "Fråga 18",
+          "kind": "gap_fill",
+          "points": 4,
+          "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nNoah [___] skrev [___] brevet [___] tydligt [___].",
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ],
+          "notes": []
+        },
+        {
+          "source_label": "Fråga 19",
+          "kind": "gap_fill",
+          "points": 4,
+          "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nAlva [___] är [___] inte [___] färdig [___].",
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "SA"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Pf"
+              ]
+            }
+          ],
+          "notes": []
+        },
+        {
+          "source_label": "Fråga 20",
+          "kind": "gap_fill",
+          "points": 2,
+          "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
+          "gaps": [
+            {
+              "accepted_values": [
+                "huvudsats"
+              ]
+            },
+            {
+              "accepted_values": [
+                "före"
+              ]
+            }
+          ],
+          "notes": []
         }
-      ],
-      "notes": [
-        "Subpart b groups -full and -het under one answer A, as printed; whole-item points stay 3. No partial-credit rule is inferred."
       ]
     },
     {
-      "source_label": "Fråga 17",
-      "kind": "gap_fill",
-      "points": 3,
-      "prompt": "Fraser\nAnvänd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en [___]\nb) Frasen på skolgården är en [___]\nc) Frasen kan vila är en [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 21–24",
+      "instruction": "Del 3: kortsvar",
+      "children": [
         {
-          "accepted_values": [
-            "NF"
+          "source_label": "Fråga 21",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Renässansen\nVad menas med en renässansmänniska?",
+          "notes": [
+            "Svarsexempel: En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         },
         {
-          "accepted_values": [
-            "PF"
+          "source_label": "Fråga 22",
+          "kind": "free_text",
+          "points": 2,
+          "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+          "notes": [
+            "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         },
         {
-          "accepted_values": [
-            "VF"
+          "source_label": "Fråga 23",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Språkstruktur\nVad är en nominalisering?",
+          "notes": [
+            "Svarsexempel: När en handling, egenskap eller process uttrycks som substantiv.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+          ]
+        },
+        {
+          "source_label": "Fråga 24",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
+          "notes": [
+            "Svarsexempel: I bisats står inte och andra satsadverbial före det finita verbet.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 18",
-      "kind": "gap_fill",
-      "points": 4,
-      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nNoah [___] skrev [___] brevet [___] tydligt [___].",
-      "gaps": [
-        {
-          "accepted_values": [
-            "S"
-          ]
-        },
-        {
-          "accepted_values": [
-            "P"
-          ]
-        },
-        {
-          "accepted_values": [
-            "DO"
-          ]
-        },
-        {
-          "accepted_values": [
-            "Adv"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 19",
-      "kind": "gap_fill",
-      "points": 4,
-      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nAlva [___] är [___] inte [___] färdig [___].",
-      "gaps": [
-        {
-          "accepted_values": [
-            "S"
-          ]
-        },
-        {
-          "accepted_values": [
-            "P"
-          ]
-        },
-        {
-          "accepted_values": [
-            "SA"
-          ]
-        },
-        {
-          "accepted_values": [
-            "Pf"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 20",
-      "kind": "gap_fill",
-      "points": 2,
-      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
-      "gaps": [
-        {
-          "accepted_values": [
-            "huvudsats"
-          ]
-        },
-        {
-          "accepted_values": [
-            "före"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 21",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Renässansen\nVad menas med en renässansmänniska?",
-      "notes": [
-        "Svarsexempel: En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 22",
-      "kind": "free_text",
-      "points": 2,
-      "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
-      "notes": [
-        "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 23",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Språkstruktur\nVad är en nominalisering?",
-      "notes": [
-        "Svarsexempel: När en handling, egenskap eller process uttrycks som substantiv.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 24",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
-      "notes": [
-        "Svarsexempel: I bisats står inte och andra satsadverbial före det finita verbet.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
       ]
     }
   ]

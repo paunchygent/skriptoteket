@@ -1,0 +1,390 @@
+"""The runs a section placement is built from: instructions, headings, and their reach.
+
+Every run is decided in one pass with one section rule: a section boundary is a heading
+no item owns, other than a heading that labels a stretch inside one instruction printed
+in several paragraphs. A printed heading over questions is a run of its own starting at
+the heading, reaching the questions up to the next boundary, so a parent formed from
+same-reach runs opens with the heading by construction (T1, T2). A heading a question
+owns reaches that question alone. A heading the grouping marks as governing reaches
+exactly the governed questions (D40).
+"""
+
+import re
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
+    defined_terms,
+    points_line,
+    uses_term,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+
+Placed = tuple[int, tuple[str, ...], NativeExamItem]
+
+# A question line that starts with its printed number.
+_NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
+# A question line that opens with quoted material, after any list label.
+_OPENS_WITH_QUOTE = re.compile(r"^\s*(?:\w{1,3}[.)]\s*)?[\"“‘«„]")
+_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
+
+
+@dataclass(frozen=True)
+class Run:
+    """One instruction (or lines an item prints before its numbered line) and the items after it.
+
+    A heading run carries one printed heading: ``only`` is the item that owns the heading
+    chunk, and ``raw`` is the heading as printed, before its wording loses the printed
+    points label and question number.
+    """
+
+    origin: int | None
+    start: int
+    sources: tuple[DocxChunk, ...]
+    span: tuple[int, ...] = ()
+    reach: tuple[int, ...] = ()
+    governs: frozenset[str] = frozenset()
+    heading: bool = False
+    only: int | None = None
+    raw: str = ""
+
+
+@dataclass(frozen=True)
+class Joined:
+    """An instruction printed inside an item's own chunks, and where in the item it belongs."""
+
+    origin: int
+    texts: tuple[str, ...]
+    later: tuple[str, ...]
+    opens: bool
+
+
+def folded(text: str) -> str:
+    return " ".join(text.replace("[___]", " ").split()).casefold()
+
+
+def _is_lead_in(chunk: DocxChunk) -> bool:
+    return chunk.kind != "heading" and chunk.text.rstrip().endswith(":")
+
+
+def _opens_with_quote(sources: Sequence[DocxChunk]) -> bool:
+    """Whether the question's first own line after any heading and lead-in opens with a quote."""
+    first = next((c for c in sources if c.kind != "heading" and not _is_lead_in(c)), None)
+    return first is not None and bool(_OPENS_WITH_QUOTE.match(first.text))
+
+
+def _lead_in_labels(
+    chunks: tuple[DocxChunk, ...],
+    runs: list[Run],
+    own: set[str],
+    positions: dict[str, int],
+    item_starts: list[int],
+) -> set[int]:
+    """Headings that label a stretch of an instruction lead-in, such as one passage of two.
+
+    Such a heading prints no points and sits between instruction paragraphs that no item
+    owns, and the lead-in it sits in serves the one question that follows it. A heading
+    over a run of two or more questions is a section heading, never a label, even when
+    instruction lines stand on both sides of it: the run before it ends there.
+    """
+    lead_in = {positions[c.anchor] for run in runs for c in run.sources if not points_line(c.text)}
+    provisional = {
+        i
+        for i in range(1, len(chunks) - 1)
+        if chunks[i].kind == "heading"
+        and chunks[i].anchor not in own
+        and not POINT_LABEL.search(chunks[i].text)
+        and {i - 1, i + 1} <= lead_in
+        and chunks[i - 1].kind != "heading"
+        and chunks[i + 1].kind != "heading"
+    }
+    labels = set()
+    for i in provisional:
+        end = next(
+            (
+                j
+                for j in range(i + 1, len(chunks))
+                if chunks[j].kind == "heading"
+                and chunks[j].anchor not in own
+                and j not in provisional
+            ),
+            len(chunks),
+        )
+        if sum(1 for start in item_starts if i < start < end) <= 1:
+            labels.add(i)
+    return labels
+
+
+def heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
+    """A printed heading's wording without its points label and question number.
+
+    What remains is the heading as printed; a heading that is only a question number
+    and points leaves nothing. A numbered question line set in a heading style, such
+    as "Fråga 6. Ange …", leaves its stem, which the item already prints.
+    """
+    text = " ".join(POINT_LABEL.sub(" ", chunk.text).split())
+    label = (item.printed_label or "") if item is not None else ""
+    if label and text.casefold().startswith(label.casefold()):
+        text = text[len(label) :].lstrip(" .):-").strip()
+    else:
+        text = _NUMBERED_LINE.sub("", text, count=1).strip()
+    # The separator before a removed points label ("Del 2: Satsdelar, 8 poäng") goes with it.
+    return text.rstrip(" ,;")
+
+
+def instruction_runs(
+    chunks: tuple[DocxChunk, ...],
+    instructions: tuple[ProducedMetadata, ...],
+    item_sources: list[list[DocxChunk]],
+    positions: dict[str, int],
+    governed: Mapping[str, frozenset[str]],
+) -> tuple[list[Run], dict[int, list[Joined]]]:
+    """The instruction runs, and the text joined into the item that prints it.
+
+    An instruction the grouping marks as governing questions is never joined into an item.
+    """
+    spans = [(positions[s[0].anchor], positions[s[-1].anchor]) for s in item_sources]
+    joined: dict[int, list[Joined]] = {}
+    runs: list[Run] = []
+    for origin, instruction in enumerate(instructions):
+        at = sorted(positions[a] for a in instruction.source_anchors)
+        sources = tuple(chunks[i] for i in at)
+        governs = frozenset(
+            anchor for a in instruction.source_anchors for anchor in governed.get(a, ())
+        )
+        owner = next((k for k, (lo, hi) in enumerate(spans) if lo < at[0] and at[-1] < hi), None)
+        if governs:
+            runs.append(Run(origin, at[-1], sources, governs=governs))
+        elif owner is not None:
+            own = [c for c in item_sources[owner] if c.kind != "heading"]
+            joined.setdefault(owner, []).append(
+                Joined(
+                    origin=origin,
+                    texts=tuple(chunk.text for chunk in sources),
+                    later=tuple(folded(c.text) for c in own if positions[c.anchor] > at[-1]),
+                    opens=not any(positions[c.anchor] < at[0] for c in own),
+                )
+            )
+        else:
+            runs.append(Run(origin, at[-1], sources))
+    for item_chunks in item_sources:
+        lines = [c for c in item_chunks if c.kind != "heading"]
+        numbered = next((i for i, c in enumerate(lines) if _NUMBERED.match(c.text)), 0)
+        if numbered:
+            runs.append(Run(None, positions[lines[numbered - 1].anchor], tuple(lines[:numbered])))
+    return runs, joined
+
+
+@dataclass(frozen=True)
+class SectionShape:
+    """The one section rule for a document: its boundary headings and lead-in labels."""
+
+    boundaries: list[int]
+    labels: set[int]
+    heading_anchors: frozenset[str]
+
+
+def with_heading_runs(
+    chunks: tuple[DocxChunk, ...],
+    ordered: list[Placed],
+    runs: list[Run],
+    instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
+    positions: dict[str, int],
+    title_anchors: frozenset[str],
+    own_anchors: frozenset[str],
+) -> tuple[list[Run], SectionShape]:
+    """Add one run per printed heading, under the same boundary rule as every other run.
+
+    The document's opening heading is the exam title, never a question heading. A
+    question's own heading chunk a reply lists as an instruction instead of in its item
+    gets no heading run: it stays with the D42 return and check mark, because placement
+    never silently repairs a misplaced own chunk.
+    """
+    own = {anchor for _, anchors, _ in ordered for anchor in anchors}
+    owner = {a: k for k, (_, anchors, _) in enumerate(ordered) for a in anchors}
+    labels = _lead_in_labels(chunks, runs, own, positions, [start for start, _, _ in ordered])
+    boundaries = [
+        i
+        for i, chunk in enumerate(chunks)
+        if chunk.kind == "heading" and chunk.anchor not in own and i not in labels
+    ]
+    boundary_anchors = {chunks[i].anchor for i in boundaries}
+    held = {a for m in instructions for a in m.source_anchors}
+    sole_origin = {
+        m.source_anchors[0]: i for i, m in enumerate(instructions) if len(m.source_anchors) == 1
+    }
+    headings: list[Run] = []
+    for chunk in chunks:
+        at = positions[chunk.anchor]
+        if (
+            chunk.kind != "heading"
+            or not chunk.text.strip()
+            or at == 0
+            or chunk.anchor in title_anchors
+            or points_line(chunk.text)
+        ):
+            continue
+        if chunk.anchor in owner:
+            only: int | None = owner[chunk.anchor]
+            governs: frozenset[str] = frozenset()
+        elif chunk.anchor in boundary_anchors:
+            if chunk.anchor in own_anchors and chunk.anchor in held:
+                continue
+            only = None
+            governs = governed.get(chunk.anchor, frozenset())
+        else:
+            continue
+        headings.append(
+            Run(
+                sole_origin.get(chunk.anchor),
+                at,
+                (chunk,),
+                governs=governs,
+                heading=True,
+                only=only,
+                raw=chunk.text,
+            )
+        )
+    shape = SectionShape(boundaries, labels, frozenset(r.sources[0].anchor for r in headings))
+    return [*runs, *headings], shape
+
+
+def _span(
+    run: Run, ordered: list[Placed], boundaries: list[int], starts: list[int], chunk_count: int
+) -> tuple[int, ...]:
+    """The items after a run, up to the next section boundary or later instruction."""
+    following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
+    first_item = next((ordered[k][0] for k in following if ordered[k][0] > run.start), chunk_count)
+    end = min(
+        next((i for i in boundaries if i > run.start), chunk_count),
+        next((s for s in starts if s > first_item), chunk_count),
+    )
+    return tuple(k for k in following if ordered[k][0] < end)
+
+
+def _exact(run: Run, ordered: list[Placed]) -> tuple[int, ...]:
+    return tuple(
+        k for k, (_, anchors, _) in enumerate(ordered) if run.governs.intersection(anchors)
+    )
+
+
+def reaches(
+    chunks: tuple[DocxChunk, ...],
+    ordered: list[Placed],
+    runs: list[Run],
+    item_sources: list[list[DocxChunk]],
+    positions: dict[str, int],
+    shape: SectionShape,
+) -> list[Run]:
+    """Each run with its span (the items up to its end) and the items its rule reaches."""
+    # A heading run never ends another run: a question's own heading starts its item,
+    # and a section heading already ends a run as a boundary.
+    starts = sorted(run.start for run in runs if not run.heading)
+    reached: list[Run] = []
+    for run in sorted(runs, key=lambda r: r.start):
+        if run.heading:
+            reach = (
+                (run.only,)
+                if run.only is not None
+                else _exact(run, ordered)
+                if run.governs
+                else _span(run, ordered, shape.boundaries, starts, len(chunks))
+            )
+            chunk = run.sources[0]
+            # A chunk the grouping marks as governing keeps its whole text (D40).
+            text = (
+                chunk.text.strip()
+                if run.governs
+                else heading_wording(chunk, ordered[reach[0]][2] if len(reach) == 1 else None)
+            )
+            if not text or not reach:
+                reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))
+                continue
+            shown = DocxChunk(chunk.anchor, chunk.kind, text, chunk.marked_text)
+            reached.append(
+                Run(
+                    run.origin,
+                    run.start,
+                    (shown,),
+                    reach,
+                    reach,
+                    run.governs,
+                    heading=True,
+                    only=run.only,
+                    raw=run.raw,
+                )
+            )
+            continue
+        sources = (
+            tuple(
+                c for c in run.sources if c.text.strip() and c.anchor not in shape.heading_anchors
+            )
+            if run.governs
+            else tuple(
+                c
+                for c in run.sources
+                if not points_line(c.text)
+                and (c.kind != "heading" or positions[c.anchor] in shape.labels)
+            )
+        )
+        if not sources:
+            reached.append(Run(run.origin, run.start, ()))
+            continue
+        if run.governs:
+            reach = _exact(run, ordered)
+            reached.append(Run(run.origin, run.start, sources, reach, reach, run.governs))
+            continue
+        span = _span(run, ordered, shape.boundaries, starts, len(chunks))
+        terms = defined_terms("\n".join(chunk.text for chunk in sources))
+        following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
+        quoted = (
+            bool(following)
+            and _is_lead_in(sources[-1])
+            and _opens_with_quote(item_sources[following[0]])
+        )
+        reach = tuple(
+            k
+            for k in span
+            if (not terms or uses_term(terms, item_sources[k]))
+            and (not quoted or _opens_with_quote(item_sources[k]))
+        )
+        reached.append(Run(run.origin, run.start, sources, span, reach))
+    return reached
+
+
+def parent_groups(reached: list[Run]) -> list[list[Run]]:
+    """Runs whose instruction reaches the same two or more consecutive items, of any kinds.
+
+    A heading whose run sits inside a parent already formed over a wider reach joins
+    that parent, so its wording opens the parent's instruction instead of being copied
+    into the children.
+    """
+    candidates: dict[tuple[int, ...], list[Run]] = {}
+    for run in reached:
+        consecutive = all(b - a == 1 for a, b in zip(run.reach, run.reach[1:], strict=False))
+        if (run.origin is not None or run.heading) and len(run.reach) >= 2 and consecutive:
+            candidates.setdefault(run.reach, []).append(run)
+    groups: list[list[Run]] = []
+    taken: set[int] = set()
+    # An instruction-formed parent stands before a heading-only one: a heading over a
+    # wider run never displaces the parent of exactly the items an instruction serves.
+    ordered_candidates = sorted(
+        candidates.items(), key=lambda entry: (all(run.heading for run in entry[1]), entry[0])
+    )
+    for span, group in ordered_candidates:
+        if not taken.intersection(span):
+            taken.update(span)
+            groups.append(group)
+    groups.sort(key=lambda group: group[0].reach)
+    grouped = {id(run) for group in groups for run in group}
+    for run in reached:
+        if run.heading and run.only is None and len(run.reach) >= 2 and id(run) not in grouped:
+            for group in groups:
+                if set(run.reach) <= set(group[0].reach):
+                    group.append(run)
+                    break
+    return groups

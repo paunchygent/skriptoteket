@@ -91,7 +91,9 @@ def test_short_label_survives_when_a_later_sentence_contains_it():
         )
         assert lines.index("Text A") == first_passage - 1
         assert lines.index("Text B") == second_passage - 1
-        assert lines[0] == build.wording("body:0075")
+        # The printed section heading over this one question opens its body (T1, 39-05-08).
+        assert lines[0] == "Del 4: Textanalys"
+        assert lines[1] == build.wording("body:0075")
 
 
 def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_items():
@@ -119,7 +121,8 @@ def test_mixed_kind_run_is_one_parent_and_no_child_repeats_the_instruction():
     assert first.kind != second.kind
     parent = build.parent_of("body:0037")
     assert parent is not None and parent == build.parent_of("body:0045")
-    assert parent.instruction == (wording,)
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert parent.instruction == ("Del 2: Satsdelar", wording)
     assert parent.item_ids == (first.item_id, second.item_id)
     for item in (first, second):
         assert wording not in item.plain_text_lines()
@@ -135,5 +138,9 @@ def test_instruction_reaching_a_single_item_is_still_copied_not_parented():
     ]
 
     assert carriers == ["body:0056"]
-    assert build.parent_of("body:0056") is None
+    # The section heading over the two questions forms their parent (T2, 39-05-08);
+    # the instruction reaching one item stays a copy in that item, not a parent line.
+    parent = build.parent_of("body:0056")
+    assert parent is not None and parent == build.parent_of("body:0066")
+    assert parent.instruction == ("Del 3: Bisatser och komplex meningsbyggnad",)
     assert build.item("body:0056").plain_text_lines()[0] == wording

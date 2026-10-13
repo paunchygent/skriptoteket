@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
 )
 
-DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v11"
+DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v12"
 
 
 def _object(value: JsonValue) -> dict[str, JsonValue]:
@@ -78,20 +78,33 @@ def docx_build_output_spec(
     item_fields = _object(_object(definitions["ProducedItem"])["properties"])
     enum: list[JsonValue] = [kind.value for kind in sorted(batch_kinds, key=lambda k: k.value)]
     item_fields["kind"] = {"type": "string", "enum": enum}
-    segment_fields = _object(_object(definitions["ProducedSegment"])["properties"])
-    # A text segment is never empty; a batch without gaps also forbids null text (O1).
-    segment_fields["text"] = {
-        "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}],
-        "description": _object(segment_fields["text"]).get("description", ""),
-    }
-    if NativeExamItemKind.GAP_FILL not in batch_kinds:
-        # Only gap_fill answers in gaps; any other kind copies a printed blank as text.
-        segment_fields["kind"] = {"type": "string", "enum": ["text"]}
-        segment_fields["text"] = {
-            "type": "string",
-            "minLength": 1,
-            "description": _object(segment_fields["text"]).get("description", ""),
+    segment = _object(definitions["ProducedSegment"])
+    segment_fields = _object(segment["properties"])
+    description = _object(segment_fields["text"]).get("description", "")
+
+    def segment_shape(kind: str, text: dict[str, JsonValue]) -> dict[str, JsonValue]:
+        return {
+            "type": "object",
+            "properties": {
+                "kind": {"type": "string", "enum": [kind]},
+                "text": text,
+                "accepted_values": segment_fields["accepted_values"],
+            },
+            "required": ["kind", "text", "accepted_values"],
+            "additionalProperties": False,
         }
+
+    # Text and gap segments are two shapes: a text segment requires non-empty text and
+    # a gap segment requires null text, so kind and text can never disagree (O1).
+    text_shape = segment_shape(
+        "text", {"type": "string", "minLength": 1, "description": description}
+    )
+    if NativeExamItemKind.GAP_FILL in batch_kinds:
+        gap_shape = segment_shape("gap", {"type": "null", "description": description})
+        definitions["ProducedSegment"] = {"anyOf": [text_shape, gap_shape]}
+    else:
+        # Only gap_fill answers in gaps; any other kind copies a printed blank as text.
+        definitions["ProducedSegment"] = text_shape
     return StructuredOutputSpec(
         schema_name="docx_exam_build",
         schema_version=DOCX_BUILD_SCHEMA_VERSION,

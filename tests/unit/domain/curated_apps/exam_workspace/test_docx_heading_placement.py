@@ -54,10 +54,9 @@ def _place(
     placed: list[Placed],
     instructions: tuple[ProducedMetadata, ...] = (),
     title_anchors: frozenset[str] = frozenset(),
+    governed: MappingProxyType[str, frozenset[str]] = _NOTHING_GOVERNED,
 ) -> SectionInstructions:
-    return place_section_instructions(
-        chunks, placed, instructions, _NOTHING_GOVERNED, title_anchors
-    )
+    return place_section_instructions(chunks, placed, instructions, governed, title_anchors)
 
 
 def _ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
@@ -184,6 +183,105 @@ def test_heading_that_is_only_a_question_number_and_points_leaves_nothing() -> N
     placed = _place(chunks, [(2, ("body:0003",), item)], title_anchors=frozenset({"body:0001"}))
 
     assert placed.items[0].plain_text_lines() == ("Frågetext",)
+
+
+def test_section_heading_before_owned_question_headings_forms_the_parent() -> None:
+    # A question's own heading is no section boundary: the section heading above two
+    # numbered question headings still introduces their parent (review F1).
+    chunks = (
+        _chunk("body:0001", "heading", "Provets titel"),
+        _chunk("body:0002", "heading", "Cellens delar"),
+        _chunk("body:0003", "heading", "Fråga 1. Beskriv kärnan."),
+        _chunk("body:0004", "paragraph", "Förklara kärnans funktion."),
+        _chunk("body:0005", "heading", "Fråga 2. Beskriv membranet."),
+        _chunk("body:0006", "paragraph", "Förklara membranets funktion."),
+    )
+    first = _item("Beskriv kärnan.\nFörklara kärnans funktion.").model_copy(
+        update={"printed_label": "Fråga 1"}
+    )
+    second = _item("Beskriv membranet.\nFörklara membranets funktion.").model_copy(
+        update={"printed_label": "Fråga 2"}
+    )
+    ordered: list[Placed] = [
+        (2, ("body:0003", "body:0004"), first),
+        (4, ("body:0005", "body:0006"), second),
+    ]
+    instruction = ProducedMetadata(text="Cellens delar", source_anchors=("body:0002",))
+    placed = _place(
+        chunks, ordered, instructions=(instruction,), title_anchors=frozenset({"body:0001"})
+    )
+
+    assert len(placed.parents) == 1
+    assert placed.parents[0].instruction == ("Cellens delar",)
+    assert placed.parents[0].item_ids == ("item_001", "item_002")
+    # The questions keep their own headings in their bodies, exactly once.
+    assert placed.items[0].plain_text_lines()[0].startswith("Beskriv kärnan.")
+    assert placed.items[1].plain_text_lines()[0].startswith("Beskriv membranet.")
+    assert 0 in placed.landed
+
+
+def test_governing_heading_opens_the_parent_ahead_of_an_earlier_governing_line() -> None:
+    # A heading the grouping marks as governing is the parent's first line even when
+    # another governing line is printed before it; that line is preserved (review F3).
+    chunks = (
+        _chunk("body:0001", "heading", "Provets titel"),
+        _chunk("body:0002", "paragraph", "Namn: ____"),
+        _chunk("body:0003", "heading", "Cellens delar"),
+        _chunk("body:0004", "paragraph", "Fråga ett?"),
+        _chunk("body:0005", "paragraph", "Fråga två?"),
+    )
+    instructions = (
+        ProducedMetadata(text="Namn: ____", source_anchors=("body:0002",)),
+        ProducedMetadata(text="Cellens delar", source_anchors=("body:0003",)),
+    )
+    governed = MappingProxyType(
+        {
+            "body:0002": frozenset({"body:0004", "body:0005"}),
+            "body:0003": frozenset({"body:0004", "body:0005"}),
+        }
+    )
+    placed = _place(
+        chunks,
+        _ordered(chunks, "body:0004", "body:0005"),
+        instructions=instructions,
+        title_anchors=frozenset({"body:0001"}),
+        governed=governed,
+    )
+
+    assert len(placed.parents) == 1
+    assert placed.parents[0].instruction == ("Cellens delar", "Namn: ____")
+
+
+def test_line_before_a_section_heading_stays_document_level() -> None:
+    # A line printed before the section heading ends at that heading, even with
+    # instruction lines on both sides of it; it lands on no item and stays
+    # document-level instead of opening the section parent (biology Name line).
+    chunks = (
+        _chunk("body:0001", "heading", "Provets titel"),
+        _chunk("body:0002", "paragraph", "Name: ___ Date: ___"),
+        _chunk("body:0003", "heading", "A. Multiple choice"),
+        _chunk("body:0004", "paragraph", "Choose the best answer."),
+        _chunk("body:0005", "paragraph", "Fråga ett?"),
+        _chunk("body:0006", "paragraph", "Fråga två?"),
+        _chunk("body:0007", "heading", "B. Open questions"),
+        _chunk("body:0008", "paragraph", "Fråga tre?"),
+    )
+    instructions = (
+        ProducedMetadata(text="Name: ___ Date: ___", source_anchors=("body:0002",)),
+        ProducedMetadata(text="A. Multiple choice", source_anchors=("body:0003",)),
+        ProducedMetadata(text="Choose the best answer.", source_anchors=("body:0004",)),
+    )
+    placed = _place(
+        chunks,
+        _ordered(chunks, "body:0005", "body:0006", "body:0008"),
+        instructions=instructions,
+        title_anchors=frozenset({"body:0001"}),
+    )
+
+    assert len(placed.parents) == 1
+    assert placed.parents[0].instruction == ("A. Multiple choice", "Choose the best answer.")
+    assert 0 not in placed.landed
+    assert all("Name:" not in line for item in placed.items for line in item.plain_text_lines())
 
 
 def test_source_text_fallback_keeps_the_printed_points() -> None:
