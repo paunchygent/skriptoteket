@@ -1497,7 +1497,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Find Exam Workspace Answer Key Suggestions
+         * @description Find the newest suggestion job requested on this saved version, if any.
+         */
+        get: operations["find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get"];
         put?: never;
         /**
          * Request Exam Workspace Answer Key Suggestions
@@ -12245,6 +12249,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get: {
+        parameters: {
+            query: {
+                document_revision: number;
+            };
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"] | null;
                 };
             };
             /** @description Validation Error */

@@ -1,22 +1,19 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-09
-title: Resume a pending answer-key suggestion after reload and block importing over
-  unsaved edits
+title: Resume a pending answer-key suggestion after reload and block importing over unsaved edits
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-13'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A suggestion requested for the open exam's saved version reaches the exam after
-  a reload or reopen, and no file can be imported while the open exam has unsaved
-  changes
+  - A suggestion requested for the open exam's saved version reaches the exam after a reload or reopen, and no file can be imported while the open exam has unsaved changes
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -35,7 +32,7 @@ defects in the exam workspace:
 - the worker logs DOCX imports as "Answer-key enrichment job claimed" and
   "finished", so imports and suggestions cannot be told apart;
 - a gap-fill suggestion answered the wrong label. For "Kingdom of
-  mushrooms: ___    Domain of bacteria: ___" it suggested "Eukarya". The
+  mushrooms: \_\_\_ Domain of bacteria: \_\_\_" it suggested "Eukarya". The
   request squeezes both pairs onto one line and sends each gap as a bare
   number, so the model reads gap 1 as the domain. 19 of 30
   production-identical requests were right; with each gap carrying its
@@ -47,21 +44,26 @@ This task fixes all four.
   the latest suggestion job requested for an exam lineage against its
   current saved version, with the same state and suggestions as the job
   status route.
+
 - **Resume on open.** Whenever the workspace opens an exam (reload, reopen
   from the list, switching back), it asks for that job:
+
   - a queued or running job is polled as if this page had requested it;
   - a finished job's suggestions are applied under 39-04-07's T5, P12 and
     P13 rules, through the same arrival path, with the lineage and
     generation check of 39-04-07 repair 4.
 
   A job requested for an older saved version never applies.
+
 - **No duplicate job.** Föreslå facit, for all keyless questions or for one
   question, returns the queued or running job that already covers the same
   saved version and the same questions, instead of starting another model
   call.
+
 - **Blocked import.** While the open exam has unsaved changes the file
   picker is disabled and dropped files are ignored. One rule decides this
   for both paths, and the existing line explains why.
+
 - **Gap labels in suggestion requests.** Each gap sent to the suggestion
   model carries the text printed before its marker, taken from the
   existing numbered cloze text. The answer-key view, its cloze text and the
@@ -69,6 +71,7 @@ This task fixes all four.
   of date. The DigiExam lane squeezes whitespace the same way
   (`digiexam_answer_key_prompts.py:246`); the lead checks whether it sends
   gaps without labels and fixes it the same way if so.
+
 - **Log events.** The worker's claimed and finished events name the job's
   source kind (`docx_import`, `workspace`, `dxe`), in wording that fits
   every kind.
@@ -102,8 +105,7 @@ Out of scope: DOCX import quality
   happens at `answer_key_view.py:171`, the bare gap entries at
   `answer_key_prompts.py:187`, and reasoning effort is `low`
   (`config.py:331`).
-- The repository has a unique index on `(workspace_lineage_id,
-  workspace_document_revision)` for enrichment jobs
+- The repository has a unique index on `(workspace_lineage_id, workspace_document_revision)` for enrichment jobs
   (`exam_answer_key_enrichment_job.py:31-36`). Staging nevertheless ran
   several suggestion jobs against one saved version. The lead establishes
   what that column holds before choosing the lookup.
@@ -150,11 +152,13 @@ cost of a suggestion.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P1  | A suggestion job the page lost track of is found again when the exam opens: the latest job requested for the exam's current saved version. A queued or running job is polled; a finished job's suggestions are applied under TASK-SKRIPT-39-04-07's T5, P12 and P13 rules (user decision 2026-10-13). |
-| P2  | A job requested for an older saved version never applies once the exam has been saved again (user decision 2026-10-13). |
-| P3  | Föreslå facit while a job for the same saved version and the same questions is queued or running returns that job, and no second model call starts (user decision 2026-10-13). |
-| P4  | While the open exam has unsaved changes, importing is impossible: the picker is disabled and drops are ignored by one shared rule, and the existing line explains why (user decision 2026-10-13). |
-| P5  | The worker's claimed and finished events name the job's source kind. |
-| P6  | Each gap sent to the suggestion model carries the text printed before its marker; the answer-key view, its cloze text and the fingerprint stay unchanged (defect found 2026-10-13, user instruction to fix every observed cause). |
+| P2  | A job requested for an older saved version never applies once the exam has been saved again (user decision 2026-10-13).                                                                                                                                                                               |
+| P3  | Föreslå facit while a job for the same saved version and the same questions is queued or running returns that job, and no second model call starts (user decision 2026-10-13).                                                                                                                        |
+| P4  | While the open exam has unsaved changes, importing is impossible: the picker is disabled and drops are ignored by one shared rule, and the existing line explains why (user decision 2026-10-13).                                                                                                     |
+| P5  | The worker's claimed and finished events name the job's source kind.                                                                                                                                                                                                                                  |
+| P6  | Each gap sent to the suggestion model carries the text printed before its marker; the answer-key view, its cloze text and the fingerprint stay unchanged (defect found 2026-10-13, user instruction to fix every observed cause).                                                                     |
+| P7  | A resumed job, once found on open, delivers across a later save like any job this page requested; P2 bounds only the lookup when the exam opens (user decision 2026-10-13).                                                                                                                           |
+| P8  | A progressive-conversion batch save is a new saved version: a job requested before it is not resumed after a reload (user decision 2026-10-13).                                                                                                                                                       |

@@ -66,6 +66,7 @@ const {
   convertingItemIds,
   isConverting,
   retryConversionStatus,
+  importBlocked,
   importDocument,
   isBusy,
   isDirty,
@@ -78,6 +79,7 @@ const {
   reloadDocument,
   saveDocument,
   savedDocuments,
+  savedRevision,
   selectItem,
   selectedItem,
   selectedItemId,
@@ -97,18 +99,25 @@ const {
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
-  useExamWorkspaceSourceFile(importDocument);
+  useExamWorkspaceSourceFile(importDocument, importBlocked);
 
 const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
   useExamWorkspaceExports(summary);
 
-const { enrichmentMessage, isEnrichmentPending, isRequesting, requestSuggestionsForAll } =
-  useExamWorkspaceEnrichment({
-    applySuggestions: applyArrivingSuggestions,
-    document: workspaceDocument,
-    isOpen,
-    openExam,
-  });
+const {
+  enrichmentLookupError,
+  enrichmentMessage,
+  isEnrichmentPending,
+  isRequesting,
+  requestSuggestionsForAll,
+  retryEnrichmentLookup,
+} = useExamWorkspaceEnrichment({
+  applySuggestions: applyArrivingSuggestions,
+  document: workspaceDocument,
+  isOpen,
+  openExam,
+  savedRevision,
+});
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
@@ -329,10 +338,12 @@ async function handleSave(): Promise<void> {
           <ExamWorkspaceFilesMode
             :compact="isPhone"
             :enrichment-disabled="enrichmentDisabled"
+            :enrichment-lookup-error="enrichmentLookupError"
             :enrichment-message="enrichmentMessage"
             :export-notice="exportNotice"
             :exporting-target="exportingTarget"
             :has-document="workspaceDocument !== null"
+            :import-blocked="importBlocked"
             :is-busy="isBusy"
             :is-dirty="isDirty"
             :notes="notes"
@@ -345,6 +356,7 @@ async function handleSave(): Promise<void> {
             @open="openDocument"
             @reload="reloadDocument"
             @request-proposals="requestSuggestionsForAll"
+            @retry-enrichment-lookup="retryEnrichmentLookup"
             @select-file="handleSelectedFile"
           />
         </div>

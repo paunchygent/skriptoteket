@@ -1,4 +1,4 @@
-"""Exam workspace answer-key suggestions: request and status handlers.
+"""Exam workspace answer-key suggestions: request, status and resume handlers.
 
 Purpose:
     Start one AI answer-key suggestion job on the questions exactly as the
@@ -7,6 +7,10 @@ Purpose:
     either one named question, with or without a key, or every keyed-kind
     question without a key; it works while the editor has unsaved changes
     because the job runs on the sent content, never on the saved head.
+    Each job records the saved version the editor's copy stood on, so an
+    exam opened again finds the newest job for its current saved version,
+    and a request repeating a queued or running job's exact content gets
+    that job back instead of a second model call (TASK-SKRIPT-39-04-09).
 
 Relationships:
     Reuses the ``exam_answer_key_enrichment_jobs`` queue through
@@ -23,6 +27,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, JsonValue, ValidationError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
+    ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
     enqueue_workspace_enrichment_job,
@@ -43,6 +48,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -97,6 +103,7 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         self,
         *,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         enrichment_enabled: bool,
         vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
@@ -104,6 +111,7 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
+        self._suggestion_jobs = suggestion_jobs
         self._enrichment_enabled = enrichment_enabled
         self._vault_files = vault_files
         self._uow = uow
@@ -136,16 +144,34 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
                 state=ExamWorkspaceEnrichmentState.NOT_ELIGIBLE,
                 message=NOT_ELIGIBLE_MESSAGE,
             )
-        job_id = self._id_generator.new_uuid()
-        payload = WorkspaceAnswerKeyRequestPayload(views=views)
+        request_json = WorkspaceAnswerKeyRequestPayload(views=views).model_dump(mode="json")
         async with self._uow:
+            # Lookup and enqueue are one decision per saved version: a
+            # concurrent equal request waits here and then finds this job.
+            await self._suggestion_jobs.lock_workspace_requests(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+            )
+            running = await self._suggestion_jobs.get_active_workspace_job(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+                workspace_request_json=request_json,
+            )
+            if running is not None:
+                # The same questions on the same saved version are already
+                # being answered: hand that job back instead of a second model call.
+                return suggestions_response_for_job(running, lineage_id=lineage_id)
+            job_id = self._id_generator.new_uuid()
             await self._enrichment_jobs.create(
                 job=enqueue_workspace_enrichment_job(
                     job_id=job_id,
                     owner_user_id=actor.id,
                     input_filename=document.title[:255],
                     workspace_lineage_id=lineage_id,
-                    workspace_request_json=payload.model_dump(mode="json"),
+                    workspace_document_revision=document.revision,
+                    workspace_request_json=request_json,
                     now=self._clock.now(),
                 )
             )
@@ -194,52 +220,94 @@ class GetExamWorkspaceAnswerKeySuggestionsStatusHandler:
                 message="Facitförslaget finns inte.",
                 details={"job_id": str(job_id)},
             )
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
-            return self._status(lineage_id, job_id, ExamWorkspaceEnrichmentState.QUEUED)
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
-            return self._status(lineage_id, job_id, ExamWorkspaceEnrichmentState.RUNNING)
-        payload = self._stored_suggestions(job.workspace_suggestions_json)
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
-            # A failed job still delivers every suggestion it produced
-            # before the failure, alongside the truthful failure message.
-            return ExamWorkspaceAnswerKeySuggestionsResponse(
-                job_id=job_id,
-                lineage_id=lineage_id,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
-                suggestions=payload.suggestions if payload is not None else (),
-            )
-        if payload is None:
-            return ExamWorkspaceAnswerKeySuggestionsResponse(
-                job_id=job_id,
-                lineage_id=lineage_id,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_DEFAULT_FAILURE_MESSAGE,
-            )
-        return ExamWorkspaceAnswerKeySuggestionsResponse(
-            job_id=job_id,
-            lineage_id=lineage_id,
-            state=ExamWorkspaceEnrichmentState.SUCCEEDED,
-            suggestions=payload.suggestions,
-        )
+        return suggestions_response_for_job(job, lineage_id=lineage_id)
 
-    @staticmethod
-    def _stored_suggestions(
-        suggestions_json: dict[str, JsonValue] | None,
-    ) -> WorkspaceAnswerKeySuggestionsPayload | None:
-        if suggestions_json is None:
-            return None
-        try:
-            return WorkspaceAnswerKeySuggestionsPayload.model_validate(suggestions_json)
-        except ValidationError:
-            return None
 
-    @staticmethod
-    def _status(
-        lineage_id: UUID, job_id: UUID, state: ExamWorkspaceEnrichmentState
-    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
-        return ExamWorkspaceAnswerKeySuggestionsResponse(
-            job_id=job_id,
-            lineage_id=lineage_id,
-            state=state,
+class FindExamWorkspaceAnswerKeySuggestionsHandler:
+    """Find the newest suggestion job requested on an exam's current saved version."""
+
+    def __init__(
+        self,
+        *,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+    ) -> None:
+        self._suggestion_jobs = suggestion_jobs
+        self._vault_files = vault_files
+
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, document_revision: int
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None:
+        head = await self._vault_files.get_document_head(
+            user_id=actor.id, document_lineage_id=lineage_id
         )
+        if head is None:
+            raise _document_not_found(lineage_id)
+        if head.document_version != document_revision:
+            # The editor's copy is not the current saved version: a job
+            # requested on it belongs to an older version and never applies.
+            return None
+        job = await self._suggestion_jobs.get_latest_workspace_job(
+            owner_user_id=actor.id,
+            workspace_lineage_id=lineage_id,
+            workspace_document_revision=document_revision,
+        )
+        if job is None:
+            return None
+        return suggestions_response_for_job(job, lineage_id=lineage_id)
+
+
+def suggestions_response_for_job(
+    job: ExamAnswerKeyEnrichmentJob, *, lineage_id: UUID
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    """Report one suggestion job's state and, once finished, its suggestions."""
+
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED)
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING)
+    payload = _stored_suggestions(job.workspace_suggestions_json)
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
+        # A failed job still delivers every suggestion it produced before
+        # the failure, alongside the truthful failure message.
+        return ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=job.id,
+            lineage_id=lineage_id,
+            state=ExamWorkspaceEnrichmentState.FAILED,
+            message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
+            suggestions=payload.suggestions if payload is not None else (),
+        )
+    if payload is None:
+        return ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=job.id,
+            lineage_id=lineage_id,
+            state=ExamWorkspaceEnrichmentState.FAILED,
+            message=_DEFAULT_FAILURE_MESSAGE,
+        )
+    return ExamWorkspaceAnswerKeySuggestionsResponse(
+        job_id=job.id,
+        lineage_id=lineage_id,
+        state=ExamWorkspaceEnrichmentState.SUCCEEDED,
+        suggestions=payload.suggestions,
+    )
+
+
+def _stored_suggestions(
+    suggestions_json: dict[str, JsonValue] | None,
+) -> WorkspaceAnswerKeySuggestionsPayload | None:
+    if suggestions_json is None:
+        return None
+    try:
+        return WorkspaceAnswerKeySuggestionsPayload.model_validate(suggestions_json)
+    except ValidationError:
+        return None
+
+
+def _status(
+    lineage_id: UUID, job_id: UUID, state: ExamWorkspaceEnrichmentState
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    return ExamWorkspaceAnswerKeySuggestionsResponse(
+        job_id=job_id,
+        lineage_id=lineage_id,
+        state=state,
+    )

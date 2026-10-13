@@ -2,7 +2,8 @@
 
 Purpose:
     Prove the new suggestion routes (TASK-SKRIPT-39-04-07) delegate the
-    editor-sent request and the per-job status read to their handlers, and
+    editor-sent request, the per-job status read and the saved-version
+    lookup (TASK-SKRIPT-39-04-09) to their handlers, and
     that the deleted whole-head enrichment routes no longer exist.
 
 Relationships:
@@ -169,6 +170,49 @@ async def test_status_route_delegates_the_job_read() -> None:
 
     assert response.state is ExamWorkspaceEnrichmentState.RUNNING
     assert handler.calls == [{"actor": user, "lineage_id": lineage_id, "job_id": job_id}]
+
+
+class CapturingFindHandler:
+    """A double satisfying `FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol`."""
+
+    def __init__(self, result: ExamWorkspaceAnswerKeySuggestionsResponse | None) -> None:
+        self.result = result
+        self.calls: list[dict[str, object]] = []
+
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, document_revision: int
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None:
+        self.calls.append(
+            {"actor": actor, "lineage_id": lineage_id, "document_revision": document_revision}
+        )
+        return self.result
+
+
+@pytest.mark.parametrize("found", [True, False])
+async def test_find_route_delegates_the_saved_version_lookup(found: bool) -> None:
+    lineage_id = uuid4()
+    user = make_user()
+    result = (
+        ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=uuid4(),
+            lineage_id=lineage_id,
+            state=ExamWorkspaceEnrichmentState.QUEUED,
+        )
+        if found
+        else None
+    )
+    handler = CapturingFindHandler(result)
+
+    response = await api.find_exam_workspace_answer_key_suggestions(
+        lineage_id=lineage_id,
+        registry=FakeRegistry(),
+        handler=handler,
+        document_revision=4,
+        user=user,
+    )
+
+    assert response is result
+    assert handler.calls == [{"actor": user, "lineage_id": lineage_id, "document_revision": 4}]
 
 
 def test_router_exposes_only_the_new_suggestion_routes() -> None:

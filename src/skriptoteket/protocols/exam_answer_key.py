@@ -133,16 +133,6 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         """Lock and refresh the row before publishing a worker's terminal result."""
         ...
 
-    async def get_by_workspace_revision(
-        self,
-        *,
-        owner_user_id: UUID,
-        workspace_lineage_id: UUID,
-        workspace_document_revision: int,
-    ) -> ExamAnswerKeyEnrichmentJob | None:
-        """Find the one workspace-lane job pinned to a document revision."""
-        ...
-
     async def claim_next(
         self,
         *,
@@ -171,6 +161,45 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         now: datetime,
         lease_ttl: timedelta,
     ) -> bool: ...
+
+
+class ExamWorkspaceSuggestionJobQueryProtocol(Protocol):
+    """Find workspace suggestion jobs by the saved version they were requested on."""
+
+    async def get_latest_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read the newest suggestion job requested against one saved version."""
+        ...
+
+    async def get_active_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+        workspace_request_json: dict[str, JsonValue],
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read a queued or running suggestion job on exactly this sent content."""
+        ...
+
+    async def lock_workspace_requests(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> None:
+        """Serialize suggestion requests on one saved version until the transaction ends.
+
+        Taken inside the caller's unit of work before the active-job lookup,
+        so that lookup and the enqueue that may follow are one decision.
+        """
+        ...
 
 
 class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):

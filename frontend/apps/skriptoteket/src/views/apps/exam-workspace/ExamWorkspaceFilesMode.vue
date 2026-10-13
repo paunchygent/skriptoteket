@@ -36,10 +36,13 @@ export type ExamWorkspaceReadinessEntry = {
 defineProps<{
   compact: boolean;
   enrichmentDisabled: boolean;
+  enrichmentLookupError: string | null;
   enrichmentMessage: string | null;
   exportNotice: string | null;
   exportingTarget: ExamWorkspaceExportTarget | null;
   hasDocument: boolean;
+  /** No import now: busy, or the open exam has unsaved changes (one rule, also gating drops). */
+  importBlocked: boolean;
   isBusy: boolean;
   isDirty: boolean;
   notes: string[];
@@ -55,11 +58,15 @@ const emit = defineEmits<{
   open: [lineageId: string];
   reload: [];
   requestProposals: [];
+  retryEnrichmentLookup: [];
   selectFile: [file: File];
 }>();
 
 function handleSourceFileInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
   const [file] = Array.from(input.files ?? []);
   if (file) {
     emit("selectFile", file);
@@ -87,7 +94,7 @@ function handleDrop(event: DragEvent): void {
         </h2>
         <label
           class="grid cursor-pointer gap-2 border border-dashed border-navy/35 bg-canvas px-3 py-5 text-center hover:bg-panel"
-          :class="isBusy ? 'cursor-not-allowed opacity-60' : undefined"
+          :class="importBlocked ? 'cursor-not-allowed opacity-60' : undefined"
           data-test="exam-workspace-drop-zone"
           @dragover.prevent
           @drop.prevent="handleDrop"
@@ -96,7 +103,7 @@ function handleDrop(event: DragEvent): void {
             class="sr-only"
             type="file"
             accept=".docx"
-            :disabled="isBusy"
+            :disabled="importBlocked"
             data-test="exam-workspace-source-file-input"
             @change="handleSourceFileInput"
           >
@@ -201,8 +208,10 @@ function handleDrop(event: DragEvent): void {
 
         <ExamWorkspaceEnrichmentPanel
           :disabled="enrichmentDisabled"
+          :lookup-error="enrichmentLookupError"
           :message="enrichmentMessage"
           @request="emit('requestProposals')"
+          @retry-lookup="emit('retryEnrichmentLookup')"
         />
 
         <section

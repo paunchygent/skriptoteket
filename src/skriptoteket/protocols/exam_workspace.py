@@ -119,3 +119,9 @@ class GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, lineage_id: UUID, job_id: UUID
     ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
+
+
+class FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, document_revision: int
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None: ...

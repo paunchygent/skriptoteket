@@ -28,11 +28,13 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     __tablename__ = "exam_answer_key_enrichment_jobs"
     __table_args__ = (
         Index("ix_exam_answer_key_enrichment_jobs_claim", "status", "available_at"),
+        # Several suggestion jobs may stand on one saved version (one per
+        # request); the resume lookup reads the newest of them.
         Index(
-            "uq_exam_answer_key_enrichment_jobs_workspace_revision",
+            "ix_exam_answer_key_enrichment_jobs_workspace_revision",
             "workspace_lineage_id",
             "workspace_document_revision",
-            unique=True,
+            "created_at",
             postgresql_where=text("source_kind = 'workspace'"),
         ),
         Index(

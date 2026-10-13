@@ -205,6 +205,7 @@ class WorkspaceHarness:
                 owner_user_id=self.owner_user_id,
                 input_filename=self.document.title,
                 workspace_lineage_id=self.document.document_id,
+                workspace_document_revision=self.document.revision,
                 workspace_request_json=WorkspaceAnswerKeyRequestPayload(views=views).model_dump(
                     mode="json"
                 ),

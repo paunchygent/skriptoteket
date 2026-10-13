@@ -21,6 +21,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
+    FindExamWorkspaceAnswerKeySuggestionsHandler,
     GetExamWorkspaceAnswerKeySuggestionsStatusHandler,
     RequestExamWorkspaceAnswerKeySuggestionsHandler,
 )
@@ -62,12 +63,14 @@ from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamAnswerKeyProposedOverlayRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
 )
 from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
+    FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
     GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol,
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
 )
@@ -83,6 +86,12 @@ class ExamAnswerKeyProvider(Provider):
     def exam_answer_key_enrichment_job_repository(
         self, session: AsyncSession
     ) -> ExamAnswerKeyEnrichmentJobRepositoryProtocol:
+        return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def exam_workspace_suggestion_job_query(
+        self, session: AsyncSession
+    ) -> ExamWorkspaceSuggestionJobQueryProtocol:
         return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
 
     @provide(scope=Scope.REQUEST)
@@ -175,6 +184,7 @@ class ExamAnswerKeyProvider(Provider):
     def request_exam_workspace_answer_key_suggestions_handler(
         self,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         settings: Settings,
         vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
@@ -183,6 +193,7 @@ class ExamAnswerKeyProvider(Provider):
     ) -> RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol:
         return RequestExamWorkspaceAnswerKeySuggestionsHandler(
             enrichment_jobs=enrichment_jobs,
+            suggestion_jobs=suggestion_jobs,
             enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
             vault_files=vault_files,
             uow=uow,
@@ -197,4 +208,15 @@ class ExamAnswerKeyProvider(Provider):
     ) -> GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol:
         return GetExamWorkspaceAnswerKeySuggestionsStatusHandler(
             enrichment_jobs=enrichment_jobs,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def find_exam_workspace_answer_key_suggestions_handler(
+        self,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+    ) -> FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol:
+        return FindExamWorkspaceAnswerKeySuggestionsHandler(
+            suggestion_jobs=suggestion_jobs,
+            vault_files=vault_files,
         )
