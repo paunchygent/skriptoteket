@@ -12,6 +12,8 @@
   - TASK-SKRIPT-39-05-05 `done` (user closure 2026-10-14).
   - [TASK-SKRIPT-39-05-06](docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md)
     `in_progress`, Sol 6.1 lead; retained `01a13798-9df1-75fa-a4c5-bd755b4bfd85`.
+  - [TASK-SKRIPT-39-05-09](docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md)
+    `in_progress` (story item 6), Sol 6.1 lead in the same worktree as 39-05-06.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12, staging walk `63de8094`, retained
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
