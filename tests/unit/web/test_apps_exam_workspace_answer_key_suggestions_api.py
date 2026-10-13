@@ -139,7 +139,7 @@ async def test_status_route_delegates_the_job_read() -> None:
 
 
 def test_router_exposes_only_the_new_suggestion_routes() -> None:
-    paths = {route.path for route in api.router.routes}
+    paths = {str(getattr(route, "path", "")) for route in api.router.routes}
 
     assert (
         "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions"

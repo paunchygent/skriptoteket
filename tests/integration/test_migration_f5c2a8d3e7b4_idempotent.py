@@ -99,6 +99,15 @@ async def _overlay_job_ids(database_url: str) -> set[str]:
             rows = await conn.execute(
                 text("SELECT enrichment_job_id::text FROM exam_answer_key_proposed_overlays")
             )
+    finally:
+        await engine.dispose()
+    return {row[0] for row in rows.fetchall()}
+
+
+async def _assert_suggestion_columns(database_url: str) -> None:
+    engine = create_async_engine(database_url, pool_pre_ping=True)
+    try:
+        async with engine.connect() as conn:
             columns = await conn.execute(
                 text(
                     """
@@ -112,7 +121,6 @@ async def _overlay_job_ids(database_url: str) -> set[str]:
     finally:
         await engine.dispose()
     assert {"workspace_request_json", "workspace_suggestions_json"} <= column_names
-    return {row[0] for row in rows.fetchall()}
 
 
 @pytest.mark.docker
@@ -134,6 +142,7 @@ def test_migration_deletes_only_workspace_overlay_rows(
 
         remaining = asyncio.run(_overlay_job_ids(database_url))
         assert remaining == {dxe_job_id}
+        asyncio.run(_assert_suggestion_columns(database_url))
 
         command.downgrade(config, _PARENT_REVISION)
         command.upgrade(config, _REVISION_ID)

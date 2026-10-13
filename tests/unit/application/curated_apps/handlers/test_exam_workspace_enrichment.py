@@ -21,6 +21,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     enqueue_workspace_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceAnswerKeySuggestionsResponse,
     ExamWorkspaceEnrichmentState,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
@@ -133,7 +134,9 @@ class _Harness:
             enrichment_jobs=self.jobs,
         )
 
-    async def request(self, document: NativeExamDocument, item_id: str | None = None) -> object:
+    async def request(
+        self, document: NativeExamDocument, item_id: str | None = None
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
         return await self.request_handler.handle(
             actor=self.actor,
             lineage_id=self.lineage_id,
@@ -185,6 +188,7 @@ class TestRequest:
         response = await harness.request(document, item_id="item_001")
 
         assert response.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert response.job_id is not None
         job = harness.jobs.jobs[response.job_id]
         payload = WorkspaceAnswerKeyRequestPayload.model_validate(job.workspace_request_json)
         assert len(payload.views) == 1

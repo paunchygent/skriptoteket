@@ -142,6 +142,9 @@ class InMemoryEnrichmentJobRepository:
                 return ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
         return None
 
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return self.jobs.get(job_id)
+
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)
 

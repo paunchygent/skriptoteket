@@ -270,9 +270,6 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         uow=uow,
         clock=clock,
         id_generator=ids,
-        vault_files=vault_files,
-        vault_storage=vault_storage,
-        workspace_codec=codec,
         docx_handler=docx_handler,
     )
     worker_container = make_async_container(
