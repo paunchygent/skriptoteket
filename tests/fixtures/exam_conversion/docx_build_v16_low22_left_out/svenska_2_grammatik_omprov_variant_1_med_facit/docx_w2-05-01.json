@@ -1,0 +1,115 @@
+{
+  "title": {
+    "text": "Del 2: Satsdelar, 8 poäng",
+    "source_anchors": [
+      "body:0034"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "source_anchors": [
+        "body:0035"
+      ],
+      "points": null
+    },
+    {
+      "text": "Del 2: Satsdelar, 8 poäng",
+      "source_anchors": [
+        "body:0034"
+      ],
+      "points": 8
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "adverbial"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "indirekt objekt"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Filmen blev spännande. Markerad del: spännande Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "predikativ/predikatsfyllnad"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "direkt objekt"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

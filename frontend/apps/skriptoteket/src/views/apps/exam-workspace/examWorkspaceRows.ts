@@ -24,19 +24,8 @@ import {
 import type { ExamWorkspaceParentBlock, ExamWorkspaceParentChild } from "./examWorkspaceParents";
 
 const REVIEW_REASON_LABELS: Record<string, string> = {
-  long_answer_key:
-    "Facit är längre än vanligt – kontrollera att det bara innehåller svaret.",
   machine_proposed_answer_key:
     "Facit är ett maskinellt förslag – kontrollera det innan du godkänner.",
-  missing_points: "Poäng saknas – ange poäng för frågan.",
-  multiple_answer_labels_detected:
-    "Flera svarsetiketter hittades på samma rad – kontrollera att luckorna blev rätt.",
-  no_question_structure_detected:
-    "Ingen frågestruktur hittades – kontrollera att frågorna har tolkats rätt.",
-  partial_answer_keys_detected:
-    "Bara några delfrågor hade facit i källfilen, så frågan blev fritext utan facit.",
-  sublines_without_answer_keys:
-    "Delfrågorna saknade facit i källfilen, så frågan blev fritext utan facit.",
 };
 
 const SNAKE_CASE_CODE = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
@@ -119,16 +108,9 @@ export function examWorkspacePromptExcerpt(item: NativeExamItem): string {
   return `${flattened.slice(0, EXCERPT_MAX_LENGTH - 1).trimEnd()}…`;
 }
 
-/**
- * The title as shown beside its question number. A leading "Fråga N.",
- * "Fråga N:" or "N." that repeats the item's own sequence is dropped so the
- * number is not shown twice; the stored title is never changed. Returns an
- * empty string when nothing else is left.
- */
-export function examWorkspaceDisplayTitle(title: string | null | undefined, sequence: number): string {
-  const trimmed = (title ?? "").trim();
-  const prefix = new RegExp(`^(?:fråga\\s*)?${sequence}(?:\\s*[.:]\\s+|\\s*[.:]$|$)`, "i");
-  return trimmed.replace(prefix, "").trim();
+/** The row label for a question: its question number. */
+export function examWorkspaceQuestionLabel(sequence: number): string {
+  return `Fråga ${sequence}`;
 }
 
 export function toExamWorkspaceItemRow(
@@ -136,8 +118,7 @@ export function toExamWorkspaceItemRow(
   parentChild: ExamWorkspaceParentChild | null = null,
   parentBlock: ExamWorkspaceParentBlock | null = null,
 ): ExamWorkspaceItemRow {
-  const title =
-    examWorkspaceDisplayTitle(item.title, item.sequence) || `Fråga ${item.sequence}`;
+  const title = examWorkspaceQuestionLabel(item.sequence);
 
   return {
     itemId: item.item_id,

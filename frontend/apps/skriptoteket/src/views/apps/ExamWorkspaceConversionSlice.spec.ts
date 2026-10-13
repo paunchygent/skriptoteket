@@ -9,17 +9,19 @@ import { buildResponse, importFixtureDocument, mountExamWorkspace } from "./Exam
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 vi.mock("../../api/examWorkspace", () => apiMocks);
 
 function status(state: ExamWorkspaceConversionStatus["state"], error_message: string | null = null): ExamWorkspaceConversionStatus {
-  return { job_id: "job-1", lineage_id: "lineage-1", state, error_message };
+  return {
+    job_id: "job-1", lineage_id: "lineage-1", state, error_message,
+    document_revision: state === "succeeded" ? 1 : null, questions_total: 0, questions_done: 0, units: [],
+  };
 }
 
 let wrapper: Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"] | undefined;
@@ -29,11 +31,10 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) mock.mockReset();
   apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(status("queued"));
-  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 1 }));
+  apiMocks.getExamWorkspaceDocument.mockResolvedValue(
+    buildResponse({ conversion: status("succeeded"), version: 1 }),
+  );
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    lineage_id: "lineage-1", document_revision: 1, state: "not_requested", proposals: [],
-  });
 });
 afterEach(() => {
   wrapper?.unmount();
@@ -100,11 +101,11 @@ describe("Exam workspace background conversion", () => {
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-enrichment-request"]').attributes("disabled")).toBeDefined();
     await wrapper.get('[data-test="exam-workspace-mode-redigera"]').trigger("click");
-    expect(wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeDefined();
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("failed", "Konverteringen misslyckades."));
     await tick();
     expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe(title);
-    expect(wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeUndefined();
   });
 
   it("retains conversion on status-read errors and recovers using the visible retry", async () => {

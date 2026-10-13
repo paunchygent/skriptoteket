@@ -14,6 +14,7 @@
 import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
 import ExamWorkspaceBodyEditor from "./exam-workspace/ExamWorkspaceBodyEditor.vue";
 import {
@@ -26,13 +27,12 @@ import {
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -43,23 +43,24 @@ async function mountImported() {
   return wrapper;
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      buildResponse({ conversion: succeededConversion, version: 1 }),
+    );
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
 });
 
@@ -152,12 +153,11 @@ describe("ExamWorkspaceView save rules", () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");
-    await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Ny rubrik");
+    await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("7");
     await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
 
     for (const testId of [
-      "exam-workspace-item-title-input",
       "exam-workspace-item-points-input",
       "exam-workspace-choice-text-choice_a",
       "exam-workspace-choice-correct-choice_a",
@@ -170,7 +170,7 @@ describe("ExamWorkspaceView save rules", () => {
     await flushPromises();
 
     expect(
-      wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled"),
+      wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled"),
     ).toBeUndefined();
     expect(wrapper.findComponent(ExamWorkspaceBodyEditor).props("disabled")).toBe(false);
   });

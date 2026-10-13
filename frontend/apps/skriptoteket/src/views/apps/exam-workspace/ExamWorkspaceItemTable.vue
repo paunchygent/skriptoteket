@@ -4,9 +4,8 @@
  *
  * Domain purpose:
  *   List the exam's questions compactly for selection in Redigera: sequence,
- *   title, type, points, and whether the question is ready for export. Flag
- *   questions with an open answer-key proposal and show the per-item
- *   blockers from the server's last refused export.
+ *   title, type, points, and whether the question is ready for export, and
+ *   show the per-item blockers from the server's last refused export.
  *
  * Relationships:
  *   - Shows a parent's shared instruction and total points once above its
@@ -22,7 +21,6 @@ import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 
 defineProps<{
   exportBlockersByItemId: Record<string, string[]>;
-  proposalItemIds: string[];
   readinessByItemId: Record<string, string[]>;
   rows: ExamWorkspaceItemRow[];
   selectedItemId: string | null;
@@ -103,13 +101,6 @@ const emit = defineEmits<{
           v-if="readinessByItemId[row.itemId] && !exportBlockersByItemId[row.itemId]"
           class="sr-only"
         >Behöver åtgärdas före export: {{ readinessByItemId[row.itemId]?.join(' ') }}</span>
-        <span
-          v-if="proposalItemIds.includes(row.itemId)"
-          class="text-xs font-semibold leading-snug text-action"
-          :data-test="`exam-workspace-item-proposal-${row.itemId}`"
-        >
-          Facitförslag finns
-        </span>
         <span
           v-if="exportBlockersByItemId[row.itemId]"
           class="grid gap-0.5 text-xs leading-snug text-error"

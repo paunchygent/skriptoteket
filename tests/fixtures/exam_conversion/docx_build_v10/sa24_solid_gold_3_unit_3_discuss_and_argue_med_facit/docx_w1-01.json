@@ -1,0 +1,400 @@
+{
+  "title": {
+    "text": "Test Unit 3 Discuss and Argue — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 74 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": 74
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0006",
+    "body:0009",
+    "body:0012",
+    "body:0015",
+    "body:0018",
+    "body:0021",
+    "body:0024",
+    "body:0030",
+    "body:0033"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0004",
+        "body:0005"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This sentence is somewhat ___. It could be interpreted in two ways. You’d better rewrite it to make it clearer.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "two-faced",
+          "correct": false
+        },
+        {
+          "text": "ambiguous",
+          "correct": true
+        },
+        {
+          "text": "unreliable",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0007",
+        "body:0008"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "My brother was so hungry that he ___ half of his burger in one bite.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "devoured",
+          "correct": true
+        },
+        {
+          "text": "disposed of",
+          "correct": false
+        },
+        {
+          "text": "scooped up",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0010",
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Susan Berry isn’t a friend really. She’s just ___ of mine.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "a mate",
+          "correct": false
+        },
+        {
+          "text": "a companion",
+          "correct": false
+        },
+        {
+          "text": "an acquaintance",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Our new washing-machine cost over £400. Fortunately, there wasn’t ___ for delivery.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "a charge",
+          "correct": true
+        },
+        {
+          "text": "an amount",
+          "correct": false
+        },
+        {
+          "text": "a postage",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Their victory over Real Madrid in the European Cup means that Bayern Munich are now ___ of a place in the final.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "definite",
+          "correct": false
+        },
+        {
+          "text": "assured",
+          "correct": true
+        },
+        {
+          "text": "secure",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0019",
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gerald couldn’t remember a thing after the accident. He was obviously suffering from ___.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "insomnia",
+          "correct": false
+        },
+        {
+          "text": "amnesia",
+          "correct": true
+        },
+        {
+          "text": "anaemia",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The children were very poor and most of them were dressed in ___.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "scraps",
+          "correct": false
+        },
+        {
+          "text": "bundles",
+          "correct": false
+        },
+        {
+          "text": "rags",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It’s almost impossible to avoid any ___ damage during heavy bombing raids.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "collateral",
+          "correct": true
+        },
+        {
+          "text": "extra",
+          "correct": false
+        },
+        {
+          "text": "essential",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0031",
+        "body:0032"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The new drug is undergoing clinical ___.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "samples",
+          "correct": false
+        },
+        {
+          "text": "trials",
+          "correct": true
+        },
+        {
+          "text": "experiments",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

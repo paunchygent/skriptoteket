@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0015"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Our new washing-machine cost over £400. Fortunately, there wasn’t ___ for delivery.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "a charge",
+          "correct": true
+        },
+        {
+          "text": "an amount",
+          "correct": false
+        },
+        {
+          "text": "a postage",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

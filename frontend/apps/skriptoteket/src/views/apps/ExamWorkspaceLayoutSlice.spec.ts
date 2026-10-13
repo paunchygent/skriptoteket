@@ -19,6 +19,7 @@
 import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import {
   buildResponse,
@@ -28,13 +29,12 @@ import {
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -54,23 +54,24 @@ function isShown(wrapper: Awaited<ReturnType<typeof mountImported>>, testId: str
   return element.style.display !== "none";
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      buildResponse({ conversion: succeededConversion, version: 1 }),
+    );
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
 });
 
@@ -107,15 +108,19 @@ describe("ExamWorkspaceView two-mode layout", () => {
     await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
 
     const readiness = wrapper.get('[data-test="exam-workspace-readiness"]');
-    expect(readiness.text()).toContain("2 frågor behöver åtgärdas");
-    expect(readiness.text()).toContain("Frågan behöver granskas.");
+    // Question 4 only needs review, which never stops an export (D1).
+    expect(readiness.text()).toContain("1 fråga behöver åtgärdas");
+    expect(readiness.text()).toContain("Facitförslaget är inte godkänt.");
+    expect(wrapper.find('[data-test="exam-workspace-readiness-item-item_004"]').exists()).toBe(
+      false,
+    );
 
-    await wrapper.get('[data-test="exam-workspace-readiness-item-item_004"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-readiness-item-item_003"]').trigger("click");
 
     expect(isShown(wrapper, "exam-workspace-workspace")).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-item-editor"]').text()).toContain("Fråga 4");
+    expect(wrapper.get('[data-test="exam-workspace-item-editor"]').text()).toContain("Fråga 3");
     expect(wrapper.get('[data-test="exam-workspace-item-drawer"]').text()).toContain(
-      "Frågan behöver granskas.",
+      "Facitförslaget är inte godkänt.",
     );
   });
 
@@ -191,7 +196,7 @@ describe("ExamWorkspaceView two-mode layout", () => {
     const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]');
     expect(frame.attributes("role")).toBeUndefined();
 
-    pressEscape(wrapper.get('[data-test="exam-workspace-item-title-input"]').element);
+    pressEscape(wrapper.get('[data-test="exam-workspace-item-points-input"]').element);
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(true);
 

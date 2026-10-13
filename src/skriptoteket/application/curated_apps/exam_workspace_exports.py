@@ -31,6 +31,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode

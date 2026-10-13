@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0009"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0007",
+        "body:0008"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "My brother was so hungry that he ___ half of his burger in one bite.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "devoured",
+          "correct": true
+        },
+        {
+          "text": "disposed of",
+          "correct": false
+        },
+        {
+          "text": "scooped up",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

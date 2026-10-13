@@ -7,22 +7,23 @@
  *   tablet the question list sits beside the dominating item editor, on phones
  *   the editor is the whole screen. The question details drawer docks beside
  *   the editor on desktop and overlays it on tablet and phone. The pane shows
- *   the selected question's save readiness, export blockers, and waiting
- *   answer-key proposal in the drawer and the attention count on the editor.
+ *   the selected question's save readiness and export blockers in the
+ *   drawer and the attention count on the editor.
+ *   A selected placeholder whose batch still converts disables its editor and
+ *   drawer; the question list stays usable.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the open document in Redigera mode.
  *   - Receives the layout from `useExamWorkspaceLayout` through the view and
  *     composes `ExamWorkspaceQuestionList`, `ExamWorkspaceItemTable`,
  *     `ExamWorkspaceItemEditor`, and `ExamWorkspaceItemDrawer`.
- *   - Holds no state: every edit, step, add, and proposal decision is emitted
- *     to the view, which owns it through the workspace composables.
+ *   - Holds no state: every edit, step, and add is emitted to the view,
+ *     which owns it through the workspace composables.
  */
 
 import { computed } from "vue";
 
 import type {
-  ExamWorkspaceAnswerKeyProposal,
   NativeExamBodySegment,
   NativeExamItem,
   NativeExamMatchPair,
@@ -41,19 +42,16 @@ const props = defineProps<{
   itemCount: number;
   itemRows: ExamWorkspaceItemRow[];
   layout: ExamWorkspaceLayout;
-  proposalItemIds: string[];
   readinessByItemId: Record<string, string[]>;
   selectedItem: NativeExamItem | null;
   selectedItemId: string | null;
+  /** The selected item is a placeholder whose batch still converts; its editor and drawer are disabled. */
+  selectedItemLocked: boolean;
   selectedPosition: number;
-  selectedProposal: ExamWorkspaceAnswerKeyProposal | null;
 }>();
 
 const emit = defineEmits<{
   add: [];
-  approveProposal: [itemId: string];
-  dismissProposal: [itemId: string];
-  editProposal: [itemId: string];
   markReviewed: [itemId: string];
   select: [itemId: string];
   step: [offset: number];
@@ -67,6 +65,7 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
+  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -74,7 +73,6 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
 }>();
 
 const isPhone = computed(() => props.layout === "phone");
@@ -114,7 +112,6 @@ const redigeraGridClass = computed(() => {
     >
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
-        :proposal-item-ids="proposalItemIds"
         :readiness-by-item-id="readinessByItemId"
         :rows="itemRows"
         :selected-item-id="selectedItemId"
@@ -130,9 +127,9 @@ const redigeraGridClass = computed(() => {
         <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
           <ExamWorkspaceItemEditor
             v-if="selectedItem"
-            :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
+            :attention-count="selectedReadiness.length"
             :details-open="detailsOpen"
-            :disabled="disabled"
+            :disabled="disabled || selectedItemLocked"
             :item="selectedItem"
             :parent-child="selectedParentChild"
             :position="selectedPosition"
@@ -152,6 +149,7 @@ const redigeraGridClass = computed(() => {
               (itemId, gapId, acceptedValues) =>
                 emit('updateGapValues', itemId, gapId, acceptedValues)
             "
+            @update-marking-guide="(itemId, guide) => emit('updateMarkingGuide', itemId, guide)"
             @update-match-entry-text="
               (itemId, side, entryId, text) =>
                 emit('updateMatchEntryText', itemId, side, entryId, text)
@@ -162,7 +160,6 @@ const redigeraGridClass = computed(() => {
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)
             "
             @update-points="(itemId, points) => emit('updatePoints', itemId, points)"
-            @update-title="(itemId, title) => emit('updateTitle', itemId, title)"
           />
           <p
             v-else
@@ -174,16 +171,12 @@ const redigeraGridClass = computed(() => {
       </div>
       <ExamWorkspaceItemDrawer
         v-if="detailsOpen && selectedItem"
-        :disabled="disabled"
+        :disabled="disabled || selectedItemLocked"
         :item="selectedItem"
         :layout="layout"
-        :proposed-item="selectedProposal?.proposed_item ?? null"
         :readiness="selectedReadiness"
         :server-blockers="selectedServerBlockers"
-        @approve="emit('approveProposal', $event)"
         @close="emit('update:detailsOpen', false)"
-        @dismiss="emit('dismissProposal', $event)"
-        @edit="emit('editProposal', $event)"
       />
     </div>
   </div>

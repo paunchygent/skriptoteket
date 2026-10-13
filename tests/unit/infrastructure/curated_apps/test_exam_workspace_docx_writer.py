@@ -51,7 +51,6 @@ def _all_kinds_document() -> NativeExamDocument:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            title="Fråga 1 (4 p)",
             body=(NativeParagraph(segments=(NativeTextSegment(text="Resonera om bisatser."),)),),
             points=4,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -142,7 +141,8 @@ class TestDocxContent:
 
         assert "Grammatikprov" in texts
         assert "Svenska 2" in texts
-        assert "Fråga 1 (4 p)" in texts
+        # Items carry no title (39-05-08); headings are the question labels.
+        assert "Fråga 1" in texts
         assert "Fråga 2" in texts
 
     def test_gap_markers_points_and_choice_letters(self, docx_bytes: bytes) -> None:

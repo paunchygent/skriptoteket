@@ -71,6 +71,7 @@ dependencies = [
     "molmass>=2026.1.8",
     "starlette-dishka>=1.0.2",
     "xlrd>=2.0.1",
+    "pypdfium2>=5.6.0",
 ]
 
 [project.optional-dependencies]
@@ -82,7 +83,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@bfbb0ed228c2f24ffcf032d3362bfe6af537dc00#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@f22b8d7c0090a4134afbc6736a9cfd262eab13c7#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -207,6 +208,7 @@ module = [
     "yaml.*",
     "pypdf.*",
     "pandas.*",
+    "pypdfium2.*",
 ]
 ignore_missing_imports = true
 

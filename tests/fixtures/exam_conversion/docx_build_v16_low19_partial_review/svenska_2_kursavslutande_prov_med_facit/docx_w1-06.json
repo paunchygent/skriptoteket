@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0027"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Handlingen",
+          "correct": false
+        },
+        {
+          "text": "Versmåttet",
+          "correct": true
+        },
+        {
+          "text": "Huvudkaraktären",
+          "correct": false
+        },
+        {
+          "text": "Budskapet",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -84,3 +84,11 @@ Live pointers stay in `handoff.md`; nothing here is re-proof.
   EPIC-SKRIPT-38 verified/done; REP-0006, REP-0003, REP-0004, REP-0005 done
   (topology checks, corpus migration with 764 byte-identical terminal
   records, schema-v3 routing, 17-entry frontend catalog).
+
+## Moved 2026-10-13
+
+- 2026-09-05: reconciled EPIC-39/ADR-0090 with the approved workspace scope
+  via scaffolder-created ADR-0091, ST-39-04, and TASK-39-04-01 (all
+  `proposed`); `pdm run docs-validate` green; `git diff --check` clean.
+- 2026-08-30/31: public (03-02) and authenticated (03-01) cutovers done;
+  both lanes run Skriptoteket-owned with zero Sir exam calls.

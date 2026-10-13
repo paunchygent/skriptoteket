@@ -5,7 +5,10 @@
  *   Tell the teacher, while editing, which questions would stop a QTI, PDF,
  *   or DOCX export, so invalid states are explained at the question instead
  *   of discovered at export. The server export gate stays authoritative;
- *   this mirrors its reasons and adds the item states the save refuses:
+ *   this mirrors its reasons, including the unbuilt question (an item
+ *   printed from source that the teacher has not marked reviewed; a
+ *   converted item that needs review does not block), and adds the item
+ *   states the save refuses:
  *   a partial gap key, an incomplete matching key, points that are not
  *   greater than zero, and a choice or matching entry without text.
  *
@@ -65,8 +68,8 @@ const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
 
 export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceReadinessReason[] {
   const reasons: ExamWorkspaceReadinessReason[] = [];
-  if (item.review.state === "review_required") {
-    reasons.push("review_required");
+  if (item.review.parse_origin === "deterministic" && item.review.state === "review_required") {
+    reasons.push("unbuilt_question");
   }
   if (item.answer_key.origin === "machine_proposed") {
     reasons.push("machine_proposed_key_unreviewed");

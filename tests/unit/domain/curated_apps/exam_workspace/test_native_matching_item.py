@@ -38,6 +38,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeGap,
     NativeMatchPair,
     NativeMatchRight,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
@@ -79,10 +81,9 @@ def _produced(
         outcome="converted",
         review_reason=None,
         kind=NativeExamItemKind.MATCHING,
-        title=None,
         body=tuple(
             ProducedParagraph(
-                segments=(ProducedSegment(kind="text", text=line, accepted_values=(), hint=None),)
+                segments=(ProducedSegment(kind="text", text=line, accepted_values=()),)
             )
             for line in stems
         ),

@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0120"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0119"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "f",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When buying health products, you should only ever buy ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "reputable",
+                "repputable"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " brands.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

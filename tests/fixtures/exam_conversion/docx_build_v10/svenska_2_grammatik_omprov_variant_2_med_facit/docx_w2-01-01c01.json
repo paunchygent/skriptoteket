@@ -1,0 +1,66 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0008",
+        "body:0009",
+        "body:0010",
+        "body:0011",
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Fråga 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) solrosornas",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) läsbarheten",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) handbollsspelarnas",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "sol (R) + ros (R) + or (B) + na (B) + s (B)\nläs (R) + bar (A) + het (A) + en (B)\nhand (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)"
+    }
+  ]
+}

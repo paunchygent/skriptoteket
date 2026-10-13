@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0159"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0158"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "h",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Are you in favour of fox hunting?” “No, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "on the contrary"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", I believe it’s cruel, barbaric and should be banned!”",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

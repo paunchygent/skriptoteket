@@ -1490,7 +1490,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/enrichment": {
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions": {
         parameters: {
             query?: never;
             header?: never;
@@ -1498,16 +1498,36 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Exam Workspace Enrichment
-         * @description Read enrichment status and proposals for the head revision.
+         * Find Exam Workspace Answer Key Suggestions
+         * @description Find the newest suggestion job requested on this saved version, if any.
          */
-        get: operations["get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get"];
+        get: operations["find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get"];
         put?: never;
         /**
-         * Start Exam Workspace Enrichment
-         * @description Start enrichment for the head revision, idempotent per revision.
+         * Request Exam Workspace Answer Key Suggestions
+         * @description Start one suggestion job on the editor-sent document content.
          */
-        post: operations["start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post"];
+        post: operations["request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Exam Workspace Answer Key Suggestions
+         * @description Read one suggestion job's status and its arrived suggestions.
+         */
+        get: operations["get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4959,27 +4979,48 @@ export interface components {
             warning_count: number;
         };
         /**
-         * ExamWorkspaceAnswerKeyProposalItem
-         * @description One advisory prefill proposal with its provider candidate lineage.
+         * ExamWorkspaceAnswerKeySuggestionItem
+         * @description One AI suggestion that arrived for one question.
          */
-        ExamWorkspaceAnswerKeyProposalItem: {
+        ExamWorkspaceAnswerKeySuggestionItem: {
             /** Item Id */
             item_id: string;
-            /** Model */
-            model: string;
-            /** Prompt Template Version */
-            prompt_template_version: string;
-            proposed_item: components["schemas"]["NativeExamItem-Output"];
-            /** Provider Profile Id */
-            provider_profile_id: string;
+            suggestion: components["schemas"]["NativeAnswerKeySuggestion"];
+        };
+        /**
+         * ExamWorkspaceAnswerKeySuggestionsResponse
+         * @description Status of one suggestion job, plus its suggestions once finished.
+         */
+        ExamWorkspaceAnswerKeySuggestionsResponse: {
+            /** Job Id */
+            job_id?: string | null;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Message */
+            message?: string | null;
+            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
+            /**
+             * Suggestions
+             * @default []
+             */
+            suggestions: components["schemas"]["ExamWorkspaceAnswerKeySuggestionItem"][];
         };
         /**
          * ExamWorkspaceConversionStatus
          * @description Owner-visible status of one background DOCX import.
+         *
+         *     ``document_revision`` is the latest revision conversion saved, absent until the
+         *     first batch is ready; ``units`` lets the editor merge each new revision into
+         *     unsaved teacher edits.
          */
         ExamWorkspaceConversionStatus: {
+            /** Document Revision */
+            document_revision: number | null;
             /** Error Message */
-            error_message?: string | null;
+            error_message: string | null;
             /**
              * Job Id
              * Format: uuid
@@ -4990,11 +5031,37 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+            /** Questions Done */
+            questions_done: number;
+            /** Questions Total */
+            questions_total: number;
             /**
              * State
              * @enum {string}
              */
             state: "queued" | "running" | "succeeded" | "failed";
+            /** Units */
+            units: components["schemas"]["ExamWorkspaceConversionUnit"][];
+        };
+        /**
+         * ExamWorkspaceConversionUnit
+         * @description Items conversion last wrote for one question or question-less review item.
+         *
+         *     ``converting`` items are placeholders that only the unit's later batch may change;
+         *     ``ready`` items are converted and editable.
+         */
+        ExamWorkspaceConversionUnit: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Question */
+            question: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "converting" | "ready";
+            /** Unit Id */
+            unit_id: string;
         };
         /**
          * ExamWorkspaceDocumentListResponse
@@ -5007,8 +5074,15 @@ export interface components {
              */
             documents: components["schemas"]["ExamWorkspaceDocumentSummary"][];
         };
-        /** ExamWorkspaceDocumentResponse */
+        /**
+         * ExamWorkspaceDocumentResponse
+         * @description One document revision, with the DOCX import that created its lineage.
+         *
+         *     ``conversion`` is read under the same lock as the document, so its units name exactly
+         *     the placeholders this revision still holds; it is None for a lineage no import created.
+         */
         ExamWorkspaceDocumentResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
             /**
              * Notes
@@ -5041,31 +5115,10 @@ export interface components {
         };
         /**
          * ExamWorkspaceEnrichmentState
-         * @description Teacher-facing state of the enrichment lane for one head revision.
+         * @description Teacher-facing state of one answer-key suggestion job.
          * @enum {string}
          */
-        ExamWorkspaceEnrichmentState: "not_requested" | "not_eligible" | "queued" | "running" | "succeeded" | "failed";
-        /**
-         * ExamWorkspaceEnrichmentStatusResponse
-         * @description Status plus advisory proposals for one document head revision.
-         */
-        ExamWorkspaceEnrichmentStatusResponse: {
-            /** Document Revision */
-            document_revision: number;
-            /**
-             * Lineage Id
-             * Format: uuid
-             */
-            lineage_id: string;
-            /** Message */
-            message?: string | null;
-            /**
-             * Proposals
-             * @default []
-             */
-            proposals: components["schemas"]["ExamWorkspaceAnswerKeyProposalItem"][];
-            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
-        };
+        ExamWorkspaceEnrichmentState: "not_eligible" | "queued" | "running" | "succeeded" | "failed";
         /**
          * ExamWorkspaceExportTarget
          * @enum {string}
@@ -5911,6 +5964,40 @@ export interface components {
          * @enum {string}
          */
         NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        /**
+         * NativeAnswerKeySuggestion
+         * @description One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+         *
+         *     Holds the proposed key, a SHA-256 fingerprint of the question's
+         *     answer-relevant content when the suggestion was made, and the provider
+         *     lineage that produced it. It lives apart from the item's answer key so
+         *     it survives the teacher accepting or replacing that key.
+         */
+        NativeAnswerKeySuggestion: {
+            /**
+             * Correct Choice Ids
+             * @default []
+             */
+            correct_choice_ids: string[];
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Gap Accepted Values
+             * @default []
+             */
+            gap_accepted_values: components["schemas"]["NativeGapAcceptedValues"][];
+            /**
+             * Match Pairs
+             * @default []
+             */
+            match_pairs: components["schemas"]["NativeMatchPair"][];
+            /** Model */
+            model: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+        };
         /** NativeAssetSegment */
         NativeAssetSegment: {
             /** Asset Id */
@@ -6034,6 +6121,7 @@ export interface components {
         };
         /** NativeExamItem */
         "NativeExamItem-Input": {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6050,6 +6138,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6062,6 +6152,11 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
@@ -6069,11 +6164,10 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6090,6 +6184,8 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Marking Guide */
+            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6102,6 +6198,11 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
@@ -6109,8 +6210,6 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
         };
         /**
          * NativeExamItemKind
@@ -6120,9 +6219,10 @@ export interface components {
         NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of one kind.
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
          *
-         *     A parent owns no points and no answer key: each child item keeps its own.
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
          */
         NativeExamParent: {
             /** Instruction */
@@ -6141,8 +6241,16 @@ export interface components {
             accepted_values: string[];
             /** Gap Id */
             gap_id: string;
-            /** Hint */
-            hint?: string | null;
+        };
+        /**
+         * NativeGapAcceptedValues
+         * @description The accepted values one AI suggestion proposes for one gap.
+         */
+        NativeGapAcceptedValues: {
+            /** Accepted Values */
+            accepted_values: string[];
+            /** Gap Id */
+            gap_id: string;
         };
         /** NativeGapSegment */
         NativeGapSegment: {
@@ -7446,6 +7554,19 @@ export interface components {
             message?: string | null;
         };
         /**
+         * RequestExamWorkspaceAnswerKeySuggestionsRequest
+         * @description Editor-sent content for one suggestion request (TASK-SKRIPT-39-04-07).
+         *
+         *     ``document`` is the exam exactly as the editor shows it, saved or not.
+         *     With ``item_id`` the request covers that one question, with or without
+         *     a key; without it, it covers every keyed-kind question without a key.
+         */
+        RequestExamWorkspaceAnswerKeySuggestionsRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Item Id */
+            item_id?: string | null;
+        };
+        /**
          * ResolvePlanDraftRequest
          * @description Deserialize the landing-page resolve request.
          */
@@ -7814,11 +7935,6 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Input"];
             /** Expected Revision */
             expected_revision: number;
-            /**
-             * Rejected Proposal Item Ids
-             * @default []
-             */
-            rejected_proposal_item_ids: string[];
         };
         /** SaveResult */
         SaveResult: {
@@ -12142,9 +12258,11 @@ export interface operations {
             };
         };
     };
-    get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get: {
+    find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get: {
         parameters: {
-            query?: never;
+            query: {
+                document_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;
@@ -12159,7 +12277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"] | null;
                 };
             };
             /** @description Validation Error */
@@ -12173,12 +12291,48 @@ export interface operations {
             };
         };
     };
-    start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post: {
+    request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestExamWorkspaceAnswerKeySuggestionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                job_id: string;
             };
             cookie?: never;
         };
@@ -12190,7 +12344,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
                 };
             };
             /** @description Validation Error */

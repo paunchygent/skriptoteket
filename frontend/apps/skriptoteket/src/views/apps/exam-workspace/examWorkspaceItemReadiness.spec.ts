@@ -38,6 +38,7 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
     match_left: [],
     match_right: [],
     points: 1,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -46,7 +47,6 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
     },
     sequence: 1,
     source_anchor: null,
-    title: "Gaser",
     ...overrides,
   };
 }
@@ -61,18 +61,43 @@ describe("examWorkspaceItemReadiness", () => {
       answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "machine_proposed" },
       points: null,
       review: {
-        confidence: 0.4,
-        parse_origin: "llm_parsed",
+        confidence: null,
+        parse_origin: "deterministic",
         reasons: [],
         state: "review_required",
       },
     });
 
     expect(examWorkspaceItemReadiness(item)).toEqual([
-      "review_required",
+      "unbuilt_question",
       "machine_proposed_key_unreviewed",
       "missing_points",
     ]);
+  });
+
+  it("does not block a converted question that only needs review", () => {
+    const item = buildChoiceItem({
+      review: {
+        confidence: 0.4,
+        parse_origin: "llm_parsed",
+        reasons: ["AI-tolkningen markerade frågan för granskning: oklar instruktion"],
+        state: "review_required",
+      },
+    });
+
+    expect(examWorkspaceItemReadiness(item)).toEqual([]);
+  });
+
+  it("blocks an unbuilt question with estimated points until it is marked reviewed", () => {
+    const unbuilt = buildChoiceItem({
+      points: 2,
+      points_estimated: true,
+      review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_required" },
+    });
+    const reviewed = { ...unbuilt, review: { ...unbuilt.review, state: "review_complete" as const } };
+
+    expect(examWorkspaceItemReadiness(unbuilt)).toEqual(["unbuilt_question"]);
+    expect(examWorkspaceItemReadiness(reviewed)).toEqual([]);
   });
 
   it("reports a missing key only for keyed kinds", () => {
@@ -95,8 +120,8 @@ describe("examWorkspaceItemReadiness", () => {
     const item = buildChoiceItem({
       choices: [],
       gaps: [
-        { accepted_values: ["100"], gap_id: "gap_001", hint: null },
-        { accepted_values: [], gap_id: "gap_002", hint: null },
+        { accepted_values: ["100"], gap_id: "gap_001" },
+        { accepted_values: [], gap_id: "gap_002" },
       ],
       kind: "gap_fill",
       match_left: [],
@@ -140,7 +165,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     const ready = buildChoiceItem();
     const partial = buildChoiceItem({
       choices: [],
-      gaps: [{ accepted_values: [], gap_id: "gap_001", hint: null }],
+      gaps: [{ accepted_values: [], gap_id: "gap_001" }],
       item_id: "item_002",
       kind: "gap_fill",
       match_left: [],

@@ -1,58 +1,55 @@
-"""Exam workspace answer-key enrichment: enqueue and status handlers.
+"""Exam workspace answer-key suggestions: request, status and resume handlers.
 
 Purpose:
-    Start one advisory machine answer-key enrichment job for a native exam
-    workspace document revision (idempotent per lineage and revision) and
-    read the job's status with the proposal prefill payload once finished.
-    Proposals are advisory: the status handler builds MACHINE_PROPOSED
-    prefill copies for the editor; nothing is ever written into a saved
-    document revision.
+    Start one AI answer-key suggestion job on the questions exactly as the
+    editor shows them (TASK-SKRIPT-39-04-07) and read the job's status with
+    one suggestion per question that got a valid answer. A request sends
+    either one named question, with or without a key, or every keyed-kind
+    question without a key; it works while the editor has unsaved changes
+    because the job runs on the sent content, never on the saved head.
+    Each job records the saved version the editor's copy stood on, so an
+    exam opened again finds the newest job for its current saved version,
+    and a request repeating a queued or running job's exact content gets
+    that job back instead of a second model call (TASK-SKRIPT-39-04-09).
 
 Relationships:
     Reuses the ``exam_answer_key_enrichment_jobs`` queue through
     ``source_kind='workspace'`` (no second queue); the worker branch lives in
-    ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
-    Document access goes through the versioned Mina filer head exactly like
-    ``exam_workspace_documents``.
+    ``exam_answer_key_enrichment_workspace_lane``. Suggestions arrive as
+    data for the editor to write onto its questions; nothing here writes a
+    saved document revision.
 """
 
 from __future__ import annotations
 
 from uuid import UUID
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, JsonValue, ValidationError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
+    ExamAnswerKeySourceKind,
     enqueue_workspace_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
-    ExamWorkspaceAnswerKeyProposalItem,
+    ExamWorkspaceAnswerKeySuggestionItem,
+    ExamWorkspaceAnswerKeySuggestionsResponse,
     ExamWorkspaceEnrichmentState,
-    ExamWorkspaceEnrichmentStatusResponse,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    ExamWorkspaceDocumentStore,
+    RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
-    WorkspaceAnswerKeyProposalsPayload,
+    AnswerKeyItemView,
+    answer_key_item_view,
     answer_key_item_views,
-    apply_proposal_to_item,
-    proposal_from_record,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamDocument,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ExamAnswerKeyProposedOverlayRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
 )
-from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
@@ -70,10 +67,8 @@ _FAILURE_MESSAGES: dict[str, str] = {
     ),
     "llm_output_invalid": "Facitförslaget kunde inte tolkas. Komplettera facit manuellt.",
     "workspace_no_enrichable_items": "Dokumentet har inga frågor som saknar facit.",
-    "workspace_document_revision_stale": (
-        "Dokumentet har ändrats sedan förslaget begärdes. Begär förslag igen."
-    ),
-    "workspace_container_invalid": "Den sparade dokumentversionen kunde inte läsas.",
+    "workspace_request_missing": _DEFAULT_FAILURE_MESSAGE,
+    "workspace_request_invalid": _DEFAULT_FAILURE_MESSAGE,
 }
 
 
@@ -85,171 +80,234 @@ def _document_not_found(lineage_id: UUID) -> DomainError:
     )
 
 
-class EnqueueExamWorkspaceEnrichmentHandler:
-    """Enqueue one workspace-lane enrichment job for a document revision."""
+class WorkspaceAnswerKeyRequestPayload(BaseModel):
+    """The answer-key views one workspace suggestion job runs on."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    views: tuple[AnswerKeyItemView, ...]
+
+
+class WorkspaceAnswerKeySuggestionsPayload(BaseModel):
+    """The suggestions one finished workspace suggestion job produced."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    suggestions: tuple[ExamWorkspaceAnswerKeySuggestionItem, ...]
+
+
+class RequestExamWorkspaceAnswerKeySuggestionsHandler:
+    """Enqueue one suggestion job on editor-sent content."""
 
     def __init__(
         self,
         *,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         enrichment_enabled: bool,
+        vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
+        self._suggestion_jobs = suggestion_jobs
         self._enrichment_enabled = enrichment_enabled
+        self._vault_files = vault_files
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
 
-    async def handle(self, *, actor: User, document: NativeExamDocument) -> bool:
-        """Insert one queued workspace job; report whether one was inserted.
-
-        Idempotent per (lineage, revision): an existing job for the same
-        revision leaves the queue untouched and returns False. Disabled
-        enrichment or a document without unkeyed keyed items also returns
-        False without touching the queue.
-        """
-
-        if not self._enrichment_enabled:
-            return False
-        if not answer_key_item_views(document):
-            return False
-        now = self._clock.now()
-        async with self._uow:
-            existing = await self._enrichment_jobs.get_by_workspace_revision(
-                owner_user_id=actor.id,
-                workspace_lineage_id=document.document_id,
-                workspace_document_revision=document.revision,
-            )
-            if existing is not None:
-                return False
-            await self._enrichment_jobs.create(
-                job=enqueue_workspace_enrichment_job(
-                    job_id=self._id_generator.new_uuid(),
-                    owner_user_id=actor.id,
-                    input_filename=document.title[:255],
-                    workspace_lineage_id=document.document_id,
-                    workspace_document_revision=document.revision,
-                    now=now,
-                )
-            )
-        return True
-
-
-class GetExamWorkspaceEnrichmentStatusHandler:
-    """Read enrichment status and advisory proposals for the head revision."""
-
-    def __init__(
-        self,
-        *,
-        vault_files: VaultFileRepositoryProtocol,
-        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
-        store: ExamWorkspaceDocumentStore,
-        codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> None:
-        self._vault_files = vault_files
-        self._enrichment_jobs = enrichment_jobs
-        self._proposed_overlays = proposed_overlays
-        self._store = store
-        self._codec = codec
-
     async def handle(
-        self, *, actor: User, lineage_id: UUID
-    ) -> ExamWorkspaceEnrichmentStatusResponse:
-        head = await self._vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if head is None or head.document_version is None:
-            raise _document_not_found(lineage_id)
-        revision = head.document_version
-        job = await self._enrichment_jobs.get_by_workspace_revision(
-            owner_user_id=actor.id,
-            workspace_lineage_id=lineage_id,
-            workspace_document_revision=revision,
-        )
-        if job is None:
-            return ExamWorkspaceEnrichmentStatusResponse(
-                lineage_id=lineage_id,
-                document_revision=revision,
-                state=ExamWorkspaceEnrichmentState.NOT_REQUESTED,
-            )
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
-            return self._status_only(lineage_id, revision, ExamWorkspaceEnrichmentState.QUEUED)
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
-            return self._status_only(lineage_id, revision, ExamWorkspaceEnrichmentState.RUNNING)
-        if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
-            return ExamWorkspaceEnrichmentStatusResponse(
-                lineage_id=lineage_id,
-                document_revision=revision,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
-            )
-        return await self._succeeded_response(
-            actor=actor, lineage_id=lineage_id, revision=revision, job=job, head_vault_file=head
-        )
-
-    def _status_only(
-        self,
-        lineage_id: UUID,
-        revision: int,
-        state: ExamWorkspaceEnrichmentState,
-    ) -> ExamWorkspaceEnrichmentStatusResponse:
-        return ExamWorkspaceEnrichmentStatusResponse(
-            lineage_id=lineage_id,
-            document_revision=revision,
-            state=state,
-        )
-
-    async def _succeeded_response(
         self,
         *,
         actor: User,
         lineage_id: UUID,
-        revision: int,
-        job: ExamAnswerKeyEnrichmentJob,
-        head_vault_file: VaultFile,
-    ) -> ExamWorkspaceEnrichmentStatusResponse:
-        overlay = await self._proposed_overlays.get_by_enrichment_job_id(enrichment_job_id=job.id)
-        if overlay is None:
-            return ExamWorkspaceEnrichmentStatusResponse(
-                lineage_id=lineage_id,
-                document_revision=revision,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_DEFAULT_FAILURE_MESSAGE,
+        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+        document = request.document
+        if document.document_id != lineage_id:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="Dokumentet hör till en annan provrad.",
+                details={"lineage_id": str(lineage_id)},
             )
-        try:
-            payload = WorkspaceAnswerKeyProposalsPayload.model_validate(overlay.overlay_json)
-        except ValidationError:
-            return ExamWorkspaceEnrichmentStatusResponse(
+        head = await self._vault_files.get_document_head(
+            user_id=actor.id, document_lineage_id=lineage_id
+        )
+        if head is None:
+            raise _document_not_found(lineage_id)
+        views = self._selected_views(request)
+        if not self._enrichment_enabled or not views:
+            return ExamWorkspaceAnswerKeySuggestionsResponse(
                 lineage_id=lineage_id,
-                document_revision=revision,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_DEFAULT_FAILURE_MESSAGE,
+                state=ExamWorkspaceEnrichmentState.NOT_ELIGIBLE,
+                message=NOT_ELIGIBLE_MESSAGE,
             )
-        content = await self._store.load_version(actor=actor, vault_file=head_vault_file)
-        container = self._codec.parse(content=content)
-        proposals: list[ExamWorkspaceAnswerKeyProposalItem] = []
-        for record in payload.items:
-            try:
-                item = container.document.item_by_id(record.item_id)
-                proposed_item = apply_proposal_to_item(item, proposal_from_record(record))
-            except (DomainError, ValidationError):
-                continue
-            proposals.append(
-                ExamWorkspaceAnswerKeyProposalItem(
-                    item_id=record.item_id,
-                    proposed_item=proposed_item,
-                    provider_profile_id=record.provider_profile_id,
-                    model=record.model,
-                    prompt_template_version=record.prompt_template_version,
+        request_json = WorkspaceAnswerKeyRequestPayload(views=views).model_dump(mode="json")
+        async with self._uow:
+            # Lookup and enqueue are one decision per saved version: a
+            # concurrent equal request waits here and then finds this job.
+            await self._suggestion_jobs.lock_workspace_requests(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+            )
+            running = await self._suggestion_jobs.get_active_workspace_job(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+                workspace_request_json=request_json,
+            )
+            if running is not None:
+                # The same questions on the same saved version are already
+                # being answered: hand that job back instead of a second model call.
+                return suggestions_response_for_job(running, lineage_id=lineage_id)
+            job_id = self._id_generator.new_uuid()
+            await self._enrichment_jobs.create(
+                job=enqueue_workspace_enrichment_job(
+                    job_id=job_id,
+                    owner_user_id=actor.id,
+                    input_filename=document.title[:255],
+                    workspace_lineage_id=lineage_id,
+                    workspace_document_revision=document.revision,
+                    workspace_request_json=request_json,
+                    now=self._clock.now(),
                 )
             )
-        return ExamWorkspaceEnrichmentStatusResponse(
+        return ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=job_id,
             lineage_id=lineage_id,
-            document_revision=revision,
-            state=ExamWorkspaceEnrichmentState.SUCCEEDED,
-            proposals=tuple(proposals),
+            state=ExamWorkspaceEnrichmentState.QUEUED,
         )
+
+    @staticmethod
+    def _selected_views(
+        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
+    ) -> tuple[AnswerKeyItemView, ...]:
+        document = request.document
+        if request.item_id is None:
+            return answer_key_item_views(document)
+        item = document.item_by_id(request.item_id)
+        try:
+            return (answer_key_item_view(item, document.parent_of(item.item_id)),)
+        except ValueError:
+            return ()
+
+
+class GetExamWorkspaceAnswerKeySuggestionsStatusHandler:
+    """Read one suggestion job's status and, once finished, its suggestions."""
+
+    def __init__(
+        self,
+        *,
+        enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ) -> None:
+        self._enrichment_jobs = enrichment_jobs
+
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, job_id: UUID
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+        job = await self._enrichment_jobs.get_by_id(job_id=job_id)
+        if (
+            job is None
+            or job.owner_user_id != actor.id
+            or job.source_kind is not ExamAnswerKeySourceKind.WORKSPACE
+            or job.workspace_lineage_id != lineage_id
+        ):
+            raise DomainError(
+                code=ErrorCode.NOT_FOUND,
+                message="Facitförslaget finns inte.",
+                details={"job_id": str(job_id)},
+            )
+        return suggestions_response_for_job(job, lineage_id=lineage_id)
+
+
+class FindExamWorkspaceAnswerKeySuggestionsHandler:
+    """Find the newest suggestion job requested on an exam's current saved version."""
+
+    def __init__(
+        self,
+        *,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+    ) -> None:
+        self._suggestion_jobs = suggestion_jobs
+        self._vault_files = vault_files
+
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, document_revision: int
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None:
+        head = await self._vault_files.get_document_head(
+            user_id=actor.id, document_lineage_id=lineage_id
+        )
+        if head is None:
+            raise _document_not_found(lineage_id)
+        if head.document_version != document_revision:
+            # The editor's copy is not the current saved version: a job
+            # requested on it belongs to an older version and never applies.
+            return None
+        job = await self._suggestion_jobs.get_latest_workspace_job(
+            owner_user_id=actor.id,
+            workspace_lineage_id=lineage_id,
+            workspace_document_revision=document_revision,
+        )
+        if job is None:
+            return None
+        return suggestions_response_for_job(job, lineage_id=lineage_id)
+
+
+def suggestions_response_for_job(
+    job: ExamAnswerKeyEnrichmentJob, *, lineage_id: UUID
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    """Report one suggestion job's state and, once finished, its suggestions."""
+
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED)
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING)
+    payload = _stored_suggestions(job.workspace_suggestions_json)
+    if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
+        # A failed job still delivers every suggestion it produced before
+        # the failure, alongside the truthful failure message.
+        return ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=job.id,
+            lineage_id=lineage_id,
+            state=ExamWorkspaceEnrichmentState.FAILED,
+            message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
+            suggestions=payload.suggestions if payload is not None else (),
+        )
+    if payload is None:
+        return ExamWorkspaceAnswerKeySuggestionsResponse(
+            job_id=job.id,
+            lineage_id=lineage_id,
+            state=ExamWorkspaceEnrichmentState.FAILED,
+            message=_DEFAULT_FAILURE_MESSAGE,
+        )
+    return ExamWorkspaceAnswerKeySuggestionsResponse(
+        job_id=job.id,
+        lineage_id=lineage_id,
+        state=ExamWorkspaceEnrichmentState.SUCCEEDED,
+        suggestions=payload.suggestions,
+    )
+
+
+def _stored_suggestions(
+    suggestions_json: dict[str, JsonValue] | None,
+) -> WorkspaceAnswerKeySuggestionsPayload | None:
+    if suggestions_json is None:
+        return None
+    try:
+        return WorkspaceAnswerKeySuggestionsPayload.model_validate(suggestions_json)
+    except ValidationError:
+        return None
+
+
+def _status(
+    lineage_id: UUID, job_id: UUID, state: ExamWorkspaceEnrichmentState
+) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+    return ExamWorkspaceAnswerKeySuggestionsResponse(
+        job_id=job_id,
+        lineage_id=lineage_id,
+        state=state,
+    )

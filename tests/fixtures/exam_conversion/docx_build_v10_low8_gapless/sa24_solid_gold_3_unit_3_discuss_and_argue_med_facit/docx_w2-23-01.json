@@ -1,0 +1,69 @@
+{
+  "title": {
+    "text": "F Advanced Vocabulary Revision: Linking words (13 points)",
+    "source_anchors": [
+      "body:0141"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)",
+      "source_anchors": [
+        "body:0142"
+      ],
+      "points": null
+    },
+    {
+      "text": "consequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas",
+      "source_anchors": [
+        "body:0143"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0145"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0144"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "a",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Using cannabis regularly can be addictive. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Moreover"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", it can lead to taking harder drugs such as heroin.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

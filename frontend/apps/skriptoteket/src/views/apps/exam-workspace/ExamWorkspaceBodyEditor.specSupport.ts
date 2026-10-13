@@ -29,14 +29,15 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     ],
     choices: [],
     gaps: [
-      { accepted_values: ["100"], gap_id: "gap_001", hint: "Celsius" },
-      { accepted_values: [], gap_id: "gap_002", hint: null },
+      { accepted_values: ["100"], gap_id: "gap_001" },
+      { accepted_values: [], gap_id: "gap_002" },
     ],
     item_id: "item_001",
     kind: "gap_fill",
     match_left: [],
     match_right: [],
     points: 1,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -45,7 +46,6 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     },
     sequence: 1,
     source_anchor: null,
-    title: null,
     ...overrides,
   };
 }

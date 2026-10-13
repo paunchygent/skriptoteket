@@ -4,7 +4,7 @@
   "source_sha256": "2cc852d8b5d5f04252d83bda5244dcf76a28e7a3cfc922d769a46337502a4e1d",
   "title": "Omprov: grammatik och språkstrukturer — Svenska 2",
   "confirmed": true,
-  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted.",
+  "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted as drafted. Confirmed by the user on 2026-10-11: Fråga 4–5 is one parent over questions of mixed kinds (D27) and Fråga 5 is gap_fill with one gap per satsdel label (D39). Fråga 1 is gap_fill with one gap per morpheme label under D39 (user decision 2026-10-11).",
   "notes": [
     "Draft read directly from word/document.xml and its inline facit. One item per numbered Fråga (8 items, 38 points).",
     "Source answer labels become gap markers; facit is absent from student-visible prompts. Open analysis facit is retained only in notes."
@@ -12,12 +12,88 @@
   "items": [
     {
       "source_label": "Fråga 1",
-      "kind": "free_text",
+      "kind": "gap_fill",
       "points": 6,
-      "prompt": "Dela upp orden i morfem.\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.\na) snöbollarnas\nb) skrivbarheten\nc) fotbollsspelarnas",
+      "prompt": "Dela upp orden i morfem.\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.\na) snö [___] + boll [___] + ar [___] + na [___] + s [___]\nb) skriv [___] + bar [___] + het [___] + en [___]\nc) fot [___] + boll [___] + foge-s + spel [___] + are [___] + na [___] + s [___]",
       "notes": [
-        "Source facit (teacher grading): a) snöbollarnas Svar: snö (R) + boll (R) + ar (B) + na (B) + s (B)\nb) skrivbarheten Svar: skriv (R) + bar (A) + het (A) + en (B)\nc) fotbollsspelarnas Svar: fot (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)",
-        "One open response retains the morpheme segmentation and classification task; no automatic answer variants are invented."
+        "Morfemanalys: each facit label after a part of a word joined with + is one gap after that part accepting that label; foge-s carries no label and stays text (D39, user decision 2026-10-11)."
+      ],
+      "gaps": [
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "R"
+          ]
+        },
+        {
+          "accepted_values": [
+            "A"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        },
+        {
+          "accepted_values": [
+            "B"
+          ]
+        }
       ]
     },
     {
@@ -77,49 +153,128 @@
       ]
     },
     {
-      "source_label": "Fråga 4",
-      "kind": "gap_fill",
-      "points": 2,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nSkriv satsdelen för den markerade delen.\na) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: [___]\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: [___]\nc) Filmen blev spännande. Markerad del: spännande Satsdel: [___]\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 4–5",
+      "instruction": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "children": [
         {
-          "accepted_values": [
-            "adverbial",
-            "Adv"
+          "source_label": "Fråga 4",
+          "kind": "gap_fill",
+          "points": 2,
+          "prompt": "Skriv satsdelen för den markerade delen.\na) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: [___]\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: [___]\nc) Filmen blev spännande. Markerad del: spännande Satsdel: [___]\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "adverbial",
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "indirekt objekt",
+                "IO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "predikativ",
+                "predikatsfyllnad",
+                "predikativ/predikatsfyllnad",
+                "Pf"
+              ]
+            },
+            {
+              "accepted_values": [
+                "direkt objekt",
+                "DO"
+              ]
+            }
+          ],
+          "notes": [
+            "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
           ]
         },
         {
-          "accepted_values": [
-            "indirekt objekt",
-            "IO"
-          ]
-        },
-        {
-          "accepted_values": [
-            "predikativ",
-            "predikatsfyllnad",
-            "predikativ/predikatsfyllnad",
-            "Pf"
-          ]
-        },
-        {
-          "accepted_values": [
-            "direkt objekt",
-            "DO"
+          "source_label": "Fråga 5",
+          "kind": "gap_fill",
+          "points": 6,
+          "prompt": "Gör satsdelsanalys av meningarna.\na) Eleverna [___] lämnade [___] inte [___] sina mobiler [___] i skåpet [___].\nb) Läraren [___] gav [___] klassen [___] tydliga instruktioner [___] före provet [___].\nc) Stämningen [___] blev [___] lugn [___] efter genomgången [___].",
+          "notes": [
+            "Satsdelsanalys: each facit label after a sentence unit is one gap after that unit accepting that label (D39, user decision 2026-10-11)."
+          ],
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "SA"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "IO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            },
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Pf"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            }
           ]
         }
-      ],
-      "notes": [
-        "The facit writes category names; the question explicitly permits the abbreviations in the section instruction, so both are accepted."
-      ]
-    },
-    {
-      "source_label": "Fråga 5",
-      "kind": "free_text",
-      "points": 6,
-      "prompt": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.\nGör satsdelsanalys av meningarna.\na) Eleverna lämnade inte sina mobiler i skåpet.\nb) Läraren gav klassen tydliga instruktioner före provet.\nc) Stämningen blev lugn efter genomgången.",
-      "notes": [
-        "Source facit (teacher grading): a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nb) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nc) Stämningen blev lugn efter genomgången. Analys: Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
       ]
     },
     {

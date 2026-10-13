@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0079"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0078"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "33",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cycling is a totally ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sustainable"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (s…) form of transport. (hållbar)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

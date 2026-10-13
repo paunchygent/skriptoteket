@@ -1,0 +1,36 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0169"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0168"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "m",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "had the Prime Minister started his speech when some of the audience started booing loudly.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

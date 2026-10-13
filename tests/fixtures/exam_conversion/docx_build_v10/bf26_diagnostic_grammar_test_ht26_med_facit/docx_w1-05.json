@@ -1,0 +1,649 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0147",
+    "body:0149",
+    "body:0151",
+    "body:0153",
+    "body:0155",
+    "body:0157",
+    "body:0159",
+    "body:0161",
+    "body:0163",
+    "body:0165",
+    "body:0167",
+    "body:0169",
+    "body:0171",
+    "body:0173",
+    "body:0175",
+    "body:0177"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0146"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "68",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It was an ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "unusually"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (ovanligt) bad storm.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0148"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "69",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She gave him ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (ett) youthful smile.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0150"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "70",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She moved around ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "carefully",
+                "cautiously"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (försiktigt) in order not to disturb anyone.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0152"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "71",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The kids threw snowballs ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "at"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (på) the passers-by.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0154"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "72",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We live in ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a house of our own",
+                "our own house"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (ett eget hus).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0156"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "73",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She thought she ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "was going to be",
+                "would be",
+                "’d be",
+                "'d be"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skulle bli) late for her own wedding.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0158"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "74",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Every evening, the children ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "wait"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (väntar) for their mother to come home.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0160"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "75",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We must get more ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "women"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (kvinnor) into politics.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0162"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "76",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She took the ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "thinnest"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (tunnaste) book she could find.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0164"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "77",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The majority of visitors to this museum are ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Americans",
+                "American"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (amerikaner).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0166"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "78",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Most of us"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (De flesta av oss) left the party at midnight.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0168"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "79",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The elephant is ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "an"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (ett) animal with large flapping ears and a trunk.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0170"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "80",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The train ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "stopped"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (stannade) in the middle of nowhere.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0172"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "81",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There are more ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sheep"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (får) than people in Wales.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0174"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "82",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We think there is no reason ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "for"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (till) such an exaggerated reaction.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0176"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "83",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There has been an increase ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (av) crimes committed by young people.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0033"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0031",
+        "body:0032"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Satir",
+          "correct": true
+        },
+        {
+          "text": "Allegori",
+          "correct": false
+        },
+        {
+          "text": "Realism",
+          "correct": false
+        },
+        {
+          "text": "Humanism",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

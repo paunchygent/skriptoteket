@@ -1,4 +1,4 @@
-"""Principles 4, 6 and 7: scoring, answers kept out of sight, labels Exam.net owns."""
+"""Principles 2 and 4: the answer key and answers kept out of sight."""
 
 from __future__ import annotations
 
@@ -17,20 +17,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 
 from .compare_questions import GoldQuestion, Question
 from .compare_results import FieldMismatch
-from .compare_text import GAP_MARKER, occurrences, stream, words
+from .compare_text import occurrences, stream, words
 
-# A label Exam.net prints itself: an option letter or number before a choice or match entry.
-_OPTION_LABEL = re.compile(r"^\s*(?:[A-Za-z]|\d{1,2})\s*[.):]\s+\S")
-# A source label opening a line: a question number, alone or after a question word.
-_QUESTION_NUMBER = re.compile(
-    r"^\s*(?:(?:fråga|question|uppgift|task)\s*\d+|\d{1,3}\s*[.)](?!\d))", re.IGNORECASE
-)
-_POINT_LABEL = re.compile(
-    r"\(\s*\d+(?:[.,]\d+)?\s*(?:p|poäng|points?|pts?)\.?\s*\)"
-    r"|\b\d+(?:[.,]\d+)?\s*(?:poäng|points?)\b",
-    re.IGNORECASE,
-)
-_BLANK_MARKER = re.compile(r"_{3,}|\.{4,}|…{2,}|\[\s*\]|\(\s*\)")
 # A teacher note labels its facit: a word and a colon, then the answer.
 _FACIT_LABEL = re.compile(r"\w+:")
 
@@ -60,7 +48,7 @@ def _admitted_extra(
 
 
 def scoring(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
-    """Principle 4: same correct choices, every gold answer accepted, same pairs."""
+    """Principle 2: same correct choices, every gold answer accepted, same pairs."""
     expected = gold.item
     mismatches: list[FieldMismatch] = []
     if _word_set(expected.correct_choices) != _word_set(actual.correct_choices):
@@ -120,10 +108,14 @@ def facit_phrases(gold: GoldQuestion) -> set[str]:
 
 
 def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
-    """Principle 6: no facit answer is shown more often than the gold question shows it.
+    """Principle 4: no facit answer is shown more often than the gold question shows it.
 
     A parent's instruction is printed above each of its children, so it counts on both sides.
+    A review item shows its source as printed, facit included, and blocks every export, so it
+    never leaks to a student.
     """
+    if not actual.converted:
+        return []
     item = gold.item
     answers = {
         *(value for gap in item.gaps for value in gap.accepted_values),
@@ -131,37 +123,11 @@ def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
         *(pair.right for pair in item.pairs),
     }
     phrases = ({words(value) for value in answers} - {""}) | facit_phrases(gold)
-    shown = stream([*actual.instruction, actual.title, *actual.body], gaps=True)
+    shown = stream([*actual.instruction, *actual.body], gaps=True)
     expected = stream([*gold.view.instruction, *item.prompt.split("\n")], gaps=True)
     leaked = sorted(
         phrase for phrase in phrases if occurrences(shown, phrase) > occurrences(expected, phrase)
     )
     if leaked:
         return [FieldMismatch("no_answer_leakage", "facit_visible", (), tuple(leaked))]
-    return []
-
-
-def _numbered(lines: Iterable[str]) -> int:
-    return sum(1 for line in lines if _QUESTION_NUMBER.match(line))
-
-
-def labels(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
-    """Principle 7: no option letters, question numbers, point labels or printed blanks."""
-    view = gold.view
-    found: list[str] = []
-    gold_entries = {words(entry) for entry in view.entries()}
-    for entry in actual.entries():
-        if _OPTION_LABEL.match(entry) and words(entry) not in gold_entries:
-            found.append(f"option label: {entry}")
-    own_lines = [line for line in (actual.title, *actual.body) if line.strip()]
-    if _numbered(own_lines) > _numbered(view.body):
-        numbered = [line for line in own_lines if _QUESTION_NUMBER.match(line)]
-        found.append(f"question number: {numbered}")
-    own_text = "\n".join((*actual.instruction, *own_lines)).replace(GAP_MARKER, " ")
-    gold_text = "\n".join((*view.instruction, *view.body)).replace(GAP_MARKER, " ")
-    for name, pattern in (("point label", _POINT_LABEL), ("blank marker", _BLANK_MARKER)):
-        if len(pattern.findall(own_text)) > len(pattern.findall(gold_text)):
-            found.append(f"{name}: {pattern.findall(own_text)}")
-    if found:
-        return [FieldMismatch("no_platform_labels", "label_visible", (), tuple(found))]
     return []

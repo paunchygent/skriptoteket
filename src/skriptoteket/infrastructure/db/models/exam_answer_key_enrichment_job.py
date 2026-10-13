@@ -28,11 +28,13 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     __tablename__ = "exam_answer_key_enrichment_jobs"
     __table_args__ = (
         Index("ix_exam_answer_key_enrichment_jobs_claim", "status", "available_at"),
+        # Several suggestion jobs may stand on one saved version (one per
+        # request); the resume lookup reads the newest of them.
         Index(
-            "uq_exam_answer_key_enrichment_jobs_workspace_revision",
+            "ix_exam_answer_key_enrichment_jobs_workspace_revision",
             "workspace_lineage_id",
             "workspace_document_revision",
-            unique=True,
+            "created_at",
             postgresql_where=text("source_kind = 'workspace'"),
         ),
         Index(
@@ -61,6 +63,12 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     source_docx: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     workspace_lineage_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     workspace_document_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    workspace_request_json: Mapped[dict[str, JsonValue] | None] = mapped_column(
+        JSONB, nullable=True
+    )
+    workspace_suggestions_json: Mapped[dict[str, JsonValue] | None] = mapped_column(
+        JSONB, nullable=True
+    )
     retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
@@ -76,6 +84,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     diagnostics: Mapped[list[dict[str, JsonValue]]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
+    conversion_progress: Mapped[dict[str, JsonValue] | None] = mapped_column(JSONB, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

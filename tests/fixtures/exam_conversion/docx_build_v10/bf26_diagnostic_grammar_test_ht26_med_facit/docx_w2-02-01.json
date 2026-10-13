@@ -1,0 +1,64 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0116"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0118"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0117"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "55",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Om vi hade tränat mer hade vi kanske vunnit matchen. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "If we had trained more, we might have won the match",
+                "If we had trained more, we might have won the match.",
+                "If we had trained more we might have won the match",
+                "If we had trained more we might have won the match.",
+                "If we had practised more, we might have won the match",
+                "If we had practised more, we might have won the match.",
+                "If we’d trained more, we might have won the match",
+                "If we'd trained more, we might have won the match",
+                "If we’d trained more, we might have won the match.",
+                "If we'd trained more, we might have won the match.",
+                "If we’d trained more we might have won the match",
+                "If we'd trained more we might have won the match",
+                "If we’d trained more we might have won the match.",
+                "If we'd trained more we might have won the match."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

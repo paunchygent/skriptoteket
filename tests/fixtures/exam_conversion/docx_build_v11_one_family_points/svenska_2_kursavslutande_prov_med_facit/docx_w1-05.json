@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0024"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Plikt och kärlek",
+          "correct": false
+        },
+        {
+          "text": "Kraft och list",
+          "correct": true
+        },
+        {
+          "text": "Känsla och fantasi",
+          "correct": false
+        },
+        {
+          "text": "Empiri och förnuft",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

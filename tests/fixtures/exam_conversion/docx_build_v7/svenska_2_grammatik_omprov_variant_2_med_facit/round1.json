@@ -119,15 +119,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Dela upp orden i morfem.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) solrosornas",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -136,8 +134,7 @@
             {
               "kind": "text",
               "text": "b) läsbarheten",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -146,8 +143,7 @@
             {
               "kind": "text",
               "text": "c) handbollsspelarnas",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -156,7 +152,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -171,15 +168,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Ange frastyp.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Skriv NF, PF eller VF.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -188,16 +183,14 @@
             {
               "kind": "text",
               "text": "a) De nyfikna barnen Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "NF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -206,16 +199,14 @@
             {
               "kind": "text",
               "text": "b) skulle springa Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "VF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -224,16 +215,14 @@
             {
               "kind": "text",
               "text": "c) i korridoren Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "PF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -242,16 +231,14 @@
             {
               "kind": "text",
               "text": "d) under rasten Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "PF"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -260,7 +247,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -274,23 +262,20 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Skriv huvudordet i varje nominalfras.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) de två gamla cyklarna från källaren Huvudord: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "cyklarna"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -299,16 +284,14 @@
             {
               "kind": "text",
               "text": "b) min yngre brors röda jacka i hallen Huvudord: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "jacka"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -317,16 +300,14 @@
             {
               "kind": "text",
               "text": "c) alla pennorna på det stora bordet Huvudord: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "pennorna"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -335,16 +316,14 @@
             {
               "kind": "text",
               "text": "d) den breda stigen genom parken Huvudord: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "stigen"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -353,7 +332,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -367,23 +347,20 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Skriv satsdelen för den markerade delen.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "adverbial"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -392,16 +369,14 @@
             {
               "kind": "text",
               "text": "b) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "indirekt objekt"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -410,16 +385,14 @@
             {
               "kind": "text",
               "text": "c) Rummet blev tyst. Markerad del: tyst Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "predikativ/predikatsfyllnad"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -428,16 +401,14 @@
             {
               "kind": "text",
               "text": "d) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "direkt objekt"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -446,7 +417,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -459,15 +431,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Gör satsdelsanalys av meningarna.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) Klassen läste inte texten i klassrummet.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -476,8 +446,7 @@
             {
               "kind": "text",
               "text": "b) Mentorn skickade eleverna ett tydligt schema på morgonen.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -486,8 +455,7 @@
             {
               "kind": "text",
               "text": "c) Dagen blev stressig efter beskedet.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -496,7 +464,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -512,37 +481,32 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) Jag hörde att brandlarmet ringde klockan två. Bisats: att brandlarmet ringde klockan två Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "att-sats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "DO"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -551,30 +515,26 @@
             {
               "kind": "text",
               "text": "b) Problemet var att läraren stod vid tavlan. Bisats: att läraren stod vid tavlan Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "att-sats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Pf"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -583,30 +543,26 @@
             {
               "kind": "text",
               "text": "c) När regnet slutade gick klassen ut. Bisats: När regnet slutade Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "tidsbisats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Adv"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -615,30 +571,26 @@
             {
               "kind": "text",
               "text": "d) Eleverna viskade eftersom filmen hade börjat. Bisats: eftersom filmen hade börjat Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "orsaksbisats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Adv"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -647,30 +599,26 @@
             {
               "kind": "text",
               "text": "e) Om bussen kommer i tid hinner vi till lektionen. Bisats: Om bussen kommer i tid Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "villkorsbisats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Adv"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -679,30 +627,26 @@
             {
               "kind": "text",
               "text": "f) Hon satte alarmet för att hon skulle vakna i tid. Bisats: för att hon skulle vakna i tid Typ: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "avsiktsbisats"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Adv"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -711,7 +655,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -724,15 +669,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Analysera en komplex mening.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Mening: Att flera datorer slutade fungera förklarar varför provet blev försenat.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -741,30 +684,26 @@
             {
               "kind": "text",
               "text": "a) Skriv bisatser. Bisats 1: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Att flera datorer slutade fungera"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Bisats 2: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "varför provet blev försenat"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -773,30 +712,26 @@
             {
               "kind": "text",
               "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "S"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Bisats 2 satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "DO"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -805,7 +740,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -823,15 +759,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Jämför texternas språkliga drag.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Beskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -840,8 +774,7 @@
             {
               "kind": "text",
               "text": "Du kan till exempel jämföra:",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -850,8 +783,7 @@
             {
               "kind": "text",
               "text": "nominaliseringar",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -860,8 +792,7 @@
             {
               "kind": "text",
               "text": "konkreta och abstrakta uttryck",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -870,8 +801,7 @@
             {
               "kind": "text",
               "text": "aktörer och perspektiv",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -880,8 +810,7 @@
             {
               "kind": "text",
               "text": "nominalfraser",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -890,8 +819,7 @@
             {
               "kind": "text",
               "text": "verb och handlingar",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -900,8 +828,7 @@
             {
               "kind": "text",
               "text": "formell och informell stil",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -910,7 +837,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

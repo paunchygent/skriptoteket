@@ -1,0 +1,37 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0073",
+        "body:0074",
+        "body:0075",
+        "body:0076"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "free_text",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Noah skrev brevet tydligt.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

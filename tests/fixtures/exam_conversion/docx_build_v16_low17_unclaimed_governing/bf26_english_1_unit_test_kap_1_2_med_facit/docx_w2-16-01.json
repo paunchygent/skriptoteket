@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0137"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0135",
+        "body:0136"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Sam Nilsson is writing a formal e-mail to Ms. Lind. Which complete closing follows the class model?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "Sincerely,\nSam Nilsson",
+          "correct": true
+        },
+        {
+          "text": "Yours faithfully,\nSam Nilsson",
+          "correct": false
+        },
+        {
+          "text": "Yours sincerely,\nSam",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0021"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0019",
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gerald couldn’t remember a thing after the accident. He was obviously suffering from ___",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [
+        {
+          "text": "insomnia",
+          "correct": false
+        },
+        {
+          "text": "amnesia",
+          "correct": true
+        },
+        {
+          "text": "anaemia",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

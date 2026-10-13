@@ -9,8 +9,10 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamParent,
-    native_exam_document_json_bytes,
     parent_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
+    native_exam_document_json_bytes,
 )
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_document,
@@ -88,11 +90,16 @@ def test_children_listed_out_of_sequence_order_are_rejected():
         recorded_document((_parent("parent_001", second, first),))
 
 
-def test_children_of_different_kinds_are_rejected():
+def test_children_of_different_kinds_share_one_parent_and_survive_a_json_round_trip():
     first, second = _kind_boundary()
+    items = recorded_items()
+    assert items[first - 1].kind is not items[second - 1].kind
 
-    with pytest.raises(ValidationError, match="share one item kind"):
-        recorded_document((_parent("parent_001", first, second),))
+    document = recorded_document((_parent("parent_001", first, second),), items=items)
+    again = NativeExamDocument.model_validate_json(native_exam_document_json_bytes(document))
+
+    assert again.parents == document.parents
+    assert again.parent_of(f"item_{first:03d}") == again.parent_of(f"item_{second:03d}")
 
 
 def test_a_child_that_is_not_an_item_is_rejected():

@@ -20,9 +20,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParagraph,
     NativeParseOrigin,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
-    native_export_blockers,
     parse_native_exam_document,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -45,7 +49,6 @@ def _free_text_item(*, sequence: int = 1, item_id: str = "item_001") -> NativeEx
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        title="Essäfråga",
         body=(_paragraph("Resonera om renässansen."),),
         points=4,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -64,7 +67,6 @@ def _single_choice_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        title="Flervalsfråga",
         body=(_paragraph("Vilket är huvudordet?"),),
         points=1,
         choices=(
@@ -87,7 +89,6 @@ def _gap_fill_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.GAP_FILL,
-        title="Lucktext",
         body=(
             NativeParagraph(
                 segments=(
@@ -245,7 +246,9 @@ class TestExportBlockers:
     def test_clean_document_has_no_blockers(self) -> None:
         assert native_export_blockers(_document(_gap_fill_item())) == ()
 
-    def test_review_required_blocks_export(self) -> None:
+    def test_a_converted_item_that_needs_review_with_points_and_key_does_not_block(
+        self,
+    ) -> None:
         item = _gap_fill_item().model_copy(
             update={
                 "review": _review(
@@ -255,8 +258,32 @@ class TestExportBlockers:
                 )
             }
         )
-        reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
-        assert "review_required" in reasons
+        assert item.points is not None
+        assert native_export_blockers(_document(item)) == ()
+
+    def test_an_unbuilt_question_blocks_until_marked_reviewed(self) -> None:
+        unbuilt = _gap_fill_item().model_copy(
+            update={
+                "points": 2,
+                "points_estimated": True,
+                "review": _review(
+                    state=NativeItemReviewState.REVIEW_REQUIRED,
+                    parse_origin=NativeParseOrigin.DETERMINISTIC,
+                ),
+            }
+        )
+        reasons = [blocker.reason for blocker in native_export_blockers(_document(unbuilt))]
+        assert reasons == ["unbuilt_question"]
+
+        review = unbuilt.review.model_copy(update={"state": NativeItemReviewState.REVIEW_COMPLETE})
+        reviewed = unbuilt.model_copy(update={"review": review})
+        assert native_export_blockers(_document(reviewed)) == ()
+
+    def test_estimated_points_require_points(self) -> None:
+        with pytest.raises(ValidationError, match="estimated points require points"):
+            NativeExamItem.model_validate(
+                {**_gap_fill_item().model_dump(), "points": None, "points_estimated": True}
+            )
 
     def test_machine_proposed_key_blocks_export(self) -> None:
         item = _single_choice_item(origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED)

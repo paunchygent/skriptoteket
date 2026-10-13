@@ -7,12 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: in_progress
+status: done
 closeout_review:
   record: inline
   status: approved
   reviewer: ruthless-code-review
   decided_at: '2026-09-28T00:54:42+02:00'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed the task on 2026-10-12 after the Hemma staging walk at main fc42b918 passed (home, tool list, Klassrumskartan planner and modal; Skriptoteket retained session 01a13061-ff38-7099-aa3d-e23f6e5bba43 evidence/staging-walk/walk-40-01-01-fc42b918.md).
 task_kind: story
 acceptance_criteria:
 - Running repository-governance-frontend-catalog design-system sync against Skriptoteket writes the package tokens, Tailwind theme and horizontal logo to their current Skriptoteket paths as named in the root design-system-map.json, with every other export null, and Skriptoteket's validate command passes

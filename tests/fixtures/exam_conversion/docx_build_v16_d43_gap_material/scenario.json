@@ -1,0 +1,7 @@
+{
+  "source": "svenska_2_kursavslutande_prov_med_facit",
+  "anchors": ["body:0085", "body:0086", "body:0087"],
+  "material_kept_as_text": "low25_docx_w2-08-01.json",
+  "model_review": "low26_docx_w2-09-01.json",
+  "material_made_gaps": ["low28_docx_w2-09-01.json", "staging_reconstruction_material_gapped.json"]
+}

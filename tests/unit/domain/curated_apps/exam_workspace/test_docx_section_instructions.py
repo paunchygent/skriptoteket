@@ -5,9 +5,13 @@ a job does. Instructions and items are selected by source anchor; wording is rea
 """
 
 import json
+import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
+
+import pytest
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     admit_batch,
@@ -19,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemb
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildResult
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
     defined_terms,
     uses_term,
 )
@@ -26,12 +31,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamItemKind,
     NativeExamParent,
+    NativeItemReviewState,
     NativeParagraph,
     NativeTextSegment,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+
+_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
 
 _FIXTURES = Path("tests/fixtures/exam_conversion")
 _SECTIONED = "svenska_2_grammatik_omprov_variant_1_med_facit"
@@ -66,7 +74,7 @@ class _Build:
         return [self.result.document.item_by_id(item_id) for item_id in parent.item_ids]
 
 
-def _build(stem: str, *, carry: bool = True) -> _Build:
+def _build(stem: str, *, carry: bool = True, edit: Callable[[dict], None] | None = None) -> _Build:
     chunks = PythonDocxExamChunker().chunk(
         content=(_FIXTURES / f"docx_corpus/{stem}.docx").read_bytes()
     )
@@ -77,7 +85,10 @@ def _build(stem: str, *, carry: bool = True) -> _Build:
         source_sha256="0" * 64,
         chunks=chunks,
     )
-    admit_batch(json.loads((_FIXTURES / f"docx_build_v7/{stem}/round1.json").read_text()), state)
+    response = json.loads((_FIXTURES / f"docx_build_v7/{stem}/round1.json").read_text())
+    if edit is not None:
+        edit(response)
+    admit_batch(response, state)
     assert state.instructions
     if not carry:
         state.instructions = ()
@@ -85,7 +96,7 @@ def _build(stem: str, *, carry: bool = True) -> _Build:
 
 
 def _text(item: NativeExamItem) -> str:
-    return " ".join(" ".join((item.title or "", *item.plain_text_lines())).split())
+    return " ".join(" ".join(item.plain_text_lines()).split())
 
 
 def _prints(item: NativeExamItem, wording: str) -> bool:
@@ -110,7 +121,9 @@ def test_vocabulary_section_becomes_one_parent_with_the_shared_instruction():
 
     parent = build.parent_with("body:0007")
     assert parent is not None
-    assert parent.instruction == (wording,)
+    # The printed section heading opens the parent's instruction (T2, 39-05-08),
+    # without the total its line prints.
+    assert parent.instruction == ("Vocabulary: Write the Word or Phrase", wording)
     children = build.children(parent)
     assert len(children) == 24
     assert {c.kind for c in children} == {NativeExamItemKind.GAP_FILL}
@@ -122,10 +135,10 @@ def test_vocabulary_section_becomes_one_parent_with_the_shared_instruction():
     # The next section's questions belong to the next parent, never to this one.
     other = build.parent_with("body:0075")
     assert other is not None and other.parent_id != parent.parent_id
-    assert other.instruction == (build.wording("body:0074"),)
+    assert other.instruction == ("Vocabulary in Context", build.wording("body:0074"))
 
 
-def test_every_parent_holds_contiguous_children_of_one_kind_in_order():
+def test_every_parent_holds_contiguous_children_in_order():
     for stem in (_ENGLISH, _REPEATED, _COURSE):
         build = _build(stem)
         document = build.result.document
@@ -136,7 +149,6 @@ def test_every_parent_holds_contiguous_children_of_one_kind_in_order():
         for parent in document.parents:
             children = build.children(parent)
             assert len(children) >= 2
-            assert len({c.kind for c in children}) == 1
             first = children[0].sequence
             assert [c.sequence for c in children] == list(range(first, first + len(children)))
         claimed = [item_id for parent in document.parents for item_id in parent.item_ids]
@@ -173,17 +185,19 @@ def test_exam_total_line_is_never_instruction_text_of_a_parent_or_an_item():
     assert total in build.result.document.instructions
 
 
-def test_questions_of_different_kinds_get_no_parent_and_the_run_is_reported():
+def test_questions_of_different_kinds_under_one_instruction_share_one_parent():
     build = _build(_SECTIONED)
     wording = build.wording("body:0035")
     kinds = {build.item(a).kind for a in ("body:0037", "body:0045")}
     assert len(kinds) == 2
 
-    assert build.result.document.parents == ()
-    (event,) = [e for e in build.result.events if e.code == "parent_kinds_mixed"]
-    assert "item_004" in event.detail and "item_005" in event.detail
-    assert "body:0035" in event.anchors
-    assert _carrying(build, wording) == {"body:0037", "body:0045"}
+    parent = build.parent_with("body:0037")
+    assert parent is not None
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert parent.instruction == ("Del 2: Satsdelar", wording)
+    assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
+    assert _carrying(build, wording) == set()
+    assert not [e for e in build.result.events if "kind" in e.code]
 
 
 def test_term_defining_instruction_reaches_only_the_items_naming_its_terms():
@@ -192,9 +206,11 @@ def test_term_defining_instruction_reaches_only_the_items_naming_its_terms():
     terms = defined_terms(wording)
     assert terms
 
-    assert _carrying(build, wording) == {"body:0037", "body:0045"}
+    parent = build.parent_with("body:0037")
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert parent is not None and parent.instruction == ("Del 2: Satsdelar", wording)
+    assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
     for anchor in ("body:0037", "body:0045"):
-        assert _first_paragraph(build.item(anchor)) == wording
         assert uses_term(terms, build.own_chunks(anchor))
     # The next section's item names the same short forms, but a section heading closes the run.
     assert uses_term(terms, build.own_chunks("body:0056"))
@@ -244,26 +260,50 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
         kept = {line for parent in document.parents for line in parent.instruction}
         for instruction in build.state.instructions:
             texts = [build.state.chunk_by_anchor[a].text for a in instruction.source_anchors]
-            reached = any(text in kept or _carrying(build, text) for text in texts)
+            # A heading chunk stands on its parent without its printed total and
+            # question number (T2).
+            shown = texts + [
+                _NUMBERED_LINE.sub(
+                    "", " ".join(POINT_LABEL.sub(" ", text).split()), count=1
+                ).rstrip(" ,;")
+                for text in texts
+            ]
+            reached = any(text in kept or _carrying(build, text) for text in shown)
             assert reached != (instruction.text in document.instructions), (
                 stem,
                 instruction.source_anchors,
             )
-        # Without recorded instructions no parent exists and the items are unchanged.
+        # Without recorded instructions the items are unchanged; a parent can still
+        # form from a printed heading alone (T2), holding only heading wording.
         bare = _build(stem, carry=False).result.document
-        assert bare.parents == ()
+        headings = {
+            " ".join(POINT_LABEL.sub(" ", chunk.text).split()).rstrip(" ,;")
+            for chunk in build.state.chunks
+            if chunk.kind == "heading"
+        } | {chunk.text for chunk in build.state.chunks if chunk.kind == "heading"}
+        assert all(
+            any(line == heading or heading.endswith(f" {line}") for heading in headings)
+            for parent in bare.parents
+            for line in parent.instruction
+        )
         assert len(bare.items) == len(document.items)
 
 
+# "Translate the sentence into English." reaches single questions, so each gets a copy.
+_COPIED = "body:0180"
+_COPY_CARRIERS = ("body:0043", "body:0117", "body:0123", "body:0181", "body:0217", "body:0223")
+
+
 def test_instruction_already_printed_in_the_item_is_not_repeated():
-    build = _build(_SECTIONED)
+    build = _build(_REPEATED)
     anchors = {item.source_anchor: anchors for item, anchors in build.state.accepted}
     carried = {
         anchor: item
         for anchor in anchors
-        if _prints(item := build.item(str(anchor)), build.wording("body:0035"))
+        if _prints(item := build.item(str(anchor)), build.wording(_COPIED))
     }
-    assert set(carried) == {"body:0037", "body:0045"}
+    assert set(carried) == set(_COPY_CARRIERS)
+    assert not any(build.parent_with(str(anchor)) for anchor in carried)
 
     # Assemble again from the items that already carry the instruction.
     again = assemble_build_result(
@@ -282,19 +322,19 @@ def test_instruction_already_printed_in_the_item_is_not_repeated():
     assert [item.body for item in again.document.items] == [
         item.body for item in build.result.document.items
     ]
-    wording = " ".join(build.wording("body:0035").split())
+    wording = " ".join(build.wording(_COPIED).split())
     for anchor in carried:
         assert _text(again.document.items[build.index(str(anchor))]).count(wording) == 1
 
 
 def test_instruction_printed_by_an_item_is_kept_once_while_its_sibling_still_gets_it():
-    build = _build(_SECTIONED)
-    wording = build.wording("body:0035")
+    build = _build(_REPEATED)
+    wording = build.wording(_COPIED)
     printed = NativeParagraph(segments=(NativeTextSegment(text=wording),))
     accepted = tuple(
         (
             item.model_copy(update={"body": (printed, *item.body)})
-            if anchors[0] == "body:0037"
+            if anchors[0] == _COPY_CARRIERS[0]
             else item,
             anchors,
         )
@@ -312,7 +352,7 @@ def test_instruction_printed_by_an_item_is_kept_once_while_its_sibling_still_get
     )
 
     by_anchor = {item.source_anchor: item for item in again.document.items}
-    for anchor in ("body:0037", "body:0045"):
+    for anchor in _COPY_CARRIERS:
         assert _text(by_anchor[anchor]).count(" ".join(wording.split())) == 1
         assert _first_paragraph(by_anchor[anchor]) == wording
 
@@ -322,7 +362,43 @@ def test_course_exam_choice_section_is_one_parent_of_single_choice_questions():
     parent = build.parent_with("body:0010")
 
     assert parent is not None
-    assert parent.instruction == (build.wording("body:0009"),)
+    # The section heading opens the instruction (T2, 39-05-08).
+    assert parent.instruction == ("Flervalsfrågor", build.wording("body:0009"))
     assert len(parent.item_ids) == 15
     assert {c.kind for c in build.children(parent)} == {NativeExamItemKind.SINGLE_CHOICE}
     assert [c.sequence for c in build.children(parent)] == list(range(1, 16))
+
+
+def _review_third_question(response: dict) -> None:
+    response["items"][2].update(outcome="review", review_reason="Frågan behöver granskas.")
+
+
+def _drop_third_question(response: dict) -> None:
+    del response["items"][2]
+
+
+@pytest.mark.parametrize(
+    ("edit", "review_anchors"),
+    [(_review_third_question, ["body:0016"]), (_drop_third_question, ["body:0016", "body:0017"])],
+    ids=["model_review_item", "unconverted_chunks"],
+)
+def test_review_item_in_a_choice_section_stays_a_child_of_its_parent_in_source_position(
+    edit: Callable[[dict], None], review_anchors: list[str]
+):
+    build = _build(_COURSE, edit=edit)
+    parent = build.parent_with("body:0010")
+
+    assert parent is not None
+    # The section heading opens the instruction (T2, 39-05-08).
+    assert parent.instruction == ("Flervalsfrågor", build.wording("body:0009"))
+    children = build.children(parent)
+    reviews = [c for c in children if c.review.state is NativeItemReviewState.REVIEW_REQUIRED]
+    assert [c.source_anchor for c in reviews] == review_anchors
+    assert all(c.kind is NativeExamItemKind.FREE_TEXT for c in reviews)
+    assert [c.source_anchor for c in children[2 : 2 + len(reviews)]] == review_anchors
+    assert len(children) == 14 + len(reviews)
+    assert {c.kind for c in children} == {
+        NativeExamItemKind.SINGLE_CHOICE,
+        NativeExamItemKind.FREE_TEXT,
+    }
+    assert [c.sequence for c in children] == list(range(1, len(children) + 1))

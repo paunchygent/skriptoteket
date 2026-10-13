@@ -4,8 +4,8 @@
  * Domain purpose:
  *   Thin typed client for the teacher exam workspace document lifecycle:
  *   import a .docx exam, list and reopen saved documents, save versioned
- *   revisions, download on-demand exports, and request advisory answer-key
- *   proposals for the saved head revision.
+ *   revisions, download on-demand exports, and request AI answer-key
+ *   suggestions for the questions exactly as the editor shows them.
  *
  * Relationships:
  *   - Uses `api/client.ts` helpers for protected API calls.
@@ -44,13 +44,17 @@ export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentRespon
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
-export type ExamWorkspaceEnrichmentStatus = Schemas["ExamWorkspaceEnrichmentStatusResponse"];
+export type ExamWorkspaceAnswerKeySuggestionsStatus =
+  Schemas["ExamWorkspaceAnswerKeySuggestionsResponse"];
 export type ExamWorkspaceConversionStatus = Schemas["ExamWorkspaceConversionStatus"];
-export type ExamWorkspaceAnswerKeyProposal = Schemas["ExamWorkspaceAnswerKeyProposalItem"];
+export type ExamWorkspaceConversionUnit = Schemas["ExamWorkspaceConversionUnit"];
+export type NativeAnswerKeySuggestion = Schemas["NativeAnswerKeySuggestion"];
+export type ExamWorkspaceAnswerKeySuggestionItem =
+  Schemas["ExamWorkspaceAnswerKeySuggestionItem"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceExportBlockerReason =
-  | "review_required"
+  | "unbuilt_question"
   | "machine_proposed_key_unreviewed"
   | "missing_points"
   | "missing_answer_key";
@@ -63,7 +67,6 @@ export type ExamWorkspaceExportBlocker = {
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
   document: NativeExamDocument;
-  rejectedProposalItemIds?: string[];
 };
 
 function documentPath(lineageId: string): string {
@@ -103,7 +106,6 @@ export async function saveExamWorkspaceDocument(
   const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
     document: params.document,
     expected_revision: params.expectedRevision,
-    rejected_proposal_item_ids: params.rejectedProposalItemIds ?? [],
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
 }
@@ -117,14 +119,40 @@ export async function downloadExamWorkspaceExport(
   );
 }
 
-export async function startExamWorkspaceEnrichment(
+/**
+ * Request AI suggestions for the editor's current document: one named
+ * question when `itemId` is given, otherwise every keyless keyed question.
+ */
+export async function requestExamWorkspaceAnswerKeySuggestions(
   lineageId: string,
-): Promise<ExamWorkspaceEnrichmentStatus> {
-  return await apiPost<ExamWorkspaceEnrichmentStatus>(`${documentPath(lineageId)}/enrichment`);
+  document: NativeExamDocument,
+  itemId?: string,
+): Promise<ExamWorkspaceAnswerKeySuggestionsStatus> {
+  const body: Schemas["RequestExamWorkspaceAnswerKeySuggestionsRequest"] = {
+    document,
+    item_id: itemId ?? null,
+  };
+  return await apiPost<ExamWorkspaceAnswerKeySuggestionsStatus>(
+    `${documentPath(lineageId)}/answer-key-suggestions`,
+    body,
+  );
 }
 
-export async function getExamWorkspaceEnrichment(
+export async function getExamWorkspaceAnswerKeySuggestions(
   lineageId: string,
-): Promise<ExamWorkspaceEnrichmentStatus> {
-  return await apiGet<ExamWorkspaceEnrichmentStatus>(`${documentPath(lineageId)}/enrichment`);
+  jobId: string,
+): Promise<ExamWorkspaceAnswerKeySuggestionsStatus> {
+  return await apiGet<ExamWorkspaceAnswerKeySuggestionsStatus>(
+    `${documentPath(lineageId)}/answer-key-suggestions/${encodeURIComponent(jobId)}`,
+  );
+}
+
+/** The newest suggestion job requested on this saved version, or null when there is none. */
+export async function findExamWorkspaceAnswerKeySuggestions(
+  lineageId: string,
+  documentRevision: number,
+): Promise<ExamWorkspaceAnswerKeySuggestionsStatus | null> {
+  return await apiGet<ExamWorkspaceAnswerKeySuggestionsStatus | null>(
+    `${documentPath(lineageId)}/answer-key-suggestions?document_revision=${documentRevision}`,
+  );
 }

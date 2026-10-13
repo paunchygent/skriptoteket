@@ -67,17 +67,19 @@ or network call.
   `scripts/exam_conversion_eval/judge.py` loads the saved API response or bare
   native document, the matching corpus gold and DOCX chunks. Shared comparison
   printing lives in `report.py` and is also used by `exam-conversion-eval`.
-- Proof and command captures are retained in session
-  `01a12706-566c-7480-acc3-427145283942`, under
-  `evidence/task-skript-39-05-06/` and `operational-output/commands/`.
-  `evidence/task-skript-39-05-06/summary.md` lists the commands and results.
-- Five saved staging documents satisfy all item principles (166/166 items).
-  Three exit 0; historical SA24 and BF26 captures exit 1 because their titles
-  still contain answer-key wording. Three additional bare live-eval documents
-  were checked separately; their historical mismatches remain failures.
-- The unchanged Swedish grammar variant-1 capture passes as an envelope and
-  as a bare document. Changing its first score from 6 to 7 prints the question
-  and points mismatch and exits 1; a title-only mutation also exits 1.
-- Five focused adversarial tests, changed-file Ruff, format and mypy checks,
-  docs and handoff validation pass. Recorded eval retains its baseline three
-  failed exams. Independent review and parent integration remain pending.
+- Historical proof (2026-10-11): session
+  `01a12706-566c-7480-acc3-427145283942`,
+  `evidence/task-skript-39-05-06/summary.md`. Five saved staging documents
+  matched 166/166 items; two historical titles failed. This proof predates
+  the question-title removal and the current conversion pipeline.
+- Current integration and focused proof: session
+  `01a13798-9df1-75fa-a4c5-bd755b4bfd85`,
+  `evidence/implementation/TASK-SKRIPT-39-05-06/result.md`. Local main is
+  merged into the task branch; the shared printer retains the current eval's
+  per-line crash reporting. The exam-title verdict remains independent of
+  removed question titles. Comparator and corpus gold are unchanged by this task.
+- Recorded corpus adversaries cover passing bare/enveloped documents, a
+  points mutation naming its question and principle, a title-only failure,
+  missing questions and untruncated long answer mismatches. A module CLI
+  subprocess test covers success and failure exit statuses without a provider.
+- Independent review and parent integration remain pending.

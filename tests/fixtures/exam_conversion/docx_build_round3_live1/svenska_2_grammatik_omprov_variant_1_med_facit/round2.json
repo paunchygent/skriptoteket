@@ -15,23 +15,20 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Ange frastyp.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "a) De trötta eleverna Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "NF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -40,16 +37,14 @@
             {
               "kind": "text",
               "text": "b) hade väntat Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "VF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -58,16 +53,14 @@
             {
               "kind": "text",
               "text": "c) på bussen Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "PF"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -76,16 +69,14 @@
             {
               "kind": "text",
               "text": "d) efter skolan Frastyp: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "PF"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -94,7 +85,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

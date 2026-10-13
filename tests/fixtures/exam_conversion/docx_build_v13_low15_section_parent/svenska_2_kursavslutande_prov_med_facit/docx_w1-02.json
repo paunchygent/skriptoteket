@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0015"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Centrallyrik stil",
+          "correct": false
+        },
+        {
+          "text": "Lakonisk stil",
+          "correct": true
+        },
+        {
+          "text": "Realistisk stil",
+          "correct": false
+        },
+        {
+          "text": "Satirisk stil",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

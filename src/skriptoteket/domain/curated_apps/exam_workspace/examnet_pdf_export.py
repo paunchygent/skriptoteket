@@ -10,7 +10,7 @@ Relationships:
     - Consumes `domain.curated_apps.exam_workspace.native_exam_document`.
     - Reuses the neutral types in
       `domain.curated_apps.exam_conversion.exam_pdf_item_semantics`, the
-      default strategy registry in `examnet_pdf_item_strategies`, and the
+      default strategy registry in `examnet_pdf_item_registry`, and the
       document assembly in `digiexam_examnet_pdf_html`.
     - Mirrors the fail-closed coordination of
       `domain.curated_apps.exam_conversion.digiexam_examnet_pdf`.
@@ -48,8 +48,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
     PdfExamMatchPairSemantics,
     PdfExamOptionSemantics,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry import (
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
@@ -84,6 +86,7 @@ SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
         single_answer_key_label="Rätt svar",
         multiple_answer_key_label="Rätta svar",
         match_key_label="Rätta par",
+        marking_guide_label="Rättningsmall",
     ),
 )
 
@@ -198,6 +201,7 @@ def _pdf_item_semantics(
         points=points,
         prompt_html=prompt_html,
         source_item_type_label=item.kind.value,
+        marking_guide=item.marking_guide,
         options=tuple(
             PdfExamOptionSemantics(option_id=_choice_number(choice.choice_id), text=choice.text)
             for choice in item.choices

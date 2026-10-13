@@ -155,8 +155,10 @@ and the
   [service-shell UX realignment plan](ref-service-shell-ux-realignment-plan-v1.md).
 - Backlog: `docs/backlog/{epics,stories,prs,reviews}/`, hierarchy
   `EPIC -> STORY -> PR slice`; volatile state in `handoff.md`.
-- Docs contract and validation: `docs/_meta/docs-contract.yaml`,
-  `pdm run docs-validate`.
+- Docs contract and validation: the package-owned `repository-governance`
+  contract (configured in `pyproject.toml` `[tool.repository-governance]`),
+  `pdm run docs-validate`; `docs/_meta/historical-docs-contract.yaml` holds the
+  read-only legacy rules for historical records.
 
 ## Decisions And Interpretation
 

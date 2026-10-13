@@ -1,0 +1,593 @@
+{
+  "model": "gpt-6-luna",
+  "answers": [
+    {
+      "type": "choice",
+      "name": "kind_q1",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q2",
+      "choice": "multiple_response",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 1.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q3",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q4",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q5",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q6",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q7",
+      "choice": "multiple_response",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 1.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q8",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q9",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.99
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.01
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 0.99
+    },
+    {
+      "type": "choice",
+      "name": "kind_q10",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q11",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q12",
+      "choice": "multiple_response",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 1.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q13",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q14",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.99
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.01
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 0.99
+    },
+    {
+      "type": "choice",
+      "name": "kind_q15",
+      "choice": "single_choice",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 1.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    },
+    {
+      "type": "choice",
+      "name": "kind_q16",
+      "choice": "multiple_response",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 1.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.0
+        },
+        {
+          "value": "free_text",
+          "probability": 0.0
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 1.0
+    }
+  ],
+  "usage": {
+    "input_tokens": 12132,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens": 0,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 12132
+  }
+}

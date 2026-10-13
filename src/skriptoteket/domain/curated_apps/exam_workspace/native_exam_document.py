@@ -10,13 +10,12 @@ no source type codes, and no source page/line spans.
 
 from __future__ import annotations
 
-import json
 import math
 from enum import StrEnum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -64,24 +63,6 @@ class NativeAnswerKeyOrigin(StrEnum):
     TEACHER_AUTHORED = "teacher_authored"
     MACHINE_PROPOSED = "machine_proposed"
     REVIEWED_ADVISORY = "reviewed_advisory"
-
-
-_TRUSTED_KEY_ORIGINS = frozenset(
-    {
-        NativeAnswerKeyOrigin.SOURCE_PROVIDED,
-        NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-        NativeAnswerKeyOrigin.REVIEWED_ADVISORY,
-    }
-)
-
-_KEYED_KINDS = frozenset(
-    {
-        NativeExamItemKind.SINGLE_CHOICE,
-        NativeExamItemKind.MULTIPLE_RESPONSE,
-        NativeExamItemKind.GAP_FILL,
-        NativeExamItemKind.MATCHING,
-    }
-)
 
 
 class NativeTextSegment(BaseModel):
@@ -156,7 +137,6 @@ class NativeGap(BaseModel):
 
     gap_id: str = Field(pattern=_GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
-    hint: str | None = None
 
     @field_validator("accepted_values")
     @classmethod
@@ -173,6 +153,43 @@ class NativeAnswerKey(BaseModel):
     origin: NativeAnswerKeyOrigin
     correct_choice_ids: tuple[str, ...] = ()
     match_pairs: tuple[NativeMatchPair, ...] = ()
+
+
+class NativeGapAcceptedValues(BaseModel):
+    """The accepted values one AI suggestion proposes for one gap."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
+    accepted_values: tuple[str, ...] = Field(min_length=1)
+
+    @field_validator("accepted_values")
+    @classmethod
+    def _non_empty_values(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        for value in values:
+            if not value.strip():
+                raise ValueError("accepted_values entries must be non-empty")
+        return values
+
+
+class NativeAnswerKeySuggestion(BaseModel):
+    """One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+
+    Holds the proposed key, a SHA-256 fingerprint of the question's
+    answer-relevant content when the suggestion was made, and the provider
+    lineage that produced it. It lives apart from the item's answer key so
+    it survives the teacher accepting or replacing that key.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    correct_choice_ids: tuple[str, ...] = ()
+    match_pairs: tuple[NativeMatchPair, ...] = ()
+    gap_accepted_values: tuple[NativeGapAcceptedValues, ...] = ()
+    fingerprint: str = Field(pattern=_SHA256_PATTERN)
+    provider_profile_id: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    prompt_template_version: str = Field(min_length=1)
 
 
 class NativeItemReview(BaseModel):
@@ -217,15 +234,17 @@ class NativeExamItem(BaseModel):
     item_id: str = Field(pattern=_ITEM_ID_PATTERN)
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
-    title: str | None = None
-    printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
+    printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
+    points_estimated: bool = False  # points split from a printed section total (D6)
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
+    ai_suggestion: NativeAnswerKeySuggestion | None = None
+    marking_guide: str | None = None  # rättningsmall: only free_text carries one (D31)
     review: NativeItemReview
     source_anchor: str | None = None
 
@@ -242,6 +261,8 @@ class NativeExamItem(BaseModel):
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> "NativeExamItem":
+        if self.points_estimated and self.points is None:
+            raise ValueError("estimated points require points")
         choice_ids = [choice.choice_id for choice in self.choices]
         gap_ids = [gap.gap_id for gap in self.gaps]
         if len(set(choice_ids)) != len(choice_ids):
@@ -276,8 +297,11 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
+        if self.marking_guide and self.kind is not NativeExamItemKind.FREE_TEXT:
+            raise ValueError("only free_text items carry a marking guide")
 
         self._answer_key_invariants(frozenset(choice_ids))
+        self._suggestion_invariants()
         self._body_gap_invariants(gap_ids)
         return self
 
@@ -322,10 +346,51 @@ class NativeExamItem(BaseModel):
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
+    def _suggestion_invariants(self) -> None:
+        """Check the kept suggestion's own shape, never its currency.
+
+        A suggestion is historical data for the question its fingerprint
+        describes: after an answer-relevant edit — including a change of
+        the question's kind — it may propose a key for another kind, name
+        choices, match entries or gaps the question no longer declares,
+        and it stays stored so the fingerprint can report it out of date.
+        Only the suggestion's own shape is invariant here: exactly one
+        payload family carries the proposed key (choice ids, match pairs
+        or gap accepted values) and no entry is named twice within it.
+        Producer validation against the requested question and the current
+        answer key's constraints live in their own checks, so a stored
+        historical suggestion never becomes a valid active key by storage.
+        """
+
+        suggestion = self.ai_suggestion
+        if suggestion is None:
+            return
+        families = (
+            bool(suggestion.correct_choice_ids),
+            bool(suggestion.match_pairs),
+            bool(suggestion.gap_accepted_values),
+        )
+        if sum(families) != 1:
+            raise ValueError("a kept suggestion proposes exactly one kind of key")
+        if len(set(suggestion.correct_choice_ids)) != len(suggestion.correct_choice_ids):
+            raise ValueError("suggested choice ids must be unique")
+        paired_left = [pair.left_id for pair in suggestion.match_pairs]
+        if len(set(paired_left)) != len(paired_left):
+            raise ValueError("a suggestion pairs each left entry at most once")
+        paired_right = [pair.right_id for pair in suggestion.match_pairs]
+        if len(set(paired_right)) != len(paired_right):
+            raise ValueError("a suggestion pairs each right entry at most once")
+        suggested_gap_ids = [entry.gap_id for entry in suggestion.gap_accepted_values]
+        if len(set(suggested_gap_ids)) != len(suggested_gap_ids):
+            raise ValueError("a suggestion names each gap at most once")
+
     def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         """Every left entry is paired once; unpaired right entries are distractors."""
         if self.answer_key.correct_choice_ids:
             raise ValueError("matching items key pairs, not choices")
+        self._match_pairs_valid(pairs)
+
+    def _match_pairs_valid(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         left_ids = {entry.left_id for entry in self.match_left}
         right_ids = {entry.right_id for entry in self.match_right}
         paired_left = [pair.left_id for pair in pairs]
@@ -424,70 +489,3 @@ class NativeExamDocument(BaseModel):
             message="Exam item not found.",
             details={"item_id": item_id},
         )
-
-
-class NativeExportBlocker(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    item_id: str
-    reason: Literal[
-        "review_required",
-        "machine_proposed_key_unreviewed",
-        "missing_points",
-        "missing_answer_key",
-    ]
-
-
-def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
-    """S4 gate: LLM output and low-confidence items need review before export.
-
-    Keyed kinds without an answer key block export: Exam.net QTI would carry an
-    automatic item with no correct response and the Exam.net PDF prints the key.
-    """
-    blockers: list[NativeExportBlocker] = []
-    for item in document.items:
-        if item.review.state is NativeItemReviewState.REVIEW_REQUIRED:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="review_required"))
-        if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
-            blockers.append(
-                NativeExportBlocker(
-                    item_id=item.item_id,
-                    reason="machine_proposed_key_unreviewed",
-                )
-            )
-        if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
-        if item.points is None:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
-    return tuple(blockers)
-
-
-def item_has_trusted_key(item: NativeExamItem) -> bool:
-    if item.kind not in _KEYED_KINDS:
-        return False
-    return item.answer_key.origin in _TRUSTED_KEY_ORIGINS
-
-
-def native_exam_document_json_bytes(document: NativeExamDocument) -> bytes:
-    payload = document.model_dump(mode="json")
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
-
-
-def parse_native_exam_document(data: bytes) -> NativeExamDocument:
-    try:
-        payload = json.loads(data.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload is not valid JSON.",
-        ) from error
-    try:
-        return NativeExamDocument.model_validate(payload)
-    except ValidationError as error:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Native exam document payload failed validation.",
-            details={"errors": error.error_count()},
-        ) from error

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -17,6 +17,7 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 )
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from skriptoteket.workers import exam_answer_key_enrichment as enrichment_worker
 from skriptoteket.workers.exam_answer_key_enrichment import process_next_answer_key_enrichment_job
 from tests.unit.workers.execution_queue_repository_fakes import DEFAULT_NOW, FakeUow
 from tests.unit.workers.execution_queue_runtime_fakes import FakeClock
@@ -174,3 +175,52 @@ async def test_expired_recovery_short_circuits_claim(
     )
     jobs.claim_next.assert_not_awaited()
     handler.handle.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "source_kind",
+    [ExamAnswerKeySourceKind.DOCX_IMPORT, ExamAnswerKeySourceKind.WORKSPACE],
+)
+async def test_claimed_and_finished_events_name_the_job_kind(
+    source_kind: ExamAnswerKeySourceKind,
+    worker_harness: tuple[AsyncContainer, AsyncMock, AsyncMock],
+    claimed_docx_job: ExamAnswerKeyEnrichmentJob,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    container, jobs, handler = worker_harness
+    job = claimed_docx_job
+    if source_kind is ExamAnswerKeySourceKind.WORKSPACE:
+        job = ExamAnswerKeyEnrichmentJob.model_validate(
+            claimed_docx_job.model_dump()
+            | {"source_kind": source_kind, "source_docx": None, "workspace_request_json": {}}
+        )
+    jobs.claim_next.return_value = job
+    handler.handle.return_value = ExamAnswerKeyEnrichmentJob.model_validate(
+        job.model_dump()
+        | {"status": ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED, "source_docx": None}
+    )
+    logger = Mock()
+    monkeypatch.setattr(enrichment_worker, "logger", logger)
+
+    await process_next_answer_key_enrichment_job(
+        container=container,
+        worker_id=WORKER_ID,
+        now=DEFAULT_NOW,
+        lease_ttl=LEASE_TTL,
+        clock=FakeClock(now=DEFAULT_NOW),
+    )
+
+    events = {call.args[0]: call.kwargs for call in logger.info.call_args_list}
+    assert events["Exam enrichment queue job claimed"] == {
+        "job_id": str(job.id),
+        "conversion_job_id": str(job.conversion_job_id),
+        "worker_id": WORKER_ID,
+        "source_kind": source_kind.value,
+    }
+    assert events["Exam enrichment queue job finished"] == {
+        "job_id": str(job.id),
+        "status": ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED.value,
+        "last_error": None,
+        "source_kind": source_kind.value,
+    }

@@ -1,0 +1,56 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046",
+        "body:0047",
+        "body:0048",
+        "body:0049"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Fråga 5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Eleverna lämnade inte sina mobiler i skåpet.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Läraren gav klassen tydliga instruktioner före provet.",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Stämningen blev lugn efter genomgången.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).\nLäraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).\nStämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
+    }
+  ]
+}

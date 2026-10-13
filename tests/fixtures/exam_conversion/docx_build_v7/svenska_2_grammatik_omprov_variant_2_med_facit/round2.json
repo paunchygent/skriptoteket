@@ -14,15 +14,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Analysera en komplex mening.",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Mening: Att flera datorer slutade fungera förklarar varför provet blev försenat.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -31,30 +29,26 @@
             {
               "kind": "text",
               "text": "a) Skriv bisatserna. Bisats 1: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "Att flera datorer slutade fungera"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Bisats 2: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "varför provet blev försenat"
-              ],
-              "hint": null
+              ]
             }
           ]
         },
@@ -63,30 +57,26 @@
             {
               "kind": "text",
               "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "S"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " Bisats 2 satsdel: ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "DO"
-              ],
-              "hint": null
+              ]
             }
           ]
         }
@@ -95,7 +85,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

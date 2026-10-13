@@ -61,11 +61,9 @@ def test_generated_lines_hold_no_fixed_word_of_the_other_language(stem: str) -> 
     assert labels.question == _gold_label_word(stem)
     forbidden = _ENGLISH if labels.language == "sv" else _SWEDISH
     forbidden_words = {word for phrase in forbidden for word in phrase.split()}
-    generated = [
-        line
-        for line in _generated_lines(stem)
-        if not any(item.title == line for item in document.items)
-    ]
+    # Lines the exam itself prints are not generated export wording.
+    printed = {line for item in document.items for line in item.plain_text_lines()}
+    generated = [line for line in _generated_lines(stem) if line not in printed]
     assert generated
     for line in generated:
         foreign = _words_of(line) & forbidden_words
@@ -83,7 +81,9 @@ def test_every_points_line_and_key_heading_uses_the_exam_language(stem: str) -> 
         if item.points is not None and not float(item.points).is_integer():
             continue
         assert labels.points_line(points) in texts
-    headings = [p.text for p in parsed.paragraphs if p.style.name == "Heading 2"]
+    headings = [
+        p.text for p in parsed.paragraphs if p.style is not None and p.style.name == "Heading 2"
+    ]
     assert headings in ([], [labels.answer_key])
 
 

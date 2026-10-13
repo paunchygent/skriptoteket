@@ -1,0 +1,647 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0119"
+      ],
+      "points": null
+    },
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0125"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0107",
+    "body:0109",
+    "body:0111",
+    "body:0113",
+    "body:0115",
+    "body:0121",
+    "body:0127",
+    "body:0129",
+    "body:0131",
+    "body:0133",
+    "body:0135",
+    "body:0137",
+    "body:0139",
+    "body:0141",
+    "body:0143",
+    "body:0145"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0106"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "50",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Where did you download ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "those"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (de där) films?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0108"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "51",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "That was ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "good news",
+                "a piece of good news",
+                "some good news"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en god nyhet).",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0110"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "52",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The interesting thing"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Det intressanta) is that the number of users increases all the time.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0112"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "53",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He has opened ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a restaurant of his own",
+                "his own restaurant"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (en egen restaurang) in New York.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0114"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "54",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We had dinner at the ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Italian"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (italienska) restaurant down the road.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0120"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "56",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Those who",
+                "People who",
+                "The people who"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (De som) work on the top floors have bought parachutes.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0126"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "58",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The most important thing"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Det viktigaste) is not to lose one’s temper.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0128"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "59",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It was ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "easier"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (lättare) to buy a new TV than repair the old one.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0130"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "60",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "works"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (arbetar) long hours every day.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0132"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "61",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Those who",
+                "People who",
+                "The people who"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (De som) order immediately will get an extra bonus.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0134"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "62",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "was going to open",
+                "was about to open",
+                "was just about to open"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (skulle öppna) the door when she was attacked from behind.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0136"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "63",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "My sister is married ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "to"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (med) a Frenchman.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0138"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "64",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "chose"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (valde) the yellow cab.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0140"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "65",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "The money is"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (Pengarna är) not in my purse.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0142"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "66",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It turned out to be ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (ett) UN decision that was accepted by all countries.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0144"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "67",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She always ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lay"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (låg) in bed till late in the morning.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

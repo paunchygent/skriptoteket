@@ -9,32 +9,27 @@
     staging walk on `1db37835`: 166/166 items on all eight principles, matching
     edit, QTI export; retained root
     `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
-  - [TASK-SKRIPT-39-05-05](docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md)
-    `in_progress`: titles drop answer-key wording. Rereview approved `83501383`,
-    merged `ece1b674`, pushed; staging walk 2026-10-11 on `ece1b674`: sa24 editor
-    and QTI title "Test Unit 3 Discuss and Argue" (retained root
-    `evidence/task-skript-39-05-05/staging-walk-ece1b674/`). Next: user closure.
-    Prior recorded eval's three item failures match baseline `6bf05757`.
-  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `in_progress`, Codex lead `18bb0b85` (thread `01a12ad3`) in worktree
-    `Skriptoteket-task-skript-39-05-04`. v1/v2 sweep and D16 tables done
-    (`evidence/task-skript-39-05-04/labeler/takeover-tables/`); context audit
-    admitted (`labeler/context-audit/`). Next: measure v3 tight context, then
-    user decides threshold and D16; then grouping/batching D11-D13.
+  - TASK-SKRIPT-39-05-05 `done` (user closure 2026-10-14).
   - [TASK-SKRIPT-39-05-06](docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md)
-    `in_progress`, owner Claude parent; implementation on
-    `codex/task-skript-39-05-06` adds the saved-document judge and shared eval
-    printing. Five staging captures: 166/166 items; two historical titles
-    fail. Points/title adversaries and five tests pass; Ruff/mypy pass.
-    Proof: retained root `evidence/task-skript-39-05-06/summary.md`.
+    `in_progress`, Sol 6.1 lead; retained `01a13798-9df1-75fa-a4c5-bd755b4bfd85`.
+    Judge/shared printer integrated with current main, exam-title check retained.
+    Proof: `evidence/implementation/TASK-SKRIPT-39-05-06/result.md`.
     Next: independent review and parent integration.
+  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
+    `done` (user closure 2026-10-12, staging walk `63de8094`, retained
+    `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
+    review with per-question retry, picture in review items and marks, the D44
+    low-27 miss and the D31 Exam.net rubric test import.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
-  is `proposed` with a closed contract (P1-P13): teachers create the seven
-  Exam.net types standalone or as parent with children (Deluppgift).
-  All-types Exam.net import 2026-10-10 passed (exam 5310254, 13 tasks, 28p).
-  Retained plan `01a127b9-9597-7303-b076-e5b24e5954d2`. Next: user
-  proposed->ready; sequenced after story 8.
+  `proposed`, P1-P16: seven types, parents with children, and (P14-P16,
+  2026-10-13) changing a question's type plus "Gör om till [type]". Next: user
+  proposed->ready; after story 8.
+
+- TASK-SKRIPT-39-05-08 `done` 2026-10-14 (merged cc89175b, staging walk at
+  cc89175b; Exam.net import exam 5326264 — evidence in retained
+  `01a13559-bf2e-760d-a690-3a3dea446cd5`). Next: suggestion accuracy as a
+  scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
@@ -54,22 +49,11 @@
   approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
-- 2026-10-09 planning session (Claude): user decisions recorded in
-  EPIC-SKRIPT-39 — new story 8 converges the product exporter on the proven
-  native QTI 3.0 Exam.net contract (HuleEduOS `examnet-qti-import` skill,
-  probe rounds V1-V44) after story 5 and before story 7, with the QTI 2.1
-  writer as the parity baseline until cutover (terms E13-E14); story-5
-  breadth candidates add accepted-spelling variants, case-insensitive maps,
-  letter hints, and the proven ordering type. ADR-SKRIPT-0066 gained an
-  ADR-0090 amendment pointer. Verified on current sir-convert-a-lot main:
-  the stale pre-beta QTI contract reference and the whole Sir exam domain
-  are already removed (TASK-SIRCON-07-04-01); the residual hazard was
-  EPIC-SIRCON-07/08 still `proposed`, which now carry supersession notes
-  on sir-convert branch `claude/supersede-retired-exam-epics` pending
-  merge and governed terminal closure. The HuleEduOS producer stays a
-  deliberately separate hand-tool for now (E15). ADR-SKRIPT-0091 and
-  ST-SKRIPT-39-04 were accepted by user decision 2026-10-09 (user-closure
-  gate): ADR-0091 is `accepted` and the story is `ready`.
+- EPIC-SKRIPT-39 decisions 2026-10-09 (E13-E15): story 8 converges the exporter
+  on the native QTI 3.0 Exam.net contract after story 5, QTI 2.1 is the parity
+  baseline until cutover. Open: sir-convert branch
+  `claude/supersede-retired-exam-epics` (EPIC-SIRCON-07/08 supersession notes)
+  awaits merge and governed terminal closure.
 
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
@@ -78,15 +62,31 @@
   Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
 
 - [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
-  is `ready`. TASK-SKRIPT-40-01-01 has an approved implementation review
-  (`bda00b6a`) and adopts design-system metadata 0.1.23 through package
-  sync. Current main was merged before integration.
-  The adopted CSS and logo bytes did not change in this refresh. The task
-  remains `in_progress`: this integration does not establish its required
-  Hemma staging screen walk. Integration and cleanup evidence:
-  HuleEdu retained session `01a0eef4-0059-7e04-a805-0991592709a1`.
-  TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Planning session:
-  `01a0e4a4-436a-70d9-a907-702d84f2a091`.
+  and ST-SKRIPT-40-01 are `active`. TASK-SKRIPT-40-01-01 is `done`
+  (user closure 2026-10-12; review `bda00b6a`; Hemma staging walk passed at
+  `fc42b918`, Skriptoteket retained session
+  `01a13061-ff38-7099-aa3d-e23f6e5bba43` evidence/staging-walk). Next:
+  TASK-SKRIPT-40-01-03 (shared action buttons), which TASK-SKRIPT-39-04-05
+  waits on. TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Open defect
+  from the walk: Klassrumskartan returns focus to the sidebar, not "Ny klass",
+  after the modal closes.
+- ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
+  (rules removal: all of .codex/rules moves into skills, user 2026-10-12;
+  shadow and panel sweep, per-app token passes).
+  Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S7
+  closed. Release first (user 2026-10-12): skill-repository
+  `TASK-SKILL-REP-0279` and HuleEdu `TASK-HULE-REP-0142` are done
+  (0.1.24 without offset shadows, in repository-governance 0.11.109; HuleEdu
+  staging walk clean). Next: this story's first task (not yet scaffolded)
+  syncs 0.1.24 and removes local uses in the same commit, before
+  TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
+  (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
+  `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
+  waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
+  39-04-08 (scaffold: Mina filer exports, pruning); 39-05-08 is done.
+  ST-SKRIPT-39-08 (metadata) is scaffolded.
+  EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
+  becomes a secondary input mode of the workspace.
 
 - 2026-09-05 reconciliation (docs/planning only, no code): the user-approved
   native editable exam workspace is recorded in
@@ -152,31 +152,27 @@
 
 ## Recent
 
-- TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
-  carried across saves; staging walk 2026-10-10 at `929e847a`, Sol `231a2190`,
-  merge `e0746f2a`.
-
-- 2026-10-10: TASK-SKRIPT-39-04-02 `done` by user acceptance of the
-  four-viewport staging walk (`agent-planning:user-closure-gate`); `main`
-  `acca1ee7` on staging; evidence in the task's Closeout Evidence.
-
-- 2026-10-10: TASK-SKRIPT-39-04-01 `done` by user D5 approval
-  (`agent-planning:user-closure-gate`); walk, proposal step, gap-key fix,
-  missing-key export block (DOCX included, user decision) and small items
-  on `main` through `77ea389f`; evidence in the task's Closeout Evidence.
+- TASK-SKRIPT-39-04-09 `done` 2026-10-13 (ruthless-reviewer approved
+  `d09bd286`, user closure): merged main `c018ae9e`, deployed to staging;
+  all seven walk steps passed, incl. resume after reload, older job ignored
+  after save, import blocked while unsaved, `docx_import` log label, q10
+  Fungi/Bacteria (retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`).
+- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (user closure; user waived review
+  of final repair `ace0cc39`, earlier rounds `changes_requested`): merged
+  main `838baea9`; T7 staging walk passed: suggestion on unsaved edits ->
+  `machine_proposed` key -> reviewed -> saved -> kept on reopen (retained
+  `01a133f5…/evidence/staging-walk-838baea9/README.md`).
+- TASK-SKRIPT-39-05-07 `done` 2026-10-13 (user closure): export blocks only on
+  missing values; review approved `58dabe3f`; staging walk on ebc2a9c7 passed
+  (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).
+- Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
+  (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
 
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
   on migrating both epics to the contract-derived profile with open child
   stories (user decision pending; ST-SIRCON-07-01 still states the old QTI
   2.1 claim).
-
-- 2026-09-05: reconciled EPIC-39/ADR-0090 with the approved workspace scope
-  via scaffolder-created ADR-0091, ST-39-04, and TASK-39-04-01 (all
-  `proposed`); `pdm run docs-validate` green; `git diff --check` clean.
-
-- 2026-08-30/31: public (03-02) and authenticated (03-01) cutovers done;
-  both lanes run Skriptoteket-owned with zero Sir exam calls.
 
 ## Facts
 

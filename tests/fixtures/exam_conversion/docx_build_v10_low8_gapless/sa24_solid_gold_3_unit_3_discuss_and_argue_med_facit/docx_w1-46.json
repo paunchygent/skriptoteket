@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0163"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0162"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "j",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There are many different ways of getting rich. You could, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "for instance"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": ", win £1 million on the National Lottery.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

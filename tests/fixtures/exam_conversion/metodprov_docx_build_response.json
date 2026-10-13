@@ -43,15 +43,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "1. Läsning på fritiden (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill undersöka hur stor andel av skolans tvåor som har läst skönlitteratur på fritiden under den senaste veckan. Gruppen har slumpat fram 120 tvåor från en fullständig elevlista.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -60,8 +58,7 @@
             {
               "kind": "text",
               "text": "Vilket sätt att samla in och bearbeta information passar bäst för att besvara frågan?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -70,8 +67,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -94,7 +90,8 @@
           "text": "Låt eleverna ange hur många böcker de äger hemma och beräkna hur stor andel som har böcker.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -107,15 +104,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "2. Tidningsartiklar (2 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp undersöker 40 tidningsartiklar om ungdomars fritid. Först räknar de hur många artiklar som nämner föreningsidrott. Sedan undersöker de hur ungdomarna beskrivs i artiklarna och vilka egenskaper de tillskrivs.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -124,8 +119,7 @@
             {
               "kind": "text",
               "text": "Vilka två beskrivningar av undersökningen stämmer?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -134,8 +128,7 @@
             {
               "kind": "text",
               "text": "Markera två svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -158,7 +151,8 @@
           "text": "Den andra delen är kvalitativ, eftersom gruppen tolkar hur ungdomarna framställs genom språket i de olika artiklarna.",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -171,15 +165,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "3. Statistik om extrajobb (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill jämföra hur vanligt extrajobb är bland gymnasieelever i tre kommuner. De hittar färdig statistik för samma år. Extrajobb har definierats på samma sätt och motsvarande elevgrupper har undersökts i alla tre kommunerna.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -188,8 +180,7 @@
             {
               "kind": "text",
               "text": "Vilket arbetssätt ger en egen analys som besvarar gruppens jämförelsefråga?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -198,8 +189,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -222,7 +212,8 @@
           "text": "Byt ut statistiken mot intervjuer med några bekanta och använd deras erfarenheter för att uppskatta kommunernas olika andelar.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -235,15 +226,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "4. AI och lärande (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill ta reda på om en AI-tjänst förbättrar elevernas lärande. De frågar 100 elever: ”Tycker du att du lär dig mer när du använder tjänsten?” Åttio elever svarar ja. Gruppen undersöker inte elevernas kunskaper på något annat sätt.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -252,8 +241,7 @@
             {
               "kind": "text",
               "text": "Vilken beskrivning stämmer bäst med vad gruppen faktiskt har fått information om?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -262,8 +250,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -286,7 +273,8 @@
           "text": "Resultatet visar elevernas uppfattning om sitt lärande, eftersom enkäten frågar efter deras bedömning snarare än deras kunskaper.",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -299,15 +287,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "5. Resor till skolan (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp skriver att arbetet ska undersöka hur svenska gymnasieelever tar sig till skolan. De frågar samtliga 72 tvåor på ett program på sin egen skola. Alla 72 svarar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -316,8 +302,7 @@
             {
               "kind": "text",
               "text": "Vilken beskrivning skiljer rätt mellan populationen i syftet och de elever som faktiskt har undersökts?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -326,8 +311,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -350,7 +334,8 @@
           "text": "Populationen är svenska gymnasieelever, och urvalet kan representera dem eftersom samtliga elever som gruppen har tillfrågat har svarat.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -363,15 +348,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "6. Besökare i biblioteket (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill undersöka vad alla elever på skolan tycker om skolbiblioteket. Gruppen ställer sig i biblioteket och frågar de första 100 besökarna. Samtliga tillfrågade svarar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -380,8 +363,7 @@
             {
               "kind": "text",
               "text": "Vilken bedömning av urvalet är mest rimlig?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -390,8 +372,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -414,7 +395,8 @@
           "text": "Det är ett strategiskt urval som passar syftet, eftersom biblioteksbesökarna kan beskriva verksamheten mer ingående än andra elever.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -427,15 +409,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "7. En enkät till hela skolan (2 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En skola har 900 elever. En grupp skickar en enkät om skolmaten till samtliga elever, men 180 svarar. Av de svarande är 70 procent missnöjda. Gruppen vet inte vad eleverna som avstod från att svara tycker.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -444,8 +424,7 @@
             {
               "kind": "text",
               "text": "Vilka två bedömningar av resultatet är försvarbara?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -454,8 +433,7 @@
             {
               "kind": "text",
               "text": "Markera två svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -478,7 +456,8 @@
           "text": "Resultatet beskriver missnöjet bland de svarande, men visar inte säkert hur stor andel av skolans elever som är missnöjda.",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -491,15 +470,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "8. 20 eller 200 elever (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Två grupper undersöker hur stor andel av en skolas 1 000 elever som cyklar till skolan. Båda lottar deltagare från samma fullständiga elevlista och använder samma tydliga fråga. Alla tillfrågade svarar. Den ena gruppen frågar 20 elever och den andra 200.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -508,8 +485,7 @@
             {
               "kind": "text",
               "text": "Vilken skillnad kan man främst förvänta sig mellan undersökningarna?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -518,8 +494,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -542,7 +517,8 @@
           "text": "Det mindre urvalet ger normalt samma säkerhet i andelen, eftersom slumpmässigt valda deltagare återspeglar populationen oavsett hur många de är.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -555,15 +531,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "9. Samma svar sorteras olika (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Två elever sorterar samma 30 intervjusvar i grupperna positiv, negativ och blandad. De använder olika regler för vad blandad betyder och placerar därför samma svar i olika grupper.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -572,8 +546,7 @@
             {
               "kind": "text",
               "text": "Vilken förändring angriper problemet med analysens tillförlitlighet mest direkt?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -582,8 +555,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -606,7 +578,8 @@
           "text": "Formulera gemensamma regler för sorteringen och pröva dem på samma intervjusvar innan ni går vidare med resten av materialet.",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -619,15 +592,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "10. Att räkna lästa sidor (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill jämföra hur väl elever förstår en novell. De räknar hur många sidor varje elev läser på tio minuter. Två personer kontrollräknar sidantalet oberoende av varandra och får samma resultat. Ingen undersöker hur eleverna har förstått innehållet.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -636,8 +607,7 @@
             {
               "kind": "text",
               "text": "Vilken bedömning skiljer rätt mellan reliabilitet och validitet i den här mätningen?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -646,8 +616,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -670,7 +639,8 @@
           "text": "Räkningen har låg reliabilitet och validitet, eftersom en undersökning av förståelse behöver bygga på elevernas egna beskrivningar av sin läsning.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -683,15 +653,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "11. Skolans introduktionsplan (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill ta reda på hur nya elever tas emot på en skola. De analyserar skolans introduktionsplan, där det står att varje ny elev ska erbjudas ett mentorssamtal. Gruppen skriver sedan: ”Alla nya elever får ett mentorssamtal.” Inget annat material har samlats in.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -700,8 +668,7 @@
             {
               "kind": "text",
               "text": "Vilken bedömning av vad planen kan belägga är mest rimlig?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -710,8 +677,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -734,7 +700,8 @@
           "text": "Planen visar vilket stöd skolan avser att erbjuda, men ger inte i sig belägg för vilket stöd eleverna faktiskt får.",
           "correct": true
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -747,15 +714,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "12. En fråga om avfallssortering (2 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill undersöka elevernas vanor vid avfallssortering. I enkäten står: ”Visst sorterar du ditt avfall, som en ansvarsfull elev bör göra?” Eleverna skriver sina namn och lämnar svaren direkt till sin lärare.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -764,8 +729,7 @@
             {
               "kind": "text",
               "text": "Vilka två ändringar riktar sig mot risken att svaren påverkas av formuleringen eller av hur eleverna vill framstå?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -774,8 +738,7 @@
             {
               "kind": "text",
               "text": "Markera två svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -798,7 +761,8 @@
           "text": "Förklara vilka sorteringsvanor skolan förväntar sig och be eleverna bedöma sina egna vanor i förhållande till skolans förväntningar.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -811,15 +775,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "13. Att byta program (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp vill förstå hur elever som har bytt gymnasieprogram upplevde bytet och stödet från skolan. De har tid att genomföra åtta längre intervjuer.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -828,8 +790,7 @@
             {
               "kind": "text",
               "text": "Vilket urval passar frågeställningen bäst?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -838,8 +799,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -862,7 +822,8 @@
           "text": "Välj åtta elever från den egna klassen, eftersom gemensamma lärare och lokaler gör deras erfarenheter av skolan lättare att jämföra.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -875,15 +836,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "14. Följdfrågor i intervjuer (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "Två elever intervjuar andra elever om hur de planerar sitt skolarbete. Alla får samma öppna huvudfrågor. Följdfrågorna hjälper var och en att utveckla sina egna svar utan att intervjuaren föreslår svar. Intervjuerna spelas in och analyseras efter samma principer.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -892,8 +851,7 @@
             {
               "kind": "text",
               "text": "Vilken bedömning av genomförandet är mest rimlig?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -902,8 +860,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -926,7 +883,8 @@
           "text": "Huvudfrågorna gör resultatet generaliserbart, eftersom en gemensam intervjustruktur gör de intervjuade eleverna representativa för skolans elever som helhet.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -939,15 +897,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "15. Att använda restiden (1 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "En grupp intervjuar sex elever som valts ut därför att de har mer än en timmes resa till skolan. Fyra berättar att de ibland använder restiden till skolarbete. Gruppen överväger slutsatsen: ”Två av tre långpendlande elever använder restiden till skolarbete.”",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -956,8 +912,7 @@
             {
               "kind": "text",
               "text": "Vilken alternativ slutsats har tydligast stöd i materialet?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -966,8 +921,7 @@
             {
               "kind": "text",
               "text": "Markera ett svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -990,7 +944,8 @@
           "text": "Lång pendling får elever att studera under resan, eftersom fyra av de sex intervjuade berättar att de använder tiden så.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     },
     {
       "source_anchors": [
@@ -1003,15 +958,13 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "16. Spelande och sömn (2 poäng)",
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "I en enkät uppger 240 elever hur länge de brukar spela datorspel och hur länge de brukar sova. De som uppger mer spelande uppger också kortare sömn. Gruppen har inte undersökt vad som kom först eller hur andra vanor hänger ihop med spelandet och sömnen.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -1020,8 +973,7 @@
             {
               "kind": "text",
               "text": "Vilka två bedömningar är försvarbara utifrån undersökningen?",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         },
@@ -1030,8 +982,7 @@
             {
               "kind": "text",
               "text": "Markera två svar.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -1054,7 +1005,8 @@
           "text": "Den kortare sömnen orsakar det ökade spelandet, eftersom elever som sover mindre får mer tid över till att spela datorspel.",
           "correct": false
         }
-      ]
+      ],
+      "marking_guide": null
     }
   ]
 }

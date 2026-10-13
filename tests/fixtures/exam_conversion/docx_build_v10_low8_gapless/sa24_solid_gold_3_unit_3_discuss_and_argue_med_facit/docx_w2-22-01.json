@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0055"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0054"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Don’t be ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "discouraged"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (d…) by the first failure – try again!",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

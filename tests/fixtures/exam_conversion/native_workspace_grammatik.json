@@ -12,7 +12,6 @@
       "item_id": "item_001",
       "sequence": 1,
       "kind": "gap_fill",
-      "title": "Fråga 1. Dela upp orden i morfem.",
       "body": [
         {
           "segments": [
@@ -74,22 +73,19 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "snö (R) + boll (R) + ar (B) + na (B) + s (B)"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "skriv (R) + bar (A) + het (A) + en (B)"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "fot (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -100,9 +96,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.7,
-        "reasons": [
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:4"
     },
@@ -110,7 +104,6 @@
       "item_id": "item_002",
       "sequence": 2,
       "kind": "gap_fill",
-      "title": "Fråga 2. Ange frastyp.",
       "body": [
         {
           "segments": [
@@ -176,29 +169,25 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "NF"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "VF"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "PF"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_004",
           "accepted_values": [
             "PF"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -217,7 +206,6 @@
       "item_id": "item_003",
       "sequence": 3,
       "kind": "gap_fill",
-      "title": "Fråga 3. Skriv huvudordet i varje nominalfras.",
       "body": [
         {
           "segments": [
@@ -275,29 +263,25 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "eleverna"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "mobiltelefon"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "böckerna"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_004",
           "accepted_values": [
             "vägen"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -316,7 +300,6 @@
       "item_id": "item_004",
       "sequence": 4,
       "kind": "gap_fill",
-      "title": "Fråga 4. Skriv satsdelen för den markerade delen.",
       "body": [
         {
           "segments": [
@@ -390,29 +373,25 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "vid skolan Satsdel: adverbial"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "eleverna Satsdel: indirekt objekt"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "spännande Satsdel: predikativ/predikatsfyllnad"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_004",
           "accepted_values": [
             "rapporten Satsdel: direkt objekt"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -423,9 +402,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:25"
     },
@@ -433,7 +410,6 @@
       "item_id": "item_005",
       "sequence": 5,
       "kind": "gap_fill",
-      "title": "Fråga 5. Gör satsdelsanalys av meningarna.",
       "body": [
         {
           "segments": [
@@ -479,22 +455,19 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv)."
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv)."
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv)."
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -505,9 +478,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.7,
-        "reasons": [
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:31"
     },
@@ -515,7 +486,6 @@
       "item_id": "item_006",
       "sequence": 6,
       "kind": "gap_fill",
-      "title": "Fråga 6. Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
       "body": [
         {
           "segments": [
@@ -613,43 +583,37 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "att lektionen börjar klockan tio Typ: att-sats Satsdel: DO"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "att eleven satt längst fram Typ: att-sats Satsdel: Pf"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_003",
           "accepted_values": [
             "När genomgången var slut Typ: tidsbisats Satsdel: Adv"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_004",
           "accepted_values": [
             "eftersom läraren ville förklara uppgiften igen Typ: orsaksbisats Satsdel: Adv"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_005",
           "accepted_values": [
             "Om alla lämnar in i tid Typ: villkorsbisats Satsdel: Adv"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_006",
           "accepted_values": [
             "för att gruppen skulle hinna klart Typ: avsiktsbisats Satsdel: Adv"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -660,10 +624,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected",
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:38"
     },
@@ -671,7 +632,6 @@
       "item_id": "item_007",
       "sequence": 7,
       "kind": "gap_fill",
-      "title": "Fråga 7. Analysera en komplex mening.",
       "body": [
         {
           "segments": [
@@ -713,15 +673,13 @@
           "gap_id": "gap_001",
           "accepted_values": [
             "Att flera elever blev sjuka Bisats 2: varför redovisningen sköts upp"
-          ],
-          "hint": null
+          ]
         },
         {
           "gap_id": "gap_002",
           "accepted_values": [
             "S Bisats 2 satsdel: DO"
-          ],
-          "hint": null
+          ]
         }
       ],
       "answer_key": {
@@ -732,10 +690,7 @@
         "state": "review_required",
         "parse_origin": "deterministic",
         "confidence": 0.55,
-        "reasons": [
-          "multiple_answer_labels_detected",
-          "long_answer_key"
-        ]
+        "reasons": []
       },
       "source_anchor": "block:46"
     },
@@ -743,7 +698,6 @@
       "item_id": "item_008",
       "sequence": 8,
       "kind": "free_text",
-      "title": "Fråga 8. Jämför texternas språkliga drag.",
       "body": [
         {
           "segments": [

@@ -1,0 +1,513 @@
+<!doctype html>
+<!--
+Domain purpose:
+    Interactive decision prototype for the exam workspace as one editor with
+    drawers (TASK-SKRIPT-39-04-05, plan D30-D37). Static data; no backend.
+    Desktop >= 1100px, tablet 641-1099px (drawers float), phone <= 640px
+    (drawers are full screens with Tillbaka).
+-->
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Provredigering – prototyp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .btn { cursor: pointer; }
+  @media (hover: hover) {
+    .btn:hover { background: var(--huleedu-action-05); }
+    .btn.primary:hover, .btn.filled-check:hover { background: var(--huleedu-action); opacity: 0.9; }
+    .row:hover, .file:hover, .mi:hover, .opt:hover { background: var(--huleedu-action-05); }
+    .row.sel:hover { background: var(--huleedu-action-10); }
+  }
+  .row, .file, .mi, .opt { cursor: pointer; }
+  [hidden] { display: none !important; }
+  .body { position: relative; }
+  .orig { background: var(--huleedu-surface-content); border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); padding: var(--huleedu-space-4); line-height: 1.5; }
+  .missing { background: var(--huleedu-warning-15); border-radius: 2px; padding: 0 2px; }
+  .issue { display: flex; gap: var(--huleedu-space-2); align-items: center; color: var(--huleedu-warning); margin: 0 0 var(--huleedu-space-2); }
+  .menu, .toast { position: fixed; }
+  .phone-only { display: none !important; }
+  .editor { overflow-y: auto; }
+  .list .rows { overflow-y: auto; flex: 1; min-height: 0; }
+  .drawerbody { overflow-y: auto; }
+
+  /* Workspace header: title block left, toolbar right (variant A) */
+  .titleblock { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .toolbar { display: flex; align-items: center; gap: var(--huleedu-space-3); flex: none; }
+  .group { display: flex; align-items: center; gap: var(--huleedu-space-2); }
+  /* Variant B: title row, then a toolbar row */
+
+  /* Question header: heading, then the question's tools. Desktop and tablet move
+     between questions with the list or the up and down arrow keys; phone uses the strip. */
+
+  /* Answer key: radio picks the key; the sparkles mark sits on the AI's choice */
+  .opt { gap: var(--huleedu-space-3); padding-right: var(--huleedu-space-1); }
+  .opt.on { border-color: var(--huleedu-action); }
+  .otext { flex: 1; min-width: 0; outline: none; cursor: text; padding: 2px 0; }
+  .otext:focus { box-shadow: 0 2px 0 var(--huleedu-action); }
+  .aislot { width: 40px; height: 40px; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+  .aimark { width: 40px; height: 40px; border: 1px solid transparent; border-radius: var(--huleedu-radius-md); background: none;
+    color: var(--huleedu-action); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .aimark[aria-pressed="false"] { border-color: var(--huleedu-action-40); border-style: dashed; }
+  .aimark[aria-pressed="true"] { background: var(--huleedu-action-10); }
+  .stale-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--huleedu-warning); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 0.9s linear infinite; }
+
+  /* Field-level blocker: the missing value is marked where it is entered */
+  .ptsrow { display: flex; align-items: center; gap: var(--huleedu-space-3); }
+  .ptsrow input { width: 96px; height: 44px; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
+    padding: 0 var(--huleedu-space-3); font: inherit; background: var(--huleedu-surface-content); color: var(--huleedu-navy); }
+  .ptsrow input[aria-invalid="true"] { border-color: var(--huleedu-error); box-shadow: 0 0 0 1px var(--huleedu-error); }
+  .ptsrow .err { display: inline-flex; align-items: center; gap: var(--huleedu-space-2); color: var(--huleedu-error); font-size: var(--huleedu-text-sm); }
+  .row .m .err { color: var(--huleedu-error); }
+  .note { color: var(--huleedu-navy-70); font-size: var(--huleedu-text-sm); margin: var(--huleedu-space-3) 0 0; }
+  /* Import view: the question as written in the exam file, opened inline above the fields */
+  /* The one layout exception: opening it pushes the fields down with a short, smooth height transition. */
+  .imp-wrap { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 220ms ease-out, opacity 220ms ease-out; }
+  .imp-wrap.open { grid-template-rows: 1fr; opacity: 1; }
+  .imp-wrap > div { min-height: 0; overflow: hidden; }
+  @media (prefers-reduced-motion: reduce) { .imp-wrap { transition: none; } }
+  .imp-inline { margin-top: var(--huleedu-space-4); background: var(--huleedu-navy-02); border: 1px solid var(--huleedu-panel-border);
+    border-radius: var(--huleedu-radius-lg); padding: var(--huleedu-space-4); }
+  .imp-inline h3 { margin: 0 0 var(--huleedu-space-2); font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-semibold); }
+  .imp-inline .orig { background: none; border: 0; padding: 0; }
+
+  /* Dense editor: labels sit close to their fields, fields fit their content,
+     options form one divided list. Fine pointers get the compact control role;
+     touch keeps 44px targets. */
+  .editor .label { margin: var(--huleedu-space-4) 0 var(--huleedu-space-1-5); min-height: 0; }
+  .editor .label.inline { margin: 0; }
+  .editor .field.text { min-height: 0; padding: var(--huleedu-space-2-5) var(--huleedu-space-3); line-height: 1.45; }
+  .ptsrow { margin-top: var(--huleedu-space-3); }
+  .opts { gap: 0; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
+    background: var(--huleedu-surface-content); overflow: hidden; }
+  .opts .opt { border: 0; border-radius: 0; min-height: 0; padding: var(--huleedu-space-1) var(--huleedu-space-1) var(--huleedu-space-1) var(--huleedu-space-3); }
+  .opts .opt + .opt { border-top: 1px solid var(--huleedu-surface-divider); }
+  .opts .opt.on { border-color: var(--huleedu-surface-divider); background: var(--huleedu-action-05); box-shadow: inset 3px 0 0 var(--huleedu-action); }
+  .opts .radio { width: 18px; height: 18px; }
+  /* The question header is a section break: more space below it than between fields. */
+  .qhead { padding-bottom: var(--huleedu-space-5); }
+  @media (pointer: fine) {
+    .toolbar .btn { height: 36px; }
+    .toolbar .btn.icon { width: 36px; }
+    .editor .btn { height: 36px; }
+    .editor .btn.icon { width: 36px; }
+    .editor .label .btn.icon { width: 32px; height: 32px; }
+    .ptsrow input { height: 36px; width: 72px; }
+    .aislot, .aimark { width: 32px; height: 32px; }
+  }
+
+  /* The question heading shares the exam name's level (D47). */
+  .qhead h1 { font-size: var(--huleedu-text-lg); flex: 0 1 auto; }
+  .qhead .qtype { flex: 1; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-sm); white-space: nowrap; }
+  /* Parents: an unnumbered instruction row; its questions are indented under it. */
+  .row.prow .n { color: var(--huleedu-navy-60); display: flex; }
+  .row.prow .t { font-weight: var(--huleedu-font-normal); }
+  .row.child { padding-left: calc(var(--huleedu-space-8) + var(--huleedu-space-5)); position: relative; }
+  .row.child::before { content: ""; position: absolute; left: calc(var(--huleedu-space-8) + 6px); top: 0; bottom: 0; border-left: 2px solid var(--huleedu-navy-20, #d5d9e0); }
+  .pref { margin-top: var(--huleedu-space-1); border: 1px solid var(--huleedu-surface-divider); border-radius: var(--huleedu-radius-md); background: var(--huleedu-navy-02); }
+  .pref-head { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: var(--huleedu-space-2); width: 100%; min-height: 36px;
+    padding: 0 var(--huleedu-space-3); font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
+  .pref-head:focus-visible { outline: 2px solid var(--huleedu-action); outline-offset: 2px; }
+  .pref-head .ex { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pref-head[aria-expanded="true"] .ex { visibility: hidden; }
+  .pref-body { padding: 0 var(--huleedu-space-3) var(--huleedu-space-3); font-size: var(--huleedu-text-sm); line-height: 1.5; }
+  .pref-body .btn { margin-top: var(--huleedu-space-2); }
+  .field.long { min-height: 140px; display: block; line-height: 1.5; }
+  .kids { border: 1px solid var(--huleedu-surface-divider); border-radius: var(--huleedu-radius-md); }
+  .kid { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: var(--huleedu-space-2); width: 100%;
+    padding: var(--huleedu-space-2) var(--huleedu-space-3); border-top: 1px solid var(--huleedu-surface-divider); font-size: var(--huleedu-text-sm); }
+  .kid:first-child { border-top: 0; }
+  .kid:hover { background: var(--huleedu-navy-02); }
+  .kid:focus-visible { outline: 2px solid var(--huleedu-action); outline-offset: -2px; }
+  .kid .ex { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kid .m { color: var(--huleedu-navy-60); }
+  .psum { margin: var(--huleedu-space-3) 0 0; font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
+  .untitled { color: var(--huleedu-navy-60); font-weight: var(--huleedu-font-normal); }
+  .brandlinks > span, .row .m { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brandlinks > span { display: inline-flex; align-items: center; gap: var(--huleedu-space-2); }
+
+
+  /* Tablet: drawers float over the editor (D5, D37) */
+  @media (max-width: 1099px) {
+    .brandlinks .bl-txt { display: none; }
+    .body, .body.with-drawer { grid-template-columns: 280px minmax(0, 1fr); }
+    .body .drawer { position: absolute; top: 12px; right: 12px; bottom: 12px; width: 400px; border: 1px solid var(--huleedu-panel-border);
+      border-radius: var(--huleedu-radius-xl); box-shadow: var(--huleedu-shadow-md); background: var(--huleedu-surface-content); z-index: 4; overflow: hidden; }
+    .tab-hide { display: none !important; }
+  }
+  /* Phone: one column; drawers are full screens with Tillbaka (D5, D37) */
+  @media (max-width: 640px) {
+    .list, .desk-only, .titleblock, .brandlinks { display: none !important; }
+    /* Phone brand bar as in the app's mobile header: wordmark left, Meny right. */
+    .brandbar { height: 52px; padding: 0 var(--huleedu-space-4); }
+    .brand { font-size: var(--huleedu-text-lg); }
+    .brand small { font-size: var(--huleedu-text-xs); vertical-align: 6px; }
+    .phone-only { display: inline-flex !important; }
+    .strip.phone-only { display: flex !important; }
+    .wshead { height: auto; padding: var(--huleedu-space-4); flex-direction: row; }
+    .toolbar { flex: 1; padding: 0; border: 0; height: auto; }
+    /* The question bar carries navigation, the question name and its tools, so the
+       editor has no second heading. Its middle opens the question list as a full screen. */
+    .strip { padding: var(--huleedu-space-3) var(--huleedu-space-4) 0; align-items: center; }
+    .stripnav #p-pick { border: 0; background: none; font: inherit; color: inherit; cursor: pointer; min-width: 0; }
+    .stripnav #p-pick > span:last-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .qhead { display: none; }
+    .editor .label:first-of-type { margin-top: var(--huleedu-space-2); }
+    .show-list .list { display: flex !important; position: fixed; inset: 0; z-index: 8; background: var(--huleedu-canvas); border: 0; }
+    .listhead { padding: var(--huleedu-space-3) var(--huleedu-space-4); gap: var(--huleedu-space-3); }
+    .listhead h2 { flex: 1; }
+    .row { padding-left: var(--huleedu-space-4); }
+    .body, .body.with-drawer { grid-template-columns: minmax(0, 1fr); }
+    .editor { padding: var(--huleedu-space-4); }
+    .body .drawer { position: fixed; inset: 0; width: auto; border-radius: 0; border: 0; z-index: 8; background: var(--huleedu-canvas); }
+    .drawer .close-x { display: none !important; }
+    .drawer .back { display: inline-flex !important; }
+    .menu { left: 16px !important; right: 16px !important; width: auto; }
+    .toast { left: 16px; right: 16px; bottom: 64px; }
+  }
+  .drawer .back { display: none; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></symbol><symbol id="i-folder-input" viewBox="0 0 24 24"><path d="M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></symbol><symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol><symbol id="i-circle-question-mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></symbol><symbol id="i-minimize" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></symbol><symbol id="i-file-exclamation-point" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol><symbol id="i-file-search" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><circle cx="11.5" cy="14.5" r="2.5"/><path d="M13.3 16.3 15 18"/></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></symbol></svg>
+<div class="frame">
+  <div class="brandbar"><span class="brand">Skriptoteket<small>Provredigering</small></span>
+    <button class="btn icon phone-only" id="b-menu" aria-label="Meny" aria-expanded="false"><svg class="g"><use href="#i-menu"/></svg></button>
+    <span class="brandlinks"><span title="Avsluta fokusläge"><svg class="g"><use href="#i-minimize"/></svg><span class="bl-txt">Avsluta fokusläge</span></span><span title="Hjälp"><svg class="g"><use href="#i-circle-question-mark"/></svg><span class="bl-txt">Hjälp</span></span><span title="Logga ut"><svg class="g"><use href="#i-log-out"/></svg><span class="bl-txt">Logga ut</span></span></span></div>
+
+  <div class="wshead">
+    <div class="titleblock">
+      <span class="examname" title="Kursavslutande prov: Svenska 2 – Textanalys och språkriktighet">Kursavslutande prov: Svenska 2 – Textanalys och språkriktighet</span>
+    </div>
+    <div class="toolbar" role="toolbar" aria-label="Provet">
+      <div class="group file-group" role="group" aria-label="Fil">
+        <button class="btn" id="b-open" aria-expanded="false" title="Öppna eller importera ett prov"><svg class="g"><use href="#i-folder-open"/></svg><span class="desk-only">Öppna</span></button>
+        <button class="btn primary" id="b-save" title="Spara provet"><svg class="g"><use href="#i-save"/></svg>Spara</button>
+        <button class="btn" id="b-export" aria-expanded="false" title="Exportera provet"><svg class="g"><use href="#i-download"/></svg><span class="desk-only">Exportera</span><svg class="g sm desk-only"><use href="#i-chevron-down"/></svg></button>
+      </div>
+      <span class="sep"></span>
+      <div class="group" role="group" aria-label="Facit">
+        <button class="btn icon" id="b-ai-all" title="Föreslå facit för frågor som saknar facit" aria-label="Föreslå facit för frågor som saknar facit"><svg class="g" id="ai-all-glyph"><use href="#i-sparkles"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip phone-only">
+    <div class="stripnav"><span id="p-prev" style="cursor:pointer"><svg class="g"><use href="#i-chevron-left"/></svg></span>
+      <button id="p-pick" aria-haspopup="dialog" title="Välj fråga"><span id="p-state" class="warn"><svg class="g"><use href="#i-triangle-alert"/></svg></span><span id="p-pos">Fråga 3</span><svg class="g sm"><use href="#i-chevron-down"/></svg></button>
+      <span id="p-next" style="cursor:pointer"><svg class="g"><use href="#i-chevron-right"/></svg></span></div>
+    <span class="phone-tools" id="phone-tools"></span>
+  </div>
+
+  <div class="body" id="body">
+    <section class="col list">
+      <div class="listhead"><button class="btn phone-only" id="list-back"><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Frågor (24)</h2><button class="btn compact"><svg class="g sm"><use href="#i-plus"/></svg>Ny fråga</button></div>
+      <div class="rows" id="rows" aria-keyshortcuts="ArrowUp ArrowDown"></div>
+    </section>
+
+    <section class="col editor">
+      <div class="qhead">
+        <h1 id="qtitle">Fråga 3</h1><span class="qtype" id="qtype">Flerval</span>
+        <button class="btn" id="b-import" aria-expanded="false" title="Visa frågan som den står i provfilen"><svg class="g"><use href="#i-file-text"/></svg><span class="tab-hide">Import</span></button>
+        <button class="btn icon" id="b-check" aria-pressed="false" title="Markera som granskad" aria-label="Markera som granskad"><svg class="g"><use href="#i-check"/></svg></button>
+      </div>
+      <div class="imp-wrap" id="imp-wrap" inert><div><div class="imp-inline" id="imp-inline"></div></div></div>
+      <div class="pref" id="pref" hidden><button class="pref-head" id="pref-toggle" aria-expanded="false" aria-controls="pref-body"><svg class="g sm"><use href="#i-book-open"/></svg><span id="pref-label"></span><span class="ex" id="pref-ex"></span><svg class="g sm" id="pref-chev"><use href="#i-chevron-down"/></svg></button>
+        <div class="pref-body" id="pref-body" hidden><div id="pref-text"></div><button class="btn compact" id="pref-edit">Redigera instruktionen</button></div></div>
+      <div id="pfields" hidden>
+        <div class="label">Instruktion</div>
+        <div class="field text long" id="ptext" contenteditable="true" spellcheck="false"></div>
+        <div class="label">Frågor</div>
+        <div class="kids" id="kids"></div>
+        <p class="psum" id="psum"></p>
+      </div>
+      <div id="qfields">
+      <div class="label">Frågetext</div>
+      <div class="field text" id="qtext">Vilket ord beskriver bäst textens ton?</div>
+      <div id="optsec">
+      <div class="label">Alternativ<button class="btn icon" id="b-ai-one"><svg class="g" id="ai-one-glyph"><use href="#i-sparkles"/></svg><span class="stale-dot" id="stale-dot" hidden></span></button></div>
+      <div class="opts" id="opts" role="radiogroup" aria-label="Facit"></div>
+      </div>
+      <div class="ptsrow"><label class="label inline" for="pts">Poäng</label><input id="pts" type="number" min="0" inputmode="numeric" aria-describedby="pts-err" /><span class="err" id="pts-err" hidden><svg class="g"><use href="#i-circle-alert"/></svg>Saknas</span></div>
+      </div>
+    </section>
+
+    <aside class="drawer col" id="d-open" hidden>
+      <div class="drawerhead"><button class="btn back" data-close><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Öppna</h2><button class="btn icon close-x" data-close title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+      <div class="drawerbody">
+        <div class="sect"><h3>Importera prov</h3>
+          <div class="drop"><svg class="g lg"><use href="#i-upload"/></svg><button class="btn">Välj .docx-fil</button><small>eller dra hit filen</small></div></div>
+        <div class="sect"><h3>Mina filer</h3><div class="files" id="files"></div></div>
+        <div class="sect"><button class="btn" id="b-reload" disabled title="Hämtar den sparade versionen och tar bort osparade ändringar"><svg class="g"><use href="#i-undo-2"/></svg>Läs in på nytt</button></div>
+      </div>
+    </aside>
+
+    <aside class="drawer col" id="d-export" hidden>
+      <div class="drawerhead"><button class="btn back" data-close><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Exportera</h2><button class="btn icon close-x" data-close title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+      <div class="drawerbody">
+        <div class="sect"><h3>Format</h3><div class="seg" id="seg"><span class="on">QTI</span><span>PDF</span><span>DOCX</span></div></div>
+        <div class="sect"><h3>Filnamn</h3><div class="field" id="fname">Kursavslutande prov Svenska 2.zip</div></div>
+        <div class="sect"><h3>Mål</h3>
+          <label class="choice"><input type="radio" name="dest" checked /> Ladda ner</label>
+          <label class="choice"><input type="radio" name="dest" /> Spara i Mina filer</label></div>
+        <div class="sect"><button class="btn" id="b-do-export"><svg class="g"><use href="#i-download"/></svg>Exportera</button></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<div class="menu" id="m-site" hidden>
+  <div class="mi"><svg class="g"><use href="#i-minimize"/></svg><span class="grow">Avsluta fokusläge</span></div>
+  <div class="mi"><svg class="g"><use href="#i-circle-question-mark"/></svg><span class="grow">Hjälp</span></div>
+  <div class="mi"><svg class="g"><use href="#i-log-out"/></svg><span class="grow">Logga ut</span></div>
+</div>
+<div class="menu" id="m-export" hidden>
+  <div class="mi" data-fmt="QTI"><svg class="g"><use href="#i-download"/></svg><span class="grow">QTI <span class="sub">Exam.net</span></span><span class="mini" data-save="QTI" title="Spara QTI i Mina filer"><svg class="g"><use href="#i-folder-input"/></svg></span></div>
+  <div class="mi" data-fmt="PDF"><svg class="g"><use href="#i-download"/></svg><span class="grow">PDF <span class="sub">utskrift</span></span><span class="mini" data-save="PDF" title="Spara PDF i Mina filer"><svg class="g"><use href="#i-folder-input"/></svg></span></div>
+  <div class="mi" data-fmt="DOCX"><svg class="g"><use href="#i-download"/></svg><span class="grow">DOCX <span class="sub">Word</span></span><span class="mini" data-save="DOCX" title="Spara DOCX i Mina filer"><svg class="g"><use href="#i-folder-input"/></svg></span></div>
+  <div class="mdiv"></div>
+  <div class="mi" id="mi-more"><span style="width:20px"></span><span class="grow">Fler val …</span></div>
+</div>
+
+<div class="toast" id="toast" hidden><span class="ok"><svg class="g"><use href="#i-circle-check"/></svg></span><b id="toast-text">Alla frågor är granskade</b>
+  <button class="btn" id="toast-action"><svg class="g"><use href="#i-download"/></svg>Exportera</button>
+  <button class="btn icon" id="toast-close" title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const use = (n, cls = "") => `<svg class="g ${cls}"><use href="#i-${n}"/></svg>`;
+// [type, points or null, reviewed, AI-interpreted, key or null, import notes, stem, options]
+const Q = [
+  ["Flerval", 1, true, false, 0, [], "Vilken ordklass är ordet 'snabbt' i meningen 'Hon sprang snabbt hem'?", ["Adverb", "Adjektiv", "Verb", "Substantiv"]],
+  ["Flerval", 1, true, true, 1, [], "Vilket av följande är ett exempel på en metafor?", ["Han är snabb som en vind", "Livet är en resa", "Det regnar ute", "Hon skrattade högt"]],
+  ["Flerval", 1, false, true, null, ["Frågetypen kan ha tolkats fel."], "Vilket ord beskriver bäst textens ton?", ["Saklig", "Ironisk", "Vardaglig", "Formell"]],
+  ["Fritext", 4, true, false, null, [], "Sammanfatta novellens huvudbudskap med egna ord.", []],
+  ["Fritext", 6, true, false, null, [], "Analysera hur författaren använder bildspråk i andra stycket.", []],
+  ["Fritext", 4, true, false, null, [], "Vad vill författaren uppnå med novellen? Motivera ditt svar.", []],
+  ["Lucktext", 3, true, true, null, [], "Fyll i rätt form av verbet i luckorna.", []],
+  ["Flerval", null, false, false, null, [], "Vilket sambandsord passar bäst i meningen?", ["Därför", "Men", "Eftersom", "Dessutom"]],
+  ["Matchning", 4, true, false, null, [], "Para ihop varje begrepp med rätt förklaring.", []],
+  ["Fritext", 6, true, false, null, [], "Tolka slutet av novellen.", []],
+  ["Fritext", 6, true, false, null, [], "Skriv en argumenterande text om skoluniformer.", []],
+  ["Flerval", 1, true, false, null, [], "Vilken källa är mest trovärdig för fakta om klimatet?", ["En blogg", "SMHI", "Ett forum", "En reklamfilm"]],
+].map(([type, p, ok, ai, key, notes, stem, opts]) => ({ type, p, ok, ai, key, notes, stem, opts, sugg: null, stale: false, busy: false }));
+// An instruction (Exam.net parent) carries text only; its questions own the points and keys.
+const P = [{ first: 3, count: 3, text: "Läs novellen ”Vägen hem” av Mira Lind på sidorna 2–3. Svara sedan på frågorna nedan. Citera gärna ur novellen när du motiverar dina svar." }];
+// The list in document order: each instruction directly before its first question.
+const ITEMS = Q.flatMap((q, i) => [...P.filter((x) => x.first === i).map((x) => ({ k: "p", p: x })), { k: "q", i }]);
+const parentOf = (i) => P.find((x) => i >= x.first && i < x.first + x.count);
+// Numbering: an instruction takes the next number and its questions get letters (4, 4a, 4b, 4c).
+const LAB = new Map();
+{ let n = 0; for (const it of ITEMS) {
+  if (it.k === "p") LAB.set(it.p, String(++n));
+  else { const x = parentOf(it.i); LAB.set(it.i, x ? `${n}${"abcdefghij"[it.i - x.first]}` : String(++n)); } } }
+const lab = (k) => LAB.get(k);
+const sumPts = (x) => Q.slice(x.first, x.first + x.count).reduce((n, q) => n + (q.p ?? 0), 0);
+const qi = () => ITEMS[cur].i;
+let cur = 2, prefOpen = false, drawer = null, toastShown = false, busyAll = false;
+
+function renderRows() {
+  $("rows").innerHTML = ITEMS.map((it, n) => {
+    const sel = n === cur ? " sel" : "";
+    if (it.k === "p") return `<div class="row prow${sel}" data-i="${n}"><span class="n">${lab(it.p)}</span><span><div class="t">${it.p.text}</div><div class="m">Instruktion · ${it.p.count} frågor · ${sumPts(it.p)} p</div></span><span></span><span></span></div>`;
+    const q = Q[it.i];
+    return `<div class="row${parentOf(it.i) ? " child" : ""}${sel}" data-i="${n}">
+    <span class="n">${lab(it.i)}</span><span><div class="t">${q.stem}</div><div class="m">${q.type} · ${q.p === null ? '<span class="err">poäng saknas</span>' : `${q.p} p`}</div></span>
+    ${q.ai ? `<span class="ai" title="AI-tolkad">${use("sparkles", "sm")}</span>` : "<span></span>"}
+    <span class="${q.ok ? "ok" : "warn"}" title="${q.ok ? "Granskad" : "Behöver granskas"}">${use(q.ok ? "circle-check" : "triangle-alert")}</span></div>`;
+  }).join("");
+}
+function renderImport() {
+  const it = ITEMS[cur];
+  if (it.k === "p") { $("imp-inline").innerHTML = `<h3>I provfilen</h3><div class="orig">${it.p.text}</div>`; return; }
+  const q = Q[it.i];
+  const pts = q.p === null ? "" : ` (${q.p} p)`;
+  const html = `<h3>I provfilen</h3><div class="orig">${lab(it.i)}. ${q.stem}${pts}<br/>${q.opts.map((o, i) => `${"abcd"[i]}) ${o}`).join(" ")}</div>`
+    + q.notes.map((t) => `<p class="note">${t}</p>`).join("");
+  $("imp-inline").innerHTML = html;
+}
+function renderPoints() {
+  const q = Q[qi()], missing = q.p === null;
+  if (document.activeElement !== $("pts")) $("pts").value = missing ? "" : q.p;
+  $("pts").setAttribute("aria-invalid", String(missing)); $("pts-err").hidden = !missing;
+}
+function renderOpts() {
+  const q = Q[qi()];
+  $("opts").innerHTML = q.opts.map((o, i) => {
+    const on = q.key === i, mark = q.sugg === i;
+    return `<div class="field opt${on ? " on" : ""}" data-o="${i}" role="radio" aria-checked="${on}" title="Välj som rätt svar">
+      <span class="radio${on ? " on" : ""}"></span><span class="otext" contenteditable="true" spellcheck="false">${o}</span>
+      <span class="aislot">${mark ? `<button class="aimark" data-use-ai aria-pressed="${on}" title="${on ? "AI-förslag" : "Använd AI-förslaget"}" aria-label="${on ? "AI-förslag" : "Använd AI-förslaget"}">${use(q.busy ? "loader-circle" : "sparkles", q.busy ? "spin" : "")}</button>` : ""}</span></div>`;
+  }).join("");
+  const one = $("b-ai-one");
+  const t = q.busy ? "Föreslår facit …" : q.stale ? "Alternativen har ändrats – föreslå facit igen" : q.sugg !== null ? "Föreslå facit igen" : "Föreslå facit för den här frågan";
+  one.title = t; one.setAttribute("aria-label", t); one.disabled = q.busy;
+  $("ai-one-glyph").innerHTML = `<use href="#i-${q.busy ? "loader-circle" : "sparkles"}"/>`; $("ai-one-glyph").classList.toggle("spin", q.busy);
+  $("stale-dot").hidden = !q.stale || q.busy;
+}
+function renderParent(x) {
+  $("qtitle").textContent = `Fråga ${lab(x)}`;
+  $("qtype").textContent = "Instruktion";
+  if (document.activeElement !== $("ptext")) $("ptext").textContent = x.text;
+  $("kids").innerHTML = Q.slice(x.first, x.first + x.count).map((q, k) => `<button class="kid" data-q="${x.first + k}"><span>${lab(x.first + k)}.</span><span class="ex">${q.stem}</span><span class="m">${q.p === null ? "–" : `${q.p} p`}</span></button>`).join("");
+  $("psum").textContent = `Totalt ${sumPts(x)} poäng. Poängen sätts på varje fråga.`;
+  $("p-pos").textContent = `Fråga ${lab(x)}`;
+  $("p-state").className = ""; $("p-state").innerHTML = use("book-open");
+}
+function renderEditor() {
+  const it = ITEMS[cur], isP = it.k === "p";
+  $("pfields").hidden = !isP; $("qfields").hidden = isP; $("b-check").hidden = isP;
+  const x = isP ? null : parentOf(it.i);
+  $("pref").hidden = !x;
+  if (x) {
+    $("pref-label").textContent = `Instruktion till fråga ${lab(x)}`;
+    $("pref-ex").textContent = x.text; $("pref-text").textContent = x.text;
+    $("pref-body").hidden = !prefOpen; $("pref-toggle").setAttribute("aria-expanded", String(prefOpen));
+    $("pref-chev").innerHTML = `<use href="#i-chevron-${prefOpen ? "up" : "down"}"/>`;
+  }
+  renderImport();
+  if (isP) { renderParent(it.p); return; }
+  const q = Q[it.i];
+  $("qtitle").textContent = `Fråga ${lab(it.i)}`;
+  $("qtype").textContent = q.type;
+  $("qtext").textContent = q.stem;
+  $("optsec").hidden = q.type !== "Flerval";
+  $("p-pos").textContent = `Fråga ${lab(it.i)}`;
+  $("p-state").className = q.ok ? "ok" : "warn";
+  $("p-state").innerHTML = use(q.ok ? "circle-check" : "triangle-alert");
+  const c = $("b-check");
+  c.className = "btn icon" + (q.ok ? " filled-check" : "");
+  c.setAttribute("aria-pressed", String(q.ok));
+  c.title = q.ok ? "Ångra granskad" : "Markera som granskad";
+  c.setAttribute("aria-label", c.title);
+  renderOpts(); renderPoints();
+}
+function render() { renderRows(); renderEditor(); }
+function go(i) { cur = (i + ITEMS.length) % ITEMS.length; render(); }
+const goQ = (i) => go(ITEMS.findIndex((it) => it.k === "q" && it.i === i));
+function checkAllReviewed() {
+  if (Q.every((q) => q.ok) && !toastShown) { toastShown = true; toast("Alla frågor är granskade"); }
+  if (!Q.every((q) => q.ok)) { toastShown = false; if ($("toast-text").textContent === "Alla frågor är granskade") $("toast").hidden = true; }
+}
+// The AI writes a key only where none is set or where the key is its own earlier suggestion.
+// Writing a key puts the question in "Behöver granskas"; the review check accepts it.
+function applySuggestion(q, i) {
+  const aiOwnsKey = q.key === null || q.key === q.sugg;
+  q.sugg = i; q.stale = false;
+  if (aiOwnsKey) { q.key = i; q.ok = false; }
+}
+
+function setDrawer(name) {
+  drawer = drawer === name ? null : name;
+  for (const [n, id] of [["open", "d-open"], ["export", "d-export"]]) $(id).hidden = drawer !== n;
+  $("body").classList.toggle("with-drawer", drawer !== null);
+  for (const [n, id] of [["open", "b-open"]]) {
+    $(id).classList.toggle("pressed", drawer === n); $(id).setAttribute("aria-expanded", String(drawer === n));
+  }
+  closeMenu();
+}
+function openMenu() {
+  const m = $("m-export"), r = $("b-export").getBoundingClientRect();
+  m.hidden = false; m.style.top = `${r.bottom + 6}px`; m.style.left = `${Math.max(16, r.right - 300)}px`;
+  $("b-export").classList.add("pressed"); $("b-export").setAttribute("aria-expanded", "true");
+}
+function closeMenu() { $("m-export").hidden = true; $("b-export").classList.remove("pressed"); $("b-export").setAttribute("aria-expanded", "false"); }
+function toast(text, action = true) {
+  $("toast-text").textContent = text; $("toast-action").hidden = !action; $("toast").hidden = false;
+}
+
+$("rows").addEventListener("click", (e) => { const r = e.target.closest(".row"); if (r) { go(+r.dataset.i); document.body.classList.remove("show-list"); } });
+$("p-pick").onclick = () => document.body.classList.add("show-list");
+$("list-back").onclick = () => document.body.classList.remove("show-list");
+// Phone: the question's tools move from the hidden question header into the question bar.
+const phone = matchMedia("(max-width: 640px)");
+function placeTools() {
+  const target = phone.matches ? $("phone-tools") : document.querySelector(".qhead");
+  target.append($("b-import"), $("b-check"));
+}
+phone.addEventListener("change", placeTools); placeTools();
+// Up and down arrows move between questions unless the focus is in a text field.
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+  if (e.target instanceof Element && e.target.closest("[contenteditable], input, textarea, select, .menu")) return;
+  e.preventDefault(); go(cur + (e.key === "ArrowDown" ? 1 : -1));
+  document.querySelector(".row.sel")?.scrollIntoView({ block: "nearest" });
+});
+$("p-prev").onclick = () => go(cur - 1); $("p-next").onclick = () => go(cur + 1);
+$("b-check").onclick = () => { Q[qi()].ok = !Q[qi()].ok; render(); checkAllReviewed(); };
+$("opts").addEventListener("click", (e) => {
+  const q = Q[qi()];
+  if (e.target.closest("[data-use-ai]")) { q.key = q.sugg; render(); return; }
+  if (e.target.closest(".otext")) return;
+  const f = e.target.closest("[data-o]"); if (f) { q.key = +f.dataset.o; renderEditor(); }
+});
+$("opts").addEventListener("input", (e) => {
+  const f = e.target.closest("[data-o]"); if (!f) return;
+  const q = Q[qi()]; q.opts[+f.dataset.o] = e.target.textContent;
+  if (q.sugg !== null && !q.stale) { q.stale = true; $("stale-dot").hidden = false;
+    const t = "Alternativen har ändrats – föreslå facit igen"; $("b-ai-one").title = t; $("b-ai-one").setAttribute("aria-label", t); }
+});
+$("b-ai-one").onclick = () => {
+  const q = Q[qi()], i = cur; q.busy = true; renderOpts();
+  setTimeout(() => { q.busy = false; applySuggestion(q, q.sugg === null ? 0 : (q.sugg + 1) % q.opts.length); if (cur === i) render(); else renderRows(); }, 1100);
+};
+$("b-ai-all").onclick = () => {
+  if (busyAll) return;
+  const targets = Q.filter((q) => q.type === "Flerval" && q.key === null);
+  if (!targets.length) { toast("Alla frågor har facit", false); return; }
+  busyAll = true; $("b-ai-all").disabled = true; $("b-ai-all").title = "Föreslår facit …";
+  $("ai-all-glyph").innerHTML = '<use href="#i-loader-circle"/>'; $("ai-all-glyph").classList.add("spin");
+  setTimeout(() => {
+    targets.forEach((q) => applySuggestion(q, 0));
+    busyAll = false; $("b-ai-all").disabled = false; $("b-ai-all").title = "Föreslå facit för frågor som saknar facit";
+    $("ai-all-glyph").innerHTML = '<use href="#i-sparkles"/>'; $("ai-all-glyph").classList.remove("spin");
+    render(); toastShown = false;
+    toast(`Facit föreslaget för ${targets.length} ${targets.length === 1 ? "fråga" : "frågor"}`, false);
+  }, 1400);
+};
+$("b-open").onclick = () => setDrawer("open");
+$("b-menu").onclick = (e) => {
+  e.stopPropagation(); const m = $("m-site"), open = m.hidden, r = $("b-menu").getBoundingClientRect();
+  m.hidden = !open; m.style.top = `${r.bottom + 6}px`; $("b-menu").setAttribute("aria-expanded", String(open));
+};
+document.addEventListener("click", (e) => { if (!$("m-site").hidden && !e.target.closest("#m-site")) { $("m-site").hidden = true; $("b-menu").setAttribute("aria-expanded", "false"); } });
+$("b-import").onclick = () => {
+  const open = !$("imp-wrap").classList.contains("open");
+  $("imp-wrap").classList.toggle("open", open); $("imp-wrap").inert = !open;
+  $("b-import").classList.toggle("pressed", open); $("b-import").setAttribute("aria-expanded", String(open));
+};
+$("pref-toggle").onclick = () => { prefOpen = !prefOpen; renderEditor(); };
+$("pref-edit").onclick = () => go(ITEMS.findIndex((it) => it.p === parentOf(qi())));
+$("ptext").addEventListener("input", (e) => { ITEMS[cur].p.text = e.target.textContent; renderRows(); });
+$("kids").addEventListener("click", (e) => { const k = e.target.closest(".kid"); if (k) goQ(+k.dataset.q); });
+$("pts").addEventListener("input", (e) => { const v = e.target.value; Q[qi()].p = v === "" ? null : +v; renderPoints(); renderRows(); });
+$("b-save").onclick = () => toast("Provet är sparat", false);
+$("b-export").onclick = (e) => { e.stopPropagation(); $("m-export").hidden ? openMenu() : closeMenu(); };
+$("mi-more").onclick = () => { closeMenu(); if (drawer !== "export") setDrawer("export"); };
+$("m-export").addEventListener("click", (e) => {
+  const s = e.target.closest("[data-save]"); const f = e.target.closest("[data-fmt]");
+  if (s) { closeMenu(); toast(`${s.dataset.save} sparad i Mina filer`, false); }
+  else if (f) { closeMenu(); toast(`${f.dataset.fmt} laddas ner`, false); }
+});
+document.addEventListener("click", (e) => { if (!$("m-export").hidden && !e.target.closest("#m-export")) closeMenu(); });
+document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = () => setDrawer(drawer)));
+$("toast-close").onclick = () => ($("toast").hidden = true);
+$("toast-action").onclick = (e) => { e.stopPropagation(); $("toast").hidden = true; openMenu(); };
+$("seg").addEventListener("click", (e) => { const s = e.target.closest("span"); if (!s) return;
+  [...$("seg").children].forEach((c) => c.classList.toggle("on", c === s));
+  $("fname").textContent = `Kursavslutande prov Svenska 2.${s.textContent === "QTI" ? "zip" : s.textContent.toLowerCase()}`; });
+$("b-do-export").onclick = () => toast("Exporten är klar", false);
+
+const files = [["Kursavslutande prov: Svenska 2 – Textanalys och språkriktighet", "Sparad 12 okt 14:05", true],
+  ["Svenska 1 – Novellanalys", "Sparad 9 okt 10:12"], ["Prov v.38 – Grammatik", "Sparad 21 sep 08:47"], ["Läsförståelse åk 9", "Sparad 3 sep 15:30"]];
+$("files").innerHTML = files.map(([t, m, c]) => `<div class="file${c ? " cur" : ""}">${use("file-text")}<span><div class="t">${t}</div><div class="m">${m}</div></span>${c ? '<span class="tag">Öppet</span>' : ""}</div>`).join("");
+render();
+</script>
+</body>
+</html>

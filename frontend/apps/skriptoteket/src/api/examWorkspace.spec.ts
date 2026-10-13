@@ -5,7 +5,7 @@
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
  *   import with the `file` field, head-version listing, lineage readback, blob
- *   export downloads per target, and enrichment start/status.
+ *   export downloads per target, and answer-key suggestion request/status.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -15,10 +15,10 @@ import {
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
-  getExamWorkspaceEnrichment,
+  getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
-  startExamWorkspaceEnrichment,
+  requestExamWorkspaceAnswerKeySuggestions,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
@@ -51,6 +51,7 @@ function buildDocument(revision: number): NativeExamDocument {
         item_id: "item_001",
         kind: "free_text",
         points: 2,
+        points_estimated: false,
         review: {
           confidence: 0.9,
           parse_origin: "deterministic",
@@ -59,7 +60,6 @@ function buildDocument(revision: number): NativeExamDocument {
         },
         sequence: 1,
         source_anchor: null,
-        title: "Kretsloppet",
       },
     ],
     origin: {
@@ -77,6 +77,7 @@ function buildDocument(revision: number): NativeExamDocument {
 
 function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document: buildDocument(revision),
     notes: [],
     summary: {
@@ -161,20 +162,33 @@ describe("examWorkspace transport", () => {
     expect(result).toBe(blobResponse);
   });
 
-  it("starts enrichment with POST and reads status with GET on the enrichment path", async () => {
+  it("requests suggestions with the editor document and reads status per job", async () => {
     const status = {
-      document_revision: 2,
+      job_id: "job-1",
       lineage_id: "lineage-1",
-      proposals: [],
       state: "queued" as const,
+      suggestions: [],
     };
     apiPostMock.mockResolvedValueOnce(status);
     apiGetMock.mockResolvedValueOnce(status);
+    const document = buildDocument(2);
 
-    await startExamWorkspaceEnrichment("lineage-1");
-    await getExamWorkspaceEnrichment("lineage-1");
+    await requestExamWorkspaceAnswerKeySuggestions("lineage-1", document);
+    await requestExamWorkspaceAnswerKeySuggestions("lineage-1", document, "item_001");
+    await getExamWorkspaceAnswerKeySuggestions("lineage-1", "job-1");
 
-    expect(apiPostMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
-    expect(apiGetMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
+    expect(apiPostMock).toHaveBeenNthCalledWith(
+      1,
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions`,
+      { document, item_id: null },
+    );
+    expect(apiPostMock).toHaveBeenNthCalledWith(
+      2,
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions`,
+      { document, item_id: "item_001" },
+    );
+    expect(apiGetMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions/job-1`,
+    );
   });
 });

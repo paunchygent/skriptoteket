@@ -16,6 +16,7 @@ import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../api/examWorkspace";
@@ -24,13 +25,12 @@ import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -63,6 +63,7 @@ function buildDocument(): NativeExamDocument {
         item_id: "item_001",
         kind: "free_text",
         points: 2,
+        points_estimated: false,
         review: {
           confidence: 0.9,
           parse_origin: "deterministic",
@@ -71,7 +72,6 @@ function buildDocument(): NativeExamDocument {
         },
         sequence: 1,
         source_anchor: null,
-        title: "Kretsloppet",
       },
     ],
     origin: {
@@ -87,8 +87,16 @@ function buildDocument(): NativeExamDocument {
   };
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
+/** The imported exam's document, fetched once its conversion has succeeded. */
 function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
+    conversion: succeededConversion,
     document: buildDocument(),
     notes: [],
     summary: {
@@ -120,21 +128,12 @@ async function chooseSourceFile(wrapper: ViewWrapper, file: File) {
 }
 
 beforeEach(() => {
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockReset();
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
 });
 
 describe("ExamWorkspaceView host frame", () => {
@@ -161,7 +160,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("accepts a .docx source file and shows the imported document", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 
@@ -219,7 +219,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("imports a dropped .docx while ignoring files that cannot be used", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 
@@ -240,7 +241,8 @@ describe("ExamWorkspaceView host frame", () => {
   it("keeps the frame free of service jargon before and after import", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const wrapper = mountView();
 

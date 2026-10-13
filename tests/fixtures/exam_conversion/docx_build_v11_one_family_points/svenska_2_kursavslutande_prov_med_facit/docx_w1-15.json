@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0054"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0052",
+        "body:0053"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 15,
+      "choices": [
+        {
+          "text": "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
+          "correct": true
+        },
+        {
+          "text": "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
+          "correct": false
+        },
+        {
+          "text": "Den används främst för riddarideal, sedan för realism och parodi.",
+          "correct": false
+        },
+        {
+          "text": "Den används främst för hederskultur, sedan för råd om furstemakt.",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

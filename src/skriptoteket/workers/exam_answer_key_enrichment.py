@@ -85,10 +85,11 @@ async def process_next_answer_key_enrichment_job(
         if job is None:
             return False
         logger.info(
-            "Answer-key enrichment job claimed",
+            "Exam enrichment queue job claimed",
             job_id=str(job.id),
             conversion_job_id=str(job.conversion_job_id),
             worker_id=worker_id,
+            source_kind=job.source_kind.value,
         )
         stop_heartbeat = asyncio.Event()
         heartbeat_task = asyncio.create_task(
@@ -111,10 +112,11 @@ async def process_next_answer_key_enrichment_job(
             except asyncio.CancelledError:
                 pass
         logger.info(
-            "Answer-key enrichment job finished",
+            "Exam enrichment queue job finished",
             job_id=str(finished.id),
             status=finished.status.value,
             last_error=finished.last_error,
+            source_kind=finished.source_kind.value,
         )
         return True
 

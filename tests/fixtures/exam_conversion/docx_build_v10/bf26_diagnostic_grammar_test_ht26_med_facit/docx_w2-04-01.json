@@ -1,0 +1,58 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0180"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0182"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0181"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "85",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "John bad om ursäkt för att han kom för sent. ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "John apologized for being late",
+                "John apologized for being late.",
+                "John apologised for being late",
+                "John apologised for being late.",
+                "John apologized for arriving late",
+                "John apologized for arriving late.",
+                "John apologised for arriving late",
+                "John apologised for arriving late."
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

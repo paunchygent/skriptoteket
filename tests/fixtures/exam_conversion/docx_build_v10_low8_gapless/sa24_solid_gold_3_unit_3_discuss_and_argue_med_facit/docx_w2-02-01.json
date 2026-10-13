@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0093"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0092"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "40",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calorie",
+                "callorie"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is a unit of measurement for energy. We use this term to define the amount of energy in the food we eat. They are found in fats, carbohydrates, proteins and alcohol.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

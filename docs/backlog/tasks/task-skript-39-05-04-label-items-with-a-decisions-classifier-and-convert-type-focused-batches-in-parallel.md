@@ -8,15 +8,23 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User closed 39-05-04 on 2026-10-12 after the staging walk on main 63de8094, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/staging-walk/walk-63de8094.md (kursavslutande 24/24, Fråga 20 correct, placeholder locked in importing and reloaded pages, export 200 and gate 422); the D44 low-27 miss and the D31 Exam.net rubric test move to the ST-SKRIPT-39-05 follow-up task
 task_kind: story
 acceptance_criteria:
 - Grouping and labeling run on all eight corpus exams and their questions, subparts,
   shared-context scope and labels are checked against the source before any conversion
   change
+- The parallelization measurement (D26) runs the production pipeline per setting and
+  reports time to first batch, time to all ready, cost and quality read as in D34
+  before batch size and reasoning effort are set
+- Converted batches reach the exam workspace as they finish, pending questions show
+  as placeholders, and the saved document passes the assembly check against the
+  grouping list before save and QTI export
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -34,19 +42,27 @@ steps decide what each question is:
 2. **Labeler.** One batched Decisions call gives each question one label from
    a closed set: `single_choice`, `multiple_response`, `gap_fill`,
    `free_text`, `matching`, `unsupported`, `unresolved`, with the label
-   probabilities. A probability or top-two margin below the label's threshold
-   sends the question to a second labeling pass with more context, and then
-   to a review item. The labeler sits behind one classifier interface (label,
+   probabilities. A question at or above 0.95 keeps its first-pass label;
+   below 0.95 a second pass (B: Responses, label only) decides alone, and
+   a question B leaves unresolved converts with the first pass's top label, and
+   the type_conflict resend (step 4) corrects a wrong label. The labeler sits behind one classifier interface (label,
    score, threshold, route), so conversion reads labels the same way whatever
    produced them.
 3. **Parallel conversion.** Code packs questions into batches that hold one
    type, or the two choice types together. A question and its subparts never
    split. A shared instruction or passage reaches every batch that holds a
-   question it governs, as read-only context. Batches run concurrently; the
-   document is assembled in source order.
+   question it governs, as read-only context. Batches run concurrently in two
+   waves: questions accepted at 0.95 convert at once, and questions sent to B
+   join second-wave batches as their labels arrive. Converted batches reach
+   the editor as they finish (progressive delivery), pending questions show
+   as placeholders with their source text, and the document is assembled in
+   source order. Before save and QTI export, assembly checks the result
+   against the grouping list: every question once, each child under its
+   named parent, each instruction once, source order. Free_text questions
+   carry a marking guide (rättningsmall / poängmall) in the converter schema.
 4. **Recovery.** A converter that finds a question outside its batch's types
-   reports a typed conflict; that question is relabeled and resent, at most
-   three attempts in total.
+   reports a typed conflict; that question is relabeled and resent once. If it
+   still conflicts, it keeps the converted item with the check-type review mark.
 
 Step 1 has two candidates, both run in the feasibility step: the Responses
 grouping pass above, and Decisions-only grouping, where a `choice` question
@@ -72,9 +88,13 @@ work done today by the converter or by code:
 
 The parent recommends the placements from that evidence.
 
-This task first builds steps 1 and 2 and runs them on the eight corpus exams
-without converting. Building step 3 and the larger measurement phases follows
-a user decision on that result.
+Steps 1 and 2 are built and measured (feasibility result below and D23).
+Before step 3 changes production, a parallelization measurement (D26)
+compares batch shapes, reasoning efforts, a heading-split comparison and a
+Sol 6.1 escalation for questions below 0.95. Step 3 is built now in
+parallel with the measurement (D29); the measured values (batch size,
+converter reasoning effort, Sol escalation, heading split) are set after
+the user's decision on its result.
 
 ## Contract Inputs
 
@@ -146,9 +166,34 @@ succeeded on retry.
 | D11 | The conversion experiment measures both groupings end to end: Responses grouping (A), and Decisions grouping with quoted chunks (B2) using A's instruction-scope rules; total time decides only when quality holds (user decision 2026-10-11). |
 | D12 | The conversion experiment starts after TASK-SKRIPT-39-05-03 merges and builds batching on its parent model, so a parent and its children share a batch (user decision 2026-10-11). |
 | D13 | The conversion experiment also targets two consecutive live eval runs where every corpus item meets the eight conversion principles, and measures higher reasoning effort as one variable (user decision 2026-10-11, moved from TASK-SKRIPT-39-05-03 D19). |
-| D14 | The labeler sends each question as the student sees it: code replaces each inline keyed span with an answer slot (`[___]`) and lists the keys in a separate answer-key block (user decision 2026-10-11, after the 11 escalated items of the live labeler run). |
+| D14 | The labeler receives each question's own source content as faithfully as possible: its own chunks in source order as markdown, keeping indentation, numbering and emphasis; inline answers, key labels, accepted alternatives and points stay where they stand; code adds nothing (no answer-slot markers, no reconstructed answer-key block) and removes nothing. Governing instructions and the section heading appear as their source text where they stand. Content that markdown cannot represent faithfully goes in as an image of that part. This replaces the earlier student-view term (user decision 2026-10-11). |
 | D15 | Label descriptions are defined by how the answer is scored: gap means each response slot (blank, blank line or labelled field) is keyed by one or more accepted strings of any length; free text means the key is a sample answer, analysis or grading guidance. This replaces the rule that answer keys do not change the response action (user decision 2026-10-11). |
 | D16 | Escalated questions get a second pass: each is re-asked alone with expanded context, and its effect is measured (user decision 2026-10-11). |
 | D17 | Fresh test documents for the shapes behind the escalations (a whole sentence on one blank line, labelled answer fields with inline keys) are synthetic DOCX files written by an independent model that never sees the corpus or its gold, as clear teacher-style Word documents; the labeler changes are measured on the corpus and these documents (user decision 2026-10-11). |
 | D18 | The labeler run also measures per-question shape counts (blanks, labelled fields, accepted strings per slot) sent as evidence alone, never as a typing rule in code; splitting the label set into two requests is measured only if escalations remain after D14-D16 (user decision 2026-10-11). |
 | D19 | Shape counts (D18) are dropped from the labeler: measured on 2026-10-11 they left the corpus at 306/314 and lowered the held-out synthetic result from 73/76 to 70/76 (user decision 2026-10-11). |
+| D20 | The second prompt round (probes P1-P4 and full runs with a hold-out set) ran after the D14 input repair was measured; its result is D23 (user decisions 2026-10-11). |
+| D21 | Teachers can edit anything in the workspace, but problems that better model context or output handling can solve are solved there; every admission or prompt option is reported with the teacher work it leaves (user decision 2026-10-11). |
+| D22 | Independent code review is paused while the pipeline is iterated and runs once on the settled pipeline before integration into main (user decision 2026-10-11). |
+| D23 | Labeler prompt P1d in both passes: a type name the teacher writes settles a label, a key marking more than one option correct settles multiple_response, Swedish type names with English counterparts, no evidence wording. Admission: first pass at >= 0.95, otherwise B decides alone; no C, no tie-breaker; a question B leaves unresolved converts with the first pass's top label, and the type_conflict resend corrects a wrong label (user decisions 2026-10-11 and 2026-10-12). |
+| D24 | The teacher re-tag and rebuild flow for unsettled or wrong types is its own later story, contracted after the parallelization measurement (user decision 2026-10-11). |
+| D25 | Two conversion waves (accepted questions at once, B questions after their labels arrive), progressive delivery to the editor, and a free_text marking-guide field in the converter schema are part of this task (user decisions 2026-10-11). |
+| D26 | The parallelization measurement runs the production pipeline per setting, starting with one small exam: batch size (whole exam, about 16 or 6 question families, one family per request) and gpt-6-luna reasoning low or medium; reasoning none is dropped. Settings that are clearly bad are stopped early instead of run on every exam. It records timing, cost and 429s per request; quality is read as in D34. The frozen-input harness is discarded (user decisions 2026-10-11). |
+| D27 | Questions under one instruction stay in one parent whatever their labels: a parent holds any mix of question types, as Exam.net does. A question that becomes a review item stays a child of its section parent, in source position (user decisions 2026-10-11). |
+| D28 | The gold files are corrected before the measurement: samhallskunskap q14 becomes free_text and kursavslutande Fråga 20 becomes gap_fill (huvudsats, före), each with a note citing the user decision (user decisions 2026-10-11). |
+| D29 | The decided parts of steps 1-4 are built now, in parallel with the D26 measurement, by several agents in the task worktree with disjoint file scopes; batch size, converter reasoning effort, Sol escalation and heading split stay single named settings set after the measurement, which runs from a frozen snapshot (user decision 2026-10-11). |
+| D30 | While batches still convert, the teacher can edit converted items: the document is saved when the first batch is ready, with placeholders (source text, converting) for the rest. A placeholder cannot be edited, reviewed, moved or deleted until its batch arrives, and each later batch replaces exactly its own placeholders (user decisions 2026-10-11 and 2026-10-12; the 2026-10-12 decision replaces the rule that a changed placeholder kept the teacher's version). |
+| D31 | The free_text marking guide is shown and editable in the item editor and printed in the DOCX and PDF answer-key exports; it enters the QTI export as a scorer rubric only after a staging import shows Exam.net accepts and displays it (user decision 2026-10-11). |
+| D32 | The strict response schema is the only gate on converter output. A schema-valid response is never rejected or retried for unclaimed chunks, unknown or conflicting anchors, source-rule, item-rule or label-rule checks, or family splits: batch anchors are a per-request schema enum, the first item claiming an anchor keeps it, an unclaimed chunk becomes a review item holding its source text, and an item that breaks a document invariant becomes a review item with the reason. The only resend is one typed type_conflict resend per question (step 4) (user decisions 2026-10-11). |
+| D33 | Following A7, gold is one correct conversion, not the only one. exam-conversion-eval judges a question only on type, answer key, points, answer leakage, and that no gold word is lost wherever it sits in the question or its parent; segmentation, slot placement, platform label and word-order checks are removed. Each converted question is paired with the gold question its wording overlaps most, not by position (user decisions 2026-10-11). |
+| D34 | Conversion quality is judged, not computed: the D33 script is a loose gate that catches most failures, and the parent and the user then read the results together, adding reviewer agents (Claude, Sol 6.1) where they help. No fixed procedure is set in advance. Conversion is a best-effort first draft that a teacher reviews and can resend: a setting is chosen when its quality is reasonable for its wait, and extra time that buys only small gains on most questions is not worth it (user decision 2026-10-11). |
+| D35 | The labeler sees every question with the full text of each shared heading, instruction or word box that governs it, repeated per question; conversion keeps its ownership, and a converted question never lacks the shared text that governs it (user decision 2026-10-11). |
+| D36 | Shared section text may be copied into each question's labeler and conversion input wherever that makes them more dependable. The saved document and the QTI export show it once, on the section parent; each child keeps only its own stem, verbatim. Enumeration (numbers or letters on question stems and on MCQ alternatives) is removed in the final presentation and may stay until then; labels that name the parts inside one question's body (a), b)) stay (user decisions 2026-10-11). |
+| D37 | The conversion default is one question family per request at gpt-6-luna low reasoning: the real pipeline converted 302 of 314 corpus questions with every exam ready within about 34 s, against 300 of 314 and up to 60 s for about 6 families at medium; medium bought no measurable quality (user decision 2026-10-11). |
+| D38 | Every question gets points. A question's printed points stay. A section total is split over the section's questions that print no points of their own: what remains of the total after printed points is split into whole points as evenly as possible, earlier questions taking the extra point; when nothing remains, the model's own reading stands. Each question whose points are not printed carries a check-points review mark (user decisions 2026-10-11). |
+| D39 | When the answer key prints a label after each unit of a sentence, or after each part of a word joined with +, each label is one gap placed after its unit or part, accepting that label (user decisions 2026-10-11). |
+| D40 | A chunk the grouping marks as a shared context governing several questions belongs to the section parent: assembly shows it once as the parent's instruction, also when a converter reply lists it in a question's source_anchors, and a governing heading keeps its text. The section parent holds exactly the items of the questions the grouping says it governs. No reply is rejected or resent (user decision 2026-10-12). |
+| D41 | When a converted item leaves out some of its question's own source chunks in the grouping, the item stays converted and carries a check mark that shows the left-out chunks as printed, in place; those chunks do not become separate review items. Export stays blocked until the mark is handled (user decision 2026-10-12). |
+| D42 | When a converter reply lists one of a question's own chunks in the grouping as an instruction or as a title, the line stands as an instruction if assembly places it at that question: in the question's body or on a parent that holds the question. If it would land anywhere else, such as the exam-wide instructions or another section, the chunk goes back to its question under the D41 check mark. A chunk the grouping marks as the exam's title stays the title (user decisions 2026-10-12). |
+| D43 | When a gap-fill question marks several phrases in the same way, the material the student is asked to analyse stays as text and only what the student must supply becomes a gap; when the converter cannot tell which phrase is which, the question comes back as review required, never as reviewed. Live corpus runs measure the change before merge (user decision 2026-10-12). |
+| D44 | A phrase printed after a field label is given material when the question's instruction does not ask the student for it, even if the answer key sets it apart the same way as the answers; it stays as text and is never a gap. The live run low-27 that made such phrases gaps and passed the question as reviewed is a known miss the D43 check does not catch; the ST-SKRIPT-39-05 follow-up task carries it (user decision 2026-10-12). |

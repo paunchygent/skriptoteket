@@ -7,76 +7,83 @@
   "confirmation_note": "Confirmed by the user on 2026-10-10: every item, answer key and point value is accepted, including these corrections from the blind second labelling: the Part 1 section heading removed from item prompts and “Read the sentence:” removed from Part 1 questions 7 and 8.",
   "items": [
     {
-      "source_label": "Part 1, Question 1",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
-      "choices": [
-        "deep",
-        "strange",
-        "dignified",
-        "thrifty"
-      ],
-      "correct_choices": [
-        "deep"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 1, Question 2",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
-      "choices": [
-        "mysterious",
-        "deep",
-        "thrifty",
-        "strange"
-      ],
-      "correct_choices": [
-        "thrifty"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 1, Question 3",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
-      "choices": [
-        "indescribable",
-        "strange",
-        "dignified",
-        "deep"
-      ],
-      "correct_choices": [
-        "strange"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
-    },
-    {
-      "source_label": "Part 1, Question 4",
-      "kind": "single_choice",
-      "points": 1,
-      "prompt": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
-      "choices": [
-        "crossed from one side to the other",
-        "kept it as something precious",
-        "made it richer or better",
-        "refused to give up his position"
-      ],
-      "correct_choices": [
-        "refused to give up his position"
-      ],
-      "gaps": [],
-      "pairs": [],
-      "teacher_questions": []
+      "kind": "parent",
+      "source_label": "Part 1, Question 1–4",
+      "instruction": "Part 1",
+      "children": [
+        {
+          "source_label": "Part 1, Question 1",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "His profound essay about the war impressed the whole class. What does “profound” mean here?",
+          "choices": [
+            "deep",
+            "strange",
+            "dignified",
+            "thrifty"
+          ],
+          "correct_choices": [
+            "deep"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "Part 1, Question 2",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "They live a frugal life in a small house by the lake. What does “frugal” mean here?",
+          "choices": [
+            "mysterious",
+            "deep",
+            "thrifty",
+            "strange"
+          ],
+          "correct_choices": [
+            "thrifty"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "Part 1, Question 3",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "A peculiar noise woke her just after midnight. What does “peculiar” mean here?",
+          "choices": [
+            "indescribable",
+            "strange",
+            "dignified",
+            "deep"
+          ],
+          "correct_choices": [
+            "strange"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        },
+        {
+          "source_label": "Part 1, Question 4",
+          "kind": "single_choice",
+          "points": 1,
+          "prompt": "Everyone else changed their minds, but he stood his ground. What does “stood his ground” mean here?",
+          "choices": [
+            "crossed from one side to the other",
+            "kept it as something precious",
+            "made it richer or better",
+            "refused to give up his position"
+          ],
+          "correct_choices": [
+            "refused to give up his position"
+          ],
+          "gaps": [],
+          "pairs": [],
+          "teacher_questions": []
+        }
+      ]
     },
     {
       "kind": "parent",

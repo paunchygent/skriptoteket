@@ -7,10 +7,12 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 39-05-05 on 2026-10-14 ("finish up the story items") after review approval 83501383, merge ece1b674 and the 2026-10-11 staging walk, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-05/staging-walk-ece1b674/'
 task_kind: story
 acceptance_criteria:
 - A DOCX whose opening heading carries answer-key wording converts to a title without

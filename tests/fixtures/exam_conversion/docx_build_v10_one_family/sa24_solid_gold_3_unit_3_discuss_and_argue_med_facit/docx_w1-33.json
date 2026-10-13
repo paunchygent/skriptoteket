@@ -1,0 +1,49 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0081"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0080"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "34",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Harold has been absent from class six times this term, ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "according",
+                "acording"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (a…) to our records,” said the head teacher to his parents. (enligt)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

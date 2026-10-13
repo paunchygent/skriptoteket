@@ -8,7 +8,7 @@ Relationships:
     - Uses prompt sanitation from `domain.digiexam_examnet_pdf_prompt`.
     - Adapts DigiExam IR items into source-neutral PDF item semantics.
     - Delegates target-specific item family policy to
-      `domain.examnet_pdf_item_strategies`.
+      `domain.examnet_pdf_item_registry`.
     - Produces item render contracts consumed by
       `domain.digiexam_examnet_pdf_html`.
 """
@@ -45,10 +45,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
     PdfExamItemSemantics,
     PdfExamOptionSemantics,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry import (
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
-    DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemRenderingPolicyRegistry,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
+    DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfTargetProfileContext,
 )
 

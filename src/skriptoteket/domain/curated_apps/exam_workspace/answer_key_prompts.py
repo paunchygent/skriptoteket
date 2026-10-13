@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompt
     GAP_FILL_PROMPT_TEMPLATE_VERSION,
     _choice_answer_shape,
     _choice_user_instruction,
+    numbered_gap_labels,
     system_prompt_for_answer_key_item,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import DigiExamItemType
@@ -113,7 +114,7 @@ def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:
 def _item_payload(view: AnswerKeyItemView, text_key: str, text: str) -> dict[str, JsonValue]:
     """The item as the student reads it: a grouped question also shows its parent's instruction."""
 
-    item: dict[str, JsonValue] = {"item_id": view.item_id, "title": view.title}
+    item: dict[str, JsonValue] = {"item_id": view.item_id}
     if view.instruction:
         item["instruction"] = view.instruction
     item[text_key] = text
@@ -184,7 +185,12 @@ def choice_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[s
 def gap_fill_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[str, JsonValue]:
     """Build the model-facing payload for a gap-fill workspace item."""
 
-    gap_entries: list[JsonValue] = [{"gap_number": index} for index in range(1, view.gap_count + 1)]
+    gap_entries: list[JsonValue] = [
+        {"gap_number": number, "label": label}
+        for number, label in enumerate(
+            numbered_gap_labels(view.cloze_text, view.gap_count), start=1
+        )
+    ]
     return {
         "task": {
             "name": "complete_teacher_intended_gap_fill_answer_key",

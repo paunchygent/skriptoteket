@@ -17,6 +17,7 @@ import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
+import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
 import {
   buildResponse,
   importFixtureDocument,
@@ -27,13 +28,12 @@ import {
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -42,25 +42,26 @@ const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
 vi.mock("./exam-converter/browserDownload", () => downloadMocks);
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   downloadMocks.triggerBrowserDownload.mockReset();
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      buildResponse({ conversion: succeededConversion, version: 1 }),
+    );
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
 });
 
 describe("ExamWorkspaceView export slice", () => {
@@ -116,13 +117,13 @@ describe("ExamWorkspaceView export slice", () => {
         code: "VALIDATION_ERROR",
         details: {
           blockers: [
-            { item_id: "item_003", reason: "review_required" },
+            { item_id: "item_003", reason: "unbuilt_question" },
             { item_id: "item_003", reason: "machine_proposed_key_unreviewed" },
-            { item_id: "item_004", reason: "review_required" },
+            { item_id: "item_004", reason: "unbuilt_question" },
             { item_id: "item_005", reason: "missing_points" },
           ],
         },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );
@@ -134,7 +135,7 @@ describe("ExamWorkspaceView export slice", () => {
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
     const item3 = wrapper.find('[data-test="exam-workspace-item-blockers-item_003"]').text();
-    expect(item3).toContain("Frågan behöver granskas.");
+    expect(item3).toContain("Frågan kunde inte konverteras och visas som i källan.");
     expect(item3).toContain("Facitförslaget är inte godkänt.");
     expect(
       wrapper.find('[data-test="exam-workspace-item-blockers-item_005"]').text(),
@@ -152,7 +153,7 @@ describe("ExamWorkspaceView export slice", () => {
       new ApiError({
         code: "VALIDATION_ERROR",
         details: { blockers: [{ item_id: "item_002", reason: "missing_answer_key" }] },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );
@@ -217,8 +218,8 @@ describe("ExamWorkspaceView export slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("7");
 
     for (const target of ["qti", "pdf", "docx"]) {
       expect(

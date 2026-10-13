@@ -3,7 +3,7 @@
  * Exam workspace item editor.
  *
  * Domain purpose:
- *   Edit one native exam item as the dominating Redigera surface: title,
+ *   Edit one native exam item as the dominating Redigera surface:
  *   points, the question text with inline gaps, choices with the correct
  *   answer, matching lists with the correct right entry per left entry, and
  *   the mark-as-reviewed action. Previous/next and the details
@@ -11,8 +11,9 @@
  *   never needs the list. Points that are not greater than zero and an
  *   empty choice text are marked invalid at the field with a Swedish hint,
  *   because the save refuses them. While `disabled` (a save or load is
- *   running) every edit control is disabled so no typed edit is lost;
- *   navigation and the details toggle stay available.
+ *   running, or the item is a placeholder whose batch still converts) every
+ *   edit control is disabled; navigation and the details toggle stay
+ *   available.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
@@ -38,6 +39,7 @@ import {
   isIncompleteMatchingItem,
 } from "./examWorkspaceAnswerKeyRules";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import ExamWorkspaceMarkingGuideField from "./ExamWorkspaceMarkingGuideField.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
   EMPTY_MATCH_TEXT_GUIDANCE,
@@ -76,6 +78,7 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
+  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -83,13 +86,20 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
 }>();
 
 const pointsHintId = useId();
 const choiceHintId = useId();
 const matchHintId = useId();
 const matchKeyHintId = useId();
+
+const TYPE_CONFIDENCE_THRESHOLD = 0.95;
+
+const typeUncertain = computed(
+  () =>
+    typeof props.item.review.confidence === "number" &&
+    props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,
+);
 
 const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
 
@@ -100,11 +110,6 @@ function choiceTextClass(choiceId: string, text: string): string {
   return isCorrectChoice(choiceId)
     ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
     : "border-navy/35";
-}
-
-function handleTitleInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateTitle", props.item.item_id, input.value);
 }
 
 function handlePointsInput(event: Event): void {
@@ -212,6 +217,11 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
       </h2>
+      <span
+        v-if="typeUncertain"
+        class="text-xs text-navy/65"
+        data-test="exam-workspace-type-uncertain"
+      >Kontrollera frågetypen</span>
       <div
         class="ml-auto flex flex-wrap items-center gap-3"
         data-test="exam-workspace-review-badge"
@@ -274,18 +284,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       instruktionen visas i listan över frågor. {{ PARENT_CHILD_LOCKED_COPY }}
     </p>
 
-    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Rubrik
-        <input
-          class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="item.title ?? ''"
-          :disabled="disabled"
-          data-test="exam-workspace-item-title-input"
-          @input="handleTitleInput"
-        >
-      </label>
+    <div class="grid gap-3">
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
         Poäng
         <input
@@ -306,7 +305,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       <p
         v-if="hasNonPositivePoints(item)"
         :id="pointsHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy sm:col-span-2"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
         data-test="exam-workspace-points-hint"
       >
         {{ NON_POSITIVE_POINTS_GUIDANCE }}
@@ -318,6 +317,13 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
+    />
+
+    <ExamWorkspaceMarkingGuideField
+      v-if="item.kind === 'free_text'"
+      :disabled="disabled"
+      :guide="item.marking_guide ?? null"
+      @update="(guide) => emit('updateMarkingGuide', item.item_id, guide)"
     />
 
     <fieldset

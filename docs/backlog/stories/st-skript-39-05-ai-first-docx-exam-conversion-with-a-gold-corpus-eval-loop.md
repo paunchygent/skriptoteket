@@ -103,6 +103,19 @@ Planned order; each task is scaffolded and contracted before work starts.
 4. Matching kind: native model, editor, and QTI export.
 5. Teacher surface: "Tolkad av AI" with undo, automatic misspellings, and
    "Visa som text".
+6. Follow-up to `TASK-SKRIPT-39-05-04` (not yet scaffolded): label-first review
+   with per-question model retry, the picture in review items and marks. It
+   carries two open items from that task: the low-27 miss that made given
+   field-label phrases gaps and passed as reviewed (D44), and the Exam.net test
+   import of a QTI file carrying a free-text marking guide as a scorer rubric,
+   which D31 requires before the QTI export includes the rubric (user decision
+   2026-10-12).
+7. `TASK-SKRIPT-39-05-07`: export is blocked only by missing values and unbuilt
+   questions; printed "(N p)" markers become points; possible parsing issues
+   fire only where wording is lost (user decisions 2026-10-13).
+8. `TASK-SKRIPT-39-05-08` (done 2026-10-14): imported questions carry no
+   title; printed group headings open the group instruction or the question
+   body; one gap_fill/free_text definition; Exam.net imports the result.
 
 ## Verification
 

@@ -146,8 +146,8 @@ async function onLogout(): Promise<void> {
       >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
-            v-if="isPageTransitionEnabled"
             name="page"
+            :css="isPageTransitionEnabled"
             :duration="150"
           >
             <div
@@ -157,13 +157,6 @@ async function onLogout(): Promise<void> {
               <component :is="Component" />
             </div>
           </Transition>
-          <div
-            v-else
-            :key="viewRoute.path"
-            class="route-stage-item"
-          >
-            <component :is="Component" />
-          </div>
         </RouterView>
       </div>
     </LandingLayout>
@@ -189,8 +182,8 @@ async function onLogout(): Promise<void> {
       >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
-            v-if="isPageTransitionEnabled"
             name="page"
+            :css="isPageTransitionEnabled"
             :duration="150"
           >
             <div
@@ -200,13 +193,6 @@ async function onLogout(): Promise<void> {
               <component :is="Component" />
             </div>
           </Transition>
-          <div
-            v-else
-            :key="viewRoute.path"
-            class="route-stage-item"
-          >
-            <component :is="Component" />
-          </div>
         </RouterView>
       </div>
     </AuthLayout>

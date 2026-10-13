@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0083"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "35",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Charles has ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "embarked"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " (e…) on a new career as a teacher. (gett sig in i)",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

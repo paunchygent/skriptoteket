@@ -119,6 +119,8 @@ def build_answer_key_chat_completions_payload(
 ) -> _JsonObject:
     """Build the Chat Completions payload with strict JSON Schema output."""
 
+    if request.user_images:
+        raise ValueError("The Chat Completions answer-key lane takes no source images.")
     return {
         "model": profile.model,
         "messages": [

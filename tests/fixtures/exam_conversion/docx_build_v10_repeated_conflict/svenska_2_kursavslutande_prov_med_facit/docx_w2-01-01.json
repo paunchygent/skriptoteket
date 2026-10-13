@@ -1,0 +1,76 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Del 2: grammatik och språkstrukturer, 16 poäng",
+      "source_anchors": [
+        "body:0059"
+      ],
+      "points": 16
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0061",
+        "body:0062",
+        "body:0063",
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nb) I ordet lekfullheten är -full och -het ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": "\nc) I ordet lekfullheten är -en ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 3,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

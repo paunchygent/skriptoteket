@@ -170,53 +170,11 @@ async def test_docx_failure_diagnostics_survive_commit_and_reload(
         )
 
 
-async def test_import_and_enrichment_coexist_at_revision_one_and_lookup_is_lane_specific(
+async def test_docx_import_lane_rejects_a_second_job_for_one_lineage(
     db_session: AsyncSession,
 ) -> None:
     jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(db_session)
-    imported = _job()
-    await jobs.create(job=imported)
-    assert imported.workspace_lineage_id is not None
-    assert (
-        await jobs.get_by_workspace_revision(
-            owner_user_id=imported.owner_user_id,
-            workspace_lineage_id=imported.workspace_lineage_id,
-            workspace_document_revision=1,
-        )
-        is None
-    )
-    workspace = _job(
-        lineage_id=imported.workspace_lineage_id,
-        owner_id=imported.owner_user_id,
-        source_kind=ExamAnswerKeySourceKind.WORKSPACE,
-    )
-    await jobs.create(job=workspace)
-    fetched = await jobs.get_by_workspace_revision(
-        owner_user_id=imported.owner_user_id,
-        workspace_lineage_id=imported.workspace_lineage_id,
-        workspace_document_revision=1,
-    )
-    assert fetched is not None and fetched.id == workspace.id
-    assert fetched.source_kind is ExamAnswerKeySourceKind.WORKSPACE
-    assert fetched.source_docx is None
-    assert (
-        await jobs.get_by_workspace_revision(
-            owner_user_id=uuid4(),
-            workspace_lineage_id=imported.workspace_lineage_id,
-            workspace_document_revision=1,
-        )
-        is None
-    )
-
-
-@pytest.mark.parametrize(
-    "source_kind", [ExamAnswerKeySourceKind.DOCX_IMPORT, ExamAnswerKeySourceKind.WORKSPACE]
-)
-async def test_each_lane_rejects_duplicate_binding(
-    db_session: AsyncSession, source_kind: ExamAnswerKeySourceKind
-) -> None:
-    jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(db_session)
-    first = _job(source_kind=source_kind)
+    first = _job()
     await jobs.create(job=first)
     duplicate = first.model_copy(update={"id": uuid4()})
     with pytest.raises(IntegrityError):

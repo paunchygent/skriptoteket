@@ -1,7 +1,7 @@
 """Questions as a student meets them, read from a gold exam or a native document.
 
 A question is a standalone item or one child of a parent. Both sides are flattened to the
-same ordered questions, each knowing the parent it sits in.
+same ordered questions; a parent's instruction belongs to each of its children.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeGapSegment,
     NativeItemReviewState,
+    NativeParseOrigin,
 )
 
 from .compare_text import CELL_SEPARATOR, ENTRY_LABEL, words
@@ -28,10 +29,10 @@ class Question:
     source_label: str
     kind: GoldKind
     points: int | float | None
-    parent: int | None
-    title: str
     instruction: tuple[str, ...]
     body: tuple[str, ...]
+    # Whether a model converted the item; a review item built from source is not converted.
+    converted: bool
     choices: tuple[str, ...] = ()
     correct_choices: tuple[str, ...] = ()
     gaps: tuple[tuple[str, ...], ...] = ()
@@ -80,9 +81,7 @@ def _read_table(item: GoldItem) -> tuple[tuple[str, ...], tuple[str, ...], tuple
     return tuple(lines[:start]), tuple(left), tuple(right)
 
 
-def _gold_view(
-    item: GoldItem, label: str, parent: int | None, instruction: tuple[str, ...]
-) -> Question:
+def _gold_view(item: GoldItem, label: str, instruction: tuple[str, ...]) -> Question:
     body: tuple[str, ...] = tuple(item.prompt.split("\n"))
     left: tuple[str, ...] = ()
     right: tuple[str, ...] = ()
@@ -92,10 +91,9 @@ def _gold_view(
         source_label=label,
         kind=item.kind,
         points=item.points,
-        parent=parent,
-        title="",
         instruction=instruction,
         body=body,
+        converted=True,
         choices=item.choices,
         correct_choices=item.correct_choices,
         gaps=tuple(gap.accepted_values for gap in item.gaps),
@@ -108,24 +106,18 @@ def _gold_view(
 def gold_questions(items: Sequence[GoldItem | GoldParent]) -> tuple[GoldQuestion, ...]:
     """The gold exam's questions in order; a parent's children carry its instruction."""
     questions: list[GoldQuestion] = []
-    parents = 0
     for entry in items:
         if isinstance(entry, GoldParent):
             instruction = tuple(entry.instruction.split("\n"))
             for child in entry.children:
                 label = f"{entry.source_label} / {child.source_label}"
-                questions.append(
-                    GoldQuestion(child, _gold_view(child, label, parents, instruction))
-                )
-            parents += 1
+                questions.append(GoldQuestion(child, _gold_view(child, label, instruction)))
         else:
-            questions.append(GoldQuestion(entry, _gold_view(entry, entry.source_label, None, ())))
+            questions.append(GoldQuestion(entry, _gold_view(entry, entry.source_label, ())))
     return tuple(questions)
 
 
-def _native_view(
-    item: NativeExamItem, label: str, parent: int | None, instruction: tuple[str, ...]
-) -> Question:
+def _native_view(item: NativeExamItem, label: str, instruction: tuple[str, ...]) -> Question:
     kind: GoldKind = item.kind.value
     if (
         item.kind is NativeExamItemKind.FREE_TEXT
@@ -140,10 +132,9 @@ def _native_view(
         source_label=label,
         kind=kind,
         points=item.points,
-        parent=parent,
-        title=item.title or "",
         instruction=instruction,
         body=item.plain_text_lines(),
+        converted=item.review.parse_origin is NativeParseOrigin.LLM_PARSED,
         choices=tuple(choice.text for choice in item.choices),
         correct_choices=tuple(
             choice.text for choice in item.choices if choice.choice_id in correct_ids
@@ -163,18 +154,14 @@ def _native_view(
 
 
 def native_questions(document: NativeExamDocument) -> tuple[Question, ...]:
-    """The document's items in order, each knowing the parent that holds it."""
-    parent_of = {
-        item_id: (ordinal, parent)
-        for ordinal, parent in enumerate(document.parents)
-        for item_id in parent.item_ids
-    }
+    """The document's items in order, each carrying the instruction of the parent that holds it."""
+    parent_of = {item_id: parent for parent in document.parents for item_id in parent.item_ids}
     questions: list[Question] = []
     for item in document.items:
-        ordinal, parent = parent_of.get(item.item_id, (None, None))
+        parent = parent_of.get(item.item_id)
         if parent is None:
-            questions.append(_native_view(item, item.item_id, None, ()))
+            questions.append(_native_view(item, item.item_id, ()))
         else:
             label = f"{parent.parent_id} / {item.item_id}"
-            questions.append(_native_view(item, label, ordinal, tuple(parent.instruction)))
+            questions.append(_native_view(item, label, tuple(parent.instruction)))
     return tuple(questions)

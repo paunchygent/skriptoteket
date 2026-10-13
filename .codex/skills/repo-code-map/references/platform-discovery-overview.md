@@ -19,7 +19,7 @@ Top-level layout:
 | Path             | Holds                                                          |
 | ---------------- | -------------------------------------------------------------- |
 | `AGENTS.md`      | Repository route list and command policy; the boot router      |
-| `CLAUDE.md`      | Narrow Claude specialist file (UI/design review, Swedish copy) |
+| `CLAUDE.md`      | Symlink to `AGENTS.md`, so Claude Code reads the same router   |
 | `handoff.md`     | Volatile current-state pointers, kept under 200 lines          |
 | `src/`           | The `skriptoteket` application package (all backend layers)    |
 | `frontend/`      | pnpm workspace holding the SPA                                 |

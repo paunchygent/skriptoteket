@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0130"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0129"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "k",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“You can’t sit on the ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fence"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " any longer – you have to decide whose side you’re on!”",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

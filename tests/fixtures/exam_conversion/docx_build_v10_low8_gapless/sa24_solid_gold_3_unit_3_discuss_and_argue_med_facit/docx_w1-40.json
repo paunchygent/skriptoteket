@@ -1,0 +1,48 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0151"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0150"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "d",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She went to work in Paris as an au pair ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in order to"
+              ]
+            },
+            {
+              "kind": "text",
+              "text": " improve her French.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

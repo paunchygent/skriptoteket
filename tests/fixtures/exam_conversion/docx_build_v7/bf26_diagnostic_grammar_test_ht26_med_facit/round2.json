@@ -12,29 +12,25 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
             {
               "kind": "text",
               "text": "It was ",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
                 "an"
-              ],
-              "hint": null
+              ]
             },
             {
               "kind": "text",
               "text": " (en) honour to carry the flag in the parade.",
-              "accepted_values": [],
-              "hint": null
+              "accepted_values": []
             }
           ]
         }
@@ -43,7 +39,8 @@
       "choices": [],
       "match_left": [],
       "match_right": [],
-      "match_pairs": []
+      "match_pairs": [],
+      "marking_guide": null
     }
   ]
 }

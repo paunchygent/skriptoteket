@@ -1,0 +1,38 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0113"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0111",
+        "body:0112",
+        "body:0114"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Fråga 24",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Förklara BIFF-regeln med en mening.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": "I bisats står inte och andra satsadverbial före det finita verbet."
+    }
+  ]
+}

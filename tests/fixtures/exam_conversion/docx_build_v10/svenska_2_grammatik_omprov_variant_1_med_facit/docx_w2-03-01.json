@@ -1,0 +1,94 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026",
+        "body:0027",
+        "body:0028",
+        "body:0029",
+        "body:0030"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) de tre nya eleverna från Göteborg Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "eleverna"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) min äldre systers trasiga mobiltelefon på köksbordet Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "mobiltelefon"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) alla böckerna i den nedersta hyllan Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "böckerna"
+              ]
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) den lilla vägen genom skogen Huvudord: ",
+              "accepted_values": []
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "vägen"
+              ]
+            }
+          ]
+        }
+      ],
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

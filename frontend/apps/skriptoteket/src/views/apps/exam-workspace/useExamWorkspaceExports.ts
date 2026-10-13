@@ -31,7 +31,8 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     machine_proposed_key_unreviewed: "Facitförslaget är inte godkänt.",
     missing_answer_key: "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.",
     missing_points: "Poäng saknas.",
-    review_required: "Frågan behöver granskas.",
+    unbuilt_question:
+      "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };
 
 export const EXAM_WORKSPACE_EXPORT_BLOCKED_COPY =
@@ -41,6 +42,12 @@ const EXPORT_TARGET_LABELS: Record<ExamWorkspaceExportTarget, string> = {
   docx: "Word-filen",
   pdf: "PDF-filen",
   qti: "QTI-paketet",
+};
+
+const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
+  docx: "Word-filen är skapad.",
+  pdf: "PDF-filen är skapad.",
+  qti: "QTI-paketet är skapat.",
 };
 
 const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
@@ -109,7 +116,7 @@ export function useExamWorkspaceExports(summary: Ref<ExamWorkspaceDocumentSummar
       const response = await downloadExamWorkspaceExport(currentSummary.lineage_id, target);
       triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
       clearExportFeedback();
-      toast.success(`${EXPORT_TARGET_LABELS[target]} är skapad.`);
+      toast.success(EXPORT_CREATED_MESSAGES[target]);
     } catch (error) {
       const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
       if (blockers.length > 0) {

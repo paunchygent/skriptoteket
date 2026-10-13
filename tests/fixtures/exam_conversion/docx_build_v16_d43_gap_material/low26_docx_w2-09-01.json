@@ -1,0 +1,46 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0087"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0085",
+        "body:0086"
+      ],
+      "outcome": "review",
+      "conflict_kind": null,
+      "review_reason": "Det saknas tydliga svarsfält; det går inte att avgöra vilka kursiverade ord som ska vara luckor.",
+      "kind": "gap_fill",
+      "printed_label": "Fråga 20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De väntar inte. är en huvudsats",
+              "accepted_values": []
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) I bisatsen att de inte väntar står satsadverbialet före det finita verbet.",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

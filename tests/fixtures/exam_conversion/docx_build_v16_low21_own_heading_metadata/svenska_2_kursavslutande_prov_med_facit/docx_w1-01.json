@@ -1,0 +1,89 @@
+{
+  "title": {
+    "text": "Kursavslutande prov: Svenska 2",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 36 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": 36
+    },
+    {
+      "text": "Del 1: litteraturhistoria, 15 poäng",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 15
+    },
+    {
+      "text": "Fråga 1. Flervalsfrågor",
+      "source_anchors": [
+        "body:0008"
+      ],
+      "points": null
+    },
+    {
+      "text": "Skriv rätt bokstav.",
+      "source_anchors": [
+        "body:0009"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0012"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0010",
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
+              "accepted_values": []
+            }
+          ]
+        }
+      ],
+      "points": null,
+      "choices": [
+        {
+          "text": "Hederskultur",
+          "correct": true
+        },
+        {
+          "text": "Hövisk kärlek",
+          "correct": false
+        },
+        {
+          "text": "Naturliga rättigheter",
+          "correct": false
+        },
+        {
+          "text": "Nyttotänkande",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-/** Conversion progress and status recovery notice for the workspace host. */
+/** Conversion progress, status recovery notice and overall batch progress for the workspace host. */
 defineProps<{
   conversionMessage: string | null;
   conversionError: string | null;
+  conversionProgress: { done: number; total: number } | null;
   isConverting: boolean;
 }>();
 
@@ -20,6 +21,27 @@ defineEmits<{
     data-test="exam-workspace-conversion-status"
   >
     <p>{{ conversionMessage }}</p>
+    <div
+      v-if="conversionProgress"
+      class="h-2 border border-navy bg-canvas"
+      role="progressbar"
+      aria-label="Konverterade frågor"
+      :aria-valuemax="conversionProgress.total"
+      :aria-valuenow="conversionProgress.done"
+      aria-valuemin="0"
+      data-test="exam-workspace-conversion-progress"
+    >
+      <div
+        class="h-full bg-navy"
+        :style="{ width: `${(100 * conversionProgress.done) / conversionProgress.total}%` }"
+      />
+    </div>
+    <p
+      v-if="conversionProgress && conversionProgress.done > 0"
+      class="text-xs"
+    >
+      Klara frågor går att redigera direkt. Frågor som konverteras visar källtexten tills de är klara.
+    </p>
     <template v-if="isConverting && conversionError">
       <p class="text-error">{{ conversionError }}</p>
       <button
