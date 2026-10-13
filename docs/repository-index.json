@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "92dff492f9707a2b22e18124f963625dbd1bbd3f5c538b7771beaa713f0919ca",
+  "source_set_digest": "f0e7bca23358c444eadcf1049634358bed0be82d6c1288cf5d057abffd218b1f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2285,6 +2285,27 @@
       "type": "story",
       "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
       "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-08",
+      "type": "story",
+      "title": "Course and tag metadata for saved exams",
+      "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
       "status": "proposed",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
@@ -4710,8 +4731,27 @@
     {
       "id": "TASK-SKRIPT-39-04-07",
       "type": "task",
-      "title": "Back the exam workspace editor with per-question key suggestions, kept suggestions, Mina filer saving and automatic QTI titles",
-      "path": "docs/backlog/tasks/task-skript-39-04-07-back-the-exam-workspace-editor-with-per-question-key-suggestions-kept-suggestions-mina-filer-saving-and-automatic-qti-titles.md",
+      "title": "Keep AI answer-key suggestions on each question and request them per question",
+      "path": "docs/backlog/tasks/task-skript-39-04-07-keep-ai-answer-key-suggestions-on-each-question-and-request-them-per-question.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-08",
+      "type": "task",
+      "title": "Save exported exam files in Mina filer, list each exam once and prune autosaved versions",
+      "path": "docs/backlog/tasks/task-skript-39-04-08-save-exported-exam-files-in-mina-filer-list-each-exam-once-and-prune-autosaved-versions.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
@@ -4854,6 +4894,25 @@
       "title": "Block export only on missing values and flag possible parsing issues only where wording is lost",
       "path": "docs/backlog/tasks/task-skript-39-05-07-block-export-only-on-missing-values-and-flag-possible-parsing-issues-only-where-wording-is-lost.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-08",
+      "type": "task",
+      "title": "Stop producing question titles at import and turn printed group headings into instructions",
+      "path": "docs/backlog/tasks/task-skript-39-05-08-stop-producing-question-titles-at-import-and-turn-printed-group-headings-into-instructions.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [

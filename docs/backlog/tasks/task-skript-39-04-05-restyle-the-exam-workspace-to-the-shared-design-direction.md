@@ -34,8 +34,9 @@ differ, the prototype and the terms below win.
 
 This task is frontend-only. It does not change conversion, the export gate
 or backend storage; those are owned by TASK-SKRIPT-39-05-07,
-TASK-SKRIPT-39-04-06 (import trace) and TASK-SKRIPT-39-04-07 (editor
-support) (C2).
+TASK-SKRIPT-39-04-06 (import trace), TASK-SKRIPT-39-04-07 (AI key
+suggestions) and TASK-SKRIPT-39-04-08 (Mina filer exports and version
+pruning) (C2).
 
 - **Page and header.** On desktop and tablet, 'Provredigering' sits after
   the Skriptoteket wordmark in the terracotta token. The workspace header is
@@ -83,6 +84,9 @@ support) (C2).
   keeps the app's mobile brand bar with a Meny button, a toolbar row and one
   question bar (previous, a picker with the review glyph and 'Fråga N', next,
   Import, review check).
+- **Autosave.** The editor saves shortly after each change, creating a new
+  version as Spara does; Spara stays as the visible 'save now'. Suggestions
+  that arrive are saved with the exam.
 - **Stable layout.** No state change moves, resizes or reflows an element;
   controls keep their size and place in every state. Each surface scrolls
   once, in its own region.
@@ -97,10 +101,12 @@ support) (C2).
   and REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype.
 - Shared buttons: TASK-SKRIPT-40-01-03.
 - Export gate and parsing issues: TASK-SKRIPT-39-05-07.
-- Backend: TASK-SKRIPT-39-04-06 (original wording and build steps) and
-  TASK-SKRIPT-39-04-07 (per-question suggestion, suggestion stored apart from
-  the key, saving the exam and exported files in Mina filer, automatic QTI
-  item title), both under ST-SKRIPT-39-04.
+- Backend, all under ST-SKRIPT-39-04:
+  - TASK-SKRIPT-39-04-06: original wording and build steps;
+  - TASK-SKRIPT-39-04-07: AI key suggestions kept on each question and
+    requested per question from the editor's content;
+  - TASK-SKRIPT-39-04-08: exported files in Mina filer, each exam listed once,
+    autosaved versions pruned.
 - Code: `frontend/apps/skriptoteket/src/views/apps/ExamWorkspaceView.vue`,
   `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`, and the
   mobile header in `frontend/apps/skriptoteket/src/components/layout/AuthLayout.vue`.
@@ -133,8 +139,8 @@ only the affected rows and the editor.
 
 - TASK-SKRIPT-40-01-03 and ST-SKRIPT-40-03's first task (the 0.1.24 sync) are
   not done.
-- TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06 or TASK-SKRIPT-39-04-07 is not
-  done.
+- TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06, TASK-SKRIPT-39-04-07 or
+  TASK-SKRIPT-39-04-08 is not done.
 - A term needs a backend change, a conversion change or a control the
   terms do not name.
 - The approved images and the prototype disagree on something the terms do
@@ -145,7 +151,7 @@ only the affected rows and the editor.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | C1  | One editor with drawers replaces the Filer and Redigera modes; the task covers the whole exam workspace on phone, tablet and desktop, but not the old DigiExam converter views (D2, D8, D30). |
-| C2  | Frontend-only; it runs after TASK-SKRIPT-40-01-03, ST-SKRIPT-40-03's 0.1.24 sync, TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06 and TASK-SKRIPT-39-04-07 (D1, D3, D8, D53, D62). |
+| C2  | Frontend-only; it runs after TASK-SKRIPT-40-01-03, ST-SKRIPT-40-03's 0.1.24 sync, TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06, TASK-SKRIPT-39-04-07 and TASK-SKRIPT-39-04-08 (D1, D3, D8, D53, D62, D67). |
 | C3  | Visual target: the approved images with their exclusions; layout, controls and copy follow the editor-drawers prototype (D7, D8). |
 | C4  | Spara is the only filled action; the header is one row with a file group (Öppna, Spara, Exportera), a divider and the Sparkles all-keys action, compact 36 px on fine pointers (D6, D43, D44). |
 | C5  | 'Provredigering' follows the wordmark in terracotta; brand links show glyph only below 1100 px; on phone a Meny button holds Avsluta fokusläge, Hjälp and Logga ut (D38, D44, D46). |
@@ -168,3 +174,4 @@ only the affected rows and the editor.
 | C22 | The workspace opens the last exam, or the Öppna drawer when there is none (D34). |
 | C23 | The upload shows a moving indeterminate bar with 'Laddar upp provet …' and 'Läser provet …' before the counted bar (D18). |
 | C24 | Desktop ≥ 1100 px, tablet 641-1099 px with floating drawers, phone ≤ 640 px with full-screen drawers and list; phone has one question bar with previous, picker, next, Import and review check (D5, D37, D46). |
+| C25 | The editor autosaves shortly after each change as a new version; Spara stays as the visible 'save now' (D67). |

@@ -78,10 +78,15 @@
   staging walk clean). Next: this story's first task (not yet scaffolded)
   syncs 0.1.24 and removes local uses in the same commit, before
   TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
-  (`proposed`, contract C1-C24 written; plan D1-D66 closed in session
+  (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
-  waits on 40-01-03, the 0.1.24 sync, 39-05-07 and the new backend tasks
-  TASK-SKRIPT-39-04-06 and 39-04-07 (scaffolded, contracts not written).
+  waits on 40-01-03, the 0.1.24 sync, 39-05-07, 39-04-06 (scaffold),
+  39-04-07 (`proposed`, contract T1-T6 written: AI key suggestions stored on
+  each question, per-question requests; plan P1-P9 in session
+  `01a133f5-7568-7aa9-8c03-d65722dbff09`) and 39-04-08 (scaffold: Mina filer
+  exports, version pruning). Also scaffolded: 39-05-08 (no titles at import)
+  and ST-SKRIPT-39-08 (course and tag metadata). Next implementation lead:
+  Pi `meta/muse-wonder-1.0` (user request 2026-10-13).
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
@@ -169,13 +174,6 @@
   on migrating both epics to the contract-derived profile with open child
   stories (user decision pending; ST-SIRCON-07-01 still states the old QTI
   2.1 claim).
-
-- 2026-09-05: reconciled EPIC-39/ADR-0090 with the approved workspace scope
-  via scaffolder-created ADR-0091, ST-39-04, and TASK-39-04-01 (all
-  `proposed`); `pdm run docs-validate` green; `git diff --check` clean.
-
-- 2026-08-30/31: public (03-02) and authenticated (03-01) cutovers done;
-  both lanes run Skriptoteket-owned with zero Sir exam calls.
 
 ## Facts
 

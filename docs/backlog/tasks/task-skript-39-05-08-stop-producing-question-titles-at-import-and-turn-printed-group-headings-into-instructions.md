@@ -1,8 +1,8 @@
 ---
 type: task
-id: TASK-SKRIPT-39-04-07
-title: Back the exam workspace editor with per-question key suggestions, kept suggestions,
-  Mina filer saving and automatic QTI titles
+id: TASK-SKRIPT-39-05-08
+title: Stop producing question titles at import and turn printed group headings into
+  instructions
 repository: skriptoteket
 owners:
 - kind: service
@@ -14,10 +14,9 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- The exam workspace backend serves per-question answer-key suggestions, keeps each
-  suggestion apart from the key, saves the editable exam and exported files in Mina
-  filer, and fills QTI item titles automatically
-story: ST-SKRIPT-39-04
+- Imported questions carry no title and a printed heading above a group of questions
+  becomes that group's instruction
+story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
 
