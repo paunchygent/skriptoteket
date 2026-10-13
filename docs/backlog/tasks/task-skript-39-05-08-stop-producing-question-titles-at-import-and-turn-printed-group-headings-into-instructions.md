@@ -8,16 +8,16 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-13'
-status: canceled
+status: proposed
 closeout_review:
   record: inline
-  status: not_required
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: User decision 2026-10-13 to cancel this task as a duplicate; TASK-SKRIPT-39-04-09 owns removing the question title end to end, including a printed heading over several questions going to the section parent.
+  status: not_started
 task_kind: story
 acceptance_criteria:
 - Imported questions carry no title and a printed heading above a group of questions
   becomes that group's instruction
+- The stored exam item has no title field, and nothing reads one (labels, answer-key
+  prompts, the correction source); no compatibility path (user decision 2026-10-13)
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
