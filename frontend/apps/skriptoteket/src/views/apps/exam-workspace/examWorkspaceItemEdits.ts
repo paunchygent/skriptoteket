@@ -18,6 +18,7 @@ import type {
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
+import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
@@ -136,34 +137,41 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
   };
 }
 
+function sameSet(left: string[], right: string[]): boolean {
+  const leftSet = new Set(left);
+  const rightSet = new Set(right);
+  return leftSet.size === rightSet.size && [...leftSet].every((value) => rightSet.has(value));
+}
+
+function pairIds(pairs: NativeExamMatchPair[]): string[] {
+  return pairs.map((pair) => `${pair.left_id}:${pair.right_id}`);
+}
+
+/**
+ * Whether the item's current key is this suggestion's whole key, in any
+ * order: the same choice ids, the same match pairs and the same gaps with
+ * the same accepted values, each compared as sets. A gap without values
+ * carries no key data. A historical id the suggestion still names, or any
+ * other extra or missing entry, makes them unequal.
+ */
 function keyMatchesSuggestion(
   item: NativeExamItem,
   suggestion: NativeAnswerKeySuggestion,
 ): boolean {
   const key = item.answer_key;
-  if (key.correct_choice_ids.length !== suggestion.correct_choice_ids.length) {
-    return false;
-  }
-  if (!key.correct_choice_ids.every((id) => suggestion.correct_choice_ids.includes(id))) {
-    return false;
-  }
-  if (key.match_pairs.length !== suggestion.match_pairs.length) {
-    return false;
-  }
-  const suggestedPairs = new Set(suggestion.match_pairs.map((p) => `${p.left_id}:${p.right_id}`));
-  if (!key.match_pairs.every((p) => suggestedPairs.has(`${p.left_id}:${p.right_id}`))) {
-    return false;
-  }
+  const keyedGaps = item.gaps.filter((gap) => gap.accepted_values.length > 0);
   const suggestedGaps = new Map(
     suggestion.gap_accepted_values.map((entry) => [entry.gap_id, entry.accepted_values]),
   );
-  return item.gaps.every((gap) => {
-    const suggested = suggestedGaps.get(gap.gap_id) ?? [];
-    return (
-      gap.accepted_values.length === suggested.length &&
-      gap.accepted_values.every((value) => suggested.includes(value))
-    );
-  });
+  return (
+    sameSet(key.correct_choice_ids, suggestion.correct_choice_ids) &&
+    sameSet(pairIds(key.match_pairs), pairIds(suggestion.match_pairs)) &&
+    sameSet(
+      keyedGaps.map((gap) => gap.gap_id),
+      [...suggestedGaps.keys()],
+    ) &&
+    keyedGaps.every((gap) => sameSet(gap.accepted_values, suggestedGaps.get(gap.gap_id) ?? []))
+  );
 }
 
 /** Write a suggestion's key onto the item as `machine_proposed`, review required. */
@@ -189,13 +197,37 @@ function withSuggestionAsKey(
 }
 
 /**
- * Whether an arriving suggestion also becomes this item's key (T5, P12):
+ * Whether the suggestion would be a valid key for the question as it is
+ * now (P13): a gap suggestion names exactly the question's gaps, and the
+ * key it makes breaks no rule the server applies to a saved key. A
+ * suggestion naming a choice, match entry or gap the question no longer
+ * has, or missing one it now has, does not fit.
+ */
+function suggestionFitsItem(
+  item: NativeExamItem,
+  suggestion: NativeAnswerKeySuggestion,
+): boolean {
+  const suggestedGapIds = suggestion.gap_accepted_values.map((entry) => entry.gap_id);
+  if (
+    suggestedGapIds.length > 0 &&
+    !sameSet(
+      suggestedGapIds,
+      item.gaps.map((gap) => gap.gap_id),
+    )
+  ) {
+    return false;
+  }
+  return !hasInvalidAnswerKey(withSuggestionAsKey(item, suggestion));
+}
+
+/**
+ * Whether this item's key gives way to an arriving suggestion (T5, P12):
  * only where the question has no key, or its key is an unreviewed
  * `machine_proposed` key equal to the previous suggestion. A source,
  * teacher or reviewed key stays, even when it equals the previous
  * suggestion.
  */
-function suggestionMayBecomeKey(item: NativeExamItem): boolean {
+function keyFollowsArrivals(item: NativeExamItem): boolean {
   const origin = item.answer_key.origin;
   if (origin === "absent") {
     return true;
@@ -210,56 +242,29 @@ function suggestionMayBecomeKey(item: NativeExamItem): boolean {
 }
 
 /**
- * Write an arriving AI suggestion onto its question (T5, P12). The
+ * Write an arriving AI suggestion onto its question (T5, P12, P13). The
  * suggestion is always kept on the question; it also becomes the key, as
- * `machine_proposed` with review required, only where
- * `suggestionMayBecomeKey` allows it. Any other key stays.
+ * `machine_proposed` with review required, only where the key follows
+ * arrivals and the suggestion fits the question. Any other key stays.
  */
 export function withArrivingSuggestion(
   item: NativeExamItem,
   suggestion: NativeAnswerKeySuggestion,
 ): NativeExamItem {
-  if (suggestionMayBecomeKey(item)) {
+  if (keyFollowsArrivals(item) && suggestionFitsItem(item, suggestion)) {
     return withSuggestionAsKey(item, suggestion);
   }
   return { ...item, ai_suggestion: suggestion };
 }
 
-/** Whether two kept suggestions carry exactly the same proposal and lineage. */
-export function suggestionsEqual(
-  left: NativeAnswerKeySuggestion | null | undefined,
-  right: NativeAnswerKeySuggestion | null | undefined,
-): boolean {
-  if (!left || !right) {
-    return false;
-  }
-  const stringArraysEqual = (a: string[], b: string[]): boolean =>
-    a.length === b.length && a.every((value, index) => value === b[index]);
-  return (
-    stringArraysEqual(left.correct_choice_ids, right.correct_choice_ids) &&
-    left.match_pairs.length === right.match_pairs.length &&
-    left.match_pairs.every(
-      (pair, index) =>
-        pair.left_id === right.match_pairs[index].left_id &&
-        pair.right_id === right.match_pairs[index].right_id,
-    ) &&
-    left.gap_accepted_values.length === right.gap_accepted_values.length &&
-    left.gap_accepted_values.every(
-      (entry, index) =>
-        entry.gap_id === right.gap_accepted_values[index].gap_id &&
-        stringArraysEqual(entry.accepted_values, right.gap_accepted_values[index].accepted_values),
-    ) &&
-    left.fingerprint === right.fingerprint &&
-    left.provider_profile_id === right.provider_profile_id &&
-    left.model === right.model &&
-    left.prompt_template_version === right.prompt_template_version
-  );
-}
-
-/** Make the kept suggestion the key again: `machine_proposed`, review required (T6). */
+/**
+ * Make the kept suggestion the key again: `machine_proposed`, review
+ * required (T6). A kept suggestion that no longer fits the question leaves
+ * it unchanged, as the server refuses that key (P13).
+ */
 export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
   const suggestion = item.ai_suggestion ?? null;
-  if (!suggestion) {
+  if (!suggestion || !suggestionFitsItem(item, suggestion)) {
     return item;
   }
   return withSuggestionAsKey(item, suggestion);

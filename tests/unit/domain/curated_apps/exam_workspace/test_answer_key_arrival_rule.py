@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
+from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
     MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
     apply_suggestion_to_item,
     restore_suggestion_on_item,

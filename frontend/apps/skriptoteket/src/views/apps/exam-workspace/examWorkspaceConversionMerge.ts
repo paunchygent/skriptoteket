@@ -22,7 +22,8 @@
  *     `application/curated_apps/handlers/exam_workspace_conversion_merge.py`,
  *     which applies the same rule on the server against the saved head.
  *   - Pure function consumed by `useExamWorkspaceConversion` and
- *     `useExamWorkspaceDocument`.
+ *     `useExamWorkspaceDocument`; `sameValue` also tells
+ *     `useExamWorkspaceSaveArrivals` whether an arrival changed an item.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
@@ -59,7 +60,7 @@ function sortKeys(value: unknown): unknown {
 }
 
 /** Key-order and null/absent insensitive deep equality. */
-function sameValue(a: unknown, b: unknown): boolean {
+export function sameValue(a: unknown, b: unknown): boolean {
   return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
 }
 

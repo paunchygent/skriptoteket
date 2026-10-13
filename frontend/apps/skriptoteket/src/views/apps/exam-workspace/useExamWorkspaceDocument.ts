@@ -4,9 +4,8 @@
  * Domain purpose:
  *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
  *   list and reopen saved documents, edit items locally with immutable
- *   updates, write arriving AI answer-key suggestions onto their
- *   questions, refuse a
- *   save the server would reject with Swedish copy naming the questions,
+ *   updates, refuse a save the server would reject with Swedish copy naming
+ *   the questions,
  *   save versioned revisions, and recover from stale-save conflicts by reloading
  *   the latest saved version.
  *
@@ -15,6 +14,8 @@
  *   - Delegates transport to `api/examWorkspace.ts`.
  *   - Applies item edits from `examWorkspaceItemEdits` through one patch path.
  *   - Checks a save against `examWorkspaceItemSaveRules` before sending it.
+ *   - Writes arriving AI suggestions and keeps their single effect across
+ *     saves through `useExamWorkspaceSaveArrivals`.
  *   - Reports outcomes through the shared toast store.
  */
 
@@ -28,7 +29,6 @@ import {
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
-  ExamWorkspaceAnswerKeySuggestionItem,
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamBodySegment,
@@ -48,14 +48,13 @@ import {
   withMatchEntryText,
   withMatchPairs,
   withParagraphSegments,
-  suggestionsEqual,
-  withArrivingSuggestion,
   withPoints,
   withRestoredSuggestion,
   withTitle,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -112,25 +111,6 @@ export function useExamWorkspaceDocument() {
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
   const savedDocuments = ref<ExamWorkspaceDocumentSummary[]>([]);
-  // Suggestions that arrived while a save was in flight. That save's
-  // response holds the document as sent, so it cannot contain them;
-  // they are reapplied onto the returned revision and stay unsaved.
-  let saveInFlight = false;
-  let arrivalsDuringSave: ExamWorkspaceAnswerKeySuggestionItem[] = [];
-
-  function rememberArrivalDuringSave(entry: ExamWorkspaceAnswerKeySuggestionItem): void {
-    // Every arrival is kept in arrival order: replaying only the latest
-    // would judge it against the wrong previous suggestion.
-    arrivalsDuringSave = [...arrivalsDuringSave, entry];
-  }
-
-  function takeArrivalsDuringSave(): ExamWorkspaceAnswerKeySuggestionItem[] {
-    const arrivals = arrivalsDuringSave;
-    arrivalsDuringSave = [];
-    saveInFlight = false;
-    return arrivals;
-  }
-
   const {
     adoptConversion,
     conversionError,
@@ -156,6 +136,8 @@ export function useExamWorkspaceDocument() {
     summary,
     workspaceDocument,
   });
+  const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isDirty, workspaceDocument });
+  const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
   const isBusy = computed(
     () =>
@@ -224,12 +206,15 @@ export function useExamWorkspaceDocument() {
     }
   }
 
-  async function reloadAfterConflict(lineageId: string): Promise<void> {
+  /** Returns whether the reloaded revision replaced the teacher's copy. */
+  async function reloadAfterConflict(lineageId: string): Promise<boolean> {
     try {
       const response = await getExamWorkspaceDocument(lineageId);
       applyResponse(response);
+      return true;
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
+      return false;
     }
   }
 
@@ -246,18 +231,17 @@ export function useExamWorkspaceDocument() {
     }
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
+    const payloadMark = arrivals.payloadMark();
+    const openedArrivals = arrivals.beginSave();
     operationBusy.value = true;
-    saveInFlight = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
       });
-      const arrivals = takeArrivalsDuringSave();
       applyResponse(response);
-      if (arrivals.length > 0) {
-        replayArrivingSuggestions(arrivals);
-      }
+      // The response holds the payload; arrivals that landed after it was read run again on it.
+      arrivals.replayAfterResponse(payloadMark);
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
       return true;
@@ -278,21 +262,17 @@ export function useExamWorkspaceDocument() {
       } else if (conflict) {
         conflictNotice.value = EXAM_WORKSPACE_CONFLICT_COPY;
         toast.failure(EXAM_WORKSPACE_CONFLICT_COPY);
-        await reloadAfterConflict(currentSummary.lineage_id);
+        if (await reloadAfterConflict(currentSummary.lineage_id)) {
+          // The reloaded head never held them: arrivals since the save began run again on it.
+          arrivals.replayAfterReload();
+        }
       } else {
         toast.failure(SAVE_FAILURE_COPY);
       }
-      // A failed or reloaded save did not persist arrivals that landed
-      // while it ran; put them back on the copy now in front of the
-      // teacher. The replay skips a copy that never lost them, so a
-      // failed save never runs an arrival's transition twice.
-      const arrivals = takeArrivalsDuringSave();
-      if (arrivals.length > 0) {
-        replayArrivingSuggestions(arrivals);
-      }
+      // Every other failure left the teacher's copy, and each arrival's single effect, in place.
       return false;
     } finally {
-      saveInFlight = false;
+      arrivals.endSave(openedArrivals);
       operationBusy.value = false;
     }
   }
@@ -390,67 +370,6 @@ export function useExamWorkspaceDocument() {
 
   function markItemReviewed(itemId: string): void {
     patchItem(itemId, reviewed);
-  }
-
-  /** Write every arriving suggestion onto its question in one document update. */
-  function applyArrivingSuggestions(suggestions: ExamWorkspaceAnswerKeySuggestionItem[]): void {
-    const current = workspaceDocument.value;
-    if (!current || suggestions.length === 0) {
-      return;
-    }
-    const byItemId = new Map(suggestions.map((entry) => [entry.item_id, entry.suggestion]));
-    let changed = false;
-    const items = current.items.map((item) => {
-      const suggestion = byItemId.get(item.item_id);
-      if (!suggestion || convertingItemIds.value.has(item.item_id)) {
-        return item;
-      }
-      changed = true;
-      if (saveInFlight) {
-        rememberArrivalDuringSave({ item_id: item.item_id, suggestion });
-      }
-      return withArrivingSuggestion(item, suggestion);
-    });
-    if (!changed) {
-      return;
-    }
-    workspaceDocument.value = { ...current, items };
-    isDirty.value = true;
-  }
-
-  /**
-   * Reapply arrivals a save's outcome displaced, in arrival order.
-   *
-   * Per question, an arrival group whose latest suggestion is already the
-   * question's stored suggestion is skipped whole: that copy never lost
-   * the arrivals (a failed save, or a returned revision that already
-   * contained them), so each arrival keeps exactly one application and a
-   * revision that already holds them stays clean. Otherwise each arrival
-   * runs the ordinary transition
-   * once against the copy now in front of the teacher, skipping any the
-   * copy already contains.
-   */
-  function replayArrivingSuggestions(arrivals: ExamWorkspaceAnswerKeySuggestionItem[]): void {
-    const byItemId = new Map<string, ExamWorkspaceAnswerKeySuggestionItem[]>();
-    for (const entry of arrivals) {
-      byItemId.set(entry.item_id, [...(byItemId.get(entry.item_id) ?? []), entry]);
-    }
-    for (const [itemId, entries] of byItemId) {
-      const current = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
-      const latest = entries[entries.length - 1];
-      if (current && suggestionsEqual(current.ai_suggestion, latest.suggestion)) {
-        continue;
-      }
-      for (const entry of entries) {
-        const item = workspaceDocument.value?.items.find(
-          (candidate) => candidate.item_id === itemId,
-        );
-        if (item && suggestionsEqual(item.ai_suggestion, entry.suggestion)) {
-          continue;
-        }
-        applyArrivingSuggestions([entry]);
-      }
-    }
   }
 
   function restoreItemSuggestion(itemId: string): void {

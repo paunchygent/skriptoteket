@@ -4,10 +4,10 @@ Purpose:
     Project keyed native exam items into a source-neutral view the machine
     answer-key completion line can prompt from, validate one provider
     decision back into a typed proposal, and turn a proposal into the AI
-    suggestion kept on the question (TASK-SKRIPT-39-04-07): the fingerprint
-    of the question's answer-relevant content, the rule that an arriving
-    suggestion becomes the key only where no teacher, source or reviewed
-    key stands, and restoring a kept suggestion as the key.
+    suggestion kept on the question (TASK-SKRIPT-39-04-07), and fingerprint
+    the question's answer-relevant content to report a kept suggestion out
+    of date. When a suggestion becomes the key lives in
+    ``answer_key_suggestion_rules``.
 
 Relationships:
     - Consumed by ``domain.curated_apps.exam_workspace.answer_key_prompts``
@@ -27,7 +27,6 @@ from typing import TypeGuard
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
     NativeAnswerKeyOrigin,
     NativeAnswerKeySuggestion,
     NativeExamDocument,
@@ -36,13 +35,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamParent,
     NativeGapAcceptedValues,
     NativeGapSegment,
-    NativeItemReviewState,
     NativeMatchPair,
     NativeTextSegment,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode
-
-MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON = "machine_proposed_answer_key"
 
 
 class AnswerKeyViewKind(StrEnum):
@@ -258,6 +253,10 @@ def suggestion_is_outdated(item: NativeExamItem, parent: NativeExamParent | None
 
     if item.ai_suggestion is None:
         return False
+    if item.kind not in _VIEW_KIND_BY_ITEM_KIND:
+        # A suggestion is only made for a keyed kind; a question changed to
+        # a kind without a key has no answer-relevant view left to match.
+        return True
     return item.ai_suggestion.fingerprint != answer_key_fingerprint(item, parent)
 
 
@@ -395,108 +394,3 @@ def suggestion_from_proposal(
         model=model,
         prompt_template_version=prompt_template_version,
     )
-
-
-def _key_matches_suggestion(item: NativeExamItem, suggestion: NativeAnswerKeySuggestion) -> bool:
-    """Whether the item's current key data is this suggestion's key, in any order."""
-
-    if set(item.answer_key.correct_choice_ids) != set(suggestion.correct_choice_ids):
-        return False
-    if set(item.answer_key.match_pairs) != set(suggestion.match_pairs):
-        return False
-    suggested_gaps = {
-        entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values
-    }
-    return all(
-        set(gap.accepted_values) == set(suggested_gaps.get(gap.gap_id, ())) for gap in item.gaps
-    )
-
-
-def _suggestion_may_become_key(item: NativeExamItem) -> bool:
-    """Whether an arriving suggestion also becomes this item's key (T5, P12).
-
-    Only where the question has no key, or its key is an unreviewed
-    ``machine_proposed`` key equal to the previous suggestion. A source,
-    teacher or reviewed key stays, even when it equals the previous
-    suggestion.
-    """
-
-    origin = item.answer_key.origin
-    if origin is NativeAnswerKeyOrigin.ABSENT:
-        return True
-    previous = item.ai_suggestion
-    return (
-        origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        and previous is not None
-        and _key_matches_suggestion(item, previous)
-    )
-
-
-def _item_with_suggestion_key(
-    item: NativeExamItem, suggestion: NativeAnswerKeySuggestion
-) -> NativeExamItem:
-    """Copy one item with the suggestion as its MACHINE_PROPOSED key, review required."""
-
-    payload = item.model_dump()
-    payload["ai_suggestion"] = suggestion.model_dump()
-    reasons = tuple(payload["review"]["reasons"])
-    if MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON not in reasons:
-        reasons = (*reasons, MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON)
-    payload["review"] = {
-        **payload["review"],
-        "state": NativeItemReviewState.REVIEW_REQUIRED,
-        "reasons": reasons,
-    }
-    if item.kind is NativeExamItemKind.GAP_FILL:
-        values_by_gap = {
-            entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values
-        }
-        if set(values_by_gap) != {gap.gap_id for gap in item.gaps}:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="Facitförslaget täcker inte frågans luckor.",
-                details={"item_id": item.item_id},
-            )
-        payload["gaps"] = [
-            {**gap_payload, "accepted_values": list(values_by_gap[gap_payload["gap_id"]])}
-            for gap_payload in payload["gaps"]
-        ]
-        payload["answer_key"] = NativeAnswerKey(
-            origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        ).model_dump()
-    elif item.kind is NativeExamItemKind.MATCHING:
-        payload["answer_key"] = NativeAnswerKey(
-            origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
-            match_pairs=suggestion.match_pairs,
-        ).model_dump()
-    else:
-        payload["answer_key"] = NativeAnswerKey(
-            origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
-            correct_choice_ids=suggestion.correct_choice_ids,
-        ).model_dump()
-    return NativeExamItem.model_validate(payload)
-
-
-def apply_suggestion_to_item(
-    item: NativeExamItem,
-    suggestion: NativeAnswerKeySuggestion,
-) -> NativeExamItem:
-    """Write an arriving suggestion onto its question (T5, P12).
-
-    The suggestion is always kept on the item. It also becomes the key,
-    as ``machine_proposed`` with review required, only where
-    ``_suggestion_may_become_key`` allows it.
-    """
-
-    if _suggestion_may_become_key(item):
-        return _item_with_suggestion_key(item, suggestion)
-    return item.model_copy(update={"ai_suggestion": suggestion})
-
-
-def restore_suggestion_on_item(item: NativeExamItem) -> NativeExamItem:
-    """Make the kept suggestion the key again: machine_proposed, review required (T6)."""
-
-    if item.ai_suggestion is None:
-        return item
-    return _item_with_suggestion_key(item, item.ai_suggestion)

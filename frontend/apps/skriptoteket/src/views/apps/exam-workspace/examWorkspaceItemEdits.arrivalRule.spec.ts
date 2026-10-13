@@ -64,6 +64,7 @@ const ALL_RELATIONS = [
 ];
 const TRUSTED: Origin[] = ["source_provided", "teacher_authored", "reviewed_advisory"];
 const BOTH_STATES: ReviewState[] = ["review_required", "review_complete"];
+const RESTORABLE: Origin[] = ["machine_proposed", ...TRUSTED];
 
 interface Row {
   matrixRow: string;
@@ -207,7 +208,7 @@ describe("withArrivingSuggestion follows the P12 arrival rule", () => {
 
 describe("withRestoredSuggestion ignores the arrival rule (T6)", () => {
   it.each(
-    (["machine_proposed", ...TRUSTED] as Origin[]).flatMap((origin) =>
+    RESTORABLE.flatMap((origin) =>
       BOTH_STATES.map((state) => [origin, state] as const),
     ),
   )("restores a kept suggestion as the key over a %s, %s key", (origin, state) => {

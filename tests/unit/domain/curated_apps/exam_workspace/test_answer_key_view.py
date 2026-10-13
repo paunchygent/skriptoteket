@@ -4,12 +4,14 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
+from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
     MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
+    apply_suggestion_to_item,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemProposal,
     AnswerKeyViewKind,
     answer_key_item_views,
-    apply_suggestion_to_item,
     proposal_from_model_content,
     suggestion_from_proposal,
 )
