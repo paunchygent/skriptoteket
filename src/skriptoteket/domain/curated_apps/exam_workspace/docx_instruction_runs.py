@@ -359,9 +359,12 @@ def reaches(
 def parent_groups(reached: list[Run]) -> list[list[Run]]:
     """Runs whose instruction reaches the same two or more consecutive items, of any kinds.
 
-    A heading whose run sits inside a parent already formed over a wider reach joins
-    that parent, so its wording opens the parent's instruction instead of being copied
-    into the children.
+    A heading the grouping marks as governing joins a parent only when its scope equals
+    that parent's items (D40 exact scope): it never lands on a wider parent, forms no
+    parent here when no exact parent stands, and opens the body of its first question
+    in placement instead. A section heading without a governing scope has only its
+    heuristic reach, which an item inserted before its first question can narrow; such
+    a heading still joins a wider parent that contains its reach.
     """
     candidates: dict[tuple[int, ...], list[Run]] = {}
     for run in reached:
@@ -384,7 +387,9 @@ def parent_groups(reached: list[Run]) -> list[list[Run]]:
     for run in reached:
         if run.heading and run.only is None and len(run.reach) >= 2 and id(run) not in grouped:
             for group in groups:
-                if set(run.reach) <= set(group[0].reach):
+                if set(run.reach) <= set(group[0].reach) and (
+                    not run.governs or set(run.reach) == set(group[0].reach)
+                ):
                     group.append(run)
                     break
     return groups

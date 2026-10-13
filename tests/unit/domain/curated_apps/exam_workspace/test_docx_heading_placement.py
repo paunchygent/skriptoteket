@@ -7,8 +7,12 @@ instruction, also when no instruction line follows it.
 """
 
 from types import MappingProxyType
+from uuid import uuid4
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review_source_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    assemble_build_result,
+    review_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
@@ -282,6 +286,57 @@ def test_line_before_a_section_heading_stays_document_level() -> None:
     assert placed.parents[0].instruction == ("A. Multiple choice", "Choose the best answer.")
     assert 0 not in placed.landed
     assert all("Name:" not in line for item in placed.items for line in item.plain_text_lines())
+
+
+def test_governing_heading_subset_of_wider_parent_opens_its_first_questions_body() -> None:
+    # A heading the grouping marks as governing only q2-q3 never joins the q1-q3
+    # parent (D40 exact scope, review F5): parents are flat, so it opens the body
+    # of its first question instead. Through the production assembly.
+    chunks = (
+        _chunk("body:0001", "heading", "Prov"),
+        _chunk("body:0002", "paragraph", "Besvara alla frågor."),
+        _chunk("body:0003", "paragraph", "Första frågan?"),
+        _chunk("body:0004", "heading", "Använd följande ord för fråga två och tre"),
+        _chunk("body:0005", "paragraph", "Andra frågan?"),
+        _chunk("body:0006", "paragraph", "Tredje frågan?"),
+    )
+    accepted = (
+        (_item("Första frågan?"), ("body:0003",)),
+        (_item("Andra frågan?"), ("body:0005",)),
+        (_item("Tredje frågan?"), ("body:0006",)),
+    )
+    instructions = (
+        ProducedMetadata(text="Besvara alla frågor.", source_anchors=("body:0002",)),
+        ProducedMetadata(
+            text="Använd följande ord för fråga två och tre", source_anchors=("body:0004",)
+        ),
+    )
+    governed = MappingProxyType(
+        {
+            "body:0002": frozenset({"body:0003", "body:0005", "body:0006"}),
+            "body:0004": frozenset({"body:0005", "body:0006"}),
+        }
+    )
+    document = assemble_build_result(
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        accepted=accepted,
+        review_reasons={},
+        instructions=instructions,
+        governed=governed,
+        title=ProducedMetadata(text="Prov", source_anchors=("body:0001",)),
+        questions=tuple(anchors for _, anchors in accepted),
+    ).document
+
+    assert len(document.parents) == 1
+    parent = document.parents[0]
+    assert parent.item_ids == ("item_001", "item_002", "item_003")
+    assert parent.instruction == ("Besvara alla frågor.",)
+    assert "Använd följande ord för fråga två och tre" not in document.items[0].plain_text_lines()
+    assert document.items[1].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
+    assert "Använd följande ord för fråga två och tre" not in document.items[2].plain_text_lines()
 
 
 def test_source_text_fallback_keeps_the_printed_points() -> None:

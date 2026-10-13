@@ -84,7 +84,7 @@ def _compare_question(gold: GoldQuestion, actual: Question) -> tuple[FieldMismat
 
 # A parent's instruction is shared by its children, so it never tells siblings apart.
 def _question_words(question: Question) -> frozenset[str]:
-    return word_set((question.title, *question.body, *question.entries()))
+    return word_set((*question.body, *question.entries()))
 
 
 def _pair_by_wording(golds: Sequence[GoldQuestion], actual: Sequence[Question]) -> dict[int, int]:

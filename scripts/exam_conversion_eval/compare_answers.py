@@ -123,7 +123,7 @@ def leakage(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
         *(pair.right for pair in item.pairs),
     }
     phrases = ({words(value) for value in answers} - {""}) | facit_phrases(gold)
-    shown = stream([*actual.instruction, actual.title, *actual.body], gaps=True)
+    shown = stream([*actual.instruction, *actual.body], gaps=True)
     expected = stream([*gold.view.instruction, *item.prompt.split("\n")], gaps=True)
     leaked = sorted(
         phrase for phrase in phrases if occurrences(shown, phrase) > occurrences(expected, phrase)

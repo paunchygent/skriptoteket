@@ -29,7 +29,6 @@ class Question:
     source_label: str
     kind: GoldKind
     points: int | float | None
-    title: str
     instruction: tuple[str, ...]
     body: tuple[str, ...]
     # Whether a model converted the item; a review item built from source is not converted.
@@ -92,7 +91,6 @@ def _gold_view(item: GoldItem, label: str, instruction: tuple[str, ...]) -> Ques
         source_label=label,
         kind=item.kind,
         points=item.points,
-        title="",
         instruction=instruction,
         body=body,
         converted=True,
@@ -134,7 +132,6 @@ def _native_view(item: NativeExamItem, label: str, instruction: tuple[str, ...])
         source_label=label,
         kind=kind,
         points=item.points,
-        title=item.title or "",
         instruction=instruction,
         body=item.plain_text_lines(),
         converted=item.review.parse_origin is NativeParseOrigin.LLM_PARSED,
