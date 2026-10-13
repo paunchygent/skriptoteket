@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0df3a960c8755201f84369f5856657aee0c021376001e136f47193fad8271224",
+  "source_set_digest": "32d1e378dd2b603b135487268be421095054e25ae5e323d25c0f99ab7802067f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4893,7 +4893,7 @@
       "type": "task",
       "title": "Block export only on missing values and flag possible parsing issues only where wording is lost",
       "path": "docs/backlog/tasks/task-skript-39-05-07-block-export-only-on-missing-values-and-flag-possible-parsing-issues-only-where-wording-is-lost.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
