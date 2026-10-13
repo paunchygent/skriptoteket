@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-14'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer review of 20463fca found F1 (crashed conversion printed the gold title as an observed title); repair 2c13468e approved on rereview; merged into main. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-06/.'
 task_kind: story
 acceptance_criteria:
 - pdm run exam-conversion-judge <exam stem> <saved document json> prints the eval
