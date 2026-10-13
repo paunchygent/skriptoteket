@@ -87,7 +87,8 @@ No new model call.
 - Ruff, mypy and focused pytest on changed backend files; Vitest and typecheck
   for the readiness mirror.
 - Staging walk: import one synthetic "(1 p)" exam and one gold exam, then
-  export QTI without marking parsing issues reviewed.
+  export QTI without marking parsing issues reviewed. Walked 2026-10-13 on main
+  ebc2a9c7: retained-root `evidence/staging-walk-ebc2a9c7/README.md`.
 
 ## Stop Conditions
 

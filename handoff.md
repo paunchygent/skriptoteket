@@ -19,12 +19,10 @@
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
-  - TASK-SKRIPT-39-05-07 `in_progress` (D1-D9 from the 39-04-05 plan): export
-    blocks only on missing values; "(N p)" becomes points. Owner: Claude session
-    566dc36a (branch `codex/task-skript-39-05-07`, merged to main 2026-10-13;
-    review approved `58dabe3f`, retained `evidence/reviews/TASK-SKRIPT-39-05-07/`;
-    D9 eval `evidence/task-skript-39-05-07-d9-eval/README.md`). Next: staging
-    walk on main; user decision on the two changed export copy strings; closure.
+  - TASK-SKRIPT-39-05-07 `in_progress`: export blocks only on missing values.
+    Owner: Claude session 566dc36a. Merged to main; review approved `58dabe3f`;
+    D9 eval and staging walk (ebc2a9c7, passed) under retained `evidence/`.
+    Next: user decision on the two changed export copy strings; closure.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
