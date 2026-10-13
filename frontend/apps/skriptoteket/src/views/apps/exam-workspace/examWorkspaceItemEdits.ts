@@ -189,20 +189,37 @@ function withSuggestionAsKey(
 }
 
 /**
- * Write an arriving AI suggestion onto its question (T5). The suggestion
- * is always kept on the question; it also becomes the key, as
- * `machine_proposed` with review required, only where the question has no
- * key or its key is the previous suggestion's key. Any other key stays.
+ * Whether an arriving suggestion also becomes this item's key (T5, P12):
+ * only where the question has no key, or its key is an unreviewed
+ * `machine_proposed` key equal to the previous suggestion. A source,
+ * teacher or reviewed key stays, even when it equals the previous
+ * suggestion.
+ */
+function suggestionMayBecomeKey(item: NativeExamItem): boolean {
+  const origin = item.answer_key.origin;
+  if (origin === "absent") {
+    return true;
+  }
+  const previous = item.ai_suggestion ?? null;
+  return (
+    origin === "machine_proposed" &&
+    item.review.state === "review_required" &&
+    previous !== null &&
+    keyMatchesSuggestion(item, previous)
+  );
+}
+
+/**
+ * Write an arriving AI suggestion onto its question (T5, P12). The
+ * suggestion is always kept on the question; it also becomes the key, as
+ * `machine_proposed` with review required, only where
+ * `suggestionMayBecomeKey` allows it. Any other key stays.
  */
 export function withArrivingSuggestion(
   item: NativeExamItem,
   suggestion: NativeAnswerKeySuggestion,
 ): NativeExamItem {
-  const previous = item.ai_suggestion ?? null;
-  const becomesKey =
-    item.answer_key.origin === "absent" ||
-    (previous !== null && keyMatchesSuggestion(item, previous));
-  if (becomesKey) {
+  if (suggestionMayBecomeKey(item)) {
     return withSuggestionAsKey(item, suggestion);
   }
   return { ...item, ai_suggestion: suggestion };

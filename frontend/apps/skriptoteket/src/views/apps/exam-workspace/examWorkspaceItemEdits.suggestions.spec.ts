@@ -4,7 +4,9 @@
  * Expected behavior (T5, T6):
  *   An arriving suggestion is kept on its question and becomes the key —
  *   `machine_proposed`, review required — only where the question has no
- *   key or its key is the previous suggestion's key. Marking reviewed turns
+ *   key or its key is an unreviewed `machine_proposed` key equal to the
+ *   previous suggestion (P12; full matrix in
+ *   `examWorkspaceItemEdits.arrivalRule.spec.ts`). Marking reviewed turns
  *   a `machine_proposed` key into `reviewed_advisory`; choosing another
  *   option makes the key `teacher_authored` and keeps the suggestion;
  *   restoring makes the suggestion the key again as `machine_proposed`.

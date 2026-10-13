@@ -398,16 +398,39 @@ def suggestion_from_proposal(
 
 
 def _key_matches_suggestion(item: NativeExamItem, suggestion: NativeAnswerKeySuggestion) -> bool:
-    """Whether the item's current key data is exactly this suggestion's key."""
+    """Whether the item's current key data is this suggestion's key, in any order."""
 
-    if item.answer_key.correct_choice_ids != suggestion.correct_choice_ids:
+    if set(item.answer_key.correct_choice_ids) != set(suggestion.correct_choice_ids):
         return False
-    if item.answer_key.match_pairs != suggestion.match_pairs:
+    if set(item.answer_key.match_pairs) != set(suggestion.match_pairs):
         return False
     suggested_gaps = {
         entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values
     }
-    return all(gap.accepted_values == suggested_gaps.get(gap.gap_id, ()) for gap in item.gaps)
+    return all(
+        set(gap.accepted_values) == set(suggested_gaps.get(gap.gap_id, ())) for gap in item.gaps
+    )
+
+
+def _suggestion_may_become_key(item: NativeExamItem) -> bool:
+    """Whether an arriving suggestion also becomes this item's key (T5, P12).
+
+    Only where the question has no key, or its key is an unreviewed
+    ``machine_proposed`` key equal to the previous suggestion. A source,
+    teacher or reviewed key stays, even when it equals the previous
+    suggestion.
+    """
+
+    origin = item.answer_key.origin
+    if origin is NativeAnswerKeyOrigin.ABSENT:
+        return True
+    previous = item.ai_suggestion
+    return (
+        origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
+        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+        and previous is not None
+        and _key_matches_suggestion(item, previous)
+    )
 
 
 def _item_with_suggestion_key(
@@ -459,19 +482,14 @@ def apply_suggestion_to_item(
     item: NativeExamItem,
     suggestion: NativeAnswerKeySuggestion,
 ) -> NativeExamItem:
-    """Write an arriving suggestion onto its question (T5).
+    """Write an arriving suggestion onto its question (T5, P12).
 
     The suggestion is always kept on the item. It also becomes the key,
-    as ``machine_proposed`` with review required, only where the question
-    has no key or its key is the previous suggestion's key; a teacher,
-    source or reviewed key is never overwritten.
+    as ``machine_proposed`` with review required, only where
+    ``_suggestion_may_become_key`` allows it.
     """
 
-    previous = item.ai_suggestion
-    becomes_key = item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT or (
-        previous is not None and _key_matches_suggestion(item, previous)
-    )
-    if becomes_key:
+    if _suggestion_may_become_key(item):
         return _item_with_suggestion_key(item, suggestion)
     return item.model_copy(update={"ai_suggestion": suggestion})
 

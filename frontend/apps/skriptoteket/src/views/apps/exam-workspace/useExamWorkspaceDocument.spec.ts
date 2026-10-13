@@ -223,39 +223,45 @@ describe("arriving suggestions during a save", () => {
     expect(state.isDirty.value).toBe(false);
   });
 
-  it("replays two arrivals for the same question in arrival order after a successful save", async () => {
-    const firstPairs: Array<[string, string]> = [
-      ["left_001", "right_001"],
-      ["left_002", "right_002"],
-      ["left_003", "right_003"],
-    ];
-    const secondPairs: Array<[string, string]> = [
-      ["left_001", "right_003"],
-      ["left_002", "right_002"],
-      ["left_003", "right_001"],
-    ];
-    const previous = matchingSuggestion([
-      ["left_001", "right_001"],
-      ["left_002", "right_003"],
-      ["left_003", "right_002"],
-    ]);
+  const FIRST_PAIRS: Array<[string, string]> = [
+    ["left_001", "right_001"],
+    ["left_002", "right_002"],
+    ["left_003", "right_003"],
+  ];
+  const SECOND_PAIRS: Array<[string, string]> = [
+    ["left_001", "right_003"],
+    ["left_002", "right_002"],
+    ["left_003", "right_001"],
+  ];
+
+  async function saveWhileTwoArrivalsLand(
+    keyPairs: Array<[string, string]>,
+    origin: NativeExamItem["answer_key"]["origin"],
+    reviewState: NativeExamItem["review"]["state"],
+    previousPairs: Array<[string, string]>,
+  ) {
     const item = buildMatchingItem({
-      ai_suggestion: previous,
+      ai_suggestion: matchingSuggestion(previousPairs),
       answer_key: {
         correct_choice_ids: [],
-        match_pairs: firstPairs.map(([left_id, right_id]) => ({ left_id, right_id })),
-        origin: "teacher_authored",
+        match_pairs: keyPairs.map(([left_id, right_id]) => ({ left_id, right_id })),
+        origin,
       },
     });
-    const state = await openMatchingDocument(item);
+    const state = await openMatchingDocument({
+      ...item,
+      review: { ...item.review, state: reviewState },
+    });
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
-    const first = matchingSuggestion(firstPairs);
-    const second = matchingSuggestion(secondPairs);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion: first }]);
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion: second }]);
+    state.applyArrivingSuggestions([
+      { item_id: "item_001", suggestion: matchingSuggestion(FIRST_PAIRS) },
+    ]);
+    state.applyArrivingSuggestions([
+      { item_id: "item_001", suggestion: matchingSuggestion(SECOND_PAIRS) },
+    ]);
     const savedDocument = apiMocks.saveExamWorkspaceDocument.mock.calls[0][1].document;
     pendingSave.resolve({
       ...buildResponse(),
@@ -263,10 +269,43 @@ describe("arriving suggestions during a save", () => {
       summary: { ...buildResponse().summary, version: 2 },
     });
     await saving;
+    return state;
+  }
 
-    expect(currentItem(state).ai_suggestion).toEqual(second);
+  it("replays two arrivals in order and keeps a teacher key equal to the first (P12)", async () => {
+    const state = await saveWhileTwoArrivalsLand(FIRST_PAIRS, "teacher_authored", "review_complete", [
+      ["left_001", "right_001"],
+      ["left_002", "right_003"],
+      ["left_003", "right_002"],
+    ]);
+
+    expect(currentItem(state).ai_suggestion).toEqual(matchingSuggestion(SECOND_PAIRS));
+    expect(currentItem(state).answer_key.origin).toBe("teacher_authored");
+    expect(currentItem(state).answer_key.match_pairs).toEqual(
+      matchingSuggestion(FIRST_PAIRS).match_pairs,
+    );
+    expect(currentItem(state).review.state).toBe("review_complete");
+    expect(state.isDirty.value).toBe(true);
+  });
+
+  it("replays two arrivals in order, each following an unreviewed machine key", async () => {
+    const previousPairs: Array<[string, string]> = [
+      ["left_001", "right_002"],
+      ["left_002", "right_001"],
+      ["left_003", "right_003"],
+    ];
+    const state = await saveWhileTwoArrivalsLand(
+      previousPairs,
+      "machine_proposed",
+      "review_required",
+      previousPairs,
+    );
+
+    expect(currentItem(state).ai_suggestion).toEqual(matchingSuggestion(SECOND_PAIRS));
     expect(currentItem(state).answer_key.origin).toBe("machine_proposed");
-    expect(currentItem(state).answer_key.match_pairs).toEqual(second.match_pairs);
+    expect(currentItem(state).answer_key.match_pairs).toEqual(
+      matchingSuggestion(SECOND_PAIRS).match_pairs,
+    );
     expect(currentItem(state).review.state).toBe("review_required");
     expect(state.isDirty.value).toBe(true);
   });
