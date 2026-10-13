@@ -31,6 +31,7 @@ import {
   currentDocument,
   currentItem,
   deferred,
+  openingOf,
   openMatchingDocument as openWith,
   savedResponse,
 } from "./useExamWorkspaceDocument.specSupport";
@@ -97,7 +98,7 @@ describe("arriving suggestions during a save", () => {
 
     state.updateItemTitle("item_001", "Ändrad titel");
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     expect(currentItem(state).ai_suggestion).toEqual(suggestion);
 
     expect(sentDocument().items[0].ai_suggestion ?? null).toBeNull();
@@ -116,7 +117,7 @@ describe("arriving suggestions during a save", () => {
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new Error("network down"));
     await saving;
 
@@ -133,7 +134,7 @@ describe("arriving suggestions during a save", () => {
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     const sent = sentDocument();
     pendingSave.resolve(
       savedResponse({
@@ -171,10 +172,10 @@ describe("arriving suggestions during a save", () => {
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([
+    state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(FIRST_PAIRS) },
     ]);
-    state.applyArrivingSuggestions([
+    state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SECOND_PAIRS) },
     ]);
     pendingSave.resolve(savedResponse(sentDocument()));
@@ -235,7 +236,7 @@ describe("arriving suggestions during a save", () => {
     const suggestion = matchingSuggestion([["left_001", "right_001"]]);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }));
     await saving;
 
@@ -270,7 +271,7 @@ describe("a newly promoted key survives a revision that stores an equal older su
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
     const saving = state.saveDocument();
-    state.applyArrivingSuggestions([
+    state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SOURCE_PAIRS) },
     ]);
     expect(currentItem(state).answer_key.origin).toBe("machine_proposed");
@@ -322,7 +323,7 @@ describe("dirty state follows real change (I2)", () => {
     const kept = matchingSuggestion(FIRST_PAIRS);
     const state = await openMatchingDocument(buildMatchingItem({ ai_suggestion: kept }));
 
-    state.applyArrivingSuggestions([
+    state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(FIRST_PAIRS) },
     ]);
 
@@ -335,7 +336,7 @@ describe("dirty state follows real change (I2)", () => {
       buildMatchingItem({ ai_suggestion: matchingSuggestion(FIRST_PAIRS) }),
     );
 
-    state.applyArrivingSuggestions([
+    state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SECOND_PAIRS) },
     ]);
 

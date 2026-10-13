@@ -6,14 +6,18 @@
  *   them — every keyless keyed question, or one named question — poll the
  *   job until it settles, and write each arriving suggestion onto its
  *   question through the document owner. Requests work with unsaved
- *   changes because the editor's current document is what gets sent.
+ *   changes because the editor's current document is what gets sent. A job
+ *   belongs to the exam opening it was requested in: its results, status,
+ *   failure toast and next poll take effect only while that opening is still
+ *   open, checked when each completion lands.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
  *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Reads the open exam opening from `useExamWorkspaceDocument`.
  */
 
-import { computed, onScopeDispose, ref, watch } from "vue";
+import { computed, onScopeDispose, shallowRef } from "vue";
 import type { Ref } from "vue";
 
 import {
@@ -23,10 +27,10 @@ import {
 import type {
   ExamWorkspaceAnswerKeySuggestionItem,
   ExamWorkspaceAnswerKeySuggestionsStatus,
-  ExamWorkspaceDocumentSummary,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export const EXAM_WORKSPACE_ENRICHMENT_POLL_MS = 3000;
 export const EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS = 30_000;
@@ -39,21 +43,44 @@ function isPending(status: ExamWorkspaceAnswerKeySuggestionsStatus | null): bool
   return status?.state === "queued" || status?.state === "running";
 }
 
-export function useExamWorkspaceEnrichment(
-  summary: Ref<ExamWorkspaceDocumentSummary | null>,
-  document: Ref<NativeExamDocument | null>,
-  applySuggestions: (suggestions: ExamWorkspaceAnswerKeySuggestionItem[]) => void,
-) {
+export type ExamWorkspaceEnrichmentBinding = {
+  /** The exam opening in front of the teacher. */
+  openExam: Readonly<Ref<ExamWorkspaceOpening | null>>;
+  document: Readonly<Ref<NativeExamDocument | null>>;
+  isOpen: (opening: ExamWorkspaceOpening) => boolean;
+  applySuggestions: (
+    opening: ExamWorkspaceOpening,
+    suggestions: ExamWorkspaceAnswerKeySuggestionItem[],
+  ) => void;
+};
+
+type Job = { opening: ExamWorkspaceOpening; status: ExamWorkspaceAnswerKeySuggestionsStatus };
+
+export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBinding) {
   const toast = useToast();
 
-  const enrichmentStatus = ref<ExamWorkspaceAnswerKeySuggestionsStatus | null>(null);
-  const isRequesting = ref(false);
+  const job = shallowRef<Job | null>(null);
+  const requestingIn = shallowRef<ExamWorkspaceOpening | null>(null);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
-  let generation = 0;
+  let disposed = false;
   // Consecutive failed status polls. The first failure of a streak shows the
   // toast; each further failure doubles the retry delay up to the cap.
   let pollFailures = 0;
 
+  /** Whether a completion requested in `opening` may still take effect. */
+  function isLive(opening: ExamWorkspaceOpening): boolean {
+    return !disposed && binding.isOpen(opening);
+  }
+
+  // Status and request state of another exam's opening are not this exam's.
+  const enrichmentStatus = computed<ExamWorkspaceAnswerKeySuggestionsStatus | null>(() => {
+    const current = job.value;
+    return current && isLive(current.opening) ? current.status : null;
+  });
+  const isRequesting = computed(() => {
+    const opening = requestingIn.value;
+    return opening !== null && isLive(opening);
+  });
   const isEnrichmentPending = computed(() => isPending(enrichmentStatus.value));
 
   const enrichmentMessage = computed<string | null>(() => {
@@ -93,47 +120,45 @@ export function useExamWorkspaceEnrichment(
     );
   }
 
-  function schedulePoll(lineageId: string, jobId: string, pollGeneration: number): void {
+  function schedulePoll(opening: ExamWorkspaceOpening, jobId: string): void {
     stopPolling();
     pollTimer = setTimeout(() => {
       pollTimer = null;
-      void refreshStatus(lineageId, jobId, pollGeneration);
+      void refreshStatus(opening, jobId);
     }, pollDelayMs());
   }
 
   function applyStatus(
-    lineageId: string,
-    pollGeneration: number,
+    opening: ExamWorkspaceOpening,
     status: ExamWorkspaceAnswerKeySuggestionsStatus,
   ): void {
-    if (pollGeneration !== generation) {
+    if (!isLive(opening)) {
       return;
     }
     pollFailures = 0;
-    enrichmentStatus.value = status;
+    job.value = { opening, status };
     // A failed job still delivers the suggestions it produced before the
     // failure; its message above stays the failure message.
     if (
       (status.state === "succeeded" || status.state === "failed") &&
       status.suggestions.length > 0
     ) {
-      applySuggestions([...status.suggestions]);
+      binding.applySuggestions(opening, [...status.suggestions]);
     }
     if (isPending(status) && status.job_id) {
-      schedulePoll(lineageId, status.job_id, pollGeneration);
+      schedulePoll(opening, status.job_id);
     }
   }
 
-  async function refreshStatus(
-    lineageId: string,
-    jobId: string,
-    pollGeneration: number,
-  ): Promise<void> {
+  async function refreshStatus(opening: ExamWorkspaceOpening, jobId: string): Promise<void> {
+    if (!isLive(opening)) {
+      return;
+    }
     try {
-      const status = await getExamWorkspaceAnswerKeySuggestions(lineageId, jobId);
-      applyStatus(lineageId, pollGeneration, status);
+      const status = await getExamWorkspaceAnswerKeySuggestions(opening.lineageId, jobId);
+      applyStatus(opening, status);
     } catch {
-      if (pollGeneration !== generation) {
+      if (!isLive(opening)) {
         return;
       }
       if (pollFailures === 0) {
@@ -141,34 +166,35 @@ export function useExamWorkspaceEnrichment(
       }
       pollFailures += 1;
       if (isPending(enrichmentStatus.value)) {
-        schedulePoll(lineageId, jobId, pollGeneration);
+        schedulePoll(opening, jobId);
       }
     }
   }
 
   async function requestSuggestions(itemId?: string): Promise<void> {
-    const currentSummary = summary.value;
-    const currentDocument = document.value;
-    if (!currentSummary || !currentDocument || isRequesting.value || isEnrichmentPending.value) {
+    const opening = binding.openExam.value;
+    const currentDocument = binding.document.value;
+    if (!opening || !currentDocument || isRequesting.value || isEnrichmentPending.value) {
       return;
     }
-    const pollGeneration = generation;
-    isRequesting.value = true;
+    requestingIn.value = opening;
     pollFailures = 0;
     try {
       const status = await requestExamWorkspaceAnswerKeySuggestions(
-        currentSummary.lineage_id,
+        opening.lineageId,
         currentDocument,
         itemId,
       );
-      applyStatus(currentSummary.lineage_id, pollGeneration, status);
+      applyStatus(opening, status);
     } catch {
-      if (pollGeneration !== generation) {
+      if (!isLive(opening)) {
         return;
       }
       toast.failure(REQUEST_FAILURE_COPY);
     } finally {
-      isRequesting.value = false;
+      if (requestingIn.value === opening) {
+        requestingIn.value = null;
+      }
     }
   }
 
@@ -180,24 +206,11 @@ export function useExamWorkspaceEnrichment(
     return requestSuggestions(itemId);
   }
 
-  watch(
-    () => summary.value?.lineage_id ?? null,
-    (lineageId, previousLineageId) => {
-      if (lineageId === previousLineageId) {
-        return;
-      }
-      generation += 1;
-      stopPolling();
-      pollFailures = 0;
-      enrichmentStatus.value = null;
-    },
-  );
-
-  // Disposal invalidates every outstanding request and poll: a late
-  // completion or failure must not apply results, toast, or schedule a
-  // new poll for a view that no longer exists.
+  // Disposal ends every outstanding request and poll: a late completion or
+  // failure must not apply results, toast, or schedule a new poll for a view
+  // that no longer exists.
   onScopeDispose(() => {
-    generation += 1;
+    disposed = true;
     stopPolling();
   });
 

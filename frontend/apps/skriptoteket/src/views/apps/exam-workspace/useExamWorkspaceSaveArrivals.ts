@@ -12,13 +12,16 @@
  *   its mark, or every arrival since the teacher's save for a conflict
  *   reload. A failed save leaves the copy, so nothing runs again. Whether an
  *   arrival runs again depends on when it arrived, never on the values the
- *   replacing document holds.
+ *   replacing document holds. Every write, first delivery and replay alike,
+ *   checks at that moment that the exam opening the arrival was requested
+ *   for is still open, so a job of another exam never writes into this one.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which owns the save lifecycle.
  *   - Applies `withArrivingSuggestion` from `examWorkspaceItemEdits`.
  *   - Compares items with `sameValue` from `examWorkspaceConversionMerge`, so
- *     an arrival that changes nothing leaves the copy clean.
+ *     an arrival that changes nothing leaves the copy as it was. Dirty state
+ *     is the document owner's: it derives it from the copy.
  */
 
 import type { Ref } from "vue";
@@ -29,12 +32,17 @@ import type {
 } from "../../../api/examWorkspace";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import { withArrivingSuggestion } from "./examWorkspaceItemEdits";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
-type NumberedArrival = { entry: ExamWorkspaceAnswerKeySuggestionItem; sequence: number };
+type NumberedArrival = {
+  entry: ExamWorkspaceAnswerKeySuggestionItem;
+  opening: ExamWorkspaceOpening;
+  sequence: number;
+};
 
 type SaveArrivalsBinding = {
   convertingItemIds: Readonly<Ref<ReadonlySet<string>>>;
-  isDirty: Ref<boolean>;
+  isOpen: (opening: ExamWorkspaceOpening) => boolean;
   workspaceDocument: Ref<NativeExamDocument | null>;
 };
 
@@ -43,12 +51,16 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
   // Arrivals written since the teacher's save began; null while no save runs.
   let duringSave: NumberedArrival[] | null = null;
 
-  /** Write suggestions onto their questions in one update; returns the written entries. */
+  /**
+   * Write suggestions onto their questions in one update when the opening
+   * they were requested for is still open; returns the written entries.
+   */
   function writeArrivals(
+    opening: ExamWorkspaceOpening,
     suggestions: ExamWorkspaceAnswerKeySuggestionItem[],
   ): ExamWorkspaceAnswerKeySuggestionItem[] {
     const current = binding.workspaceDocument.value;
-    if (!current || suggestions.length === 0) {
+    if (!current || !binding.isOpen(opening) || suggestions.length === 0) {
       return [];
     }
     const byItemId = new Map(suggestions.map((entry) => [entry.item_id, entry.suggestion]));
@@ -69,16 +81,18 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
     });
     if (changed) {
       binding.workspaceDocument.value = { ...current, items };
-      binding.isDirty.value = true;
     }
     return written;
   }
 
-  /** Write every arriving suggestion onto its question, numbering each arrival. */
-  function applyArrivingSuggestions(suggestions: ExamWorkspaceAnswerKeySuggestionItem[]): void {
-    for (const entry of writeArrivals(suggestions)) {
+  /** Write every arriving suggestion of `opening` onto its question, numbering each arrival. */
+  function applyArrivingSuggestions(
+    opening: ExamWorkspaceOpening,
+    suggestions: ExamWorkspaceAnswerKeySuggestionItem[],
+  ): void {
+    for (const entry of writeArrivals(opening, suggestions)) {
       delivered += 1;
-      duringSave?.push({ entry, sequence: delivered });
+      duringSave?.push({ entry, opening, sequence: delivered });
     }
   }
 
@@ -101,8 +115,8 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
   }
 
   function replay(arrivals: NumberedArrival[]): void {
-    for (const { entry } of arrivals) {
-      writeArrivals([entry]);
+    for (const { entry, opening } of arrivals) {
+      writeArrivals(opening, [entry]);
     }
   }
 

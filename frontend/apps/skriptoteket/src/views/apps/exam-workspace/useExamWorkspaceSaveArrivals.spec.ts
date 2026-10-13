@@ -11,7 +11,7 @@
  *   one, would leave a visible difference.
  */
 
-import { ref } from "vue";
+import { ref, shallowRef } from "vue";
 import { describe, expect, it } from "vitest";
 
 import type {
@@ -21,6 +21,8 @@ import type {
 } from "../../../api/examWorkspace";
 import { pairs } from "./examWorkspaceKeyedItems.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
+import { sameDocument } from "./examWorkspaceConversionMerge";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
@@ -60,9 +62,26 @@ function unreviewedMachineItem(
 
 function setup(item: NativeExamItem) {
   const workspaceDocument = ref<NativeExamDocument | null>(documentWith(item));
-  const isDirty = ref(false);
+  const serverDocument = ref<NativeExamDocument | null>(workspaceDocument.value);
   const convertingItemIds = ref<ReadonlySet<string>>(new Set());
-  const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isDirty, workspaceDocument });
+  const opening: ExamWorkspaceOpening = { lineageId: "lineage-1" };
+  const openExam = shallowRef<ExamWorkspaceOpening | null>(opening);
+  const arrivals = useExamWorkspaceSaveArrivals({
+    convertingItemIds,
+    isOpen: (candidate) => openExam.value === candidate,
+    workspaceDocument,
+  });
+  function deliver(arriving: NativeAnswerKeySuggestion): void {
+    arrivals.applyArrivingSuggestions(opening, [{ item_id: "item_001", suggestion: arriving }]);
+  }
+  /** A server document replaces the copy. */
+  function replaceWith(document: NativeExamDocument | null): void {
+    workspaceDocument.value = document;
+    serverDocument.value = document;
+  }
+  function matchesServer(): boolean {
+    return sameDocument(workspaceDocument.value, serverDocument.value);
+  }
   function item0(): NativeExamItem {
     const current = workspaceDocument.value?.items[0];
     if (!current) {
@@ -70,7 +89,7 @@ function setup(item: NativeExamItem) {
     }
     return current;
   }
-  return { arrivals, isDirty, item0, workspaceDocument };
+  return { arrivals, deliver, item0, matchesServer, openExam, replaceWith, workspaceDocument };
 }
 
 describe("a save response replays only arrivals its payload was read without", () => {
@@ -78,47 +97,45 @@ describe("a save response replays only arrivals its payload was read without", (
     // Running A1 again on its own effect would reorder the key to A1's order:
     // the key equals A1 as a set, and A1 is now the previous suggestion.
     const a1 = suggestion([P1, P2, P3]);
-    const { arrivals, isDirty, item0, workspaceDocument } = setup(
+    const { arrivals, deliver, item0, matchesServer, replaceWith } = setup(
       unreviewedMachineItem([P2, P1, P3], suggestion(ROTATED)),
     );
 
     const opened = arrivals.beginSave();
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: a1 }]);
+    deliver(a1);
     expect(item0().answer_key.match_pairs).toEqual(pairs([P2, P1, P3]));
     // The conflict merge kept the copy; the recursive save reads it now.
     const recursiveMark = arrivals.payloadMark();
     expect(arrivals.beginSave()).toBe(false);
-    workspaceDocument.value = documentWith(item0());
-    isDirty.value = false;
+    replaceWith(documentWith(item0()));
     arrivals.replayAfterResponse(recursiveMark);
     arrivals.endSave(opened);
 
     expect(item0().answer_key.match_pairs).toEqual(pairs([P2, P1, P3]));
     expect(item0().ai_suggestion).toEqual(a1);
-    expect(isDirty.value).toBe(false);
+    expect(matchesServer()).toBe(true);
   });
 
   it("A17: an arrival after the recursive save's payload runs once on its response", () => {
     const a1 = suggestion([P1, P2, P3]);
     const a2 = suggestion(ROTATED);
-    const { arrivals, isDirty, item0, workspaceDocument } = setup(
+    const { arrivals, deliver, item0, matchesServer, replaceWith } = setup(
       unreviewedMachineItem([P2, P1, P3], suggestion([P2, P1, P3])),
     );
 
     const opened = arrivals.beginSave();
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: a1 }]);
+    deliver(a1);
     const recursiveMark = arrivals.payloadMark();
     arrivals.beginSave();
     const recursivePayload = documentWith(item0());
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: a2 }]);
-    workspaceDocument.value = recursivePayload;
-    isDirty.value = false;
+    deliver(a2);
+    replaceWith(recursivePayload);
     arrivals.replayAfterResponse(recursiveMark);
     arrivals.endSave(opened);
 
     expect(item0().ai_suggestion).toEqual(a2);
     expect(item0().answer_key.match_pairs).toEqual(a2.match_pairs);
-    expect(isDirty.value).toBe(true);
+    expect(matchesServer()).toBe(false);
   });
 });
 
@@ -131,14 +148,13 @@ describe("a conflict reload replays every arrival since the teacher's save began
     const a1 = suggestion([P1, P2, P3]);
     const a2 = suggestion([P1, P2, ["left_009", "right_003"]]);
     const reloaded = documentWith(unreviewedMachineItem(CROSSED, s));
-    const { arrivals, isDirty, item0, workspaceDocument } = setup(unreviewedMachineItem(CROSSED, s));
+    const { arrivals, deliver, item0, matchesServer, replaceWith } = setup(unreviewedMachineItem(CROSSED, s));
 
     const opened = arrivals.beginSave();
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: a1 }]);
+    deliver(a1);
     arrivals.beginSave();
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: a2 }]);
-    workspaceDocument.value = reloaded;
-    isDirty.value = false;
+    deliver(a2);
+    replaceWith(reloaded);
     arrivals.replayAfterReload();
     arrivals.endSave(opened);
 
@@ -148,23 +164,42 @@ describe("a conflict reload replays every arrival since the teacher's save began
       match_pairs: a1.match_pairs,
       origin: "machine_proposed",
     });
-    expect(isDirty.value).toBe(true);
+    expect(matchesServer()).toBe(false);
   });
 
   it("closes the list when the save that opened it ends", () => {
-    const { arrivals, isDirty, workspaceDocument } = setup(
+    const { arrivals, deliver, matchesServer, replaceWith, workspaceDocument } = setup(
       unreviewedMachineItem([P2, P1, P3], suggestion([P2, P1, P3])),
     );
     const reloaded = workspaceDocument.value;
 
     const opened = arrivals.beginSave();
     arrivals.endSave(opened);
-    arrivals.applyArrivingSuggestions([{ item_id: "item_001", suggestion: suggestion([P1, P2, P3]) }]);
-    workspaceDocument.value = reloaded;
-    isDirty.value = false;
+    deliver(suggestion([P1, P2, P3]));
+    replaceWith(reloaded);
     arrivals.replayAfterReload();
 
     expect(workspaceDocument.value).toBe(reloaded);
-    expect(isDirty.value).toBe(false);
+    expect(matchesServer()).toBe(true);
+  });
+});
+
+describe("an arrival is written only into the exam opening that requested it", () => {
+  it("writes nothing, first delivery or replay, once another opening is open", () => {
+    const { arrivals, deliver, item0, openExam, replaceWith, workspaceDocument } = setup(
+      unreviewedMachineItem([P2, P1, P3], suggestion([P2, P1, P3])),
+    );
+    const before = workspaceDocument.value;
+
+    const opened = arrivals.beginSave();
+    deliver(suggestion([P1, P2, P3]));
+    expect(item0().ai_suggestion).toEqual(suggestion([P1, P2, P3]));
+    openExam.value = { lineageId: "lineage-1" };
+    replaceWith(before);
+    arrivals.replayAfterReload();
+    deliver(suggestion(ROTATED));
+    arrivals.endSave(opened);
+
+    expect(workspaceDocument.value).toBe(before);
   });
 });

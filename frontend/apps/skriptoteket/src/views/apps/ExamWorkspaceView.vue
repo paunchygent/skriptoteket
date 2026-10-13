@@ -69,10 +69,12 @@ const {
   importDocument,
   isBusy,
   isDirty,
+  isOpen,
   loadSavedDocuments,
   markItemReviewed,
   notes,
   openDocument,
+  openExam,
   reloadDocument,
   saveDocument,
   savedDocuments,
@@ -101,7 +103,12 @@ const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } 
   useExamWorkspaceExports(summary);
 
 const { enrichmentMessage, isEnrichmentPending, isRequesting, requestSuggestionsForAll } =
-  useExamWorkspaceEnrichment(summary, workspaceDocument, applyArrivingSuggestions);
+  useExamWorkspaceEnrichment({
+    applySuggestions: applyArrivingSuggestions,
+    document: workspaceDocument,
+    isOpen,
+    openExam,
+  });
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);

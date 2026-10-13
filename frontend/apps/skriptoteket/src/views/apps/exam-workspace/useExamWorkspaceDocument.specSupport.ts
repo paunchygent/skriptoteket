@@ -4,8 +4,9 @@
  * Purpose:
  *   Open the real matching question through the document state with a
  *   mocked transport, read the open item back, build a save or reload
- *   response around a given item, and hold a response pending so a spec can
- *   act while a save is in flight.
+ *   response around a given item, read the open exam opening that arrivals
+ *   are delivered for, and hold a response pending so a spec can act while a
+ *   save is in flight.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -19,6 +20,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export type DocumentState = ReturnType<typeof useExamWorkspaceDocument>;
 
@@ -87,6 +89,15 @@ export function currentDocument(state: DocumentState): NativeExamDocument {
     throw new Error("expected an open document");
   }
   return document;
+}
+
+/** The exam opening in front of the teacher, which an arrival is delivered for. */
+export function openingOf(state: DocumentState): ExamWorkspaceOpening {
+  const opening = state.openExam.value;
+  if (!opening) {
+    throw new Error("expected an open exam");
+  }
+  return opening;
 }
 
 export function deferred<T>() {

@@ -22,8 +22,9 @@
  *     `application/curated_apps/handlers/exam_workspace_conversion_merge.py`,
  *     which applies the same rule on the server against the saved head.
  *   - Pure function consumed by `useExamWorkspaceConversion` and
- *     `useExamWorkspaceDocument`; `sameValue` also tells
- *     `useExamWorkspaceSaveArrivals` whether an arrival changed an item.
+ *     `useExamWorkspaceDocument`; `sameDocument` is the one rule that tells
+ *     `useExamWorkspaceDocument` whether the copy is dirty, and `sameValue`
+ *     tells `useExamWorkspaceSaveArrivals` whether an arrival changed an item.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
@@ -62,6 +63,29 @@ function sortKeys(value: unknown): unknown {
 /** Key-order and null/absent insensitive deep equality. */
 export function sameValue(a: unknown, b: unknown): boolean {
   return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
+}
+
+/**
+ * Whether two documents hold the same value. An item both documents share
+ * by reference is equal without being serialised, so typing in one question
+ * compares only that question.
+ */
+export function sameDocument(
+  a: NativeExamDocument | null,
+  b: NativeExamDocument | null,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a === null || b === null || a.items.length !== b.items.length) {
+    return false;
+  }
+  const { items: aItems, ...aRest } = a;
+  const { items: bItems, ...bRest } = b;
+  return (
+    sameValue(aRest, bRest) &&
+    aItems.every((item, index) => item === bItems[index] || sameValue(item, bItems[index]))
+  );
 }
 
 /** Item content without ids and positions, so renumbering never reads as an edit. */
@@ -120,7 +144,7 @@ export function mergeConversionRevision({
   head,
   headUnits,
   local,
-}: MergeArgs): { document: NativeExamDocument; teacherEditsKept: boolean } {
+}: MergeArgs): NativeExamDocument {
   const baseUnitById = new Map(baseUnits.map((unit) => [unit.unit_id, unit]));
   const unitByItemId = new Map(
     baseUnits.flatMap((unit) =>
@@ -234,7 +258,7 @@ export function mergeConversionRevision({
     })
     .filter((parent) => parent.item_ids.length > 0);
 
-  const document: NativeExamDocument = {
+  return {
     ...local,
     document_id: head.document_id,
     instructions,
@@ -243,5 +267,4 @@ export function mergeConversionRevision({
     revision: head.revision,
     title,
   };
-  return { document, teacherEditsKept: !sameValue(document, head) };
 }
