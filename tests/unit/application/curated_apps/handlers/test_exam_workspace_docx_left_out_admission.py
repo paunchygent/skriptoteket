@@ -203,3 +203,33 @@ def test_points_the_reply_gives_win_over_a_printed_label():
     ((admitted, _),) = state.accepted
     assert admitted.points == 2
     assert _stem_texts(admitted) == [stem]
+
+
+def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the_points():
+    state = _state("Vilket ord är ett substantiv?", "A. bord", "B. springa", "(1 p)")
+    choices: list[JsonValue] = [
+        {"text": "bord", "correct": True},
+        {"text": "springa", "correct": False},
+    ]
+
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ["body:0001", "body:0002", "body:0003"],
+                    kind="single_choice",
+                    body=[{"segments": [_text("Vilket ord är ett substantiv?")]}],
+                    points=None,
+                    choices=choices,
+                    marking_guide=None,
+                )
+            ]
+        },
+        state,
+    )
+
+    ((admitted, anchors),) = state.accepted
+    assert admitted.points == 1
+    assert anchors[-1] == "body:0004"
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert admitted.review.reasons == ()

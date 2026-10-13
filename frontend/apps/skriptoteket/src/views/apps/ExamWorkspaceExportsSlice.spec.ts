@@ -130,7 +130,7 @@ describe("ExamWorkspaceView export slice", () => {
             { item_id: "item_005", reason: "missing_points" },
           ],
         },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );
@@ -160,7 +160,7 @@ describe("ExamWorkspaceView export slice", () => {
       new ApiError({
         code: "VALIDATION_ERROR",
         details: { blockers: [{ item_id: "item_002", reason: "missing_answer_key" }] },
-        message: "Provet har frågor som behöver granskas före export.",
+        message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
     );

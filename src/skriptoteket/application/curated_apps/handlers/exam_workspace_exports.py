@@ -86,7 +86,7 @@ class ExportExamWorkspaceDocumentHandler:
         if blockers:
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,
-                message="Provet har frågor som behöver granskas före export.",
+                message="Provet har frågor som måste åtgärdas före export.",
                 details={"blockers": [blocker.model_dump(mode="json") for blocker in blockers]},
             )
 

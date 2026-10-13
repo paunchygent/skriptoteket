@@ -12,7 +12,7 @@ another chunk of its question. A title or instruction holding an own chunk no it
 instruction that stands only where assembly places it at its question (D42); the title keeps
 its other chunks. A converted item that leaves out own chunks of its question holds them; those
 whose wording it lacks show under a check mark as printed (D41, D4). A reply without points
-takes the one points label the item's chunks print (D3). A gap_fill item that makes a gap of
+takes the one points label its question's own chunks print (D3). A gap_fill item that makes a gap of
 material its line talks about becomes a review item showing its question as printed (D43).
 Building one
 question's item never fails the batch: an item that cannot be built becomes a review item
@@ -274,7 +274,9 @@ def _admit_item(
 
     def build() -> NativeExamItem:
         context = definition_context(state.chunks, anchors, instructions)
-        own = (state.chunk_by_anchor[a] for a in anchors)
+        # The question's own paragraphs, also those the reply does not list (D3).
+        shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+        own = (chunk for chunk in state.chunks if chunk.anchor in shown)
         return native_item(with_printed_points(with_accepted_forms(produced, context), own))
 
     built = _built(index, anchors, state, seen, build)

@@ -26,7 +26,6 @@ import type { ExamWorkspaceParentBlock, ExamWorkspaceParentChild } from "./examW
 const REVIEW_REASON_LABELS: Record<string, string> = {
   machine_proposed_answer_key:
     "Facit är ett maskinellt förslag – kontrollera det innan du godkänner.",
-  missing_points: "Poäng saknas – ange poäng för frågan.",
 };
 
 const SNAKE_CASE_CODE = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
