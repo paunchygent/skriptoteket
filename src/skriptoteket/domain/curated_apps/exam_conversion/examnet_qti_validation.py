@@ -252,6 +252,9 @@ def _validate_contract_rules(
     return tuple(errors)
 
 
+_GAP_MATCH_TAG = f"{{{QTI_NAMESPACE}}}gapMatchInteraction"
+
+
 def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
     body = root.find(f"{{{QTI_NAMESPACE}}}itemBody")
     if body is None:
@@ -274,9 +277,13 @@ def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str,
         (index for index, child in enumerate(children) if child.tag in interaction_tags),
         None,
     )
-    # An item with several interactions is a parent: its shared instruction is the
-    # information block before the first child, each child stem sits in its own prompt.
-    if interaction_index is not None and len(interactions) == 1:
+    # An item with several block interactions is a parent: its shared instruction is the
+    # information block before the first child, each child stem sits in its own prompt,
+    # and a gap-fill child's sentences sit before their gap-match separator.
+    block_interactions = sum(
+        1 for child in body.iter() if child.tag in (*interaction_tags, _GAP_MATCH_TAG)
+    )
+    if interaction_index is not None and block_interactions == 1:
         for child in children[:interaction_index]:
             child_tag = child.tag.removeprefix(f"{{{QTI_NAMESPACE}}}")
             errors.append(

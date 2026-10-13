@@ -39,7 +39,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeAnswerKey,
+    NativeAnswerKeyOrigin,
     NativeExamItemKind,
+    NativeParagraph,
+    NativeTextSegment,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
@@ -209,3 +213,38 @@ def test_pdf_and_docx_print_a_mixed_parent_instruction_once_before_its_first_chi
     assert lines.count(_INSTRUCTION) == 1
     opening_at = next(k for k, line in enumerate(lines) if opening in line)
     assert lines.index(_INSTRUCTION) < opening_at
+
+
+def test_a_parent_of_gap_fills_and_one_free_text_passes_package_validation():
+    # Gap-fill children carry no prompted interaction, so a parent of gap fills and one
+    # free text holds a single prompted interaction; it is still a parent, and its gap
+    # sentences before the free text are not a stray stem (staging walk 2026-10-14).
+    items = recorded_items()
+    gap_fills = [item for item in items if item.kind is NativeExamItemKind.GAP_FILL]
+    assert len(gap_fills) >= 3
+    free_text = gap_fills[2].model_copy(
+        update={
+            "kind": NativeExamItemKind.FREE_TEXT,
+            "body": (NativeParagraph(segments=(NativeTextSegment(text="Explain why."),)),),
+            "gaps": (),
+            "answer_key": NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+        }
+    )
+    kept = (gap_fills[0], gap_fills[1], free_text)
+    renumbered = tuple(
+        item.model_copy(update={"item_id": f"item_{n:03d}", "sequence": n})
+        for n, item in enumerate(kept, start=1)
+    )
+    document = recorded_document(
+        (parent_over("parent_001", _INSTRUCTION, 1, 2, 3),), items=renumbered
+    )
+    plan = build_examnet_qti_package_plan(
+        package_name="mixed", items=native_exam_to_examnet_qti_items(document)
+    )
+    writer = ExamNetQtiPackageWriter()
+    package = writer.build_package_bytes(plan)
+    report = build_examnet_qti_validation_report(
+        plan=plan, package_filename="mixed.zip", package_bytes=package
+    )
+
+    assert report.package_status is ExamNetQtiPackageStatus.PASSED, report.errors
