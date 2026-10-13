@@ -46,9 +46,11 @@ class ReturnedChunks:
     events: tuple[DocxBuildEvent, ...]
 
 
-# A unit's own number or letter, such as "3.", "b)" or "Fråga 3:", and an answer or facit line.
+# A unit's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ", and an answer
+# or facit line.
 _NUMBERING = re.compile(
-    r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)])\s*",
+    r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)]"
+    r"|[-–—•*](?=\s))\s*",
     re.IGNORECASE,
 )
 _ANSWER_LINE = re.compile(
@@ -60,9 +62,8 @@ _ANSWER_LINE = re.compile(
 _UNIT_BREAK = re.compile(r"\s\|\s|\s(?=[a-z]\s*[.)]\s)", re.IGNORECASE)
 # Words, numbers and single letters, and the symbols that carry mathematical content.
 _TOKEN = re.compile(r"[^\W_]+|[+−=<>≤≥×÷*/^%]")
-# A dash in front of a word, as in "e-post" or "frågan – tolkningen", is punctuation; every
-# other dash, as in "x - y", "x=-7" or "-(x + y)", is a minus.
-_WORD_DASH = re.compile(r"[-−–—](?=\s*[^\W\d_]{2})")
+# Every dash reads as one token, so a minus or sign is never lost; a copied hyphen or prose dash
+# reads the same on both sides.
 _DASH = re.compile(r"[-−–—]")
 
 Gap = tuple[tuple[str, ...], ...]
@@ -72,7 +73,7 @@ Stream = tuple[str | Gap, ...]
 
 
 def _tokens(text: str | None) -> tuple[str, ...]:
-    words = _DASH.sub(" − ", _WORD_DASH.sub(" ", text or ""))
+    words = _DASH.sub(" − ", text or "")
     return tuple(token.casefold() for token in _TOKEN.findall(words))
 
 

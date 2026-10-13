@@ -169,6 +169,8 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
         ("Temperaturen är -7 grader.", "Temperaturen är 7 grader."),
         ("Lös x=-7.", "Lös x=7."),
         ("Förenkla -(x + y).", "Förenkla (x + y)."),
+        ("Beräkna x - sin(y).", "Beräkna x sin(y)."),
+        ("Förenkla -sin(x).", "Förenkla sin(x)."),
     ],
     ids=[
         "formula",
@@ -179,6 +181,8 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
         "negative-number",
         "sign-after-equals",
         "sign-before-bracket",
+        "minus-before-function",
+        "sign-before-function",
     ],
 )
 def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(dropped, kept):
@@ -217,6 +221,27 @@ def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
 
 def test_a_dropped_line_of_inline_options_is_read_option_by_option():
     options = "A) play B) plays"
+    state = _state(_STEM, options)
+    choices: list[JsonValue] = [
+        {"text": "play", "correct": True},
+        {"text": "plays", "correct": False},
+    ]
+
+    admit_batch(
+        {
+            "items": [
+                _item(["body:0001"], kind="single_choice", choices=choices, marking_guide=None)
+            ]
+        },
+        state,
+    )
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.reasons == ()
+
+
+def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
+    options = "- play\n- plays"
     state = _state(_STEM, options)
     choices: list[JsonValue] = [
         {"text": "play", "correct": True},
