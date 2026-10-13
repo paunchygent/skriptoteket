@@ -118,3 +118,19 @@ def test_the_judge_cli_returns_the_verdict_and_names_the_changed_question(tmp_pa
     assert failed.returncode == 1
     assert f"[{index}] {_POINTS_LABEL} points points: expected=" in failed.stdout
     assert f"actual={changed.points!r}" in failed.stdout
+
+
+def test_a_crashed_conversion_never_reports_an_observed_title(capsys):
+    from scripts.exam_conversion_eval.compare import compare_exam
+    from scripts.exam_conversion_eval.gold import GoldExam
+    from scripts.exam_conversion_eval.judge import _CORPUS
+    from scripts.exam_conversion_eval.report import print_comparison
+
+    gold = GoldExam.model_validate_json(
+        (_CORPUS / "gold" / f"{_STEM}.json").read_text(encoding="utf-8")
+    )
+    print_comparison(compare_exam(gold, ()), crashed=True)
+
+    out = capsys.readouterr().out
+    assert "title ok" not in out
+    assert f"title FAIL: gold={gold.title!r} actual=None (conversion crashed)" in out

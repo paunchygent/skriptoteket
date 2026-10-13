@@ -285,7 +285,7 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             "  stage seconds: "
             + ", ".join(f"{stage} {a}-{b}" for stage, (a, b) in report.timings.items())
         )
-        print_comparison(report.comparison)
+        print_comparison(report.comparison, crashed=bool(report.crash))
         for line in report.crash:
             print(f"  conversion crashed: {line}")
 
