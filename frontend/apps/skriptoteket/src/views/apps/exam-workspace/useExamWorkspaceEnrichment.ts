@@ -12,7 +12,8 @@
  *   open, checked when each completion lands. Each new opening asks the
  *   server for the newest job requested on its saved version, so a job this
  *   page lost (reload, reopen, switching back) is polled or delivered as if
- *   this opening had requested it (TASK-SKRIPT-39-04-09 P1, P2, P7).
+ *   this opening had requested it (TASK-SKRIPT-39-04-09 P1, P2, P7). A failed
+ *   lookup is shown with a retry that asks again, while that opening is open.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
@@ -42,6 +43,7 @@ export const EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS = 30_000;
 const REQUEST_FAILURE_COPY = "Det gick inte att begära facitförslag. Försök igen.";
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
 const NO_SUGGESTIONS_COPY = "Inga facitförslag kom tillbaka. Komplettera facit manuellt.";
+const LOOKUP_FAILURE_COPY = "Det gick inte att se om ett facitförslag väntar på provet.";
 
 function isPending(status: ExamWorkspaceAnswerKeySuggestionsStatus | null): boolean {
   return status?.state === "queued" || status?.state === "running";
@@ -67,6 +69,8 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
 
   const job = shallowRef<Job | null>(null);
   const requestingIn = shallowRef<ExamWorkspaceOpening | null>(null);
+  // The opening whose lost-job lookup failed and has not been asked again.
+  const lookupFailedIn = shallowRef<ExamWorkspaceOpening | null>(null);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let disposed = false;
   // Consecutive failed status polls. The first failure of a streak shows the
@@ -88,6 +92,10 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     return opening !== null && isLive(opening);
   });
   const isEnrichmentPending = computed(() => isPending(enrichmentStatus.value));
+  const enrichmentLookupError = computed<string | null>(() => {
+    const opening = lookupFailedIn.value;
+    return opening && isLive(opening) ? LOOKUP_FAILURE_COPY : null;
+  });
 
   const enrichmentMessage = computed<string | null>(() => {
     const status = enrichmentStatus.value;
@@ -184,6 +192,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       return;
     }
     requestingIn.value = opening;
+    lookupFailedIn.value = null;
     pollFailures = 0;
     try {
       const status = await requestExamWorkspaceAnswerKeySuggestions(
@@ -208,26 +217,26 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
    * Find the job this opening's exam has on its saved version. Admitted only
    * if, when the answer lands, the opening is still open, its copy still
    * stands on the asked-for saved version (an older version's job never
-   * applies), and the teacher has not started a job of their own here.
+   * applies), and the teacher has not started a job of their own here. A
+   * failure is shown under the same conditions, minus the version check.
    */
   async function resumeLostJob(opening: ExamWorkspaceOpening): Promise<void> {
     const revision = binding.savedRevision.value;
     if (revision === null) {
       return;
     }
+    const ownJobStarted = () => job.value?.opening === opening || requestingIn.value === opening;
     let status: ExamWorkspaceAnswerKeySuggestionsStatus | null;
     try {
       status = await findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
     } catch {
-      // The job stays on the server; the next opening asks again.
+      if (isLive(opening) && !ownJobStarted()) {
+        lookupFailedIn.value = opening;
+        toast.failure(LOOKUP_FAILURE_COPY);
+      }
       return;
     }
-    if (
-      !status ||
-      binding.savedRevision.value !== revision ||
-      job.value?.opening === opening ||
-      requestingIn.value === opening
-    ) {
+    if (!status || binding.savedRevision.value !== revision || ownJobStarted()) {
       return;
     }
     // Like every completion, it takes effect only while `opening` is open.
@@ -240,6 +249,16 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       void resumeLostJob(opening);
     }
   });
+
+  /** Ask again for the job whose lookup failed in the opening still open. */
+  async function retryEnrichmentLookup(): Promise<void> {
+    const opening = lookupFailedIn.value;
+    if (!opening || !isLive(opening)) {
+      return;
+    }
+    lookupFailedIn.value = null;
+    await resumeLostJob(opening);
+  }
 
   function requestSuggestionsForAll(): Promise<void> {
     return requestSuggestions();
@@ -258,11 +277,13 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
   });
 
   return {
+    enrichmentLookupError,
     enrichmentMessage,
     enrichmentStatus,
     isEnrichmentPending,
     isRequesting,
     requestSuggestionForItem,
     requestSuggestionsForAll,
+    retryEnrichmentLookup,
   };
 }

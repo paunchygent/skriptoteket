@@ -36,6 +36,7 @@ export type ExamWorkspaceReadinessEntry = {
 defineProps<{
   compact: boolean;
   enrichmentDisabled: boolean;
+  enrichmentLookupError: string | null;
   enrichmentMessage: string | null;
   exportNotice: string | null;
   exportingTarget: ExamWorkspaceExportTarget | null;
@@ -57,6 +58,7 @@ const emit = defineEmits<{
   open: [lineageId: string];
   reload: [];
   requestProposals: [];
+  retryEnrichmentLookup: [];
   selectFile: [file: File];
 }>();
 
@@ -206,8 +208,10 @@ function handleDrop(event: DragEvent): void {
 
         <ExamWorkspaceEnrichmentPanel
           :disabled="enrichmentDisabled"
+          :lookup-error="enrichmentLookupError"
           :message="enrichmentMessage"
           @request="emit('requestProposals')"
+          @retry-lookup="emit('retryEnrichmentLookup')"
         />
 
         <section

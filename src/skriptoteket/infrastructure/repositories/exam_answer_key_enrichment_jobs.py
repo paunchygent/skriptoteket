@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from pydantic import JsonValue
-from sqlalchemy import Select, select, update
+from sqlalchemy import Select, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -234,6 +234,26 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         result = await self._session.execute(stmt)
         model = result.scalars().first()
         return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    async def lock_workspace_requests(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> None:
+        # Released when the owning UoW commits or rolls back. The key leaves out
+        # the sent content: equal requests compare by JSONB equality, which a
+        # string hash of the content would not respect.
+        await self._session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:lock_key, 0))"),
+            {
+                "lock_key": (
+                    f"exam-workspace-suggestion:{owner_user_id}:"
+                    f"{workspace_lineage_id}:{workspace_document_revision}"
+                )
+            },
+        )
 
     @staticmethod
     def _workspace_jobs(

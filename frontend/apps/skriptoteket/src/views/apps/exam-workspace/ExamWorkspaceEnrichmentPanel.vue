@@ -4,20 +4,24 @@
  *
  * Domain purpose:
  *   Let the teacher ask for AI answer-key suggestions for the questions as
- *   the editor shows them and show the job's current status message.
+ *   the editor shows them and show the job's current status message. When
+ *   looking for a job an earlier opening lost failed, show that with a retry.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; emits `request` and the view starts
- *     the job through `useExamWorkspaceEnrichment`.
+ *     the job through `useExamWorkspaceEnrichment`; `retryLookup` asks the
+ *     server again for the lost job.
  */
 
 defineProps<{
   disabled: boolean;
+  lookupError: string | null;
   message: string | null;
 }>();
 
 const emit = defineEmits<{
   request: [];
+  retryLookup: [];
 }>();
 </script>
 
@@ -49,5 +53,22 @@ const emit = defineEmits<{
     >
       {{ message }}
     </p>
+    <template v-if="lookupError">
+      <p
+        class="text-xs leading-snug text-error"
+        role="status"
+        data-test="exam-workspace-enrichment-lookup-error"
+      >
+        {{ lookupError }}
+      </p>
+      <button
+        type="button"
+        class="btn-ghost justify-self-start shadow-none"
+        data-test="exam-workspace-enrichment-lookup-retry"
+        @click="emit('retryLookup')"
+      >
+        Försök igen
+      </button>
+    </template>
   </section>
 </template>

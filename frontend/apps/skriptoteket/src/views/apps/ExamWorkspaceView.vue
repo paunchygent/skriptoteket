@@ -104,14 +104,20 @@ const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
 const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
   useExamWorkspaceExports(summary);
 
-const { enrichmentMessage, isEnrichmentPending, isRequesting, requestSuggestionsForAll } =
-  useExamWorkspaceEnrichment({
-    applySuggestions: applyArrivingSuggestions,
-    document: workspaceDocument,
-    isOpen,
-    openExam,
-    savedRevision,
-  });
+const {
+  enrichmentLookupError,
+  enrichmentMessage,
+  isEnrichmentPending,
+  isRequesting,
+  requestSuggestionsForAll,
+  retryEnrichmentLookup,
+} = useExamWorkspaceEnrichment({
+  applySuggestions: applyArrivingSuggestions,
+  document: workspaceDocument,
+  isOpen,
+  openExam,
+  savedRevision,
+});
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
@@ -332,6 +338,7 @@ async function handleSave(): Promise<void> {
           <ExamWorkspaceFilesMode
             :compact="isPhone"
             :enrichment-disabled="enrichmentDisabled"
+            :enrichment-lookup-error="enrichmentLookupError"
             :enrichment-message="enrichmentMessage"
             :export-notice="exportNotice"
             :exporting-target="exportingTarget"
@@ -349,6 +356,7 @@ async function handleSave(): Promise<void> {
             @open="openDocument"
             @reload="reloadDocument"
             @request-proposals="requestSuggestionsForAll"
+            @retry-enrichment-lookup="retryEnrichmentLookup"
             @select-file="handleSelectedFile"
           />
         </div>

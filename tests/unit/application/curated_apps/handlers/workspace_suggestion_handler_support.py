@@ -108,6 +108,16 @@ class InMemorySuggestionJobQueries:
                 return job
         return None
 
+    async def lock_workspace_requests(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> None:
+        # One event loop and no await inside the fake calls: nothing interleaves.
+        return None
+
 
 NOW = datetime(2026, 10, 13, 12, 0, 0, tzinfo=UTC)
 

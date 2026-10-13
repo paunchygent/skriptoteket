@@ -9,10 +9,12 @@
  *   The answer is admitted only if, when it lands, the opening is still open,
  *   its copy still stands on the asked-for saved version, and the teacher has
  *   not started a job of their own there. Same-exam replacements keep the
- *   opening and ask nothing.
+ *   opening and ask nothing. A failed lookup is shown with a retry that asks
+ *   again, only while the opening that asked is still open.
  *
- * Rows follow the case table (C1-C16) in the retained design note
- * `evidence/implementation/TASK-SKRIPT-39-04-09/design.md`.
+ * Rows follow the case tables (C1-C16) in the retained design note
+ * `evidence/implementation/TASK-SKRIPT-39-04-09/design.md` and, for the
+ * failed lookup that replaces C12, (F2-a to F2-i) in `repair1/design.md`.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -217,17 +219,145 @@ describe("an exam opening asks for its lost job", () => {
     expect(enrichment.enrichmentMessage.value).toBe("Budget slut.");
   });
 
-  it("C12: a failed lookup shows nothing and is not retried", async () => {
+});
+
+const LOOKUP_FAILURE_COPY = "Det gick inte att se om ett facitförslag väntar på provet.";
+
+function lookupFailureToasts(): number {
+  return useToastStore().toasts.filter((toast) => toast.message === LOOKUP_FAILURE_COPY).length;
+}
+
+describe("a failed lookup is shown and can be retried (C12)", () => {
+  it("F2-a: the failure is shown once, delivers nothing and is not rerun on its own", async () => {
     const { document, enrichment, lookup } = await openAWithLookupHeld();
 
     lookup.reject(new Error("network"));
     await flushPromises();
+    expect(lookupFailureToasts()).toBe(1);
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS);
 
     expectUntouched(document);
     expect(enrichment.enrichmentStatus.value).toBeNull();
-    expect(useToastStore().toasts).toEqual([]);
+    expect(enrichment.enrichmentLookupError.value).toBe(LOOKUP_FAILURE_COPY);
     expect(apiMocks.findExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
+  });
+
+  it("F2-b: retry asks again for the same saved version and delivers the found job", async () => {
+    const { document, enrichment, lookup } = await openAWithLookupHeld();
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
+      jobStatus("succeeded", { withSuggestion: true }),
+    );
+    await enrichment.retryEnrichmentLookup();
+    await flushPromises();
+
+    expect(apiMocks.findExamWorkspaceAnswerKeySuggestions.mock.calls).toEqual([
+      ["lineage-a", 1],
+      ["lineage-a", 1],
+    ]);
+    expectDelivered(document);
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+  });
+
+  it("F2-c: a retry that fails again shows the failure again", async () => {
+    const { enrichment, lookup } = await openAWithLookupHeld();
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    apiMocks.findExamWorkspaceAnswerKeySuggestions.mockRejectedValueOnce(new Error("500"));
+    await enrichment.retryEnrichmentLookup();
+    await flushPromises();
+
+    expect(enrichment.enrichmentLookupError.value).toBe(LOOKUP_FAILURE_COPY);
+    expect(apiMocks.findExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
+  });
+
+  it("F2-d: a retry that finds no job clears the failure", async () => {
+    const { document, enrichment, lookup } = await openAWithLookupHeld();
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    await enrichment.retryEnrichmentLookup();
+    await flushPromises();
+
+    expectUntouched(document);
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(enrichment.enrichmentStatus.value).toBeNull();
+  });
+
+  it("F2-h: the teacher's own request clears the failure", async () => {
+    const { enrichment, lookup } = await openAWithLookupHeld();
+    lookup.reject(new Error("network"));
+    await flushPromises();
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
+      jobStatus("queued", { jobId: "job-b" }),
+    );
+
+    await enrichment.requestSuggestionsForAll();
+
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(enrichment.enrichmentStatus.value?.job_id).toBe("job-b");
+  });
+
+  it("F2-i: a failure landing while the teacher's own request is in flight is not shown", async () => {
+    const { enrichment, lookup } = await openAWithLookupHeld();
+    const request = deferred<ExamWorkspaceAnswerKeySuggestionsStatus>();
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValueOnce(request.promise);
+    const requesting = enrichment.requestSuggestionsForAll();
+
+    lookup.reject(new Error("network"));
+    await flushPromises();
+    request.resolve(jobStatus("queued", { jobId: "job-b" }));
+    await requesting;
+
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(lookupFailureToasts()).toBe(0);
+  });
+});
+
+describe("a failed lookup affects only the opening that asked", () => {
+  it("F2-e: A's failure landing after B opened shows nothing on B", async () => {
+    const { document, enrichment, lookup } = await openAWithLookupHeld();
+    await open(document, "lineage-b");
+    await flushPromises();
+
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    expect(document.summary.value?.lineage_id).toBe("lineage-b");
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(lookupFailureToasts()).toBe(0);
+    await enrichment.retryEnrichmentLookup();
+    expect(apiMocks.findExamWorkspaceAnswerKeySuggestions.mock.calls).toEqual([
+      ["lineage-a", 1],
+      ["lineage-b", 1],
+    ]);
+  });
+
+  it("F2-f: an earlier opening's failure does not reach a later opening of the same exam", async () => {
+    const { document, enrichment, lookup } = await openAWithLookupHeld();
+    await open(document, "lineage-b");
+    await open(document, "lineage-a");
+    await flushPromises();
+
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(lookupFailureToasts()).toBe(0);
+  });
+
+  it("F2-g: a failure landing after disposal shows nothing", async () => {
+    const { enrichment, lookup, scope } = await openAWithLookupHeld();
+    scope.stop();
+
+    lookup.reject(new Error("network"));
+    await flushPromises();
+
+    expect(enrichment.enrichmentLookupError.value).toBeNull();
+    expect(lookupFailureToasts()).toBe(0);
   });
 });
 

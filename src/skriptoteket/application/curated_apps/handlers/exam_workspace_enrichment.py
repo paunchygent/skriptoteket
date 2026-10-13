@@ -145,18 +145,25 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
                 message=NOT_ELIGIBLE_MESSAGE,
             )
         request_json = WorkspaceAnswerKeyRequestPayload(views=views).model_dump(mode="json")
-        running = await self._suggestion_jobs.get_active_workspace_job(
-            owner_user_id=actor.id,
-            workspace_lineage_id=lineage_id,
-            workspace_document_revision=document.revision,
-            workspace_request_json=request_json,
-        )
-        if running is not None:
-            # The same questions on the same saved version are already being
-            # answered: hand that job back instead of a second model call.
-            return suggestions_response_for_job(running, lineage_id=lineage_id)
-        job_id = self._id_generator.new_uuid()
         async with self._uow:
+            # Lookup and enqueue are one decision per saved version: a
+            # concurrent equal request waits here and then finds this job.
+            await self._suggestion_jobs.lock_workspace_requests(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+            )
+            running = await self._suggestion_jobs.get_active_workspace_job(
+                owner_user_id=actor.id,
+                workspace_lineage_id=lineage_id,
+                workspace_document_revision=document.revision,
+                workspace_request_json=request_json,
+            )
+            if running is not None:
+                # The same questions on the same saved version are already
+                # being answered: hand that job back instead of a second model call.
+                return suggestions_response_for_job(running, lineage_id=lineage_id)
+            job_id = self._id_generator.new_uuid()
             await self._enrichment_jobs.create(
                 job=enqueue_workspace_enrichment_job(
                     job_id=job_id,
