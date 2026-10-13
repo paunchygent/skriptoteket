@@ -57,10 +57,12 @@ editor request suggestions for the content it is showing.
   it the key again as `machine_proposed` with `review_required`. A suggestion
   whose fingerprint no longer matches the question is reported as out of
   date.
-- **Removal.** Delete the overlay path in the same change, keeping no reader
-  or fallback for it:
-  - the `exam_answer_key_proposed_overlays` table and its model and
-    repository;
+- **Removal.** Delete the workspace's overlay path in the same change,
+  keeping no reader or fallback for it:
+  - the workspace's rows and every workspace read and write of
+    `exam_answer_key_proposed_overlays`. The table, model and repository stay
+    because the DigiExam converter stores its proposals there;
+    ST-SKRIPT-39-07 removes them when DigiExam joins the workspace;
   - the proposal carry-forward on save (TASK-SKRIPT-39-04-04);
   - `rejected_proposal_item_ids`;
   - the whole-head enrichment request and status routes;
@@ -91,7 +93,8 @@ exam metadata (ST-SKRIPT-39-08).
 - To delete:
   - `exam_workspace_proposal_carry_forward.py`;
   - `domain/curated_apps/exam_workspace/proposal_carry_forward.py`;
-  - the `exam_answer_key_proposed_overlay` model and repository;
+  - the workspace's use of the `exam_answer_key_proposed_overlay` model and
+    repository (the DigiExam lane keeps them);
   - the save request field in `application/curated_apps/exam_workspace.py`.
 - Frontend:
   - `frontend/apps/skriptoteket/src/views/apps/exam-workspace/useExamWorkspaceEnrichment.ts`;
@@ -122,15 +125,17 @@ only. Applying suggestions must not reload or re-render the whole exam.
   - a per-question request on unsaved content uses that content.
 - Integration tests for the new request route, the job running on sent
   content, and save and reopen keeping the suggestion.
-- A migration test for dropping `exam_answer_key_proposed_overlays`.
+- A migration test for deleting the workspace's rows from
+  `exam_answer_key_proposed_overlays` while DigiExam rows stay.
 - `pdm run lint`, `pdm run typecheck` and the focused tests; `pdm run fe-test`
   and `pdm run fe-type-check` for the changed frontend files.
 - A live staging walk of the core vertical, recorded in `handoff.md`.
 
 ## Stop Conditions
 
-- The change would keep the overlay table, carry-forward or rejected-ids path
-  alongside the new one.
+- The change would keep a workspace read or write of the overlay table, the
+  carry-forward or the rejected-ids path alongside the new one.
+- The change would alter the DigiExam converter's proposal storage.
 - A provider, model, timeout or token-limit change is needed.
 - The editor's suggestion presentation needs a decision that
   TASK-SKRIPT-39-04-05 has not made.
@@ -141,7 +146,7 @@ only. Applying suggestions must not reload or re-render the whole exam.
 | --- | --------------------- |
 | T1  | This task owns only AI answer-key suggestions; Mina filer exports and version pruning, question titles at import, and exam metadata belong to TASK-SKRIPT-39-04-08, TASK-SKRIPT-39-05-08 and ST-SKRIPT-39-08 (P1, P2). |
 | T2  | Each question stores its suggestion in the saved exam: the proposed key, a fingerprint of its answer-relevant content, and provider profile, model and prompt version (P5). |
-| T3  | The overlay table, proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5). |
+| T3  | The workspace's use of the overlay table (the table stays for the DigiExam converter until ST-SKRIPT-39-07), proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5, P10). |
 | T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6). |
 | T5  | An arriving suggestion becomes the key only where the question has no key or its key equals its previous suggestion, with origin `machine_proposed` and `review_required` (P8, D42). |
 | T6  | Review turns `machine_proposed` into `reviewed_advisory`; choosing another option makes the key `teacher_authored`; restoring the suggestion makes it `machine_proposed` with `review_required`; a fingerprint mismatch reports the suggestion as out of date (P8, D42). |
