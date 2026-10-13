@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, JsonValue, ValidationError
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
@@ -198,25 +198,18 @@ class GetExamWorkspaceAnswerKeySuggestionsStatusHandler:
             return self._status(lineage_id, job_id, ExamWorkspaceEnrichmentState.QUEUED)
         if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
             return self._status(lineage_id, job_id, ExamWorkspaceEnrichmentState.RUNNING)
+        payload = self._stored_suggestions(job.workspace_suggestions_json)
         if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
+            # A failed job still delivers every suggestion it produced
+            # before the failure, alongside the truthful failure message.
             return ExamWorkspaceAnswerKeySuggestionsResponse(
                 job_id=job_id,
                 lineage_id=lineage_id,
                 state=ExamWorkspaceEnrichmentState.FAILED,
                 message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
+                suggestions=payload.suggestions if payload is not None else (),
             )
-        if job.workspace_suggestions_json is None:
-            return ExamWorkspaceAnswerKeySuggestionsResponse(
-                job_id=job_id,
-                lineage_id=lineage_id,
-                state=ExamWorkspaceEnrichmentState.FAILED,
-                message=_DEFAULT_FAILURE_MESSAGE,
-            )
-        try:
-            payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
-                job.workspace_suggestions_json
-            )
-        except ValidationError:
+        if payload is None:
             return ExamWorkspaceAnswerKeySuggestionsResponse(
                 job_id=job_id,
                 lineage_id=lineage_id,
@@ -229,6 +222,17 @@ class GetExamWorkspaceAnswerKeySuggestionsStatusHandler:
             state=ExamWorkspaceEnrichmentState.SUCCEEDED,
             suggestions=payload.suggestions,
         )
+
+    @staticmethod
+    def _stored_suggestions(
+        suggestions_json: dict[str, JsonValue] | None,
+    ) -> WorkspaceAnswerKeySuggestionsPayload | None:
+        if suggestions_json is None:
+            return None
+        try:
+            return WorkspaceAnswerKeySuggestionsPayload.model_validate(suggestions_json)
+        except ValidationError:
+            return None
 
     @staticmethod
     def _status(

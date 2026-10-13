@@ -22,6 +22,7 @@ Relationships:
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
@@ -48,6 +49,23 @@ from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+
+@dataclass(frozen=True)
+class ValidProposalCollection[R]:
+    """Workspace collection outcome: valid proposals plus how the batch ended.
+
+    ``failure`` is the terminal provider failure that stopped the batch, if
+    any; ``proposals`` holds every valid answer collected before it (or all
+    of them when the batch ran to completion). ``saw_invalid_output`` tells
+    an all-invalid batch (no proposals, no failure) apart from success.
+    """
+
+    proposals: tuple[tuple[str, R], ...]
+    serving_profile: StructuredLLMProviderProfile
+    failure: EnrichmentFailure | None
+    saw_invalid_output: bool
+
 
 MANUAL_COMPLETION_MESSAGE = (
     "Provet kunde inte kompletteras automatiskt med facit. "
@@ -154,14 +172,15 @@ class AnswerKeyAttemptLedger:
         attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
         leases_by_item: dict[str, AnswerKeyTokenLease],
         proposal_from: Callable[[P, ProviderAttempt], R | None],
-    ) -> tuple[tuple[tuple[str, R], ...], StructuredLLMProviderProfile] | EnrichmentFailure:
+    ) -> ValidProposalCollection[R]:
         """Collect every valid proposal, keyed by its candidate's item id.
 
         Workspace-only policy: one question's invalid model output neither
         discards the valid proposals already collected nor stops the later
         questions; processing continues in plan order. A provider failure
-        still fails the collection at once, and when no question produced a
-        valid proposal the collection fails as ``llm_output_invalid``. The
+        stops the collection at once (no further calls), but the valid
+        proposals already collected travel with the failure so the lane can
+        keep and deliver them while still reporting the real failure. The
         DigiExam lane keeps the all-or-nothing ``collect_proposals`` above.
         """
 
@@ -176,7 +195,12 @@ class AnswerKeyAttemptLedger:
                 primary_lease=leases_by_item[candidate.item_id],
             )
             if isinstance(attempt, EnrichmentFailure):
-                return attempt
+                return ValidProposalCollection(
+                    proposals=tuple(proposals),
+                    serving_profile=serving_profile,
+                    failure=attempt,
+                    saw_invalid_output=saw_invalid_output,
+                )
             if attempt.profile is route.failover:
                 serving_profile = route.failover
             await self._reconcile_attempt_usage(attempt=attempt)
@@ -185,12 +209,12 @@ class AnswerKeyAttemptLedger:
                 saw_invalid_output = True
                 continue
             proposals.append((candidate.item_id, proposal))
-        if not proposals and saw_invalid_output:
-            return EnrichmentFailure(
-                teacher_message=MANUAL_COMPLETION_MESSAGE,
-                last_error="llm_output_invalid",
-            )
-        return tuple(proposals), serving_profile
+        return ValidProposalCollection(
+            proposals=tuple(proposals),
+            serving_profile=serving_profile,
+            failure=None,
+            saw_invalid_output=saw_invalid_output,
+        )
 
     async def _reconcile_attempt_usage(self, *, attempt: ProviderAttempt) -> None:
         usable_tokens = attempt.response.usage.usable_total_tokens

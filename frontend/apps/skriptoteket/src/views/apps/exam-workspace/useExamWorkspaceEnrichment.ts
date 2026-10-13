@@ -111,7 +111,12 @@ export function useExamWorkspaceEnrichment(
     }
     pollFailures = 0;
     enrichmentStatus.value = status;
-    if (status.state === "succeeded" && status.suggestions.length > 0) {
+    // A failed job still delivers the suggestions it produced before the
+    // failure; its message above stays the failure message.
+    if (
+      (status.state === "succeeded" || status.state === "failed") &&
+      status.suggestions.length > 0
+    ) {
       applySuggestions([...status.suggestions]);
     }
     if (isPending(status) && status.job_id) {

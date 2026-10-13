@@ -9,12 +9,15 @@ Relationships:
     - Covers `web.api.v1.apps_conversion_hub_exam_workspace_enrichment`.
     - Handler behavior is covered in
       `test_exam_workspace_enrichment` (application handlers).
+
+The routes are called directly: FastAPI registration returns the route
+function unchanged, so mypy checks every argument below against the
+production route signatures and the handler/registry protocols they
+declare. The capturing doubles implement those production protocols.
 """
 
 from __future__ import annotations
 
-from types import SimpleNamespace
-from typing import Protocol, TypeGuard
 from uuid import UUID, uuid4
 
 import pytest
@@ -24,6 +27,11 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceEnrichmentState,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
+from skriptoteket.domain.curated_apps.models import (
+    CuratedAppDefinition,
+    CuratedAppPlacement,
+    curated_app_tool_id,
+)
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_enrichment as api
 from tests.fixtures.identity_fixtures import make_user
@@ -32,76 +40,58 @@ pytestmark = pytest.mark.unit
 
 
 class FakeRegistry:
-    def get_by_app_id(self, *, app_id: str) -> SimpleNamespace:
-        del app_id
-        return SimpleNamespace(app_id="documents.conversion_hub", min_role=Role.USER)
+    """A registry double satisfying `CuratedAppRegistryProtocol`."""
+
+    def __init__(self) -> None:
+        self._app = CuratedAppDefinition(
+            app_id="documents.conversion_hub",
+            tool_id=curated_app_tool_id(app_id="documents.conversion_hub"),
+            app_version="app:test",
+            title="Conversion Hub",
+            min_role=Role.USER,
+            placements=[CuratedAppPlacement(profession_slug="larare", category_slug="ovrigt")],
+        )
+
+    def list_all(self) -> list[CuratedAppDefinition]:
+        return [self._app]
+
+    def get_by_app_id(self, *, app_id: str) -> CuratedAppDefinition | None:
+        return self._app if app_id == self._app.app_id else None
+
+    def get_by_tool_id(self, *, tool_id: UUID) -> CuratedAppDefinition | None:
+        del tool_id
+        return None
 
 
 class CapturingRequestHandler:
+    """A double satisfying `RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol`."""
+
     def __init__(self, result: ExamWorkspaceAnswerKeySuggestionsResponse) -> None:
         self.result = result
         self.calls: list[dict[str, object]] = []
 
-    async def handle(self, **kwargs: object) -> ExamWorkspaceAnswerKeySuggestionsResponse:
-        self.calls.append(kwargs)
+    async def handle(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+        self.calls.append({"actor": actor, "lineage_id": lineage_id, "request": request})
         return self.result
 
 
-class _RequestSuggestionsEndpoint(Protocol):
-    """The unwrapped request route with this test's capturing doubles."""
-
-    async def __call__(
-        self,
-        *,
-        lineage_id: UUID,
-        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
-        registry: FakeRegistry,
-        handler: CapturingRequestHandler,
-        user: User,
-    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
-
-
-class _StatusSuggestionsEndpoint(Protocol):
-    """The unwrapped status route with this test's capturing doubles."""
-
-    async def __call__(
-        self,
-        *,
-        lineage_id: UUID,
-        job_id: UUID,
-        registry: FakeRegistry,
-        handler: CapturingStatusHandler,
-        user: User,
-    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
-
-
-def _is_request_endpoint(value: object) -> TypeGuard[_RequestSuggestionsEndpoint]:
-    return callable(value)
-
-
-def _is_status_endpoint(value: object) -> TypeGuard[_StatusSuggestionsEndpoint]:
-    return callable(value)
-
-
-def _unwrap_request_endpoint(fn: object) -> _RequestSuggestionsEndpoint:
-    candidate = getattr(fn, "__dishka_orig_func__", fn)
-    assert _is_request_endpoint(candidate)
-    return candidate
-
-
-def _unwrap_status_endpoint(fn: object) -> _StatusSuggestionsEndpoint:
-    candidate = getattr(fn, "__dishka_orig_func__", fn)
-    assert _is_status_endpoint(candidate)
-    return candidate
-
-
 class CapturingStatusHandler:
+    """A double satisfying `GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol`."""
+
     def __init__(self, result: ExamWorkspaceAnswerKeySuggestionsResponse) -> None:
         self.result = result
         self.calls: list[dict[str, object]] = []
 
-    async def handle(self, **kwargs: object) -> ExamWorkspaceAnswerKeySuggestionsResponse:
-        self.calls.append(kwargs)
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, job_id: UUID
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+        self.calls.append({"actor": actor, "lineage_id": lineage_id, "job_id": job_id})
         return self.result
 
 
@@ -145,8 +135,7 @@ async def test_request_route_delegates_the_editor_sent_document() -> None:
         }
     )
 
-    route = _unwrap_request_endpoint(api.request_exam_workspace_answer_key_suggestions)
-    response = await route(
+    response = await api.request_exam_workspace_answer_key_suggestions(
         lineage_id=lineage_id,
         request=request,
         registry=FakeRegistry(),
@@ -170,8 +159,7 @@ async def test_status_route_delegates_the_job_read() -> None:
         )
     )
 
-    route = _unwrap_status_endpoint(api.get_exam_workspace_answer_key_suggestions)
-    response = await route(
+    response = await api.get_exam_workspace_answer_key_suggestions(
         lineage_id=lineage_id,
         job_id=job_id,
         registry=FakeRegistry(),

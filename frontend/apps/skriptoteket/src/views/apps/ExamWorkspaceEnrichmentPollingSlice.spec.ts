@@ -125,6 +125,31 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(saved?.review.state).toBe("review_required");
   });
 
+  it("applies suggestions a failed job produced before its provider failure", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
+      status("failed", {
+        message: "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
+        suggestions: SUCCEEDED.suggestions,
+      }),
+    );
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
+      "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
+    );
+    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    await saveDocument(wrapper);
+    const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
+    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_c"]);
+  });
+
   it("shows the server message when no suggestions can be made", async () => {
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(
       status("not_eligible", { message: "Inga facitförslag kan skapas." }),

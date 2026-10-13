@@ -48,6 +48,7 @@ import {
   withMatchEntryText,
   withMatchPairs,
   withParagraphSegments,
+  suggestionsEqual,
   withArrivingSuggestion,
   withPoints,
   withRestoredSuggestion,
@@ -118,10 +119,9 @@ export function useExamWorkspaceDocument() {
   let arrivalsDuringSave: ExamWorkspaceAnswerKeySuggestionItem[] = [];
 
   function rememberArrivalDuringSave(entry: ExamWorkspaceAnswerKeySuggestionItem): void {
-    arrivalsDuringSave = [
-      ...arrivalsDuringSave.filter((candidate) => candidate.item_id !== entry.item_id),
-      entry,
-    ];
+    // Every arrival is kept in arrival order: replaying only the latest
+    // would judge it against the wrong previous suggestion.
+    arrivalsDuringSave = [...arrivalsDuringSave, entry];
   }
 
   function takeArrivalsDuringSave(): ExamWorkspaceAnswerKeySuggestionItem[] {
@@ -256,7 +256,7 @@ export function useExamWorkspaceDocument() {
       const arrivals = takeArrivalsDuringSave();
       applyResponse(response);
       if (arrivals.length > 0) {
-        applyArrivingSuggestions(arrivals);
+        replayArrivingSuggestions(arrivals);
       }
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
@@ -284,10 +284,11 @@ export function useExamWorkspaceDocument() {
       }
       // A failed or reloaded save did not persist arrivals that landed
       // while it ran; put them back on the copy now in front of the
-      // teacher (idempotent where that copy never lost them).
+      // teacher. The replay skips a copy that never lost them, so a
+      // failed save never runs an arrival's transition twice.
       const arrivals = takeArrivalsDuringSave();
       if (arrivals.length > 0) {
-        applyArrivingSuggestions(arrivals);
+        replayArrivingSuggestions(arrivals);
       }
       return false;
     } finally {
@@ -415,6 +416,41 @@ export function useExamWorkspaceDocument() {
     }
     workspaceDocument.value = { ...current, items };
     isDirty.value = true;
+  }
+
+  /**
+   * Reapply arrivals a save's outcome displaced, in arrival order.
+   *
+   * Per question, an arrival group whose latest suggestion is already the
+   * question's stored suggestion is skipped whole: that copy never lost
+   * the arrivals (a failed save, or a returned revision that already
+   * contained them), and running the arrival transition again would judge
+   * the key against the arriving suggestion itself instead of the
+   * previous one. Otherwise each arrival runs the ordinary transition
+   * once against the copy now in front of the teacher, skipping any the
+   * copy already contains.
+   */
+  function replayArrivingSuggestions(arrivals: ExamWorkspaceAnswerKeySuggestionItem[]): void {
+    const byItemId = new Map<string, ExamWorkspaceAnswerKeySuggestionItem[]>();
+    for (const entry of arrivals) {
+      byItemId.set(entry.item_id, [...(byItemId.get(entry.item_id) ?? []), entry]);
+    }
+    for (const [itemId, entries] of byItemId) {
+      const current = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
+      const latest = entries[entries.length - 1];
+      if (current && suggestionsEqual(current.ai_suggestion, latest.suggestion)) {
+        continue;
+      }
+      for (const entry of entries) {
+        const item = workspaceDocument.value?.items.find(
+          (candidate) => candidate.item_id === itemId,
+        );
+        if (item && suggestionsEqual(item.ai_suggestion, entry.suggestion)) {
+          continue;
+        }
+        applyArrivingSuggestions([entry]);
+      }
+    }
   }
 
   function restoreItemSuggestion(itemId: string): void {

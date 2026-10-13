@@ -38,7 +38,6 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_a
 )
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
     AnswerKeyAttemptCandidate,
-    EnrichmentFailure,
     ProviderAttempt,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
@@ -132,16 +131,24 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
             leases_by_item=leases_by_item,
             proposal_from=_workspace_suggestion,
         )
-        if isinstance(collected, EnrichmentFailure):
-            return await self.fail(job=job, last_error=collected.last_error)
-        suggestions, _serving_profile = collected
-
+        suggestions = collected.proposals
         payload = WorkspaceAnswerKeySuggestionsPayload(
             suggestions=tuple(
                 ExamWorkspaceAnswerKeySuggestionItem(item_id=item_id, suggestion=suggestion)
                 for item_id, suggestion in suggestions
             )
         )
+        if collected.failure is not None:
+            # The batch ended on a real provider failure: keep every valid
+            # suggestion collected before it on the job, and still report
+            # the failure truthfully.
+            return await self.fail(
+                job=job,
+                last_error=collected.failure.last_error,
+                suggestions=payload if suggestions else None,
+            )
+        if not suggestions:
+            return await self.fail(job=job, last_error="llm_output_invalid")
         now = self._clock.now()
         async with self._uow:
             return await self._enrichment_jobs.update(
@@ -162,9 +169,18 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         *,
         job: ExamAnswerKeyEnrichmentJob,
         last_error: str,
+        suggestions: WorkspaceAnswerKeySuggestionsPayload | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
-        """Finish one workspace-lane job as FAILED; no conversion to update."""
+        """Finish one workspace-lane job as FAILED; no conversion to update.
 
+        Suggestions collected before the failure stay on the job so the
+        status read can still deliver them to the editor.
+        """
+
+        if suggestions is not None:
+            job = job.model_copy(
+                update={"workspace_suggestions_json": suggestions.model_dump(mode="json")}
+            )
         now = self._clock.now()
         async with self._uow:
             return await self._enrichment_jobs.update(

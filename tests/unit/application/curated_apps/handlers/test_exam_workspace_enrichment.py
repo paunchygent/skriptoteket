@@ -287,6 +287,26 @@ class TestStatus:
         assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
         assert response.suggestions[0].suggestion.model == "gpt-5.6-luna"
 
+    async def test_failed_job_returns_suggestions_it_produced_before_the_failure(self) -> None:
+        harness = _Harness()
+        job_id = await self._finished_job(harness, succeeded=True)
+        job = harness.jobs.jobs[job_id]
+        harness.jobs.jobs[job_id] = job.model_copy(
+            update={
+                "status": ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                "last_error": "provider_timeout",
+            }
+        )
+
+        response = await harness.status_handler.handle(
+            actor=harness.actor, lineage_id=harness.lineage_id, job_id=job_id
+        )
+
+        assert response.state is ExamWorkspaceEnrichmentState.FAILED
+        assert response.message is not None
+        assert [entry.item_id for entry in response.suggestions] == ["item_001"]
+        assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
+
     async def test_failed_job_maps_last_error_to_a_swedish_message(self) -> None:
         harness = _Harness()
         job_id = await self._finished_job(harness, succeeded=False)

@@ -208,6 +208,37 @@ export function withArrivingSuggestion(
   return { ...item, ai_suggestion: suggestion };
 }
 
+/** Whether two kept suggestions carry exactly the same proposal and lineage. */
+export function suggestionsEqual(
+  left: NativeAnswerKeySuggestion | null | undefined,
+  right: NativeAnswerKeySuggestion | null | undefined,
+): boolean {
+  if (!left || !right) {
+    return false;
+  }
+  const stringArraysEqual = (a: string[], b: string[]): boolean =>
+    a.length === b.length && a.every((value, index) => value === b[index]);
+  return (
+    stringArraysEqual(left.correct_choice_ids, right.correct_choice_ids) &&
+    left.match_pairs.length === right.match_pairs.length &&
+    left.match_pairs.every(
+      (pair, index) =>
+        pair.left_id === right.match_pairs[index].left_id &&
+        pair.right_id === right.match_pairs[index].right_id,
+    ) &&
+    left.gap_accepted_values.length === right.gap_accepted_values.length &&
+    left.gap_accepted_values.every(
+      (entry, index) =>
+        entry.gap_id === right.gap_accepted_values[index].gap_id &&
+        stringArraysEqual(entry.accepted_values, right.gap_accepted_values[index].accepted_values),
+    ) &&
+    left.fingerprint === right.fingerprint &&
+    left.provider_profile_id === right.provider_profile_id &&
+    left.model === right.model &&
+    left.prompt_template_version === right.prompt_template_version
+  );
+}
+
 /** Make the kept suggestion the key again: `machine_proposed`, review required (T6). */
 export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
   const suggestion = item.ai_suggestion ?? null;

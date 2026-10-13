@@ -41,6 +41,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     WorkspaceAnswerKeySuggestionsPayload,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMBackendFailureCode,
+    StructuredLLMProviderError,
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
     StructuredLLMResponse,
@@ -326,6 +328,123 @@ async def test_one_invalid_answer_keeps_valid_answers_and_continues_to_later_que
     assert payload.suggestions[1].suggestion.correct_choice_ids == ("choice_001",)
     assert harness.proposed_overlays.records == []
     assert harness.producer.calls == 0
+
+
+class _ScriptedProvider(StubProvider):
+    """Provider double playing one scripted outcome (content or error) per call."""
+
+    def __init__(self, outcomes: list[dict[str, JsonValue] | StructuredLLMProviderError]) -> None:
+        super().__init__(content={}, usage=StructuredLLMUsage(total_tokens=50))
+        self._outcomes = outcomes
+
+    async def complete_structured(
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+    ) -> StructuredLLMResponse:
+        del request, profile
+        self.call_count += 1
+        outcome = self._outcomes[self.call_count - 1]
+        if isinstance(outcome, StructuredLLMProviderError):
+            raise outcome
+        return StructuredLLMResponse(
+            content=outcome,
+            finish_reason="completed",
+            usage=StructuredLLMUsage(total_tokens=50),
+        )
+
+
+def _provider_error(code: StructuredLLMBackendFailureCode) -> StructuredLLMProviderError:
+    return StructuredLLMProviderError(
+        failure_code=code,
+        message="provider failed",
+        provider_id="fake",
+    )
+
+
+async def test_valid_answer_survives_a_later_provider_timeout_with_failover() -> None:
+    document = _three_unkeyed_choice_document(document_id=uuid4())
+    timeout = _provider_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)
+    provider = _ScriptedProvider([{"correct_alternative_ids": [2]}, timeout, timeout])
+    harness = _WorkspaceHarness(provider=provider, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    # Question 1 answered, question 2 times out on primary and failover,
+    # question 3 is never attempted after the terminal failure.
+    assert provider.call_count == 3
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "provider_timeout"
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
+    assert payload.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
+    assert harness.proposed_overlays.records == []
+    assert harness.producer.calls == 0
+
+
+async def test_valid_answer_survives_an_invalid_answer_then_a_provider_error() -> None:
+    document = _three_unkeyed_choice_document(document_id=uuid4())
+    provider = _ScriptedProvider(
+        [
+            {"correct_alternative_ids": [2]},
+            {"correct_alternative_ids": [9]},
+            _provider_error(StructuredLLMBackendFailureCode.PROVIDER_REFUSAL),
+        ]
+    )
+    harness = _WorkspaceHarness(provider=provider, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert provider.call_count == 3
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "provider_refusal"
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
+
+
+async def test_valid_answer_survives_a_failover_lease_refusal() -> None:
+    three = _three_unkeyed_choice_document(document_id=uuid4())
+    document = three.model_copy(update={"items": three.items[:2]})
+    timeout = _provider_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)
+    provider = _ScriptedProvider([{"correct_alternative_ids": [2]}, timeout, timeout])
+    # The upfront reservations for both attempted questions fit the day, but
+    # the failover's second lease for question 2 does not.
+    harness = _WorkspaceHarness(provider=provider, document=document, daily_token_limit=8_840)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    # The failover provider is never called once its lease is refused.
+    assert provider.call_count == 2
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "daily_token_lease_exhausted"
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
+
+
+async def test_provider_failure_on_the_first_question_keeps_no_suggestions() -> None:
+    document = _three_unkeyed_choice_document(document_id=uuid4())
+    provider = _ScriptedProvider(
+        [_provider_error(StructuredLLMBackendFailureCode.PROVIDER_REFUSAL)]
+    )
+    harness = _WorkspaceHarness(provider=provider, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert provider.call_count == 1
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "provider_refusal"
+    assert finished.workspace_suggestions_json is None
 
 
 async def test_workspace_lease_refusal_fails_closed_with_zero_provider_calls() -> None:

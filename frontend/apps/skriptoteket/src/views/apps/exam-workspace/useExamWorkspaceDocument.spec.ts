@@ -12,10 +12,12 @@ import { createPinia, setActivePinia } from "pinia";
 import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeAnswerKeySuggestion,
+  NativeExamItem,
 } from "../../../api/examWorkspace";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { mergeSavedDocuments, useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
@@ -61,14 +63,14 @@ describe("mergeSavedDocuments", () => {
   });
 });
 
-function buildResponse(): ExamWorkspaceDocumentResponse {
+function buildResponse(item: NativeExamItem = buildMatchingItem()): ExamWorkspaceDocumentResponse {
   return {
     conversion: null,
     document: {
       assets: [],
       document_id: "doc-1",
       instructions: [],
-      items: [buildMatchingItem()],
+      items: [item],
       origin: {
         extractor_version: "docx-extractor-1",
         kind: "docx_import",
@@ -91,8 +93,8 @@ function buildResponse(): ExamWorkspaceDocumentResponse {
   };
 }
 
-async function openMatchingDocument() {
-  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
+async function openMatchingDocument(item?: NativeExamItem) {
+  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(item));
   const state = effectScope().run(() => useExamWorkspaceDocument());
   if (!state) {
     throw new Error("expected the document state to be created");
@@ -118,10 +120,12 @@ beforeEach(() => {
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((pendingResolve) => {
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((pendingResolve, pendingReject) => {
     resolve = pendingResolve;
+    reject = pendingReject;
   });
-  return { promise, resolve };
+  return { promise, reject, resolve };
 }
 
 describe("arriving suggestions during a save", () => {
@@ -151,6 +155,134 @@ describe("arriving suggestions during a save", () => {
       document: savedDocument,
       summary: { ...buildResponse().summary, version: 2 },
     });
+    await saving;
+
+    expect(currentItem(state).ai_suggestion).toEqual(suggestion);
+    expect(currentItem(state).answer_key.origin).toBe("source_provided");
+    expect(state.isDirty.value).toBe(true);
+  });
+
+  function matchingSuggestion(
+    pairs: Array<[string, string]>,
+  ): NativeAnswerKeySuggestion {
+    return {
+      correct_choice_ids: [],
+      fingerprint: "a".repeat(64),
+      gap_accepted_values: [],
+      match_pairs: pairs.map(([left_id, right_id]) => ({ left_id, right_id })),
+      model: "model",
+      prompt_template_version: "v1",
+      provider_profile_id: "profile",
+    };
+  }
+
+  const SOURCE_PAIRS: Array<[string, string]> = [
+    ["left_001", "right_002"],
+    ["left_002", "right_001"],
+    ["left_003", "right_003"],
+  ];
+
+  it("does not downgrade a source key equal to the arriving suggestion when the save fails", async () => {
+    const state = await openMatchingDocument();
+    const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
+    const suggestion = matchingSuggestion(SOURCE_PAIRS);
+
+    const saving = state.saveDocument();
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    pendingSave.reject(new Error("network down"));
+    await saving;
+
+    expect(currentItem(state).ai_suggestion).toEqual(suggestion);
+    expect(currentItem(state).answer_key.origin).toBe("source_provided");
+    expect(currentItem(state).review.state).toBe("review_complete");
+    expect(state.isDirty.value).toBe(true);
+  });
+
+  it("does not reapply an arrival the returned revision already contains", async () => {
+    const state = await openMatchingDocument();
+    const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
+    const suggestion = matchingSuggestion(SOURCE_PAIRS);
+
+    const saving = state.saveDocument();
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    const alreadySaved = JSON.parse(
+      JSON.stringify(state.workspaceDocument.value),
+    ) as ExamWorkspaceDocumentResponse["document"];
+    pendingSave.resolve({
+      ...buildResponse(),
+      document: alreadySaved,
+      summary: { ...buildResponse().summary, version: 2 },
+    });
+    await saving;
+
+    expect(currentItem(state).ai_suggestion).toEqual(suggestion);
+    expect(currentItem(state).answer_key.origin).toBe("source_provided");
+    expect(currentItem(state).review.state).toBe("review_complete");
+    expect(state.isDirty.value).toBe(false);
+  });
+
+  it("replays two arrivals for the same question in arrival order after a successful save", async () => {
+    const firstPairs: Array<[string, string]> = [
+      ["left_001", "right_001"],
+      ["left_002", "right_002"],
+      ["left_003", "right_003"],
+    ];
+    const secondPairs: Array<[string, string]> = [
+      ["left_001", "right_003"],
+      ["left_002", "right_002"],
+      ["left_003", "right_001"],
+    ];
+    const previous = matchingSuggestion([
+      ["left_001", "right_001"],
+      ["left_002", "right_003"],
+      ["left_003", "right_002"],
+    ]);
+    const item = buildMatchingItem({
+      ai_suggestion: previous,
+      answer_key: {
+        correct_choice_ids: [],
+        match_pairs: firstPairs.map(([left_id, right_id]) => ({ left_id, right_id })),
+        origin: "teacher_authored",
+      },
+    });
+    const state = await openMatchingDocument(item);
+    const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
+    const first = matchingSuggestion(firstPairs);
+    const second = matchingSuggestion(secondPairs);
+
+    const saving = state.saveDocument();
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion: first }]);
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion: second }]);
+    const savedDocument = apiMocks.saveExamWorkspaceDocument.mock.calls[0][1].document;
+    pendingSave.resolve({
+      ...buildResponse(),
+      document: savedDocument,
+      summary: { ...buildResponse().summary, version: 2 },
+    });
+    await saving;
+
+    expect(currentItem(state).ai_suggestion).toEqual(second);
+    expect(currentItem(state).answer_key.origin).toBe("machine_proposed");
+    expect(currentItem(state).answer_key.match_pairs).toEqual(second.match_pairs);
+    expect(currentItem(state).review.state).toBe("review_required");
+    expect(state.isDirty.value).toBe(true);
+  });
+
+  it("reapplies an arrival onto the revision reloaded after a conflict", async () => {
+    const state = await openMatchingDocument();
+    const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    const suggestion = matchingSuggestion([["left_001", "right_001"]]);
+
+    const saving = state.saveDocument();
+    state.applyArrivingSuggestions([{ item_id: "item_001", suggestion }]);
+    pendingSave.reject(
+      new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }),
+    );
     await saving;
 
     expect(currentItem(state).ai_suggestion).toEqual(suggestion);
