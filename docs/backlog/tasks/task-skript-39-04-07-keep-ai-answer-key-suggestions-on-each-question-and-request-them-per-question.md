@@ -104,12 +104,14 @@ exam metadata (ST-SKRIPT-39-08).
 
 ## Core Vertical And Performance
 
-The core vertical: a teacher opens an exam on staging, edits a multiple-choice
-question's options without saving, and requests a suggestion for that
-question. The suggestion arrives, becomes the key with origin
-`machine_proposed`, and the teacher marks the question reviewed. The teacher
-picks another option, saves, reopens the exam and restores the AI's choice
-from the saved suggestion.
+The core vertical: a teacher opens an exam on staging, edits a keyless
+multiple-choice question's options without saving, and requests suggestions
+with the existing "Föreslå facit" action. The suggestion arrives, becomes the
+key with origin `machine_proposed`, and the teacher marks the question
+reviewed. The teacher saves, reopens the exam and finds the suggestion kept on
+the question. The per-question request and restore have no controls until
+TASK-SKRIPT-39-04-05, so their live walk belongs to that task's core vertical
+(P11).
 
 Performance: a per-question request makes one provider call for that question
 only. Applying suggestions must not reload or re-render the whole exam.
@@ -150,3 +152,4 @@ only. Applying suggestions must not reload or re-render the whole exam.
 | T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6). |
 | T5  | An arriving suggestion becomes the key only where the question has no key or its key equals its previous suggestion, with origin `machine_proposed` and `review_required` (P8, D42). |
 | T6  | Review turns `machine_proposed` into `reviewed_advisory`; choosing another option makes the key `teacher_authored`; restoring the suggestion makes it `machine_proposed` with `review_required`; a fingerprint mismatch reports the suggestion as out of date (P8, D42). |
+| T7  | The staging walk covers "Föreslå facit" on unsaved edits, review, save and reopen; the per-question request and restore are walked in TASK-SKRIPT-39-04-05 (P11). |

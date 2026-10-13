@@ -117,7 +117,10 @@ The core vertical is one teacher session on staging: open the last exam,
 move through the list including an instruction and its lettered questions,
 open Import on a question, fix a missing Poäng, accept an AI key by marking
 the question reviewed, see the all-reviewed toast and export QTI from the
-quick menu, on desktop, tablet and phone.
+quick menu, on desktop, tablet and phone. The same session requests an AI
+suggestion for one question, picks another option, and restores the AI's
+choice with the Sparkles mark, the walk TASK-SKRIPT-39-04-07 left to this
+task (P11 in its plan).
 
 Performance: moving between questions with the arrow keys and opening the
 Import box must not re-render the whole list; selection changes re-render
@@ -175,3 +178,4 @@ only the affected rows and the editor.
 | C23 | The upload shows a moving indeterminate bar with 'Laddar upp provet …' and 'Läser provet …' before the counted bar (D18). |
 | C24 | Desktop ≥ 1100 px, tablet 641-1099 px with floating drawers, phone ≤ 640 px with full-screen drawers and list; phone has one question bar with previous, picker, next, Import and review check (D5, D37, D46). |
 | C25 | The editor autosaves shortly after each change as a new version; Spara stays as the visible 'save now' (D67). |
+| C26 | The core vertical also walks a per-question AI suggestion request and restoring the AI's choice, which TASK-SKRIPT-39-04-07 could not walk without controls (D68, 39-04-07 P11). |
