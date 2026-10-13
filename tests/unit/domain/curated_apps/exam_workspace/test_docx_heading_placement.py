@@ -288,10 +288,10 @@ def test_line_before_a_section_heading_stays_document_level() -> None:
     assert all("Name:" not in line for item in placed.items for line in item.plain_text_lines())
 
 
-def test_governing_heading_subset_of_wider_parent_opens_its_first_questions_body() -> None:
+def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions_body() -> None:
     # A heading the grouping marks as governing only q2-q3 never joins the q1-q3
     # parent (D40 exact scope, review F5): parents are flat, so it opens the body
-    # of its first question instead. Through the production assembly.
+    # of every question it governs. Through the production assembly.
     chunks = (
         _chunk("body:0001", "heading", "Prov"),
         _chunk("body:0002", "paragraph", "Besvara alla frågor."),
@@ -336,7 +336,7 @@ def test_governing_heading_subset_of_wider_parent_opens_its_first_questions_body
     assert parent.instruction == ("Besvara alla frågor.",)
     assert "Använd följande ord för fråga två och tre" not in document.items[0].plain_text_lines()
     assert document.items[1].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
-    assert "Använd följande ord för fråga två och tre" not in document.items[2].plain_text_lines()
+    assert document.items[2].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
 
 
 def test_source_text_fallback_keeps_the_printed_points() -> None:

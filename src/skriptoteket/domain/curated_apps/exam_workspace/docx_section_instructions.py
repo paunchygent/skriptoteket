@@ -176,8 +176,10 @@ def place_section_instructions(
         covered = parented.get((run.origin, run.start), set())
         wording = "\n".join(chunk.text for chunk in run.sources)
         targets = [k for k in run.reach if k not in covered]
-        if run.heading and len(run.reach) >= 2:
-            # A group heading that forms no parent opens its first question only.
+        if run.heading and not run.governs and len(run.reach) >= 2:
+            # A section heading that forms no parent opens its first question only. A
+            # governing heading reaches every question it governs (D40), like a governing
+            # instruction that cannot be a parent.
             targets = targets[:1]
         for k in targets:
             if run.heading and run.raw and _printed(ordered[k][2], run.raw):
