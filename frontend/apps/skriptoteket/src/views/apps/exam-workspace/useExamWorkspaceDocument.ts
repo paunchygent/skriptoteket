@@ -424,9 +424,9 @@ export function useExamWorkspaceDocument() {
    * Per question, an arrival group whose latest suggestion is already the
    * question's stored suggestion is skipped whole: that copy never lost
    * the arrivals (a failed save, or a returned revision that already
-   * contained them), and running the arrival transition again would judge
-   * the key against the arriving suggestion itself instead of the
-   * previous one. Otherwise each arrival runs the ordinary transition
+   * contained them), so each arrival keeps exactly one application and a
+   * revision that already holds them stays clean. Otherwise each arrival
+   * runs the ordinary transition
    * once against the copy now in front of the teacher, skipping any the
    * copy already contains.
    */
