@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f0e7bca23358c444eadcf1049634358bed0be82d6c1288cf5d057abffd218b1f",
+  "source_set_digest": "0df3a960c8755201f84369f5856657aee0c021376001e136f47193fad8271224",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4733,7 +4733,7 @@
       "type": "task",
       "title": "Keep AI answer-key suggestions on each question and request them per question",
       "path": "docs/backlog/tasks/task-skript-39-04-07-keep-ai-answer-key-suggestions-on-each-question-and-request-them-per-question.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

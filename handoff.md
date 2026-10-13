@@ -81,7 +81,7 @@
   (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
   waits on 40-01-03, the 0.1.24 sync, 39-05-07, 39-04-06 (scaffold),
-  39-04-07 (`proposed`, contract T1-T6 written: AI key suggestions stored on
+  39-04-07 (`ready`, contract T1-T6: AI key suggestions stored on
   each question, per-question requests; plan P1-P9 in session
   `01a133f5-7568-7aa9-8c03-d65722dbff09`) and 39-04-08 (scaffold: Mina filer
   exports, version pruning). Also scaffolded: 39-05-08 (no titles at import)
