@@ -26,9 +26,7 @@
   proposed->ready; after story 8.
 
 - Owner Dobby (session `a0e6b5f5`, retained `01a13559-bf2e-760d-a690-3a3dea446cd5`):
-  [TASK-SKRIPT-39-04-09](docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md)
-  `ready`, Opus lead `bdcc2fb3` implementing in worktree; next: review, merge,
-  staging walk. TASK-SKRIPT-39-05-08 planning: D1-D3 closed (shared gap/free-text
+  TASK-SKRIPT-39-05-08 planning: D1-D3 closed (shared gap/free-text
   definition, D15 plus alternative-sentences rule, import fixes folded in), O1-O3
   open; replay evidence `evidence/import-replay/`. Next: suggestion accuracy as a
   scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
@@ -154,6 +152,11 @@
 
 ## Recent
 
+- TASK-SKRIPT-39-04-09 `done` 2026-10-13 (ruthless-reviewer approved
+  `d09bd286`, user closure): merged main `c018ae9e`, deployed to staging;
+  all seven walk steps passed, incl. resume after reload, older job ignored
+  after save, import blocked while unsaved, `docx_import` log label, q10
+  Fungi/Bacteria (retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`).
 - TASK-SKRIPT-39-04-07 `done` 2026-10-13 (user closure; user waived review
   of final repair `ace0cc39`, earlier rounds `changes_requested`): merged
   main `838baea9`; T7 staging walk passed: suggestion on unsaved edits ->

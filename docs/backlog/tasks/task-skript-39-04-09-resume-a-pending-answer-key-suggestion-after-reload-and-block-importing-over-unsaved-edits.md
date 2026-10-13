@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-13'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-13'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer rereview approved d09bd286 after the F1 lock, F2 retry and F3 test-synchronization repairs (retained evidence/reviews/TASK-SKRIPT-39-04-09/rereview-d09bd286.md); merged main c018ae9e and deployed to Hemma staging; all seven Validation walk steps passed in the built-in browser on c018ae9e and the user closed the task on 2026-10-13 (evidence/staging-walk-c018ae9e/README.md), all in session 01a13559-bf2e-760d-a690-3a3dea446cd5.
 task_kind: story
 acceptance_criteria:
   - A suggestion requested for the open exam's saved version reaches the exam after a reload or reopen, and no file can be imported while the open exam has unsaved changes

@@ -93,7 +93,12 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    and reopen, and the workspace no longer uses the proposed-overlay table.
 8. `TASK-SKRIPT-39-04-08`: save exported exam files in Mina filer, list each
    exam once and prune autosaves (proposed).
-9. Later slices (unscarffolded until this story is reviewed): digital-PDF
+9. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
+   reload and block importing over unsaved edits. Done 2026-10-13: the page
+   finds the latest job for the current saved version on open, a running job
+   is reused, import is impossible while the exam has unsaved changes, worker
+   logs name the job kind, and each gap carries its printed label.
+10. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.
 

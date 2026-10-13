@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "389be066193da510a5d528d255ebaf3acce9a4ed9bd689d504c85d9bda6a99ab",
+  "source_set_digest": "ffb60eefba3113d715324d1065af06783d62ca5d637c2dc48bd6d32823f9d471",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4773,7 +4773,7 @@
       "type": "task",
       "title": "Resume a pending answer-key suggestion after reload and block importing over unsaved edits",
       "path": "docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4784,7 +4784,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-13",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer rereview approved d09bd286 after the F1 lock, F2 retry and F3 test-synchronization repairs (retained evidence/reviews/TASK-SKRIPT-39-04-09/rereview-d09bd286.md); merged main c018ae9e and deployed to Hemma staging; all seven Validation walk steps passed in the built-in browser on c018ae9e and the user closed the task on 2026-10-13 (evidence/staging-walk-c018ae9e/README.md), all in session 01a13559-bf2e-760d-a690-3a3dea446cd5."
       }
     },
     {
