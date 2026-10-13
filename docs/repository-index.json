@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d988f194029a5f94231aaf8cf90b9166d5cb9ada2dbc250b2670997480bb8cd2",
+  "source_set_digest": "a3425a18b20b0d97464a091122304543b53779c521331d23ee78b74d05f52f57",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4941,7 +4941,7 @@
       "type": "task",
       "title": "Stop producing question titles at import and turn printed group headings into instructions",
       "path": "docs/backlog/tasks/task-skript-39-05-08-stop-producing-question-titles-at-import-and-turn-printed-group-headings-into-instructions.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
