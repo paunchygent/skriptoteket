@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b26ffa80a644645ada043199ea79caf14b5d1994d5d0739c05e6e1fc7b64509e",
+  "source_set_digest": "14f36db6a6d531e5584ff6f63900c6fb7993f4dc71417c44136c5200be58af96",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4755,6 +4755,25 @@
       "title": "Save exported exam files in Mina filer, list each exam once and prune autosaved versions",
       "path": "docs/backlog/tasks/task-skript-39-04-08-save-exported-exam-files-in-mina-filer-list-each-exam-once-and-prune-autosaved-versions.md",
       "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-09",
+      "type": "task",
+      "title": "Resume a pending answer-key suggestion after reload and block importing over unsaved edits",
+      "path": "docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
