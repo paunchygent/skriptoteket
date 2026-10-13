@@ -6,12 +6,16 @@ Purpose:
     one job, two requests with different content get one job each.
 
 Interleaving:
-    Request 1 pauses right after its active-job lookup. Request 2 then runs
-    for a while before request 1 continues. Without serialization request 2
-    finds nothing and commits its own job before request 1 inserts a second
-    one. With it, request 2 waits until request 1 has committed and then finds
-    request 1's job. Pausing both requests after their lookups would deadlock
-    a correct implementation, so only request 1 pauses.
+    Request 1 pauses right after its active-job lookup, still inside its
+    transaction, and reports its database backend. Request 2 then starts, and
+    request 1 continues only once PostgreSQL shows request 2 blocked by request
+    1 on the advisory lock. Without serialization request 2 never blocks, so
+    the test fails at the deadline instead of silently running the two
+    requests one after the other. Both cases share one lock key, because the
+    key is owner, exam and saved version and leaves out the sent content, so
+    the different-content case also proves the requests overlapped. Pausing
+    both requests after their lookups would deadlock a correct implementation,
+    so only request 1 pauses.
 """
 
 from __future__ import annotations
@@ -21,7 +25,7 @@ from uuid import UUID
 
 import pytest
 from pydantic import JsonValue
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -61,15 +65,20 @@ pytestmark = [
     pytest.mark.asyncio(loop_scope="module"),
 ]
 
-# Long enough for an unserialized request 2 to look up, insert and commit.
-_SECOND_REQUEST_HEAD_START_S = 0.3
+# Bounds a hung or unserialized run; elapsed time is never the evidence.
+_DEADLINE_S = 10.0
+_POLL_INTERVAL_S = 0.02
 
 
 class _PausingAfterLookup(PostgreSQLExamAnswerKeyEnrichmentJobRepository):
-    """Signals once its active-job lookup has returned, then waits to continue."""
+    """Reports its backend once its active-job lookup has returned, then waits to continue."""
 
     def __init__(
-        self, session: AsyncSession, *, looked_up: asyncio.Event, resume: asyncio.Event
+        self,
+        session: AsyncSession,
+        *,
+        looked_up: asyncio.Future[int],
+        resume: asyncio.Event,
     ) -> None:
         super().__init__(session)
         self._looked_up = looked_up
@@ -89,7 +98,9 @@ class _PausingAfterLookup(PostgreSQLExamAnswerKeyEnrichmentJobRepository):
             workspace_document_revision=workspace_document_revision,
             workspace_request_json=workspace_request_json,
         )
-        self._looked_up.set()
+        backend_pid = await self._session.scalar(select(func.pg_backend_pid()))
+        assert backend_pid is not None
+        self._looked_up.set_result(backend_pid)
         await self._resume.wait()
         return job
 
@@ -116,13 +127,39 @@ async def _request(
     )
 
 
+async def _wait_until_blocked_by(
+    session_factory: async_sessionmaker[AsyncSession], holder_pid: int
+) -> None:
+    """Return once another backend waits on an advisory lock held by ``holder_pid``."""
+    deadline = asyncio.get_running_loop().time() + _DEADLINE_S
+    while True:
+        async with session_factory() as session:
+            waiting = await session.scalar(
+                text(
+                    "SELECT count(*) FROM pg_locks "
+                    "WHERE locktype = 'advisory' AND NOT granted "
+                    "AND :holder = ANY(pg_blocking_pids(pid))"
+                ),
+                {"holder": holder_pid},
+            )
+        if waiting:
+            return
+        if asyncio.get_running_loop().time() >= deadline:
+            pytest.fail(
+                "request 2 never waited on request 1's advisory lock while request 1 "
+                "held its transaction; the reuse-or-enqueue decision is not serialized"
+            )
+        await asyncio.sleep(_POLL_INTERVAL_S)
+
+
 async def _race(
     session_factory: async_sessionmaker[AsyncSession],
     harness: SuggestionHandlerHarness,
     first_document: NativeExamDocument,
     second_document: NativeExamDocument,
 ) -> tuple[ExamWorkspaceAnswerKeySuggestionsResponse, ExamWorkspaceAnswerKeySuggestionsResponse]:
-    looked_up, resume = asyncio.Event(), asyncio.Event()
+    looked_up: asyncio.Future[int] = asyncio.get_running_loop().create_future()
+    resume = asyncio.Event()
 
     async def first() -> ExamWorkspaceAnswerKeySuggestionsResponse:
         async with session_factory() as session:
@@ -134,12 +171,19 @@ async def _race(
             repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
             return await _request(session, repository, harness, second_document)
 
-    first_task = asyncio.create_task(first())
-    await looked_up.wait()
-    second_task = asyncio.create_task(second())
-    await asyncio.sleep(_SECOND_REQUEST_HEAD_START_S)
+    tasks = [asyncio.create_task(first())]
+    try:
+        first_pid = await asyncio.wait_for(asyncio.shield(looked_up), _DEADLINE_S)
+        tasks.append(asyncio.create_task(second()))
+        await _wait_until_blocked_by(session_factory, first_pid)
+    except BaseException:
+        resume.set()
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        raise
     resume.set()
-    return await first_task, await second_task
+    return await tasks[0], await tasks[1]
 
 
 async def _stored_jobs(session_factory: async_sessionmaker[AsyncSession], lineage_id: UUID) -> int:
