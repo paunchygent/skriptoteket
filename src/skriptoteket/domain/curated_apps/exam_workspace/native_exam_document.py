@@ -220,6 +220,7 @@ class NativeExamItem(BaseModel):
     printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
+    points_estimated: bool = False  # points split from a printed section total (D6)
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
@@ -242,6 +243,8 @@ class NativeExamItem(BaseModel):
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> "NativeExamItem":
+        if self.points_estimated and self.points is None:
+            raise ValueError("estimated points require points")
         choice_ids = [choice.choice_id for choice in self.choices]
         gap_ids = [gap.gap_id for gap in self.gaps]
         if len(set(choice_ids)) != len(choice_ids):
@@ -433,7 +436,7 @@ class NativeExportBlocker(BaseModel):
 
     item_id: str
     reason: Literal[
-        "review_required",
+        "unbuilt_question",
         "machine_proposed_key_unreviewed",
         "missing_points",
         "missing_answer_key",
@@ -441,15 +444,17 @@ class NativeExportBlocker(BaseModel):
 
 
 def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
-    """S4 gate: LLM output and low-confidence items need review before export.
+    """S4 gate: export needs every value the export carries, never a parsing doubt (D1).
 
+    An unbuilt question, printed from source because the import could not convert it, blocks
+    until the teacher marks it reviewed (D2). A converted item that needs review does not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
     """
     blockers: list[NativeExportBlocker] = []
     for item in document.items:
-        if item.review.state is NativeItemReviewState.REVIEW_REQUIRED:
-            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="review_required"))
+        if is_unbuilt_question(item):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="unbuilt_question"))
         if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
             blockers.append(
                 NativeExportBlocker(
@@ -462,6 +467,14 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)
+
+
+def is_unbuilt_question(item: NativeExamItem) -> bool:
+    """An item printed from source that the teacher has not marked reviewed (D2)."""
+    return (
+        item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    )
 
 
 def item_has_trusted_key(item: NativeExamItem) -> bool:

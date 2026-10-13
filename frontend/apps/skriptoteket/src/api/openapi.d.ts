@@ -6103,6 +6103,11 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];
@@ -6145,6 +6150,11 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
             review: components["schemas"]["NativeItemReview"];

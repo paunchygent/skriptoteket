@@ -77,7 +77,7 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     ]
     assert shared == [], "the grouping governs this section; assert its parent instead"
     assert [document.parent_of(i.item_id) for i in (previous, item, following)] == [None] * 3
-    assert ("review_required", item.item_id) in {
+    assert ("unbuilt_question", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }
     events = [e for e in outcome.result.events if e.code == "model_review"]

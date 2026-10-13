@@ -8,9 +8,6 @@ total as its own points and left the line unclaimed.
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
-    CHECK_POINTS_REASON,
-)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     build_replay,
@@ -31,5 +28,6 @@ async def test_section_total_is_split_over_its_questions_and_its_points_line_is_
     items = {item.source_anchor: item for item in outcome.result.document.items}
     section = [items[anchor] for anchor in _FIRST_SECTION]
     assert [item.points for item in section] == [1] * 15
-    assert all(CHECK_POINTS_REASON in item.review.reasons for item in section)
+    assert all(item.points_estimated for item in section)
+    assert not any(item.review.reasons for item in section)
     assert _POINTS_LINE not in items

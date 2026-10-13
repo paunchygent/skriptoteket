@@ -1,6 +1,7 @@
-"""A question's own chunk that a reply lists only as an answer key, while an item lists another
-chunk of the question, is left out of that item: the item's check mark shows it as printed and
-it is no teacher note (D41)."""
+"""A converted item holds the own chunks of its question that the reply leaves out (D41). Only a
+chunk whose wording the item lacks, without points labels, numbering and answer or facit lines,
+shows under the item's check mark as printed (D4). A reply without points takes the one points
+label the item's own chunks print, and the label leaves the stem and title (D3)."""
 
 from uuid import uuid4
 
@@ -18,8 +19,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     LEFT_OUT_REASON,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItem,
     NativeItemReviewState,
     NativeParseOrigin,
+    NativeTextSegment,
 )
 
 pytestmark = pytest.mark.unit
@@ -32,24 +35,32 @@ def _chunk(anchor: str, text: str) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text)
 
 
-def test_an_own_chunk_listed_only_as_an_answer_key_joins_the_item_s_check_mark():
-    state = DocxBuildState(
+def _state(*texts: str) -> DocxBuildState:
+    chunks = tuple(_chunk(f"body:{n:04d}", text) for n, text in enumerate(texts, start=1))
+    return DocxBuildState(
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,
-        chunks=(_chunk("body:0001", _STEM), _chunk("body:0002", _FACIT)),
-        questions=(("body:0001", "body:0002"),),
+        chunks=chunks,
+        questions=(tuple(c.anchor for c in chunks),),
     )
+
+
+def _text(text: str) -> dict[str, JsonValue]:
+    return {"kind": "text", "text": text, "accepted_values": []}
+
+
+def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
     item: dict[str, JsonValue] = {
-        "source_anchors": ["body:0001"],
+        "source_anchors": list(anchors),
         "outcome": "converted",
         "conflict_kind": None,
         "review_reason": None,
         "kind": "free_text",
-        "title": _STEM,
+        "title": None,
         "printed_label": "1",
-        "body": [{"segments": [{"kind": "text", "text": _STEM[3:], "accepted_values": []}]}],
+        "body": [{"segments": [_text(_STEM[3:])]}],
         "points": 2,
         "choices": [],
         "match_left": [],
@@ -57,14 +68,138 @@ def test_an_own_chunk_listed_only_as_an_answer_key_joins_the_item_s_check_mark()
         "match_pairs": [],
         "marking_guide": "",
     }
+    item.update(fields)
+    return item
 
-    admit_batch({"answer_key_anchors": ["body:0002"], "items": [item]}, state)
+
+def _stem_texts(item: NativeExamItem) -> list[str]:
+    return [
+        segment.text
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ]
+
+
+def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked():
+    state = _state(_STEM, _FACIT)
+
+    admit_batch(
+        {"answer_key_anchors": ["body:0002"], "items": [_item(["body:0001"], title=_STEM)]}, state
+    )
 
     assert state.key_anchors == set()
     ((admitted, anchors),) = state.accepted
     assert anchors == ("body:0001", "body:0002")
     assert admitted.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, _FACIT)
-    assert [e.code for e in state.events] == ["own_chunks_left_out"]
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert admitted.review.reasons == ()
+    assert state.events == []
     assert state.pending == ()
+
+
+def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_flagged():
+    lead = "Läs dikten nedan och svara på frågan."
+    state = _state(lead, _STEM)
+
+    body = [{"segments": [_text(lead)]}, {"segments": [_text(_STEM[3:])]}]
+    admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
+
+    ((admitted, anchors),) = state.accepted
+    assert anchors == ("body:0002", "body:0001")
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert admitted.review.reasons == ()
+
+
+def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
+    lead = "Läs dikten nedan. Tänk särskilt på diktens rytm och rim."
+    state = _state(lead, _STEM)
+
+    body = [{"segments": [_text("Läs dikten nedan.")]}, {"segments": [_text(_STEM[3:])]}]
+    admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert admitted.review.reasons == (LEFT_OUT_REASON, lead)
+    assert [(e.code, e.anchors) for e in state.events] == [("own_chunks_left_out", ("body:0001",))]
+
+
+def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_label():
+    stem = "Vilket ord är ett substantiv? (1 p)"
+    state = _state(stem, "A. springa", "B. bord", "C. snabb")
+    choices: list[JsonValue] = [
+        {"text": "springa", "correct": False},
+        {"text": "bord", "correct": True},
+        {"text": "snabb", "correct": False},
+    ]
+
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ["body:0001", "body:0002", "body:0003", "body:0004"],
+                    kind="single_choice",
+                    title=stem,
+                    body=[{"segments": [_text(stem)]}],
+                    points=None,
+                    choices=choices,
+                    marking_guide=None,
+                )
+            ]
+        },
+        state,
+    )
+
+    ((admitted, _),) = state.accepted
+    assert admitted.points == 1
+    assert admitted.title == "Vilket ord är ett substantiv?"
+    assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
+    assert admitted.review.reasons == ()
+
+
+@pytest.mark.parametrize(
+    "texts",
+    [
+        ("Vilket ord är ett substantiv?", "A. bord", "B. springa"),
+        ("Vilket ord är ett substantiv? (1 p)", "A. bord (1 p)", "B. springa"),
+        ("Vilket ord är ett substantiv? (0 p)", "A. bord", "B. springa"),
+    ],
+    ids=["no-label", "two-labels", "zero-points"],
+)
+def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_label(texts):
+    state = _state(*texts)
+    choices: list[JsonValue] = [
+        {"text": "bord", "correct": True},
+        {"text": "springa", "correct": False},
+    ]
+
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ["body:0001", "body:0002", "body:0003"],
+                    kind="single_choice",
+                    body=[{"segments": [_text(texts[0])]}],
+                    points=None,
+                    choices=choices,
+                    marking_guide=None,
+                )
+            ]
+        },
+        state,
+    )
+
+    ((admitted, _),) = state.accepted
+    assert admitted.points is None
+    assert _stem_texts(admitted) == [texts[0]]
+
+
+def test_points_the_reply_gives_win_over_a_printed_label():
+    stem = "Vilket ord är ett substantiv? (1 p)"
+    state = _state(stem)
+
+    admit_batch({"items": [_item(["body:0001"], body=[{"segments": [_text(stem)]}])]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.points == 2
+    assert _stem_texts(admitted) == [stem]

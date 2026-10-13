@@ -254,14 +254,10 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
 
 
 async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseline, monkeypatch):
-    confidence = exam_workspace_docx_pipeline.with_confidence
+    mark = exam_workspace_docx_pipeline.with_type_check_mark
 
-    def breaking_confidence(
-        state: DocxBuildState,
-        families: tuple[QuestionFamily, ...],
-        scores: Mapping[str, float],
-    ) -> None:
-        confidence(state, families, scores)
+    def breaking_mark(state: DocxBuildState) -> None:
+        mark(state)
         state.accepted = [
             (
                 item.model_copy(update={"points": -1})
@@ -272,7 +268,7 @@ async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseli
             for item, a in state.accepted
         ]
 
-    monkeypatch.setattr(exam_workspace_docx_pipeline, "with_confidence", breaking_confidence)
+    monkeypatch.setattr(exam_workspace_docx_pipeline, "with_type_check_mark", breaking_mark)
     outcome = await _convert()
 
     _assert_only_questions_reviewed(baseline, outcome, {"body:0019"})

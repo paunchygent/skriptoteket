@@ -235,3 +235,46 @@ def uses_term(terms: Iterable[str], sources: Iterable[DocxChunk]) -> bool:
     """Whether a chunk names one of the terms as a whole word, facit included."""
     text = " ".join(chunk.marked_text for chunk in sources).casefold()
     return any(re.search(rf"(?<!\w){re.escape(term.casefold())}(?!\w)", text) for term in terms)
+
+
+_LABEL_RUN = re.compile(r"\s*(?:" + POINT_LABEL.pattern + ")", re.IGNORECASE)
+
+
+def _printed_points(label: str) -> int | float | None:
+    number = re.search(r"\d+(?:[.,]\d+)?", label)
+    if number is None:
+        return None
+    value = float(number.group().replace(",", "."))
+    if value <= 0:
+        return None
+    return int(value) if value.is_integer() else value
+
+
+def _without_label(text: str) -> str:
+    stripped = _LABEL_RUN.sub("", text)
+    return stripped.lstrip() if _LABEL_RUN.match(text) else stripped
+
+
+def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
+    """D3: a reply without points takes the one points label its own chunks print.
+
+    The label, such as "(1 p)", leaves the item's title and stem text. With no label, or with
+    two or more, the item keeps the reply's reading.
+    """
+    if item.points is not None:
+        return item
+    labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
+    points = _printed_points(labels[0]) if len(labels) == 1 else None
+    if points is None:
+        return item
+    body = []
+    for paragraph in item.body:
+        segments = tuple(
+            segment.model_copy(update={"text": _without_label(segment.text)})
+            if segment.kind == "text" and segment.text
+            else segment
+            for segment in paragraph.segments
+        )
+        body.append(paragraph.model_copy(update={"segments": segments}))
+    title = _without_label(item.title).strip() if item.title else item.title
+    return item.model_copy(update={"points": points, "body": tuple(body), "title": title or None})

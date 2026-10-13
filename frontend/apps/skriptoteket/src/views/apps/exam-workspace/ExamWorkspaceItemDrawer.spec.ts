@@ -26,6 +26,7 @@ const ITEM: NativeExamItem = {
   match_left: [],
   match_right: [],
   points: 2,
+  points_estimated: false,
   review: {
     confidence: 0.9,
     parse_origin: "deterministic",

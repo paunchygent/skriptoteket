@@ -1,24 +1,18 @@
-"""A converted item that leaves out some of its question's own chunks carries a check mark.
+"""A converted item that leaves out own chunks whose wording it copies carries no check mark.
 
 ``docx_build_v16_low22_left_out`` holds unedited live replies of a one-family-per-batch run (see
-its README). The item stays converted and carries a check mark showing the left-out chunks as
-printed (D41). Those chunks are not separate review items, and export stays blocked until the
-teacher marks the item reviewed, which the item editor saves as ``review_complete``.
+its README). The reply lists only the first sub-question's anchor but copies every sub-question
+into its body. The item holds the left-out chunks (D41); they are not separate review items, and
+because the item holds their wording it needs no review and nothing blocks its export (D4, D1).
 """
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
-    LEFT_OUT_REASON,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
-    NativeExportBlocker,
     NativeItemReviewState,
     NativeParseOrigin,
-    native_exam_document_json_bytes,
     native_export_blockers,
-    parse_native_exam_document,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
@@ -34,7 +28,7 @@ _ROOT = FIXTURES / "docx_build_v16_low22_left_out"
 _EXAM = "svenska_2_grammatik_omprov_variant_1_med_facit"
 
 
-async def test_a_converted_item_leaving_out_own_chunks_shows_them_in_its_check_mark():
+async def test_a_converted_item_copying_the_wording_of_left_out_chunks_is_not_flagged():
     questions = recording(_EXAM, "docx_grouping_1", root=_ROOT)["questions"]
     assert isinstance(questions, list)
     (question,) = [
@@ -53,26 +47,19 @@ async def test_a_converted_item_leaving_out_own_chunks_shows_them_in_its_check_m
 
     document = outcome.result.document
     assert len(document.items) == 8
-    texts = {c.anchor: c.text for c in corpus_chunks(_EXAM)}
     (item,) = [i for i in document.items if i.source_anchor == "body:0025"]
     assert item.kind is NativeExamItemKind.GAP_FILL
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.reasons[-4:] == (
-        LEFT_OUT_REASON,
-        texts["body:0027"],
-        texts["body:0028"],
-        texts["body:0029"],
-    )
+    assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert item.review.reasons == ()
     left_out = {"body:0027", "body:0028", "body:0029"}
     assert all(i.source_anchor not in left_out for i in document.items)
-    blocker = NativeExportBlocker(item_id=item.item_id, reason="review_required")
-    assert blocker in native_export_blockers(document)
-
-    review = item.review.model_copy(update={"state": NativeItemReviewState.REVIEW_COMPLETE})
-    reviewed = item.model_copy(update={"review": review})
-    updated = tuple(reviewed if i is item else i for i in document.items)
-    saved = native_exam_document_json_bytes(document.model_copy(update={"items": updated}))
-    assert all(
-        b.item_id != item.item_id for b in native_export_blockers(parse_native_exam_document(saved))
+    texts = {c.anchor: c.text for c in corpus_chunks(_EXAM)}
+    stems = " ".join(
+        segment.text
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if segment.kind == "text"
     )
+    assert all(texts[a].split(" Huvudord:")[0] in stems for a in left_out)
+    assert all(b.item_id != item.item_id for b in native_export_blockers(document))

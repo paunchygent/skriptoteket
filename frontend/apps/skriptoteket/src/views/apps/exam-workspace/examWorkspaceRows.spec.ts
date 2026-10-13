@@ -32,6 +32,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     match_left: [],
     match_right: [],
     points: 2,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

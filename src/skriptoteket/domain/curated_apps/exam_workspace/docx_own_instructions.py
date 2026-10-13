@@ -3,14 +3,15 @@
 The instruction stands when section placement puts it at that question: in the body of an
 item that holds the question's other own chunks, or on a parent that holds such an item. A
 chunk whose instruction lands anywhere else, such as the exam-wide instructions or another
-section, goes back to its question's item. A converted item holds it under the check mark that
-shows left-out chunks as printed and blocks export until the teacher handles it (D41); a review
-item already prints every own chunk of its question. The rest of the instruction keeps the
+section, goes back to its question's item. A converted item that lacks the chunk's wording holds
+it under the check mark that shows left-out chunks as printed (D41, D4); a review item already
+prints every own chunk of its question. The rest of the instruction keeps the
 source text of its other chunks. A chunk the grouping marks as governing belongs to its
 section parent (D40) and is never sent back.
 """
 
-from collections.abc import Mapping, Sequence
+import re
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
@@ -18,10 +19,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
     NativeItemReviewState,
     NativeParseOrigin,
+    NativeTextSegment,
 )
 
 LEFT_OUT_REASON = (
@@ -40,6 +43,53 @@ class ReturnedChunks:
     accepted: Accepted
     instructions: tuple[ProducedMetadata, ...]
     events: tuple[DocxBuildEvent, ...]
+
+
+# A line's own number or letter, such as "3.", "b)" or "Fråga 3:", and an answer or facit line.
+_NUMBERING = re.compile(
+    r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)])\s*",
+    re.IGNORECASE,
+)
+_ANSWER_LINE = re.compile(r"^\s*(?:svar|facit|answer|answers|key)\s*:", re.IGNORECASE)
+# Words of two or more characters: a lone option letter or digit is numbering, not wording.
+_WORD = re.compile(r"\w{2,}")
+
+
+def _words(texts: Iterable[str | None]) -> set[str]:
+    return {word.casefold() for text in texts if text for word in _WORD.findall(text)}
+
+
+def _wording(chunk: DocxChunk) -> set[str]:
+    """The chunk's words without points labels, numbering and answer or facit lines."""
+    lines = (
+        _NUMBERING.sub("", POINT_LABEL.sub(" ", line))
+        for line in chunk.text.splitlines()
+        if not _ANSWER_LINE.match(line)
+    )
+    return _words(lines)
+
+
+def _item_words(item: NativeExamItem) -> set[str]:
+    texts: list[str | None] = [item.title, item.marking_guide]
+    texts.extend(
+        segment.text
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    )
+    texts.extend(value for gap in item.gaps for value in gap.accepted_values)
+    texts.extend(choice.text for choice in item.choices)
+    texts.extend(entry.text for entry in item.match_left)
+    texts.extend(entry.text for entry in item.match_right)
+    return _words(texts)
+
+
+def wording_left_out(item: NativeExamItem, chunks: Iterable[DocxChunk]) -> tuple[DocxChunk, ...]:
+    """The chunks whose wording the item lacks (D4); a drawing is never wording the item holds."""
+    held = _item_words(item)
+    return tuple(
+        chunk for chunk in chunks if chunk.kind == "drawing" or not _wording(chunk) <= held
+    )
 
 
 def with_left_out_mark(item: NativeExamItem, chunks: Sequence[DocxChunk]) -> NativeExamItem:
@@ -106,8 +156,10 @@ def return_misplaced_own_chunks(
     for k, anchors in back.items():
         item, held = updated[k]
         ordered = sorted(anchors, key=positions.__getitem__)
-        if item.review.parse_origin is NativeParseOrigin.LLM_PARSED:
-            item = with_left_out_mark(item, [by_anchor[a] for a in ordered])
+        if item.review.parse_origin is NativeParseOrigin.LLM_PARSED and (
+            missing := wording_left_out(item, [by_anchor[a] for a in ordered])
+        ):
+            item = with_left_out_mark(item, missing)
         updated[k] = (item, (*held, *ordered))
         events.append(
             DocxBuildEvent(

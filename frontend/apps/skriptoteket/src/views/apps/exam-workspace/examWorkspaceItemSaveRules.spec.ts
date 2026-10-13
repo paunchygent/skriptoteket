@@ -36,6 +36,7 @@ function buildChoiceItem(
     match_left: [],
     match_right: [],
     points: 1,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

@@ -156,8 +156,11 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
         c.text.strip() for c in chunks
     ]
     assert all(item.review.state.value == "review_required" for item in opened.document.items)
-    assert opened.notes
-    assert native_export_blockers(opened.document)
+    assert opened.notes == (), "item reasons stay on their items (D8)"
+    assert {b.reason for b in native_export_blockers(opened.document)} == {
+        "unbuilt_question",
+        "missing_points",
+    }
     codes = {event["code"] for event in finished.diagnostics}
     assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
     reason = opened.document.items[0].review.reasons[0]

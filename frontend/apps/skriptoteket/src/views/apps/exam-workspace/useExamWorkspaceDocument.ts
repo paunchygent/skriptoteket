@@ -314,7 +314,8 @@ export function useExamWorkspaceDocument() {
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
-    patchItem(itemId, (item) => ({ ...item, points }));
+    // A points value the teacher sets is no estimate from a section total.
+    patchItem(itemId, (item) => ({ ...item, points, points_estimated: false }));
   }
 
   /** Replace one paragraph's segments, as serialized by the inline body editor. */
@@ -462,6 +463,7 @@ export function useExamWorkspaceDocument() {
       match_left: [],
       match_right: [],
       points: null,
+      points_estimated: false,
       review: {
         confidence: null,
         parse_origin: "teacher_created",

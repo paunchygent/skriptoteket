@@ -10,9 +10,11 @@ grouping gives a question as its own stays with the item that lists it, also whe
 lists it as an answer key, the title or an instruction, and is no answer key when an item lists
 another chunk of its question. A title or instruction holding an own chunk no item lists is an
 instruction that stands only where assembly places it at its question (D42); the title keeps
-its other chunks. A converted item that leaves out own chunks of its question holds them under
-a check mark that shows them as printed (D41). A gap_fill item that makes a gap of material its
-line talks about becomes a review item showing its question as printed (D43). Building one
+its other chunks. A converted item that leaves out own chunks of its question holds them; those
+whose wording it lacks show under a check mark as printed (D41, D4). A reply without points
+takes the one points label the item's chunks print (D3). A gap_fill item that makes a gap of
+material its line talks about becomes a review item showing its question as printed (D43).
+Building one
 question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A question reported as a type conflict leaves the
 batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
@@ -38,11 +40,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     with_left_out_mark,
+    wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     title_without_answer_key,
     with_accepted_forms,
+    with_printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
@@ -188,8 +192,8 @@ def _with_left_out(
     seen: set[str],
     item_held: frozenset[str],
 ) -> Admitted:
-    """A converted item that leaves out own chunks of its question holds them under a check
-    mark that shows them as printed and blocks export until the teacher handles it (D41).
+    """A converted item holds the own chunks of its question it leaves out; those whose wording
+    it lacks show under a check mark as printed, a possible parsing issue (D41, D4).
 
     A left-out chunk is an own chunk of a question the item touches that no item of the
     reply lists and no entry holds yet.
@@ -206,9 +210,12 @@ def _with_left_out(
     if not left_out:
         return admitted
     seen.update(left_out)
-    state.record("admission", "own_chunks_left_out", item=index, anchors=left_out)
-    marked = with_left_out_mark(item, [state.chunk_by_anchor[a] for a in left_out])
-    return marked, (*anchors, *left_out)
+    missing = wording_left_out(item, [state.chunk_by_anchor[a] for a in left_out])
+    if missing:
+        moved = tuple(c.anchor for c in missing)
+        state.record("admission", "own_chunks_left_out", item=index, anchors=moved)
+        item = with_left_out_mark(item, missing)
+    return item, (*anchors, *left_out)
 
 
 def _admit_item(
@@ -267,7 +274,8 @@ def _admit_item(
 
     def build() -> NativeExamItem:
         context = definition_context(state.chunks, anchors, instructions)
-        return native_item(with_accepted_forms(produced, context))
+        own = (state.chunk_by_anchor[a] for a in anchors)
+        return native_item(with_printed_points(with_accepted_forms(produced, context), own))
 
     built = _built(index, anchors, state, seen, build)
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))
