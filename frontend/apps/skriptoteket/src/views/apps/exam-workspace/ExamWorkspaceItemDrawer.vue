@@ -4,10 +4,9 @@
  *
  * Domain purpose:
  *   Hold the selected question's metadata outside the editor: what stops
- *   its export or save, why it needs review, the open answer-key proposal,
- *   and how the question was read from the source file. The teacher opens
- *   it from the editor's "Detaljer" toggle; the view also opens it on
- *   desktop when a proposal waits. Parse notes read "Att granska" while the
+ *   its export or save, why it needs review, and how the question was
+ *   read from the source file. The teacher opens it from the editor's
+ *   "Detaljer" toggle. Parse notes read "Att granska" while the
  *   question needs review and "Anteckningar från inläsningen" after it is
  *   reviewed.
  *
@@ -23,14 +22,12 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` with the current layout.
  *   - Keyboard and focus handling comes from `useExamWorkspaceDialogFocus`.
- *   - Embeds `ExamWorkspaceProposalPanel` and re-emits its intents.
  */
 
 import { computed, ref, useId } from "vue";
 
 import { IconX } from "../../../components/icons";
 import type { NativeExamItem, NativeExamParseOrigin } from "../../../api/examWorkspace";
-import ExamWorkspaceProposalPanel from "./ExamWorkspaceProposalPanel.vue";
 import { examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
@@ -45,16 +42,12 @@ const props = defineProps<{
   disabled: boolean;
   item: NativeExamItem;
   layout: ExamWorkspaceLayout;
-  proposedItem: NativeExamItem | null;
   readiness: string[];
   serverBlockers: string[];
 }>();
 
 const emit = defineEmits<{
-  approve: [itemId: string];
   close: [];
-  dismiss: [itemId: string];
-  edit: [itemId: string];
 }>();
 
 const DETAILS_TOGGLE_SELECTOR = '[data-test="exam-workspace-item-details-toggle"]';
@@ -119,16 +112,6 @@ useExamWorkspaceDialogFocus(frame, {
           />
         </button>
       </header>
-
-      <ExamWorkspaceProposalPanel
-        v-if="proposedItem"
-        :disabled="disabled"
-        :item="item"
-        :proposed-item="proposedItem"
-        @approve="emit('approve', $event)"
-        @dismiss="emit('dismiss', $event)"
-        @edit="emit('edit', $event)"
-      />
 
       <section class="grid gap-2">
         <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">

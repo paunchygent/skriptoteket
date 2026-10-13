@@ -4,7 +4,8 @@
  * Domain purpose:
  *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
  *   list and reopen saved documents, edit items locally with immutable
- *   updates, move advisory answer-key proposals into the editor, refuse a
+ *   updates, write arriving AI answer-key suggestions onto their
+ *   questions, refuse a
  *   save the server would reject with Swedish copy naming the questions,
  *   save versioned revisions, and recover from stale-save conflicts by reloading
  *   the latest saved version.
@@ -27,6 +28,7 @@ import {
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
+  ExamWorkspaceAnswerKeySuggestionItem,
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamBodySegment,
@@ -46,8 +48,9 @@ import {
   withMatchEntryText,
   withMatchPairs,
   withParagraphSegments,
+  withArrivingSuggestion,
   withPoints,
-  withProposal,
+  withRestoredSuggestion,
   withTitle,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
@@ -211,10 +214,7 @@ export function useExamWorkspaceDocument() {
     }
   }
 
-  async function saveDocument(
-    rejectedProposalItemIds: string[] = [],
-    afterConversionConflict = false,
-  ): Promise<boolean> {
+  async function saveDocument(afterConversionConflict = false): Promise<boolean> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || (isBusy.value && !afterConversionConflict)) {
@@ -232,7 +232,6 @@ export function useExamWorkspaceDocument() {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
-        rejectedProposalItemIds: [...rejectedProposalItemIds],
       });
       applyResponse(response);
       conflictNotice.value = null;
@@ -244,7 +243,7 @@ export function useExamWorkspaceDocument() {
       const conflict = isApiError(error) && error.status === 409;
       const sync = conflict ? await syncAfterConflict(expectedRevision) : "unrelated";
       if (sync === "merged") {
-        return await saveDocument(rejectedProposalItemIds, true);
+        return await saveDocument(true);
       }
       if (refusedPlaceholderChange(error)) {
         // The server names the converting questions the save changed; the copy stays.
@@ -360,8 +359,31 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, reviewed);
   }
 
-  function applyProposal(itemId: string, proposedItem: NativeExamItem, approve: boolean): void {
-    patchItem(itemId, (item) => withProposal(item, proposedItem, approve));
+  /** Write every arriving suggestion onto its question in one document update. */
+  function applyArrivingSuggestions(suggestions: ExamWorkspaceAnswerKeySuggestionItem[]): void {
+    const current = workspaceDocument.value;
+    if (!current || suggestions.length === 0) {
+      return;
+    }
+    const byItemId = new Map(suggestions.map((entry) => [entry.item_id, entry.suggestion]));
+    let changed = false;
+    const items = current.items.map((item) => {
+      const suggestion = byItemId.get(item.item_id);
+      if (!suggestion || convertingItemIds.value.has(item.item_id)) {
+        return item;
+      }
+      changed = true;
+      return withArrivingSuggestion(item, suggestion);
+    });
+    if (!changed) {
+      return;
+    }
+    workspaceDocument.value = { ...current, items };
+    isDirty.value = true;
+  }
+
+  function restoreItemSuggestion(itemId: string): void {
+    patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
   function addItem(): void {
@@ -378,7 +400,7 @@ export function useExamWorkspaceDocument() {
 
   return {
     addItem,
-    applyProposal,
+    applyArrivingSuggestions,
     conflictNotice,
     conversionError,
     conversionMessage,
@@ -395,6 +417,7 @@ export function useExamWorkspaceDocument() {
     notes,
     openDocument,
     reloadDocument,
+    restoreItemSuggestion,
     saveDocument,
     savedDocuments,
     selectItem,

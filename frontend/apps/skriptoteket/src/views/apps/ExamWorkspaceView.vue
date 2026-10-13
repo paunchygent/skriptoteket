@@ -5,7 +5,7 @@
  * Domain purpose:
  *   Convert a .docx exam into files Exam.net imports as intended, in two
  *   modes switched in one stable toolbar: Filer (import, saved exams,
- *   readiness, QTI/PDF/DOCX files, answer-key proposals) and Redigera
+ *   readiness, QTI/PDF/DOCX files, answer-key suggestions) and Redigera
  *   (question list plus one dominating editor, with question details in a
  *   drawer). Save state stays in the toolbar in both modes. Desktop is the
  *   canonical composition; tablet narrows it and overlays the drawer; phone
@@ -58,7 +58,7 @@ const layout = useExamWorkspaceLayout();
 
 const {
   addItem,
-  applyProposal,
+  applyArrivingSuggestions,
   conflictNotice,
   conversionError,
   conversionMessage,
@@ -100,18 +100,8 @@ const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
 const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
   useExamWorkspaceExports(summary);
 
-const {
-  dismissProposal,
-  enrichmentMessage,
-  isEnrichmentPending,
-  isRequesting,
-  openProposals,
-  proposalForItem,
-  rejectedItemIds,
-  rejectProposal,
-  requestProposals,
-  resetProposalDecisionsAfterSave,
-} = useExamWorkspaceEnrichment(summary);
+const { enrichmentMessage, isEnrichmentPending, isRequesting, requestSuggestionsForAll } =
+  useExamWorkspaceEnrichment(summary, workspaceDocument, applyArrivingSuggestions);
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
@@ -148,14 +138,6 @@ const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
     })),
 );
 
-const proposalItemIds = computed(() =>
-  openProposals.value.map((proposal) => proposal.item_id),
-);
-
-const selectedProposal = computed(() =>
-  selectedItem.value ? proposalForItem(selectedItem.value.item_id) : null,
-);
-
 const selectedPosition = computed(() => {
   const index = items.value.findIndex((item) => item.item_id === selectedItemId.value);
   return index + 1;
@@ -165,8 +147,10 @@ const otherSavedDocuments = computed(() =>
   savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
 );
 
+// Suggestion requests send the editor's current document, so unsaved
+// changes never disable them (TASK-SKRIPT-39-04-07).
 const enrichmentDisabled = computed(
-  () => isDirty.value || isBusy.value || isRequesting.value || isEnrichmentPending.value,
+  () => isBusy.value || isRequesting.value || isEnrichmentPending.value,
 );
 
 // A newly open exam goes into the address and starts in Redigera; closing
@@ -179,19 +163,6 @@ watch(
       mode.value = "filer";
     } else if (lineageId !== previousLineageId) {
       mode.value = "redigera";
-    }
-  },
-);
-
-// A waiting answer-key proposal is the next thing to decide, so the desktop
-// drawer opens by itself for it. Tablet and phone overlays take focus, which
-// would interrupt typing; there the count on the "Detaljer" toggle shows it.
-watch(
-  () => selectedProposal.value?.item_id ?? null,
-  (proposalItemId) => {
-    if (proposalItemId && layout.value === "desktop") {
-      questionSheetOpen.value = false;
-      detailsOpen.value = true;
     }
   },
 );
@@ -239,27 +210,7 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
 }
 
 async function handleSave(): Promise<void> {
-  const rejectedProposalItemIds = [...rejectedItemIds.value];
-  if (await saveDocument(rejectedProposalItemIds)) {
-    resetProposalDecisionsAfterSave();
-  }
-}
-
-function handleApproveProposal(itemId: string): void {
-  const proposal = proposalForItem(itemId);
-  if (proposal) {
-    applyProposal(itemId, proposal.proposed_item, true);
-    dismissProposal(itemId);
-  }
-}
-
-function handleEditProposal(itemId: string): void {
-  const proposal = proposalForItem(itemId);
-  if (proposal) {
-    applyProposal(itemId, proposal.proposed_item, false);
-    dismissProposal(itemId);
-    detailsOpen.value = false;
-  }
+  await saveDocument();
 }
 </script>
 
@@ -386,7 +337,7 @@ function handleEditProposal(itemId: string): void {
             @go-to-item="goToItem"
             @open="openDocument"
             @reload="reloadDocument"
-            @request-proposals="requestProposals"
+            @request-proposals="requestSuggestionsForAll"
             @select-file="handleSelectedFile"
           />
         </div>
@@ -409,17 +360,12 @@ function handleEditProposal(itemId: string): void {
             :item-count="items.length"
             :item-rows="itemRows"
             :layout="layout"
-            :proposal-item-ids="proposalItemIds"
             :readiness-by-item-id="readinessByItemId"
             :selected-item="selectedItem"
             :selected-item-id="selectedItemId"
             :selected-item-locked="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
             :selected-position="selectedPosition"
-            :selected-proposal="selectedProposal"
             @add="handleAddItem"
-            @approve-proposal="handleApproveProposal"
-            @dismiss-proposal="rejectProposal"
-            @edit-proposal="handleEditProposal"
             @mark-reviewed="markItemReviewed"
             @select="selectItem"
             @step="stepItem"
@@ -444,7 +390,6 @@ function handleEditProposal(itemId: string): void {
     >
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
-        :proposal-item-ids="proposalItemIds"
         :readiness-by-item-id="readinessByItemId"
         :rows="itemRows"
         :selected-item-id="selectedItemId"

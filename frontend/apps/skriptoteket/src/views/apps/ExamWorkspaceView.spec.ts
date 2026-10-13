@@ -26,12 +26,10 @@ import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -136,13 +134,6 @@ beforeEach(() => {
   apiMocks.saveExamWorkspaceDocument.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockReset();
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
 });
 
 describe("ExamWorkspaceView host frame", () => {

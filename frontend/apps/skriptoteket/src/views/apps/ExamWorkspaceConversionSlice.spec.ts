@@ -10,11 +10,9 @@ const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 vi.mock("../../api/examWorkspace", () => apiMocks);
 
@@ -36,9 +34,6 @@ beforeEach(() => {
     buildResponse({ conversion: status("succeeded"), version: 1 }),
   );
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    lineage_id: "lineage-1", document_revision: 1, state: "not_requested", proposals: [],
-  });
 });
 afterEach(() => {
   wrapper?.unmount();

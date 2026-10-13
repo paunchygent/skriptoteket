@@ -102,9 +102,6 @@ export function installProgressiveConversionLifecycle(apiMocks: ProgressiveApiMo
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(FIRST_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(FIRST);
     apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-    apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-      lineage_id: "lineage-1", document_revision: 1, state: "not_requested", proposals: [],
-    });
   });
   afterEach(() => {
     mountedView?.unmount();

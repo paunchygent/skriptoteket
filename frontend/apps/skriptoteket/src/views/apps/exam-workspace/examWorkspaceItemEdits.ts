@@ -12,6 +12,7 @@
  */
 
 import type {
+  NativeAnswerKeySuggestion,
   NativeExamAnswerKeyOrigin,
   NativeExamBodySegment,
   NativeExamItem,
@@ -135,41 +136,91 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
   };
 }
 
-/**
- * Move an advisory proposal into the editor as an unreviewed prefill
- * (`machine_proposed`, item marked `review_required`). With `approve`, the
- * teacher accepts the key unchanged in the same step, which records it as
- * `reviewed_advisory` and leaves the item's review state and reasons as
- * they were: parse-confidence review still needs the explicit
- * "mark reviewed" action.
- */
-export function withProposal(
+function keyMatchesSuggestion(
   item: NativeExamItem,
-  proposedItem: NativeExamItem,
-  approve: boolean,
+  suggestion: NativeAnswerKeySuggestion,
+): boolean {
+  const key = item.answer_key;
+  if (key.correct_choice_ids.length !== suggestion.correct_choice_ids.length) {
+    return false;
+  }
+  if (!key.correct_choice_ids.every((id) => suggestion.correct_choice_ids.includes(id))) {
+    return false;
+  }
+  if (key.match_pairs.length !== suggestion.match_pairs.length) {
+    return false;
+  }
+  const suggestedPairs = new Set(suggestion.match_pairs.map((p) => `${p.left_id}:${p.right_id}`));
+  if (!key.match_pairs.every((p) => suggestedPairs.has(`${p.left_id}:${p.right_id}`))) {
+    return false;
+  }
+  const suggestedGaps = new Map(
+    suggestion.gap_accepted_values.map((entry) => [entry.gap_id, entry.accepted_values]),
+  );
+  return item.gaps.every((gap) => {
+    const suggested = suggestedGaps.get(gap.gap_id) ?? [];
+    return (
+      gap.accepted_values.length === suggested.length &&
+      gap.accepted_values.every((value) => suggested.includes(value))
+    );
+  });
+}
+
+/** Write a suggestion's key onto the item as `machine_proposed`, review required. */
+function withSuggestionAsKey(
+  item: NativeExamItem,
+  suggestion: NativeAnswerKeySuggestion,
 ): NativeExamItem {
   const gaps = item.gaps.map((gap) => {
-    const proposedGap = proposedItem.gaps.find((candidate) => candidate.gap_id === gap.gap_id);
-    return proposedGap ? { ...gap, accepted_values: proposedGap.accepted_values } : gap;
+    const suggested = suggestion.gap_accepted_values.find((entry) => entry.gap_id === gap.gap_id);
+    return suggested ? { ...gap, accepted_values: [...suggested.accepted_values] } : gap;
   });
-  if (approve) {
-    return {
-      ...item,
-      answer_key: { ...proposedItem.answer_key, origin: "reviewed_advisory" },
-      gaps,
-    };
-  }
   return {
     ...item,
-    answer_key: { ...proposedItem.answer_key, origin: "machine_proposed" },
+    ai_suggestion: suggestion,
+    answer_key: {
+      correct_choice_ids: [...suggestion.correct_choice_ids],
+      match_pairs: suggestion.match_pairs.map((pair) => ({ ...pair })),
+      origin: "machine_proposed",
+    },
     gaps,
     review: { ...item.review, state: "review_required" },
   };
 }
 
+/**
+ * Write an arriving AI suggestion onto its question (T5). The suggestion
+ * is always kept on the question; it also becomes the key, as
+ * `machine_proposed` with review required, only where the question has no
+ * key or its key is the previous suggestion's key. Any other key stays.
+ */
+export function withArrivingSuggestion(
+  item: NativeExamItem,
+  suggestion: NativeAnswerKeySuggestion,
+): NativeExamItem {
+  const previous = item.ai_suggestion ?? null;
+  const becomesKey =
+    item.answer_key.origin === "absent" ||
+    (previous !== null && keyMatchesSuggestion(item, previous));
+  if (becomesKey) {
+    return withSuggestionAsKey(item, suggestion);
+  }
+  return { ...item, ai_suggestion: suggestion };
+}
+
+/** Make the kept suggestion the key again: `machine_proposed`, review required (T6). */
+export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
+  const suggestion = item.ai_suggestion ?? null;
+  if (!suggestion) {
+    return item;
+  }
+  return withSuggestionAsKey(item, suggestion);
+}
+
 /** The free-text question a teacher adds after the last item. */
 export function newTeacherItem(itemId: string, sequence: number): NativeExamItem {
   return {
+    ai_suggestion: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
     choices: [],

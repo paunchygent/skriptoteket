@@ -1,11 +1,12 @@
 /**
- * Exam workspace advisory answer-key proposals.
+ * Exam workspace AI answer-key suggestions.
  *
  * Domain purpose:
- *   Request machine answer-key proposals for the saved head revision, poll
- *   the job until it settles, and expose each proposal as editor prefill.
- *   Proposals are advisory: nothing here changes the document. The teacher
- *   moves a proposal into the editor, then approves or edits it there.
+ *   Request AI suggestions for the questions exactly as the editor shows
+ *   them — every keyless keyed question, or one named question — poll the
+ *   job until it settles, and write each arriving suggestion onto its
+ *   question through the document owner. Requests work with unsaved
+ *   changes because the editor's current document is what gets sent.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
@@ -16,13 +17,14 @@ import { computed, onScopeDispose, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import {
-  getExamWorkspaceEnrichment,
-  startExamWorkspaceEnrichment,
+  getExamWorkspaceAnswerKeySuggestions,
+  requestExamWorkspaceAnswerKeySuggestions,
 } from "../../../api/examWorkspace";
 import type {
-  ExamWorkspaceAnswerKeyProposal,
+  ExamWorkspaceAnswerKeySuggestionItem,
+  ExamWorkspaceAnswerKeySuggestionsStatus,
   ExamWorkspaceDocumentSummary,
-  ExamWorkspaceEnrichmentStatus,
+  NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 
@@ -31,23 +33,21 @@ export const EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS = 30_000;
 
 const REQUEST_FAILURE_COPY = "Det gick inte att begära facitförslag. Försök igen.";
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
-const NO_PROPOSALS_COPY = "Inga facitförslag kom tillbaka. Komplettera facit manuellt.";
+const NO_SUGGESTIONS_COPY = "Inga facitförslag kom tillbaka. Komplettera facit manuellt.";
 
-function isPending(status: ExamWorkspaceEnrichmentStatus | null): boolean {
+function isPending(status: ExamWorkspaceAnswerKeySuggestionsStatus | null): boolean {
   return status?.state === "queued" || status?.state === "running";
 }
 
 export function useExamWorkspaceEnrichment(
   summary: Ref<ExamWorkspaceDocumentSummary | null>,
+  document: Ref<NativeExamDocument | null>,
+  applySuggestions: (suggestions: ExamWorkspaceAnswerKeySuggestionItem[]) => void,
 ) {
   const toast = useToast();
 
-  const enrichmentStatus = ref<ExamWorkspaceEnrichmentStatus | null>(null);
+  const enrichmentStatus = ref<ExamWorkspaceAnswerKeySuggestionsStatus | null>(null);
   const isRequesting = ref(false);
-  const dismissedItemIds = ref<string[]>([]);
-  // Proposals the teacher explicitly rejected ("Avvisa"). Approving or moving
-  // a proposal into the editor only hides it; it is not a rejection.
-  const rejectedItemIds = ref<string[]>([]);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let generation = 0;
   // Consecutive failed status polls. The first failure of a streak shows the
@@ -67,9 +67,9 @@ export function useExamWorkspaceEnrichment(
       case "running":
         return "Facitförslagen tas fram …";
       case "succeeded":
-        return status.proposals.length > 0
-          ? `${status.proposals.length} facitförslag att granska.`
-          : NO_PROPOSALS_COPY;
+        return status.suggestions.length > 0
+          ? `${status.suggestions.length} facitförslag har lagts in på frågorna.`
+          : NO_SUGGESTIONS_COPY;
       case "not_eligible":
       case "failed":
         return status.message ?? REQUEST_FAILURE_COPY;
@@ -77,38 +77,6 @@ export function useExamWorkspaceEnrichment(
         return null;
     }
   });
-
-  const openProposals = computed<ExamWorkspaceAnswerKeyProposal[]>(() => {
-    const status = enrichmentStatus.value;
-    if (status?.state !== "succeeded") {
-      return [];
-    }
-    return status.proposals.filter(
-      (proposal) => !dismissedItemIds.value.includes(proposal.item_id),
-    );
-  });
-
-  function proposalForItem(itemId: string): ExamWorkspaceAnswerKeyProposal | null {
-    return openProposals.value.find((proposal) => proposal.item_id === itemId) ?? null;
-  }
-
-  function dismissProposal(itemId: string): void {
-    if (!dismissedItemIds.value.includes(itemId)) {
-      dismissedItemIds.value = [...dismissedItemIds.value, itemId];
-    }
-  }
-
-  function rejectProposal(itemId: string): void {
-    dismissProposal(itemId);
-    if (!rejectedItemIds.value.includes(itemId)) {
-      rejectedItemIds.value = [...rejectedItemIds.value, itemId];
-    }
-  }
-
-  function resetProposalDecisionsAfterSave(): void {
-    dismissedItemIds.value = [];
-    rejectedItemIds.value = [];
-  }
 
   function stopPolling(): void {
     if (pollTimer !== null) {
@@ -125,32 +93,39 @@ export function useExamWorkspaceEnrichment(
     );
   }
 
-  function schedulePoll(lineageId: string, pollGeneration: number): void {
+  function schedulePoll(lineageId: string, jobId: string, pollGeneration: number): void {
     stopPolling();
     pollTimer = setTimeout(() => {
       pollTimer = null;
-      void refreshStatus(lineageId, pollGeneration);
+      void refreshStatus(lineageId, jobId, pollGeneration);
     }, pollDelayMs());
   }
 
   function applyStatus(
     lineageId: string,
     pollGeneration: number,
-    status: ExamWorkspaceEnrichmentStatus,
+    status: ExamWorkspaceAnswerKeySuggestionsStatus,
   ): void {
     if (pollGeneration !== generation) {
       return;
     }
     pollFailures = 0;
     enrichmentStatus.value = status;
-    if (isPending(status)) {
-      schedulePoll(lineageId, pollGeneration);
+    if (status.state === "succeeded" && status.suggestions.length > 0) {
+      applySuggestions([...status.suggestions]);
+    }
+    if (isPending(status) && status.job_id) {
+      schedulePoll(lineageId, status.job_id, pollGeneration);
     }
   }
 
-  async function refreshStatus(lineageId: string, pollGeneration: number): Promise<void> {
+  async function refreshStatus(
+    lineageId: string,
+    jobId: string,
+    pollGeneration: number,
+  ): Promise<void> {
     try {
-      const status = await getExamWorkspaceEnrichment(lineageId);
+      const status = await getExamWorkspaceAnswerKeySuggestions(lineageId, jobId);
       applyStatus(lineageId, pollGeneration, status);
     } catch {
       if (pollGeneration !== generation) {
@@ -161,21 +136,26 @@ export function useExamWorkspaceEnrichment(
       }
       pollFailures += 1;
       if (isPending(enrichmentStatus.value)) {
-        schedulePoll(lineageId, pollGeneration);
+        schedulePoll(lineageId, jobId, pollGeneration);
       }
     }
   }
 
-  async function requestProposals(): Promise<void> {
+  async function requestSuggestions(itemId?: string): Promise<void> {
     const currentSummary = summary.value;
-    if (!currentSummary || isRequesting.value || isEnrichmentPending.value) {
+    const currentDocument = document.value;
+    if (!currentSummary || !currentDocument || isRequesting.value || isEnrichmentPending.value) {
       return;
     }
     const pollGeneration = generation;
     isRequesting.value = true;
     pollFailures = 0;
     try {
-      const status = await startExamWorkspaceEnrichment(currentSummary.lineage_id);
+      const status = await requestExamWorkspaceAnswerKeySuggestions(
+        currentSummary.lineage_id,
+        currentDocument,
+        itemId,
+      );
       applyStatus(currentSummary.lineage_id, pollGeneration, status);
     } catch {
       toast.failure(REQUEST_FAILURE_COPY);
@@ -184,38 +164,35 @@ export function useExamWorkspaceEnrichment(
     }
   }
 
+  function requestSuggestionsForAll(): Promise<void> {
+    return requestSuggestions();
+  }
+
+  function requestSuggestionForItem(itemId: string): Promise<void> {
+    return requestSuggestions(itemId);
+  }
+
   watch(
-    () => [summary.value?.lineage_id, summary.value?.version] as const,
-    ([lineageId], [previousLineageId]) => {
+    () => summary.value?.lineage_id ?? null,
+    (lineageId, previousLineageId) => {
+      if (lineageId === previousLineageId) {
+        return;
+      }
       generation += 1;
       stopPolling();
       pollFailures = 0;
       enrichmentStatus.value = null;
-      // A conflict can reload a newer revision after a failed save. Keep
-      // unsaved dismissals and rejections for this exam until the save succeeds.
-      if (lineageId !== previousLineageId) {
-        dismissedItemIds.value = [];
-        rejectedItemIds.value = [];
-      }
-      if (lineageId) {
-        void refreshStatus(lineageId, generation);
-      }
     },
   );
 
   onScopeDispose(stopPolling);
 
   return {
-    dismissProposal,
     enrichmentMessage,
     enrichmentStatus,
     isEnrichmentPending,
     isRequesting,
-    openProposals,
-    proposalForItem,
-    rejectedItemIds,
-    rejectProposal,
-    requestProposals,
-    resetProposalDecisionsAfterSave,
+    requestSuggestionForItem,
+    requestSuggestionsForAll,
   };
 }
