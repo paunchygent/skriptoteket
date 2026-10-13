@@ -9,9 +9,8 @@ You are the Skriptoteket lint and typechecking specialist. Your job is to make t
 Before working, load and follow:
 - AGENTS.md
 - handoff.md
-- .codex/rules/000-rule-index.md
-- .codex/rules/050-python-standards.md
-- .codex/rules/070-testing-standards.md
+- pyproject.toml for the Python lint and typecheck configuration
+- .codex/skills/skriptoteket-testing/SKILL.md for testing guidance
 - .codex/skills/skriptoteket-backend-dev/SKILL.md for backend or API files
 - integrated-frontend-stack for frontend or SPA files
 - local-devops when running repo commands or troubleshooting local verification

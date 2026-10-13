@@ -8,7 +8,7 @@
 
 ## Lookup
 
-- runbook | RUN-SKRIPT-runbook-agent-browser-automation-mcp-chrome-playwright | system=skriptoteket-dev | summary=Runbook: Agent browser walk proof | [Runbook: Agent browser walk proof](run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md)
+- runbook | RUN-SKRIPT-runbook-agent-browser-automation-mcp-chrome-playwright | system=skriptoteket-dev | summary=Use the shared staging-walk route for staging and browser proof on Hemma | [Runbook: Agent browser walk proof](run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md)
 - runbook | RUN-SKRIPT-runbook-ai-code-completion-services | system=hemma.hule.education | summary=Runbook: AI Code Completion Services | [Runbook: AI Code Completion Services](run-skript-runbook-ai-code-completion-services-runbook-ai-code-completion-services.md)
 - runbook | RUN-SKRIPT-runbook-editor-ai-pipeline-completion-chat-edit-ops | system=skriptoteket | summary=Use this runbook when you need to understand, debug, or extend the editor AI features: - Inline completions ("ghost text") - Editor chat ("Kodassistenten") - Edit-ops (patch-only diffs + preview/apply) This document i… | [Runbook: Editor AI pipeline (completion/chat/edit-ops)](run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops-runbook-editor-ai-pipeline-completion-chat-edit-ops.md)
 - runbook | RUN-SKRIPT-runbook-feedback-email-cli | system=skriptoteket-email | summary=Runbook: Feedback Email CLI | [Runbook: Feedback Email CLI](run-skript-runbook-feedback-email-cli-runbook-feedback-email-cli.md)
@@ -27,7 +27,7 @@
 - runbook | RUN-SKRIPT-runbook-script-bank-seeding-repo-db | system=skriptoteket | summary=Runbook: Script bank seeding (repo → DB) | [Runbook: Script bank seeding (repo → DB)](run-skript-runbook-script-bank-seeding-repo-db-runbook-script-bank-seeding-repo-db.md)
 - runbook | RUN-SKRIPT-runbook-testing-pytest-vitest-playwright | system=skriptoteket-dev | summary=Runbook: Testing (Pytest + Vitest + browser walk) | [Runbook: Testing (Pytest + Vitest + browser walk)](run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md)
 - runbook | RUN-SKRIPT-runbook-user-and-local-role-management | system=skriptoteket-identity | summary=Use this runbook when you need to: - Bootstrap a new deployment with the first Superuser. - Inspect or repair Skriptoteket-local users, identity projections, and roles. - Grant or revoke app-local roles. **Context:**… | [Runbook: User and Local Role Management](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md)
-- runbook | RUN-SKRIPT-skriptoteket-staging-on-hemma | system=hemma.hule.education | summary=Operate the skriptoteket-dev staging stack beside HuleEdu staging on Hemma and reach it from the Mac tunnel | [Skriptoteket staging on Hemma](run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md)
+- runbook | RUN-SKRIPT-skriptoteket-staging-on-hemma | system=hemma.hule.education | summary=Use the shared staging-walk route for staging and browser proof on Hemma | [Skriptoteket staging on Hemma](run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md)
 
 ## Backlog Backlinks
 

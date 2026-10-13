@@ -154,9 +154,8 @@ Skriptoteket reference.
   local skill source into a harness configuration folder; installing shared-skill
   shims into this repository stays forbidden.
 - Identity is split: HuleEdu owns the browser-session login ceremony,
-  Skriptoteket owns local roles and authorization. Authenticated browser proof
-  must use the HuleEdu ceremony and the repo helpers, never direct
-  credential POSTs or local cookie shortcuts.
+  Skriptoteket owns local roles and authorization.
+- Use the shared `staging-walk` skill for staging and browser proof on Hemma.
 - Skriptoteket shares Hemma infrastructure with HuleEdu through
   `shared-postgres` and shared edge surfaces; host policy is the shared
   `hemma-devops` skill.

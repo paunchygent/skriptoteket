@@ -1,5 +1,12 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
+  `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
+  D1-D2 live routing edits pass focused gates (2026-10-11; retained session
+  `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
+  Rule deletion is blocked: migration hook demands replacements, contrary to D1.
+  Next: parent resolves hook, delete rules, rerun gates, commit for review.
+
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
   is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session

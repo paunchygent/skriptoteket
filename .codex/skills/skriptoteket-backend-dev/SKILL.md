@@ -36,14 +36,13 @@ Tip: generate a fresh tree with `find src/skriptoteket -maxdepth 2 -type d`.
 
 ## Critical invariants (non-negotiable)
 
-- Follow `.codex/rules/000-rule-index.md` (layer boundaries, protocol-first DI, docs workflow).
 - Keep domain pure: no web/db/framework imports in `src/skriptoteket/domain/**`.
 - Keep web/api thin: validate + call handlers; never put business logic in routers.
 - Raise `DomainError` (no HTTP) and map to HTTP in `src/skriptoteket/web/*`.
 - Unit of Work owns commit/rollback; repositories never commit (see `src/skriptoteket/infrastructure/db/uow.py`).
-- Avoid OpenAPI breakage: do NOT use `from __future__ import annotations` in router modules (rule 040).
-- For editor AI / LLM changes: follow `.codex/rules/047-ai-llm-guardrails.md` + `docs/runbooks/runbook-openai-responses-api.md`.
-- For execution queue/worker changes: follow `.codex/rules/062-execution-queue-worker-loop.md` + ADR-0062.
+- Avoid OpenAPI breakage: do NOT use `from __future__ import annotations` in router modules (see `tests/unit/web/test_openapi_contracts.py`).
+- For editor AI / LLM changes: follow `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`.
+- For execution queue/worker changes: follow `docs/decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md`.
 
 ## Key ADRs + “goal state” watchlist
 
@@ -54,7 +53,7 @@ Read first when touching these areas:
 - Tool UI contract v2: `docs/adr/adr-0022-tool-ui-contract-v2.md` (models in `src/skriptoteket/domain/scripting/ui/contract_v2.py`)
 - Tool sessions + persistence: `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`
 - Multi-file inputs: `docs/adr/adr-0031-multi-file-input-contract.md`
-- Execution queue worker loop: `docs/adr/adr-0062-execution-queue-and-worker-loop.md`
+- Execution queue worker loop: `docs/decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md`
 - OpenAPI as source + frontend types: `docs/adr/adr-0030-openapi-as-source-and-openapi-typescript.md`
 - Runner request envelope v1 (goal state): `docs/adr/adr-0063-runner-request-envelope-v1.md`
 - File references + resolver (goal state): `docs/adr/adr-0064-file-references-and-resolver.md`
@@ -64,21 +63,17 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 ## Stories + planning workflow (when implementing backlog work)
 
 - Planning workflow: `docs/index.md`
-- Review gate (required for proposed EPICs/ADRs): `.codex/rules/096-review-workflow.md`
+- Review gate (required for proposed EPICs/ADRs): `agent-docs-governance`
 
 ## DB + migrations
 
-- Migrations live in `migrations/versions/`; workflow rules in `.codex/rules/054-alembic-migrations.md`.
+- Migrations live in `migrations/versions/`; workflow in `.codex/skills/skriptoteket-testing/references/migrations.md`.
 - Upgrade dev DB: `pdm run db-upgrade`
-- If you add a migration, add/run the docker idempotency integration test (rule 054).
+- If you add a migration, add/run the docker idempotency integration test (see `.codex/skills/skriptoteket-testing/references/migrations.md`).
 
 ## CLIs + seeding
 
 - Bootstrap superuser: `pdm run bootstrap-superuser`
-- Shared-auth local projection:
-  `pdm run consume-huleedu-subject-export --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --apply --output-json .artifacts/skriptoteket-auth-bootstrap/local-dev-apply-result.json`
-- Shared-auth preflight:
-  `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json`
 - Seed script bank:
   - Runbook: `docs/runbooks/runbook-script-bank-seeding.md`
   - Safe default: `pdm run seed-script-bank --dry-run --profile dev`
@@ -88,21 +83,18 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 
 - OpenAPI export: `pdm run openapi-export-v1`
 - Frontend API types: `pdm run fe-gen-api-types`
-- UI and route proof: agent-driven click-through walk in a real browser session per
-  `.codex/rules/075-browser-automation.md`. Never use Playwright; the `ui-*-smoke` and
-  `ui-hmr-probe` scripts are history, not a proof lane.
+- Use the shared staging-walk skill for staging and browser proof on Hemma.
 - Edit-ops harnesses (ad-hoc): `python -m scripts.edit_ops_harness` and `python -m scripts.chat_edit_ops_context_probe`
 
 ## Auth and API proof boundary
 
-- HuleEdu owns browser login, session issuance, CSRF, and Gateway ceremony.
-- Protected Skriptoteket app APIs go through HuleEdu Gateway or an explicit signed Gateway-equivalent local harness.
+Use the shared staging-walk skill for staging and browser proof on Hemma.
+
 - Direct Skriptoteket backend calls are for unit tests, integration tests, public routes, health checks, and explicitly scoped backend probes.
-- Do not use retired app-local login endpoints or hand-set local browser-session cookies for browser/protected-API proof.
 - Correlation header: `X-Correlation-ID: <uuid>` (echoed by middleware).
 
 ## Testing protocol (backend)
 
-- Follow `.codex/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`.
+- Follow `.codex/skills/skriptoteket-testing/SKILL.md` and `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`.
 - Default: `pdm run test` (unit tests mock protocols; integration uses Docker/testcontainers).
 - Also run: `pdm run lint` and `pdm run typecheck` for backend changes.
