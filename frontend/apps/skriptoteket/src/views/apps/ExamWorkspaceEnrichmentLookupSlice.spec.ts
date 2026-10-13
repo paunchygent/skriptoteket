@@ -54,7 +54,7 @@ describe("ExamWorkspaceView failed lost-job lookup", () => {
     await importFixtureDocument(wrapper);
 
     expect(wrapper.find(LOOKUP_ERROR).text()).toBe(
-      "Det gick inte att se om ett facitförslag väntar på provet.",
+      "Kunde inte hämta väntande facitförslag.",
     );
     expect(apiMocks.findExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
 

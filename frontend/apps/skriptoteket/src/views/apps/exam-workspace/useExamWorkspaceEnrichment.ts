@@ -43,7 +43,7 @@ export const EXAM_WORKSPACE_ENRICHMENT_MAX_POLL_MS = 30_000;
 const REQUEST_FAILURE_COPY = "Det gick inte att begära facitförslag. Försök igen.";
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
 const NO_SUGGESTIONS_COPY = "Inga facitförslag kom tillbaka. Komplettera facit manuellt.";
-const LOOKUP_FAILURE_COPY = "Det gick inte att se om ett facitförslag väntar på provet.";
+const LOOKUP_FAILURE_COPY = "Kunde inte hämta väntande facitförslag.";
 
 function isPending(status: ExamWorkspaceAnswerKeySuggestionsStatus | null): boolean {
   return status?.state === "queued" || status?.state === "running";

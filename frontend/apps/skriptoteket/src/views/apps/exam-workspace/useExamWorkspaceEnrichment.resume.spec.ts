@@ -221,7 +221,7 @@ describe("an exam opening asks for its lost job", () => {
 
 });
 
-const LOOKUP_FAILURE_COPY = "Det gick inte att se om ett facitförslag väntar på provet.";
+const LOOKUP_FAILURE_COPY = "Kunde inte hämta väntande facitförslag.";
 
 function lookupFailureToasts(): number {
   return useToastStore().toasts.filter((toast) => toast.message === LOOKUP_FAILURE_COPY).length;
