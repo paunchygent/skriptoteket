@@ -48,9 +48,11 @@ editor request suggestions for the content it is showing.
   per question that got a valid answer. A request works while the editor has
   unsaved changes.
 - **Applying a suggestion.** The editor writes an arriving suggestion onto
-  its question. When the question has no key, or its key equals its previous
-  suggestion, the suggestion also becomes the key, with origin
-  `machine_proposed` and review state `review_required`; any other key stays.
+  its question. When the question has no key, or its key is an unreviewed
+  `machine_proposed` key equal to its previous suggestion, the suggestion
+  also becomes the key, with origin `machine_proposed` and review state
+  `review_required`. Any other key stays, including a source, teacher or
+  reviewed key equal to the previous suggestion (P12).
 - **Key origins.** Marking the question reviewed turns a `machine_proposed`
   key into `reviewed_advisory`. Choosing another option makes the key
   `teacher_authored` and keeps the suggestion. Restoring the suggestion makes
@@ -150,6 +152,6 @@ only. Applying suggestions must not reload or re-render the whole exam.
 | T2  | Each question stores its suggestion in the saved exam: the proposed key, a fingerprint of its answer-relevant content, and provider profile, model and prompt version (P5). |
 | T3  | The workspace's use of the overlay table (the table stays for the DigiExam converter until ST-SKRIPT-39-07), proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5, P10). |
 | T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6). |
-| T5  | An arriving suggestion becomes the key only where the question has no key or its key equals its previous suggestion, with origin `machine_proposed` and `review_required` (P8, D42). |
+| T5  | An arriving suggestion becomes the key only where the question has no key or its key is an unreviewed `machine_proposed` key equal to its previous suggestion, with origin `machine_proposed` and `review_required`; source, teacher and reviewed keys always stay (P8, P12, D42). |
 | T6  | Review turns `machine_proposed` into `reviewed_advisory`; choosing another option makes the key `teacher_authored`; restoring the suggestion makes it `machine_proposed` with `review_required`; a fingerprint mismatch reports the suggestion as out of date (P8, D42). |
 | T7  | The staging walk covers "Föreslå facit" on unsaved edits, review, save and reopen; the per-question request and restore are walked in TASK-SKRIPT-39-04-05 (P11). |
