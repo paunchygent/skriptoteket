@@ -9,7 +9,10 @@
  *   changes because the editor's current document is what gets sent. A job
  *   belongs to the exam opening it was requested in: its results, status,
  *   failure toast and next poll take effect only while that opening is still
- *   open, checked when each completion lands.
+ *   open, checked when each completion lands. Each new opening asks the
+ *   server for the newest job requested on its saved version, so a job this
+ *   page lost (reload, reopen, switching back) is polled or delivered as if
+ *   this opening had requested it (TASK-SKRIPT-39-04-09 P1, P2, P7).
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
@@ -17,10 +20,11 @@
  *   - Reads the open exam opening from `useExamWorkspaceDocument`.
  */
 
-import { computed, onScopeDispose, shallowRef } from "vue";
+import { computed, onScopeDispose, shallowRef, watch } from "vue";
 import type { Ref } from "vue";
 
 import {
+  findExamWorkspaceAnswerKeySuggestions,
   getExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerKeySuggestions,
 } from "../../../api/examWorkspace";
@@ -47,6 +51,8 @@ export type ExamWorkspaceEnrichmentBinding = {
   /** The exam opening in front of the teacher. */
   openExam: Readonly<Ref<ExamWorkspaceOpening | null>>;
   document: Readonly<Ref<NativeExamDocument | null>>;
+  /** The saved version the open copy stands on. */
+  savedRevision: Readonly<Ref<number | null>>;
   isOpen: (opening: ExamWorkspaceOpening) => boolean;
   applySuggestions: (
     opening: ExamWorkspaceOpening,
@@ -197,6 +203,43 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       }
     }
   }
+
+  /**
+   * Find the job this opening's exam has on its saved version. Admitted only
+   * if, when the answer lands, the opening is still open, its copy still
+   * stands on the asked-for saved version (an older version's job never
+   * applies), and the teacher has not started a job of their own here.
+   */
+  async function resumeLostJob(opening: ExamWorkspaceOpening): Promise<void> {
+    const revision = binding.savedRevision.value;
+    if (revision === null) {
+      return;
+    }
+    let status: ExamWorkspaceAnswerKeySuggestionsStatus | null;
+    try {
+      status = await findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
+    } catch {
+      // The job stays on the server; the next opening asks again.
+      return;
+    }
+    if (
+      !status ||
+      binding.savedRevision.value !== revision ||
+      job.value?.opening === opening ||
+      requestingIn.value === opening
+    ) {
+      return;
+    }
+    // Like every completion, it takes effect only while `opening` is open.
+    applyStatus(opening, status);
+  }
+
+  // Only triggers the lookup; whether its answer applies is decided when it lands.
+  watch(binding.openExam, (opening) => {
+    if (opening) {
+      void resumeLostJob(opening);
+    }
+  });
 
   function requestSuggestionsForAll(): Promise<void> {
     return requestSuggestions();

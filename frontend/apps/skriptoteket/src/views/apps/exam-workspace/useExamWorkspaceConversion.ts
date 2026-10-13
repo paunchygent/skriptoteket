@@ -72,6 +72,12 @@ export function useExamWorkspaceConversion(
   const conversionStatus = ref<ExamWorkspaceConversionStatus | null>(null);
   const isConverting = ref(false);
   const conversionError = ref<string | null>(null);
+  /**
+   * The one rule for every import path (picker, drop, `importDocument`): no
+   * import while the workspace is busy or the open exam has unsaved changes,
+   * which the new exam would discard.
+   */
+  const importBlocked = computed(() => isBusy() || binding.isDirty.value);
   /** Units of `binding.serverDocument` while its conversion runs; null otherwise. */
   const shownUnits = ref<ExamWorkspaceConversionUnit[] | null>(null);
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -340,7 +346,7 @@ export function useExamWorkspaceConversion(
   }
 
   async function importDocument(file: File): Promise<void> {
-    if (isBusy() || isConverting.value) return;
+    if (importBlocked.value || isConverting.value) return;
     const pollGeneration = ++generation;
     isImporting.value = true;
     conversionError.value = null;
@@ -374,6 +380,7 @@ export function useExamWorkspaceConversion(
     adoptConversion,
     conversionStatus,
     convertingItemIds,
+    importBlocked,
     importDocument,
     isConverting,
     isEditingConversion,

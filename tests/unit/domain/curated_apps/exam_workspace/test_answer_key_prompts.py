@@ -37,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     plan_workspace_answer_key_candidates,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
+    answer_key_fingerprint_for_view,
     answer_key_item_views,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -57,6 +58,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 
 pytestmark = pytest.mark.unit
+
+# Pinned from the unchanged answer-key view: labels must never alter it.
+_TWO_PAIR_FINGERPRINT = "56ac0be0fa7c0c2a631abfd11294a54d882589f97a1d0c503af4d0d023368c47"
 
 
 def _profile() -> StructuredLLMProviderProfile:
@@ -234,3 +238,56 @@ class TestGapFillPromptParity:
         assert plan.request.prompt_template_version == GAP_FILL_PROMPT_TEMPLATE_VERSION
         assert plan.request.output_spec == numbered_gap_fill_output_spec(1)
         assert plan.request.max_output_tokens == _profile().max_output_tokens
+
+
+def _native_two_pair_gap_item() -> NativeExamItem:
+    return NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=NativeExamItemKind.GAP_FILL,
+        title="Taxonomy",
+        body=(
+            NativeParagraph(
+                segments=(
+                    NativeTextSegment(text="Kingdom of mushrooms: "),
+                    NativeGapSegment(gap_id="gap_001"),
+                    NativeTextSegment(text="    Domain of bacteria: "),
+                    NativeGapSegment(gap_id="gap_002"),
+                )
+            ),
+        ),
+        points=2,
+        gaps=(NativeGap(gap_id="gap_001"), NativeGap(gap_id="gap_002")),
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
+        review=_review(),
+    )
+
+
+class TestGapFillLabels:
+    def test_gap_entries_carry_the_text_printed_before_each_marker(self) -> None:
+        view = answer_key_item_views(_document(_native_two_pair_gap_item()))[0]
+
+        payload = gap_fill_answer_key_model_payload_from_view(view)
+
+        assert payload["gaps"] == [
+            {"gap_number": 1, "label": "Kingdom of mushrooms"},
+            {"gap_number": 2, "label": "Domain of bacteria"},
+        ]
+
+    def test_labels_leave_the_view_cloze_text_and_fingerprint_unchanged(self) -> None:
+        view = answer_key_item_views(_document(_native_two_pair_gap_item()))[0]
+        before = view.model_dump()
+        fingerprint = answer_key_fingerprint_for_view(view)
+
+        payload = gap_fill_answer_key_model_payload_from_view(view)
+
+        item = payload["item"]
+        assert isinstance(item, dict)
+        assert item["cloze_text"] == view.cloze_text
+        assert view.cloze_text == "Kingdom of mushrooms: [1] Domain of bacteria: [2]"
+        assert view.model_dump() == before
+        assert answer_key_fingerprint_for_view(view) == fingerprint
+        assert fingerprint == _TWO_PAIR_FINGERPRINT
+
+    def test_gap_prompt_template_version_is_bumped_for_labels(self) -> None:
+        assert GAP_FILL_PROMPT_TEMPLATE_VERSION == "digiexam_gap_fill_answer_key_prompt_v2"

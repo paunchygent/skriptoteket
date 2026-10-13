@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bdd94acfaf1927273e465497c16ccdcfac30de95e690880228c9bebb6643123a",
+  "source_set_digest": "389be066193da510a5d528d255ebaf3acce9a4ed9bd689d504c85d9bda6a99ab",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4773,7 +4773,7 @@
       "type": "task",
       "title": "Resume a pending answer-key suggestion after reload and block importing over unsaved edits",
       "path": "docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

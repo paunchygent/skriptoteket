@@ -288,10 +288,12 @@ async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
             owner_user_id=owner.id,
             input_filename="prov.provdokument.zip",
             workspace_lineage_id=lineage_id,
+            workspace_document_revision=3,
             workspace_request_json={"views": []},
             now=now,
         )
 
+    # Both stand on saved version 3: one saved version carries several jobs.
     first = workspace_job()
     second = workspace_job()
     async with session_factory() as session, session.begin():
@@ -304,12 +306,12 @@ async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
         found = await repository.get_by_id(job_id=first.id)
         assert found is not None
         assert found.workspace_lineage_id == lineage_id
-        assert found.workspace_document_revision is None
+        assert found.workspace_document_revision == 3
         assert found.workspace_request_json == {"views": []}
         assert await repository.get_by_id(job_id=uuid4()) is None
 
 
-async def test_dxe_enrichment_jobs_are_outside_the_workspace_unique_index(
+async def test_dxe_enrichment_jobs_carry_no_workspace_binding(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     owner = await create_owner(session_factory)

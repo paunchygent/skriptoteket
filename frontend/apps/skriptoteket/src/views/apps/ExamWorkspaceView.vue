@@ -66,6 +66,7 @@ const {
   convertingItemIds,
   isConverting,
   retryConversionStatus,
+  importBlocked,
   importDocument,
   isBusy,
   isDirty,
@@ -78,6 +79,7 @@ const {
   reloadDocument,
   saveDocument,
   savedDocuments,
+  savedRevision,
   selectItem,
   selectedItem,
   selectedItemId,
@@ -97,7 +99,7 @@ const {
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
-  useExamWorkspaceSourceFile(importDocument);
+  useExamWorkspaceSourceFile(importDocument, importBlocked);
 
 const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
   useExamWorkspaceExports(summary);
@@ -108,6 +110,7 @@ const { enrichmentMessage, isEnrichmentPending, isRequesting, requestSuggestions
     document: workspaceDocument,
     isOpen,
     openExam,
+    savedRevision,
   });
 
 const mode = ref<ExamWorkspaceMode>("filer");
@@ -333,6 +336,7 @@ async function handleSave(): Promise<void> {
             :export-notice="exportNotice"
             :exporting-target="exportingTarget"
             :has-document="workspaceDocument !== null"
+            :import-blocked="importBlocked"
             :is-busy="isBusy"
             :is-dirty="isDirty"
             :notes="notes"

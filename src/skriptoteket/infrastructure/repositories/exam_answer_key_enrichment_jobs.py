@@ -6,8 +6,9 @@ Purpose:
     tool-run execution queue.
 
 Relationships:
-    Implements ``ExamAnswerKeyEnrichmentJobRepositoryProtocol`` on a
-    request-scoped ``AsyncSession``; commit/rollback is owned by the UoW.
+    Implements ``ExamAnswerKeyEnrichmentJobRepositoryProtocol`` and the
+    workspace suggestion lookups of ``ExamWorkspaceSuggestionJobQueryProtocol``
+    on a request-scoped ``AsyncSession``; commit/rollback is owned by the UoW.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from pydantic import JsonValue
-from sqlalchemy import select, update
+from sqlalchemy import Select, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -29,10 +30,15 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
-from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
+)
 
 
-class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobRepositoryProtocol):
+class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol, ExamWorkspaceSuggestionJobQueryProtocol
+):
     """Postgres enrichment-job ledger with SKIP LOCKED claims."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -176,23 +182,73 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model = result.scalar_one_or_none()
         return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
-    async def get_by_workspace_revision(
+    async def get_latest_workspace_job(
         self,
         *,
         owner_user_id: UUID,
         workspace_lineage_id: UUID,
         workspace_document_revision: int,
     ) -> ExamAnswerKeyEnrichmentJob | None:
-        stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+        stmt = (
+            self._workspace_jobs(
+                owner_user_id=owner_user_id,
+                workspace_lineage_id=workspace_lineage_id,
+                workspace_document_revision=workspace_document_revision,
+            )
+            .order_by(
+                ExamAnswerKeyEnrichmentJobModel.created_at.desc(),
+                ExamAnswerKeyEnrichmentJobModel.id.desc(),
+            )
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    async def get_active_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+        workspace_request_json: dict[str, JsonValue],
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = (
+            self._workspace_jobs(
+                owner_user_id=owner_user_id,
+                workspace_lineage_id=workspace_lineage_id,
+                workspace_document_revision=workspace_document_revision,
+            )
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.status.in_(
+                    (
+                        ExamAnswerKeyEnrichmentJobStatus.QUEUED.value,
+                        ExamAnswerKeyEnrichmentJobStatus.RUNNING.value,
+                    )
+                ),
+                ExamAnswerKeyEnrichmentJobModel.workspace_request_json == workspace_request_json,
+            )
+            .order_by(ExamAnswerKeyEnrichmentJobModel.created_at.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    @staticmethod
+    def _workspace_jobs(
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> Select[tuple[ExamAnswerKeyEnrichmentJobModel]]:
+        return select(ExamAnswerKeyEnrichmentJobModel).where(
             ExamAnswerKeyEnrichmentJobModel.source_kind == ExamAnswerKeySourceKind.WORKSPACE.value,
             ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_document_revision
             == workspace_document_revision,
         )
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
-        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
     async def claim_next(
         self,

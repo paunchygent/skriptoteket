@@ -146,3 +146,13 @@ export async function getExamWorkspaceAnswerKeySuggestions(
     `${documentPath(lineageId)}/answer-key-suggestions/${encodeURIComponent(jobId)}`,
   );
 }
+
+/** The newest suggestion job requested on this saved version, or null when there is none. */
+export async function findExamWorkspaceAnswerKeySuggestions(
+  lineageId: string,
+  documentRevision: number,
+): Promise<ExamWorkspaceAnswerKeySuggestionsStatus | null> {
+  return await apiGet<ExamWorkspaceAnswerKeySuggestionsStatus | null>(
+    `${documentPath(lineageId)}/answer-key-suggestions?document_revision=${documentRevision}`,
+  );
+}

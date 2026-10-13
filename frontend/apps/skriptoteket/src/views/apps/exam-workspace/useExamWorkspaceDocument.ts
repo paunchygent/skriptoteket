@@ -118,6 +118,8 @@ export function useExamWorkspaceDocument() {
   const notes = ref<string[]>([]);
   const openExam = shallowRef<ExamWorkspaceOpening | null>(null);
   const isDirty = computed(() => !sameDocument(workspaceDocument.value, serverDocument.value));
+  /** The saved version the open copy stands on. */
+  const savedRevision = computed(() => serverDocument.value?.revision ?? null);
   const operationBusy = ref(false);
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
@@ -129,6 +131,7 @@ export function useExamWorkspaceDocument() {
     conversionProgress,
     conversionStatus,
     convertingItemIds,
+    importBlocked,
     importDocument,
     isConverting,
     isEditingConversion,
@@ -414,6 +417,7 @@ export function useExamWorkspaceDocument() {
     convertingItemIds,
     isConverting,
     retryConversionStatus,
+    importBlocked,
     importDocument,
     isBusy,
     isDirty,
@@ -427,6 +431,7 @@ export function useExamWorkspaceDocument() {
     restoreItemSuggestion,
     saveDocument,
     savedDocuments,
+    savedRevision,
     selectItem,
     selectedItem,
     selectedItemId,

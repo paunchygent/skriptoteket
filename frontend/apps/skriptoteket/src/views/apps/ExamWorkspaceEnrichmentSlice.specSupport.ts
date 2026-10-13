@@ -28,6 +28,7 @@ import { buildResponse, type ViewWrapper } from "./ExamWorkspaceSlice.specSuppor
 /** The `api/examWorkspace` module mock every enrichment spec declares. */
 export interface EnrichmentApiMocks {
   downloadExamWorkspaceExport: Mock;
+  findExamWorkspaceAnswerKeySuggestions: Mock;
   getExamWorkspaceAnswerKeySuggestions: Mock;
   getExamWorkspaceDocument: Mock;
   importExamWorkspaceDocument: Mock;

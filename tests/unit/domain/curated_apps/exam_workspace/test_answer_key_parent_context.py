@@ -8,6 +8,9 @@ instruction, such as the word bank the child's answers come from.
 import pytest
 from pydantic import JsonValue
 
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompts import (
+    numbered_gap_labels,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     choice_answer_key_model_payload_from_view,
     gap_fill_answer_key_model_payload_from_view,
@@ -95,7 +98,10 @@ def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -
                 gap.gap_id for gap in child.gaps
             )
             assert payload["gaps"] == [
-                {"gap_number": number} for number in range(1, len(child.gaps) + 1)
+                {"gap_number": number, "label": label}
+                for number, label in enumerate(
+                    numbered_gap_labels(view.cloze_text, len(child.gaps)), start=1
+                )
             ]
         elif view.kind is AnswerKeyViewKind.MATCHING:
             assert payload["left_entries"] == [
@@ -141,7 +147,7 @@ def test_word_bank_child_payload_keeps_bank_directions_and_numbered_body() -> No
     assert "fatal | infant | rewarding" in view.instruction
     assert item["cloze_text"] == "My aunt is a great believer in Chinese [1] medicines."
     assert view.gap_ids == ("gap_001",)
-    assert payload["gaps"] == [{"gap_number": 1}]
+    assert payload["gaps"] == [{"gap_number": 1, "label": "My aunt is a great believer in Chinese"}]
 
 
 def test_a_standalone_question_payload_has_no_instruction() -> None:

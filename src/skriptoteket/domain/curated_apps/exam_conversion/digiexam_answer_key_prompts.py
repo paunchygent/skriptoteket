@@ -14,6 +14,7 @@ Relationships:
 
 from __future__ import annotations
 
+import re
 from html.parser import HTMLParser
 
 from pydantic import JsonValue
@@ -22,7 +23,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
 
 CHOICE_PROMPT_TEMPLATE_VERSION = "digiexam_choice_answer_key_prompt_v1"
-GAP_FILL_PROMPT_TEMPLATE_VERSION = "digiexam_gap_fill_answer_key_prompt_v1"
+GAP_FILL_PROMPT_TEMPLATE_VERSION = "digiexam_gap_fill_answer_key_prompt_v2"
 
 BASE_ANSWER_KEY_SYSTEM_PROMPT = (
     "You propose only structured answer-key candidates for one exam item. "
@@ -47,6 +48,8 @@ GAP_FILL_ANSWER_KEY_SYSTEM_PROMPT = (
     "or other label type, follow that instruction even when both sides are "
     "labeled. Do not paraphrase, substitute synonyms, or expand labels."
 )
+
+_GAP_MARKER = re.compile(r"\[(\d+)\]")
 
 _CHOICE_ITEM_TYPES = frozenset(
     {
@@ -104,8 +107,10 @@ def choice_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonValue
 def gap_fill_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonValue]:
     """Build the model-facing payload for a gap-fill DigiExam item."""
 
+    cloze_text = _numbered_gap_prompt_text(item)
     gap_entries: list[JsonValue] = [
-        {"gap_number": index} for index, _gap in enumerate(item.gaps, start=1)
+        {"gap_number": number, "label": label}
+        for number, label in enumerate(numbered_gap_labels(cloze_text, len(item.gaps)), start=1)
     ]
     return {
         "task": {
@@ -120,7 +125,7 @@ def gap_fill_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonVal
         "item": {
             "item_id": item.item_id,
             "title": item.title,
-            "cloze_text": _numbered_gap_prompt_text(item),
+            "cloze_text": cloze_text,
         },
         "gaps": gap_entries,
         "output": {
@@ -145,6 +150,30 @@ def gap_fill_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonVal
             ),
         },
     }
+
+
+def numbered_gap_labels(cloze_text: str, gap_count: int) -> tuple[str, ...]:
+    """Return the text printed before each numbered ``[n]`` gap marker.
+
+    The label for gap ``n`` is the text since the previous marker or the start
+    of its line, whichever is later, stripped and with one trailing colon
+    removed. A marker with nothing before it, or a number whose marker does not
+    appear, gets an empty label.
+    """
+
+    labels: dict[int, str] = {}
+    for line in cloze_text.splitlines():
+        label_start = 0
+        for marker in _GAP_MARKER.finditer(line):
+            number = int(marker.group(1))
+            if number not in labels:
+                labels[number] = _gap_label(line[label_start : marker.start()])
+            label_start = marker.end()
+    return tuple(labels.get(number, "") for number in range(1, gap_count + 1))
+
+
+def _gap_label(text: str) -> str:
+    return text.strip().removesuffix(":").strip()
 
 
 def _choice_user_instruction(item_type: DigiExamItemType) -> str:

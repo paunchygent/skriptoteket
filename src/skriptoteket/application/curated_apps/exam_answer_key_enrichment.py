@@ -176,11 +176,16 @@ def enqueue_workspace_enrichment_job(
     owner_user_id: UUID,
     input_filename: str,
     workspace_lineage_id: UUID,
+    workspace_document_revision: int,
     workspace_request_json: dict[str, JsonValue],
     now: datetime,
     retry_identity: str | None = None,
 ) -> ExamAnswerKeyEnrichmentJob:
-    """Build one queued suggestion job running on editor-sent content."""
+    """Build one queued suggestion job running on editor-sent content.
+
+    ``workspace_document_revision`` is the saved version the editor's copy
+    stood on when the teacher asked; a reopened exam finds the job by it.
+    """
 
     return ExamAnswerKeyEnrichmentJob(
         id=job_id,
@@ -191,7 +196,7 @@ def enqueue_workspace_enrichment_job(
         input_filename=input_filename,
         source_dxe=None,
         workspace_lineage_id=workspace_lineage_id,
-        workspace_document_revision=None,
+        workspace_document_revision=workspace_document_revision,
         workspace_request_json=workspace_request_json,
         retry_identity=retry_identity,
         available_at=now,

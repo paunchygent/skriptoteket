@@ -10,7 +10,6 @@ Purpose:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -21,143 +20,42 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     enqueue_workspace_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
-    ExamWorkspaceAnswerKeySuggestionsResponse,
     ExamWorkspaceEnrichmentState,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    GetExamWorkspaceAnswerKeySuggestionsStatusHandler,
-    RequestExamWorkspaceAnswerKeySuggestionsHandler,
     WorkspaceAnswerKeyRequestPayload,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
     NativeAnswerKeyOrigin,
     NativeAnswerKeySuggestion,
-    NativeChoice,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
-from tests.fixtures.application_fixtures import FakeUow
-from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-    FixedClock,
-    InMemoryEnrichmentJobRepository,
-    UUIDGenerator,
-)
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
 )
-from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
+from tests.unit.application.curated_apps.handlers.workspace_suggestion_handler_support import (
+    NOW,
+    SuggestionHandlerHarness,
+    suggestion_document,
+    suggestion_item,
 )
 
 pytestmark = pytest.mark.unit
 
-_NOW = datetime(2026, 10, 13, 12, 0, 0, tzinfo=UTC)
-
-
-def _item(
-    *,
-    item_id: str,
-    sequence: int,
-    origin: NativeAnswerKeyOrigin = NativeAnswerKeyOrigin.ABSENT,
-    stem: str = "Vilket är huvudordet?",
-) -> NativeExamItem:
-    return NativeExamItem(
-        item_id=item_id,
-        sequence=sequence,
-        kind=NativeExamItemKind.SINGLE_CHOICE,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=stem),)),),
-        points=1,
-        choices=(
-            NativeChoice(choice_id="choice_001", text="vägen"),
-            NativeChoice(choice_id="choice_002", text="eleverna"),
-        ),
-        answer_key=NativeAnswerKey(
-            origin=origin,
-            correct_choice_ids=("choice_001",)
-            if origin is not NativeAnswerKeyOrigin.ABSENT
-            else (),
-        ),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_COMPLETE,
-            parse_origin=NativeParseOrigin.TEACHER_CREATED,
-        ),
-    )
-
-
-def _document(document_id: UUID, *items: NativeExamItem) -> NativeExamDocument:
-    return NativeExamDocument(
-        document_id=document_id,
-        revision=3,
-        title="Omprov: grammatik",
-        items=items,
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-
-
-class _Harness:
-    def __init__(self, *, enabled: bool = True) -> None:
-        self.actor = make_actor()
-        self.jobs = InMemoryEnrichmentJobRepository()
-        self.vault_files = InMemoryVaultFileRepository()
-        self.lineage_id = uuid4()
-        head_id = uuid4()
-        self.vault_files.files[head_id] = VaultFile(
-            id=head_id,
-            user_id=self.actor.id,
-            name="prov.provdokument.zip",
-            bytes=1,
-            source_kind=VaultFileSourceKind.APP_EXPORT,
-            document_lineage_id=self.lineage_id,
-            document_version=3,
-            created_at=_NOW,
-        )
-        self.request_handler = RequestExamWorkspaceAnswerKeySuggestionsHandler(
-            enrichment_jobs=self.jobs,
-            enrichment_enabled=enabled,
-            vault_files=self.vault_files,
-            uow=FakeUow(),
-            clock=FixedClock(_NOW),
-            id_generator=UUIDGenerator(),
-        )
-        self.status_handler = GetExamWorkspaceAnswerKeySuggestionsStatusHandler(
-            enrichment_jobs=self.jobs,
-        )
-
-    async def request(
-        self, document: NativeExamDocument, item_id: str | None = None
-    ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
-        return await self.request_handler.handle(
-            actor=self.actor,
-            lineage_id=self.lineage_id,
-            request=RequestExamWorkspaceAnswerKeySuggestionsRequest(
-                document=document, item_id=item_id
-            ),
-        )
-
 
 class TestRequest:
     async def test_suggest_for_all_skips_keyed_questions(self) -> None:
-        harness = _Harness()
-        document = _document(
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
             harness.lineage_id,
-            _item(item_id="item_001", sequence=1),
-            _item(
+            suggestion_item(item_id="item_001", sequence=1),
+            suggestion_item(
                 item_id="item_002",
                 sequence=2,
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
             ),
-            _item(item_id="item_003", sequence=3),
+            suggestion_item(item_id="item_003", sequence=3),
         )
 
         response = await harness.request(document)
@@ -167,17 +65,18 @@ class TestRequest:
         job = harness.jobs.jobs[response.job_id]
         assert job.source_kind is ExamAnswerKeySourceKind.WORKSPACE
         assert job.workspace_lineage_id == harness.lineage_id
-        assert job.workspace_document_revision is None
+        # The job records the saved version the editor's copy stood on.
+        assert job.workspace_document_revision == document.revision == 3
         payload = WorkspaceAnswerKeyRequestPayload.model_validate(job.workspace_request_json)
         assert [view.item_id for view in payload.views] == ["item_001", "item_003"]
 
     async def test_per_question_request_uses_unsaved_sent_content(self) -> None:
-        harness = _Harness()
+        harness = SuggestionHandlerHarness()
         # The saved head is revision 3; the editor sends edited, unsaved
         # wording for a question that already carries a teacher key.
-        document = _document(
+        document = suggestion_document(
             harness.lineage_id,
-            _item(
+            suggestion_item(
                 item_id="item_001",
                 sequence=1,
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -195,17 +94,17 @@ class TestRequest:
         assert payload.views[0].stem_text == "Vilket är subjektet i meningen?"
 
     async def test_disabled_lane_and_all_keyed_documents_enqueue_nothing(self) -> None:
-        document = _document(
+        document = suggestion_document(
             uuid4(),
-            _item(
+            suggestion_item(
                 item_id="item_001",
                 sequence=1,
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
             ),
         )
-        disabled = _Harness(enabled=False)
+        disabled = SuggestionHandlerHarness(enabled=False)
         disabled.lineage_id = document.document_id
-        keyed = _Harness()
+        keyed = SuggestionHandlerHarness()
         keyed.lineage_id = document.document_id
         for harness in (disabled, keyed):
             head = next(iter(harness.vault_files.files.values()))
@@ -225,8 +124,8 @@ class TestRequest:
         assert keyed.jobs.jobs == {}
 
     async def test_request_for_another_teachers_document_is_not_found(self) -> None:
-        harness = _Harness()
-        document = _document(uuid4(), _item(item_id="item_001", sequence=1))
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(uuid4(), suggestion_item(item_id="item_001", sequence=1))
 
         with pytest.raises(DomainError):
             await harness.request_handler.handle(
@@ -238,8 +137,10 @@ class TestRequest:
 
 
 class TestStatus:
-    async def _finished_job(self, harness: _Harness, *, succeeded: bool) -> UUID:
-        document = _document(harness.lineage_id, _item(item_id="item_001", sequence=1))
+    async def _finished_job(self, harness: SuggestionHandlerHarness, *, succeeded: bool) -> UUID:
+        document = suggestion_document(
+            harness.lineage_id, suggestion_item(item_id="item_001", sequence=1)
+        )
         response = await harness.request(document)
         assert response.job_id is not None
         job = harness.jobs.jobs[response.job_id]
@@ -274,7 +175,7 @@ class TestStatus:
         return job.id
 
     async def test_succeeded_job_returns_its_suggestions(self) -> None:
-        harness = _Harness()
+        harness = SuggestionHandlerHarness()
         job_id = await self._finished_job(harness, succeeded=True)
 
         response = await harness.status_handler.handle(
@@ -288,7 +189,7 @@ class TestStatus:
         assert response.suggestions[0].suggestion.model == "gpt-5.6-luna"
 
     async def test_failed_job_returns_suggestions_it_produced_before_the_failure(self) -> None:
-        harness = _Harness()
+        harness = SuggestionHandlerHarness()
         job_id = await self._finished_job(harness, succeeded=True)
         job = harness.jobs.jobs[job_id]
         harness.jobs.jobs[job_id] = job.model_copy(
@@ -308,7 +209,7 @@ class TestStatus:
         assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
 
     async def test_failed_job_maps_last_error_to_a_swedish_message(self) -> None:
-        harness = _Harness()
+        harness = SuggestionHandlerHarness()
         job_id = await self._finished_job(harness, succeeded=False)
 
         response = await harness.status_handler.handle(
@@ -320,7 +221,7 @@ class TestStatus:
         assert "AI-budget" in response.message
 
     async def test_status_is_hidden_from_other_teachers(self) -> None:
-        harness = _Harness()
+        harness = SuggestionHandlerHarness()
         job_id = await self._finished_job(harness, succeeded=True)
 
         with pytest.raises(DomainError):
@@ -329,8 +230,10 @@ class TestStatus:
             )
 
     async def test_queued_job_reports_queued_state(self) -> None:
-        harness = _Harness()
-        document = _document(harness.lineage_id, _item(item_id="item_001", sequence=1))
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
+            harness.lineage_id, suggestion_item(item_id="item_001", sequence=1)
+        )
         response = await harness.request(document)
         assert response.job_id is not None
 
@@ -348,8 +251,9 @@ def test_enqueue_helper_builds_an_editor_content_job() -> None:
         owner_user_id=uuid4(),
         input_filename="Prov",
         workspace_lineage_id=uuid4(),
+        workspace_document_revision=4,
         workspace_request_json={"views": []},
-        now=_NOW,
+        now=NOW,
     )
-    assert job.workspace_document_revision is None
+    assert job.workspace_document_revision == 4
     assert job.workspace_request_json == {"views": []}
