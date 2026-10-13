@@ -21,11 +21,17 @@
     low-27 miss and the D31 Exam.net rubric test import.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
-  is `proposed` with a closed contract (P1-P13): teachers create the seven
-  Exam.net types standalone or as parent with children (Deluppgift).
-  All-types Exam.net import 2026-10-10 passed (exam 5310254, 13 tasks, 28p).
-  Retained plan `01a127b9-9597-7303-b076-e5b24e5954d2`. Next: user
-  proposed->ready; sequenced after story 8.
+  `proposed`, P1-P16: seven types, parents with children, and (P14-P16,
+  2026-10-13) changing a question's type plus "Gör om till [type]". Next: user
+  proposed->ready; after story 8.
+
+- Owner Dobby (session `a0e6b5f5`, retained `01a13559-bf2e-760d-a690-3a3dea446cd5`):
+  [TASK-SKRIPT-39-04-09](docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md)
+  `ready`, Opus lead `bdcc2fb3` implementing in worktree; next: review, merge,
+  staging walk. TASK-SKRIPT-39-05-08 planning: D1-D3 closed (shared gap/free-text
+  definition, D15 plus alternative-sentences rule, import fixes folded in), O1-O3
+  open; replay evidence `evidence/import-replay/`. Next: suggestion accuracy as a
+  scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
@@ -79,8 +85,7 @@
   (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
   waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
-  39-04-08 (scaffold: Mina filer exports, pruning) and 39-05-08 (no titles
-  at import; next: contract and plan, owner Dobby session `a0e6b5f5`).
+  39-04-08 (scaffold: Mina filer exports, pruning) and 39-05-08 (see Dobby entry).
   ST-SKRIPT-39-08 (metadata) is scaffolded.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
@@ -159,18 +164,6 @@
   (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
-- TASK-SKRIPT-39-04-04 `done` 2026-10-11 (user closure): pending proposals
-  carried across saves; staging walk 2026-10-10 at `929e847a`, Sol `231a2190`,
-  merge `e0746f2a`.
-
-- 2026-10-10: TASK-SKRIPT-39-04-02 `done` by user acceptance of the
-  four-viewport staging walk (`agent-planning:user-closure-gate`); `main`
-  `acca1ee7` on staging; evidence in the task's Closeout Evidence.
-
-- 2026-10-10: TASK-SKRIPT-39-04-01 `done` by user D5 approval
-  (`agent-planning:user-closure-gate`); walk, proposal step, gap-key fix,
-  missing-key export block (DOCX included, user decision) and small items
-  on `main` through `77ea389f`; evidence in the task's Closeout Evidence.
 
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
