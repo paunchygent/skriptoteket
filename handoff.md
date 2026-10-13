@@ -20,9 +20,9 @@
     review with per-question retry, picture in review items and marks, the D44
     low-27 miss and the D31 Exam.net rubric test import.
   - TASK-SKRIPT-39-05-07 `in_progress` (D1-D9 from the 39-04-05 plan): export
-    blocks only on missing values; "(N p)" becomes points. Owner: Claude parent;
-    implementation lead Pi `meta/muse-wonder-1.0` in worktree
-    `Skriptoteket-task-skript-39-05-07` (2026-10-13).
+    blocks only on missing values; "(N p)" becomes points. Owner: the Codex
+    session on branch `codex/task-skript-39-05-07` (review F1-F4 and the F1
+    rereview fix `a42b0af6`, not merged).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   is `proposed` with a closed contract (P1-P13): teachers create the seven
@@ -87,8 +87,8 @@
   each question, per-question requests; plan P1-P9 in session
   `01a133f5-7568-7aa9-8c03-d65722dbff09`) and 39-04-08 (scaffold: Mina filer
   exports, version pruning). Also scaffolded: 39-05-08 (no titles at import)
-  and ST-SKRIPT-39-08 (course and tag metadata). Next implementation lead:
-  Pi `meta/muse-wonder-1.0` (user request 2026-10-13).
+  and ST-SKRIPT-39-08 (course and tag metadata). 39-04-07 implementation
+  lead: Pi `meta/muse-wonder-1.0` (user request 2026-10-13).
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
