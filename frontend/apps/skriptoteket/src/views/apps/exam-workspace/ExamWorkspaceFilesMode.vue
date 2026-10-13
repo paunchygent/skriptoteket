@@ -29,7 +29,6 @@ import ExamWorkspaceSavedDocuments from "./ExamWorkspaceSavedDocuments.vue";
 export type ExamWorkspaceReadinessEntry = {
   itemId: string;
   sequence: number;
-  title: string;
   reasons: string[];
 };
 
@@ -187,7 +186,7 @@ function handleDrop(event: DragEvent): void {
                   @click="emit('goToItem', entry.itemId)"
                 >
                   <span class="truncate text-sm font-medium leading-snug text-navy">
-                    Fråga {{ entry.sequence }}<template v-if="entry.title"> – {{ entry.title }}</template>
+                    Fråga {{ entry.sequence }}
                   </span>
                   <span class="text-xs leading-snug text-navy/70">
                     {{ entry.reasons.join(' ') }}

@@ -96,7 +96,6 @@ def _native_choice_item() -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        title="Single without key",
         body=(NativeParagraph(segments=(NativeTextSegment(text="Choose the Greek letter."),)),),
         points=2,
         choices=(
@@ -113,7 +112,6 @@ def _native_gap_item() -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.GAP_FILL,
-        title="Gap without key",
         body=(
             NativeParagraph(
                 segments=(
@@ -192,7 +190,8 @@ class TestChoicePromptParity:
         dxe_item = dxe_payload["item"]
         assert isinstance(workspace_item, dict)
         assert isinstance(dxe_item, dict)
-        assert workspace_item["title"] == dxe_item["title"]
+        assert "title" not in workspace_item
+        assert dxe_item["title"] == "Single without key"
         assert workspace_item["stem"] == dxe_item["stem"]
 
     def test_choice_request_reuses_system_prompt_template_and_spec(self) -> None:
@@ -223,7 +222,8 @@ class TestGapFillPromptParity:
         dxe_item = dxe_payload["item"]
         assert isinstance(workspace_item, dict)
         assert isinstance(dxe_item, dict)
-        assert workspace_item["title"] == dxe_item["title"]
+        assert "title" not in workspace_item
+        assert dxe_item["title"] == "Gap without key"
         assert workspace_item["cloze_text"] == dxe_item["cloze_text"]
 
     def test_gap_request_reuses_system_prompt_template_and_spec(self) -> None:
@@ -245,7 +245,6 @@ def _native_two_pair_gap_item() -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.GAP_FILL,
-        title="Taxonomy",
         body=(
             NativeParagraph(
                 segments=(

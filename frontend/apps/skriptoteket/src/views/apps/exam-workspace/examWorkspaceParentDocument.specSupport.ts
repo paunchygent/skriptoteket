@@ -67,7 +67,6 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     },
     sequence,
     source_anchor: null,
-    title: null,
   };
 }
 

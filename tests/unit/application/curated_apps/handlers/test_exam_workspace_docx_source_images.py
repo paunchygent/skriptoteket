@@ -172,7 +172,6 @@ def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
         "conflict_kind": None,
         "review_reason": None,
         "kind": "free_text",
-        "title": text,
         "printed_label": text[0],
         "body": [{"segments": [{"kind": "text", "text": text[3:], "accepted_values": []}]}],
         "points": 1,

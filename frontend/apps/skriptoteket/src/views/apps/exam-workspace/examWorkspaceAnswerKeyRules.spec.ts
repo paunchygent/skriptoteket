@@ -61,7 +61,6 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
-    title: "Kokpunkt",
     ...overrides,
   };
 }

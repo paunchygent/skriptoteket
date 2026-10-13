@@ -3,15 +3,14 @@
  *
  * Expected behavior:
  *   Native exam items map to teacher-facing table rows with Swedish type and
- *   review-status labels, locale-formatted points, title fallbacks, and prompt
- *   excerpts that keep gaps visible as fixed chips.
+ *   review-status labels, locale-formatted points, question-number row
+ *   titles, and prompt excerpts that keep gaps visible as fixed chips.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
-  examWorkspaceDisplayTitle,
   examWorkspacePointsLabel,
   examWorkspacePromptExcerpt,
   examWorkspaceReviewReasonLabel,
@@ -41,7 +40,6 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
-    title: "Fotosyntes",
     ...overrides,
   };
 }
@@ -112,7 +110,7 @@ describe("examWorkspaceRows", () => {
     expect(fallback).not.toContain("_");
   });
 
-  it("builds a complete row and falls back to a sequence title", () => {
+  it("builds a complete row titled by its question number", () => {
     const row = toExamWorkspaceItemRow(
       buildItem({
         points: null,
@@ -123,7 +121,6 @@ describe("examWorkspaceRows", () => {
           state: "review_required",
         },
         sequence: 4,
-        title: null,
       }),
     );
 
@@ -142,23 +139,13 @@ describe("examWorkspaceRows", () => {
     });
   });
 
-  it("drops a leading question number that repeats the item sequence", () => {
-    expect(examWorkspaceDisplayTitle("Fråga 4. Beskriv fotosyntesen", 4)).toBe(
-      "Beskriv fotosyntesen",
-    );
-    expect(examWorkspaceDisplayTitle("fråga 4: Beskriv", 4)).toBe("Beskriv");
-    expect(examWorkspaceDisplayTitle("4. Beskriv", 4)).toBe("Beskriv");
-    expect(examWorkspaceDisplayTitle("  Fråga 4  ", 4)).toBe("");
-    expect(examWorkspaceDisplayTitle("Fråga 5. Beskriv", 4)).toBe("Fråga 5. Beskriv");
-    expect(examWorkspaceDisplayTitle("Fråga 40. Beskriv", 4)).toBe("Fråga 40. Beskriv");
-    expect(examWorkspaceDisplayTitle("4.5 liter vatten", 4)).toBe("4.5 liter vatten");
-    expect(examWorkspaceDisplayTitle(null, 4)).toBe("");
-  });
-
-  it("shows the display title in a row without changing the stored title", () => {
-    const item = buildItem({ sequence: 4, title: "Fråga 4. Beskriv fotosyntesen" });
-    expect(toExamWorkspaceItemRow(item).title).toBe("Beskriv fotosyntesen");
-    expect(item.title).toBe("Fråga 4. Beskriv fotosyntesen");
+  it("titles every row with its question number, whatever the question text says", () => {
+    const item = buildItem({
+      body: [{ segments: [{ kind: "text", text: "Fråga 4. Beskriv fotosyntesen" }] }],
+      sequence: 4,
+    });
+    expect(toExamWorkspaceItemRow(item).title).toBe("Fråga 4");
+    expect(toExamWorkspaceItemRow(buildItem({ sequence: 12 })).title).toBe("Fråga 12");
   });
 
   it("maps item lists in order", () => {

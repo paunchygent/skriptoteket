@@ -11,7 +11,9 @@ Purpose:
 Relationships:
     Implements ``protocols.item_type_labeler.MeteredItemTypeLabelerProtocol``.
     Label descriptions define gap and free text by how the answer is scored
-    (D15); the instruction and descriptions are prompt P1d, sent in both passes
+    (D15), generated from the one definition in ``item_kind_boundary`` that also
+    generates the converter's kind rule (TASK-SKRIPT-39-05-08); the instruction
+    and descriptions are sent in both passes
     (D23), and each question retains its source text and inline keys
     (amended D14); a new measurement is required after the input repair and
     a rewording invalidates that measurement. Request and answer shapes follow
@@ -34,6 +36,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
     estimate_prompt_tokens,
     input_content,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
+    FREE_TEXT_DEFINITION,
+    GAP_FILL_DEFINITION,
+    labeler_boundary_sentences,
 )
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
@@ -63,11 +70,8 @@ CLASSIFICATION_INSTRUCTION = (
     "and key labels. A type name the teacher writes for the question, as listed under each "
     "label, settles the label, and a key that marks more than one option as correct settles "
     "multiple_response. For single_choice the student selects exactly one printed option; "
-    "for multiple_response the student selects several. For gap_fill each response slot is "
-    "checked against one or more accepted strings, including a whole sentence or a word "
-    "from a supplied bank. For free_text the teacher judges a written response using a "
-    "sample answer, analysis or grading guidance rather than exact accepted strings for "
-    "each slot. Response length alone does not distinguish these labels. Matching pairs "
+    "for multiple_response the student selects several. "
+    f"{labeler_boundary_sentences()} Matching pairs "
     "entries from two supplied sets. Unsupported means the required interaction falls "
     "outside those supported types; unresolved means the source does not establish a "
     "reliable choice."
@@ -93,20 +97,11 @@ LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
         f"settles this label. {_MULTIPLE_CHOICE_NAME}"
     ),
     ItemTypeLabel.GAP_FILL: (
-        "Each response slot (a blank, a blank line or a labelled field) is keyed by one or "
-        "more accepted strings of any length, including slots filled from a word bank. "
-        "In a source with answers, a blank may be printed already filled with its answer, "
-        "marked by formatting such as italics, bold or colour, or set apart by position: "
-        "that place is a slot keyed by those words. When the key prints a sentence with a "
-        "label after each of its units, or a word split into parts joined with + and a "
-        "label after each part, each label is one slot after its unit or part, keyed by "
-        "that label. Type names: lucktext (gap text, cloze), fyll i luckan / luckorna "
-        "(fill in the gap / gaps)."
+        f"{GAP_FILL_DEFINITION} Type names: lucktext (gap text, cloze), "
+        "fyll i luckan / luckorna (fill in the gap / gaps)."
     ),
     ItemTypeLabel.FREE_TEXT: (
-        "The student writes a response whose key is a sample answer, an analysis or "
-        "grading guidance. Type names: fritt svar (open answer), öppen fråga (open "
-        "question)."
+        f"{FREE_TEXT_DEFINITION} Type names: fritt svar (open answer), öppen fråga (open question)."
     ),
     ItemTypeLabel.MATCHING: (
         "The student pairs entries of one supplied set with entries of another supplied set. "

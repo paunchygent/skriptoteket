@@ -42,8 +42,11 @@ class ExamLanguageLabels:
         return f"{self.question} {numbers}".strip()
 
     def item_title(self, item: NativeExamItem) -> str:
-        """The item's own title, else its running number; printed labels title only parents."""
-        return item.title or self.question_label(item.sequence)
+        """The QTI item title: the question label in the exam's language, such as "Fråga 3".
+
+        Exam.net discards the QTI item title, so it carries no question wording.
+        """
+        return self.question_label(item.sequence)
 
     def printed_span(self, first: str, last: str) -> str:
         """The title over children printed first to last, such as "Question 1–7"."""
@@ -127,7 +130,7 @@ def exam_language_labels(document: NativeExamDocument) -> ExamLanguageLabels:
     for parent in document.parents:
         lines.extend(parent.instruction)
     for item in document.items:
-        lines.extend((item.title or "", *item.plain_text_lines()))
+        lines.extend(item.plain_text_lines())
         lines.extend(choice.text for choice in item.choices)
     words = [word.casefold() for line in lines for word in _WORD.findall(line)]
     counts = [sum(word in language.function_words for word in words) for language in _LANGUAGES]

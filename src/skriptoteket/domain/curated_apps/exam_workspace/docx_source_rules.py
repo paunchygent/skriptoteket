@@ -271,16 +271,21 @@ def _joined_text_runs(segments: Iterable[ProducedSegment]) -> list[ProducedSegme
     return joined
 
 
+def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
+    """The one points label the chunks print, as a number; None with none or several."""
+    labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
+    return _printed_points(labels[0]) if len(labels) == 1 else None
+
+
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
     """D3: a reply without points takes the one points label its own chunks print.
 
-    The label, such as "(1 p)", leaves the item's title and stem text. With no label, or with
+    The label, such as "(1 p)", leaves the item's stem text. With no label, or with
     two or more, the item keeps the reply's reading.
     """
     if item.points is not None:
         return item
-    labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
-    points = _printed_points(labels[0]) if len(labels) == 1 else None
+    points = printed_points(own)
     if points is None:
         return item
     body = []
@@ -292,5 +297,4 @@ def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> Produce
             for segment in _joined_text_runs(paragraph.segments)
         )
         body.append(paragraph.model_copy(update={"segments": segments}))
-    title = _without_label(item.title).strip() if item.title else item.title
-    return item.model_copy(update={"points": points, "body": tuple(body), "title": title or None})
+    return item.model_copy(update={"points": points, "body": tuple(body)})

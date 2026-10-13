@@ -1,7 +1,7 @@
 """Principle 5: no gold wording is lost.
 
 Every word of a gold question's prompt and instruction, its parent's instruction included, is
-present somewhere in the converted question: its title, body, choices, match entries or the
+present somewhere in the converted question: its body, choices, match entries or the
 parent's instruction. Which field holds a word, the word order and the line breaks do not count.
 """
 
@@ -18,7 +18,7 @@ def content(gold: GoldQuestion, actual: Question) -> list[FieldMismatch]:
     wanted = word_set(
         without_list_labels([*view.instruction, *view.body, *view.match_left, *view.match_right])
     )
-    shown = word_set([*actual.instruction, actual.title, *actual.body, *actual.entries()])
+    shown = word_set([*actual.instruction, *actual.body, *actual.entries()])
     missing = wanted - shown
     if missing:
         return [FieldMismatch("content_present", "missing_wording", tuple(sorted(missing)), ())]

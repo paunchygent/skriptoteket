@@ -54,7 +54,6 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     },
     sequence,
     source_anchor: null,
-    title: `Fråga ${sequence}`,
   };
 }
 
@@ -70,7 +69,6 @@ export function buildDocument(): NativeExamDocument {
         { choice_id: "choice_c", text: "Nederbörd" },
       ],
       kind: "single_choice",
-      title: "Vattnets kretslopp",
     },
     {
       ...buildFreeTextItem(3),
@@ -91,7 +89,6 @@ export function buildDocument(): NativeExamDocument {
         reasons: ["föreslaget facit behöver godkännas"],
         state: "review_required",
       },
-      title: "Luftens gaser",
     },
     {
       ...buildFreeTextItem(4),
@@ -112,7 +109,6 @@ export function buildDocument(): NativeExamDocument {
         reasons: ["luckan behöver godkända svar"],
         state: "review_required",
       },
-      title: "Kokpunkt",
     },
     buildFreeTextItem(5),
     buildFreeTextItem(6),

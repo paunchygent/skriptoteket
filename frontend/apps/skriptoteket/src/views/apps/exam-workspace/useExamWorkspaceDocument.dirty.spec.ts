@@ -62,7 +62,8 @@ const OTHER_PAIRS: Pairs = [
   ["left_002", "right_002"],
   ["left_003", "right_001"],
 ];
-const SAVED_TITLE = "Vocabulary Matching, Question 1";
+const SAVED_POINTS = 3;
+const CHANGED_POINTS = 5;
 const SAVED_PAIRS_REORDERED: Pairs = [SAVED_PAIRS[2], SAVED_PAIRS[0], SAVED_PAIRS[1]];
 
 function suggestion(pairs: Pairs): NativeAnswerKeySuggestion {
@@ -81,7 +82,6 @@ function suggestion(pairs: Pairs): NativeAnswerKeySuggestion {
 function openFollowingMachineKey() {
   const item = buildMatchingItem({
     ai_suggestion: suggestion(SAVED_PAIRS),
-    title: SAVED_TITLE,
     answer_key: {
       correct_choice_ids: [],
       match_pairs: suggestion(SAVED_PAIRS).match_pairs,
@@ -98,12 +98,12 @@ function sentDocument() {
   return apiMocks.saveExamWorkspaceDocument.mock.calls[0][1].document;
 }
 
-/** Edit the title, save, and land two arrivals while the save is in flight. */
+/** Edit the points, save, and land two arrivals while the save is in flight. */
 async function saveWhileArrivalsLand(first: Pairs, second: Pairs) {
   const state = await openFollowingMachineKey();
   const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
   apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
-  state.updateItemTitle("item_001", "Ändrad titel");
+  state.updateItemPoints("item_001", CHANGED_POINTS);
   const saving = state.saveDocument();
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(first) }]);
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(second) }]);
@@ -114,9 +114,9 @@ describe("teacher edits", () => {
   it("F3: an edit back to the saved value leaves the copy clean", async () => {
     const state = await openFollowingMachineKey();
 
-    state.updateItemTitle("item_001", "Ändrad titel");
+    state.updateItemPoints("item_001", CHANGED_POINTS);
     expect(state.isDirty.value).toBe(true);
-    state.updateItemTitle("item_001", SAVED_TITLE);
+    state.updateItemPoints("item_001", SAVED_POINTS);
 
     expect(state.isDirty.value).toBe(false);
   });
@@ -124,7 +124,7 @@ describe("teacher edits", () => {
   it("F4: an edit that changes nothing leaves the copy clean", async () => {
     const state = await openFollowingMachineKey();
 
-    state.updateItemTitle("item_001", SAVED_TITLE);
+    state.updateItemPoints("item_001", SAVED_POINTS);
 
     expect(state.isDirty.value).toBe(false);
   });
@@ -186,7 +186,7 @@ describe("arrivals replayed after a save's outcome", () => {
   it("F11: a failed save keeps the unsaved copy dirty", async () => {
     const state = await openFollowingMachineKey();
     apiMocks.saveExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
-    state.updateItemTitle("item_001", "Ändrad titel");
+    state.updateItemPoints("item_001", CHANGED_POINTS);
 
     expect(await state.saveDocument()).toBe(false);
 

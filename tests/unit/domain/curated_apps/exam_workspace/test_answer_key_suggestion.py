@@ -59,7 +59,6 @@ def _choice_item(**overrides: object) -> NativeExamItem:
         "item_id": "item_001",
         "sequence": 1,
         "kind": NativeExamItemKind.SINGLE_CHOICE,
-        "title": "Flervalsfråga",
         "body": (NativeParagraph(segments=(NativeTextSegment(text="Vilket är huvudordet?"),)),),
         "points": 1,
         "choices": (
@@ -193,8 +192,6 @@ class TestFingerprint:
         base = answer_key_fingerprint(item, None)
 
         variants = [
-            _choice_item(title="En annan titel"),
-            _choice_item(title=None),
             _choice_item(points=5),
             _choice_item(printed_label="Fråga 9"),
             _choice_item(review=_review(NativeItemReviewState.REVIEW_REQUIRED)),
@@ -217,8 +214,8 @@ class TestOutdated:
         kept = item.model_copy(update={"ai_suggestion": suggestion})
         assert suggestion_is_outdated(kept, None) is False
 
-        retitled = kept.model_copy(update={"title": "Ny titel"})
-        assert suggestion_is_outdated(retitled, None) is False
+        repointed = kept.model_copy(update={"points": 5})
+        assert suggestion_is_outdated(repointed, None) is False
 
         reworded = _choice_item(
             choices=(

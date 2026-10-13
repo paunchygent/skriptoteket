@@ -22,6 +22,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import (
     docx_build_output_spec,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
+    converter_kind_rule,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
 )
@@ -42,12 +45,11 @@ that other parts own, and the other questions of a section whose heading, instru
 points line this part owns: read them to convert the questions they govern and to tell a
 heading, instruction or points line that serves the whole section from one that belongs to
 a single question of this part. Never convert a question of context_chunks, list their
-anchors anywhere or copy their wording into an item, the title or instructions.
+anchors anywhere or copy their wording into an item, the exam title or instructions.
 item_kinds lists the kinds this part produces. A question's kind follows from its answer
 places under the rules below: options to choose among make a choice kind, two lists to pair
-make matching, answer places the gap rules define, each keyed by accepted strings, make
-gap_fill whatever the length of those strings, and a written response the teacher judges
-against a sample answer, criteria or grading guidance makes free_text. A question whose kind
+make matching, and the gap_fill/free_text boundary is: {kind_rule}
+A question whose kind
 by these rules is none of item_kinds returns outcome type_conflict with conflict_kind set
 to that kind, its source_anchors and its body; never force it into one of the listed kinds.
 Chunk text wraps each stretch the teacher set in italics in <i>...</i>. The tags are source
@@ -56,7 +58,7 @@ Two kinds of labels are never confused:
 - Ordering enumeration is removed. It is the number or letter that orders the questions (1, 2, 3
   or a, b, c before a question's stem, which starts an item of its own) and the letter or number
   that orders a question's choices (A, B, C or 1, 2, 3 before each choice). Leave it out of
-  title, body and choices; printed_label may carry a question's own number or letter. Only
+  the body and choices; printed_label may carry a question's own number or letter. Only
   the number or letter is removed: a blank or cue right after it is question text, and such
   a blank is the sentence's first gap.
 - A part label is kept verbatim. It is a label such as "a)" or "b)" on a line or run inside one
@@ -65,7 +67,7 @@ Two kinds of labels are never confused:
   its place in the body, together with the words that follow it. Never drop one, renumber one
   or move one into printed_label.
 Rules:
-- Student-visible text (title, body, choices, exam title and instructions) is copied from
+- Student-visible text (body, choices, exam title and instructions) is copied from
   the source wording. A cue printed beside a blank, such as a first letter or a word in
   brackets, is body text next to the gap. A cue printed after the sentence, such as a word,
   translation or word count in brackets, is body text after the sentence's last word, where
@@ -73,7 +75,7 @@ Rules:
   such cue with its brackets and all of its words, also when it is in another language than
   the sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
   translate, solve or invent. Every word of a question's own chunks that is not facit goes
-  into its title or body, including the words before and after each blank, the words after
+  into its body, including the words before and after each blank, the words after
   each cue and every label that stays text; never shorten a sentence to the part around its
   blank or cue.
 - The exam title is the document's opening heading, copied verbatim, whatever its wording says.
@@ -81,7 +83,7 @@ Rules:
   answer line that follows a question. Never treat a chunk as facit because its wording
   mentions answers. A chunk that holds question text as well as its inline answer belongs to
   the question: list it in that item's source_anchors, never in answer_key_anchors.
-  Facit chunks are never student-visible text, title or instructions, except the units and
+  Facit chunks are never student-visible text or instructions, except the units and
   parts gap rule 4 keeps as text. List their anchors in answer_key_anchors and nowhere else.
 - Answers come only from the teacher's facit or answer lines in the source: mark a choice
   correct, or give a gap's accepted_values, only when the facit keys it. Without a facit entry
@@ -162,15 +164,20 @@ Rules:
   sample answer, criteria or points guidance its facit gives, inline or in answer-key chunks,
   without the facit label. null when the facit gives none and for every other kind. The
   guide is never student-visible text.
-- Body and title omit the printed points.
+- The body omits the printed points. A text segment is never empty and never null: a
+  printed blank or answer line in a kind without gaps is not the question text and never
+  becomes a text segment of its own; the printed question goes in the body.
 - A heading or label line that introduces one question, such as "Question 3 (2 points)" or
   "Part B: term (1 point)", belongs to that question: include its anchor in source_anchors,
-  copy its wording without the question number and printed points as the item title (null
-  when nothing else remains), and take the points it prints. printed_label copies the
+  copy its wording without the question number and printed points verbatim as the first
+  paragraph of the item's body (no paragraph when nothing else remains), and take the
+  points it prints. printed_label copies the
   question's own number or letter as printed, with its word ("Fråga 3", "Question 4", "3",
   "a"); a number shared by a part heading stays out, and a part or section name ("Part 2",
-  "Del B") is title wording, never printed_label. title and instructions
-  hold only text that belongs to no single question. A section instruction, word box or
+  "Del B") is body or instruction wording, never printed_label. The exam title and
+  instructions hold only text that belongs to no single question. A heading printed above
+  two or more consecutive questions is an instruction for that run, copied verbatim, also
+  when no instruction line follows it. A section instruction, word box or
   shared passage printed once for a run of questions is an instruction, never part of the
   first question or of any question: the converter groups the questions it serves under
   it, so no question repeats its wording. Wording printed inside a question's own chunk
@@ -179,15 +186,18 @@ Rules:
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
   A chunk of kind drawing is a picture with no text; the question it stands with lists it in
   its source_anchors.
-  Each source chunk belongs to exactly one item, the title, an instruction, or
+  Each source chunk belongs to exactly one item, the exam title, an instruction, or
   answer_key_anchors. This holds for every chunk up to the last one of chunks, also after
   the last question: a facit line whose answer became a gap's accepted_values goes in
-  answer_key_anchors, a heading goes in the title or an instruction, and a points line goes
-  where the points rule places it.
+  answer_key_anchors, a heading goes in the exam title, an item's body or an instruction
+  under the heading rule, and a points line goes where the points rule places it.
 - Return every question in the supplied chunks in this one response; context_chunks hold no
   question of this part.
 - When a question cannot be converted faithfully, return outcome review with a short
   Swedish review_reason naming the problem; still give its source_anchors."""
+
+# The kind rule is generated from the one boundary definition the labeler also reads.
+_PROMPT = _PROMPT.replace("{kind_rule}", converter_kind_rule())
 
 
 class DocxBuildRoundFailure(Exception):

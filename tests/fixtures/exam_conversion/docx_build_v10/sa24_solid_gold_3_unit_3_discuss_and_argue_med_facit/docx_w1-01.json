@@ -36,7 +36,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "1",
       "body": [
         {
@@ -78,7 +77,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "2",
       "body": [
         {
@@ -120,7 +118,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "3",
       "body": [
         {
@@ -162,7 +159,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "4",
       "body": [
         {
@@ -204,7 +200,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "5",
       "body": [
         {
@@ -246,7 +241,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "6",
       "body": [
         {
@@ -288,7 +282,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "7",
       "body": [
         {
@@ -330,7 +323,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "9",
       "body": [
         {
@@ -372,7 +364,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "10",
       "body": [
         {

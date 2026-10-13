@@ -114,7 +114,7 @@ def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:
 def _item_payload(view: AnswerKeyItemView, text_key: str, text: str) -> dict[str, JsonValue]:
     """The item as the student reads it: a grouped question also shows its parent's instruction."""
 
-    item: dict[str, JsonValue] = {"item_id": view.item_id, "title": view.title}
+    item: dict[str, JsonValue] = {"item_id": view.item_id}
     if view.instruction:
         item["instruction"] = view.instruction
     item[text_key] = text

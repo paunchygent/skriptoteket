@@ -222,7 +222,17 @@ async def test_save_advances_version_and_reopens_faithfully(
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     document = imported.document
-    edited_item = document.items[0].model_copy(update={"title": "Fråga 1 (redigerad)"})
+    first_item = document.items[0]
+    first_paragraph = first_item.body[0]
+    edited_paragraph = first_paragraph.model_copy(
+        update={
+            "segments": (
+                first_paragraph.segments[0].model_copy(update={"text": "Fråga 1 (redigerad)"}),
+                *first_paragraph.segments[1:],
+            )
+        }
+    )
+    edited_item = first_item.model_copy(update={"body": (edited_paragraph, *first_item.body[1:])})
     edited = with_next_revision(
         document.model_copy(update={"items": (edited_item, *document.items[1:])})
     )
@@ -236,7 +246,7 @@ async def test_save_advances_version_and_reopens_faithfully(
 
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
     assert reopened.summary.version == 2
-    assert reopened.document.items[0].title == "Fråga 1 (redigerad)"
+    assert reopened.document.items[0].plain_text_lines()[0] == "Fråga 1 (redigerad)"
     assert reopened.document == edited
 
 

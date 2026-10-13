@@ -64,7 +64,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -99,7 +98,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -134,7 +132,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -169,7 +166,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -204,7 +200,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -239,7 +234,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -274,7 +268,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -309,7 +302,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -344,7 +336,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -379,7 +370,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -414,7 +404,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -449,7 +438,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -484,7 +472,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -519,7 +506,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -554,7 +540,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -589,7 +574,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -624,7 +608,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -659,7 +642,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -694,7 +676,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -729,7 +710,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -764,7 +744,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -800,7 +779,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -835,7 +813,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -870,7 +847,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -907,7 +883,6 @@
       "outcome": "review",
       "review_reason": "Matchningsuppgift med tre definitioner och gemensamma alternativ kan inte återges som en stödd frågetyp.",
       "kind": "free_text",
-      "title": "Select the word or phrase for each definition.",
       "body": [
         {
           "segments": [
@@ -932,7 +907,6 @@
       "outcome": "review",
       "review_reason": "Matchningsuppgift med tre definitioner och gemensamma alternativ kan inte återges som en stödd frågetyp.",
       "kind": "free_text",
-      "title": "Select the word or phrase for each definition.",
       "body": [
         {
           "segments": [
@@ -957,7 +931,6 @@
       "outcome": "review",
       "review_reason": "Matchningsuppgift med tre definitioner och gemensamma alternativ kan inte återges som en stödd frågetyp.",
       "kind": "free_text",
-      "title": "Select the word or phrase for each definition.",
       "body": [
         {
           "segments": [
@@ -981,7 +954,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1018,7 +990,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1055,7 +1026,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1092,7 +1062,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1129,7 +1098,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1166,7 +1134,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1202,7 +1169,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1232,7 +1198,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1262,7 +1227,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1297,7 +1261,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1332,7 +1295,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1367,7 +1329,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1402,7 +1363,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1437,7 +1397,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1472,7 +1431,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1502,7 +1460,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1537,7 +1494,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1572,7 +1528,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1607,7 +1562,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1642,7 +1596,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1673,7 +1626,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1710,7 +1662,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1747,7 +1698,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1784,7 +1734,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1821,7 +1770,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -1858,7 +1806,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [

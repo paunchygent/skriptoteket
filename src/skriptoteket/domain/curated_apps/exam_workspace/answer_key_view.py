@@ -64,7 +64,6 @@ class AnswerKeyItemView(BaseModel):
 
     item_id: str
     kind: AnswerKeyViewKind
-    title: str
     # The instruction a grouped question's parent prints above it, such as a word bank.
     instruction: str = ""
     stem_text: str
@@ -193,7 +192,6 @@ def answer_key_item_view(
     return AnswerKeyItemView(
         item_id=item.item_id,
         kind=kind,
-        title=item.title or "",
         instruction="\n".join(parent.instruction) if parent else "",
         stem_text="\n".join(item.plain_text_lines()),
         choices=tuple((choice_int_id(choice.choice_id), choice.text) for choice in item.choices),

@@ -1,11 +1,11 @@
 """A chunk the grouping marks as governing several questions belongs to its section parent (D40).
 
 When a converter reply lists such a chunk in an item's source anchors, the item gives the
-chunk up: the anchor leaves the item, the chunk's wording leaves the item's title or body
+chunk up: the anchor leaves the item, the chunk's wording leaves the item's body
 where the item prints it as the chunk's source text, and the chunk becomes an instruction,
 which section placement shows once, on the parent. Wording is removed only where it matches
 the chunk's source text after whitespace normalization and stands as whole lines, or at the
-start or end of a title or paragraph text; wording found anywhere else is kept and reported.
+start or end of a paragraph text; wording found anywhere else is kept and reported.
 An item that held nothing but governing chunks is dropped. A governing chunk no entry holds
 becomes an instruction built from its source text. No reply is rejected or resent.
 """
@@ -108,16 +108,12 @@ def _paragraph_without(
 def _item_without(item: NativeExamItem, chunk_text: str) -> NativeExamItem | None:
     """The item without the chunk's wording; the item itself when it does not print it; None
     when it prints it where no faithful removal exists, or where removing it leaves no body."""
-    if item.title is not None:
-        rest = _removed(item.title, chunk_text)
-        if rest is not None:
-            return item.model_copy(update={"title": rest or None})
     for k, paragraph in enumerate(item.body):
         without = _paragraph_without(paragraph, chunk_text)
         if without is not None:
             body = (*item.body[:k], *without, *item.body[k + 1 :])
             return item.model_copy(update={"body": body}) if body else None
-    printed = _squash(" ".join([item.title or "", *item.plain_text_lines()]))
+    printed = _squash(" ".join(item.plain_text_lines()))
     return None if _squash(chunk_text) in printed else item
 
 

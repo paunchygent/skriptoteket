@@ -13,14 +13,14 @@ import type { ExamWorkspaceConversionStatus, NativeExamItem } from "../../api/ex
 import { EXAM_WORKSPACE_CONFLICT_COPY } from "./exam-workspace/useExamWorkspaceDocument";
 import {
   converted,
-  editTitle,
+  editPoints,
   installProgressiveConversionLifecycle,
   revision,
   SECOND,
   SECOND_STATUS,
   status,
   tick,
-  titleOf,
+  pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 
@@ -40,7 +40,7 @@ installProgressiveConversionLifecycle(apiMocks);
 describe("Exam workspace progressive conversion save conflicts", () => {
   it("saves again on the newer revision when conversion saved one during the teacher's save", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     apiMocks.saveExamWorkspaceDocument
       .mockRejectedValueOnce(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }))
@@ -53,17 +53,13 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
     expect(retry.expectedRevision).toBe(2);
-    expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
-      "Lärarens rubrik ett",
-      "Konverterad 2",
-      "Konverterad 3",
-    ]);
+    expect(retry.document.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
 
   it("merges and saves the teacher's edits when a save conflicts while a status poll is still in flight", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     let resolvePoll!: (value: ExamWorkspaceConversionStatus) => void;
     apiMocks.getExamWorkspaceConversionStatus
@@ -82,17 +78,13 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
     expect(retry.expectedRevision).toBe(2);
-    expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
-      "Lärarens rubrik ett",
-      "Konverterad 2",
-      "Konverterad 3",
-    ]);
+    expect(retry.document.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });
 
   it("merges and saves again at once when another batch moves the head past the conflict's status", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     // The save from revision 1 conflicts; the status then describes revision 2,
     // but another batch commits revision 3 before the document is read. The
@@ -111,16 +103,12 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     const [, retry] = apiMocks.saveExamWorkspaceDocument.mock.calls[1];
     expect(retry.expectedRevision).toBe(3);
-    expect(retry.document.items.map((item: NativeExamItem) => item.title)).toEqual([
-      "Lärarens rubrik ett",
-      "Konverterad 2",
-      "Konverterad 3",
-    ]);
+    expect(retry.document.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
   });
 
   it("keeps the teacher's copy when the conflicting revision cannot be fetched", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     apiMocks.getExamWorkspaceConversionStatus.mockRejectedValueOnce(new Error("offline"));
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(SECOND);
@@ -131,12 +119,12 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     await flushPromises();
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await pointsOf(view, "item_001")).toBe("11");
   });
 
   it("keeps the teacher's copy when the server refuses a save that changed a converting question", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
     apiMocks.saveExamWorkspaceDocument.mockRejectedValueOnce(
       new ApiError({
         code: "VALIDATION_ERROR",
@@ -148,7 +136,7 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
 
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await pointsOf(view, "item_001")).toBe("11");
     expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);

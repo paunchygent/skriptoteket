@@ -32,7 +32,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "free_text",
-      "title": "Renässansen",
       "printed_label": "Fråga 21",
       "body": [
         {
@@ -62,7 +61,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "free_text",
-      "title": "Upplysningen och romantiken",
       "printed_label": "Fråga 22",
       "body": [
         {
@@ -92,7 +90,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "free_text",
-      "title": "Språkstruktur",
       "printed_label": "Fråga 23",
       "body": [
         {
@@ -122,7 +119,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "free_text",
-      "title": "Satsstruktur",
       "printed_label": "Fråga 24",
       "body": [
         {

@@ -12,7 +12,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { NativeExamItem } from "../../api/examWorkspace";
 import {
   convertingNoticeShown,
-  editTitle,
+  editPoints,
   expectEditable,
   FIRST,
   forceInput,
@@ -23,7 +23,7 @@ import {
   SECOND_STATUS,
   status,
   tick,
-  titleOf,
+  pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
@@ -65,7 +65,7 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain("3 av 3 frågor klara.");
     expect(convertingNoticeShown(view)).toBe(false);
     expectEditable(view, true);
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(await pointsOf(view, "item_002")).toBe("22");
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 2, ["ready", "ready", "ready"]));
     await tick();
@@ -77,7 +77,6 @@ describe("Exam workspace progressive conversion", () => {
   it("refuses every change to a converting placeholder, even one dispatched past its disabled controls", async () => {
     const view = await uploadFirstBatch();
     await selectItemRow(view, "item_002");
-    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik två");
     await forceInput(view, "exam-workspace-item-points-input", "7");
     await forceInput(view, "exam-workspace-marking-guide-input", "Lärarens bedömningsstöd");
 
@@ -85,25 +84,24 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBe("");
     await selectItemRow(view, "item_001");
     await selectItemRow(view, "item_002");
-    expect((view.get('[data-test="exam-workspace-item-title-input"]').element as HTMLInputElement).value).toBe("Fråga 2");
     expect((view.get('[data-test="exam-workspace-item-points-input"]').element as HTMLInputElement).value).toBe("2");
   });
 
   it("keeps unsaved edits of converted items and fills a placeholder from its batch when it arrives", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
     await selectItemRow(view, "item_003");
-    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik tre");
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
-    expect(await titleOf(view, "item_003")).toBe("Fråga 3");
+    await forceInput(view, "exam-workspace-item-points-input", "13");
+    expect(await pointsOf(view, "item_001")).toBe("11");
+    expect(await pointsOf(view, "item_003")).toBe("2");
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
     await tick();
 
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
-    expect(await titleOf(view, "item_003")).toBe("Konverterad 3");
+    expect(await pointsOf(view, "item_001")).toBe("11");
+    expect(await pointsOf(view, "item_002")).toBe("22");
+    expect(await pointsOf(view, "item_003")).toBe("23");
     expectEditable(view, true);
 
     apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(3, SECOND.document.items, SECOND_STATUS));
@@ -111,11 +109,7 @@ describe("Exam workspace progressive conversion", () => {
     await flushPromises();
     const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0];
     expect(params.expectedRevision).toBe(2);
-    expect(params.document.items.map((item: NativeExamItem) => item.title)).toEqual([
-      "Lärarens rubrik ett",
-      "Konverterad 2",
-      "Konverterad 3",
-    ]);
+    expect(params.document.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
   });
 
   it("keeps the placeholders locked when the unfinished exam is opened from its address, until their batch arrives", async () => {
@@ -128,7 +122,7 @@ describe("Exam workspace progressive conversion", () => {
     await selectItemRow(view, "item_002");
     expect(convertingNoticeShown(view)).toBe(true);
     expectEditable(view, false);
-    await forceInput(view, "exam-workspace-item-title-input", "Lärarens rubrik två");
+    await forceInput(view, "exam-workspace-item-points-input", "7");
     expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
     await selectItemRow(view, "item_001");
     expectEditable(view, true);
@@ -138,7 +132,7 @@ describe("Exam workspace progressive conversion", () => {
     await tick();
 
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledWith("job-1");
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(await pointsOf(view, "item_002")).toBe("22");
     expect(convertingNoticeShown(view)).toBe(false);
     expectEditable(view, true);
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();

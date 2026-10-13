@@ -46,7 +46,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Läsning på fritiden",
       "printed_label": "1",
       "body": [
         {
@@ -113,7 +112,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "Tidningsartiklar",
       "printed_label": "2",
       "body": [
         {
@@ -180,7 +178,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Statistik om extrajobb",
       "printed_label": "3",
       "body": [
         {
@@ -247,7 +244,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "AI och lärande",
       "printed_label": "4",
       "body": [
         {
@@ -314,7 +310,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Resor till skolan",
       "printed_label": "5",
       "body": [
         {
@@ -381,7 +376,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Besökare i biblioteket",
       "printed_label": "6",
       "body": [
         {
@@ -448,7 +442,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "En enkät till hela skolan",
       "printed_label": "7",
       "body": [
         {
@@ -515,7 +508,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "20 eller 200 elever",
       "printed_label": "8",
       "body": [
         {
@@ -582,7 +574,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Samma svar sorteras olika",
       "printed_label": "9",
       "body": [
         {
@@ -649,7 +640,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att räkna lästa sidor",
       "printed_label": "10",
       "body": [
         {
@@ -716,7 +706,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Skolans introduktionsplan",
       "printed_label": "11",
       "body": [
         {
@@ -783,7 +772,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "En fråga om avfallssortering",
       "printed_label": "12",
       "body": [
         {
@@ -850,7 +838,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att byta program",
       "printed_label": "13",
       "body": [
         {
@@ -917,7 +904,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Följdfrågor i intervjuer",
       "printed_label": "14",
       "body": [
         {
@@ -984,7 +970,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att använda restiden",
       "printed_label": "15",
       "body": [
         {
@@ -1051,7 +1036,6 @@
       "conflict_kind": null,
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "Spelande och sömn",
       "printed_label": "16",
       "body": [
         {

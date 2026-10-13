@@ -135,18 +135,18 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
   });
 
-  it("marks the workspace as unsaved when the selected item title is edited", async () => {
+  it("marks the workspace as unsaved when the selected item points are edited", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
 
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').text()).toBe("Osparat");
     expect(wrapper.find('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
-      "Helt ny rubrik",
+      "Fråga 2",
     );
   });
 
@@ -173,8 +173,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
@@ -186,7 +186,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(params.expectedRevision).toBe(1);
     expect(params.document.revision).toBe(2);
     const savedItem = params.document.items.find((item) => item.item_id === "item_002");
-    expect(savedItem?.title).toBe("Helt ny rubrik");
+    expect(savedItem?.points).toBe(5);
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
     expect(wrapper.text()).toContain("Version 2");
   });
@@ -367,8 +367,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
     await saveDocument(wrapper);
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");

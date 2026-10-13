@@ -6164,8 +6164,6 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
@@ -6212,8 +6210,6 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
         };
         /**
          * NativeExamItemKind

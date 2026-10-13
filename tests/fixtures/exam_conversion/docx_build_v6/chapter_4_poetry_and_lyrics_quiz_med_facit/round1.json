@@ -68,7 +68,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -112,7 +111,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -156,7 +154,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -200,7 +197,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -245,7 +241,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -298,7 +293,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -342,7 +336,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -386,7 +379,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -431,7 +423,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: contemplation",
       "body": [
         {
           "segments": [
@@ -492,7 +483,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: dignified",
       "body": [
         {
           "segments": [
@@ -553,7 +543,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: enrich",
       "body": [
         {
           "segments": [
@@ -614,7 +603,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: ineffable",
       "body": [
         {
           "segments": [
@@ -675,7 +663,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: inscrutable",
       "body": [
         {
           "segments": [
@@ -736,7 +723,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: oblivion",
       "body": [
         {
           "segments": [
@@ -797,7 +783,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2A: prejudice",
       "body": [
         {
           "segments": [
@@ -858,7 +843,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: style",
       "body": [
         {
           "segments": [
@@ -915,7 +899,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: stanza",
       "body": [
         {
           "segments": [
@@ -972,7 +955,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: tone",
       "body": [
         {
           "segments": [
@@ -1029,7 +1011,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: rhythm",
       "body": [
         {
           "segments": [
@@ -1086,7 +1067,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: theme",
       "body": [
         {
           "segments": [
@@ -1143,7 +1123,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Part 2B: symbolism",
       "body": [
         {
           "segments": [
@@ -1200,7 +1179,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1240,7 +1218,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1280,7 +1257,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1320,7 +1296,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1355,7 +1330,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1395,7 +1369,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [
@@ -1435,7 +1408,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Part 3",
       "body": [
         {
           "segments": [

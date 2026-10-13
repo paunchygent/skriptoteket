@@ -106,14 +106,13 @@ def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
                 body.append(_PICTURE)
         body.extend(_tokens(run))
     texts = [
-        item.title,
         item.marking_guide,
         *(value for gap in item.gaps for value in gap.accepted_values),
         *(choice.text for choice in item.choices),
         *(entry.text for entry in item.match_left),
         *(entry.text for entry in item.match_right),
     ]
-    return (tuple(body), (*_tokens(item.title), *body), *(_tokens(text) for text in texts))
+    return (tuple(body), *(_tokens(text) for text in texts))
 
 
 def _occurs(unit: tuple[str, ...], stream: Stream) -> bool:

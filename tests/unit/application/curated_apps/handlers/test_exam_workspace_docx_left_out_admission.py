@@ -1,7 +1,7 @@
 """A converted item holds the own chunks of its question that the reply leaves out (D41). Only a
 chunk whose wording the item lacks, without points labels, numbering and answer or facit lines,
 shows under the item's check mark as printed (D4). A reply without points takes the one points
-label the item's own chunks print, and the label leaves the stem and title (D3)."""
+label the item's own chunks print, and the label leaves the stem (D3)."""
 
 from uuid import uuid4
 
@@ -58,7 +58,6 @@ def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
         "conflict_kind": None,
         "review_reason": None,
         "kind": "free_text",
-        "title": None,
         "printed_label": "1",
         "body": [{"segments": [_text(_STEM[3:])]}],
         "points": 2,
@@ -84,9 +83,7 @@ def _stem_texts(item: NativeExamItem) -> list[str]:
 def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked():
     state = _state(_STEM, _FACIT)
 
-    admit_batch(
-        {"answer_key_anchors": ["body:0002"], "items": [_item(["body:0001"], title=_STEM)]}, state
-    )
+    admit_batch({"answer_key_anchors": ["body:0002"], "items": [_item(["body:0001"])]}, state)
 
     assert state.key_anchors == set()
     ((admitted, anchors),) = state.accepted
@@ -317,7 +314,6 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
                 _item(
                     ["body:0001", "body:0002", "body:0003", "body:0004"],
                     kind="single_choice",
-                    title=stem,
                     body=[{"segments": [_text(stem)]}],
                     points=None,
                     choices=choices,
@@ -330,7 +326,6 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
 
     ((admitted, _),) = state.accepted
     assert admitted.points == 1
-    assert admitted.title == "Vilket ord är ett substantiv?"
     assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
     assert admitted.review.reasons == ()
 

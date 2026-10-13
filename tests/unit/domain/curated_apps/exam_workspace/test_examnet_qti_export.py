@@ -67,7 +67,6 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            title="Fråga 1 (4 p)",
             body=_text_body("Resonera om satsdelar."),
             points=4,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -77,7 +76,7 @@ class TestFreeTextMapping:
 
         assert qti_item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
         assert qti_item.item_id == "item_001"
-        assert qti_item.title == "Fråga 1 (4 p)"
+        assert qti_item.title == "Fråga 1"
         assert qti_item.prompt_lines == ("Resonera om satsdelar.",)
         assert qti_item.max_score == 4
         assert qti_item.free_text_criterion_points == 4
@@ -106,7 +105,6 @@ class TestChoiceMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.SINGLE_CHOICE,
-            title="Fråga 1",
             body=_text_body("Välj rätt alternativ."),
             points=2,
             choices=(

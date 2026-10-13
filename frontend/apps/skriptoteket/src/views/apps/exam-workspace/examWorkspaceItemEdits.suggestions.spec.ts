@@ -48,7 +48,6 @@ function choiceItem(
     },
     sequence: 1,
     source_anchor: null,
-    title: null,
   };
 }
 

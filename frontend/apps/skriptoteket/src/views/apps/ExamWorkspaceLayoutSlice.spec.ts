@@ -196,7 +196,7 @@ describe("ExamWorkspaceView two-mode layout", () => {
     const frame = wrapper.get('[data-test="exam-workspace-item-drawer-frame"]');
     expect(frame.attributes("role")).toBeUndefined();
 
-    pressEscape(wrapper.get('[data-test="exam-workspace-item-title-input"]').element);
+    pressEscape(wrapper.get('[data-test="exam-workspace-item-points-input"]').element);
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-item-drawer"]').exists()).toBe(true);
 

@@ -50,7 +50,7 @@ def test_strict_schema_preserves_title_properties_and_requires_every_object_fiel
         "items",
     }
     produced_item = _object(_object(schema["$defs"])["ProducedItem"])
-    assert "title" in _object(produced_item["properties"])
+    assert "title" not in _object(produced_item["properties"])
     definitions = _object(schema["$defs"])
     item_fields = _object(_object(definitions["ProducedItem"])["properties"])
     assert _object(item_fields["kind"])["enum"] == ["multiple_response", "single_choice"]

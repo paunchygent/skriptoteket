@@ -13,7 +13,7 @@ import { useToastStore } from "../../stores/toast";
 import {
   convertingNoticeShown,
   converted,
-  editTitle,
+  editPoints,
   expectEditable,
   FIRST_STATUS,
   installProgressiveConversionLifecycle,
@@ -22,7 +22,7 @@ import {
   SECOND,
   status,
   tick,
-  titleOf,
+  pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
@@ -43,17 +43,17 @@ installProgressiveConversionLifecycle(apiMocks);
 describe("Exam workspace progressive conversion completion", () => {
   it("keeps a placeholder locked until the final revision that arrived during a save is merged", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
     let resolveSave!: (value: ExamWorkspaceDocumentResponse) => void;
     apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(new Promise((resolve) => { resolveSave = resolve; }));
     await view.get('[data-test="exam-workspace-save"]').trigger("click");
 
     const savedFirst = revision(
       2,
-      [{ ...converted(1), title: "Lärarens rubrik ett" }, placeholder(2), placeholder(3)],
+      [{ ...converted(1), points: 11 }, placeholder(2), placeholder(3)],
       FIRST_STATUS,
     );
-    const finalItems = [{ ...converted(1), title: "Lärarens rubrik ett" }, converted(2), converted(3)];
+    const finalItems = [{ ...converted(1), points: 11 }, converted(2), converted(3)];
     const succeeded = status("succeeded", 3, ["ready", "ready", "ready"]);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(succeeded);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems, succeeded));
@@ -72,29 +72,29 @@ describe("Exam workspace progressive conversion completion", () => {
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await pointsOf(view, "item_002")).toBe("22");
+    expect(await pointsOf(view, "item_001")).toBe("11");
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
   });
 
   it("merges the final batch through a later teacher revision before it reports the import done", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     // Conversion finished at revision 2; another tab then saved revision 3 on top of it.
     const done = status("succeeded", 2, ["ready", "ready", "ready"]);
     const otherTab = revision(
       3,
-      [converted(1), { ...converted(2), title: "Andra flikens rubrik" }, converted(3)],
+      [converted(1), { ...converted(2), points: 32 }, converted(3)],
       done,
     );
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(done);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(otherTab);
     await tick();
 
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
-    expect(await titleOf(view, "item_002")).toBe("Andra flikens rubrik");
-    expect(await titleOf(view, "item_003")).toBe("Konverterad 3");
+    expect(await pointsOf(view, "item_001")).toBe("11");
+    expect(await pointsOf(view, "item_002")).toBe("32");
+    expect(await pointsOf(view, "item_003")).toBe("23");
     expect(convertingNoticeShown(view)).toBe(false);
     expectEditable(view, true);
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
@@ -122,14 +122,14 @@ describe("Exam workspace progressive conversion completion", () => {
 
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(2, SECOND.document.items, done));
     await tick();
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(await pointsOf(view, "item_002")).toBe("22");
     expect(convertingNoticeShown(view)).toBe(false);
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
   });
 
   it("keeps the placeholders locked and the import unfinished when the followed exam's revision comes without its conversion", async () => {
     const view = await uploadFirstBatch();
-    await editTitle(view, "item_001", "Lärarens rubrik ett");
+    await editPoints(view, "item_001", "11");
 
     // The status names revision 2, but the document read returns it without the conversion that owns its units.
     const partial = status("running", 2, ["ready", "ready", "converting"]);
@@ -139,7 +139,7 @@ describe("Exam workspace progressive conversion completion", () => {
     );
     await tick();
 
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await pointsOf(view, "item_001")).toBe("11");
     for (const itemId of ["item_002", "item_003"]) {
       await selectItemRow(view, itemId);
       expect(convertingNoticeShown(view), itemId).toBe(true);
@@ -154,10 +154,10 @@ describe("Exam workspace progressive conversion completion", () => {
       revision(2, [converted(1), converted(2), placeholder(3)], partial),
     );
     await tick();
-    expect(await titleOf(view, "item_002")).toBe("Konverterad 2");
+    expect(await pointsOf(view, "item_002")).toBe("22");
     expect(convertingNoticeShown(view)).toBe(false);
     await selectItemRow(view, "item_003");
     expect(convertingNoticeShown(view)).toBe(true);
-    expect(await titleOf(view, "item_001")).toBe("Lärarens rubrik ett");
+    expect(await pointsOf(view, "item_001")).toBe("11");
   });
 });

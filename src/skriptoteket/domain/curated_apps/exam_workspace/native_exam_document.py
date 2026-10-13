@@ -234,8 +234,7 @@ class NativeExamItem(BaseModel):
     item_id: str = Field(pattern=_ITEM_ID_PATTERN)
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
-    title: str | None = None
-    printed_label: str | None = None  # "Fråga 3", "a": title metadata only, never shown (D20)
+    printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
     points_estimated: bool = False  # points split from a printed section total (D6)

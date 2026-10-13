@@ -46,7 +46,6 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     },
     sequence: 0,
     source_anchor: null,
-    title: null,
   };
 }
 
@@ -417,23 +416,23 @@ describe("mergeConversionRevision", () => {
     const teacherOwn = buildItem("item_003", "Lärarens fråga");
     const base = buildDocument(1, [converted, placeholder, teacherOwn]);
     const baseUnits = [unit("q1", "ready", ["item_001"]), unit("q2", "converting", ["item_002"])];
-    const local = buildDocument(1, [{ ...converted, title: "Lokal rubrik" }, placeholder, teacherOwn]);
+    const local = buildDocument(1, [{ ...converted, points: 7 }, placeholder, teacherOwn]);
     const otherTabAdded = buildItem("item_004", "Andra flikens fråga");
     const head = buildDocument(3, [
       converted,
       buildItem("item_002", "Fråga två"),
-      { ...teacherOwn, title: "Andra flikens rubrik" },
+      { ...teacherOwn, points: 9 },
       otherTabAdded,
     ]);
     const headUnits = [unit("q1", "ready", ["item_001"]), unit("q2", "ready", ["item_002"])];
 
     const document = mergeConversionRevision({ base, baseUnits, head, headUnits, local });
 
-    expect(document.items.map((item) => [item.item_id, item.title, item.body[0]?.segments[0]])).toEqual([
-      ["item_001", "Lokal rubrik", { kind: "text", text: "Fråga ett" }],
-      ["item_002", null, { kind: "text", text: "Fråga två" }],
-      ["item_003", "Andra flikens rubrik", { kind: "text", text: "Lärarens fråga" }],
-      ["item_004", null, { kind: "text", text: "Andra flikens fråga" }],
+    expect(document.items.map((item) => [item.item_id, item.points, item.body[0]?.segments[0]])).toEqual([
+      ["item_001", 7, { kind: "text", text: "Fråga ett" }],
+      ["item_002", 2, { kind: "text", text: "Fråga två" }],
+      ["item_003", 9, { kind: "text", text: "Lärarens fråga" }],
+      ["item_004", 2, { kind: "text", text: "Andra flikens fråga" }],
     ]);
     expect(document.revision).toBe(3);
   });

@@ -46,7 +46,6 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
     },
     sequence: 1,
     source_anchor: null,
-    title: "Vocabulary Matching, Question 1",
     ...overrides,
   };
 }

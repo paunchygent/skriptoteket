@@ -98,7 +98,7 @@ def test_a_save_that_changes_a_placeholder_is_caught(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
-    edited = head.items[1].model_copy(update={"title": "Lärarens rubrik"})
+    edited = head.items[1].model_copy(update={"body": body("Lärarens redigerade källtext")})
     saved = _teacher_save(head, items=(head.items[0], edited, head.items[2]))
 
     assert changed_placeholders(progress=progress, base=head, saved=saved) == ["item_002"]
@@ -189,7 +189,7 @@ def test_editing_converted_items_and_adding_questions_leaves_placeholders_alone(
     added = q1.model_copy(update={"item_id": "item_004", "sequence": 4, "source_anchor": None})
     saved = _teacher_save(
         head,
-        items=(q1.model_copy(update={"title": "Lärarens titel"}), q2, q3, added),
+        items=(q1.model_copy(update={"body": body("Lärarens fråga ett")}), q2, q3, added),
     )
 
     assert changed_placeholders(progress=progress, base=head, saved=saved) == []
@@ -380,16 +380,16 @@ def _instruction_of(document: NativeExamDocument) -> dict[str, tuple[str, ...] |
     }
 
 
-def test_teacher_retitled_converted_child_stays_under_the_final_parent(
+def test_teacher_edited_converted_child_stays_under_the_final_parent(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:
     head, progress = first
-    retitled = head.items[0].model_copy(update={"title": "Lärarens titel"})
-    teacher_head = _teacher_save(head, items=(retitled, *head.items[1:]))
+    edited = head.items[0].model_copy(update={"body": body("Lärarens fråga ett")})
+    teacher_head = _teacher_save(head, items=(edited, *head.items[1:]))
 
     merged = _final_with_parent(teacher_head, progress)
 
-    assert merged.document.items[0].title == "Lärarens titel"
+    assert _texts(merged.document)[0] == "Lärarens fråga ett"
     assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_002", "item_003")]
     assert merged.document.parent_of("item_001") is not None
 

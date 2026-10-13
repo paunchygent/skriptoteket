@@ -53,7 +53,6 @@ import {
   withParagraphSegments,
   withPoints,
   withRestoredSuggestion,
-  withTitle,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
@@ -342,10 +341,6 @@ export function useExamWorkspaceDocument() {
     workspaceDocument.value = { ...current, items };
   }
 
-  function updateItemTitle(itemId: string, title: string): void {
-    patchItem(itemId, (item) => withTitle(item, title));
-  }
-
   function updateItemMarkingGuide(itemId: string, guide: string | null): void {
     patchItem(itemId, (item) => withMarkingGuide(item, guide));
   }
@@ -444,7 +439,6 @@ export function useExamWorkspaceDocument() {
     updateItemMatchEntryText,
     updateItemMatchPairs,
     updateItemPoints,
-    updateItemTitle,
     workspaceDocument,
   };
 }

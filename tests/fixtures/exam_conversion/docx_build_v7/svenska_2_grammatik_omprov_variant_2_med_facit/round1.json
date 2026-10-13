@@ -119,7 +119,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Dela upp orden i morfem.",
       "body": [
         {
           "segments": [
@@ -169,7 +168,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Ange frastyp.",
       "body": [
         {
           "segments": [
@@ -264,7 +262,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Skriv huvudordet i varje nominalfras.",
       "body": [
         {
           "segments": [
@@ -350,7 +347,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Skriv satsdelen för den markerade delen.",
       "body": [
         {
           "segments": [
@@ -435,7 +431,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Gör satsdelsanalys av meningarna.",
       "body": [
         {
           "segments": [
@@ -486,7 +481,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
       "body": [
         {
           "segments": [
@@ -675,7 +669,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Analysera en komplex mening.",
       "body": [
         {
           "segments": [
@@ -766,7 +759,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Jämför texternas språkliga drag.",
       "body": [
         {
           "segments": [
