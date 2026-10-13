@@ -6,8 +6,8 @@ Purpose:
     decision back into a typed proposal, and turn a proposal into the AI
     suggestion kept on the question (TASK-SKRIPT-39-04-07), and fingerprint
     the question's answer-relevant content to report a kept suggestion out
-    of date. When a suggestion becomes the key lives in
-    ``answer_key_suggestion_rules``.
+    of date. The editor decides when a suggestion becomes the key; saving
+    the document validates that key against its question.
 
 Relationships:
     - Consumed by ``domain.curated_apps.exam_workspace.answer_key_prompts``

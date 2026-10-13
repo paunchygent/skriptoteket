@@ -4,10 +4,6 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
-    MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
-    apply_suggestion_to_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemProposal,
     AnswerKeyViewKind,
@@ -198,33 +194,27 @@ class TestProposalValidation:
         assert proposal_from_model_content(view=view, content={"1": "gap_001", "2": "x"}) is None
 
 
-class TestApplySuggestion:
-    def test_choice_suggestion_marks_machine_proposed_and_review_required(self) -> None:
+class TestSuggestionFromProposal:
+    def test_choice_suggestion_names_native_choice_ids(self) -> None:
         item = _choice_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"correct_alternative_ids": [2]})
         assert proposal is not None
 
-        proposed = apply_suggestion_to_item(item, _suggestion(view, proposal))
+        suggestion = _suggestion(view, proposal)
 
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.answer_key.correct_choice_ids == ("choice_002",)
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON in proposed.review.reasons
-        assert proposed.ai_suggestion is not None
-        assert proposed.ai_suggestion.correct_choice_ids == ("choice_002",)
-        assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
-        assert item.ai_suggestion is None
+        assert suggestion.correct_choice_ids == ("choice_002",)
+        assert suggestion.gap_accepted_values == ()
+        assert suggestion.match_pairs == ()
 
-    def test_gap_suggestion_fills_accepted_values_per_gap(self) -> None:
+    def test_gap_suggestion_carries_accepted_values_per_gap(self) -> None:
         item = _gap_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"1": "Maja", "2": "Lund"})
         assert proposal is not None
 
-        proposed = apply_suggestion_to_item(item, _suggestion(view, proposal))
+        suggestion = _suggestion(view, proposal)
 
-        accepted = {gap.gap_id: gap.accepted_values for gap in proposed.gaps}
+        accepted = {entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values}
         assert accepted == {"gap_002": ("Maja",), "gap_001": ("Lund",)}
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
+        assert suggestion.correct_choice_ids == ()

@@ -325,6 +325,62 @@ def test_save_request_refuses_the_deleted_rejected_proposal_ids_field() -> None:
         )
 
 
+def _save_payload_with_key(
+    item_id: str, key: dict[str, object], gap_values: list[str]
+) -> dict[str, object]:
+    payload = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()).model_dump(mode="json")
+    payload["revision"] = 2
+    item = next(entry for entry in payload["items"] if entry["item_id"] == item_id)
+    item["answer_key"] = {"correct_choice_ids": [], "match_pairs": [], **key}
+    for gap in item["gaps"]:
+        gap["accepted_values"] = gap_values
+    return {"expected_revision": 1, "document": payload}
+
+
+def test_save_request_accepts_a_machine_proposed_key_that_fits_its_question() -> None:
+    request = SaveExamWorkspaceDocumentRequest.model_validate(
+        _save_payload_with_key("item_001", {"origin": "machine_proposed"}, ["förslag"])
+    )
+
+    assert request.document.items[0].answer_key.origin.value == "machine_proposed"
+
+
+@pytest.mark.parametrize(
+    ("label", "item_id", "key", "gap_values"),
+    [
+        (
+            "choice ids on a gap question",
+            "item_001",
+            {"origin": "machine_proposed", "correct_choice_ids": ["choice_001"]},
+            ["förslag"],
+        ),
+        (
+            "match pairs on a gap question",
+            "item_001",
+            {
+                "origin": "machine_proposed",
+                "match_pairs": [{"left_id": "left_001", "right_id": "right_001"}],
+            },
+            ["förslag"],
+        ),
+        ("gap key with gaps left unkeyed", "item_001", {"origin": "machine_proposed"}, []),
+        (
+            "choice key on a free_text question",
+            "item_008",
+            {"origin": "machine_proposed", "correct_choice_ids": ["choice_001"]},
+            [],
+        ),
+    ],
+)
+def test_save_request_refuses_a_key_that_does_not_fit_its_question(
+    label: str, item_id: str, key: dict[str, object], gap_values: list[str]
+) -> None:
+    with pytest.raises(ValidationError):
+        SaveExamWorkspaceDocumentRequest.model_validate(
+            _save_payload_with_key(item_id, key, gap_values)
+        )
+
+
 @pytest.mark.asyncio
 async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
     env: _Env, fixture_bytes: bytes

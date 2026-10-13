@@ -12,10 +12,6 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
-    apply_suggestion_to_item,
-    restore_suggestion_on_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_fingerprint,
     suggestion_is_outdated,
@@ -214,81 +210,7 @@ class TestFingerprint:
             assert answer_key_fingerprint(variant, None) == base
 
 
-class TestApplySuggestion:
-    @pytest.mark.parametrize(
-        "origin",
-        [
-            NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-            NativeAnswerKeyOrigin.SOURCE_PROVIDED,
-            NativeAnswerKeyOrigin.REVIEWED_ADVISORY,
-        ],
-    )
-    def test_never_overwrites_a_trusted_key(self, origin: NativeAnswerKeyOrigin) -> None:
-        item = _choice_item(
-            answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=("choice_001",))
-        )
-
-        arrived = apply_suggestion_to_item(item, _suggestion("choice_002"))
-
-        assert arrived.answer_key.origin is origin
-        assert arrived.answer_key.correct_choice_ids == ("choice_001",)
-        assert arrived.review.state is NativeItemReviewState.REVIEW_COMPLETE
-        # ...but the suggestion itself is kept on the question.
-        assert arrived.ai_suggestion is not None
-        assert arrived.ai_suggestion.correct_choice_ids == ("choice_002",)
-
-    def test_new_suggestion_replaces_key_that_is_the_previous_suggestion(self) -> None:
-        first = apply_suggestion_to_item(_choice_item(), _suggestion("choice_002"))
-        assert first.answer_key.correct_choice_ids == ("choice_002",)
-
-        second = apply_suggestion_to_item(first, _suggestion("choice_001"))
-
-        assert second.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert second.answer_key.correct_choice_ids == ("choice_001",)
-        assert second.ai_suggestion is not None
-        assert second.ai_suggestion.correct_choice_ids == ("choice_001",)
-
-    def test_teacher_key_after_a_suggestion_is_kept_on_next_arrival(self) -> None:
-        suggested = apply_suggestion_to_item(_choice_item(), _suggestion("choice_002"))
-        teacher_keyed = suggested.model_copy(
-            update={
-                "answer_key": NativeAnswerKey(
-                    origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-                    correct_choice_ids=("choice_001",),
-                )
-            }
-        )
-
-        arrived = apply_suggestion_to_item(teacher_keyed, _suggestion("choice_002"))
-
-        assert arrived.answer_key.origin is NativeAnswerKeyOrigin.TEACHER_AUTHORED
-        assert arrived.answer_key.correct_choice_ids == ("choice_001",)
-
-
-class TestRestoreAndOutdated:
-    def test_restore_makes_the_suggestion_the_key_again(self) -> None:
-        suggested = apply_suggestion_to_item(_choice_item(), _suggestion("choice_002"))
-        teacher_keyed = suggested.model_copy(
-            update={
-                "answer_key": NativeAnswerKey(
-                    origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
-                    correct_choice_ids=("choice_001",),
-                ),
-                "review": _review(),
-            }
-        )
-
-        restored = restore_suggestion_on_item(teacher_keyed)
-
-        assert restored.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert restored.answer_key.correct_choice_ids == ("choice_002",)
-        assert restored.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert restored.ai_suggestion is not None
-
-    def test_restore_without_a_suggestion_changes_nothing(self) -> None:
-        item = _choice_item()
-        assert restore_suggestion_on_item(item) is item
-
+class TestOutdated:
     def test_outdated_after_an_answer_relevant_edit_only(self) -> None:
         item = _choice_item()
         suggestion = _suggestion(fingerprint=answer_key_fingerprint(item, None))
@@ -398,7 +320,14 @@ class TestSuggestionStorage:
             )
 
     def test_save_and_reopen_keep_the_suggestion(self) -> None:
-        item = apply_suggestion_to_item(_choice_item(), _suggestion("choice_002"))
+        item = _choice_item(
+            answer_key=NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
+                correct_choice_ids=("choice_002",),
+            ),
+            review=_review(NativeItemReviewState.REVIEW_REQUIRED),
+            ai_suggestion=_suggestion("choice_002"),
+        )
         document = NativeExamDocument(
             document_id=uuid4(),
             revision=1,

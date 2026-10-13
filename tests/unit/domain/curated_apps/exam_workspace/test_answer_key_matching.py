@@ -14,10 +14,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     MATCHING_PROMPT_TEMPLATE_VERSION,
     plan_workspace_answer_key_candidates,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
-    MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
-    apply_suggestion_to_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemProposal,
     AnswerKeyItemView,
@@ -30,7 +26,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeAnswerKeyOrigin,
     NativeAnswerKeySuggestion,
     NativeExamItem,
-    NativeItemReviewState,
     NativeMatchRight,
 )
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
@@ -60,16 +55,13 @@ def _view(item: NativeExamItem) -> AnswerKeyItemView:
     return answer_key_item_views(document_of(item))[0]
 
 
-def _apply(item: NativeExamItem, proposal: AnswerKeyItemProposal) -> NativeExamItem:
-    return apply_suggestion_to_item(
-        item,
-        suggestion_from_proposal(
-            view=_view(item),
-            proposal=proposal,
-            provider_profile_id="p",
-            model="m",
-            prompt_template_version=MATCHING_PROMPT_TEMPLATE_VERSION,
-        ),
+def _suggestion(item: NativeExamItem, proposal: AnswerKeyItemProposal) -> NativeAnswerKeySuggestion:
+    return suggestion_from_proposal(
+        view=_view(item),
+        proposal=proposal,
+        provider_profile_id="p",
+        model="m",
+        prompt_template_version=MATCHING_PROMPT_TEMPLATE_VERSION,
     )
 
 
@@ -93,7 +85,7 @@ def test_keyed_recorded_matching_items_are_not_selected() -> None:
     assert answer_key_item_views(document_of(*recorded_matching_items(keyed=True))) == ()
 
 
-def test_well_formed_proposal_applies_as_machine_proposed_review_required() -> None:
+def test_well_formed_proposal_is_kept_as_a_matching_suggestion() -> None:
     item = recorded_matching_items()[0]
     proposal = proposal_from_model_content(
         view=_view(item), content=_content((1, 2), (2, 3), (3, 1))
@@ -105,17 +97,16 @@ def test_well_formed_proposal_applies_as_machine_proposed_review_required() -> N
         ("left_002", "right_003"),
         ("left_003", "right_001"),
     )
-    proposed = _apply(item, proposal)
+    suggestion = _suggestion(item, proposal)
+    kept = NativeExamItem.model_validate({**dict(item), "ai_suggestion": suggestion})
 
-    assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-    assert [(p.left_id, p.right_id) for p in proposed.answer_key.match_pairs] == [
+    assert kept.ai_suggestion is not None
+    assert [(p.left_id, p.right_id) for p in kept.ai_suggestion.match_pairs] == [
         ("left_001", "right_002"),
         ("left_002", "right_003"),
         ("left_003", "right_001"),
     ]
-    assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON in proposed.review.reasons
-    assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
+    assert kept.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
 
 
 def test_proposal_may_leave_a_distractor_right_entry_unused() -> None:
@@ -136,7 +127,7 @@ def test_proposal_may_leave_a_distractor_right_entry_unused() -> None:
     )
 
     assert proposal is not None
-    assert _apply(widened, proposal).answer_key.match_pairs[0].right_id == "right_004"
+    assert _suggestion(widened, proposal).match_pairs[0].right_id == "right_004"
 
 
 @pytest.mark.parametrize(
@@ -185,21 +176,13 @@ def test_suggestion_round_trips_pairs_through_json() -> None:
         view=_view(item), content=_content((1, 1), (2, 2), (3, 3))
     )
     assert proposal is not None
-    suggestion = suggestion_from_proposal(
-        view=_view(item),
-        proposal=proposal,
-        provider_profile_id="p",
-        model="m",
-        prompt_template_version=MATCHING_PROMPT_TEMPLATE_VERSION,
-    )
+    suggestion = _suggestion(item, proposal)
 
     restored = NativeAnswerKeySuggestion.model_validate(suggestion.model_dump(mode="json"))
 
     assert restored == suggestion
-    proposed = apply_suggestion_to_item(item, restored)
-    assert [(p.left_id, p.right_id) for p in proposed.answer_key.match_pairs] == [
+    assert [(p.left_id, p.right_id) for p in restored.match_pairs] == [
         ("left_001", "right_001"),
         ("left_002", "right_002"),
         ("left_003", "right_003"),
     ]
-    assert proposed.ai_suggestion == restored

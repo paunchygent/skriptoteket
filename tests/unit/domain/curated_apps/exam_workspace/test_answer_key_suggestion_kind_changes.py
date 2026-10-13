@@ -10,10 +10,6 @@ changed, including a change to free_text, which has no keyed view.
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_suggestion_rules import (
-    apply_suggestion_to_item,
-    restore_suggestion_on_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_fingerprint,
     suggestion_is_outdated,
@@ -37,7 +33,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
-from skriptoteket.domain.errors import DomainError
 
 pytestmark = pytest.mark.unit
 
@@ -196,17 +191,6 @@ class TestSuggestionStorageAcrossKindChanges:
         with pytest.raises(ValidationError):
             NativeExamItem.model_validate({**self._item_fields(kind), "ai_suggestion": payload})
 
-    def test_restoring_a_kind_incompatible_suggestion_is_still_refused(self) -> None:
-        item = NativeExamItem.model_validate(
-            {
-                **self._item_fields(NativeExamItemKind.SINGLE_CHOICE),
-                "ai_suggestion": self._shapes()["multiple_response"],
-            }
-        )
-
-        with pytest.raises(DomainError):
-            restore_suggestion_on_item(item)
-
     def test_matching_suggestion_pairs_every_left_entry(self) -> None:
         item = NativeExamItem(
             item_id="item_001",
@@ -230,10 +214,19 @@ class TestSuggestionStorageAcrossKindChanges:
             prompt_template_version="v1",
         )
 
-        arrived = apply_suggestion_to_item(item, suggestion)
+        keyed = NativeExamItem.model_validate(
+            {
+                **dict(item),
+                "ai_suggestion": suggestion,
+                "answer_key": NativeAnswerKey(
+                    origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
+                    match_pairs=suggestion.match_pairs,
+                ),
+            }
+        )
 
-        assert arrived.answer_key.match_pairs == suggestion.match_pairs
-        assert arrived.ai_suggestion == suggestion
+        assert keyed.answer_key.match_pairs == suggestion.match_pairs
+        assert keyed.ai_suggestion == suggestion
 
 
 _SHAPE_KINDS: dict[str, NativeExamItemKind] = {
