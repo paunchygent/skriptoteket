@@ -3,7 +3,7 @@
  * Exam workspace item editor.
  *
  * Domain purpose:
- *   Edit one native exam item as the dominating Redigera surface: title,
+ *   Edit one native exam item as the dominating Redigera surface:
  *   points, the question text with inline gaps, choices with the correct
  *   answer, matching lists with the correct right entry per left entry, and
  *   the mark-as-reviewed action. Previous/next and the details
@@ -86,7 +86,6 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
 }>();
 
 const pointsHintId = useId();
@@ -111,11 +110,6 @@ function choiceTextClass(choiceId: string, text: string): string {
   return isCorrectChoice(choiceId)
     ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
     : "border-navy/35";
-}
-
-function handleTitleInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateTitle", props.item.item_id, input.value);
 }
 
 function handlePointsInput(event: Event): void {
@@ -290,18 +284,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       instruktionen visas i listan över frågor. {{ PARENT_CHILD_LOCKED_COPY }}
     </p>
 
-    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Rubrik
-        <input
-          class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="item.title ?? ''"
-          :disabled="disabled"
-          data-test="exam-workspace-item-title-input"
-          @input="handleTitleInput"
-        >
-      </label>
+    <div class="grid gap-3">
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
         Poäng
         <input
@@ -322,7 +305,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       <p
         v-if="hasNonPositivePoints(item)"
         :id="pointsHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy sm:col-span-2"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
         data-test="exam-workspace-points-hint"
       >
         {{ NON_POSITIVE_POINTS_GUIDANCE }}

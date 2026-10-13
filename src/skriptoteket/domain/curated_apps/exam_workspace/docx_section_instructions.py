@@ -79,10 +79,9 @@ def _lines(text: str) -> list[str]:
 
 
 def _printed(item: NativeExamItem, text: str) -> bool:
-    """Whether the item already prints the text as whole lines of its title or body."""
+    """Whether the item already prints the text as whole lines of its body."""
     wanted = _lines(text)
     shown = [
-        *_lines(item.title or ""),
         *(part for line in item.plain_text_lines() for part in _lines(line)),
     ]
     return (
@@ -292,11 +291,171 @@ def _parent_groups(reached: list[_Run]) -> list[list[_Run]]:
     return groups
 
 
+_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
+
+
+def _heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
+    """A printed heading's wording without its points label and question number.
+
+    What remains is the heading as printed; a heading that is only a question number
+    and points leaves nothing. A numbered question line set in a heading style, such
+    as "Fråga 6. Ange …", leaves its stem, which the item already prints.
+    """
+    text = " ".join(POINT_LABEL.sub(" ", chunk.text).split())
+    label = (item.printed_label or "") if item is not None else ""
+    if label and text.casefold().startswith(label.casefold()):
+        text = text[len(label) :].lstrip(" .):-").strip()
+    else:
+        text = _NUMBERED_LINE.sub("", text, count=1).strip()
+    return text
+
+
+def _with_heading(
+    item: NativeExamItem,
+    text: str,
+    raw: str,
+    heading_at: int,
+    source_positions: dict[str, int],
+) -> NativeExamItem:
+    """The item with its heading at its source place among the paragraphs placement added.
+
+    Paragraphs copied from chunks printed before the heading stay ahead of it; the
+    question's own text follows it. Wording the item already prints — the heading as
+    placed, or the whole printed line a source-text item holds — is never repeated.
+    """
+    if _printed(item, text) or _printed(item, raw):
+        return item
+    at = 0
+    for paragraph in item.body:
+        plain = "".join(
+            segment.text for segment in paragraph.segments if isinstance(segment, NativeTextSegment)
+        )
+        position = source_positions.get(" ".join(plain.split()))
+        if position is None or position >= heading_at:
+            break
+        at += 1
+    heading = NativeParagraph(segments=(NativeTextSegment(text=text),))
+    return item.model_copy(update={"body": (*item.body[:at], heading, *item.body[at:])})
+
+
+def _place_headings(
+    chunks: tuple[DocxChunk, ...],
+    ordered: list[Placed],
+    items: tuple[NativeExamItem, ...],
+    parents: tuple[NativeExamParent, ...],
+    instructions: tuple[ProducedMetadata, ...],
+    governed: Mapping[str, frozenset[str]],
+    title_anchors: frozenset[str],
+    own_anchors: frozenset[str],
+    landed: dict[int, set[str]],
+) -> tuple[tuple[NativeExamItem, ...], tuple[NativeExamParent, ...]]:
+    """Place every printed heading the placement above left as structure (T1, T2).
+
+    A heading over one question opens that question's body verbatim. A heading over
+    two or more consecutive questions is the first line of their parent's instruction,
+    ahead of any printed instruction text; a heading with no instruction line still
+    forms the parent. The document's opening heading is the exam title, never a
+    question heading. A heading whose run already has a parent with another reach
+    opens the body of the run's first question, so its wording stays student-visible.
+    A question's own heading chunk a reply lists as an instruction instead of in its
+    item stays with the D42 return and check mark: placement never silently repairs
+    a misplaced own chunk.
+    """
+    positions = {c.anchor: i for i, c in enumerate(chunks)}
+    owner = {a: k for k, (_, anchors, _) in enumerate(ordered) for a in anchors}
+    starts = [min(positions[a] for a in anchors) for _, anchors, _ in ordered]
+    headings = [
+        c
+        for c in chunks
+        if c.kind == "heading"
+        and c.text.strip()
+        and positions[c.anchor] > 0
+        and c.anchor not in title_anchors
+        and c.anchor not in governed
+        and not points_line(c.text)
+    ]
+    source_positions: dict[str, int] = {}
+    for chunk in chunks:
+        source_positions.setdefault(" ".join(chunk.text.split()), positions[chunk.anchor])
+    instruction_held = {a for m in instructions for a in m.source_anchors}
+    placed_items = list(items)
+    placed_parents = list(parents)
+    for chunk in headings:
+        if (
+            chunk.anchor in own_anchors
+            and chunk.anchor in instruction_held
+            and chunk.anchor not in owner
+        ):
+            continue
+        at = positions[chunk.anchor]
+        if chunk.anchor in owner:
+            reach = [owner[chunk.anchor]]
+        else:
+            following = next(
+                (positions[c.anchor] for c in chunks[at + 1 :] if c.kind == "heading"),
+                len(chunks),
+            )
+            reach = [k for k, start in enumerate(starts) if at < start < following]
+        if not reach:
+            continue
+        first = placed_items[reach[0]]
+        text = _heading_wording(chunk, first if len(reach) == 1 else None)
+        if not text:
+            continue
+        # An instruction that held only this heading lands where the heading lands.
+        for origin, instruction in enumerate(instructions):
+            if set(instruction.source_anchors) == {chunk.anchor}:
+                for k in reach:
+                    landed.setdefault(origin, set()).update(ordered[k][1])
+        if len(reach) == 1:
+            placed_items[reach[0]] = _with_heading(first, text, chunk.text, at, source_positions)
+            continue
+        consecutive = reach == list(range(reach[0], reach[-1] + 1))
+        ids = tuple(_item_id(k) for k in reach)
+        order_of = {_item_id(k): k for k in range(len(placed_items))}
+        # A parent that covers the heading's whole run takes the heading as its first
+        # line, also when it also holds an item placed before the heading, such as a
+        # review item from an unclaimed chunk at the document's start.
+        same = next(
+            (
+                p
+                for p in placed_parents
+                if order_of[p.item_ids[0]] <= reach[0] and order_of[p.item_ids[-1]] >= reach[-1]
+            ),
+            None,
+        )
+        parented = {item_id for p in placed_parents for item_id in p.item_ids}
+        if same is not None:
+            if text not in same.instruction:
+                placed_parents[placed_parents.index(same)] = same.model_copy(
+                    update={"instruction": (text, *same.instruction)}
+                )
+        elif consecutive and not parented.intersection(ids):
+            placed_parents.append(
+                NativeExamParent(
+                    parent_id=f"parent_{len(placed_parents) + 1:03d}",
+                    instruction=(text,),
+                    item_ids=ids,
+                )
+            )
+        else:
+            placed_items[reach[0]] = _with_heading(first, text, chunk.text, at, source_positions)
+    order = {_item_id(k): k for k in range(len(placed_items))}
+    placed_parents.sort(key=lambda p: order[p.item_ids[0]])
+    renumbered = tuple(
+        p.model_copy(update={"parent_id": f"parent_{number:03d}"})
+        for number, p in enumerate(placed_parents, start=1)
+    )
+    return tuple(placed_items), renumbered
+
+
 def place_section_instructions(
     chunks: tuple[DocxChunk, ...],
     ordered: list[Placed],
     instructions: tuple[ProducedMetadata, ...],
     governed: Mapping[str, frozenset[str]],
+    title_anchors: frozenset[str] = frozenset(),
+    own_anchors: frozenset[str] = frozenset(),
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
 
@@ -307,8 +466,10 @@ def place_section_instructions(
     An instruction printed inside an item's own chunks joins that item. Any other instruction
     opens the items of its run, which ends at the next section heading (a heading no item
     owns, other than a lead-in label) or at the next instruction printed after one of the
-    run's items. Section headings and points lines are structure and are never instruction
+    run's items. Points lines are structure and are never instruction
     text, except in a chunk the grouping marks as governing, which keeps its whole text (D40).
+    Printed headings are placed last: over one question they open its body, and over two or
+    more consecutive questions they open their parent's instruction (T1, T2).
     The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
     the run's items whose own chunks use one; lines an item prints before its numbered
@@ -364,6 +525,9 @@ def place_section_instructions(
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )
         for number, group in enumerate(groups, start=1)
+    )
+    items, parents = _place_headings(
+        chunks, ordered, items, parents, instructions, governed, title_anchors, own_anchors, landed
     )
     return SectionInstructions(
         items, parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})

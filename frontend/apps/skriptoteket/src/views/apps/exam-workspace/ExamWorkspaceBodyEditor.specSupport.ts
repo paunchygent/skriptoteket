@@ -46,7 +46,6 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     },
     sequence: 1,
     source_anchor: null,
-    title: null,
     ...overrides,
   };
 }

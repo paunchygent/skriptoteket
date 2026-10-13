@@ -122,7 +122,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -166,7 +165,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -210,7 +208,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -254,7 +251,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -298,7 +294,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -342,7 +337,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -386,7 +380,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -430,7 +423,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -474,7 +466,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -518,7 +509,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -562,7 +552,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -606,7 +595,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -650,7 +638,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -694,7 +681,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -738,7 +724,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -783,7 +768,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Morfem",
       "body": [
         {
           "segments": [
@@ -850,7 +834,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fraser",
       "body": [
         {
           "segments": [
@@ -917,7 +900,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Satsdelar",
       "body": [
         {
           "segments": [
@@ -993,7 +975,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Satsdelar",
       "body": [
         {
           "segments": [
@@ -1069,7 +1050,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Huvudsats, bisats och BIFF",
       "body": [
         {
           "segments": [
@@ -1125,7 +1105,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Renässansen",
       "body": [
         {
           "segments": [
@@ -1153,7 +1132,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Upplysningen och romantiken",
       "body": [
         {
           "segments": [
@@ -1181,7 +1159,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Språkstruktur",
       "body": [
         {
           "segments": [
@@ -1209,7 +1186,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Satsstruktur",
       "body": [
         {
           "segments": [

@@ -93,11 +93,12 @@ _ASSET = NativeExamAsset(
 
 
 @pytest.mark.parametrize("stem", _STEMS)
-def test_an_untitled_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: str) -> None:
-    """A printed label titles only parents; an image added to the item never names it."""
+def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: str) -> None:
+    """No item carries a title (39-05-08): its QTI title is its question label, a printed
+    label titles only parents, and an image added to the item never names it."""
     document, _ = replayed(stem, _LABELLED)
     labels = exam_language_labels(document)
-    untitled = [item for item in document.items if not item.title and item.printed_label]
+    untitled = [item for item in document.items if item.printed_label]
     assert untitled
     if stem == "bf26_english_1_unit_test_kap_1_2_med_facit":
         (restarted,) = [item for item in untitled if item.sequence == 28]

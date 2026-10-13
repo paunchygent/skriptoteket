@@ -43,7 +43,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "1. Läsning på fritiden (1 poäng)",
       "body": [
         {
           "segments": [
@@ -105,7 +104,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "2. Tidningsartiklar (2 poäng)",
       "body": [
         {
           "segments": [
@@ -167,7 +165,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "3. Statistik om extrajobb (1 poäng)",
       "body": [
         {
           "segments": [
@@ -229,7 +226,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "4. AI och lärande (1 poäng)",
       "body": [
         {
           "segments": [
@@ -291,7 +287,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "5. Resor till skolan (1 poäng)",
       "body": [
         {
           "segments": [
@@ -353,7 +348,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "6. Besökare i biblioteket (1 poäng)",
       "body": [
         {
           "segments": [
@@ -415,7 +409,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "7. En enkät till hela skolan (2 poäng)",
       "body": [
         {
           "segments": [
@@ -477,7 +470,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "8. 20 eller 200 elever (1 poäng)",
       "body": [
         {
           "segments": [
@@ -539,7 +531,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "9. Samma svar sorteras olika (1 poäng)",
       "body": [
         {
           "segments": [
@@ -601,7 +592,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "10. Att räkna lästa sidor (1 poäng)",
       "body": [
         {
           "segments": [
@@ -663,7 +653,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "11. Skolans introduktionsplan (1 poäng)",
       "body": [
         {
           "segments": [
@@ -725,7 +714,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "12. En fråga om avfallssortering (2 poäng)",
       "body": [
         {
           "segments": [
@@ -787,7 +775,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "13. Att byta program (1 poäng)",
       "body": [
         {
           "segments": [
@@ -849,7 +836,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "14. Följdfrågor i intervjuer (1 poäng)",
       "body": [
         {
           "segments": [
@@ -911,7 +897,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "15. Att använda restiden (1 poäng)",
       "body": [
         {
           "segments": [
@@ -973,7 +958,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "16. Spelande och sömn (2 poäng)",
       "body": [
         {
           "segments": [

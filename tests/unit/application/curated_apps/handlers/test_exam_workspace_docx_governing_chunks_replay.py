@@ -18,7 +18,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamParent,
-    NativeTextSegment,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -91,9 +90,11 @@ async def test_a_governing_chunk_an_item_prints_at_its_start_moves_to_the_parent
     assert list(parent.item_ids) == governed
     first = next(item for item in document.items if item.item_id == governed[0])
     assert first.source_anchor != anchor
-    opening = first.body[0].segments[0]
-    assert isinstance(opening, NativeTextSegment)
-    assert opening.text.startswith("Noah"), "the item still prints the parent's instruction"
+    # The item's own printed heading opens its body (T1, 39-05-08); the governing
+    # chunk's wording stands only on the parent.
+    lines = first.plain_text_lines()
+    assert text[anchor] not in lines, "the item still prints the parent's instruction"
+    assert any(line.startswith("Noah") for line in lines)
     codes = [(e.code, e.anchors) for e in outcome.result.events]
     assert ("governing_text_kept", (anchor,)) not in codes
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []

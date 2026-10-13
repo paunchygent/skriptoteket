@@ -97,7 +97,7 @@ describe("arriving suggestions during a save", () => {
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion([["left_001", "right_001"]]);
 
-    state.updateItemTitle("item_001", "Ändrad titel");
+    state.updateItemPoints("item_001", 7);
     const saving = state.saveDocument();
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     expect(currentItem(state).ai_suggestion).toEqual(suggestion);

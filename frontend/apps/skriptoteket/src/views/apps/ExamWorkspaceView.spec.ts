@@ -72,7 +72,6 @@ function buildDocument(): NativeExamDocument {
         },
         sequence: 1,
         source_anchor: null,
-        title: "Kretsloppet",
       },
     ],
     origin: {

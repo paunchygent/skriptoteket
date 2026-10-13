@@ -218,8 +218,8 @@ describe("ExamWorkspaceView export slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("7");
 
     for (const target of ["qti", "pdf", "docx"]) {
       expect(

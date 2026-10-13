@@ -41,10 +41,7 @@ import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue"
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
-import {
-  examWorkspaceDisplayTitle,
-  toExamWorkspaceItemRows,
-} from "./exam-workspace/examWorkspaceRows";
+import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
@@ -92,7 +89,6 @@ const {
   updateItemMatchPairs,
   updateItemParagraphSegments,
   updateItemPoints,
-  updateItemTitle,
   workspaceDocument,
 } = useExamWorkspaceDocument();
 
@@ -150,7 +146,6 @@ const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
       itemId: item.item_id,
       reasons: readinessByItemId.value[item.item_id] ?? [],
       sequence: item.sequence,
-      title: examWorkspaceDisplayTitle(item.title, item.sequence),
     })),
 );
 
@@ -396,7 +391,6 @@ async function handleSave(): Promise<void> {
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
             @update-points="updateItemPoints"
-            @update-title="updateItemTitle"
           />
         </div>
       </div>

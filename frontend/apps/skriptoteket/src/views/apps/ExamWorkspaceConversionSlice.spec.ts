@@ -101,11 +101,11 @@ describe("Exam workspace background conversion", () => {
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-enrichment-request"]').attributes("disabled")).toBeDefined();
     await wrapper.get('[data-test="exam-workspace-mode-redigera"]').trigger("click");
-    expect(wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeDefined();
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("failed", "Konverteringen misslyckades."));
     await tick();
     expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe(title);
-    expect(wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeUndefined();
   });
 
   it("retains conversion on status-read errors and recovers using the visible retry", async () => {

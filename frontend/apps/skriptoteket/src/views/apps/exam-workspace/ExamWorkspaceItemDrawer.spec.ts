@@ -35,7 +35,6 @@ const ITEM: NativeExamItem = {
   },
   sequence: 1,
   source_anchor: null,
-  title: "Kretslopp",
 };
 
 let opener: HTMLButtonElement | null = null;

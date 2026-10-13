@@ -172,7 +172,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_001");
-    await wrapper.find('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
@@ -181,8 +181,10 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     await requestProposals(wrapper);
     const [, sentDocument] = apiMocks.requestExamWorkspaceAnswerKeySuggestions.mock.calls[0];
     expect(
-      sentDocument.items.find((item: { item_id: string }) => item.item_id === "item_001")?.title,
-    ).toBe("Ändrad");
+      sentDocument.items.find(
+        (item: { item_id: string; points: number | null }) => item.item_id === "item_001",
+      )?.points,
+    ).toBe(7);
   });
 
   it("retries a failed poll on the next interval until the job settles", async () => {

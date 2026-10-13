@@ -153,12 +153,11 @@ describe("ExamWorkspaceView save rules", () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");
-    await wrapper.get('[data-test="exam-workspace-item-title-input"]').setValue("Ny rubrik");
+    await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("7");
     await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
 
     for (const testId of [
-      "exam-workspace-item-title-input",
       "exam-workspace-item-points-input",
       "exam-workspace-choice-text-choice_a",
       "exam-workspace-choice-correct-choice_a",
@@ -171,7 +170,7 @@ describe("ExamWorkspaceView save rules", () => {
     await flushPromises();
 
     expect(
-      wrapper.get('[data-test="exam-workspace-item-title-input"]').attributes("disabled"),
+      wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled"),
     ).toBeUndefined();
     expect(wrapper.findComponent(ExamWorkspaceBodyEditor).props("disabled")).toBe(false);
   });

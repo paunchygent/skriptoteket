@@ -120,71 +120,12 @@ async def test_an_own_line_a_reply_lists_as_an_instruction_stands_at_its_place_i
     assert outcome.update.item_ids["q2"] == ("item_002",)
     (item,) = [i for i in document.items if i.item_id == "item_002"]
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    # Printed between the question's heading and its first part, as in the source.
+    # The question's printed heading opens the body (T1, 39-05-08); the line stands
+    # between it and the first part, as in the source.
     lines = item.plain_text_lines()
-    assert lines[0] == line
-    assert lines[1].startswith("a) De trötta eleverna")
+    assert lines[0] == "Ange frastyp."
+    assert lines[1] == line
+    assert lines[2].startswith("a) De trötta eleverna")
     assert LEFT_OUT_REASON not in item.review.reasons
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert line not in document.instructions
-
-
-async def test_an_own_lead_in_a_reply_lists_as_the_title_stands_on_the_parent_it_opens():
-    exam = "chapter_4_poetry_and_lyrics_quiz_med_facit"
-    root = FIXTURES / "docx_build_low24_own_title"
-    grouping = recording(exam, "docx_grouping_1", root=root)
-    questions = grouping["questions"]
-    assert isinstance(questions, list)
-    (question,) = [q for q in questions if isinstance(q, dict) and q["id"] == "q5"]
-    assert question["anchors"] == ["body:0018", "body:0019", "body:0020"]
-    assert grouping["title_anchors"] == ["body:0002"]
-    reply = recording(exam, "docx_w1-05", root=root)
-    title, items = reply["title"], reply["items"]
-    assert isinstance(title, dict) and title["source_anchors"] == ["body:0018"]
-    assert isinstance(items, list) and isinstance(items[0], dict)
-    assert items[0]["source_anchors"] == ["body:0019", "body:0020"]
-
-    replay = build_replay(exam, root=root, families_per_batch=1)
-    outcome = await replay.pipeline.convert(job=replay.job())
-
-    document = outcome.result.document
-    lead_in = {c.anchor: c.text for c in corpus_chunks(exam)}["body:0018"]
-    assert lead_in == "Read the sentence:"
-    (q5,) = outcome.update.item_ids["q5"]
-    (q6,) = outcome.update.item_ids["q6"]
-    (parent,) = [p for p in document.parents if lead_in in p.instruction]
-    assert parent.item_ids == (q5, q6)
-    for item in (i for i in document.items if i.item_id in (q5, q6)):
-        assert lead_in not in item.plain_text_lines()
-    assert all(LEFT_OUT_REASON not in item.review.reasons for item in document.items)
-    assert document.title != lead_in
-    assert lead_in not in document.instructions
-
-
-async def test_an_own_heading_a_reply_lists_as_the_title_and_in_its_item_stays_with_the_item():
-    exam = "svenska_2_grammatik_omprov_variant_1_med_facit"
-    root = FIXTURES / "docx_build_low26_item_held_title"
-    questions = recording(exam, "docx_grouping_1", root=root)["questions"]
-    assert isinstance(questions, list)
-    (question,) = [q for q in questions if isinstance(q, dict) and q["id"] == "q7"]
-    assert question["anchors"] == ["body:0066", "body:0067", "body:0068", "body:0069"]
-    reply = recording(exam, "docx_w2-03-01", root=root)
-    title, items = reply["title"], reply["items"]
-    assert isinstance(title, dict) and title["source_anchors"] == ["body:0066"]
-    assert isinstance(items, list) and isinstance(items[0], dict)
-    listed = items[0]["source_anchors"]
-    assert isinstance(listed, list) and "body:0066" in listed
-
-    provider = SecondWaveByAnchor(exam, root=root)
-    replay = build_replay(exam, root=root, families_per_batch=1, provider=provider)
-    outcome = await replay.pipeline.convert(job=replay.job())
-
-    document = outcome.result.document
-    heading = {c.anchor: c.text for c in corpus_chunks(exam)}["body:0066"]
-    (item_id,) = outcome.update.item_ids["q7"]
-    (item,) = [i for i in document.items if i.item_id == item_id]
-    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert LEFT_OUT_REASON not in item.review.reasons
-    assert document.title != heading
-    assert heading not in document.instructions
-    assert not [p for p in document.parents if heading in p.instruction]

@@ -84,7 +84,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 1. Dela upp orden i morfem.",
       "body": [
         {
           "segments": [
@@ -131,7 +130,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fråga 2. Ange frastyp.",
       "body": [
         {
           "segments": [
@@ -223,7 +221,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fråga 3. Skriv huvudordet i varje nominalfras.",
       "body": [
         {
           "segments": [
@@ -306,7 +303,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fråga 4. Skriv satsdelen för den markerade delen.",
       "body": [
         {
           "segments": [
@@ -388,7 +384,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 5. Gör satsdelsanalys av meningarna.",
       "body": [
         {
           "segments": [
@@ -436,7 +431,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fråga 6. Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
       "body": [
         {
           "segments": [
@@ -622,7 +616,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fråga 7. Analysera en komplex mening.",
       "body": [
         {
           "segments": [
@@ -715,7 +708,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 8. Jämför texternas språkliga drag.",
       "body": [
         {
           "segments": [

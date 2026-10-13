@@ -58,12 +58,12 @@ beforeEach(() => {
 
 type Wrapper = Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"];
 
-/** An imported exam whose first question's title the teacher changed and did not save. */
+/** An imported exam whose first question's points the teacher changed and did not save. */
 async function examWithUnsavedEdit(): Promise<Wrapper> {
   const { wrapper } = await mountExamWorkspace();
   await importFixtureDocument(wrapper);
   await selectItemRow(wrapper, "item_001");
-  await wrapper.find('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad");
+  await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
   await flushPromises();
   expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
   return wrapper;
@@ -99,9 +99,9 @@ describe("import while the open exam has unsaved changes", () => {
     expect(wrapper.find('[data-test="exam-workspace-source-file-error"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
     expect(
-      wrapper.find<HTMLInputElement>('[data-test="exam-workspace-item-title-input"]').element
+      wrapper.find<HTMLInputElement>('[data-test="exam-workspace-item-points-input"]').element
         .value,
-    ).toBe("Ändrad");
+    ).toBe("7");
   });
 
   it("ignores a dropped file of the wrong type without guidance", async () => {

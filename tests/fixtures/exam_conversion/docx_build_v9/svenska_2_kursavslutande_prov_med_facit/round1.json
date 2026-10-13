@@ -94,7 +94,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "1",
       "body": [
         {
@@ -139,7 +138,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "2",
       "body": [
         {
@@ -184,7 +182,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "3",
       "body": [
         {
@@ -229,7 +226,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "4",
       "body": [
         {
@@ -274,7 +270,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "5",
       "body": [
         {
@@ -319,7 +314,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "6",
       "body": [
         {
@@ -364,7 +358,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "7",
       "body": [
         {
@@ -409,7 +402,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "8",
       "body": [
         {
@@ -454,7 +446,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "9",
       "body": [
         {
@@ -499,7 +490,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "10",
       "body": [
         {
@@ -544,7 +534,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "11",
       "body": [
         {
@@ -589,7 +578,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "12",
       "body": [
         {
@@ -634,7 +622,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "13",
       "body": [
         {
@@ -679,7 +666,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "14",
       "body": [
         {
@@ -724,7 +710,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "printed_label": "15",
       "body": [
         {
@@ -771,7 +756,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Morfem",
       "printed_label": "Fråga 16",
       "body": [
         {
@@ -849,7 +833,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Fraser",
       "printed_label": "Fråga 17",
       "body": [
         {
@@ -927,7 +910,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Satsdelar",
       "printed_label": "Fråga 18",
       "body": [
         {
@@ -1014,7 +996,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Satsdelar",
       "printed_label": "Fråga 19",
       "body": [
         {
@@ -1100,7 +1081,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "gap_fill",
-      "title": "Huvudsats, bisats och BIFF",
       "printed_label": "Fråga 20",
       "body": [
         {
@@ -1157,7 +1137,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Renässansen",
       "printed_label": "Fråga 21",
       "body": [
         {
@@ -1186,7 +1165,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Upplysningen och romantiken",
       "printed_label": "Fråga 22",
       "body": [
         {
@@ -1215,7 +1193,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Språkstruktur",
       "printed_label": "Fråga 23",
       "body": [
         {
@@ -1244,7 +1221,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Satsstruktur",
       "printed_label": "Fråga 24",
       "body": [
         {

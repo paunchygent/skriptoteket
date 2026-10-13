@@ -81,7 +81,6 @@ def _produced(
         outcome="converted",
         review_reason=None,
         kind=NativeExamItemKind.MATCHING,
-        title=None,
         body=tuple(
             ProducedParagraph(
                 segments=(ProducedSegment(kind="text", text=line, accepted_values=()),)

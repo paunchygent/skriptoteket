@@ -45,7 +45,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Läsning på fritiden",
       "body": [
         {
           "segments": [
@@ -110,7 +109,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "Tidningsartiklar",
       "body": [
         {
           "segments": [
@@ -175,7 +173,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Statistik om extrajobb",
       "body": [
         {
           "segments": [
@@ -240,7 +237,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "AI och lärande",
       "body": [
         {
           "segments": [
@@ -305,7 +301,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Resor till skolan",
       "body": [
         {
           "segments": [
@@ -370,7 +365,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Besökare i biblioteket",
       "body": [
         {
           "segments": [
@@ -435,7 +429,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "En enkät till hela skolan",
       "body": [
         {
           "segments": [
@@ -500,7 +493,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "20 eller 200 elever",
       "body": [
         {
           "segments": [
@@ -565,7 +557,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Samma svar sorteras olika",
       "body": [
         {
           "segments": [
@@ -630,7 +621,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att räkna lästa sidor",
       "body": [
         {
           "segments": [
@@ -695,7 +685,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Skolans introduktionsplan",
       "body": [
         {
           "segments": [
@@ -760,7 +749,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "En fråga om avfallssortering",
       "body": [
         {
           "segments": [
@@ -825,7 +813,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att byta program",
       "body": [
         {
           "segments": [
@@ -890,7 +877,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Följdfrågor i intervjuer",
       "body": [
         {
           "segments": [
@@ -955,7 +941,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": "Att använda restiden",
       "body": [
         {
           "segments": [
@@ -1020,7 +1005,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "multiple_response",
-      "title": "Spelande och sömn",
       "body": [
         {
           "segments": [

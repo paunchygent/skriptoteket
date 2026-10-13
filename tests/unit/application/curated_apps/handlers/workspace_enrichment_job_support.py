@@ -131,7 +131,6 @@ def unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.SINGLE_CHOICE,
-                title="Flervalsfråga",
                 body=(
                     NativeParagraph(
                         segments=(NativeTextSegment(text="Välj den grekiska bokstaven."),)

@@ -66,14 +66,19 @@ def _release_conflicts(
         return
     own = frozenset(a for qid in outcome.conflicts for a in families[qid].question_anchors)
     state.accepted = [entry for entry in state.accepted if not own.intersection(entry[1])]
+    # The resend keeps the question's answer-key chunks: a conflicted family's facit
+    # anchors are released with it, never held back as this batch's key anchors.
+    conflicted_claims = frozenset().union(*(families[qid].claims for qid in outcome.conflicts))
     held = {
         *(a for _, anchors in state.accepted for a in anchors),
         *(a for m in (state.title, *state.instructions) if m for a in m.source_anchors),
-        *state.key_anchors,
+        *(a for a in state.key_anchors if a not in conflicted_claims),
     }
     for qid in outcome.conflicts:
         outcome.released[qid] = families[qid].claims - held
-    state.release(frozenset().union(*outcome.released.values()))
+    released = frozenset().union(*outcome.released.values())
+    state.key_anchors -= released
+    state.release(released)
 
 
 async def convert_batch(

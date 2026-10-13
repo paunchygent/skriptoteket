@@ -26,10 +26,15 @@
   proposed->ready; after story 8.
 
 - Owner Dobby (session `a0e6b5f5`, retained `01a13559-bf2e-760d-a690-3a3dea446cd5`):
-  TASK-SKRIPT-39-05-08 planning: D1-D3 closed (shared gap/free-text
-  definition, D15 plus alternative-sentences rule, import fixes folded in), O1-O3
-  open; replay evidence `evidence/import-replay/`. Next: suggestion accuracy as a
-  scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
+  TASK-SKRIPT-39-05-08 implemented on `codex/task-skript-39-05-08` (Muse Wonder
+  Full lead, 2026-10-13): item title removed end to end, headings to body/parent
+  instruction, shared gap/free-text definition, O1-O3 fixes; recordings stripped
+  by script, two title-only replay tests deleted (user decision). Local proof:
+  lint/typecheck clean, 1817 exam-workspace tests, Vitest 399, live q4/q15
+  replay 10/10 each — see `evidence/implementation/TASK-SKRIPT-39-05-08/result.md`.
+  Next (parent): independent review, merge, staging exam deletion (T6), staging
+  walk. Then: suggestion accuracy as a scored gold-corpus eval metric (user
+  decision 2026-10-13; not scaffolded).
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).

@@ -30,8 +30,8 @@ class ProducedSegment(_Produced):
 
     @model_validator(mode="after")
     def _kind_fields(self) -> "ProducedSegment":
-        if self.kind == "text" and (self.text is None or self.accepted_values):
-            raise ValueError("text segments carry text only")
+        if self.kind == "text" and (not self.text or self.accepted_values):
+            raise ValueError("text segments carry non-empty text only")
         if self.kind == "gap" and self.text is not None:
             raise ValueError("gap segments carry no text")
         return self
@@ -75,12 +75,11 @@ class ProducedItem(_Produced):
     )
     # Strict schemas reject keywords beside a $ref; each request narrows kind to its batch.
     kind: NativeExamItemKind
-    title: str | None = Field(description="A question heading printed in the source, else null.")
     printed_label: str | None = Field(
         default=None,
         description="The question's own number or letter as the source prints it, with its "
         'word and without punctuation or points, such as "Fråga 3", "Question 4", "3" '
-        'or "a"; null when the source prints none. Never part of title or body.',
+        'or "a"; null when the source prints none. Never part of the body.',
     )
     body: tuple[ProducedParagraph, ...] = Field(
         min_length=1,

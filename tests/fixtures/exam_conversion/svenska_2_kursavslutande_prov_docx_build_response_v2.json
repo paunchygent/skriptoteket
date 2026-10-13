@@ -85,7 +85,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -126,7 +125,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -167,7 +165,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -208,7 +205,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -249,7 +245,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -290,7 +285,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -331,7 +325,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -372,7 +365,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -413,7 +405,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -454,7 +445,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -495,7 +485,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -536,7 +525,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -577,7 +565,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -618,7 +605,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -659,7 +645,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "single_choice",
-      "title": null,
       "body": [
         {
           "segments": [
@@ -702,7 +687,6 @@
       "outcome": "review",
       "review_reason": "Uppgiftens svarssätt framgår inte av källtexten.",
       "kind": "free_text",
-      "title": "Fråga 16. Morfem",
       "body": [
         {
           "segments": [
@@ -737,7 +721,6 @@
       "outcome": "review",
       "review_reason": "Uppgiftens svarssätt framgår inte av källtexten.",
       "kind": "free_text",
-      "title": "Fråga 17. Fraser",
       "body": [
         {
           "segments": [
@@ -772,7 +755,6 @@
       "outcome": "review",
       "review_reason": "Uppgiftens svarssätt framgår inte av källtexten.",
       "kind": "free_text",
-      "title": "Fråga 18. Satsdelar",
       "body": [
         {
           "segments": [
@@ -807,7 +789,6 @@
       "outcome": "review",
       "review_reason": "Uppgiftens svarssätt framgår inte av källtexten.",
       "kind": "free_text",
-      "title": "Fråga 19. Satsdelar",
       "body": [
         {
           "segments": [
@@ -841,7 +822,6 @@
       "outcome": "review",
       "review_reason": "Uppgiften saknar instruktion om hur påståendena ska besvaras.",
       "kind": "free_text",
-      "title": "Fråga 20. Huvudsats, bisats och BIFF",
       "body": [
         {
           "segments": [
@@ -866,7 +846,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 21. Renässansen",
       "body": [
         {
           "segments": [
@@ -891,7 +870,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 22. Upplysningen och romantiken",
       "body": [
         {
           "segments": [
@@ -916,7 +894,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 23. Språkstruktur",
       "body": [
         {
           "segments": [
@@ -941,7 +918,6 @@
       "outcome": "converted",
       "review_reason": null,
       "kind": "free_text",
-      "title": "Fråga 24. Satsstruktur",
       "body": [
         {
           "segments": [

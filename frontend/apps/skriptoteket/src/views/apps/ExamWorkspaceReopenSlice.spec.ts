@@ -146,7 +146,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     const { router, wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
     await selectItemRow(wrapper, "item_001");
-    await wrapper.find('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     await router.push({ query: { document: "lineage-2" } });
     await flushPromises();
@@ -198,7 +198,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_001");
-    await wrapper.find('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     expect(
       wrapper.find('[data-test="exam-workspace-open-lineage-2"]').attributes("disabled"),

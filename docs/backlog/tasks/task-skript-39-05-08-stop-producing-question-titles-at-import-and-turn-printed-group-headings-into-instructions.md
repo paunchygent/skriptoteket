@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-08
-title: Stop producing question titles at import and turn printed group headings into
-  instructions
+title: Stop producing question titles at import and turn printed group headings into instructions
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-13'
 status: in_progress
 closeout_review:
@@ -14,10 +13,8 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Imported questions carry no title and a printed heading above a group of questions
-  becomes that group's instruction
-- The stored exam item has no title field, and nothing reads one (labels, answer-key
-  prompts, exports); no compatibility path (user decision 2026-10-13)
+  - Imported questions carry no title and a printed heading above a group of questions becomes that group's instruction
+  - The stored exam item has no title field, and nothing reads one (labels, answer-key prompts, exports); no compatibility path (user decision 2026-10-13)
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -112,8 +109,9 @@ The change removes prompt and schema text and adds no model call.
   admission, heading placement (one question and a group, with and without
   an instruction line), the type_conflict resend, the source-text fallback,
   answer-key prompts and QTI export.
-- Recorded replies that carry `title` are re-recorded against the real
-  provider, not edited by hand.
+- A script deletes `title` from the recorded replies; no live re-recording.
+  The two title-only replay tests (`low24_own_title`, `low26_item_held_title`)
+  are deleted (user decision 2026-10-13).
 - Vitest for the editor, question list, Filer labels and conversion merge
   without a title; `pdm run fe-type-check`, `pdm run fe-lint` and the
   frontend build.
@@ -140,17 +138,17 @@ The change removes prompt and schema text and adds no model call.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | One written definition of the gap_fill/free_text boundary, owned in one place, generates both the labeler's label descriptions and the converter's kind rule (user decision 2026-10-13). |
-| D2  | D15 of TASK-SKRIPT-39-05-04 stays, and an answer key that lists alternative sentences for one answer line is gap_fill (user decision 2026-10-13). |
-| D3  | The import faults found on 2026-10-13 are fixed in this task together with title removal (user decision 2026-10-13). |
+| ID  | Decided contract term                                                                                                                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | One written definition of the gap_fill/free_text boundary, owned in one place, generates both the labeler's label descriptions and the converter's kind rule (user decision 2026-10-13).                                            |
+| D2  | D15 of TASK-SKRIPT-39-05-04 stays, and an answer key that lists alternative sentences for one answer line is gap_fill (user decision 2026-10-13).                                                                                   |
+| D3  | The import faults found on 2026-10-13 are fixed in this task together with title removal (user decision 2026-10-13).                                                                                                                |
 | O1  | The reply schema forbids empty or null text in text segments, and the prompt says a printed blank or answer line in a kind without gaps is not the question text; the printed question goes in the body (user decision 2026-10-13). |
-| O2  | The type_conflict resend keeps the question's answer-key chunks (user decision 2026-10-13). |
-| O3  | The source-text fallback item keeps the question's printed points (user decision 2026-10-13). |
-| T1  | A printed heading over one question is copied verbatim as the first paragraph of that question's body (user decision 2026-10-13). |
-| T2  | A printed heading over two or more consecutive questions becomes the first line of their parent's instruction; a heading without an instruction line still forms the parent (Exam.net probe round 12, 2026-10-13). |
-| T3  | Only the native exam item loses its title; the DigiExam lane keeps its item names (2026-10-13). |
-| T4  | The QTI item title attribute carries the exam-language question label "Fråga N"; Exam.net discards it (probe round 12, 2026-10-13). |
-| T5  | Saved exams that carry a title are not migrated and no longer open (user decision 2026-10-13). |
-| T6  | On deploy to staging, every saved exam-workspace exam there is deleted with its versions and stored files; production is untouched (user decision 2026-10-13). |
+| O2  | The type_conflict resend keeps the question's answer-key chunks (user decision 2026-10-13).                                                                                                                                         |
+| O3  | The source-text fallback item keeps the question's printed points (user decision 2026-10-13).                                                                                                                                       |
+| T1  | A printed heading over one question is copied verbatim as the first paragraph of that question's body (user decision 2026-10-13).                                                                                                   |
+| T2  | A printed heading over two or more consecutive questions becomes the first line of their parent's instruction; a heading without an instruction line still forms the parent (Exam.net probe round 12, 2026-10-13).                  |
+| T3  | Only the native exam item loses its title; the DigiExam lane keeps its item names (2026-10-13).                                                                                                                                     |
+| T4  | The QTI item title attribute carries the exam-language question label "Fråga N"; Exam.net discards it (probe round 12, 2026-10-13).                                                                                                 |
+| T5  | Saved exams that carry a title are not migrated and no longer open (user decision 2026-10-13).                                                                                                                                      |
+| T6  | On deploy to staging, every saved exam-workspace exam there is deleted with its versions and stored files; production is untouched (user decision 2026-10-13).                                                                      |

@@ -49,7 +49,6 @@ def _free_text_item(*, sequence: int = 1, item_id: str = "item_001") -> NativeEx
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        title="Essäfråga",
         body=(_paragraph("Resonera om renässansen."),),
         points=4,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -68,7 +67,6 @@ def _single_choice_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        title="Flervalsfråga",
         body=(_paragraph("Vilket är huvudordet?"),),
         points=1,
         choices=(
@@ -91,7 +89,6 @@ def _gap_fill_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.GAP_FILL,
-        title="Lucktext",
         body=(
             NativeParagraph(
                 segments=(

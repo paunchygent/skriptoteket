@@ -67,10 +67,13 @@ def test_instruction_printed_inside_the_item_opens_the_body_when_the_item_prints
     wording = build.wording("body:0017")
 
     lines = item.plain_text_lines()
-    assert lines[0] == wording
+    # The item's own printed heading opens the body (T1, 39-05-08); the instruction
+    # printed inside the item follows it, ahead of the question's parts.
+    assert lines[0] == "Ange frastyp."
+    assert lines[1] == wording
     assert lines.count(wording) == 1
-    assert lines[1].startswith("a) De trötta eleverna")
-    assert len(lines) == 5
+    assert lines[2].startswith("a) De trötta eleverna")
+    assert len(lines) == 6
 
 
 def test_short_label_survives_when_a_later_sentence_contains_it():

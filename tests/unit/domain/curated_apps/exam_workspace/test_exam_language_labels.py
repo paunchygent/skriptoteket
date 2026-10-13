@@ -63,19 +63,16 @@ def test_parent_titles_span_their_children_in_the_exam_language(stem: str) -> No
         assert titles[qti_id] == f"{word} {first}–{last}", (stem, by_parent)
 
 
-def test_an_untitled_english_item_is_not_labelled_in_swedish() -> None:
+def test_an_english_item_is_not_labelled_in_swedish() -> None:
     document, _ = replayed("bf26_diagnostic_grammar_test_ht26_med_facit")
-    untitled = document.model_copy(
-        update={"items": tuple(item.model_copy(update={"title": None}) for item in document.items)}
-    )
-    titles = [item.title for item in native_exam_to_examnet_qti_items(untitled)]
+    titles = [item.title for item in native_exam_to_examnet_qti_items(document)]
     assert all(not title.startswith("Fråga") for title in titles)
     assert "Question 19" in titles
 
 
 def _numbers_only(item: NativeExamItem) -> NativeExamItem:
     digits = NativeParagraph(segments=(NativeTextSegment(text="12 + 30 = 42"),))
-    return item.model_copy(update={"title": None, "body": (digits,), "choices": ()})
+    return item.model_copy(update={"body": (digits,), "choices": ()})
 
 
 def test_an_exam_without_words_of_a_known_language_gets_bare_numbers() -> None:

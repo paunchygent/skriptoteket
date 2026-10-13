@@ -73,7 +73,6 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
 }>();
 
 const isPhone = computed(() => props.layout === "phone");
@@ -161,7 +160,6 @@ const redigeraGridClass = computed(() => {
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)
             "
             @update-points="(itemId, points) => emit('updatePoints', itemId, points)"
-            @update-title="(itemId, title) => emit('updateTitle', itemId, title)"
           />
           <p
             v-else

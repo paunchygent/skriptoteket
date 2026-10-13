@@ -45,7 +45,6 @@ function buildChoiceItem(
     },
     sequence,
     source_anchor: null,
-    title: null,
     ...overrides,
   };
 }

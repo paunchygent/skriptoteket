@@ -24,10 +24,6 @@ function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
 }
 
-export function withTitle(item: NativeExamItem, title: string): NativeExamItem {
-  return { ...item, title: title.trim().length > 0 ? title : null };
-}
-
 export function withMarkingGuide(item: NativeExamItem, guide: string | null): NativeExamItem {
   return { ...item, marking_guide: guide };
 }
@@ -292,6 +288,5 @@ export function newTeacherItem(itemId: string, sequence: number): NativeExamItem
     },
     sequence,
     source_anchor: null,
-    title: null,
   };
 }

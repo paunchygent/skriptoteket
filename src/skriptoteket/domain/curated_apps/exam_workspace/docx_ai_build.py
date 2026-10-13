@@ -23,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
     place_section_instructions,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    printed_points,
     title_without_answer_key,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -103,7 +104,6 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=produced.kind,
-        title=produced.title,
         printed_label=produced.printed_label,
         body=tuple(body),
         points=produced.points,
@@ -125,11 +125,12 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
 
 def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
     """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
-    chunk in source order, whatever the model wrote."""
+    chunk in source order, whatever the model wrote; it keeps the question's printed points."""
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
+        points=printed_points(chunks),
         body=tuple(
             NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
             for chunk in chunks
@@ -156,6 +157,8 @@ def _ordered_items(
     review_reasons: dict[str, str],
     instructions: tuple[ProducedMetadata, ...],
     governed: Mapping[str, frozenset[str]],
+    title_anchors: frozenset[str] = frozenset(),
+    own_anchors: frozenset[str] = frozenset(),
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -169,7 +172,9 @@ def _ordered_items(
         if chunk.anchor in review_reasons
     )
     ordered.sort(key=lambda entry: entry[0])
-    return place_section_instructions(chunks, ordered, instructions, governed)
+    return place_section_instructions(
+        chunks, ordered, instructions, governed, title_anchors, own_anchors
+    )
 
 
 def assemble_build_result(
@@ -205,13 +210,19 @@ def assemble_build_result(
     released = release_governing_chunks(chunks, accepted, instructions, governed)
     accepted, instructions = released.accepted, released.instructions
     events = (*events, *released.events)
-    placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
+    title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
+    own_anchors = frozenset(anchor for own in questions for anchor in own)
+    placed = _ordered_items(
+        chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
+    )
     while returned := return_misplaced_own_chunks(
         chunks, accepted, instructions, placed.landed, questions, governed
     ):
         accepted, instructions = returned.accepted, returned.instructions
         events = (*events, *returned.events)
-        placed = _ordered_items(chunks, accepted, review_reasons, instructions, governed)
+        placed = _ordered_items(
+            chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
+        )
     items = placed.items
     # Document-level notes only: each item shows its own reasons (D8).
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]

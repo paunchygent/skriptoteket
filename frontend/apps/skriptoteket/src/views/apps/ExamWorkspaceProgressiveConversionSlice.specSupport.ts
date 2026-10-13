@@ -45,8 +45,9 @@ export function placeholder(sequence: number): NativeExamItem {
   };
 }
 
+/** A converted item is told apart from its placeholder by its points: `20 + sequence`. */
 export function converted(sequence: number): NativeExamItem {
-  return { ...buildFreeTextItem(sequence), title: `Konverterad ${sequence}` };
+  return { ...buildFreeTextItem(sequence), points: 20 + sequence };
 }
 
 /** A saved revision with the conversion state the server reads under the same lock. */
@@ -128,14 +129,14 @@ export async function tick() {
   await flushPromises();
 }
 
-export async function editTitle(view: ViewWrapper, itemId: string, title: string) {
+export async function editPoints(view: ViewWrapper, itemId: string, points: string) {
   await selectItemRow(view, itemId);
-  await view.get('[data-test="exam-workspace-item-title-input"]').setValue(title);
+  await view.get('[data-test="exam-workspace-item-points-input"]').setValue(points);
 }
 
-export async function titleOf(view: ViewWrapper, itemId: string): Promise<string> {
+export async function pointsOf(view: ViewWrapper, itemId: string): Promise<string> {
   await selectItemRow(view, itemId);
-  return (view.get('[data-test="exam-workspace-item-title-input"]').element as HTMLInputElement).value;
+  return (view.get('[data-test="exam-workspace-item-points-input"]').element as HTMLInputElement).value;
 }
 
 /** Dispatch an input event straight on the element, past its `disabled` attribute. */
@@ -147,7 +148,6 @@ export async function forceInput(view: ViewWrapper, control: string, value: stri
 }
 
 const EDIT_CONTROLS = [
-  "exam-workspace-item-title-input",
   "exam-workspace-item-points-input",
   "exam-workspace-marking-guide-input",
 ];

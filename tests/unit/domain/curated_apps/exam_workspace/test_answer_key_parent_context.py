@@ -85,7 +85,7 @@ def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -
         else:
             assert "instruction" not in item
         assert item["item_id"] == child.item_id
-        assert item["title"] == (child.title or "")
+        assert "title" not in item
         assert view.stem_text == "\n".join(child.plain_text_lines())
         if view.kind is AnswerKeyViewKind.GAP_FILL:
             assert view.gap_ids == tuple(

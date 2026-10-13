@@ -2,7 +2,7 @@
  * Exam workspace document state with parents.
  *
  * Expected behavior:
- *   Every edit the editor offers on a child (title, points, text, gap
+ *   Every edit the editor offers on a child (points, text, gap
  *   answers, review) and adding a question leave the parents untouched and the
  *   children consecutive and in sequence order, so a save never
  *   sends a parent the server would refuse. A new question is appended after
@@ -84,7 +84,6 @@ describe("parents in useExamWorkspaceDocument", () => {
     const child = original.items[1]!;
     const gapId = child.gaps[0]!.gap_id;
 
-    state.updateItemTitle("item_002", "Sentence two");
     state.updateItemPoints("item_002", 2);
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
     state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", text: "Edited." }]);

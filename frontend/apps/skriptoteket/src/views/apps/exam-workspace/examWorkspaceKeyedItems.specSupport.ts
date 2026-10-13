@@ -74,7 +74,6 @@ export function choiceItem(
     review: UNREVIEWED,
     sequence: 1,
     source_anchor: null,
-    title: null,
   };
 }
 
@@ -102,6 +101,5 @@ export function gapItem(
     review: UNREVIEWED,
     sequence: 1,
     source_anchor: null,
-    title: null,
   };
 }
