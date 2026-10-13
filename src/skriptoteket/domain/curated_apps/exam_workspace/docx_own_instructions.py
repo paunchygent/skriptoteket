@@ -59,7 +59,13 @@ _ANSWER_LINE = re.compile(
 # Where a printed line holds several units: a table cell boundary or an inline option letter.
 _UNIT_BREAK = re.compile(r"\s\|\s|\s(?=[a-z]\s*[.)]\s)", re.IGNORECASE)
 # Words, numbers and single letters, and the symbols that carry mathematical content.
-_TOKEN = re.compile(r"[^\W_]+|[+=<>≤≥×÷*/^%]")
+_TOKEN = re.compile(r"[^\W_]+|[+−=<>≤≥×÷*/^%]")
+# A dash between two numbers or single letters, or in front of a number, is a minus; a dash
+# between words is punctuation.
+_MINUS = re.compile(
+    r"(?<![^\W_])(\d+(?:[.,]\d+)?|[^\W\d_])\s*[-−–](?=\s*(?:\d|[^\W\d_](?![^\W_])))"
+)
+_NEGATIVE = re.compile(r"(?:^|(?<=[\s(\[]))[-−–](?=\d)")
 
 Gap = tuple[tuple[str, ...], ...]
 # A picture in the body: no printed unit reads across it.
@@ -68,7 +74,8 @@ Stream = tuple[str | Gap, ...]
 
 
 def _tokens(text: str | None) -> tuple[str, ...]:
-    return tuple(token.casefold() for token in _TOKEN.findall(text or ""))
+    words = _NEGATIVE.sub("− ", _MINUS.sub(r"\1 − ", text or ""))
+    return tuple(token.casefold() for token in _TOKEN.findall(words))
 
 
 def _units(chunk: DocxChunk) -> tuple[tuple[str, ...], ...]:
@@ -87,13 +94,18 @@ def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
     gaps = {gap.gap_id: tuple(_tokens(value) for value in gap.accepted_values) for gap in item.gaps}
     body: list[str | Gap] = []
     for paragraph in item.body:
+        run = ""  # adjacent text segments read as one text, so a word may span them
         for segment in paragraph.segments:
             if isinstance(segment, NativeTextSegment):
-                body.extend(_tokens(segment.text))
-            elif isinstance(segment, NativeGapSegment):
+                run += segment.text
+                continue
+            body.extend(_tokens(run))
+            run = ""
+            if isinstance(segment, NativeGapSegment):
                 body.append(gaps.get(segment.gap_id, ()))
             else:
                 body.append(_PICTURE)
+        body.extend(_tokens(run))
     texts = [
         item.title,
         item.marking_guide,

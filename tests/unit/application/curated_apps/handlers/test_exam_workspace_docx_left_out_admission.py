@@ -164,8 +164,18 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
         ("x + y = 7", "Beräkna summan."),
         ("Förklara hur ånga blir vatten.", "Förklara hur vatten blir ånga."),
         ("Skriv i meter.", "Skriv meter."),
+        ("Beräkna x - y = 7.", "Beräkna x y = 7."),
+        ("Beräkna x − y = 7.", "Beräkna x y = 7."),
+        ("Temperaturen är -7 grader.", "Temperaturen är 7 grader."),
     ],
-    ids=["formula", "reversed-sentence", "one-letter-word"],
+    ids=[
+        "formula",
+        "reversed-sentence",
+        "one-letter-word",
+        "minus",
+        "unicode-minus",
+        "negative-number",
+    ],
 )
 def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(dropped, kept):
     state = _state(dropped, kept)
@@ -235,6 +245,20 @@ def test_a_dropped_table_is_read_cell_by_cell(stem, flagged):
 
     ((admitted, _),) = state.accepted
     assert admitted.review.reasons == ((LEFT_OUT_REASON, table) if flagged else ())
+
+
+def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
+    stem = "Vilket ord är ett substantiv?"
+    state = _state("Läs meningen.", stem)
+    body = [
+        {"segments": [_text("Läs meningen.")]},
+        {"segments": [_text("Vilket ord är ett sub"), _text("stantiv?")]},
+    ]
+
+    admit_batch({"items": [_item(["body:0001"], body=body)]}, state)
+
+    ((admitted, _),) = state.accepted
+    assert admitted.review.reasons == ()
 
 
 def test_a_points_label_split_across_text_segments_leaves_the_stem():
