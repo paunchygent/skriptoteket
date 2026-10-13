@@ -60,12 +60,10 @@ _ANSWER_LINE = re.compile(
 _UNIT_BREAK = re.compile(r"\s\|\s|\s(?=[a-z]\s*[.)]\s)", re.IGNORECASE)
 # Words, numbers and single letters, and the symbols that carry mathematical content.
 _TOKEN = re.compile(r"[^\W_]+|[+−=<>≤≥×÷*/^%]")
-# A dash between two numbers or single letters, or in front of a number, is a minus; a dash
-# between words is punctuation.
-_MINUS = re.compile(
-    r"(?<![^\W_])(\d+(?:[.,]\d+)?|[^\W\d_])\s*[-−–](?=\s*(?:\d|[^\W\d_](?![^\W_])))"
-)
-_NEGATIVE = re.compile(r"(?:^|(?<=[\s(\[]))[-−–](?=\d)")
+# A dash in front of a word, as in "e-post" or "frågan – tolkningen", is punctuation; every
+# other dash, as in "x - y", "x=-7" or "-(x + y)", is a minus.
+_WORD_DASH = re.compile(r"[-−–—](?=\s*[^\W\d_]{2})")
+_DASH = re.compile(r"[-−–—]")
 
 Gap = tuple[tuple[str, ...], ...]
 # A picture in the body: no printed unit reads across it.
@@ -74,7 +72,7 @@ Stream = tuple[str | Gap, ...]
 
 
 def _tokens(text: str | None) -> tuple[str, ...]:
-    words = _NEGATIVE.sub("− ", _MINUS.sub(r"\1 − ", text or ""))
+    words = _DASH.sub(" − ", _WORD_DASH.sub(" ", text or ""))
     return tuple(token.casefold() for token in _TOKEN.findall(words))
 
 

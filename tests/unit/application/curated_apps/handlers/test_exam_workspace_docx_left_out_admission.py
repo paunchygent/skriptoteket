@@ -167,6 +167,8 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
         ("Beräkna x - y = 7.", "Beräkna x y = 7."),
         ("Beräkna x − y = 7.", "Beräkna x y = 7."),
         ("Temperaturen är -7 grader.", "Temperaturen är 7 grader."),
+        ("Lös x=-7.", "Lös x=7."),
+        ("Förenkla -(x + y).", "Förenkla (x + y)."),
     ],
     ids=[
         "formula",
@@ -175,6 +177,8 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
         "minus",
         "unicode-minus",
         "negative-number",
+        "sign-after-equals",
+        "sign-before-bracket",
     ],
 )
 def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(dropped, kept):
