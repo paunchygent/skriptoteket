@@ -35,9 +35,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
@@ -54,9 +51,6 @@ from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileM
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
-)
-from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
-    PostgreSQLExamAnswerKeyProposedOverlayRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
@@ -110,12 +104,6 @@ class _World:
             uow=self.uow,
             clock=clock,
             settings=_SETTINGS,
-            proposal_carry_forward=CarryExamWorkspaceProposals(
-                enrichment_jobs=self.jobs,
-                proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
-                clock=clock,
-                id_generator=_Ids(),
-            ),
         )
         self.progress = ExamWorkspaceConversionProgress(
             jobs=self.jobs,

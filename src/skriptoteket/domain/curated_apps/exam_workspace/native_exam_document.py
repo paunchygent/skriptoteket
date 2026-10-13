@@ -155,6 +155,43 @@ class NativeAnswerKey(BaseModel):
     match_pairs: tuple[NativeMatchPair, ...] = ()
 
 
+class NativeGapAcceptedValues(BaseModel):
+    """The accepted values one AI suggestion proposes for one gap."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
+    accepted_values: tuple[str, ...] = Field(min_length=1)
+
+    @field_validator("accepted_values")
+    @classmethod
+    def _non_empty_values(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        for value in values:
+            if not value.strip():
+                raise ValueError("accepted_values entries must be non-empty")
+        return values
+
+
+class NativeAnswerKeySuggestion(BaseModel):
+    """One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+
+    Holds the proposed key, a SHA-256 fingerprint of the question's
+    answer-relevant content when the suggestion was made, and the provider
+    lineage that produced it. It lives apart from the item's answer key so
+    it survives the teacher accepting or replacing that key.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    correct_choice_ids: tuple[str, ...] = ()
+    match_pairs: tuple[NativeMatchPair, ...] = ()
+    gap_accepted_values: tuple[NativeGapAcceptedValues, ...] = ()
+    fingerprint: str = Field(pattern=_SHA256_PATTERN)
+    provider_profile_id: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    prompt_template_version: str = Field(min_length=1)
+
+
 class NativeItemReview(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -207,6 +244,7 @@ class NativeExamItem(BaseModel):
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
+    ai_suggestion: NativeAnswerKeySuggestion | None = None
     marking_guide: str | None = None  # rättningsmall: only free_text carries one (D31)
     review: NativeItemReview
     source_anchor: str | None = None
@@ -264,6 +302,7 @@ class NativeExamItem(BaseModel):
             raise ValueError("only free_text items carry a marking guide")
 
         self._answer_key_invariants(frozenset(choice_ids))
+        self._suggestion_invariants(frozenset(choice_ids))
         self._body_gap_invariants(gap_ids)
         return self
 
@@ -308,10 +347,43 @@ class NativeExamItem(BaseModel):
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
+    def _suggestion_invariants(self, known_choice_ids: frozenset[str]) -> None:
+        suggestion = self.ai_suggestion
+        if suggestion is None:
+            return
+        if self.kind is NativeExamItemKind.FREE_TEXT:
+            raise ValueError("free_text items carry no AI answer-key suggestion")
+        if suggestion.match_pairs and self.kind is not NativeExamItemKind.MATCHING:
+            raise ValueError("only matching items suggest match pairs")
+        if suggestion.gap_accepted_values and self.kind is not NativeExamItemKind.GAP_FILL:
+            raise ValueError("only gap_fill items suggest gap values")
+        unknown = set(suggestion.correct_choice_ids) - known_choice_ids
+        if unknown:
+            raise ValueError(f"suggested choice ids not declared: {sorted(unknown)}")
+        if self.kind is NativeExamItemKind.SINGLE_CHOICE:
+            if len(suggestion.correct_choice_ids) != 1:
+                raise ValueError("single_choice suggestions need exactly one correct choice")
+        elif self.kind is NativeExamItemKind.MULTIPLE_RESPONSE:
+            if not suggestion.correct_choice_ids:
+                raise ValueError("multiple_response suggestions need at least one correct choice")
+        elif self.kind is NativeExamItemKind.MATCHING:
+            if suggestion.correct_choice_ids:
+                raise ValueError("matching suggestions key pairs, not choices")
+            self._match_pairs_valid(suggestion.match_pairs)
+        else:
+            if suggestion.correct_choice_ids:
+                raise ValueError("gap_fill suggestions key gaps, not choices")
+            suggested_gap_ids = [entry.gap_id for entry in suggestion.gap_accepted_values]
+            if sorted(suggested_gap_ids) != sorted(gap.gap_id for gap in self.gaps):
+                raise ValueError("a gap_fill suggestion covers every gap exactly once")
+
     def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         """Every left entry is paired once; unpaired right entries are distractors."""
         if self.answer_key.correct_choice_ids:
             raise ValueError("matching items key pairs, not choices")
+        self._match_pairs_valid(pairs)
+
+    def _match_pairs_valid(self, pairs: tuple[NativeMatchPair, ...]) -> None:
         left_ids = {entry.left_id for entry in self.match_left}
         right_ids = {entry.right_id for entry in self.match_right}
         paired_left = [pair.left_id for pair in pairs]

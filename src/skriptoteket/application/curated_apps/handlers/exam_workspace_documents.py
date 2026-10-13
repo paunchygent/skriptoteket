@@ -330,9 +330,6 @@ class SaveExamWorkspaceDocumentHandler:
             content=container_bytes,
             lineage_id=lineage_id,
             version=document.revision,
-            previous_document=head_container.document,
-            document=document,
-            rejected_proposal_item_ids=request.rejected_proposal_item_ids,
         )
         return ExamWorkspaceDocumentResponse(
             document=document,

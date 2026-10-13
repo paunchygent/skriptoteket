@@ -5,6 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_workspace import (
@@ -20,13 +21,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     SaveExamWorkspaceDocumentHandler,
     _summary,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeAnswerKeySuggestion,
     NativeExamDocument,
+    NativeGapAcceptedValues,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
@@ -34,7 +34,6 @@ from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
-from tests.fixtures.exam_workspace_proposals import proposal_document
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
@@ -117,12 +116,6 @@ class _Env:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             settings=_settings(),
-            proposal_carry_forward=CarryExamWorkspaceProposals(
-                enrichment_jobs=self.enrichment_jobs,
-                proposed_overlays=self.proposed_overlays,
-                clock=FixedClock(_NOW),
-                id_generator=self.ids,
-            ),
         )
         self.get_handler = GetExamWorkspaceDocumentHandler(
             vault_files=self.vault_files,
@@ -320,9 +313,55 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
     assert exc_info.value.code is ErrorCode.NOT_FOUND
 
 
-def test_save_request_keeps_older_clients_compatible() -> None:
-    document = with_next_revision(proposal_document())
-    request = SaveExamWorkspaceDocumentRequest.model_validate(
-        {"expected_revision": 1, "document": document.model_dump(mode="json")}
+def test_save_request_refuses_the_deleted_rejected_proposal_ids_field() -> None:
+    document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes())
+    with pytest.raises(ValidationError):
+        SaveExamWorkspaceDocumentRequest.model_validate(
+            {
+                "expected_revision": 1,
+                "document": document.model_dump(mode="json"),
+                "rejected_proposal_item_ids": ["item_001"],
+            }
+        )
+
+
+@pytest.mark.asyncio
+async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
+    env: _Env, fixture_bytes: bytes
+) -> None:
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    first = imported.document.items[0]
+    suggestion = NativeAnswerKeySuggestion(
+        gap_accepted_values=tuple(
+            NativeGapAcceptedValues(gap_id=gap.gap_id, accepted_values=("förslag",))
+            for gap in first.gaps
+        ),
+        fingerprint="a" * 64,
+        provider_profile_id="profile",
+        model="model",
+        prompt_template_version="v1",
     )
-    assert request.rejected_proposal_item_ids == ()
+    saved_document = imported.document.model_copy(
+        update={
+            "revision": 2,
+            "items": (
+                first.model_copy(update={"ai_suggestion": suggestion}),
+                *imported.document.items[1:],
+            ),
+        }
+    )
+
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=saved_document),
+    )
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
+
+    kept = reopened.document.items[0].ai_suggestion
+    assert kept is not None
+    assert kept.model == "model"
+    assert [entry.gap_id for entry in kept.gap_accepted_values] == [
+        gap.gap_id for gap in first.gaps
+    ]

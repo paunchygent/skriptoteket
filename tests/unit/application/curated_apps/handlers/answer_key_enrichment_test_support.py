@@ -37,9 +37,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
@@ -167,6 +164,9 @@ class InMemoryEnrichmentJobRepository:
             ):
                 return ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
         return None
+
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        return self.jobs.get(job_id)
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         return self.jobs.get(job_id)
@@ -474,12 +474,6 @@ def replayed_docx_job_handler(
         settings=Settings.model_construct(
             VAULT_MAX_FILE_BYTES=5_000_000,
             VAULT_MAX_TOTAL_BYTES=50_000_000,
-        ),
-        proposal_carry_forward=CarryExamWorkspaceProposals(
-            enrichment_jobs=enrichment_jobs,
-            proposed_overlays=proposed_overlays,
-            clock=clock,
-            id_generator=id_generator,
         ),
     )
     progress = RecordingProgress(

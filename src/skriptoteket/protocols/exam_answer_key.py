@@ -125,6 +125,10 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         """
         ...
 
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read one job by id without locking it."""
+        ...
+
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         """Lock and refresh the row before publishing a worker's terminal result."""
         ...

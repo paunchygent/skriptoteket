@@ -50,6 +50,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             source_docx=job.source_docx,
             workspace_lineage_id=job.workspace_lineage_id,
             workspace_document_revision=job.workspace_document_revision,
+            workspace_request_json=job.workspace_request_json,
+            workspace_suggestions_json=job.workspace_suggestions_json,
             retry_identity=job.retry_identity,
             attempts=job.attempts,
             max_attempts=job.max_attempts,
@@ -84,6 +86,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             )
         model.status = job.status.value
         model.source_docx = job.source_docx
+        model.workspace_suggestions_json = job.workspace_suggestions_json
         model.attempts = job.attempts
         model.max_attempts = job.max_attempts
         model.available_at = job.available_at
@@ -153,6 +156,14 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             if row
             else None
         )
+
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+            ExamAnswerKeyEnrichmentJobModel.id == job_id
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         stmt = (

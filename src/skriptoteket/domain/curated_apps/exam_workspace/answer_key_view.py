@@ -1,12 +1,13 @@
 """Neutral answer-key item views for native exam workspace enrichment.
 
 Purpose:
-    Project keyed native exam items whose answer key is absent into a
-    source-neutral view the machine answer-key completion line can prompt
-    from, validate one provider decision back into a typed proposal, and
-    apply a proposal as an advisory MACHINE_PROPOSED prefill that stays
-    behind teacher review. Applying a proposal builds the editor prefill
-    payload only; it never mutates a saved document revision.
+    Project keyed native exam items into a source-neutral view the machine
+    answer-key completion line can prompt from, validate one provider
+    decision back into a typed proposal, and turn a proposal into the AI
+    suggestion kept on the question (TASK-SKRIPT-39-04-07): the fingerprint
+    of the question's answer-relevant content, the rule that an arriving
+    suggestion becomes the key only where no teacher, source or reviewed
+    key stands, and restoring a kept suggestion as the key.
 
 Relationships:
     - Consumed by ``domain.curated_apps.exam_workspace.answer_key_prompts``
@@ -18,29 +19,28 @@ Relationships:
 
 from __future__ import annotations
 
+import hashlib
+import json
 from enum import StrEnum
-from typing import Literal, TypeGuard
-from uuid import UUID
+from typing import TypeGuard
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
+    NativeAnswerKeySuggestion,
     NativeExamDocument,
     NativeExamItem,
     NativeExamItemKind,
     NativeExamParent,
+    NativeGapAcceptedValues,
     NativeGapSegment,
     NativeItemReviewState,
     NativeMatchPair,
     NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-
-EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION: Literal[
-    "exam_workspace_answer_key_proposals_v1"
-] = "exam_workspace_answer_key_proposals_v1"
 
 MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON = "machine_proposed_answer_key"
 
@@ -109,34 +109,6 @@ class AnswerKeyItemProposal(BaseModel):
     correct_choice_ids: tuple[str, ...] = ()
     gap_accepted_values: tuple[tuple[str, tuple[str, ...]], ...] = ()
     match_pairs: tuple[tuple[str, str], ...] = ()
-
-
-class WorkspaceAnswerKeyProposalRecord(BaseModel):
-    """One persisted proposal item with its provider candidate lineage."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    item_id: str
-    kind: AnswerKeyViewKind
-    correct_choice_ids: tuple[str, ...] = ()
-    gap_accepted_values: dict[str, tuple[str, ...]] = {}
-    match_pairs: tuple[tuple[str, str], ...] = ()
-    provider_profile_id: str
-    model: str
-    prompt_template_version: str
-
-
-class WorkspaceAnswerKeyProposalsPayload(BaseModel):
-    """Persisted native-shaped proposals payload for one document revision."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    schema_version: Literal["exam_workspace_answer_key_proposals_v1"] = (
-        EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION
-    )
-    lineage_id: UUID
-    document_revision: int = Field(ge=1)
-    items: tuple[WorkspaceAnswerKeyProposalRecord, ...] = Field(min_length=1)
 
 
 def choice_int_id(choice_id: str) -> int:
@@ -251,6 +223,44 @@ def answer_key_item_views(document: NativeExamDocument) -> tuple[AnswerKeyItemVi
     )
 
 
+def answer_key_fingerprint_for_view(view: AnswerKeyItemView) -> str:
+    """Fingerprint the answer-relevant content one suggestion was made for.
+
+    Covers exactly the fields the answer-key view defines as answer-relevant:
+    the kind, the question text (stem and numbered cloze), the choices, the
+    gap ids, both match lists and the parent instruction. Titles, points,
+    marking guides, review state and the answer key itself are excluded, so
+    editing any of those never marks a suggestion out of date.
+    """
+
+    payload = {
+        "kind": view.kind.value,
+        "instruction": view.instruction,
+        "stem_text": view.stem_text,
+        "cloze_text": view.cloze_text,
+        "choices": [list(choice) for choice in view.choices],
+        "gap_ids": list(view.gap_ids),
+        "match_left": [list(entry) for entry in view.match_left],
+        "match_right": [list(entry) for entry in view.match_right],
+    }
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def answer_key_fingerprint(item: NativeExamItem, parent: NativeExamParent | None) -> str:
+    """Fingerprint one item's current answer-relevant content."""
+
+    return answer_key_fingerprint_for_view(answer_key_item_view(item, parent))
+
+
+def suggestion_is_outdated(item: NativeExamItem, parent: NativeExamParent | None) -> bool:
+    """Report whether the kept suggestion no longer matches the question."""
+
+    if item.ai_suggestion is None:
+        return False
+    return item.ai_suggestion.fingerprint != answer_key_fingerprint(item, parent)
+
+
 def proposal_from_model_content(
     *,
     view: AnswerKeyItemView,
@@ -360,39 +370,53 @@ def _int_tuple(value: JsonValue | None) -> tuple[int, ...]:
     return tuple(integers)
 
 
-def proposal_from_record(record: WorkspaceAnswerKeyProposalRecord) -> AnswerKeyItemProposal:
-    """Rehydrate one persisted proposal record into the typed proposal."""
+def suggestion_from_proposal(
+    *,
+    view: AnswerKeyItemView,
+    proposal: AnswerKeyItemProposal,
+    provider_profile_id: str,
+    model: str,
+    prompt_template_version: str,
+) -> NativeAnswerKeySuggestion:
+    """Turn one validated provider proposal into the suggestion kept on the item."""
 
-    return AnswerKeyItemProposal(
-        item_id=record.item_id,
-        kind=record.kind,
-        correct_choice_ids=record.correct_choice_ids,
-        gap_accepted_values=tuple(
-            (gap_id, values) for gap_id, values in record.gap_accepted_values.items()
+    return NativeAnswerKeySuggestion(
+        correct_choice_ids=proposal.correct_choice_ids,
+        match_pairs=tuple(
+            NativeMatchPair(left_id=left_id, right_id=right_id)
+            for left_id, right_id in proposal.match_pairs
         ),
-        match_pairs=record.match_pairs,
+        gap_accepted_values=tuple(
+            NativeGapAcceptedValues(gap_id=gap_id, accepted_values=values)
+            for gap_id, values in proposal.gap_accepted_values
+        ),
+        fingerprint=answer_key_fingerprint_for_view(view),
+        provider_profile_id=provider_profile_id,
+        model=model,
+        prompt_template_version=prompt_template_version,
     )
 
 
-def apply_proposal_to_item(
-    item: NativeExamItem,
-    proposal: AnswerKeyItemProposal,
+def _key_matches_suggestion(item: NativeExamItem, suggestion: NativeAnswerKeySuggestion) -> bool:
+    """Whether the item's current key data is exactly this suggestion's key."""
+
+    if item.answer_key.correct_choice_ids != suggestion.correct_choice_ids:
+        return False
+    if item.answer_key.match_pairs != suggestion.match_pairs:
+        return False
+    suggested_gaps = {
+        entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values
+    }
+    return all(gap.accepted_values == suggested_gaps.get(gap.gap_id, ()) for gap in item.gaps)
+
+
+def _item_with_suggestion_key(
+    item: NativeExamItem, suggestion: NativeAnswerKeySuggestion
 ) -> NativeExamItem:
-    """Return an advisory MACHINE_PROPOSED prefill copy of one item.
+    """Copy one item with the suggestion as its MACHINE_PROPOSED key, review required."""
 
-    The copy carries the proposed key with ``REVIEW_REQUIRED`` and the
-    ``machine_proposed_answer_key`` reason. It is only ever served to the
-    editor as prefill material; it must never be written into a saved
-    document revision without the teacher's explicit review action.
-    """
-
-    if proposal.item_id != item.item_id:
-        raise DomainError(
-            code=ErrorCode.VALIDATION_ERROR,
-            message="Facitförslaget hör till en annan fråga.",
-            details={"item_id": item.item_id, "proposal_item_id": proposal.item_id},
-        )
     payload = item.model_dump()
+    payload["ai_suggestion"] = suggestion.model_dump()
     reasons = tuple(payload["review"]["reasons"])
     if MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON not in reasons:
         reasons = (*reasons, MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON)
@@ -401,8 +425,10 @@ def apply_proposal_to_item(
         "state": NativeItemReviewState.REVIEW_REQUIRED,
         "reasons": reasons,
     }
-    if proposal.kind is AnswerKeyViewKind.GAP_FILL:
-        values_by_gap = dict(proposal.gap_accepted_values)
+    if item.kind is NativeExamItemKind.GAP_FILL:
+        values_by_gap = {
+            entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values
+        }
         if set(values_by_gap) != {gap.gap_id for gap in item.gaps}:
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,
@@ -410,23 +436,49 @@ def apply_proposal_to_item(
                 details={"item_id": item.item_id},
             )
         payload["gaps"] = [
-            {**gap_payload, "accepted_values": values_by_gap[gap_payload["gap_id"]]}
+            {**gap_payload, "accepted_values": list(values_by_gap[gap_payload["gap_id"]])}
             for gap_payload in payload["gaps"]
         ]
         payload["answer_key"] = NativeAnswerKey(
             origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED
         ).model_dump()
-    elif proposal.kind is AnswerKeyViewKind.MATCHING:
+    elif item.kind is NativeExamItemKind.MATCHING:
         payload["answer_key"] = NativeAnswerKey(
             origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
-            match_pairs=tuple(
-                NativeMatchPair(left_id=left_id, right_id=right_id)
-                for left_id, right_id in proposal.match_pairs
-            ),
+            match_pairs=suggestion.match_pairs,
         ).model_dump()
     else:
         payload["answer_key"] = NativeAnswerKey(
             origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
-            correct_choice_ids=proposal.correct_choice_ids,
+            correct_choice_ids=suggestion.correct_choice_ids,
         ).model_dump()
     return NativeExamItem.model_validate(payload)
+
+
+def apply_suggestion_to_item(
+    item: NativeExamItem,
+    suggestion: NativeAnswerKeySuggestion,
+) -> NativeExamItem:
+    """Write an arriving suggestion onto its question (T5).
+
+    The suggestion is always kept on the item. It also becomes the key,
+    as ``machine_proposed`` with review required, only where the question
+    has no key or its key is the previous suggestion's key; a teacher,
+    source or reviewed key is never overwritten.
+    """
+
+    previous = item.ai_suggestion
+    becomes_key = item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT or (
+        previous is not None and _key_matches_suggestion(item, previous)
+    )
+    if becomes_key:
+        return _item_with_suggestion_key(item, suggestion)
+    return item.model_copy(update={"ai_suggestion": suggestion})
+
+
+def restore_suggestion_on_item(item: NativeExamItem) -> NativeExamItem:
+    """Make the kept suggestion the key again: machine_proposed, review required (T6)."""
+
+    if item.ai_suggestion is None:
+        return item
+    return _item_with_suggestion_key(item, item.ai_suggestion)

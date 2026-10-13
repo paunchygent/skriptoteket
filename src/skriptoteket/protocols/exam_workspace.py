@@ -6,12 +6,13 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceAnswerKeySuggestionsResponse,
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
-    ExamWorkspaceEnrichmentStatusResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
+    RequestExamWorkspaceAnswerKeySuggestionsRequest,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
@@ -104,11 +105,17 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
     ) -> ExamWorkspaceExportFile: ...
 
 
-class EnqueueExamWorkspaceEnrichmentHandlerProtocol(Protocol):
-    async def handle(self, *, actor: User, document: NativeExamDocument) -> bool: ...
-
-
-class GetExamWorkspaceEnrichmentStatusHandlerProtocol(Protocol):
+class RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
     async def handle(
-        self, *, actor: User, lineage_id: UUID
-    ) -> ExamWorkspaceEnrichmentStatusResponse: ...
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...
+
+
+class GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, job_id: UUID
+    ) -> ExamWorkspaceAnswerKeySuggestionsResponse: ...

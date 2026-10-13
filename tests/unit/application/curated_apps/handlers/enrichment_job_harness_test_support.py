@@ -163,9 +163,6 @@ class _Harness:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             id_generator=UUIDGenerator(),
-            vault_files=vault_files,
-            vault_storage=vault_storage,
-            workspace_codec=codec,
             docx_handler=docx_job_handler(
                 enrichment_jobs=self.enrichment_jobs,
                 proposed_overlays=self.proposed_overlays,

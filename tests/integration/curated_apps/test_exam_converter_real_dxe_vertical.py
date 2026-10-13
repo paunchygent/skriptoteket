@@ -50,9 +50,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
@@ -227,12 +224,6 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         uow=uow,
         clock=clock,
         settings=settings,
-        proposal_carry_forward=CarryExamWorkspaceProposals(
-            enrichment_jobs=enrichment_jobs,
-            proposed_overlays=overlays,
-            clock=clock,
-            id_generator=ids,
-        ),
     )
     users = PostgreSQLUserRepository(db_session)
     docx_progress = ExamWorkspaceConversionProgress(

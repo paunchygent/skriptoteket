@@ -32,9 +32,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
@@ -46,9 +43,6 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
-    PostgreSQLExamAnswerKeyProposedOverlayRepository,
-)
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
@@ -59,9 +53,6 @@ from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStor
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
-)
-from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-    UUIDGenerator,
 )
 
 pytestmark = [
@@ -232,12 +223,6 @@ async def test_duplicate_document_version_maps_to_conflict_without_writing_a_fil
                 uow=SQLAlchemyUnitOfWork(session),
                 clock=FixedClock(datetime.now(UTC)),
                 settings=settings,
-                proposal_carry_forward=CarryExamWorkspaceProposals(
-                    enrichment_jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
-                    proposed_overlays=PostgreSQLExamAnswerKeyProposedOverlayRepository(session),
-                    clock=FixedClock(datetime.now(UTC)),
-                    id_generator=UUIDGenerator(),
-                ),
             )
             return await store.save_version(
                 actor=owner,
