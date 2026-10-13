@@ -59,6 +59,12 @@ document has no grouping.
   editor, QTI export) and delivers converted parents; this story adds teacher
   creation for matching and parent authoring. ST-SKRIPT-39-04's acceptance stands; creating every
   type is new scope here.
+- **Changing a question's type.** The teacher changes any question to
+  another type. When conversion reported that a question is of another type
+  than the one it was saved as, the question stores that suggested type and
+  the editor offers "Gör om till [type]", which converts the question to it.
+  Asking the model to rebuild a question as a type the teacher chooses waits
+  until walks show it is needed.
 
 ## Contract Inputs
 
@@ -93,6 +99,10 @@ document has no grouping.
    sum of its children.
 4. Conversion, gold files and comparator move to parents with children
    together.
+5. Changing a question's type: the teacher changes any question to another
+   type.
+6. Suggested type: conversion stores the type it reported on the question,
+   and the editor offers "Gör om till [type]".
 
 ## Verification
 
@@ -123,3 +133,6 @@ document has no grouping.
 | P11 | ST-SKRIPT-39-04's acceptance stands; creating every question type is new scope in this story (user decision 2026-10-10). |
 | P12 | Lucktext children export with the empty `SEPARATOR` gap-match before every child sentence, a recorded exception to QTI 3.0 schema validity, proven by the BF26 package and the all-types import of 2026-10-10. |
 | P13 | Teacher-facing labels follow Exam.net: "Ny uppgift" creates a standalone question or a parent and "+ Deluppgift" adds a child; parent and child are internal names (user confirmation 2026-10-10). |
+| P14 | The teacher can change any question to another type (user decision 2026-10-13). |
+| P15 | When conversion reports that a question is of another type than the one it was saved as, the question stores that suggested type and the editor offers "Gör om till [type]", which converts the question to it (user decision 2026-10-13). |
+| P16 | Asking the model to rebuild a question as a type the teacher chooses waits until walks show it is needed (user decision 2026-10-13). |
