@@ -70,7 +70,7 @@ editor request suggestions for the content it is showing.
 
 Out of scope: the editor's presentation of suggestions (TASK-SKRIPT-39-04-05),
 autosave (TASK-SKRIPT-39-04-05), Mina filer exports and version pruning
-(TASK-SKRIPT-39-04-08), question titles at import (TASK-SKRIPT-39-05-08) and
+(TASK-SKRIPT-39-04-08), question titles (TASK-SKRIPT-39-04-09) and
 exam metadata (ST-SKRIPT-39-08).
 
 ## Contract Inputs
@@ -144,7 +144,7 @@ only. Applying suggestions must not reload or re-render the whole exam.
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| T1  | This task owns only AI answer-key suggestions; Mina filer exports and version pruning, question titles at import, and exam metadata belong to TASK-SKRIPT-39-04-08, TASK-SKRIPT-39-05-08 and ST-SKRIPT-39-08 (P1, P2). |
+| T1  | This task owns only AI answer-key suggestions; Mina filer exports and version pruning, question titles, and exam metadata belong to TASK-SKRIPT-39-04-08, TASK-SKRIPT-39-04-09 and ST-SKRIPT-39-08 (P1, P2). |
 | T2  | Each question stores its suggestion in the saved exam: the proposed key, a fingerprint of its answer-relevant content, and provider profile, model and prompt version (P5). |
 | T3  | The workspace's use of the overlay table (the table stays for the DigiExam converter until ST-SKRIPT-39-07), proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5, P10). |
 | T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6). |

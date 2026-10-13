@@ -91,7 +91,7 @@
   plan P1-P9 in `01a133f5-7568-7aa9-8c03-d65722dbff09`; lead Pi
   `meta/muse-wonder-1.0` in `Skriptoteket-task-skript-39-04-07`, user
   2026-10-13) and 39-04-08 (scaffold: Mina filer exports, pruning). Also
-  scaffolded: 39-05-08 (no titles at import), ST-SKRIPT-39-08 (metadata).
+  scaffolded: ST-SKRIPT-39-08 (metadata); 39-05-08 canceled as duplicate of 39-04-09.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 

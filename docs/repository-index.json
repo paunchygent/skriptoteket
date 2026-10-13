@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0bce1bada242cc9b545ccd21bbc729980f988e555d7c8e4fa79ec7d769334c87",
+  "source_set_digest": "b10772aeda2569a641349e40a9bcb339e880711679d82009d1aef691a3d3f851",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4931,7 +4931,7 @@
       "type": "task",
       "title": "Stop producing question titles at import and turn printed group headings into instructions",
       "path": "docs/backlog/tasks/task-skript-39-05-08-stop-producing-question-titles-at-import-and-turn-printed-group-headings-into-instructions.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4942,7 +4942,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User decision 2026-10-13 to cancel this task as a duplicate; TASK-SKRIPT-39-04-09 owns removing the question title end to end, including a printed heading over several questions going to the section parent."
       }
     },
     {
