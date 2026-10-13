@@ -54,6 +54,7 @@ from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderPr
 
 from .compare import ExamComparison, compare_exam, compare_native_exam
 from .gold import GoldExam
+from .report import print_comparison
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 _WORKER = "exam-conversion-eval"
@@ -284,21 +285,9 @@ def _print_report(reports: Sequence[_ExamReport]) -> None:
             "  stage seconds: "
             + ", ".join(f"{stage} {a}-{b}" for stage, (a, b) in report.timings.items())
         )
-        failures = report.comparison.failures_by_principle()
-        print(
-            "  failing items per principle: " + ", ".join(f"{p} {n}" for p, n in failures.items())
-        )
-        if not report.comparison.title.passed:
-            print(f"  title fails: gold={report.gold_title!r} actual={report.title!r}")
+        print_comparison(report.comparison, crashed=bool(report.crash))
         for line in report.crash:
             print(f"  conversion crashed: {line}")
-        for item in failed:
-            for mismatch in item.mismatches:
-                detail = f"expected={mismatch.expected!r} actual={mismatch.actual!r}"
-                print(
-                    f"  [{item.index}] {item.source_label} {mismatch.principle} {mismatch.reason}:"
-                    f" {detail[:400]}"
-                )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
