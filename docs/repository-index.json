@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "40a0cd4007606c69df007a8cb689128026649119ad040d1eed5585f9cd9bb968",
+  "source_set_digest": "72f8e88bc891db30ca9716e2d82085c0ba800612076e4a68ec30a9d5ac6b4a09",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4959,6 +4959,25 @@
         "decided_at": "2026-10-14",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer approved 5e532690 after findings F1-F6 and T7 were resolved, and approved the walk fix 3411b5ec (QTI preflight counts gap-match interactions); merged cc89175b. Staging walk at cc89175b after T6 deletion of 34 exams: biology import 19 questions without titles, section headings open each group instruction, QTI export 5,743 bytes, Exam.net import exam 5326264 with 4 information blocks carrying the headings and 19 sub-questions (matching as categorizingItems, gap fills, free text). Records in Skriptoteket session 01a13559-bf2e-760d-a690-3a3dea446cd5 evidence/review/TASK-SKRIPT-39-05-08/ and evidence/walk/TASK-SKRIPT-39-05-08/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-09",
+      "type": "task",
+      "title": "Label-first per-question retry, DOCX pictures as exam assets, field-label gaps and the marking-guide rubric",
+      "path": "docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
