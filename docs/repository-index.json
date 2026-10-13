@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1bb4c1f093827d90d6e9ab5e0ce6e87183bf65c324b9a193077a63f17270c31f",
+  "source_set_digest": "0bce1bada242cc9b545ccd21bbc729980f988e555d7c8e4fa79ec7d769334c87",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4752,6 +4752,25 @@
       "type": "task",
       "title": "Save exported exam files in Mina filer, list each exam once and prune autosaved versions",
       "path": "docs/backlog/tasks/task-skript-39-04-08-save-exported-exam-files-in-mina-filer-list-each-exam-once-and-prune-autosaved-versions.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-09",
+      "type": "task",
+      "title": "Remove the question title from exam items; headings live on section parents",
+      "path": "docs/backlog/tasks/task-skript-39-04-09-remove-the-question-title-from-exam-items-headings-live-on-section-parents.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
