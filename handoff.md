@@ -9,11 +9,9 @@
     staging walk on `1db37835`: 166/166 items on all eight principles, matching
     edit, QTI export; retained root
     `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
-  - [TASK-SKRIPT-39-05-05](docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md)
-    `in_progress`: titles drop answer-key wording. Approved `83501383`, merged
-    `ece1b674`; staging walk 2026-10-11 passed (retained
-    `evidence/task-skript-39-05-05/staging-walk-ece1b674/`). Next: user closure.
-    Prior recorded eval's three item failures match baseline `6bf05757`.
+  - TASK-SKRIPT-39-05-05 `done` (user closure 2026-10-14).
+  - [TASK-SKRIPT-39-05-06](docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md)
+    `in_progress`, Sol 6.1 lead; retained `01a13798-9df1-75fa-a4c5-bd755b4bfd85`.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12, staging walk `63de8094`, retained
     `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
