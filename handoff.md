@@ -26,10 +26,12 @@
     `evidence/staging-walk/walk-63de8094.md`).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
-  `proposed`, P1-P26; tasks 7-10 (Kategorisera grid, Fritext criteria, Kort
-  svar, export checklist) added 2026-10-15 from the Exam.net probes
-  (`REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type`). Next:
-  plan epic story 8 (QTI 3.0 export, no backlog item yet), which comes first.
+  `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
+
+- [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
+  `proposed`, Q1-Q15 planned 2026-10-15 (epic story 8: QTI 3.0 for both
+  lanes, 2.1 deleted, plus the Exam.net routes moved from 39-06). Next: admit
+  to `ready` and implement task 1 (walking skeleton).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (merged cc89175b, staging walk at
   cc89175b; Exam.net import exam 5326264 — evidence in retained
@@ -54,12 +56,6 @@
   approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
   visible by user choice; head-only listing is a later task.
 
-- EPIC-SKRIPT-39 decisions 2026-10-09 (E13-E15): story 8 converges the exporter
-  on the native QTI 3.0 Exam.net contract after story 5, QTI 2.1 is the parity
-  baseline until cutover. Open: sir-convert branch
-  `claude/supersede-retired-exam-epics` (EPIC-SIRCON-07/08 supersession notes)
-  awaits merge and governed terminal closure.
-
 - TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
   Owner: skill-repository parent 01a1036b; next: terminal closeout.
   Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
@@ -75,6 +71,7 @@
   waits on. TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Open defect
   from the walk: Klassrumskartan returns focus to the sidebar, not "Ny klass",
   after the modal closes.
+
 - ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
   (rules removal: all of .codex/rules moves into skills, user 2026-10-12;
   shadow and panel sweep, per-app token passes).
@@ -162,14 +159,17 @@
   all seven walk steps passed, incl. resume after reload, older job ignored
   after save, import blocked while unsaved, `docx_import` log label, q10
   Fungi/Bacteria (retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`).
+
 - TASK-SKRIPT-39-04-07 `done` 2026-10-13 (user closure; user waived review
   of final repair `ace0cc39`, earlier rounds `changes_requested`): merged
   main `838baea9`; T7 staging walk passed: suggestion on unsaved edits ->
   `machine_proposed` key -> reviewed -> saved -> kept on reopen (retained
   `01a133f5…/evidence/staging-walk-838baea9/README.md`).
+
 - TASK-SKRIPT-39-05-07 `done` 2026-10-13 (user closure): export blocks only on
   missing values; review approved `58dabe3f`; staging walk on ebc2a9c7 passed
   (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).
+
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
 

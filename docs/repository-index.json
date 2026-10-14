@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fb68c1a1565c2409e9e1c630defd1a9ea2329dc7a196f1211219fc908716d667",
+  "source_set_digest": "57324d5fabb02d3608f970f92e6f58469cd7cee4082e5c7c8a849bdbf66bb9ac",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2306,6 +2306,27 @@
       "type": "story",
       "title": "Course and tag metadata for saved exams",
       "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-09",
+      "type": "story",
+      "title": "QTI 3.0 native export for Exam.net",
+      "path": "docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md",
       "status": "proposed",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
