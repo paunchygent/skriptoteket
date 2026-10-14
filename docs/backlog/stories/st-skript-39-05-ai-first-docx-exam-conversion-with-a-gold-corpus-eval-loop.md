@@ -102,7 +102,7 @@ Planned order; each task is scaffolded and contracted before work starts.
    until every corpus item meets the conversion principles against its gold.
 4. Matching kind: native model, editor, and QTI export (delivered in
    `TASK-SKRIPT-39-05-03`, D1, D7, D8).
-5. `TASK-SKRIPT-39-05-10` teacher surface: AI glyph with undo on interpreted
+5. `TASK-SKRIPT-39-05-10` (done 2026-10-14) teacher surface: AI glyph with undo on interpreted
    keys, checked AI-invented keys, automatic misspellings, and
    "Visa som text".
 6. `TASK-SKRIPT-39-05-09` (done 2026-10-14): label-first per-question retry;

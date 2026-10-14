@@ -5,19 +5,22 @@
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
 
-  - TASK-SKRIPT-39-05-01, -02 and -03 `done` (user closure 2026-10-11 after the
-    staging walk on `1db37835`: 166/166 items on all eight principles, matching
-    edit, QTI export; retained root
-    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`).
-  - TASK-SKRIPT-39-05-05 `done` (user closure 2026-10-14).
-  - TASK-SKRIPT-39-05-06 `done` 2026-10-14 (review approved 2c13468e, merged).
+  - TASK-SKRIPT-39-05-01/-02/-03 `done` 2026-10-11 (walk `1db37835`, retained
+    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -05 and
+    -06 `done` 2026-10-14.
   - [TASK-SKRIPT-39-05-09](docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md)
     `done` 2026-10-14 (review approved 659973e5, merged eafb1487; staging walk
     and Exam.net import exam 5331367 in retained
     `01a13798-9df1-75fa-a4c5-bd755b4bfd85` `evidence/walk/TASK-SKRIPT-39-05-09/`).
   - [TASK-SKRIPT-39-05-10](docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md)
-    `in_progress` (story item 5, D1-D10), Sol 6.1 lead; retained
-    `01a13a87-acac-7730-bb4e-746618d73cfd`. Done = green staging walk plus Exam.net import.
+    `done` 2026-10-14 (reviews approved e4a5e2eb and 42050a03, merged
+    426d7551; staging walk at c270419e and Exam.net import exam 5332346 in
+    retained `01a13a87-acac-7730-bb4e-746618d73cfd`
+    `evidence/walk/TASK-SKRIPT-39-05-10/`). Live v14 eval 0/8 gold; open
+    model-quality findings (SA24 dropped accepted forms, truncated facit_text,
+    poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
+    that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
+    next: route them under story item 3.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12, staging walk `63de8094`, retained
     `evidence/staging-walk/walk-63de8094.md`).

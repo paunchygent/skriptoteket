@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-14'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-14'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer approved the frontend repair e4a5e2eb after review of c7d6db01 (merged c270419e) and the replay repair 42050a03 after review of the re-record commit 87478dcd (merged 426d7551). 118 live v14 replies replace the obsolete recordings; source audit of all eight corpus exams found no misreported key source. Staging walk at c270419e: glyph, undo, review, automatic misspellings and Visa som text passed; Exam.net import exam 5332346 accepted several values per gap (Stockholm, Stockolm; syre, syr). Records in Skriptoteket session 01a13a87-acac-7730-bb4e-746618d73cfd evidence/review/TASK-SKRIPT-39-05-10/ and evidence/walk/TASK-SKRIPT-39-05-10/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
 - An AI-interpreted key carries the AI glyph with an undo that clears it and shows the teacher's facit text
