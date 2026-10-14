@@ -75,32 +75,50 @@ describe("conversion answer-key transitions", () => {
     expect(result.gaps[1]?.automatic_values).toEqual(["Oslp"]);
   });
 
-  it("removes only the selected automatic answer and invalidates AI provenance", () => {
-    const source = interpretedGap();
-    const result = withoutAutomaticValue(source, "gap_001", "Stockhom");
-    expect(result.gaps[0]?.automatic_values).toEqual([]);
-    expect(result.gaps[0]?.accepted_values).toEqual(["Stockholm", "Sthlm"]);
-    expect(result.gaps[1]).toBe(source.gaps[1]);
-    expect(result.answer_key.origin).toBe("teacher_authored");
-    expect(withoutAutomaticValue(source, "gap_001", "missing")).toBe(source);
-  });
+  it.each(["ai_interpreted", "machine_proposed", "source_provided"] as const)(
+    "removes only the selected automatic answer and preserves %s provenance",
+    (origin) => {
+      const source = interpretedGap();
+      source.answer_key.origin = origin;
+      const result = withoutAutomaticValue(source, "gap_001", "Stockhom");
+      expect(result.gaps[0]?.automatic_values).toEqual([]);
+      expect(result.gaps[0]?.accepted_values).toEqual(["Stockholm", "Sthlm"]);
+      expect(result.gaps[1]).toBe(source.gaps[1]);
+      expect(result.answer_key).toEqual(source.answer_key);
+      expect(examWorkspaceItemReadiness(result)).toEqual(examWorkspaceItemReadiness(source));
+      if (origin === "ai_interpreted") {
+        expect(withoutInterpretedKey(result).answer_key.origin).toBe("absent");
+      }
+      expect(source.gaps[0]?.automatic_values).toEqual(["Stockhom"]);
+      expect(withoutAutomaticValue(source, "gap_001", "missing")).toBe(source);
+    },
+  );
 
-  it("turns the selected gap into its first accepted answer, not a misspelling, with points unchanged", () => {
-    const source = interpretedGap();
-    const result = withGapAsText(source, "gap_001");
-    expect(result.body[0]?.segments).toEqual([
-      { kind: "text", text: "Hon heter " },
-      { kind: "text", text: "Stockholm" },
-      { kind: "text", text: " och " },
-      { kind: "gap", gap_id: "gap_002" },
-      { kind: "text", text: " och " },
-    ]);
-    expect(result.gaps).toEqual([source.gaps[1]]);
-    expect(result.points).toBe(source.points);
-    expect(result.answer_key.origin).toBe("teacher_authored");
-    expect(hasInvalidAnswerKey(result)).toBe(false);
-    expect(withGapAsText(result, "gap_002")).toBe(result);
-  });
+  it.each(["ai_interpreted", "machine_proposed", "source_provided"] as const)(
+    "turns the selected gap into its first accepted answer with points and %s provenance unchanged",
+    (origin) => {
+      const source = interpretedGap();
+      source.answer_key.origin = origin;
+      const result = withGapAsText(source, "gap_001");
+      expect(result.body[0]?.segments).toEqual([
+        { kind: "text", text: "Hon heter " },
+        { kind: "text", text: "Stockholm" },
+        { kind: "text", text: " och " },
+        { kind: "gap", gap_id: "gap_002" },
+        { kind: "text", text: " och " },
+      ]);
+      expect(result.gaps).toEqual([source.gaps[1]]);
+      expect(result.points).toBe(source.points);
+      expect(result.answer_key).toEqual(source.answer_key);
+      expect(examWorkspaceItemReadiness(result)).toEqual(examWorkspaceItemReadiness(source));
+      if (origin === "ai_interpreted") {
+        expect(withoutInterpretedKey(result).answer_key.origin).toBe("absent");
+      }
+      expect(source.gaps).toHaveLength(2);
+      expect(hasInvalidAnswerKey(result)).toBe(false);
+      expect(withGapAsText(result, "gap_002")).toBe(result);
+    },
+  );
 
   it("refuses unknown gaps and gaps with no first accepted value", () => {
     const source = interpretedGap();

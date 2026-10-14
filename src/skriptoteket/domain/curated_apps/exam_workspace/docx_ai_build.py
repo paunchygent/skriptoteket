@@ -174,8 +174,6 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
             "interpreted": NativeAnswerKeyOrigin.AI_INTERPRETED,
             "invented": NativeAnswerKeyOrigin.MACHINE_PROPOSED,
         }
-        if keyed and produced.key_source is None:
-            raise ValueError("an objective key must state its source")
         origin = (
             origins[produced.key_source]
             if keyed and produced.key_source is not None

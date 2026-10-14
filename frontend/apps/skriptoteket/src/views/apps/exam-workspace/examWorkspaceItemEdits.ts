@@ -142,7 +142,7 @@ export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
   };
 }
 
-/** Removing an automatic answer is a teacher change of the answer key. */
+/** Remove only the selected automatic answer, preserving the key's provenance. */
 export function withoutAutomaticValue(
   item: NativeExamItem,
   gapId: string,
@@ -154,7 +154,6 @@ export function withoutAutomaticValue(
   }
   return {
     ...item,
-    answer_key: { ...item.answer_key, origin: "teacher_authored" },
     gaps: item.gaps.map((candidate) =>
       candidate.gap_id === gapId
         ? { ...candidate, automatic_values: candidate.automatic_values.filter((entry) => entry !== value) }
@@ -172,7 +171,6 @@ export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamIt
   }
   return {
     ...item,
-    answer_key: { ...item.answer_key, origin: "teacher_authored" },
     gaps: item.gaps.filter((candidate) => candidate.gap_id !== gapId),
     body: item.body.map((paragraph) => ({
       ...paragraph,

@@ -42,16 +42,32 @@ describe("document conversion-key actions", () => {
     expect(state.isDirty.value).toBe(false);
   });
 
-  it("removes one automatic value and turns a different gap into text through document state", async () => {
-    const state = await openMatchingDocument(api.getExamWorkspaceDocument, interpretedItem());
-    state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
-    expect(currentItem(state).gaps[0]?.automatic_values).toEqual([]);
-    state.showItemGapAsText("item_001", "gap_002");
-    expect(currentItem(state).gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
-    expect(currentItem(state).body[0]?.segments).toContainEqual({ kind: "text", text: "Oslo" });
-    expect(currentItem(state).points).toBe(1);
-    expect(state.isDirty.value).toBe(true);
-  });
+  it.each(["ai_interpreted", "machine_proposed", "source_provided"] as const)(
+    "removes one automatic value and turns a different gap into text while preserving %s",
+    async (origin) => {
+      const source = interpretedItem();
+      source.answer_key.origin = origin;
+      const readiness = examWorkspaceItemReadiness(source);
+      const state = await openMatchingDocument(api.getExamWorkspaceDocument, source);
+      state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
+      expect(currentItem(state).gaps[0]?.automatic_values).toEqual([]);
+      expect(currentItem(state).answer_key.origin).toBe(origin);
+      expect(examWorkspaceItemReadiness(currentItem(state))).toEqual(readiness);
+      state.showItemGapAsText("item_001", "gap_002");
+      expect(currentItem(state).gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+      expect(currentItem(state).body[0]?.segments).toContainEqual({ kind: "text", text: "Oslo" });
+      expect(currentItem(state).points).toBe(1);
+      expect(currentItem(state).answer_key.origin).toBe(origin);
+      expect(examWorkspaceItemReadiness(currentItem(state))).toEqual(readiness);
+      expect(state.isDirty.value).toBe(true);
+      const copy = currentDocument(state);
+      api.saveExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
+      expect(await state.saveDocument()).toBe(true);
+      const payload = api.saveExamWorkspaceDocument.mock.calls[0]?.[1].document;
+      expect(payload.items[0].answer_key.origin).toBe(origin);
+      expect(payload.items[0].gaps).toEqual(currentItem(state).gaps);
+    },
+  );
 
   it("refuses all new actions while busy and ignores unknown items", async () => {
     const source = interpretedItem();
