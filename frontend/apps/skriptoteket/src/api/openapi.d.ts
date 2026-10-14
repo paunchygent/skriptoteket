@@ -6012,7 +6012,7 @@ export interface components {
          * @description Provenance vocabulary aligned with the exam-conversion review states.
          * @enum {string}
          */
-        NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "ai_interpreted" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
         /**
          * NativeAnswerKeySuggestion
          * @description One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
@@ -6111,10 +6111,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v1
+             * @default native_exam_document_v2
              * @constant
              */
-            schema_version: "native_exam_document_v1";
+            schema_version: "native_exam_document_v2";
             /** Title */
             title: string;
         };
@@ -6147,10 +6147,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v1
+             * @default native_exam_document_v2
              * @constant
              */
-            schema_version: "native_exam_document_v1";
+            schema_version: "native_exam_document_v2";
             /** Title */
             title: string;
         };
@@ -6179,11 +6179,13 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice"][];
+            /** Facit Text */
+            facit_text?: string | null;
             /**
              * Gaps
              * @default []
              */
-            gaps: components["schemas"]["NativeGap"][];
+            gaps: components["schemas"]["NativeGap-Input"][];
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
@@ -6217,7 +6219,7 @@ export interface components {
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
-            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
+            ai_suggestion: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6226,16 +6228,18 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice"][];
+            /** Facit Text */
+            facit_text: string | null;
             /**
              * Gaps
              * @default []
              */
-            gaps: components["schemas"]["NativeGap"][];
+            gaps: components["schemas"]["NativeGap-Output"][];
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
             /** Marking Guide */
-            marking_guide?: string | null;
+            marking_guide: string | null;
             /**
              * Match Left
              * @default []
@@ -6247,20 +6251,20 @@ export interface components {
              */
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
-            points?: number | null;
+            points: number | null;
             /**
              * Points Estimated
              * @default false
              */
             points_estimated: boolean;
             /** Printed Label */
-            printed_label?: string | null;
-            retry_source?: components["schemas"]["NativeExamRetrySource-Output"] | null;
+            printed_label: string | null;
+            retry_source: components["schemas"]["NativeExamRetrySource-Output"] | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
             /** Source Anchor */
-            source_anchor?: string | null;
+            source_anchor: string | null;
         };
         /**
          * NativeExamItemKind
@@ -6412,12 +6416,32 @@ export interface components {
             label_kind: components["schemas"]["NativeExamItemKind"];
         };
         /** NativeGap */
-        NativeGap: {
+        "NativeGap-Input": {
             /**
              * Accepted Values
              * @default []
              */
             accepted_values: string[];
+            /**
+             * Automatic Values
+             * @default []
+             */
+            automatic_values: string[];
+            /** Gap Id */
+            gap_id: string;
+        };
+        /** NativeGap */
+        "NativeGap-Output": {
+            /**
+             * Accepted Values
+             * @default []
+             */
+            accepted_values: string[];
+            /**
+             * Automatic Values
+             * @default []
+             */
+            automatic_values: string[];
             /** Gap Id */
             gap_id: string;
         };

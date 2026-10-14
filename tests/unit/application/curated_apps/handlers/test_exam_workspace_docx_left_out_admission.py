@@ -48,7 +48,7 @@ def _state(*texts: str) -> DocxBuildState:
 
 
 def _text(text: str) -> dict[str, JsonValue]:
-    return {"kind": "text", "text": text, "accepted_values": []}
+    return {"kind": "text", "text": text, "accepted_values": [], "spelling_candidates": []}
 
 
 def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
@@ -58,6 +58,8 @@ def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
         "conflict_kind": None,
         "review_reason": None,
         "kind": "free_text",
+        "key_source": None,
+        "facit_text": None,
         "printed_label": "1",
         "body": [{"segments": [_text(_STEM[3:])]}],
         "points": 2,
@@ -203,13 +205,20 @@ def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
         {
             "segments": [
                 _text("The bands "),
-                {"kind": "gap", "text": None, "accepted_values": ["play"]},
+                {
+                    "kind": "gap",
+                    "text": None,
+                    "accepted_values": ["play"],
+                    "spelling_candidates": [],
+                },
                 _text(" (spelar) at the festival."),
             ]
         },
     ]
 
-    admit_batch({"items": [_item(["body:0001"], kind="gap_fill", body=body)]}, state)
+    admit_batch(
+        {"items": [_item(["body:0001"], kind="gap_fill", key_source="invented", body=body)]}, state
+    )
 
     ((admitted, anchors),) = state.accepted
     assert anchors == ("body:0001", "body:0002")
@@ -227,7 +236,13 @@ def test_a_dropped_line_of_inline_options_is_read_option_by_option():
     admit_batch(
         {
             "items": [
-                _item(["body:0001"], kind="single_choice", choices=choices, marking_guide=None)
+                _item(
+                    ["body:0001"],
+                    kind="single_choice",
+                    key_source="invented",
+                    choices=choices,
+                    marking_guide=None,
+                )
             ]
         },
         state,
@@ -248,7 +263,13 @@ def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
     admit_batch(
         {
             "items": [
-                _item(["body:0001"], kind="single_choice", choices=choices, marking_guide=None)
+                _item(
+                    ["body:0001"],
+                    kind="single_choice",
+                    key_source="invented",
+                    choices=choices,
+                    marking_guide=None,
+                )
             ]
         },
         state,
@@ -314,6 +335,7 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
                 _item(
                     ["body:0001", "body:0002", "body:0003", "body:0004"],
                     kind="single_choice",
+                    key_source="invented",
                     body=[{"segments": [_text(stem)]}],
                     points=None,
                     choices=choices,
@@ -352,6 +374,7 @@ def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_lab
                 _item(
                     ["body:0001", "body:0002", "body:0003"],
                     kind="single_choice",
+                    key_source="invented",
                     body=[{"segments": [_text(texts[0])]}],
                     points=None,
                     choices=choices,
@@ -391,6 +414,7 @@ def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the
                 _item(
                     ["body:0001", "body:0002", "body:0003"],
                     kind="single_choice",
+                    key_source="invented",
                     body=[{"segments": [_text("Vilket ord är ett substantiv?")]}],
                     points=None,
                     choices=choices,

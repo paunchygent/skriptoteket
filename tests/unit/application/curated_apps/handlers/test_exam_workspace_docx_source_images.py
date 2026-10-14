@@ -167,7 +167,16 @@ _BETWEEN_GROUPING: dict[str, JsonValue] = {
 def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dict[str, JsonValue]:
     """A converted free-text item in the shape the converter's schema returns."""
     body: list[JsonValue] = [
-        {"segments": [{"kind": "text", "text": text[3:], "accepted_values": []}]}
+        {
+            "segments": [
+                {
+                    "kind": "text",
+                    "text": text[3:],
+                    "accepted_values": [],
+                    "spelling_candidates": [],
+                }
+            ]
+        }
     ]
     body.extend(
         {
@@ -176,6 +185,7 @@ def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dic
                     "kind": "asset",
                     "text": None,
                     "accepted_values": [],
+                    "spelling_candidates": [],
                     "asset_id": asset_id,
                 }
             ]
@@ -188,6 +198,8 @@ def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dic
         "conflict_kind": None,
         "review_reason": None,
         "kind": "free_text",
+        "key_source": None,
+        "facit_text": None,
         "printed_label": text[0],
         "body": body,
         "points": 1,

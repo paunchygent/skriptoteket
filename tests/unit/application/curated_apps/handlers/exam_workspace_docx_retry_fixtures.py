@@ -246,11 +246,19 @@ def retry_reply(
                 "conflict_kind": conflict_kind,
                 "review_reason": None,
                 "kind": kind,
+                "key_source": None,
+                "facit_text": None,
                 "printed_label": None,
                 "body": [
                     {
                         "segments": [
-                            {"kind": "text", "text": text, "accepted_values": [], "asset_id": None}
+                            {
+                                "kind": "text",
+                                "text": text,
+                                "accepted_values": [],
+                                "spelling_candidates": [],
+                                "asset_id": None,
+                            }
                         ]
                     }
                 ],

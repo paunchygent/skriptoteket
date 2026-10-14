@@ -26,8 +26,14 @@ class ProducedSegment(_Produced):
         "inline facit answer or label; null for a gap or asset segment."
     )
     accepted_values: tuple[str, ...] = Field(
-        description="For a gap: the accepted answers from the teacher's facit, including "
-        "facit written inline in the question paragraph. Empty for text and asset."
+        description="For a gap: correct answer forms from the teacher's facit, including "
+        "inline facit, or proposed answers when the item's key_source is invented. "
+        "Empty for text and asset. Misspellings belong in spelling_candidates only."
+    )
+    spelling_candidates: tuple[str, ...] = Field(
+        description="For a gap answered from the facit: likely misspellings of its accepted "
+        "answers, at most three per answer. Empty for invented keys, text and assets. "
+        "Keep them separate from accepted_values; code filters their edit distance."
     )
     asset_id: str | None = Field(
         default=None,
@@ -39,12 +45,22 @@ class ProducedSegment(_Produced):
     @model_validator(mode="after")
     def _kind_fields(self) -> "ProducedSegment":
         if self.kind == "text":
-            if not self.text or self.accepted_values or self.asset_id is not None:
+            if (
+                not self.text
+                or self.accepted_values
+                or self.spelling_candidates
+                or self.asset_id is not None
+            ):
                 raise ValueError("text segments carry non-empty text only")
         elif self.kind == "gap":
             if self.text is not None or self.asset_id is not None:
                 raise ValueError("gap segments carry no text or asset")
-        elif self.text is not None or self.accepted_values or not self.asset_id:
+        elif (
+            self.text is not None
+            or self.accepted_values
+            or self.spelling_candidates
+            or not self.asset_id
+        ):
             raise ValueError("asset segments carry one asset id only")
         return self
 
@@ -57,12 +73,18 @@ class ProducedChoice(_Produced):
     text: str = Field(
         min_length=1, description="The option wording without its source letter or number."
     )
-    correct: bool = Field(description="True only when the teacher's facit keys this option.")
+    correct: bool = Field(
+        description="True when this option is keyed by the teacher's facit, or by the "
+        "proposed key when the item's key_source is invented."
+    )
 
 
 class ProducedMatchPair(_Produced):
     left: str = Field(description="A match_left entry, copied exactly.")
-    right: str = Field(description="The match_right entry the facit pairs it with, copied exactly.")
+    right: str = Field(
+        description="The match_right entry the key pairs it with, copied exactly. "
+        "The item's key_source states whether that key came from facit or was invented."
+    )
 
 
 class ProducedItem(_Produced):
@@ -98,6 +120,16 @@ class ProducedItem(_Produced):
         description="Student-visible question text, also for review items. Inline facit "
         "answers never go into text.",
     )
+    key_source: Literal["copied", "interpreted", "invented"] | None = Field(
+        description="copied: the facit's own answer words, including a letter mapped to "
+        "its choice or listed alternatives split. interpreted: answers extracted from "
+        "a facit sentence or matching pairs inferred from prose. invented: solved without "
+        "a facit entry. Null when there is no objective key or for free_text."
+    )
+    facit_text: str | None = Field(
+        description="The teacher's original facit wording for this question, copied "
+        "verbatim, including inline answers. Null only when this question has no facit entry."
+    )
     points: int | None = Field(description="Points printed in the source, else null.")
     choices: tuple[ProducedChoice, ...] = Field(
         description="Options in source order for single_choice and multiple_response; "
@@ -116,8 +148,8 @@ class ProducedItem(_Produced):
     match_pairs: tuple[ProducedMatchPair, ...] = Field(
         default=(),
         description="For matching: each pair the teacher's facit keys, one pair per match_left "
-        "entry; a match_right entry no pair uses stays in match_right. Empty without a facit "
-        "entry and for other kinds.",
+        "entry; a match_right entry no pair uses stays in match_right. A proposed key "
+        "without a facit entry uses key_source invented. Empty for other kinds.",
     )
     marking_guide: str | None = Field(
         default=None,
@@ -128,6 +160,22 @@ class ProducedItem(_Produced):
 
     @model_validator(mode="after")
     def _pairs_name_entries(self) -> "ProducedItem":
+        if self.facit_text is not None and not self.facit_text.strip():
+            raise ValueError("facit_text must contain the teacher's wording")
+        if self.key_source in {"copied", "interpreted"} and self.facit_text is None:
+            raise ValueError("a facit-derived key requires facit_text")
+        if self.key_source == "invented" and self.facit_text is not None:
+            raise ValueError("an invented key has no facit entry")
+        keyed = (
+            any(choice.correct for choice in self.choices)
+            or bool(self.match_pairs)
+            or any(s.accepted_values for p in self.body for s in p.segments if s.kind == "gap")
+        )
+        if self.kind is NativeExamItemKind.FREE_TEXT:
+            if self.key_source is not None:
+                raise ValueError("free_text has no objective key source")
+        elif keyed != (self.key_source is not None):
+            raise ValueError("each objective key states its source; an empty key has none")
         for pair in self.match_pairs:
             if pair.left not in self.match_left or pair.right not in self.match_right:
                 raise ValueError("each match pair copies one match_left and one match_right entry")

@@ -76,7 +76,8 @@ Rules:
   the source prints it. Keep every
   such cue with its brackets and all of its words, also when it is in another language than
   the sentence: it tells the student what to write, it is not the answer. Do not paraphrase,
-  translate, solve or invent. Every word of a question's own chunks that is not facit goes
+  translate or invent student-visible wording. Only the key rule below allows solving
+  an objective key without a facit. Every word of a question's own chunks that is not facit goes
   into its body, including the words before and after each blank, the words after
   each cue and every label that stays text; never shorten a sentence to the part around its
   blank or cue.
@@ -87,9 +88,25 @@ Rules:
   the question: list it in that item's source_anchors, never in answer_key_anchors.
   Facit chunks are never student-visible text or instructions, except the units and
   parts gap rule 4 keeps as text. List their anchors in answer_key_anchors and nowhere else.
-- Answers come only from the teacher's facit or answer lines in the source: mark a choice
-  correct, or give a gap's accepted_values, only when the facit keys it. Without a facit entry
-  leave every choice false and accepted_values empty; never guess.
+- State each item's key_source: copied when its key copies the teacher's facit answer
+  words, including mapping a facit letter to its choice or splitting listed alternatives
+  ("Stockholm/Sthlm", "eller"); interpreted only when extracting an answer word from a
+  facit sentence or constructing matching pairs from prose; invented when solving an
+  objective question without any facit entry. Use the facit whenever it exists. Without
+  a facit you may propose an objective key, but key_source MUST be invented; never claim
+  that a solved answer came from the teacher. When no objective key is supplied, or for
+  free_text, key_source is null. If any part of an item's facit key needs interpretation,
+  the item's key_source is interpreted.
+- facit_text copies the teacher's original facit wording for this item verbatim, including
+  inline facit. Keep it even when it needs interpretation or supplies only a marking guide.
+  Without an item-specific facit entry it is null. Never substitute your proposed key for
+  this teacher text. Copied and interpreted keys require facit_text; invented keys have none.
+- For each facit-derived gap, propose likely misspellings in spelling_candidates in this
+  same response, at most three per accepted answer. They are extra spelling mistakes, not
+  synonyms or new correct answers: at most one edit for answers of up to six characters,
+  two for longer answers, including adjacent transposition. Keep accepted_values as the
+  correct answer forms only. Text and asset segments, and invented keys, have empty
+  spelling_candidates. Do not make separate calls for misspellings.
 - A question paragraph can carry its facit inline. Inline facit is set apart as an answer:
   by formatting, usually italics, or after an answer label, as in an answer line
   "Label: value"; a bracketed cue in the question's own plain text is no facit. Italic text
@@ -161,7 +178,8 @@ Rules:
   the student chooses among, also entries no pair uses, each copied without its number or
   letter. match_pairs holds the pairs the facit gives: each match_left entry in exactly one
   pair, copying that entry and the match_right entry the facit's letter or number points to;
-  a match_right entry no pair names stays in the list. The body holds the question's
+  a match_right entry no pair names stays in the list. Without a facit, a proposed set of
+  pairs follows the invented key rule. The body holds the question's
   instructions without the lists.
   A matching item has no gaps and no choices; an empty answer cell is no blank.
 - A free_text question's marking_guide copies the teacher's grading guidance for it: the

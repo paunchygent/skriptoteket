@@ -14,9 +14,12 @@ import math
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
+from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
+    filter_answer_spelling_candidates,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
@@ -53,7 +56,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v1"] = "native_exam_document_v1"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v2"] = "native_exam_document_v2"
 
 NativeExamParent = native_exam_parent.NativeExamParent
 parent_points = native_exam_parent.parent_points
@@ -94,10 +97,15 @@ class NativeMatchPair(BaseModel):
 
 
 class NativeGap(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        json_schema_serialization_defaults_required=True,
+    )
 
     gap_id: str = Field(pattern=GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
+    automatic_values: tuple[str, ...] = ()
 
     @field_validator("accepted_values")
     @classmethod
@@ -106,6 +114,21 @@ class NativeGap(BaseModel):
             if not value.strip():
                 raise ValueError("accepted_values entries must be non-empty")
         return values
+
+    @field_validator("automatic_values")
+    @classmethod
+    def _bounded_automatic_values(
+        cls, values: tuple[str, ...], info: ValidationInfo
+    ) -> tuple[str, ...]:
+        """Keep only bounded spellings of an accepted value; drop the rest at save (D7).
+
+        The saved document is normalized, never rejected: a value outside the A10
+        distance, a duplicate of an accepted value, or a fourth spelling of one
+        accepted value is dropped, and an accepted value's removal drops the
+        automatic values that depended on it in the same save.
+        """
+        accepted = info.data.get("accepted_values") or ()
+        return filter_answer_spelling_candidates(accepted, values)
 
 
 class NativeAnswerKey(BaseModel):
@@ -190,12 +213,17 @@ class NativeExamDocumentOrigin(BaseModel):
 
 
 class NativeExamItem(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        json_schema_serialization_defaults_required=True,
+    )
 
     item_id: str = Field(pattern=ITEM_ID_PATTERN)
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
     printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
+    facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
     points_estimated: bool = False  # points split from a printed section total (D6)
@@ -420,7 +448,7 @@ class NativeExamItem(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v1"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v2"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str = Field(min_length=1)

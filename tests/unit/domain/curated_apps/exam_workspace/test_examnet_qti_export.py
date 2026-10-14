@@ -157,6 +157,27 @@ class TestChoiceMapping:
         assert qti_item.interaction_type is ExamNetQtiInteractionType.MULTIPLE_RESPONSE
         assert qti_item.correct_choice_identifiers == ("choice_001", "choice_003")
 
+    def test_ai_interpreted_key_maps_its_correct_identifier(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.SINGLE_CHOICE,
+            body=_text_body("Välj."),
+            points=1,
+            choices=(
+                NativeChoice(choice_id="choice_001", text="Ett"),
+                NativeChoice(choice_id="choice_002", text="Två"),
+            ),
+            answer_key=NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.AI_INTERPRETED,
+                correct_choice_ids=("choice_001",),
+            ),
+            review=_review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+
+        assert qti_item.correct_choice_identifiers == ("choice_001",)
+
     def test_absent_answer_key_emits_no_correct_identifiers(self) -> None:
         item = NativeExamItem(
             item_id="item_001",
@@ -286,6 +307,71 @@ class TestGapFillMapping:
         assert tuple(gap.label for gap in qti_item.text_entry_gaps) == ("Lucka 1", "Lucka 2")
         assert qti_item.text_entry_gaps[0].accepted_values == ("VF", "verbfras")
         assert qti_item.text_entry_gaps[1].accepted_values == ("NF",)
+
+    def test_automatic_values_join_the_gaps_accepted_answers_after_them(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.GAP_FILL,
+            body=(
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Ange frastyp: "),
+                        NativeGapSegment(gap_id="gap_001"),
+                    )
+                ),
+            ),
+            points=2,
+            gaps=(
+                NativeGap(
+                    gap_id="gap_001",
+                    accepted_values=("NF",),
+                    automatic_values=("NE", "NFn"),
+                ),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.AI_INTERPRETED),
+            review=_review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+
+        assert qti_item.text_entry_gaps[0].accepted_values == ("NF", "NE", "NFn")
+
+    def test_gap_without_points_writes_every_accepted_value_in_the_correct_response(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.GAP_FILL,
+            body=(
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Ange frastyp: "),
+                        NativeGapSegment(gap_id="gap_001"),
+                    )
+                ),
+            ),
+            gaps=(
+                NativeGap(
+                    gap_id="gap_001",
+                    accepted_values=("NF",),
+                    automatic_values=("NE",),
+                ),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
+            review=_review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+
+        assert qti_item.max_score is None
+        root = ElementTree.fromstring(serialize_qti_assessment_item(qti_item))
+        correct_values = tuple(
+            child.text
+            for element in root.iter()
+            if element.tag.rsplit("}", 1)[-1] == "correctResponse"
+            for child in element
+            if child.tag.rsplit("}", 1)[-1] == "value"
+        )
+        assert correct_values == ("NF", "NE")
+        assert [e for e in root.iter() if e.tag.rsplit("}", 1)[-1] == "mapping"] == []
 
 
 class TestAssetMapping:
