@@ -23,6 +23,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiImageResource,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiPromptGap,
+    ExamNetQtiPromptImage,
+    ExamNetQtiPromptSegment,
+    ExamNetQtiPromptText,
     ExamNetQtiTextEntryGap,
 )
 
@@ -233,6 +237,9 @@ def _append_interaction_prompt(
     image_paths: tuple[str, ...],
 ) -> None:
     prompt = ElementTree.SubElement(interaction, qti_tag("prompt"))
+    if item.prompt_paragraphs:
+        _append_prompt_paragraphs(prompt, item, image_paths)
+        return
     lines = normalized_prompt_lines(item.prompt_lines)
     if len(lines) == 1:
         prompt.text = lines[0]
@@ -249,6 +256,114 @@ def _append_interaction_prompt(
                 "alt": image.alt_text,
             },
         )
+
+
+def _append_prompt_paragraphs(
+    prompt: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+) -> None:
+    """Render rich paragraphs: one stays directly in ``prompt``, several get ``p`` children."""
+
+    if len(item.prompt_paragraphs) == 1:
+        _append_prompt_segments(prompt, item, item.prompt_paragraphs[0], image_paths)
+        return
+    for segments in item.prompt_paragraphs:
+        paragraph = ElementTree.SubElement(prompt, qti_tag("p"))
+        _append_prompt_segments(paragraph, item, segments, image_paths)
+
+
+def _append_prompt_segments(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    segments: tuple[ExamNetQtiPromptSegment, ...],
+    image_paths: tuple[str, ...],
+) -> tuple[int, ...]:
+    """Append rich segments in order; return the gap indexes they place."""
+
+    placed_gap_indexes: list[int] = []
+    tail_target: ElementTree.Element | None = None
+    for segment in segments:
+        if isinstance(segment, ExamNetQtiPromptText):
+            tail_target = _append_prompt_text(parent, tail_target, segment.text)
+        elif isinstance(segment, ExamNetQtiPromptImage):
+            tail_target = _append_prompt_image(parent, item, image_paths, segment.image_index)
+        elif isinstance(segment, ExamNetQtiPromptGap):
+            tail_target = _append_prompt_gap(parent, item, segment.gap_index)
+            placed_gap_indexes.append(segment.gap_index)
+        else:
+            raise ValueError(f"Item {item.item_id} carries an unknown prompt segment.")
+    return tuple(placed_gap_indexes)
+
+
+def _append_prompt_text(
+    parent: ElementTree.Element,
+    tail_target: ElementTree.Element | None,
+    text: str,
+) -> ElementTree.Element | None:
+    """Append one text run after ``tail_target``, rendering its line breaks as ``br`` elements."""
+
+    lines = text.split("\n")
+    tail_target = _append_run_text(parent, tail_target, lines[0])
+    for line in lines[1:]:
+        tail_target = ElementTree.SubElement(parent, qti_tag("br"))
+        tail_target = _append_run_text(parent, tail_target, line)
+    return tail_target
+
+
+def _append_run_text(
+    parent: ElementTree.Element,
+    tail_target: ElementTree.Element | None,
+    text: str,
+) -> ElementTree.Element | None:
+    if not text:
+        return tail_target
+    if tail_target is None:
+        parent.text = (parent.text or "") + text
+    else:
+        tail_target.tail = (tail_target.tail or "") + text
+    return tail_target
+
+
+def _append_prompt_image(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+    image_index: int,
+) -> ElementTree.Element:
+    if not 0 <= image_index < len(item.image_resources):
+        raise ValueError(
+            f"Item {item.item_id} prompt image index {image_index} has no image resource."
+        )
+    if len(image_paths) != len(item.image_resources):
+        raise ValueError(f"Item {item.item_id} needs one packaged path per image resource.")
+    image = item.image_resources[image_index]
+    return ElementTree.SubElement(
+        parent,
+        qti_tag("img"),
+        {
+            "src": image_paths[image_index],
+            "alt": image.alt_text,
+        },
+    )
+
+
+def _append_prompt_gap(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    gap_index: int,
+) -> ElementTree.Element:
+    if not 0 <= gap_index < len(item.text_entry_gaps):
+        raise ValueError(f"Item {item.item_id} prompt gap index {gap_index} has no text-entry gap.")
+    gap = item.text_entry_gaps[gap_index]
+    return ElementTree.SubElement(
+        parent,
+        qti_tag("textEntryInteraction"),
+        {
+            "responseIdentifier": gap.response_identifier,
+            "expectedLength": _expected_text_entry_length(gap),
+        },
+    )
 
 
 def normalized_prompt_lines(prompt_lines: tuple[str, ...]) -> tuple[str, ...]:
@@ -300,23 +415,55 @@ def append_interaction(
     _append_match_interaction(parent, item, image_paths, response_id)
 
 
-def append_gap_fill_body(parent: ElementTree.Element, item: ExamNetQtiItem) -> None:
+def append_gap_fill_body(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+) -> None:
+    if item.prompt_paragraphs:
+        placed_gap_indexes = _append_rich_gap_fill_paragraphs(parent, item, image_paths)
+        for index, gap in enumerate(item.text_entry_gaps):
+            if index not in placed_gap_indexes:
+                _append_labeled_gap(parent, gap)
+        return
     gaps = iter(item.text_entry_gaps)
     used_count = 0
     for line in _expanded_prompt_lines(item.prompt_lines):
         used_count += _append_gap_prompt_line(parent, line, gaps)
-    remaining_gaps = item.text_entry_gaps[used_count:]
-    for gap in remaining_gaps:
+    for gap in item.text_entry_gaps[used_count:]:
+        _append_labeled_gap(parent, gap)
+
+
+def _append_rich_gap_fill_paragraphs(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+) -> frozenset[int]:
+    """Render rich item-body paragraphs and return the gap indexes they place."""
+
+    placed_gap_indexes: set[int] = set()
+    for segments in item.prompt_paragraphs:
         paragraph = ElementTree.SubElement(parent, qti_tag("p"))
-        paragraph.text = f"{gap.label}: "
-        ElementTree.SubElement(
-            paragraph,
-            qti_tag("textEntryInteraction"),
-            {
-                "responseIdentifier": gap.response_identifier,
-                "expectedLength": _expected_text_entry_length(gap),
-            },
-        )
+        for gap_index in _append_prompt_segments(paragraph, item, segments, image_paths):
+            if gap_index in placed_gap_indexes:
+                raise ValueError(
+                    f"Item {item.item_id} places gap index {gap_index} more than once."
+                )
+            placed_gap_indexes.add(gap_index)
+    return frozenset(placed_gap_indexes)
+
+
+def _append_labeled_gap(parent: ElementTree.Element, gap: ExamNetQtiTextEntryGap) -> None:
+    paragraph = ElementTree.SubElement(parent, qti_tag("p"))
+    paragraph.text = f"{gap.label}: "
+    ElementTree.SubElement(
+        paragraph,
+        qti_tag("textEntryInteraction"),
+        {
+            "responseIdentifier": gap.response_identifier,
+            "expectedLength": _expected_text_entry_length(gap),
+        },
+    )
 
 
 def _expanded_prompt_lines(prompt_lines: tuple[str, ...]) -> tuple[str, ...]:

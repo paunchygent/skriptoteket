@@ -68,7 +68,16 @@ const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
 
 export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceReadinessReason[] {
   const reasons: ExamWorkspaceReadinessReason[] = [];
-  if (item.review.parse_origin === "deterministic" && item.review.state === "review_required") {
+  const source = item.retry_source;
+  const missingPicture = source
+    ? [...source.chunks, ...source.key_chunks, ...source.context_chunks].some(
+      (chunk) => chunk.missing_images.length > 0,
+    )
+    : false;
+  if (
+    item.review.state === "review_required" &&
+    (item.review.parse_origin === "deterministic" || missingPicture)
+  ) {
     reasons.push("unbuilt_question");
   }
   if (item.answer_key.origin === "machine_proposed") {

@@ -12,7 +12,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
+    ExamWorkspaceItemRetryResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
+    RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
@@ -57,6 +59,22 @@ class ExamWorkspaceContainerCodecProtocol(Protocol):
     def build(self, *, content: ExamWorkspaceContainerContent) -> bytes: ...
 
     def parse(self, *, content: bytes) -> ExamWorkspaceContainerContent: ...
+
+
+@dataclass(frozen=True)
+class ExamWorkspaceAssetContent:
+    """One picture payload with the media type its document asset declares."""
+
+    content: bytes
+    media_type: str
+
+
+class GetExamWorkspaceAssetHandlerProtocol(Protocol):
+    """Read one declared picture payload of the actor-owned head revision."""
+
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, asset_id: str
+    ) -> ExamWorkspaceAssetContent: ...
 
 
 class ExamWorkspaceDocxWriterProtocol(Protocol):
@@ -125,3 +143,13 @@ class FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, lineage_id: UUID, document_revision: int
     ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None: ...
+
+
+class RetryExamWorkspaceItemHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: RetryExamWorkspaceItemRequest,
+    ) -> ExamWorkspaceItemRetryResponse: ...

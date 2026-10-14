@@ -56,6 +56,7 @@ const layout = useExamWorkspaceLayout();
 const {
   addItem,
   applyArrivingSuggestions,
+  assetUrls,
   conflictNotice,
   conversionError,
   conversionMessage,
@@ -74,6 +75,7 @@ const {
   openDocument,
   openExam,
   reloadDocument,
+  retryItem,
   saveDocument,
   savedDocuments,
   savedRevision,
@@ -369,6 +371,7 @@ async function handleSave(): Promise<void> {
           <ExamWorkspaceEditorPane
             v-if="workspaceDocument"
             v-model:details-open="detailsOpen"
+            :asset-urls="assetUrls"
             :disabled="isBusy"
             :export-blockers-by-item-id="exportBlockersByItemId"
             :item-count="items.length"
@@ -381,6 +384,7 @@ async function handleSave(): Promise<void> {
             :selected-position="selectedPosition"
             @add="handleAddItem"
             @mark-reviewed="markItemReviewed"
+            @retry="retryItem"
             @select="selectItem"
             @step="stepItem"
             @update-choice-text="updateItemChoiceText"

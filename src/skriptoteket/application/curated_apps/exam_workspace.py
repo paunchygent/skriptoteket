@@ -10,6 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKeySuggestion,
     NativeExamDocument,
+    NativeExamItem,
+    NativeExamItemKind,
 )
 
 
@@ -131,6 +133,30 @@ class ExamWorkspaceAnswerKeySuggestionsResponse(BaseModel):
     state: ExamWorkspaceEnrichmentState
     message: str | None = None
     suggestions: tuple[ExamWorkspaceAnswerKeySuggestionItem, ...] = ()
+
+
+class RetryExamWorkspaceItemRequest(BaseModel):
+    """Editor-sent content for one single-question reconversion (TASK-SKRIPT-39-05-09 D1).
+
+    ``document`` is the exam exactly as the editor shows it; the saved head revision is the
+    authority for the question's original source, so the draft's own copy of the item is
+    never read as source. ``kind`` is the type the teacher keeps or chooses.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    document: NativeExamDocument
+    item_id: str
+    kind: NativeExamItemKind
+
+
+class ExamWorkspaceItemRetryResponse(BaseModel):
+    """The one item a retry replaces its question with; everything else stays put."""
+
+    model_config = ConfigDict(frozen=True)
+
+    lineage_id: UUID
+    item: NativeExamItem
 
 
 class ExamWorkspaceExportTarget(StrEnum):

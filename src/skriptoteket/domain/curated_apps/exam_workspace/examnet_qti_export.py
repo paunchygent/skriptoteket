@@ -26,6 +26,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiMatchEntry,
     ExamNetQtiMatchPair,
+    ExamNetQtiPromptGap,
+    ExamNetQtiPromptImage,
+    ExamNetQtiPromptSegment,
+    ExamNetQtiPromptText,
     ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
@@ -34,12 +38,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKeyOrigin,
+    NativeAssetSegment,
     NativeExamAsset,
     NativeExamDocument,
     NativeExamItem,
     NativeExamItemKind,
     NativeExamParent,
     NativeGapSegment,
+    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -115,8 +121,16 @@ def _parent_qti_item(
     if len(qti_children) == 1 and first.interaction_type is not ExamNetQtiInteractionType.GAP_FILL:
         # One child has nothing to share: a stem outside its interaction would be
         # rejected, so the instruction joins the child's own prompt.
+        instruction_paragraphs = tuple((ExamNetQtiPromptText(line),) for line in parent.instruction)
         return replace(
-            first, item_id=parent_id, prompt_lines=(*parent.instruction, *first.prompt_lines)
+            first,
+            item_id=parent_id,
+            prompt_lines=(*parent.instruction, *first.prompt_lines),
+            prompt_paragraphs=(
+                (*instruction_paragraphs, *first.prompt_paragraphs)
+                if first.prompt_paragraphs
+                else ()
+            ),
         )
     manual = any(
         child.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED for child in qti_children
@@ -181,6 +195,7 @@ def _base_qti_item(
         title=labels.item_title(item),
         interaction_type=_INTERACTION_TYPE_BY_KIND[item.kind],
         prompt_lines=item.plain_text_lines(),
+        prompt_paragraphs=_prompt_paragraphs(item),
         max_score=item.points,
         source_item_type=item.kind.value,
         image_resources=_image_resources(
@@ -285,6 +300,27 @@ def _placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
         for segment in paragraph.segments
         if isinstance(segment, NativeGapSegment)
     )
+
+
+def _prompt_paragraphs(item: NativeExamItem) -> tuple[tuple[ExamNetQtiPromptSegment, ...], ...]:
+    """Keep positioned picture/gap carriers; positionless producers use prompt_lines."""
+    if not item.body_asset_ids():
+        return ()
+    gap_indexes = {gap.gap_id: index for index, gap in enumerate(item.gaps)}
+    image_index = 0
+    paragraphs: list[tuple[ExamNetQtiPromptSegment, ...]] = []
+    for paragraph in item.body:
+        segments: list[ExamNetQtiPromptSegment] = []
+        for segment in paragraph.segments:
+            if isinstance(segment, NativeTextSegment):
+                segments.append(ExamNetQtiPromptText(segment.text))
+            elif isinstance(segment, NativeAssetSegment):
+                segments.append(ExamNetQtiPromptImage(image_index))
+                image_index += 1
+            else:
+                segments.append(ExamNetQtiPromptGap(gap_indexes[segment.gap_id]))
+        paragraphs.append(tuple(segments))
+    return tuple(paragraphs)
 
 
 def _image_resources(

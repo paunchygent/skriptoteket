@@ -83,8 +83,9 @@ def _append_standalone_item(
     append_score_outcome(root, item)
     item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
-        append_gap_fill_body(item_body, item)
-        append_images(item_body, item.image_resources, image_paths)
+        append_gap_fill_body(item_body, item, image_paths)
+        if not item.prompt_paragraphs:
+            append_images(item_body, item.image_resources, image_paths)
     else:
         append_interaction(item_body, item, image_paths)
     if emits_map_response(item):
@@ -142,8 +143,9 @@ def _append_child_body(
         qti_tag("gapMatchInteraction"),
         {"responseIdentifier": _separator_identifier(child)},
     )
-    append_gap_fill_body(item_body, child)
-    append_images(item_body, child.image_resources, image_paths)
+    append_gap_fill_body(item_body, child, image_paths)
+    if not child.prompt_paragraphs:
+        append_images(item_body, child.image_resources, image_paths)
 
 
 def _append_score_sum(root: ElementTree.Element, response_ids: tuple[str, ...]) -> None:

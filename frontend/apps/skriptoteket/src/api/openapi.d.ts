@@ -1534,6 +1534,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace Asset */
+        get: operations["get_exam_workspace_asset_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__assets__asset_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/exports/{target}": {
         parameters: {
             query?: never;
@@ -1545,6 +1562,26 @@ export interface paths {
         get: operations["export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/items/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Exam Workspace Item
+         * @description Reconvert one question from its saved source with the chosen type.
+         */
+        post: operations["retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5124,6 +5161,18 @@ export interface components {
          * @enum {string}
          */
         ExamWorkspaceExportTarget: "qti" | "pdf" | "docx";
+        /**
+         * ExamWorkspaceItemRetryResponse
+         * @description The one item a retry replaces its question with; everything else stays put.
+         */
+        ExamWorkspaceItemRetryResponse: {
+            item: components["schemas"]["NativeExamItem-Output"];
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+        };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
             /** App Id */
@@ -6159,6 +6208,7 @@ export interface components {
             points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
+            retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
@@ -6205,6 +6255,7 @@ export interface components {
             points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
+            retry_source?: components["schemas"]["NativeExamRetrySource-Output"] | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
@@ -6231,6 +6282,115 @@ export interface components {
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
+        };
+        /**
+         * NativeExamRetryChunk
+         * @description One original source chunk kept for a question's retry (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     ``text`` is the plain wording people see and ``marked_text`` the model's wording with
+         *     its italics marked, both exactly as the conversion read them. ``images`` name the
+         *     pictures the chunk carries, at their places, so a retry rebuilds each image from the
+         *     container's saved payload instead of storing the bytes a second time.
+         */
+        NativeExamRetryChunk: {
+            /** Anchor */
+            anchor: string;
+            /**
+             * Images
+             * @default []
+             */
+            images: components["schemas"]["NativeExamRetryImage"][];
+            /** Kind */
+            kind: string;
+            /** Marked Text */
+            marked_text: string;
+            /**
+             * Missing Images
+             * @default []
+             */
+            missing_images: components["schemas"]["NativeExamRetryMissingImage"][];
+            /** Text */
+            text: string;
+        };
+        /**
+         * NativeExamRetryImage
+         * @description One picture a source chunk carries, by reference (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     The asset's payload lives once, in the container; this keeps the picture's identity and
+         *     its place in the chunk's plain and marked text so a retry can rebuild the chunk's
+         *     image from the saved document manifest and payload.
+         */
+        NativeExamRetryImage: {
+            /** Asset Id */
+            asset_id: string;
+            /** Marked Offset */
+            marked_offset: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * NativeExamRetryMissingImage
+         * @description A named picture the source could not preserve as a faithful native PNG/JPEG.
+         */
+        NativeExamRetryMissingImage: {
+            /** Marked Offset */
+            marked_offset: number;
+            /** Media Type */
+            media_type: string;
+            /** Offset */
+            offset: number;
+            /** Reference */
+            reference: string;
+        };
+        /**
+         * NativeExamRetrySource
+         * @description The original source and first label of one grouped question (D1).
+         *
+         *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
+         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
+         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
+         *     type-conflict resend changed the pipeline's kind.
+         */
+        "NativeExamRetrySource-Input": {
+            /** Chunks */
+            chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Context Chunks
+             * @default []
+             */
+            context_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Key Chunks
+             * @default []
+             */
+            key_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            label_kind: components["schemas"]["NativeExamItemKind"];
+        };
+        /**
+         * NativeExamRetrySource
+         * @description The original source and first label of one grouped question (D1).
+         *
+         *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
+         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
+         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
+         *     type-conflict resend changed the pipeline's kind.
+         */
+        "NativeExamRetrySource-Output": {
+            /** Chunks */
+            chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Context Chunks
+             * @default []
+             */
+            context_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Key Chunks
+             * @default []
+             */
+            key_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            label_kind: components["schemas"]["NativeExamItemKind"];
         };
         /** NativeGap */
         NativeGap: {
@@ -7594,6 +7754,20 @@ export interface components {
             roster_name: string;
             /** Template Name */
             template_name?: string | null;
+        };
+        /**
+         * RetryExamWorkspaceItemRequest
+         * @description Editor-sent content for one single-question reconversion (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     ``document`` is the exam exactly as the editor shows it; the saved head revision is the
+         *     authority for the question's original source, so the draft's own copy of the item is
+         *     never read as source. ``kind`` is the type the teacher keeps or chooses.
+         */
+        RetryExamWorkspaceItemRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Item Id */
+            item_id: string;
+            kind: components["schemas"]["NativeExamItemKind"];
         };
         /**
          * RevertExamConverterCorrectionIntentRequest
@@ -12358,6 +12532,38 @@ export interface operations {
             };
         };
     };
+    get_exam_workspace_asset_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__assets__asset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get: {
         parameters: {
             query?: never;
@@ -12377,6 +12583,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryExamWorkspaceItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceItemRetryResponse"];
                 };
             };
             /** @description Validation Error */

@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiManualFollowUp,
     ExamNetQtiManualFollowUpReason,
+    ExamNetQtiPromptImage,
     ExamNetQtiTextEntryGap,
     ExamNetQtiUnsupportedResource,
 )
@@ -91,7 +92,13 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     errors: list[str] = []
     if not _SAFE_IDENTIFIER_PATTERN.fullmatch(item.item_id):
         errors.append(f"Item {item.item_id} has an unsafe QTI identifier.")
-    if not any(line.strip() for line in item.prompt_lines):
+    positioned_picture = any(
+        isinstance(segment, ExamNetQtiPromptImage)
+        and 0 <= segment.image_index < len(item.image_resources)
+        for paragraph in item.prompt_paragraphs
+        for segment in paragraph
+    )
+    if not any(line.strip() for line in item.prompt_lines) and not positioned_picture:
         errors.append(f"Item {item.item_id} has no prompt text.")
     if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
         item.max_score is None or not math.isfinite(item.max_score) or item.max_score <= 0

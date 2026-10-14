@@ -1,6 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
-from collections.abc import Mapping
+import hashlib
+from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from uuid import UUID
 
@@ -10,7 +11,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
+    DocxChunk,
+    DocxImage,
+    DocxMissingImage,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
     unclaimed_governing,
@@ -29,7 +34,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
+    NativeAssetSegment,
     NativeChoice,
+    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
@@ -54,8 +61,46 @@ _BLANK = NativeTextSegment(text="____")
 NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 
 
-def native_item(produced: ProducedItem) -> NativeExamItem:
-    """Assign IDs and provenance; the native contract raises on any invalid shape."""
+def _missing_picture_reason(missing: DocxMissingImage) -> str:
+    return (
+        f"Bilden {missing.reference} ({missing.media_type}) kan inte visas i provet. "
+        "Granska frågan manuellt."
+    )
+
+
+def _missing_picture_text(missing: DocxMissingImage) -> str:
+    return f"[Bild saknas: {missing.reference} ({missing.media_type})]"
+
+
+def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
+    """One named Swedish review reason per picture the chunker could not turn into an image.
+
+    The same picture referenced twice is one reason. An empty result means no chunk in
+    ``chunks`` carries a picture the conversion could not show.
+    """
+    reasons: dict[str, str] = {}
+    for chunk in chunks:
+        for missing in chunk.missing_images:
+            reasons.setdefault(missing.reference, _missing_picture_reason(missing))
+    return tuple(reasons.values())
+
+
+def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> NativeExamItem:
+    """Assign IDs and provenance; the native contract raises on any invalid shape.
+
+    An asset segment becomes a native picture reference only when its id belongs to one of
+    the provided source chunks; a model-invented id raises, so admission falls back to the
+    question's own source. The same picture may repeat; references are never deduplicated.
+    A chunk with a picture the conversion could not show raises before anything else: no
+    picture may vanish from the question, so admission falls back to its source review.
+    """
+    chunk_list = tuple(chunks)
+    unresolved = tuple(
+        dict.fromkeys(missing.reference for chunk in chunk_list for missing in chunk.missing_images)
+    )
+    if unresolved:
+        raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
+    known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
     choices = tuple(
         NativeChoice(choice_id=f"choice_{index:03d}", text=choice.text)
         for index, choice in enumerate(produced.choices, start=1)
@@ -70,7 +115,12 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     for paragraph in produced.body:
         segments: list[NativeSegment] = []
         for segment in paragraph.segments:
-            if segment.kind == "gap" and produced.kind is not NativeExamItemKind.GAP_FILL:
+            if segment.kind == "asset":
+                asset_id = segment.asset_id
+                if asset_id is None or asset_id not in known_assets:
+                    raise ValueError(f"unknown source picture {asset_id}")
+                segments.append(NativeAssetSegment(asset_id=asset_id))
+            elif segment.kind == "gap" and produced.kind is not NativeExamItemKind.GAP_FILL:
                 # Only gap_fill answers in a gap; another kind shows a printed blank as text.
                 segments.append(_BLANK)
             elif segment.kind == "gap":
@@ -123,25 +173,58 @@ def native_item(produced: ProducedItem) -> NativeExamItem:
     )
 
 
+def _review_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
+    """One chunk's plain text as a paragraph, each picture at its exact source place.
+
+    A picture the chunker could not turn into a ``DocxImage`` has no payload, so its exact
+    place holds a named text placeholder instead: the teacher sees which picture is missing
+    and where, and a picture-only chunk still becomes a non-empty paragraph.
+    """
+    placements: list[tuple[int, NativeSegment]] = [
+        (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
+    ]
+    placements.extend(
+        (missing.offset, NativeTextSegment(text=_missing_picture_text(missing)))
+        for missing in chunk.missing_images
+    )
+    if not placements:
+        if not chunk.text:
+            return None
+        return NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
+    placements.sort(key=lambda placement: placement[0])
+    segments: list[NativeSegment] = []
+    cursor = 0
+    for offset, segment in placements:
+        before = chunk.text[cursor:offset]
+        if before:
+            segments.append(NativeTextSegment(text=before))
+        segments.append(segment)
+        cursor = offset
+    after = chunk.text[cursor:]
+    if after:
+        segments.append(NativeTextSegment(text=after))
+    return NativeParagraph(segments=tuple(segments))
+
+
 def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
     """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
-    chunk in source order, whatever the model wrote; it keeps the question's printed points."""
+    chunk in source order, whatever the model wrote; it keeps the question's printed points
+    and every picture at its exact place in the chunk's text, and names every picture the
+    conversion could not show beside the caller's ``reason``."""
+    body = tuple(
+        paragraph for chunk in chunks if (paragraph := _review_paragraph(chunk)) is not None
+    )
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         points=printed_points(chunks),
-        body=tuple(
-            NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
-            for chunk in chunks
-            if chunk.text
-        )
-        or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
+        body=body or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
             parse_origin=NativeParseOrigin.DETERMINISTIC,
-            reasons=(reason,),
+            reasons=(reason, *missing_picture_reasons(chunks)),
         ),
         source_anchor=chunks[0].anchor,
     )
@@ -175,6 +258,46 @@ def _ordered_items(
     return place_section_instructions(
         chunks, ordered, instructions, governed, title_anchors, own_anchors
     )
+
+
+def asset_manifest(
+    items: Iterable[NativeExamItem], chunks: Iterable[DocxChunk]
+) -> tuple[tuple[NativeExamAsset, ...], Mapping[str, bytes]]:
+    """The pictures the items reference: native metadata and payloads, in asset-id order.
+
+    Every picture an item's student body references and every picture its stored retry
+    source keeps (facit and read-only context included) is carried, because the native
+    contract rejects an orphan asset; the QTI export reads the body references only, so a
+    source-only picture never reaches a student. The container requires payloads to match
+    the document's asset list exactly.
+    """
+    images: dict[str, DocxImage] = {}
+    for chunk in chunks:
+        for image in chunk.images:
+            images.setdefault(image.asset_id, image)
+    referenced = sorted(
+        {
+            asset_id
+            for item in items
+            for asset_id in (*item.body_asset_ids(), *item.source_asset_ids())
+        }
+    )
+    missing = [asset_id for asset_id in referenced if asset_id not in images]
+    if missing:
+        raise ValueError(f"items reference unknown source pictures: {', '.join(missing)}")
+    assets = tuple(
+        NativeExamAsset(
+            asset_id=asset_id,
+            sha256=hashlib.sha256(images[asset_id].payload).hexdigest(),
+            media_type=images[asset_id].media_type,
+            byte_length=len(images[asset_id].payload),
+            width=images[asset_id].width,
+            height=images[asset_id].height,
+        )
+        for asset_id in referenced
+    )
+    payloads = {asset_id: images[asset_id].payload for asset_id in referenced}
+    return assets, MappingProxyType(payloads)
 
 
 def assemble_build_result(
@@ -224,6 +347,7 @@ def assemble_build_result(
             chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
         )
     items = placed.items
+    assets, assets_by_id = asset_manifest(items, chunks)
     # Document-level notes only: each item shows its own reasons (D8).
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     if title is not None:
@@ -240,6 +364,7 @@ def assemble_build_result(
         instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.landed),
         items=items,
         parents=placed.parents,
+        assets=assets,
         origin=NativeExamDocumentOrigin(
             kind="docx_import",
             source_filename=filename,
@@ -247,4 +372,6 @@ def assemble_build_result(
             extractor_version="docx_ai_build_v2",
         ),
     )
-    return DocxBuildResult(document, tuple(notes), input_tokens, output_tokens, events)
+    return DocxBuildResult(
+        document, tuple(notes), input_tokens, output_tokens, events, assets_by_id=assets_by_id
+    )

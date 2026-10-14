@@ -1,6 +1,8 @@
 """Producer contract for batched DOCX construction and its diagnostics."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
@@ -16,24 +18,34 @@ class _Produced(BaseModel):
 
 
 class ProducedSegment(_Produced):
-    """One run of student-visible text, or one blank the student fills in."""
+    """One run of student-visible text, one blank the student fills in, or one source picture."""
 
-    kind: Literal["text", "gap"]
+    kind: Literal["text", "gap", "asset"]
     text: str | None = Field(
         description="The student-visible source wording for a text segment, without any "
-        "inline facit answer or label; null for a gap segment."
+        "inline facit answer or label; null for a gap or asset segment."
     )
     accepted_values: tuple[str, ...] = Field(
         description="For a gap: the accepted answers from the teacher's facit, including "
-        "facit written inline in the question paragraph. Empty for text."
+        "facit written inline in the question paragraph. Empty for text and asset."
+    )
+    asset_id: str | None = Field(
+        default=None,
+        pattern=r"^asset_[0-9a-f]{16}$",
+        description="For an asset: the id of one source picture, copied exactly from its "
+        '<image asset_id="..."/> marker at the same place in the body. Null otherwise.',
     )
 
     @model_validator(mode="after")
     def _kind_fields(self) -> "ProducedSegment":
-        if self.kind == "text" and (not self.text or self.accepted_values):
-            raise ValueError("text segments carry non-empty text only")
-        if self.kind == "gap" and self.text is not None:
-            raise ValueError("gap segments carry no text")
+        if self.kind == "text":
+            if not self.text or self.accepted_values or self.asset_id is not None:
+                raise ValueError("text segments carry non-empty text only")
+        elif self.kind == "gap":
+            if self.text is not None or self.asset_id is not None:
+                raise ValueError("gap segments carry no text or asset")
+        elif self.text is not None or self.accepted_values or not self.asset_id:
+            raise ValueError("asset segments carry one asset id only")
         return self
 
 
@@ -179,3 +191,4 @@ class DocxBuildResult:
     output_tokens: int | None = None
     events: tuple[DocxBuildEvent, ...] = ()
     timings: tuple[DocxStageTiming, ...] = ()
+    assets_by_id: Mapping[str, bytes] = MappingProxyType({})

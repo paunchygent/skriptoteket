@@ -22,6 +22,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
     NativeExamDocument,
     NativeExamItem,
     NativeExamParent,
@@ -102,6 +103,7 @@ class ConversionTarget:
     title: str | None = None
     instructions: tuple[str, ...] | None = None
     parents: tuple[NativeExamParent, ...] | None = None
+    assets: tuple[NativeExamAsset, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -160,6 +162,7 @@ def target_from_update(update: ConversionUpdate) -> ConversionTarget:
         title=update.document.title,
         instructions=update.document.instructions,
         parents=update.document.parents,
+        assets=update.document.assets,
     )
 
 
@@ -377,6 +380,7 @@ def merge_conversion(
         item.model_copy(update={"sequence": sequence})
         for sequence, item in enumerate(ordered, start=1)
     )
+    assets = _merged_assets(head=head, target=target, items=items)
 
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
     instructions, instructions_digest = _choose(
@@ -390,6 +394,7 @@ def merge_conversion(
             "instructions": instructions,
             "items": items,
             "parents": parents,
+            "assets": assets,
         }
     )
     document = NativeExamDocument.model_validate(document.model_dump())
@@ -406,6 +411,26 @@ def merge_conversion(
         ),
         changed=changed,
     )
+
+
+def _merged_assets(
+    *, head: NativeExamDocument, target: ConversionTarget, items: tuple[NativeExamItem, ...]
+) -> tuple[NativeExamAsset, ...]:
+    """The head's and the conversion's pictures, minus any the merged items no longer use.
+
+    Asset ids are content-addressed, so a picture delivered twice is one asset. Every
+    picture an item's student body or its stored retry source references is kept; the native
+    contract rejects an orphan asset, so a picture whose item the teacher removed is dropped.
+    """
+    by_id = {asset.asset_id: asset for asset in head.assets}
+    for asset in target.assets or ():
+        by_id.setdefault(asset.asset_id, asset)
+    referenced = {
+        asset_id
+        for item in items
+        for asset_id in (*item.body_asset_ids(), *item.source_asset_ids())
+    }
+    return tuple(by_id[asset_id] for asset_id in sorted(by_id) if asset_id in referenced)
 
 
 def _choose[T: (str, tuple[str, ...])](

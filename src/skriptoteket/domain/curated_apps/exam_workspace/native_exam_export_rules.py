@@ -50,7 +50,8 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     """S4 gate: export needs every value the export carries, never a parsing doubt (D1).
 
     An unbuilt question, printed from source because the import could not convert it, blocks
-    until the teacher marks it reviewed (D2). A converted item that needs review does not block.
+    until the teacher marks it reviewed (D2). A named source-picture loss also blocks;
+    other converted items that need review do not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
     """
@@ -73,10 +74,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
 
 
 def is_unbuilt_question(item: NativeExamItem) -> bool:
-    """An item printed from source that the teacher has not marked reviewed (D2)."""
-    return (
-        item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
-        and item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    """An unfinished source question, including a named picture loss, pending teacher review."""
+    missing_picture = item.retry_source is not None and item.retry_source.has_missing_pictures()
+    return item.review.state is NativeItemReviewState.REVIEW_REQUIRED and (
+        item.review.parse_origin is NativeParseOrigin.DETERMINISTIC or missing_picture
     )
 
 

@@ -55,6 +55,8 @@ import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
   attentionCount: number;
+  /** Asset URL per asset id, handed to the question-text editor for picture rendering. */
+  assetUrls?: Record<string, string>;
   detailsOpen: boolean;
   disabled?: boolean;
   item: NativeExamItem;
@@ -313,6 +315,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
     </div>
 
     <ExamWorkspaceBodyEditor
+      :asset-urls="assetUrls"
       :disabled="disabled"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"

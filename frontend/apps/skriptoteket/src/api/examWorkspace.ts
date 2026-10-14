@@ -14,7 +14,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiFetchBlobResponse, apiGet, apiPost, apiPut } from "./client";
+import { apiFetchBlobResponse, apiGet, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
 import type { ApiBlobResponse } from "./client";
 import type { components } from "./openapi";
 
@@ -38,6 +38,7 @@ export type NativeExamAnswerKey = Schemas["NativeAnswerKey"];
 export type NativeExamReviewState = Schemas["NativeItemReviewState"];
 export type NativeExamParseOrigin = Schemas["NativeParseOrigin"];
 export type NativeExamItemReview = Schemas["NativeItemReview"];
+export type NativeExamAsset = Schemas["NativeExamAsset"];
 
 export type ExamWorkspaceDocumentSummary = Schemas["ExamWorkspaceDocumentSummary"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
@@ -51,6 +52,7 @@ export type ExamWorkspaceConversionUnit = Schemas["ExamWorkspaceConversionUnit"]
 export type NativeAnswerKeySuggestion = Schemas["NativeAnswerKeySuggestion"];
 export type ExamWorkspaceAnswerKeySuggestionItem =
   Schemas["ExamWorkspaceAnswerKeySuggestionItem"];
+export type ExamWorkspaceItemRetryResponse = Schemas["ExamWorkspaceItemRetryResponse"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceExportBlockerReason =
@@ -71,6 +73,24 @@ export type SaveExamWorkspaceDocumentParams = {
 
 function documentPath(lineageId: string): string {
   return `${ROOT}/documents/${encodeURIComponent(lineageId)}`;
+}
+
+/**
+ * Protected URL of one declared picture on an exam workspace document.
+ *
+ * Pictures are content-addressed, so the same asset id always names the same
+ * bytes; the optional revision is a cache hint, never part of the picture's
+ * identity. The URL goes through the Gateway-aware protected base, never the
+ * app host, and the browser's same-site session cookie authorises the GET.
+ */
+export function examWorkspaceAssetUrl(
+  lineageId: string,
+  assetId: string,
+  revision?: number,
+): string {
+  const path = `${documentPath(lineageId)}/assets/${encodeURIComponent(assetId)}`;
+  const query = revision === undefined ? "" : `?revision=${revision}`;
+  return resolveProtectedApiUrl(`${path}${query}`);
 }
 
 export async function listExamWorkspaceDocuments(): Promise<ExamWorkspaceDocumentListResponse> {
@@ -154,5 +174,28 @@ export async function findExamWorkspaceAnswerKeySuggestions(
 ): Promise<ExamWorkspaceAnswerKeySuggestionsStatus | null> {
   return await apiGet<ExamWorkspaceAnswerKeySuggestionsStatus | null>(
     `${documentPath(lineageId)}/answer-key-suggestions?document_revision=${documentRevision}`,
+  );
+}
+
+/**
+ * Reconvert one question from the saved revision's stored source with the
+ * teacher's chosen type. The response carries exactly one replacement item;
+ * the caller replaces only that item in its draft. A converter problem
+ * arrives as a source-review item, not as a failed request.
+ */
+export async function retryExamWorkspaceItem(
+  lineageId: string,
+  document: NativeExamDocument,
+  itemId: string,
+  kind: NativeExamItemKind,
+): Promise<ExamWorkspaceItemRetryResponse> {
+  const body: Schemas["RetryExamWorkspaceItemRequest"] = {
+    document,
+    item_id: itemId,
+    kind,
+  };
+  return await apiPost<ExamWorkspaceItemRetryResponse>(
+    `${documentPath(lineageId)}/items/retry`,
+    body,
   );
 }

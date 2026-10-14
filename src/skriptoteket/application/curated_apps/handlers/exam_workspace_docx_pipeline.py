@@ -68,6 +68,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
     StructuredLLMProviderProfile,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import missing_picture_reasons
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
     pack_batches,
@@ -79,6 +80,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
+    retry_sources_by_anchor,
+    with_retry_sources,
+    with_source_assets,
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.docx_conversion_progress import (
@@ -245,6 +251,7 @@ class DocxConversionPipeline:
         request, unlabeled = self._labeling_request(run, manifest)
         for question_id in unlabeled:
             run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
+            run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
         if unlabeled:
             self._dispatch(run, unlabeled, "wi-", tasks)
 
@@ -269,9 +276,11 @@ class DocxConversionPipeline:
                         anchors=run.own_anchors[result.item_id],
                         detail=result.failure_code or "",
                     )
+                    run.label_kinds[result.item_id] = NativeExamItemKind.FREE_TEXT
                     unlabeled.append(result.item_id)
                     continue
                 run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
+                run.label_kinds[result.item_id] = _KIND_OF_LABEL[result.label]
                 labeled.append(result.item_id)
             self._dispatch(run, labeled, prefix, tasks)
             if unlabeled:
@@ -367,6 +376,21 @@ class DocxConversionPipeline:
     async def _converted(self, run: DocxConversionRun, batch: ConversionBatch) -> BatchOutcome:
         """The batch's admitted and contract-checked items, else its questions for review."""
         families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
+        missing_chunks = tuple(
+            chunk
+            for chunk in run.job.chunks
+            if chunk.anchor in batch.claims | batch.reads and chunk.missing_images
+        )
+        missing = missing_picture_reasons(missing_chunks)
+        if missing:
+            outcome = self._reviewed(run, batch, " ".join(missing))
+            outcome.state.record(
+                "batch",
+                "source_picture_missing",
+                anchors=tuple(c.anchor for c in missing_chunks),
+                detail=" ".join(missing),
+            )
+            return outcome
         try:
             outcome = await convert_batch(
                 state=self._batch_state(run, batch),
@@ -424,7 +448,20 @@ class DocxConversionPipeline:
         provisional = provisional_result(
             trial, families, frozenset(pending), governed_anchors(run.contexts, families)
         )
-        update = conversion_update(provisional.document, families, filled, pending)
+        sources = retry_sources_by_anchor(
+            families=families,
+            own_anchors=run.own_anchors,
+            key_anchors=run.key_anchors,
+            chunks=run.job.chunks,
+            label_kinds=run.label_kinds,
+        )
+        document, assets_by_id = with_source_assets(
+            document=with_retry_sources(provisional.document, sources),
+            chunks=run.job.chunks,
+            assets_by_id=provisional.assets_by_id,
+        )
+        provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
+        update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
         run.state = trial
         run.families = families
         run.filled = list(filled)
@@ -441,10 +478,30 @@ class DocxConversionPipeline:
             governed_anchors(run.contexts, run.families),
             tuple(f.question_anchors for f in run.families),
         )
-        update = conversion_update(result.document, run.families, tuple(run.filled), ())
-        checks = assembly_check(result.document, manifest, run.families, update) if manifest else ()
+        sources = retry_sources_by_anchor(
+            families=run.families,
+            own_anchors=run.own_anchors,
+            key_anchors=run.key_anchors,
+            chunks=run.job.chunks,
+            label_kinds=run.label_kinds,
+        )
+        document, assets_by_id = with_source_assets(
+            document=with_retry_sources(result.document, sources),
+            chunks=run.job.chunks,
+            assets_by_id=result.assets_by_id,
+        )
+        update = conversion_update(
+            document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
+        )
+        checks = assembly_check(document, manifest, run.families, update) if manifest else ()
         run.timed("assembly", started)
         return DocxConversionOutcome(
-            result=replace(result, events=(*result.events, *checks), timings=tuple(run.timings)),
+            result=replace(
+                result,
+                document=document,
+                assets_by_id=assets_by_id,
+                events=(*result.events, *checks),
+                timings=tuple(run.timings),
+            ),
             update=update,
         )

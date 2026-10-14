@@ -8,6 +8,7 @@ finishes. A lost job lease still stops the conversion.
 """
 
 from collections.abc import Callable, Mapping
+from types import MappingProxyType
 from uuid import UUID
 
 import pytest
@@ -238,6 +239,8 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
         families: tuple[QuestionFamily, ...],
         filled: tuple[str, ...],
         pending: tuple[str, ...],
+        *,
+        assets_by_id: Mapping[str, bytes] = MappingProxyType({}),
     ) -> ConversionUpdate:
         converted = any(
             i.source_anchor == "body:0039" and i.review.parse_origin is NativeParseOrigin.LLM_PARSED
@@ -245,7 +248,7 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
         )
         if converted and pending:
             raise TypeError("progress update met content it cannot hold")
-        return update(document, families, filled, pending)
+        return update(document, families, filled, pending, assets_by_id=assets_by_id)
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "conversion_update", failing_update)
     outcome = await _convert()
