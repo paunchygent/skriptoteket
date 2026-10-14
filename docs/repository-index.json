@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9b04b7c69cae93993e1b1610f91e3319b817524ec97282944c9cb6ad1bd7059d",
+  "source_set_digest": "63e3b12777bbe2441535a36b13ee9227b55888bd40c12484e3c938f2bd769ab7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9532,6 +9532,20 @@
       ],
       "retired_ids": [
         "REF-devops-skill-research"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type",
+      "type": "reference",
+      "title": "Exam.net QTI import routes per question type",
+      "path": "docs/reference/ref-skript-research-exam-net-qti-import-routes-per-question-type-exam-net-qti-import-routes-per-question-type.md",
+      "status": "draft",
+      "reference_kind": "research",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

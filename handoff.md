@@ -26,9 +26,10 @@
     `evidence/staging-walk/walk-63de8094.md`).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
-  `proposed`, P1-P16: seven types, parents with children, and (P14-P16,
-  2026-10-13) changing a question's type plus "Gör om till [type]". Next: user
-  proposed->ready; after story 8.
+  `proposed`, P1-P16. Exam.net import probes and user direction 2026-10-15 in
+  `REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type`
+  (grid-only matching, many-to-many, Enkelt svar as one-gap Lucktext, Fritext
+  criterion rows + export-screen checklist). Next: plan with user; after story 8.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (merged cc89175b, staging walk at
   cc89175b; Exam.net import exam 5326264 — evidence in retained
