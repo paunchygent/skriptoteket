@@ -6,6 +6,7 @@ admission and provenance contracts, not exact equality with the gold exam.
 """
 
 import json
+from dataclasses import replace
 
 import pytest
 from pydantic import JsonValue
@@ -25,6 +26,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
+    MissingRecording,
+    ReplayProvider,
     build_replay,
     corpus_chunks,
     recorded_exams,
@@ -79,13 +82,62 @@ async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exa
     assert [position[a or ""] for a in anchors] == sorted(position[a or ""] for a in anchors)
     assert replay.progress.calls[0] == "outline"
     assert replay.progress.calls.count("batch_ready") == len(replay.progress.updates)
-    served = list(replay.provider.recording_ids.values())
+    request_ids = [request_id for request_id, _ in replay.provider.served]
+    assert len(request_ids) == len(set(request_ids)), "a request id was served twice"
+    served = [name for _, name in replay.provider.served]
     assert len(served) == len(set(served)), "a producer reply was replayed twice"
     assert set(served) == {
         path.stem
         for path in (RECORDINGS / exam).glob("*.json")
         if not path.stem.startswith("decisions_")
     }
+
+
+@pytest.mark.parametrize("wave", ["docx_w1-", "docx_w2-"])
+async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wave: str, tmp_path):
+    """Isolate one unmodified reply to challenge both converter waves' replay boundary."""
+    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+        StructuredLLMEndpointKind,
+        StructuredLLMProviderProfile,
+    )
+
+    exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
+    replay, _ = await _convert(exam)
+    request = next(r for r in replay.provider.requests if r.item_id.startswith(wave))
+    name = replay.provider.recording_ids[request.item_id]
+    directory = tmp_path / exam
+    directory.mkdir()
+    (directory / f"{name}.json").write_bytes((RECORDINGS / exam / f"{name}.json").read_bytes())
+    provider = ReplayProvider(exam, root=tmp_path)
+    profile = StructuredLLMProviderProfile(
+        "replay", "replay", StructuredLLMEndpointKind.RESPONSES, False, 4096, 1024
+    )
+    invisible = replace(
+        request,
+        user_payload=json.dumps({"chunks": [{"anchor": "body:9999"}], "context_chunks": []}),
+    )
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=invisible, profile=profile)
+    assert provider.served == []
+
+    context_only = replace(
+        request,
+        user_payload=json.dumps(
+            {
+                "chunks": [{"anchor": "body:9999"}],
+                "context_chunks": json.loads(request.user_payload)["chunks"],
+            }
+        ),
+    )
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=context_only, profile=profile)
+    assert provider.served == []
+
+    response = await provider.complete_structured(request=request, profile=profile)
+    assert response.content == recording(exam, name)
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=request, profile=profile)
+    assert provider.served == [(request.item_id, name)]
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
@@ -154,10 +206,13 @@ async def test_automatic_spellings_obey_distance_disjointness_and_quota(exam: st
 
 @pytest.mark.parametrize("exam", recorded_exams())
 async def test_grouping_title_anchors_name_source_text_without_the_facit_label(exam: str):
+    _, outcome = await _convert(exam)
     manifest = _manifest(exam)
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(exam)}
     assert manifest.title_anchors
-    title = title_without_answer_key(_words(" ".join(text[a] for a in manifest.title_anchors)))
+    expected = title_without_answer_key(_words(" ".join(text[a] for a in manifest.title_anchors)))
+    title = _words(outcome.result.document.title)
+    assert title == expected
     assert title
     assert "med facit" not in title.casefold()
     assert "answer key" not in title.casefold()
