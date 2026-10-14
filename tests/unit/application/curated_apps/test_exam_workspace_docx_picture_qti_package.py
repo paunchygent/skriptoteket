@@ -13,6 +13,7 @@ from uuid import uuid4
 from xml.etree import ElementTree
 
 import pytest
+from PIL import Image
 
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
@@ -34,7 +35,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 )
 
 _PNG = base64.b64decode(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5WQAAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAECAIAAAA8r+mnAAAAFElEQVR4nGOUbLJhwAaYsIqSJQEAVB8A33yzxnAAAAAASUVORK5CYII="
 )
 
 
@@ -55,8 +56,8 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         "image/png",
         offset=0 if picture_only else 10,
         marked_offset=0 if picture_only else 10,
-        width=1,
-        height=1,
+        width=8,
+        height=4,
     )
     text = "" if picture_only else "Beskriv:  bilden."
     chunk = DocxChunk("body:0001", "drawing" if picture_only else "paragraph", text, text, (image,))
@@ -157,6 +158,9 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 parts.append(part)
         image_path = "/".join(parts)
         assert archive.read(image_path) == _PNG
+        with Image.open(BytesIO(archive.read(image_path))) as picture:
+            assert picture.size == (8, 4)
+            picture.verify()
         manifest = ElementTree.fromstring(archive.read("imsmanifest.xml"))
         assert any(
             any(
