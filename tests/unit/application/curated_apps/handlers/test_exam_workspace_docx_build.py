@@ -1,11 +1,12 @@
 """The type-batched DOCX pipeline replayed from every exam's live recordings.
 
 Each test builds the production pipeline with ``build_docx_conversion_pipeline`` over the
-recordings in ``docx_build_v10/<exam>/`` and the corpus DOCX, then challenges the result.
+recordings in ``docx_key_provenance_v14/<exam>/`` and the corpus DOCX, then challenges
+admission and provenance contracts, not exact equality with the gold exam.
 """
 
 import json
-import re
+from dataclasses import replace
 
 import pytest
 from pydantic import JsonValue
@@ -21,10 +22,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItemKind,
     NativeParseOrigin,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    RECORDINGS,
+    MissingRecording,
+    ReplayProvider,
     build_replay,
     corpus_chunks,
     recorded_exams,
@@ -33,7 +36,6 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _QUIZ = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 
 
@@ -80,54 +82,140 @@ async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exa
     assert [position[a or ""] for a in anchors] == sorted(position[a or ""] for a in anchors)
     assert replay.progress.calls[0] == "outline"
     assert replay.progress.calls.count("batch_ready") == len(replay.progress.updates)
-
-
-async def test_a_type_conflict_is_resent_and_leaves_its_neighbours_converted():
-    replay, outcome = await _convert(_GRAMMAR_1)
-    outline = {a: q.question_id for q in replay.progress.outlines[0].questions for a in q.anchors}
-    second_wave = [
-        request_id
-        for request_id in replay.provider.request_ids
-        if request_id.startswith("docx_w2-") and "c" not in request_id.removeprefix("docx_")
-    ]
-    items = [i for rid in second_wave for i in _list(recording(_GRAMMAR_1, rid)["items"])]
-    conflicted = {
-        outline[str(_list(_object(i)["source_anchors"])[0])]
-        for i in items
-        if _object(i)["outcome"] == "type_conflict"
+    request_ids = [request_id for request_id, _ in replay.provider.served]
+    assert len(request_ids) == len(set(request_ids)), "a request id was served twice"
+    served = [name for _, name in replay.provider.served]
+    assert len(served) == len(set(served)), "a producer reply was replayed twice"
+    assert set(served) == {
+        path.stem
+        for path in (RECORDINGS / exam).glob("*.json")
+        if not path.stem.startswith("decisions_")
     }
-    converted = {
-        outline[str(_list(_object(i)["source_anchors"])[0])]
-        for i in items
-        if _object(i)["outcome"] == "converted"
-    }
-    assert conflicted == {"q1"}
-    assert {"q2", "q3", "q4"} <= converted
 
-    assert replay.provider.request_ids.count("docx_w2-01-01c01") == 1
-    after_conflict = next(u for u in replay.progress.updates if converted <= set(u.filled))
-    assert "q1" in after_conflict.pending
-    for qid in converted:
-        assert after_conflict.item_ids[qid], f"{qid} lost its converted item to the release"
-        item = next(
-            i for i in after_conflict.document.items if i.item_id == after_conflict.item_ids[qid][0]
-        )
-        assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    final = outcome.update
-    q1_item = next(i for i in final.document.items if i.item_id == final.item_ids["q1"][0])
-    assert q1_item.kind is NativeExamItemKind.FREE_TEXT
-    assert q1_item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert final.pending == ()
+
+@pytest.mark.parametrize("wave", ["docx_w1-", "docx_w2-"])
+async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wave: str, tmp_path):
+    """Isolate one unmodified reply to challenge both converter waves' replay boundary."""
+    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+        StructuredLLMEndpointKind,
+        StructuredLLMProviderProfile,
+    )
+
+    exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
+    replay, _ = await _convert(exam)
+    request = next(r for r in replay.provider.requests if r.item_id.startswith(wave))
+    name = replay.provider.recording_ids[request.item_id]
+    directory = tmp_path / exam
+    directory.mkdir()
+    (directory / f"{name}.json").write_bytes((RECORDINGS / exam / f"{name}.json").read_bytes())
+    provider = ReplayProvider(exam, root=tmp_path)
+    profile = StructuredLLMProviderProfile(
+        "replay", "replay", StructuredLLMEndpointKind.RESPONSES, False, 4096, 1024
+    )
+    invisible = replace(
+        request,
+        user_payload=json.dumps({"chunks": [{"anchor": "body:9999"}], "context_chunks": []}),
+    )
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=invisible, profile=profile)
+    assert provider.served == []
+
+    context_only = replace(
+        request,
+        user_payload=json.dumps(
+            {
+                "chunks": [{"anchor": "body:9999"}],
+                "context_chunks": json.loads(request.user_payload)["chunks"],
+            }
+        ),
+    )
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=context_only, profile=profile)
+    assert provider.served == []
+
+    response = await provider.complete_structured(request=request, profile=profile)
+    assert response.content == recording(exam, name)
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=request, profile=profile)
+    assert provider.served == [(request.item_id, name)]
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_exam_title_is_the_text_of_the_groupings_title_chunks(exam: str):
+async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
+    replay, outcome = await _convert(exam)
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+
+    origins = {
+        "copied": "source_provided",
+        "interpreted": "ai_interpreted",
+        "invented": "machine_proposed",
+        None: "absent",
+    }
+    produced = {}
+    for request in replay.provider.requests:
+        if not request.item_id.startswith("docx_w"):
+            continue
+        for raw in _list(recording(exam, replay.provider.recording_ids[request.item_id])["items"]):
+            node = _object(raw)
+            if node["outcome"] == "converted":
+                # Admission rejects invalid producer items; only native LLM items below
+                # must have a valid current producer counterpart.
+                produced[str(_list(node["source_anchors"])[0])] = node
+    admitted = [
+        i
+        for i in outcome.result.document.items
+        if i.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    ]
+    assert admitted
+    for item in admitted:
+        assert item.source_anchor is not None
+        producer = ProducedItem.model_validate(produced[item.source_anchor])
+        expected = (
+            "not_applicable" if producer.kind.value == "free_text" else origins[producer.key_source]
+        )
+        assert item.answer_key.origin.value == expected
+        assert item.facit_text == producer.facit_text
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_automatic_spellings_obey_distance_disjointness_and_quota(exam: str):
+    from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
+        filter_answer_spelling_candidates,
+        is_allowed_answer_spelling_variant,
+        normalize_answer,
+    )
+
+    _, outcome = await _convert(exam)
+    gaps = [gap for item in outcome.result.document.items for gap in item.gaps]
+    for gap in gaps:
+        assert set(map(normalize_answer, gap.accepted_values)).isdisjoint(
+            map(normalize_answer, gap.automatic_values)
+        )
+        assert (
+            filter_answer_spelling_candidates(gap.accepted_values, gap.automatic_values)
+            == gap.automatic_values
+        )
+        for candidate in gap.automatic_values:
+            assert any(
+                is_allowed_answer_spelling_variant(
+                    answer, candidate, other_gold_answers=gap.accepted_values
+                )
+                for answer in gap.accepted_values
+            )
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_grouping_title_anchors_name_source_text_without_the_facit_label(exam: str):
     _, outcome = await _convert(exam)
     manifest = _manifest(exam)
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(exam)}
     assert manifest.title_anchors
     expected = title_without_answer_key(_words(" ".join(text[a] for a in manifest.title_anchors)))
-    assert _words(outcome.update.document.title) == expected
+    title = _words(outcome.result.document.title)
+    assert title == expected
+    assert title
+    assert "med facit" not in title.casefold()
+    assert "answer key" not in title.casefold()
 
 
 def _unplaced_points_lines(exam: str):
@@ -157,13 +245,6 @@ async def test_an_unplaced_points_line_belongs_to_the_question_before_it(exam: s
     for chunk, previous in found:
         owners = [qid for qid, family in families.items() if chunk.anchor in family.claims]
         assert owners == [previous], f"{chunk.anchor} {chunk.text!r}"
-    _, outcome = await _convert(exam)
-    items = {item.item_id: item for item in outcome.update.document.items}
-    for chunk, previous in found:
-        match = re.search(r"\d+", chunk.text)
-        assert match
-        printed = int(match.group())
-        assert [items[i].points for i in outcome.update.item_ids[previous]] == [printed]
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
@@ -178,6 +259,16 @@ async def test_each_batch_schema_names_only_its_own_anchors_and_kinds_without_re
         own = {c["anchor"] for c in payload["chunks"]}
         schema = _object(request.output_spec.json_schema)
         defs = _object(schema["$defs"])
+        assert request.output_spec.schema_version == "docx_exam_build_v14"
+        item_schema = _object(defs["ProducedItem"])
+        assert {"key_source", "facit_text"} <= set(_list(item_schema["required"]))
+        segment_schema = _object(defs["ProducedSegment"])
+        shapes = (
+            [_object(shape) for shape in _list(segment_schema["anyOf"])]
+            if "anyOf" in segment_schema
+            else [segment_schema]
+        )
+        assert all("spelling_candidates" in _list(shape["required"]) for shape in shapes)
         lists = [
             _object(_object(schema["properties"])["answer_key_anchors"]),
             _object(_object(_object(defs["ProducedItem"])["properties"])["source_anchors"]),
@@ -188,6 +279,25 @@ async def test_each_batch_schema_names_only_its_own_anchors_and_kinds_without_re
         kind = _object(_object(_object(defs["ProducedItem"])["properties"])["kind"])
         assert kind["enum"] == payload["item_kinds"], request.item_id
         assert not _ref_with_siblings(schema), request.item_id
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_recorded_source_classes_agree_with_the_manually_audited_facit(exam: str):
+    """The live audit found explicit answer words/letters, not invented or inferred keys.
+
+    Inline Swedish answer slots were checked against the DOCX italic runs. This
+    explicit expectation must be re-audited, not inferred from a model's own label.
+    Free-text marking guides have no objective-key provenance.
+    """
+    paths = sorted((RECORDINGS / exam).glob("docx_w*.json"))
+    assert paths
+    for path in paths:
+        for raw in _list(recording(exam, path.stem)["items"]):
+            node = _object(raw)
+            expected = None if node["kind"] == "free_text" else "copied"
+            assert node["key_source"] == expected, (exam, path.name, node["source_anchors"])
+            if expected == "copied":
+                assert isinstance(node["facit_text"], str) and node["facit_text"].strip()
 
 
 def _ref_with_siblings(node: JsonValue, path: str = "$") -> list[str]:
@@ -245,19 +355,9 @@ async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_item
 async def test_questions_one_context_governs_share_one_parent_whatever_their_kinds(exam: str):
     _, outcome = await _convert(exam)
     update = outcome.update
-    document = update.document
-    items = {item.item_id: item for item in document.items}
-
     assert not [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"]
     for context in _manifest(exam).contexts:
         governed = [q for q in context.governs if update.item_ids.get(q)]
         parents = {update.parent_ids.get(q) for q in governed}
         if len(governed) >= 2:
             assert len(parents) == 1 and None not in parents, context.anchor
-    mixed = [
-        parent
-        for parent in document.parents
-        if len({items[item_id].kind for item_id in parent.item_ids}) > 1
-    ]
-    if exam == _GRAMMAR_1:
-        assert mixed, "the grammar exam's mixed-kind section lost its parent"

@@ -1,0 +1,54 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0086"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0084",
+        "body:0085"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Sam seemed to recoil as he lifted the lid.\n\nWhat does recoil mean here?",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. draw back from something",
+      "points": 1,
+      "choices": [
+        {
+          "text": "hold still in place",
+          "correct": false
+        },
+        {
+          "text": "lean forward toward something",
+          "correct": false
+        },
+        {
+          "text": "draw back from something",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

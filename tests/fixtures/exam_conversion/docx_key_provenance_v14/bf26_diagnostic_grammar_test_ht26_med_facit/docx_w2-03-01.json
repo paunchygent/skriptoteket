@@ -1,0 +1,66 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the sentence into English.",
+      "source_anchors": [
+        "body:0122"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0124"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "57",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Robert sade att han efter två månader hade glömt allt han hade lärt sig. ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Robert said that after two months he had forgotten everything he had learned",
+                "Robert said that after two months he had forgotten everything he had learned.",
+                "Robert said that after two months he had forgotten everything he had learnt",
+                "Robert said that after two months he had forgotten everything he had learnt.",
+                "Robert said that after two months, he had forgotten everything he had learned",
+                "Robert said that after two months, he had forgotten everything he had learned.",
+                "Robert said that he had forgotten everything he had learned after two months",
+                "Robert said that he had forgotten everything he had learned after two months."
+              ],
+              "spelling_candidates": [
+                "Robert said that after two months he had forgot everything he had learned"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Robert said that after two months he had forgotten everything he had learned (Also accepted: Robert said that after two months he had forgotten everything he had learned., Robert said that after two months he had forgotten everything he had learnt, Robert said that after two months he had forgotten everything he had learnt., Robert said that after two months, he had forgotten everything he had learned, Robert said that after two months, he had forgotten everything he had learned., Robert said that he had forgotten everything he had learned after two months, Robert said that he had forgotten everything he had learned after two months.)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

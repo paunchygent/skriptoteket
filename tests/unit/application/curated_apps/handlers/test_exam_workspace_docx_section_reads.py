@@ -1,8 +1,9 @@
-"""One-family batches see the section run whose heading or points line they own (U4).
+"""One-family batches see the section run whose instruction they own (U4).
 
-Real recorded input: the corpus chunks and the live grouping of the final Svenska 2 exam,
-where one heading and one instruction serve questions 1-15 and a section points line
-follows question 15.
+Real recorded input: the corpus chunks and the live grouping of the final Svenska 2 exam.
+In that grouping one unplaced heading ("Fråga 1. Flervalsfrågor") stays with the first
+family, one section instruction ("Skriv rätt bokstav.") governs questions 1-15 as read-only
+context, and a section points line follows question 15.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 )
 
 _EXAM = "svenska_2_kursavslutande_prov_med_facit"
+_SECTION_INSTRUCTION = "body:0009"
 
 
 def _one_family_batches() -> dict[str, tuple[frozenset[str], frozenset[str]]]:
@@ -62,10 +64,13 @@ def test_other_questions_answer_keys_never_reach_a_batch_as_context():
         assert not reads & claims
 
 
-def test_a_question_inside_the_run_reads_only_the_shared_text():
+def test_a_question_inside_the_run_reads_only_the_shared_instruction():
     _, reads = _one_family_batches()["q7"]
 
-    assert reads == {"body:0008", "body:0009"}
+    # The current grouping marks only "Skriv rätt bokstav." as shared context; the unplaced
+    # heading above it stays with q1 and is not read by q7.
+    assert reads == {_SECTION_INSTRUCTION}
+    assert "body:0008" not in reads
 
 
 def test_a_question_whose_instruction_governs_it_alone_reads_nothing_more():

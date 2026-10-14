@@ -17,7 +17,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     ReplayProvider,
-    SecondWaveByAnchor,
     build_replay,
 )
 
@@ -28,7 +27,7 @@ _ESCALATED = sorted(p.stem.removeprefix("label_b_") for p in (RECORDINGS / _EXAM
 _HELD = _ESCALATED[0]
 
 
-class _HeldLabel(SecondWaveByAnchor):
+class _HeldLabel(ReplayProvider):
     """Hold one question's second-pass label until the test releases it.
 
     Holding a label changes the order second-pass labels arrive in, and with it the

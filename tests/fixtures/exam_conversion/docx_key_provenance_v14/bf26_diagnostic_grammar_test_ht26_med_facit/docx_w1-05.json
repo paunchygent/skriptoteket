@@ -1,0 +1,814 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0147",
+    "body:0149",
+    "body:0151",
+    "body:0153",
+    "body:0155",
+    "body:0157",
+    "body:0159",
+    "body:0161",
+    "body:0163",
+    "body:0165",
+    "body:0167",
+    "body:0169",
+    "body:0171",
+    "body:0173",
+    "body:0175",
+    "body:0177"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0146",
+        "body:0147"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "68",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It was an ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "unusually"
+              ],
+              "spelling_candidates": [
+                "usualy"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ovanligt) bad storm.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: unusually",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0148",
+        "body:0149"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "69",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She gave him ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ett) youthful smile.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: a",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0150",
+        "body:0151"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "70",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She moved around ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "carefully",
+                "cautiously"
+              ],
+              "spelling_candidates": [
+                "carefuly"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (försiktigt) in order not to disturb anyone.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: carefully (Also accepted: cautiously)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0152",
+        "body:0153"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "71",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The kids threw snowballs ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "at"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (på) the passers-by.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: at",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0154",
+        "body:0155"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "72",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We live in ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a house of our own",
+                "our own house"
+              ],
+              "spelling_candidates": [
+                "a house of own"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ".",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: a house of our own (Also accepted: our own house)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0156",
+        "body:0157"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "73",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She thought she ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "was going to be",
+                "would be",
+                "’d be",
+                "'d be"
+              ],
+              "spelling_candidates": [
+                "was going to bee"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (skulle bli) late for her own wedding.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: was going to be (Also accepted: would be, ’d be)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0158",
+        "body:0159"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "74",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Every evening, the children ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "wait"
+              ],
+              "spelling_candidates": [
+                "waait"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (väntar) for their mother to come home.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: wait",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0160",
+        "body:0161"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "75",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We must get more ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "women"
+              ],
+              "spelling_candidates": [
+                "wmoen"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (kvinnor) into politics.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: women",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0162",
+        "body:0163"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "76",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She took the ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "thinnest"
+              ],
+              "spelling_candidates": [
+                "thinnset"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (tunnaste) book she could find.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: thinnest",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0164",
+        "body:0165"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "77",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The majority of visitors to this museum are ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Americans",
+                "American"
+              ],
+              "spelling_candidates": [
+                "Americns",
+                "Americn"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (amerikaner).",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Americans (Also accepted: American)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0166",
+        "body:0167"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "78",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Most of us"
+              ],
+              "spelling_candidates": [
+                "Most of u"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " left the party at midnight.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Most of us",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0168",
+        "body:0169"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "79",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The elephant is ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "an"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ett) animal with large flapping ears and a trunk.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: an",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0170",
+        "body:0171"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "80",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The train ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "stopped"
+              ],
+              "spelling_candidates": [
+                "stoped"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (stannade) in the middle of nowhere.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: stopped",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0172",
+        "body:0173"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "81",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There are more ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sheep"
+              ],
+              "spelling_candidates": [
+                "shepe"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (får) than people in Wales.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: sheep",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0174",
+        "body:0175"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "82",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We think there is no reason ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "for"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (till) such an exaggerated reaction.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: for",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0176",
+        "body:0177"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "83",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There has been an increase ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (av) crimes committed by young people.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: in",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

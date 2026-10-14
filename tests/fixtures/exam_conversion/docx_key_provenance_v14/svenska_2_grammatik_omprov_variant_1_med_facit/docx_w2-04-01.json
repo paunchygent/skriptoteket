@@ -1,0 +1,299 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046",
+        "body:0047",
+        "body:0048",
+        "body:0049"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gör satsdelsanalys av meningarna.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") lämnade (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") inte (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "SA"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") sina mobiler (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") i skåpet (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ").",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") gav (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") klassen (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "IO"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") tydliga instruktioner (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") före provet (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ").",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Stämningen blev lugn efter genomgången. Analys: Stämningen (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") blev (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "P"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") lugn (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Pf"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ") efter genomgången (",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ").",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv). Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv). Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv).",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

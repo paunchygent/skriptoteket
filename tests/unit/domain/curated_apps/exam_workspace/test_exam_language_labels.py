@@ -53,14 +53,20 @@ def test_exported_labels_use_the_exam_language(stem: str) -> None:
 @pytest.mark.parametrize("stem", STEMS)
 def test_parent_titles_span_their_children_in_the_exam_language(stem: str) -> None:
     document, _ = replayed(stem)
-    word = _gold_label_word(stem)
-    by_parent = {parent.item_ids[0]: parent for parent in document.parents}
+    labels = exam_language_labels(document)
+    assert labels.question == _gold_label_word(stem)
     titles = {item.item_id: item.title for item in native_exam_to_examnet_qti_items(document)}
     for parent in document.parents:
-        first = document.item_by_id(parent.item_ids[0]).sequence
-        last = document.item_by_id(parent.item_ids[-1]).sequence
-        qti_id = parent.parent_id
-        assert titles[qti_id] == f"{word} {first}–{last}", (stem, by_parent)
+        children = [document.item_by_id(item_id) for item_id in parent.item_ids]
+        first, last = children[0], children[-1]
+        # Parents span printed labels (including letters/restarted numbering),
+        # falling back to running numbers only if a child has no printed label.
+        expected = (
+            labels.printed_span(first.printed_label or "", last.printed_label or "")
+            if all(child.printed_label for child in children)
+            else labels.question_label(first.sequence, last.sequence)
+        )
+        assert titles[parent.parent_id] == expected, (stem, parent.parent_id)
 
 
 def test_an_english_item_is_not_labelled_in_swedish() -> None:

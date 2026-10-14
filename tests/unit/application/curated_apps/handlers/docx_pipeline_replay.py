@@ -3,15 +3,16 @@
 The pipeline is built by ``build_docx_conversion_pipeline``, the composition the DOCX job and
 the exam-conversion eval use. Only the network is replaced: the Decisions first pass reads
 ``decisions_N.json`` in request order, and every Responses call (grouping, second-pass labels,
-type batches) reads the recording named by its request id from
-``tests/fixtures/exam_conversion/docx_build_v10/<exam>/``.
+type batches) reads unmodified replies from
+``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/``. All converter
+batches are matched once by their source/facit anchors within the request's
+visible chunks, as in the HTTP replay transport.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
@@ -59,7 +60,7 @@ from tests.fixtures.time_fixtures import FixedClock
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 CORPUS = FIXTURES / "docx_corpus"
-RECORDINGS = FIXTURES / "docx_build_v10"
+RECORDINGS = FIXTURES / "docx_key_provenance_v14"
 WORKER = "replay-worker"
 # The live run behind RECORDINGS packed 16 families per batch; batch request ids follow it.
 RECORDED_FAMILIES_PER_BATCH = 16
@@ -90,7 +91,7 @@ class MissingRecording(AssertionError):
 
 
 class ReplayProvider:
-    """Serve each Responses request the recording named by its request id."""
+    """Replay current replies; match every converter batch once by visible source anchors."""
 
     def __init__(
         self,
@@ -102,6 +103,9 @@ class ReplayProvider:
         self._root = root
         self._failures = dict(failures or {})
         self.requests: list[StructuredLLMRequest] = []
+        self.recording_ids: dict[str, str] = {}
+        self.served: list[tuple[str, str]] = []
+        self._served: set[str] = set()
 
     @property
     def request_ids(self) -> list[str]:
@@ -113,11 +117,29 @@ class ReplayProvider:
         self.requests.append(request)
         if request.item_id in self._failures:
             raise self._failures[request.item_id]
-        path = self._root / self._exam / f"{request.item_id.replace(':', '_')}.json"
+        name = request.item_id.replace(":", "_")
+        if request.output_spec.schema_name == "docx_exam_build":
+            payload = json.loads(request.user_payload)
+            pending = {chunk["anchor"] for chunk in payload["chunks"]}
+            visible = pending | {chunk["anchor"] for chunk in payload["context_chunks"]}
+            fits = {}
+            for candidate in sorted((self._root / self._exam).glob("docx_w*.json")):
+                if candidate.stem in self._served:
+                    continue
+                anchors = _claimed(json.loads(candidate.read_text()))
+                if anchors <= visible and anchors & pending:
+                    fits[candidate.stem] = len(anchors & pending)
+            if not fits:
+                raise MissingRecording(f"{self._exam}: no unused batch reply for {sorted(pending)}")
+            name = max(fits, key=lambda candidate: fits[candidate])
+        path = self._root / self._exam / f"{name}.json"
         if not path.exists():
             raise MissingRecording(
                 f"{self._exam}: no recording for request id {request.item_id!r} ({path.name})"
             )
+        self.recording_ids[request.item_id] = name
+        self.served.append((request.item_id, name))
+        self._served.add(name)
         return StructuredLLMResponse(
             content=json.loads(path.read_text()),
             finish_reason="completed",
@@ -125,45 +147,21 @@ class ReplayProvider:
         )
 
 
-_SECOND_WAVE = re.compile(r"docx_w2-\d+-\d+")
-
-
 def _claimed(reply: Mapping[str, JsonValue]) -> set[str]:
-    items = reply["items"]
-    assert isinstance(items, list)
-    return {
-        str(anchor)
-        for item in items
-        if isinstance(item, dict) and isinstance(item["source_anchors"], list)
-        for anchor in item["source_anchors"]
-    }
+    def anchors(node: JsonValue) -> set[str]:
+        if isinstance(node, list):
+            return set().union(*(anchors(value) for value in node))
+        if not isinstance(node, dict):
+            return set()
+        found: set[str] = set()
+        for key, value in node.items():
+            if key in {"source_anchors", "answer_key_anchors"} and isinstance(value, list):
+                found.update(anchor for anchor in value if isinstance(anchor, str))
+            else:
+                found.update(anchors(value))
+        return found
 
-
-class SecondWaveByAnchor(ReplayProvider):
-    """Serve each first second-wave request the recorded second-wave reply that claims one of
-    its chunks; every other request is served by its request id.
-
-    Second-wave batch ids follow the order in which second-pass labels arrive, which a replay
-    does not reproduce, so a second-wave request is matched to its own question's reply.
-    """
-
-    async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
-    ) -> StructuredLLMResponse:
-        if not _SECOND_WAVE.fullmatch(request.item_id):
-            return await super().complete_structured(request=request, profile=profile)
-        self.requests.append(request)
-        payload = json.loads(request.user_payload)
-        pending = {chunk["anchor"] for chunk in payload["chunks"]}
-        replies = [
-            recording(self._exam, path.stem, root=self._root)
-            for path in sorted((self._root / self._exam).glob("docx_w2-*.json"))
-            if _SECOND_WAVE.fullmatch(path.stem)
-        ]
-        (reply,) = [r for r in replies if _claimed(r) & pending]
-        return StructuredLLMResponse(
-            content=reply, finish_reason="completed", usage=StructuredLLMUsage()
-        )
+    return anchors(dict(reply))
 
 
 def decisions_client(exam: str, root: Path = RECORDINGS) -> httpx.AsyncClient:

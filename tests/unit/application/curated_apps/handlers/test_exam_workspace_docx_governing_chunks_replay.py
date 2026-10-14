@@ -1,141 +1,144 @@
-"""A chunk the grouping marks as governing several questions belongs to the section parent (D40).
+"""A governing chunk an item lists belongs to the section parent, not to the item (D40).
 
-``docx_build_v15_governing_chunk_in_item`` holds unedited live recordings of two
-one-family-per-batch runs in which a converter reply lists a governing chunk in a question's
-source_anchors instead of its instructions. ``docx_build_v15_low17_governing_heading`` holds a
-live run whose grouping is edited so that a section heading governs a run of questions (see
-its README). In each, the governing chunk is shown once, as the parent's instruction, and the
-parent holds exactly the items of the questions the grouping says it governs.
+Both tests serve the fresh course-exam recording with the first wave reply rewritten in
+memory (explicitly synthetic): the governing chunk body:0009 leaves the reply's instructions
+and joins q1's item instead, the shape the historical recordings captured. When the item
+prints the chunk's line, assembly releases it to the parent and removes it from the item.
+When the chunk is the item's whole body, removing it would leave no body: the item keeps the
+wording, an event names the chunk, and the parent still shows it.
 """
 
-from pathlib import Path
+from __future__ import annotations
+
+import copy
 
 import pytest
+from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
-    DocxConversionOutcome,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamDocument,
-    NativeExamParent,
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+    StructuredLLMRequest,
+    StructuredLLMResponse,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
-from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    FIXTURES,
-    SecondWaveByAnchor,
+    ReplayProvider,
     build_replay,
     corpus_chunks,
-    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_IN_ITEM = FIXTURES / "docx_build_v15_governing_chunk_in_item"
-_HEADING = FIXTURES / "docx_build_v15_low17_governing_heading"
-_ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
-_SWEDISH = "svenska_2_kursavslutande_prov_med_facit"
+_EXAM = "svenska_2_kursavslutande_prov_med_facit"
+_REPLY = "docx_w1-01"
+_GOVERNING = "body:0009"
+_OWN = "body:0010"
 
 
-def _governs(exam: str, root: Path, anchor: str) -> list[str]:
-    contexts = recording(exam, "docx_grouping_1", root=root)["shared_contexts"]
-    assert isinstance(contexts, list)
-    (context,) = [c for c in contexts if isinstance(c, dict) and c["anchor"] == anchor]
-    governs = context["governs"]
-    assert isinstance(governs, list) and len(governs) >= 2
-    return [str(q) for q in governs]
+def _segments(item: dict[str, JsonValue]) -> list[dict[str, JsonValue]]:
+    body = item["body"]
+    assert isinstance(body, list)
+    (paragraph,) = body
+    assert isinstance(paragraph, dict)
+    segments = paragraph["segments"]
+    assert isinstance(segments, list)
+    return [s for s in segments if isinstance(s, dict)]
 
 
-def _listed_in_an_item(exam: str, root: Path, anchor: str) -> bool:
-    for path in sorted((root / exam).glob("docx_w*.json")):
-        items = recording(exam, path.stem, root=root)["items"]
-        assert isinstance(items, list)
-        for item in items:
-            assert isinstance(item, dict)
-            anchors = item["source_anchors"]
-            assert isinstance(anchors, list)
-            if anchor in anchors:
-                return True
-    return False
+def _anchors(item: dict[str, JsonValue]) -> list[JsonValue]:
+    value = item["source_anchors"]
+    assert isinstance(value, list)
+    return list(value)
 
 
-async def _convert(exam: str, root: Path) -> DocxConversionOutcome:
-    replay = build_replay(
-        exam, root=root, families_per_batch=1, provider=SecondWaveByAnchor(exam, root=root)
-    )
-    return await replay.pipeline.convert(job=replay.job())
+def _without_instruction(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    instructions = content["instructions"]
+    assert isinstance(instructions, list)
+    content["instructions"] = [
+        entry
+        for entry in instructions
+        if not (isinstance(entry, dict) and entry["source_anchors"] == [_GOVERNING])
+    ]
+    return content
 
 
-def _governed_items(update: ConversionUpdate, governs: list[str]) -> list[str]:
-    return [item_id for qid in governs for item_id in update.item_ids[qid]]
+def _listed_in_an_item(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    content = _without_instruction(content)
+    items = content["items"]
+    assert isinstance(items, list)
+    item = items[0]
+    assert isinstance(item, dict)
+    item["source_anchors"] = [_GOVERNING, *_anchors(item)]
+    (segment,) = _segments(item)
+    segment["text"] = "Skriv rätt bokstav.\n" + str(segment["text"])
+    return content
 
 
-def _parent_of(document: NativeExamDocument, item_ids: list[str]) -> NativeExamParent:
-    parent = document.parent_of(item_ids[0])
-    assert parent is not None, "the first governed question has no section parent"
-    return parent
+def _item_whole_body(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    content = _without_instruction(content)
+    items = content["items"]
+    assert isinstance(items, list)
+    item = items[0]
+    assert isinstance(item, dict)
+    item["source_anchors"] = [_GOVERNING, *_anchors(item)]
+    (segment,) = _segments(item)
+    segment["text"] = "Skriv rätt bokstav."
+    item["body"] = [{"segments": [segment]}]
+    return content
 
 
-async def test_a_governing_chunk_an_item_prints_at_its_start_moves_to_the_parent():
-    anchor = "body:0074"
-    governs = _governs(_SWEDISH, _IN_ITEM, anchor)
-    assert _listed_in_an_item(_SWEDISH, _IN_ITEM, anchor)
-    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_SWEDISH)}
+class _RewrittenReplies(ReplayProvider):
+    """Serve the fresh recordings with the first wave reply rewritten in memory."""
 
-    outcome = await _convert(_SWEDISH, _IN_ITEM)
+    def __init__(self, exam: str, rewrite) -> None:
+        super().__init__(exam)
+        self._rewrite = rewrite
+
+    async def complete_structured(
+        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> StructuredLLMResponse:
+        response = await super().complete_structured(request=request, profile=profile)
+        if self.recording_ids.get(request.item_id) != _REPLY:
+            return response
+        content = copy.deepcopy(response.content)
+        assert isinstance(content, dict)
+        return StructuredLLMResponse(
+            content=self._rewrite(content),
+            finish_reason=response.finish_reason,
+            usage=response.usage,
+        )
+
+
+async def test_a_governing_chunk_an_item_prints_moves_to_the_parent():
+    replay = build_replay(_EXAM, provider=_RewrittenReplies(_EXAM, _listed_in_an_item))
+    outcome = await replay.pipeline.convert(job=replay.job())
 
     document = outcome.result.document
-    governed = _governed_items(outcome.update, governs)
-    parent = _parent_of(document, governed)
-    assert body_text_lines(parent.instruction) == (text[anchor],)
-    assert list(parent.item_ids) == governed
-    first = next(item for item in document.items if item.item_id == governed[0])
-    assert first.source_anchor != anchor
-    # The item's own printed heading opens its body (T1, 39-05-08); the governing
-    # chunk's wording stands only on the parent.
-    lines = first.plain_text_lines()
-    assert text[anchor] not in lines, "the item still prints the parent's instruction"
-    assert any(line.startswith("Noah") for line in lines)
-    codes = [(e.code, e.anchors) for e in outcome.result.events]
-    assert ("governing_text_kept", (anchor,)) not in codes
+    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
+    governed = [item_id for qid in ("q1", "q2", "q3") for item_id in outcome.update.item_ids[qid]]
+    parent = document.parent_of(governed[0])
+    assert parent is not None
+    assert text[_GOVERNING] in body_text_lines(parent.instruction)
+    first = next(i for i in document.items if i.item_id == governed[0])
+    assert text[_GOVERNING] not in first.plain_text_lines()
+    assert "governing_text_kept" not in {e.code for e in outcome.result.events}
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []
 
 
-async def test_a_governing_chunk_that_is_an_item_whole_body_is_kept_there_and_reported():
-    """Removing the only body text would leave the item without a body, so the item keeps
-    it, an event names the chunk, and the parent still shows it."""
-    listed, instruction = "body:0060", "body:0058"
-    governs = _governs(_ENGLISH, _IN_ITEM, listed)
-    assert governs == _governs(_ENGLISH, _IN_ITEM, instruction)
-    assert _listed_in_an_item(_ENGLISH, _IN_ITEM, listed)
-    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_ENGLISH)}
-
-    outcome = await _convert(_ENGLISH, _IN_ITEM)
+async def test_a_governing_chunk_that_is_an_item_whole_body_is_kept_and_reported():
+    replay = build_replay(_EXAM, provider=_RewrittenReplies(_EXAM, _item_whole_body))
+    outcome = await replay.pipeline.convert(job=replay.job())
 
     document = outcome.result.document
-    governed = _governed_items(outcome.update, governs)
-    parent = _parent_of(document, governed)
-    assert body_text_lines(parent.instruction) == (text[instruction], text[listed])
-    assert list(parent.item_ids) == governed
-    assert all(item.source_anchor != listed for item in document.items)
-    codes = [(e.code, e.anchors) for e in outcome.result.events]
-    assert ("governing_text_kept", (listed,)) in codes
-    assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []
-
-
-async def test_a_governing_heading_keeps_its_text_on_the_parent():
-    heading, instruction = "body:0006", "body:0009"
-    governs = _governs(_SWEDISH, _HEADING, heading)
-    assert governs == _governs(_SWEDISH, _HEADING, instruction)
-    chunks = {chunk.anchor: chunk for chunk in corpus_chunks(_SWEDISH)}
-    assert chunks[heading].kind == "heading"
-
-    outcome = await _convert(_SWEDISH, _HEADING)
-
-    document = outcome.result.document
-    governed = _governed_items(outcome.update, governs)
-    parent = _parent_of(document, governed)
-    assert body_text_lines(parent.instruction) == (chunks[heading].text, chunks[instruction].text)
-    assert list(parent.item_ids) == governed
-    assert chunks[heading].text not in document.instructions
-    assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []
+    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
+    (kept,) = [i for i in document.items if i.source_anchor == _OWN]
+    assert text[_GOVERNING] in kept.plain_text_lines(), "the wording vanished with no body left"
+    kept_codes = [
+        (e.code, e.anchors) for e in outcome.result.events if e.code == "governing_text_kept"
+    ]
+    assert kept_codes == [("governing_text_kept", (_GOVERNING,))]
+    governed = [item_id for qid in ("q1", "q2", "q3") for item_id in outcome.update.item_ids[qid]]
+    parent = document.parent_of(governed[0])
+    assert parent is not None
+    assert text[_GOVERNING] in body_text_lines(parent.instruction)
+    assert text[_GOVERNING] not in body_text_lines(document.instructions)

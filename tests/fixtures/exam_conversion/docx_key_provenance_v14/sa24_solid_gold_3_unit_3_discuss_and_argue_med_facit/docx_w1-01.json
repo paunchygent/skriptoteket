@@ -1,0 +1,376 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0012",
+    "body:0015",
+    "body:0018",
+    "body:0021",
+    "body:0024",
+    "body:0027",
+    "body:0030",
+    "body:0033"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0010",
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Susan Berry isn’t a friend really. She’s just ___ of mine.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. an acquaintance",
+      "points": 1,
+      "choices": [
+        {
+          "text": "a mate",
+          "correct": false
+        },
+        {
+          "text": "a companion",
+          "correct": false
+        },
+        {
+          "text": "an acquaintance",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0013",
+        "body:0014"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Our new washing-machine cost over £400. Fortunately, there wasn’t ___ for delivery.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: A. a charge",
+      "points": 1,
+      "choices": [
+        {
+          "text": "a charge",
+          "correct": true
+        },
+        {
+          "text": "an amount",
+          "correct": false
+        },
+        {
+          "text": "a postage",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Their victory over Real Madrid in the European Cup means that Bayern Munich are now ___ of a place in the final.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: B. assured",
+      "points": 1,
+      "choices": [
+        {
+          "text": "definite",
+          "correct": false
+        },
+        {
+          "text": "assured",
+          "correct": true
+        },
+        {
+          "text": "secure",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0019",
+        "body:0020"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gerald couldn’t remember a thing after the accident. He was obviously suffering from ___.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: B. amnesia",
+      "points": 1,
+      "choices": [
+        {
+          "text": "insomnia",
+          "correct": false
+        },
+        {
+          "text": "amnesia",
+          "correct": true
+        },
+        {
+          "text": "anaemia",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The children were very poor and most of them were dressed in ___.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. rags",
+      "points": 1,
+      "choices": [
+        {
+          "text": "scraps",
+          "correct": false
+        },
+        {
+          "text": "bundles",
+          "correct": false
+        },
+        {
+          "text": "rags",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The situation is dangerous and the UN is ___ caution.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. urging",
+      "points": 1,
+      "choices": [
+        {
+          "text": "persuading",
+          "correct": false
+        },
+        {
+          "text": "insisting",
+          "correct": false
+        },
+        {
+          "text": "urging",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "It’s almost impossible to avoid any ___ damage during heavy bombing raids.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: A. collateral",
+      "points": 1,
+      "choices": [
+        {
+          "text": "collateral",
+          "correct": true
+        },
+        {
+          "text": "extra",
+          "correct": false
+        },
+        {
+          "text": "essential",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0031",
+        "body:0032"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The new drug is undergoing clinical ___.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: B. trials",
+      "points": 1,
+      "choices": [
+        {
+          "text": "samples",
+          "correct": false
+        },
+        {
+          "text": "trials",
+          "correct": true
+        },
+        {
+          "text": "experiments",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
