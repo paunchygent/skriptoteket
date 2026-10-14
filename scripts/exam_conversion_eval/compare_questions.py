@@ -17,6 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 
 from .compare_text import CELL_SEPARATOR, ENTRY_LABEL, words
 from .gold import GoldItem, GoldKind, GoldParent
@@ -163,5 +164,5 @@ def native_questions(document: NativeExamDocument) -> tuple[Question, ...]:
             questions.append(_native_view(item, item.item_id, ()))
         else:
             label = f"{parent.parent_id} / {item.item_id}"
-            questions.append(_native_view(item, label, tuple(parent.instruction)))
+            questions.append(_native_view(item, label, body_text_lines(parent.instruction)))
     return tuple(questions)

@@ -35,6 +35,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParagraph,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -112,7 +113,9 @@ def _first_paragraph(item: NativeExamItem) -> str:
 
 
 def _in_parents(build: _Build, wording: str) -> bool:
-    return any(wording in parent.instruction for parent in build.result.document.parents)
+    return any(
+        wording in body_text_lines(parent.instruction) for parent in build.result.document.parents
+    )
 
 
 def test_vocabulary_section_becomes_one_parent_with_the_shared_instruction():
@@ -123,7 +126,7 @@ def test_vocabulary_section_becomes_one_parent_with_the_shared_instruction():
     assert parent is not None
     # The printed section heading opens the parent's instruction (T2, 39-05-08),
     # without the total its line prints.
-    assert parent.instruction == ("Vocabulary: Write the Word or Phrase", wording)
+    assert body_text_lines(parent.instruction) == ("Vocabulary: Write the Word or Phrase", wording)
     children = build.children(parent)
     assert len(children) == 24
     assert {c.kind for c in children} == {NativeExamItemKind.GAP_FILL}
@@ -131,11 +134,14 @@ def test_vocabulary_section_becomes_one_parent_with_the_shared_instruction():
     assert children[-1].source_anchor == "body:0053"
     assert not any(_prints(child, wording) for child in children)
     # The instruction reached items, so it is no document-level instruction.
-    assert wording not in build.result.document.instructions
+    assert wording not in body_text_lines(build.result.document.instructions)
     # The next section's questions belong to the next parent, never to this one.
     other = build.parent_with("body:0075")
     assert other is not None and other.parent_id != parent.parent_id
-    assert other.instruction == ("Vocabulary in Context", build.wording("body:0074"))
+    assert body_text_lines(other.instruction) == (
+        "Vocabulary in Context",
+        build.wording("body:0074"),
+    )
 
 
 def test_every_parent_holds_contiguous_children_in_order():
@@ -162,7 +168,7 @@ def test_parent_instruction_covers_each_of_a_section_with_several_instruction_li
 
     opening = build.parent_with("body:0005")
     assert opening is not None
-    assert opening.instruction == (first,)
+    assert body_text_lines(opening.instruction) == (first,)
     assert len(opening.item_ids) == 18
     # One question under a second instruction forms no run of two: it keeps a copy.
     single = build.item("body:0043")
@@ -170,7 +176,9 @@ def test_parent_instruction_covers_each_of_a_section_with_several_instruction_li
     assert _first_paragraph(single) == second
     assert not _prints(single, first)
     resumed = build.parent_with("body:0046")
-    assert resumed is not None and resumed.instruction == (build.wording("body:0045"),)
+    assert resumed is not None and body_text_lines(resumed.instruction) == (
+        build.wording("body:0045"),
+    )
     assert build.wording("body:0045") == first
     assert resumed.parent_id != opening.parent_id
 
@@ -182,7 +190,7 @@ def test_exam_total_line_is_never_instruction_text_of_a_parent_or_an_item():
 
     assert _carrying(build, total) == set()
     assert not _in_parents(build, total)
-    assert total in build.result.document.instructions
+    assert total in body_text_lines(build.result.document.instructions)
 
 
 def test_questions_of_different_kinds_under_one_instruction_share_one_parent():
@@ -194,7 +202,7 @@ def test_questions_of_different_kinds_under_one_instruction_share_one_parent():
     parent = build.parent_with("body:0037")
     assert parent is not None
     # The section heading opens the parent's instruction (T2, 39-05-08).
-    assert parent.instruction == ("Del 2: Satsdelar", wording)
+    assert body_text_lines(parent.instruction) == ("Del 2: Satsdelar", wording)
     assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
     assert _carrying(build, wording) == set()
     assert not [e for e in build.result.events if "kind" in e.code]
@@ -208,7 +216,10 @@ def test_term_defining_instruction_reaches_only_the_items_naming_its_terms():
 
     parent = build.parent_with("body:0037")
     # The section heading opens the parent's instruction (T2, 39-05-08).
-    assert parent is not None and parent.instruction == ("Del 2: Satsdelar", wording)
+    assert parent is not None and body_text_lines(parent.instruction) == (
+        "Del 2: Satsdelar",
+        wording,
+    )
     assert [c.source_anchor for c in build.children(parent)] == ["body:0037", "body:0045"]
     for anchor in ("body:0037", "body:0045"):
         assert uses_term(terms, build.own_chunks(anchor))
@@ -257,7 +268,7 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
     for stem in (_SECTIONED, _REPEATED, _ENGLISH, _COURSE):
         build = _build(stem)
         document = build.result.document
-        kept = {line for parent in document.parents for line in parent.instruction}
+        kept = {line for parent in document.parents for line in body_text_lines(parent.instruction)}
         for instruction in build.state.instructions:
             texts = [build.state.chunk_by_anchor[a].text for a in instruction.source_anchors]
             # A heading chunk stands on its parent without its printed total and
@@ -269,7 +280,7 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
                 for text in texts
             ]
             reached = any(text in kept or _carrying(build, text) for text in shown)
-            assert reached != (instruction.text in document.instructions), (
+            assert reached != (instruction.text in body_text_lines(document.instructions)), (
                 stem,
                 instruction.source_anchors,
             )
@@ -284,7 +295,7 @@ def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_document_
         assert all(
             any(line == heading or heading.endswith(f" {line}") for heading in headings)
             for parent in bare.parents
-            for line in parent.instruction
+            for line in body_text_lines(parent.instruction)
         )
         assert len(bare.items) == len(document.items)
 
@@ -363,7 +374,7 @@ def test_course_exam_choice_section_is_one_parent_of_single_choice_questions():
 
     assert parent is not None
     # The section heading opens the instruction (T2, 39-05-08).
-    assert parent.instruction == ("Flervalsfrågor", build.wording("body:0009"))
+    assert body_text_lines(parent.instruction) == ("Flervalsfrågor", build.wording("body:0009"))
     assert len(parent.item_ids) == 15
     assert {c.kind for c in build.children(parent)} == {NativeExamItemKind.SINGLE_CHOICE}
     assert [c.sequence for c in build.children(parent)] == list(range(1, 16))
@@ -390,7 +401,7 @@ def test_review_item_in_a_choice_section_stays_a_child_of_its_parent_in_source_p
 
     assert parent is not None
     # The section heading opens the instruction (T2, 39-05-08).
-    assert parent.instruction == ("Flervalsfrågor", build.wording("body:0009"))
+    assert body_text_lines(parent.instruction) == ("Flervalsfrågor", build.wording("body:0009"))
     children = build.children(parent)
     reviews = [c for c in children if c.review.state is NativeItemReviewState.REVIEW_REQUIRED]
     assert [c.source_anchor for c in reviews] == review_anchors

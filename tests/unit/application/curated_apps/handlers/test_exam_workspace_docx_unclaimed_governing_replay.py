@@ -8,6 +8,7 @@ item holds it.
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     SecondWaveByAnchor,
@@ -45,7 +46,7 @@ async def test_an_unclaimed_governing_chunk_is_its_section_parent_s_instruction(
     governed = [item_id for qid in governs for item_id in outcome.update.item_ids[str(qid)]]
     parent = document.parent_of(governed[0])
     assert parent is not None
-    assert parent.instruction == (text[_UNCLAIMED], text[_LISTED])
+    assert body_text_lines(parent.instruction) == (text[_UNCLAIMED], text[_LISTED])
     assert list(parent.item_ids) == governed
     assert all(item.source_anchor != _UNCLAIMED for item in document.items)
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
+from types import MappingProxyType
 
 from pydantic import ValidationError
 
@@ -23,7 +24,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     NO_ITEM_REASON,
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    assemble_build_result,
+    review_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -34,16 +38,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     SharedContext,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
     NativeExamDocument,
     NativeExamItem,
-    NativeExamItemKind,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from skriptoteket.protocols.item_type_labeler import ACCEPT_THRESHOLD
@@ -123,23 +120,14 @@ def validated(state: DocxBuildState) -> None:
 
 
 def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExamItem:
-    """A converting question shows its own source text until its batch fills it."""
-    texts = [state.chunk_by_anchor[a].text for a in family.question_anchors]
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        body=tuple(
-            NativeParagraph(segments=(NativeTextSegment(text=text),)) for text in texts if text
-        )
-        or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
-            reasons=(PLACEHOLDER_REASON,),
-        ),
-        source_anchor=family.question_anchors[0],
+    """A converting question shows its own source text and pictures until its batch fills it.
+
+    The placeholder is one review item over the question's own chunks, so a picture keeps
+    its exact place while the converter runs and the question stays locked for the teacher.
+    """
+    return review_source_item(
+        tuple(state.chunk_by_anchor[anchor] for anchor in family.question_anchors),
+        PLACEHOLDER_REASON,
     )
 
 
@@ -194,8 +182,10 @@ def conversion_update(
     families: tuple[QuestionFamily, ...],
     filled: tuple[str, ...],
     pending: tuple[str, ...],
+    *,
+    assets_by_id: Mapping[str, bytes] = MappingProxyType({}),
 ) -> ConversionUpdate:
-    """Map every grouped question to its items and the parent it sits under."""
+    """Map every grouped question to its items, the parent it sits under, and its pictures."""
     owner = {a: f.question_id for f in families for a in f.claims}
     item_ids: dict[str, list[str]] = {f.question_id: [] for f in families}
     extra: list[str] = []
@@ -213,6 +203,7 @@ def conversion_update(
         item_ids={qid: tuple(ids) for qid, ids in item_ids.items()},
         extra_item_ids=tuple(extra),
         parent_ids=parent_ids,
+        assets_by_id=assets_by_id,
     )
 
 

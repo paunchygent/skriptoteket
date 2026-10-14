@@ -99,7 +99,7 @@ def conversion_update(
         parents=tuple(
             NativeExamParent(
                 parent_id=f"parent_{index:03d}",
-                instruction=("Välj rätt svar.",),
+                instruction=body("Välj rätt svar."),
                 item_ids=tuple(i for q in questions for i in by_source[q]),
             )
             for index, (_, questions) in enumerate(parents, start=1)

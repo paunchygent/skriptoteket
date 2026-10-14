@@ -31,6 +31,10 @@ from docx.styles.style import CharacterStyle
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxMissingImage
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_picture import (  # noqa: E501
+    picture_from_relationship,
+)
 from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
 
 _MC = "{http://schemas.openxmlformats.org/markup-compatibility/2006}"
@@ -43,7 +47,6 @@ _RUN_CONTAINERS = frozenset(
     qn(tag)
     for tag in ("w:hyperlink", "w:ins", "w:smartTag", "w:sdt", "w:sdtContent", "w:fldSimple")
 )
-_WEB_IMAGES = frozenset({"image/png", "image/jpeg", "image/gif"})
 _EMU_PER_PX = 9525
 _TAB = "&#160;" * 4
 _CROP_MARGIN = 16
@@ -328,7 +331,7 @@ class DocxBlockImageRenderer:
             kind = None if data is None else data.get("uri")
             raise _Unrenderable(f"drawing without a picture ({kind or 'unknown'})")
         extent = next(drawing.iter(qn("wp:extent")), None)
-        return self._image(blip.get(f"{_R}embed"), extent)
+        return self._image(blip.get(f"{_R}embed"), extent, element=blip)
 
     def _vml(self, element: BaseOxmlElement, what: str) -> str:
         boxes = list(element.iter(_TXBX))
@@ -337,22 +340,22 @@ class DocxBlockImageRenderer:
         data = next(element.iter(_V_IMAGEDATA), None)
         if data is None:
             raise _Unrenderable(f"{what} without a preview picture")
-        return self._image(data.get(f"{_R}id"), None)
+        return self._image(data.get(f"{_R}id"), None, element=data)
 
-    def _image(self, rid: str | None, extent: BaseOxmlElement | None) -> str:
-        parts = self._document.part.related_parts
-        if rid is None or rid not in parts:
-            raise _Unrenderable("picture without an embedded image")
-        part = parts[rid]
-        if part.content_type not in _WEB_IMAGES:
-            raise _Unrenderable(f"picture of type {part.content_type}")
+    def _image(
+        self, rid: str | None, extent: BaseOxmlElement | None, *, element: BaseOxmlElement
+    ) -> str:
+        picture = picture_from_relationship(self._document, rid, element=element)
+        if isinstance(picture, DocxMissingImage):
+            what = picture.reference or "picture without an embedded image"
+            raise _Unrenderable(f"picture {what} ({picture.media_type})")
         size = ""
         if extent is not None:
             width = int(extent.get("cx") or 0) / _EMU_PER_PX
             height = int(extent.get("cy") or 0) / _EMU_PER_PX
             size = f' style="width:{width:.2f}px;height:{height:.2f}px"'
-        encoded = base64.b64encode(part.blob).decode("ascii")
-        return f'<img src="data:{part.content_type};base64,{encoded}"{size}>'
+        encoded = base64.b64encode(picture.payload).decode("ascii")
+        return f'<img src="data:{picture.media_type};base64,{encoded}"{size}>'
 
     def _text_box(self, box: BaseOxmlElement) -> str:
         inner = "".join(self._block(child) for child in box)

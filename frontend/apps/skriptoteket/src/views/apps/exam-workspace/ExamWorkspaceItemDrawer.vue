@@ -24,11 +24,11 @@
  *   - Keyboard and focus handling comes from `useExamWorkspaceDialogFocus`.
  */
 
-import { computed, ref, useId } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
 import { IconX } from "../../../components/icons";
-import type { NativeExamItem, NativeExamParseOrigin } from "../../../api/examWorkspace";
-import { examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
+import type { NativeExamItem, NativeExamItemKind, NativeExamParseOrigin } from "../../../api/examWorkspace";
+import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
 
@@ -37,6 +37,15 @@ const PARSE_ORIGIN_LABELS: Record<NativeExamParseOrigin, string> = {
   llm_parsed: "Tolkad med AI ur provfilen.",
   teacher_created: "Skapad i provredigeringen.",
 };
+
+/** The five types the converter produces, in the order the review selector offers them. */
+const RETRY_KINDS: readonly NativeExamItemKind[] = [
+  "free_text",
+  "single_choice",
+  "multiple_response",
+  "gap_fill",
+  "matching",
+];
 
 const props = defineProps<{
   disabled: boolean;
@@ -48,7 +57,31 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
+  retry: [itemId: string, kind: NativeExamItemKind];
 }>();
+
+/**
+ * The type the teacher keeps or picks for the next reconversion. Null until
+ * the teacher changes it, so the item's stored label type shows first; it is
+ * kept when a reply replaces the same question with a review item, and reset
+ * only when the drawer shows another question.
+ */
+const retryKind = ref<NativeExamItemKind | null>(null);
+
+const canRetry = computed(
+  () => props.item.review.state === "review_required" && props.item.retry_source != null,
+);
+
+const selectedRetryKind = computed<NativeExamItemKind | null>(
+  () => retryKind.value ?? props.item.retry_source?.label_kind ?? null,
+);
+
+watch(
+  () => props.item.item_id,
+  () => {
+    retryKind.value = null;
+  },
+);
 
 const DETAILS_TOGGLE_SELECTOR = '[data-test="exam-workspace-item-details-toggle"]';
 
@@ -74,6 +107,18 @@ useExamWorkspaceDialogFocus(frame, {
   onClose: () => emit("close"),
   takesFocus: () => props.layout !== "desktop",
 });
+
+function handleRetryKindChange(event: Event): void {
+  retryKind.value = (event.target as HTMLSelectElement).value as NativeExamItemKind;
+}
+
+function emitRetry(): void {
+  const kind = selectedRetryKind.value;
+  if (props.disabled || !canRetry.value || kind === null) {
+    return;
+  }
+  emit("retry", props.item.item_id, kind);
+}
 </script>
 
 <template>
@@ -157,6 +202,43 @@ useExamWorkspaceDialogFocus(frame, {
             {{ examWorkspaceReviewReasonLabel(reason) }}
           </li>
         </ul>
+      </section>
+
+      <section
+        v-if="canRetry"
+        class="grid gap-2"
+        data-test="exam-workspace-retry"
+      >
+        <h4 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
+          Omkonvertering
+        </h4>
+        <label class="grid gap-1">
+          <span class="sr-only">Frågetyp</span>
+          <select
+            class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm text-navy"
+            :disabled="disabled"
+            :value="selectedRetryKind"
+            data-test="exam-workspace-retry-kind"
+            @change="handleRetryKindChange"
+          >
+            <option
+              v-for="kind in RETRY_KINDS"
+              :key="kind"
+              :value="kind"
+            >
+              {{ EXAM_WORKSPACE_TYPE_LABELS[kind] }}
+            </option>
+          </select>
+        </label>
+        <button
+          type="button"
+          class="btn-cta w-full justify-center shadow-none"
+          :disabled="disabled"
+          data-test="exam-workspace-retry-button"
+          @click="emitRetry"
+        >
+          Konvertera igen
+        </button>
       </section>
 
       <section class="grid gap-1">

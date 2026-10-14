@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Protocol
 from uuid import UUID
 
@@ -52,7 +53,8 @@ class ConversionUpdate:
     ``item_ids`` maps every outline question to its items in ``document``: converted items
     for a filled question, the placeholder item for a pending one. ``extra_item_ids`` are
     review items for source chunks no question owns. ``parent_ids`` maps a question to the
-    parent it sits under.
+    parent it sits under. ``assets_by_id`` carries the payloads of every picture the
+    document references, so a provisional save writes them beside the revision.
     """
 
     filled: tuple[str, ...]
@@ -61,6 +63,7 @@ class ConversionUpdate:
     item_ids: Mapping[str, tuple[str, ...]]
     extra_item_ids: tuple[str, ...]
     parent_ids: Mapping[str, str]
+    assets_by_id: Mapping[str, bytes] = MappingProxyType({})
 
 
 class DocxConversionProgressProtocol(Protocol):

@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeGapSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.scripts.exam_conversion_corpus_support import STEMS, replayed
 
 pytestmark = pytest.mark.unit
@@ -81,7 +82,7 @@ def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -
         payload = _payload(view)
         item = _payload_item(payload)
         if parent is not None:
-            assert item["instruction"] == "\n".join(parent.instruction), (stem, child.item_id)
+            assert item["instruction"] == body_plain_text(parent.instruction), (stem, child.item_id)
         else:
             assert "instruction" not in item
         assert item["item_id"] == child.item_id
@@ -139,7 +140,7 @@ def test_word_bank_child_payload_keeps_bank_directions_and_numbered_body() -> No
     item = _payload_item(payload)
     parent = document.parent_of("item_046")
     assert parent is not None
-    assert item["instruction"] == "\n".join(parent.instruction)
+    assert item["instruction"] == body_plain_text(parent.instruction)
     assert "Choose a word to fill the gaps. Three of the words will not be used." in (
         view.instruction
     )

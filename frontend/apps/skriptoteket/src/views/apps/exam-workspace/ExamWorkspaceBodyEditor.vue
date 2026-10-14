@@ -5,11 +5,13 @@
  * Domain purpose:
  *   Let the teacher edit each paragraph of a question as one continuous
  *   text, with every gap shown as an inline chip and every image as a fixed
- *   "Bild" marker. Activating a gap chip opens a small popover where the
- *   teacher edits that gap's accepted answers. Gaps and images are the
- *   Exam.net contract, so typing, pasting, cutting, dragging, dropping or
- *   undo can never remove, add or reorder them. While `disabled` is set,
- *   nothing can be edited and an open popover closes without committing.
+ *   atom that renders the actual picture once its asset URL is known and the
+ *   "Bild" placeholder until then. Activating a gap chip opens a small
+ *   popover where the teacher edits that gap's accepted answers. Gaps and
+ *   images are the Exam.net contract, so typing, pasting, cutting, dragging,
+ *   dropping or undo can never remove, add or reorder them. While `disabled`
+ *   is set, nothing can be edited and an open popover closes without
+ *   committing.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
@@ -38,6 +40,7 @@ import {
   selectionRanges,
 } from "./examWorkspaceBodyCaret";
 import {
+  applyAssetState,
   applyChipState,
   ATOM_ATTRIBUTE,
   ensureTrailingBreak,
@@ -71,6 +74,8 @@ function atomGuardCopy(inputType: string, atom: TouchedAtomKind): string {
 const props = defineProps<{
   item: NativeExamItem;
   disabled?: boolean;
+  /** Asset URL per asset id; a mapped picture renders, an unmapped one keeps its placeholder. */
+  assetUrls?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -128,7 +133,7 @@ function renderParagraph(paragraphIndex: number): void {
   if (!element || !paragraph) {
     return;
   }
-  renderParagraphElement(element, paragraph.segments, props.item.gaps);
+  renderParagraphElement(element, paragraph.segments, props.item.gaps, props.assetUrls);
   refreshAtomIndexes(element, paragraphIndex, paragraph.segments);
   renderedKeys[paragraphIndex] = segmentsKey(paragraph.segments);
 }
@@ -159,9 +164,22 @@ function refreshChips(): void {
     .forEach((chip) => applyChipState(chip, props.item.gaps));
 }
 
+/** Update live image atoms in place so an arriving or changed URL never rebuilds the paragraph. */
+function refreshAssets(): void {
+  editorRoot.value
+    ?.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}="asset"]`)
+    .forEach((atom) => {
+      const assetId = atom.getAttribute("data-asset-id");
+      if (assetId) {
+        applyAssetState(atom, assetId, props.assetUrls);
+      }
+    });
+}
+
 onMounted(syncParagraphs);
 watch(() => [props.item.item_id, props.item.body] as const, syncParagraphs, { flush: "post" });
 watch(() => props.item.gaps, refreshChips, { deep: true, flush: "post" });
+watch(() => props.assetUrls, refreshAssets, { deep: true, flush: "post" });
 watch(
   () => props.disabled,
   (disabled) => {

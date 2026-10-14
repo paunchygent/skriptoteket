@@ -5,11 +5,13 @@
  *   Build a native document from the real English recording
  *   (`docx_build_v7/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json`):
  *   its first three gap_fill items are the children of one parent that holds
- *   their shared instruction ("Complete each sentence ..."); its first
- *   single_choice item stays a standalone question after them.
+ *   their shared instruction ("Complete each sentence ...") as a canonical
+ *   paragraph body; its first single_choice item stays a standalone question
+ *   after them.
  */
 
 import type {
+  NativeExamBodyParagraph,
   NativeExamDocument,
   NativeExamItem,
   NativeExamParent,
@@ -70,9 +72,19 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
   };
 }
 
+export function buildRecordedParentInstruction(): NativeExamBodyParagraph[] {
+  return [
+    {
+      segments: [
+        { kind: "text", text: recording.instructions[SHARED_INSTRUCTION_INDEX]!.text },
+      ],
+    },
+  ];
+}
+
 export function buildRecordedParent(): NativeExamParent {
   return {
-    instruction: [recording.instructions[SHARED_INSTRUCTION_INDEX]!.text],
+    instruction: buildRecordedParentInstruction(),
     item_ids: Array.from({ length: CHILD_COUNT }, (_, index) => itemId(index + 1)),
     parent_id: "parent_001",
   };

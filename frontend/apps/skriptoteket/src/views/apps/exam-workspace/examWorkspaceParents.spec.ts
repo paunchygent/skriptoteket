@@ -15,6 +15,7 @@ import {
   examWorkspaceParentPoints,
   examWorkspaceParentPointsLabel,
 } from "./examWorkspaceParents";
+import { examWorkspaceSharedParagraphs } from "./examWorkspaceSharedInstruction";
 import { toExamWorkspaceItemRows } from "./examWorkspaceRows";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 
@@ -57,7 +58,9 @@ describe("toExamWorkspaceItemRows with parents", () => {
       null,
       null,
     ]);
-    expect(rows[0]!.parentBlock?.instruction).toEqual(document.parents[0]!.instruction);
+    expect(rows[0]!.parentBlock?.instruction).toEqual(
+      examWorkspaceSharedParagraphs(document.parents[0]!.instruction),
+    );
     expect(rows[0]!.parentBlock?.pointsLabel).toBe("Totalt 3 poäng");
     expect(rows.map((row) => row.parentChild)).toEqual([
       { childCount: 3, childIndex: 0, parentId: "parent_001" },
@@ -72,5 +75,35 @@ describe("toExamWorkspaceItemRows with parents", () => {
     const rows = toExamWorkspaceItemRows(document.items);
 
     expect(rows.every((row) => row.parentBlock === null && row.parentChild === null)).toBe(true);
+  });
+
+  it("resolves each shared picture through the protected asset URL map", () => {
+    const document = buildParentDocument();
+    const assetId = "asset_0123456789abcdef";
+    const protectedUrl = `/api/v1/apps/documents.conversion_hub/exam-workspace/documents/lineage-1/assets/${assetId}?revision=3`;
+    const parents = [
+      {
+        ...document.parents[0]!,
+        instruction: [
+          {
+            segments: [
+              { kind: "text" as const, text: "Betrakta diagrammet." },
+              { asset_id: assetId, kind: "asset" as const },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const rows = toExamWorkspaceItemRows(document.items, parents, { [assetId]: protectedUrl });
+
+    expect(rows[0]!.parentBlock?.instruction).toEqual([
+      {
+        parts: [
+          { kind: "text", text: "Betrakta diagrammet." },
+          { assetId, kind: "asset", url: protectedUrl },
+        ],
+      },
+    ]);
   });
 });

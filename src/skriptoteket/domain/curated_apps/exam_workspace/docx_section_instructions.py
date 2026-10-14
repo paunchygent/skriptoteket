@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import (
     Joined,
     Placed,
+    Run,
     folded,
     instruction_runs,
     parent_groups,
@@ -29,14 +30,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItem,
     NativeExamParent,
-    NativeGapSegment,
     NativeParagraph,
-    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_asset_ids,
+    body_plain_text,
+    body_text_lines,
+    source_paragraphs,
 )
 
 __all__ = ["Placed", "SectionInstructions", "place_section_instructions"]
-
-_GAP_MARKER = "[___]"
 
 
 @dataclass(frozen=True)
@@ -69,37 +72,79 @@ def _printed(item: NativeExamItem, text: str) -> bool:
     )
 
 
-def _paragraphs(item: NativeExamItem, texts: Sequence[str]) -> tuple[NativeParagraph, ...]:
-    return tuple(
-        NativeParagraph(segments=(NativeTextSegment(text=text),))
-        for text in dict.fromkeys(texts)
-        if not _printed(item, text)
+def _paragraph_content(paragraph: NativeParagraph) -> tuple[tuple[str, str], ...]:
+    """Positioned content independent of how adjacent text runs were split."""
+    parts: list[tuple[str, str]] = []
+    for segment in paragraph.segments:
+        if segment.kind == "text":
+            if parts and parts[-1][0] == "text":
+                parts[-1] = ("text", parts[-1][1] + segment.text)
+            else:
+                parts.append(("text", segment.text))
+        elif segment.kind == "asset":
+            parts.append(("asset", segment.asset_id))
+        else:
+            parts.append(("gap", segment.gap_id))
+    return tuple(parts)
+
+
+def _body_paragraphs(
+    item: NativeExamItem,
+    paragraphs: Sequence[NativeParagraph],
+    delivered: list[NativeParagraph],
+) -> tuple[NativeParagraph, ...]:
+    """Omit only already-delivered content, accounting for each paragraph occurrence.
+
+    A text echo is not a positioned picture paragraph, and an asset id identifies bytes,
+    not a source occurrence. Each complete matching body paragraph consumes one source
+    occurrence; repeated source paragraphs remain repeated. Text-only instructions keep
+    the existing whole-line wording check.
+    """
+    kept: list[NativeParagraph] = []
+    for paragraph in paragraphs:
+        matching = next(
+            (
+                shown
+                for shown in delivered
+                if _paragraph_content(shown) == _paragraph_content(paragraph)
+            ),
+            None,
+        )
+        if matching is not None:
+            delivered.remove(matching)
+            continue
+        text = body_plain_text((paragraph,))
+        if not body_asset_ids((paragraph,)) and text and _printed(item, text):
+            continue
+        kept.append(paragraph)
+    return tuple(kept)
+
+
+def _with_paragraphs(
+    item: NativeExamItem, paragraphs: Sequence[NativeParagraph], delivered: list[NativeParagraph]
+) -> NativeExamItem:
+    return item.model_copy(
+        update={"body": (*_body_paragraphs(item, paragraphs, delivered), *item.body)}
     )
-
-
-def _with_paragraphs(item: NativeExamItem, texts: list[str]) -> NativeExamItem:
-    return item.model_copy(update={"body": (*_paragraphs(item, texts), *item.body)})
 
 
 def _renders_one_of(paragraph: NativeParagraph, chunks: Sequence[str]) -> bool:
-    text = folded(
-        "".join(
-            segment.text if isinstance(segment, NativeTextSegment) else _GAP_MARKER
-            for segment in paragraph.segments
-            if isinstance(segment, (NativeTextSegment, NativeGapSegment))
-        )
-    )
+    text = folded(" ".join(body_text_lines((paragraph,))))
     return bool(text) and any(chunk.startswith(text) for chunk in chunks)
 
 
-def _with_joined(item: NativeExamItem, joined: Sequence[Joined]) -> NativeExamItem:
+def _with_joined(
+    item: NativeExamItem, joined: Sequence[Joined], delivered: list[NativeParagraph]
+) -> NativeExamItem:
     """Place each joined instruction before the body paragraph that renders the next own chunk.
 
-    The first body paragraph stands in when the item prints nothing of its own before the
-    instruction. An instruction no paragraph can be located by ends the body.
+    Every source chunk keeps its exact place, a shared picture included; a paragraph the
+    item's own body already holds is not placed again. The first body paragraph stands in
+    when the item prints nothing of its own before the instruction. An instruction no
+    paragraph can be located by ends the body.
     """
     for entry in joined:
-        added = _paragraphs(item, entry.texts)
+        added = _body_paragraphs(item, source_paragraphs(entry.sources), delivered)
         at = (
             0
             if entry.opens
@@ -114,6 +159,22 @@ def _with_joined(item: NativeExamItem, joined: Sequence[Joined]) -> NativeExamIt
 
 def _item_id(index: int) -> str:
     return f"item_{index + 1:03d}"
+
+
+def _parent_instruction(group: Sequence[Run]) -> tuple[NativeParagraph, ...]:
+    """Every run's source chunks as positioned paragraphs, headings first, deduplicated.
+
+    A shared picture stays at its exact place in the shared wording (F2); a picture the
+    chunker could not show keeps its named placeholder there.
+    """
+    paragraphs: list[NativeParagraph] = []
+    seen_anchors: set[str] = set()
+    for run in sorted(group, key=lambda entry: (not entry.heading, entry.start)):
+        for chunk in run.sources:
+            if chunk.anchor not in seen_anchors:
+                paragraphs.extend(source_paragraphs((chunk,)))
+                seen_anchors.add(chunk.anchor)
+    return tuple(paragraphs)
 
 
 def place_section_instructions(
@@ -164,7 +225,7 @@ def place_section_instructions(
     for group in groups:
         for run in group:
             parented.setdefault((run.origin, run.start), set()).update(run.reach)
-    carried: dict[int, list[str]] = {}
+    carried: dict[int, list[NativeParagraph]] = {}
     landed: dict[int, set[str]] = {}
     for k, entries in joined.items():
         for entry in entries:
@@ -174,7 +235,6 @@ def place_section_instructions(
             for k in run.reach:
                 landed.setdefault(run.origin, set()).update(ordered[k][1])
         covered = parented.get((run.origin, run.start), set())
-        wording = "\n".join(chunk.text for chunk in run.sources)
         targets = [k for k in run.reach if k not in covered]
         if run.heading and not run.governs and len(run.reach) >= 2:
             # A section heading that forms no parent opens its first question only. A
@@ -182,30 +242,28 @@ def place_section_instructions(
             # instruction that cannot be a parent.
             targets = targets[:1]
         for k in targets:
-            if run.heading and run.raw and _printed(ordered[k][2], run.raw):
+            if (
+                run.heading
+                and run.raw
+                and not any(chunk.images or chunk.missing_images for chunk in run.sources)
+                and _printed(ordered[k][2], run.raw)
+            ):
                 continue
-            carried.setdefault(k, []).append(wording)
-    items = tuple(
-        _with_paragraphs(_with_joined(item, joined.get(k, [])), carried.get(k, [])).model_copy(
-            update={"item_id": _item_id(k), "sequence": k + 1}
-        )
-        for k, (_, _, item) in enumerate(ordered)
-    )
+            carried.setdefault(k, []).extend(source_paragraphs(run.sources))
+    items: list[NativeExamItem] = []
+    for k, (_, _, item) in enumerate(ordered):
+        delivered = list(item.body)
+        item = _with_joined(item, joined.get(k, []), delivered)
+        item = _with_paragraphs(item, carried.get(k, []), delivered)
+        items.append(item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
-            instruction=tuple(
-                dict.fromkeys(
-                    chunk.text
-                    for run in sorted(group, key=lambda r: (not r.heading, r.start))
-                    for chunk in run.sources
-                    if chunk.text.strip()
-                )
-            ),
+            instruction=_parent_instruction(group),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )
         for number, group in enumerate(groups, start=1)
     )
     return SectionInstructions(
-        items, parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
+        tuple(items), parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
     )

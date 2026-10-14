@@ -138,8 +138,9 @@ export function toExamWorkspaceItemRow(
 export function toExamWorkspaceItemRows(
   items: NativeExamItem[],
   parents: NativeExamParent[] = [],
+  assetUrls: Record<string, string> = {},
 ): ExamWorkspaceItemRow[] {
-  const blocks = examWorkspaceParentBlocksByFirstChild(parents, items);
+  const blocks = examWorkspaceParentBlocksByFirstChild(parents, items, assetUrls);
   const children = examWorkspaceParentChildren(parents);
   return items.map((item) =>
     toExamWorkspaceItemRow(item, children[item.item_id] ?? null, blocks[item.item_id] ?? null),

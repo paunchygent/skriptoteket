@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
     PLACEHOLDER_REASON,
@@ -375,7 +376,11 @@ def _final_with_parent(head: NativeExamDocument, progress: ConversionProgress) -
 
 def _instruction_of(document: NativeExamDocument) -> dict[str, tuple[str, ...] | None]:
     return {
-        item.item_id: (parent.instruction if (parent := document.parent_of(item.item_id)) else None)
+        item.item_id: (
+            body_text_lines(parent.instruction)
+            if (parent := document.parent_of(item.item_id))
+            else None
+        )
         for item in document.items
     }
 

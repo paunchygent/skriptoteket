@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, TypeAlias
 
 EXAMNET_QTI_VERSION: Literal["2.1"] = "2.1"
 EXAMNET_QTI_PACKAGE_SCHEMA_VERSION: Literal["examnet_qti_package_plan_v1"] = (
@@ -158,6 +158,32 @@ class ExamNetQtiUnsupportedResource:
 
 
 @dataclass(frozen=True)
+class ExamNetQtiPromptText:
+    """One literal text run at its place inside a rich prompt paragraph."""
+
+    text: str
+
+
+@dataclass(frozen=True)
+class ExamNetQtiPromptImage:
+    """One image at its place; ``image_index`` addresses the item's image resources."""
+
+    image_index: int
+
+
+@dataclass(frozen=True)
+class ExamNetQtiPromptGap:
+    """One text-entry gap at its place; ``gap_index`` addresses the item's text-entry gaps."""
+
+    gap_index: int
+
+
+ExamNetQtiPromptSegment: TypeAlias = (
+    ExamNetQtiPromptText | ExamNetQtiPromptImage | ExamNetQtiPromptGap
+)
+
+
+@dataclass(frozen=True)
 class ExamNetQtiItem:
     """One QTI item request in the Exam.net target profile.
 
@@ -166,6 +192,11 @@ class ExamNetQtiItem:
     item holding one interaction per child, each with its own response, and every
     reader takes each child's own ``interaction_type``. Its ``image_resources`` are the children's
     in order, so package planning writes every image once under the parent.
+
+    ``prompt_paragraphs`` carries the exact rich placement of text, images, and
+    gaps; its image and gap indexes address this item's own ``image_resources``
+    and ``text_entry_gaps`` in order. An empty value keeps the positionless
+    ``prompt_lines`` rendering with appended images.
     """
 
     item_id: str
@@ -174,6 +205,7 @@ class ExamNetQtiItem:
     interaction_type: ExamNetQtiInteractionType
     prompt_lines: tuple[str, ...]
     max_score: int | float | None
+    prompt_paragraphs: tuple[tuple[ExamNetQtiPromptSegment, ...], ...] = ()
     evaluation_mode: ExamNetQtiEvaluationMode = ExamNetQtiEvaluationMode.AUTOMATIC
     manual_representation: ExamNetQtiManualRepresentation = (
         ExamNetQtiManualRepresentation.NATIVE_INTERACTION

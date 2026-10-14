@@ -11,6 +11,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamItemKind,
     NativeExamParent,
+    NativeParagraph,
+    NativeTextSegment,
 )
 
 _RECORDINGS = Path("tests/fixtures/exam_conversion/docx_build_v7")
@@ -55,6 +57,6 @@ def item_numbers(items: tuple[NativeExamItem, ...], kind: NativeExamItemKind) ->
 def parent_over(parent_id: str, instruction: str, *numbers: int) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
-        instruction=(instruction,),
+        instruction=(NativeParagraph(segments=(NativeTextSegment(text=instruction),)),),
         item_ids=tuple(f"item_{number:03d}" for number in numbers),
     )

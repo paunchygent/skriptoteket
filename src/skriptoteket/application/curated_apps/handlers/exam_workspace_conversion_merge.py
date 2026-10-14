@@ -13,18 +13,27 @@ rule. Items the teacher added belong to no unit and keep their place.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_assets import (
+    merged_assets,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_fields import (
+    choose_delivered_field as _choose,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_fields import (
+    digest_json as _digest,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
     NativeExamDocument,
     NativeExamItem,
     NativeExamParent,
+    NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     validate_parent_structure,
@@ -100,8 +109,9 @@ class ConversionTarget:
 
     units: tuple[CandidateUnit, ...]
     title: str | None = None
-    instructions: tuple[str, ...] | None = None
+    instructions: tuple[NativeParagraph, ...] | None = None
     parents: tuple[NativeExamParent, ...] | None = None
+    assets: tuple[NativeExamAsset, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -109,11 +119,6 @@ class ConversionMerge:
     document: NativeExamDocument
     progress: ConversionProgress
     changed: bool
-
-
-def _digest(value: object) -> str:
-    encoded = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def items_digest(items: Sequence[NativeExamItem]) -> str:
@@ -160,6 +165,7 @@ def target_from_update(update: ConversionUpdate) -> ConversionTarget:
         title=update.document.title,
         instructions=update.document.instructions,
         parents=update.document.parents,
+        assets=update.document.assets,
     )
 
 
@@ -183,7 +189,9 @@ def first_conversion(*, update: ConversionUpdate, progress: ConversionProgress) 
             units=_ordered_units(progress, written),
             revision=1,
             title_digest=_digest(document.title),
-            instructions_digest=_digest(list(document.instructions)),
+            instructions_digest=_digest(
+                [paragraph.model_dump(mode="json") for paragraph in document.instructions]
+            ),
             parents_digest=_parents_digest(document.parents),
         ),
         changed=True,
@@ -377,12 +385,18 @@ def merge_conversion(
         item.model_copy(update={"sequence": sequence})
         for sequence, item in enumerate(ordered, start=1)
     )
-
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
     instructions, instructions_digest = _choose(
         head.instructions, target.instructions, progress.instructions_digest
     )
     parents, parents_digest = _merge_parents(head, target, progress, id_map, items)
+    assets = merged_assets(
+        head=head,
+        delivered=target.assets,
+        items=items,
+        instructions=instructions,
+        parents=parents,
+    )
     document = head.model_copy(
         update={
             "revision": head.revision + 1,
@@ -390,6 +404,7 @@ def merge_conversion(
             "instructions": instructions,
             "items": items,
             "parents": parents,
+            "assets": assets,
         }
     )
     document = NativeExamDocument.model_validate(document.model_dump())
@@ -406,18 +421,6 @@ def merge_conversion(
         ),
         changed=changed,
     )
-
-
-def _choose[T: (str, tuple[str, ...])](
-    current: T, proposed: T | None, delivered_digest: str | None
-) -> tuple[T, str | None]:
-    if proposed is None:
-        return current, delivered_digest
-    as_json = list(current) if isinstance(current, tuple) else current
-    if _digest(as_json) != delivered_digest:
-        return current, delivered_digest
-    proposed_json = list(proposed) if isinstance(proposed, tuple) else proposed
-    return proposed, _digest(proposed_json)
 
 
 def _merge_parents(

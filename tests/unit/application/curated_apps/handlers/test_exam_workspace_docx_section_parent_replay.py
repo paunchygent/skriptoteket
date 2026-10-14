@@ -12,6 +12,7 @@ import pytest
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     build_replay,
@@ -43,7 +44,7 @@ async def test_a_governing_instruction_is_the_parent_of_every_question_it_govern
     governed_items = [item_id for qid in governed for item_id in update.item_ids[str(qid)]]
     parent = document.parent_of(governed_items[0])
     assert parent is not None, "the first governed question has no section parent"
-    assert parent.instruction == (text[_INSTRUCTION],)
+    assert body_text_lines(parent.instruction) == (text[_INSTRUCTION],)
     assert list(parent.item_ids) == governed_items
     first = next(item for item in document.items if item.item_id == governed_items[0])
     printed = [
@@ -53,5 +54,5 @@ async def test_a_governing_instruction_is_the_parent_of_every_question_it_govern
         if isinstance(segment, NativeTextSegment)
     ]
     assert text[_INSTRUCTION] not in printed, "the first question prints the parent's instruction"
-    assert text[_INSTRUCTION] not in document.instructions
+    assert text[_INSTRUCTION] not in body_text_lines(document.instructions)
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []

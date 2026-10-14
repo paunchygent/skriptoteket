@@ -128,7 +128,7 @@ class ExportExamWorkspaceDocumentHandler:
                 content=self._pdf_renderer.render_pdf(document=pdf_document),
             )
 
-        content = self._docx_writer.build_docx_bytes(document)
+        content = self._docx_writer.build_docx_bytes(document, assets_by_id=container.assets_by_id)
         self._docx_writer.validate_docx_bytes(content, expected_item_count=len(document.items))
         return ExamWorkspaceExportFile(
             filename=f"{base}.docx",

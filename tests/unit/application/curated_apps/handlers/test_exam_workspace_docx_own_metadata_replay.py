@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     RECORDINGS,
@@ -62,7 +63,7 @@ async def test_an_own_heading_a_reply_lists_as_an_instruction_stays_in_the_check
     # The item lacks the heading's wording, so the check mark shows it as printed (D4).
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert item.review.reasons[-2:] == (LEFT_OUT_REASON, heading)
-    assert heading not in document.instructions
+    assert heading not in body_text_lines(document.instructions)
     assert all(b.item_id != item.item_id for b in native_export_blockers(document))
 
 
@@ -85,13 +86,13 @@ async def test_an_own_lead_in_a_reply_lists_as_an_instruction_stands_on_the_pare
     assert lead_in == "Read the sentence:"
     (q5,) = outcome.update.item_ids["q5"]
     (q6,) = outcome.update.item_ids["q6"]
-    (parent,) = [p for p in document.parents if lead_in in p.instruction]
+    (parent,) = [p for p in document.parents if lead_in in body_text_lines(p.instruction)]
     assert parent.item_ids == (q5, q6)
     for item in (i for i in document.items if i.item_id in (q5, q6)):
         assert lead_in not in item.plain_text_lines()
         assert LEFT_OUT_REASON not in item.review.reasons
         assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert lead_in not in document.instructions
+    assert lead_in not in body_text_lines(document.instructions)
     assert native_export_blockers(document) == ()
 
 
@@ -128,4 +129,4 @@ async def test_an_own_line_a_reply_lists_as_an_instruction_stands_at_its_place_i
     assert lines[2].startswith("a) De trötta eleverna")
     assert LEFT_OUT_REASON not in item.review.reasons
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert line not in document.instructions
+    assert line not in body_text_lines(document.instructions)

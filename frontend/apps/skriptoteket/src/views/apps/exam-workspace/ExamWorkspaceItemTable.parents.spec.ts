@@ -3,31 +3,68 @@
  *
  * Expected behavior:
  *   The list shows a parent's shared instruction and total points once, above
- *   the first child, and "Totalt –" while a child lacks points. Standalone
- *   questions carry no parent block. The editor tells a child its position
- *   and that it cannot be moved, removed or retyped here, offers no control
- *   for those changes, and says nothing of the kind for a standalone question.
+ *   the first child, and "Totalt –" while a child lacks points. A shared
+ *   instruction keeps its text and pictures in order, a known picture from
+ *   its protected URL. Standalone questions carry no parent block. The editor
+ *   tells a child its position and that it cannot be moved, removed or
+ *   retyped here, offers no control for those changes, and says nothing of
+ *   the kind for a standalone question.
  */
 
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
+import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./ExamWorkspaceItemTable.vue";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
 import { toExamWorkspaceItemRows } from "./examWorkspaceRows";
 
-function mountTable(document = buildParentDocument()) {
+const DIAGRAM_ASSET_ID = "asset_0123456789abcdef";
+const DIAGRAM_URL =
+  "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/lineage-1/assets/asset_0123456789abcdef?revision=3";
+
+function instructionText(paragraph: NativeExamBodyParagraph): string {
+  return paragraph.segments
+    .map((segment) => (segment.kind === "text" ? segment.text : ""))
+    .join("");
+}
+
+function mountTable(
+  document = buildParentDocument(),
+  assetUrls: Record<string, string> = {},
+) {
   return mount(ExamWorkspaceItemTable, {
     props: {
       exportBlockersByItemId: {},
       proposalItemIds: [],
       readinessByItemId: {},
-      rows: toExamWorkspaceItemRows(document.items, document.parents),
+      rows: toExamWorkspaceItemRows(document.items, document.parents, assetUrls),
       selectedItemId: "item_001",
     },
   });
+}
+
+function documentWithDiagram() {
+  const document = buildParentDocument();
+  return {
+    ...document,
+    parents: [
+      {
+        ...document.parents[0]!,
+        instruction: [
+          {
+            segments: [
+              { kind: "text" as const, text: "Betrakta diagrammet." },
+              { asset_id: DIAGRAM_ASSET_ID, kind: "asset" as const },
+              { kind: "text" as const, text: "Svara sedan." },
+            ],
+          },
+        ],
+      },
+    ],
+  };
 }
 
 function mountEditorFor(itemId: string) {
@@ -54,9 +91,12 @@ describe("ExamWorkspaceItemTable with a parent", () => {
 
     const blocks = wrapper.findAll('[data-test^="exam-workspace-parent-parent_"]');
     expect(blocks).toHaveLength(1);
-    const instructionLines = wrapper.findAll('[data-test="exam-workspace-parent-instruction-line"]');
-    expect(instructionLines.map((line) => line.text())).toEqual(document.parents[0]!.instruction);
-    expect(wrapper.text().split(document.parents[0]!.instruction[0]!)).toHaveLength(2);
+    const instruction = document.parents[0]!.instruction;
+    const instructionLines = wrapper.findAll(
+      '[data-test="exam-workspace-shared-instruction-paragraph"]',
+    );
+    expect(instructionLines.map((line) => line.text())).toEqual(instruction.map(instructionText));
+    expect(wrapper.text().split(instructionText(instruction[0]!))).toHaveLength(2);
     expect(wrapper.get('[data-test="exam-workspace-parent-points"]').text()).toBe("Totalt 3 poäng");
 
     const firstChildRow = wrapper.get('[data-test="exam-workspace-item-row-item_001"]');
@@ -94,6 +134,21 @@ describe("ExamWorkspaceItemTable with a parent", () => {
     expect(wrapper.findAll('[data-test^="exam-workspace-parent-parent_"]')).toHaveLength(1);
     expect(rows.map((row) => row.parentChild?.childIndex)).toEqual([0, 1, 2, 3]);
     expect(rows.map((row) => row.parentChild?.childCount)).toEqual([4, 4, 4, 4]);
+  });
+
+  it("renders a shared diagram once, from its protected URL, in text order", () => {
+    const wrapper = mountTable(documentWithDiagram(), { [DIAGRAM_ASSET_ID]: DIAGRAM_URL });
+
+    const images = wrapper.findAll('[data-test="exam-workspace-shared-instruction-image"]');
+    expect(images).toHaveLength(1);
+    expect(images[0]!.attributes("src")).toBe(DIAGRAM_URL);
+    expect(images[0]!.attributes("data-asset-id")).toBe(DIAGRAM_ASSET_ID);
+
+    const paragraph = wrapper.get('[data-test="exam-workspace-shared-instruction-paragraph"]');
+    const rendered = Array.from(paragraph.element.children).map((element) =>
+      element.tagName === "IMG" ? element.getAttribute("src") : element.textContent,
+    );
+    expect(rendered).toEqual(["Betrakta diagrammet.", DIAGRAM_URL, "Svara sedan."]);
   });
 
   it("shows no parent block on a document without parents", () => {

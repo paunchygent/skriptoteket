@@ -10,6 +10,7 @@ accumulate in the teacher's vault usage.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import PurePosixPath
 from uuid import UUID
 
@@ -31,6 +32,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile
@@ -44,6 +48,18 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _SAVE_ATTEMPTS = 3
+
+
+def _referenced_payloads(
+    document: NativeExamDocument, payloads: Mapping[str, bytes]
+) -> dict[str, bytes]:
+    """The payloads the document's own asset list references; a missing payload fails later
+    in the container's fail-closed validation rather than being silently dropped."""
+    return {
+        asset.asset_id: payloads[asset.asset_id]
+        for asset in document.assets
+        if asset.asset_id in payloads
+    }
 
 
 def _version_name(job: ExamAnswerKeyEnrichmentJob) -> str:
@@ -241,7 +257,7 @@ class ExamWorkspaceConversionProgress:
                 name=name,
                 merged=ConversionMerge(document=document, progress=merged.progress, changed=True),
                 head_file=None,
-                assets_by_id={},
+                assets_by_id=_referenced_payloads(document, update.assets_by_id),
                 notes=notes or (),
             )
             return
@@ -256,7 +272,9 @@ class ExamWorkspaceConversionProgress:
             name=name,
             merged=merged,
             head_file=head_file,
-            assets_by_id=head.assets_by_id,
+            assets_by_id=_referenced_payloads(
+                merged.document, {**head.assets_by_id, **update.assets_by_id}
+            ),
             notes=head.notes if notes is None else notes,
             notes_changed=notes is not None and notes != head.notes,
         )

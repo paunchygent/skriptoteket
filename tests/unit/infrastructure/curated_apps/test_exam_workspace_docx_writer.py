@@ -1,20 +1,33 @@
 """Round-trip and fail-closed tests for the exam workspace DOCX writer (D3)."""
 
+import hashlib
 import io
+import zipfile
+from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from docx import Document
+from docx.document import Document as DocxDocument
+from docx.oxml.ns import qn
+from docx.text.paragraph import Paragraph
+from PIL import Image
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
+    exam_language_labels,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
+    NativeAssetSegment,
     NativeChoice,
+    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
     NativeExamItemKind,
+    NativeExamParent,
     NativeGap,
     NativeGapSegment,
     NativeItemReview,
@@ -43,6 +56,142 @@ def _review_complete() -> NativeItemReview:
         state=NativeItemReviewState.REVIEW_COMPLETE,
         parse_origin=NativeParseOrigin.TEACHER_CREATED,
     )
+
+
+_SHARED_GLOBAL_BEFORE = "Betrakta: "
+_SHARED_GLOBAL_AFTER = " diagrammet."
+_SHARED_PARENT_BEFORE = "Se figuren: "
+_SHARED_PARENT_AFTER = " och svara."
+_SHARED_MARKING_GUIDE = "Godtagbar förklaring."
+
+
+@dataclass(frozen=True)
+class SharedPictureDocument:
+    """The accepted shared-picture document: two shared instructions and one facit item."""
+
+    document: NativeExamDocument
+    global_asset_id: str
+    parent_asset_id: str
+    assets_by_id: dict[str, bytes]
+
+
+def _png(color: tuple[int, int, int, int], size: tuple[int, int]) -> bytes:
+    buffer = io.BytesIO()
+    Image.new("RGBA", size, color).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def _shared_asset(payload: bytes) -> tuple[str, NativeExamAsset]:
+    digest = hashlib.sha256(payload).hexdigest()
+    asset_id = f"asset_{digest[:16]}"
+    return asset_id, NativeExamAsset(
+        asset_id=asset_id,
+        media_type="image/png",
+        byte_length=len(payload),
+        sha256=digest,
+    )
+
+
+def shared_picture_document() -> SharedPictureDocument:
+    """Global and parent instruction each carry a real PNG between two text runs."""
+    global_payload = _png((200, 20, 20, 255), (12, 6))
+    parent_payload = _png((20, 20, 200, 255), (16, 8))
+    global_id, global_asset = _shared_asset(global_payload)
+    parent_id, parent_asset = _shared_asset(parent_payload)
+    items = (
+        NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.FREE_TEXT,
+            body=(
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Fråga 1."),
+                        NativeAssetSegment(asset_id=global_id),
+                    )
+                ),
+            ),
+            points=1,
+            marking_guide=_SHARED_MARKING_GUIDE,
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+            review=_review_complete(),
+        ),
+        NativeExamItem(
+            item_id="item_002",
+            sequence=2,
+            kind=NativeExamItemKind.FREE_TEXT,
+            body=(NativeParagraph(segments=(NativeTextSegment(text="Fråga 2."),)),),
+            points=1,
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+            review=_review_complete(),
+        ),
+    )
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Diagramprov",
+        instructions=(
+            NativeParagraph(
+                segments=(
+                    NativeTextSegment(text=_SHARED_GLOBAL_BEFORE),
+                    NativeAssetSegment(asset_id=global_id),
+                    NativeTextSegment(text=_SHARED_GLOBAL_AFTER),
+                )
+            ),
+        ),
+        items=items,
+        parents=(
+            NativeExamParent(
+                parent_id="parent_001",
+                instruction=(
+                    NativeParagraph(
+                        segments=(
+                            NativeTextSegment(text=_SHARED_PARENT_BEFORE),
+                            NativeAssetSegment(asset_id=parent_id),
+                            NativeTextSegment(text=_SHARED_PARENT_AFTER),
+                        )
+                    ),
+                ),
+                item_ids=tuple(item.item_id for item in items),
+            ),
+        ),
+        assets=(global_asset, parent_asset),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+    return SharedPictureDocument(
+        document=document,
+        global_asset_id=global_id,
+        parent_asset_id=parent_id,
+        assets_by_id={global_id: global_payload, parent_id: parent_payload},
+    )
+
+
+def _only_paragraph(paragraphs: list[Paragraph], text: str) -> Paragraph:
+    matches = [paragraph for paragraph in paragraphs if paragraph.text == text]
+    assert len(matches) == 1, f"expected one paragraph {text!r}, found {len(matches)}"
+    return matches[0]
+
+
+def _run_shape(paragraph: Paragraph) -> list[str]:
+    shape: list[str] = []
+    for run in paragraph.runs:
+        if run._element.find(qn("w:drawing")) is not None:
+            shape.append("image")
+        elif run.text:
+            shape.append(run.text)
+    return shape
+
+
+def _drawing_payload(parsed: DocxDocument, paragraph: Paragraph) -> bytes:
+    drawing = next(
+        element
+        for run in paragraph.runs
+        if (element := run._element.find(qn("w:drawing"))) is not None
+    )
+    blip = next(drawing.iter(qn("a:blip")))
+    payload = parsed.part.related_parts[blip.attrib[qn("r:embed")]].blob
+    assert isinstance(payload, bytes)
+    return payload
 
 
 def _all_kinds_document() -> NativeExamDocument:
@@ -111,7 +260,10 @@ def _all_kinds_document() -> NativeExamDocument:
         document_id=uuid4(),
         revision=1,
         title="Grammatikprov",
-        instructions=("Svenska 2", "Total: 9,5 poäng"),
+        instructions=(
+            NativeParagraph(segments=(NativeTextSegment(text="Svenska 2"),)),
+            NativeParagraph(segments=(NativeTextSegment(text="Total: 9,5 poäng"),)),
+        ),
         items=items,
         origin=NativeExamDocumentOrigin(kind="created"),
     )
@@ -225,3 +377,87 @@ class TestValidationFailsClosed:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
         assert exc_info.value.details["found_item_headings"] == 4
+
+
+class TestSharedInstructionPictures:
+    def test_two_shared_instructions_round_trip_in_place_with_payloads_and_facit(self) -> None:
+        fixture = shared_picture_document()
+        writer = ExamWorkspaceDocxWriter()
+        content = writer.build_docx_bytes(fixture.document, assets_by_id=fixture.assets_by_id)
+        writer.validate_docx_bytes(content, expected_item_count=len(fixture.document.items))
+
+        parsed = Document(io.BytesIO(content))
+        paragraphs = list(parsed.paragraphs)
+        texts = [paragraph.text for paragraph in paragraphs]
+
+        global_paragraph = _only_paragraph(
+            paragraphs, f"{_SHARED_GLOBAL_BEFORE}{_SHARED_GLOBAL_AFTER}"
+        )
+        assert _run_shape(global_paragraph) == [
+            _SHARED_GLOBAL_BEFORE,
+            "image",
+            _SHARED_GLOBAL_AFTER,
+        ]
+        assert (
+            _drawing_payload(parsed, global_paragraph)
+            == fixture.assets_by_id[fixture.global_asset_id]
+        )
+        assert texts.count(global_paragraph.text) == 1
+
+        parent_paragraph = _only_paragraph(
+            paragraphs, f"{_SHARED_PARENT_BEFORE}{_SHARED_PARENT_AFTER}"
+        )
+        assert _run_shape(parent_paragraph) == [
+            _SHARED_PARENT_BEFORE,
+            "image",
+            _SHARED_PARENT_AFTER,
+        ]
+        assert (
+            _drawing_payload(parsed, parent_paragraph)
+            == fixture.assets_by_id[fixture.parent_asset_id]
+        )
+        assert texts.count(parent_paragraph.text) == 1
+        first_heading_at = next(
+            index
+            for index, paragraph in enumerate(paragraphs)
+            if paragraph.style is not None and paragraph.style.name == "Heading 3"
+        )
+        assert texts.index(parent_paragraph.text) == first_heading_at - 1
+
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            media_payloads = [
+                archive.read(name) for name in archive.namelist() if name.startswith("word/media/")
+            ]
+        expected_digests = sorted(
+            hashlib.sha256(payload).hexdigest() for payload in fixture.assets_by_id.values()
+        )
+        assert sorted(hashlib.sha256(payload).hexdigest() for payload in media_payloads) == (
+            expected_digests
+        )
+
+        labels = exam_language_labels(fixture.document)
+        heading_names = [
+            paragraph.text
+            for paragraph in paragraphs
+            if paragraph.style is not None and paragraph.style.name == "Heading 2"
+        ]
+        assert labels.answer_key in heading_names
+        assert labels.keyed(labels.marking_guide, _SHARED_MARKING_GUIDE) in texts
+
+    def test_item_body_picture_keeps_plain_text_rendering(self) -> None:
+        fixture = shared_picture_document()
+        content = ExamWorkspaceDocxWriter().build_docx_bytes(
+            fixture.document, assets_by_id=fixture.assets_by_id
+        )
+
+        paragraphs = list(Document(io.BytesIO(content)).paragraphs)
+        body_paragraph = _only_paragraph(paragraphs, "Fråga 1.")
+        assert _run_shape(body_paragraph) == ["Fråga 1."]
+
+    def test_shared_instruction_picture_without_payload_fails_closed(self) -> None:
+        fixture = shared_picture_document()
+        with pytest.raises(DomainError) as exc_info:
+            ExamWorkspaceDocxWriter().build_docx_bytes(fixture.document)
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+        assert exc_info.value.details["asset_ids"] == [fixture.global_asset_id]

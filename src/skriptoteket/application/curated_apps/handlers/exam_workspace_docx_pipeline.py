@@ -53,8 +53,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline_batches import (
+    BatchPart,
+    batch_state,
+    failed,
+    reviewed,
+    source_parts,
+    source_reviewed,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
@@ -79,6 +84,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
+    retry_sources_by_anchor,
+    with_retry_sources,
+    with_source_assets,
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.docx_conversion_progress import (
@@ -109,7 +119,6 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
-_BATCH_FAILED_REASON = "Frågan kunde inte tolkas. Kontrollera källtexten manuellt."
 UNLABELED_REASON = "Frågetypen kunde inte avgöras. Välj frågetyp och kontrollera källtexten."
 
 logger = structlog.get_logger(__name__)
@@ -245,6 +254,7 @@ class DocxConversionPipeline:
         request, unlabeled = self._labeling_request(run, manifest)
         for question_id in unlabeled:
             run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
+            run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
         if unlabeled:
             self._dispatch(run, unlabeled, "wi-", tasks)
 
@@ -269,9 +279,11 @@ class DocxConversionPipeline:
                         anchors=run.own_anchors[result.item_id],
                         detail=result.failure_code or "",
                     )
+                    run.label_kinds[result.item_id] = NativeExamItemKind.FREE_TEXT
                     unlabeled.append(result.item_id)
                     continue
                 run.kinds[result.item_id] = _KIND_OF_LABEL[result.label]
+                run.label_kinds[result.item_id] = _KIND_OF_LABEL[result.label]
                 labeled.append(result.item_id)
             self._dispatch(run, labeled, prefix, tasks)
             if unlabeled:
@@ -295,30 +307,15 @@ class DocxConversionPipeline:
         ):
             tasks.create_task(self._convert(run, batch, tasks))
 
-    def _batch_state(self, run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildState:
-        job = run.job
-        return DocxBuildState(
-            job.job_id,
-            job.document_id,
-            job.filename,
-            job.source_sha256,
-            job.chunks,
-            claimable=batch.claims,
-            context_anchors=batch.reads,
-            allowed_kinds=batch.kinds,
-            batch=batch.batch_id,
-            keep_conflicts=any(qid in run.resent for qid in batch.question_ids),
-            questions=tuple(f.question_anchors for f in run.families),
-            governing=frozenset(governed_anchors(run.contexts, run.families)),
-        )
-
     async def _convert(
         self, run: DocxConversionRun, batch: ConversionBatch, tasks: asyncio.TaskGroup
     ) -> None:
         started = time.monotonic()
-        outcome = await self._converted(run, batch)
+        parts = source_parts(run, batch)
+        outcomes = [await self._admitted(run, part) for part in parts]
         run.timed(f"batch {batch.batch_id}", started)
-        await self._deliver(run, batch, outcome, tasks)
+        for part, outcome in zip(parts, outcomes, strict=True):
+            await self._deliver(run, part.batch, outcome, tasks)
 
     async def _unlabeled(
         self,
@@ -337,7 +334,7 @@ class DocxConversionPipeline:
             claims=frozenset().union(*(f.claims for f in families)),
             reads=frozenset(),
         )
-        await self._deliver(run, batch, self._reviewed(run, batch, UNLABELED_REASON), tasks)
+        await self._deliver(run, batch, reviewed(run, batch, UNLABELED_REASON), tasks)
 
     async def _deliver(
         self,
@@ -356,7 +353,7 @@ class DocxConversionPipeline:
                     job_id=str(run.job.job_id),
                     batch=batch.batch_id,
                 )
-                outcome = self._failed(run, batch, "batch_merge_failed", error)
+                outcome = failed(run, batch, "batch_merge_failed", error)
                 update = self._merged(run, batch, outcome)
             await self._progress.batch_ready(
                 worker_id=run.job.worker_id, job_id=run.job.job_id, update=update
@@ -364,14 +361,20 @@ class DocxConversionPipeline:
         if outcome.conflicts:
             self._dispatch(run, list(outcome.conflicts), f"{batch.batch_id}c", tasks)
 
-    async def _converted(self, run: DocxConversionRun, batch: ConversionBatch) -> BatchOutcome:
-        """The batch's admitted and contract-checked items, else its questions for review."""
-        families = {f.question_id: f for f in run.families if f.question_id in batch.question_ids}
+    async def _admitted(self, run: DocxConversionRun, part: BatchPart) -> BatchOutcome:
+        """One part's outcome: its families' review when their source is unavailable, else
+        their admitted and contract-checked items."""
+        if part.missing:
+            return source_reviewed(run, part)
         try:
             outcome = await convert_batch(
-                state=self._batch_state(run, batch),
-                batch=batch,
-                families=families,
+                state=batch_state(run, part.batch),
+                batch=part.batch,
+                families={
+                    f.question_id: f
+                    for f in run.families
+                    if f.question_id in part.batch.question_ids
+                },
                 exchange=self._exchange,
                 profile=self._profile,
             )
@@ -380,31 +383,12 @@ class DocxConversionPipeline:
         except Exception as error:
             # One batch's failure never fails the conversion (D25).
             logger.exception(
-                "DOCX conversion batch failed", job_id=str(run.job.job_id), batch=batch.batch_id
+                "DOCX conversion batch failed",
+                job_id=str(run.job.job_id),
+                batch=part.batch.batch_id,
             )
-            return self._failed(run, batch, "batch_failed", error)
+            return failed(run, part.batch, "batch_failed", error)
         return outcome
-
-    def _failed(
-        self, run: DocxConversionRun, batch: ConversionBatch, code: str, error: Exception
-    ) -> BatchOutcome:
-        """Each of the batch's questions as one review item holding its source text."""
-        outcome = self._reviewed(run, batch, _BATCH_FAILED_REASON)
-        outcome.state.record("batch", code, detail=type(error).__name__)
-        return outcome
-
-    def _reviewed(
-        self, run: DocxConversionRun, batch: ConversionBatch, reason: str
-    ) -> BatchOutcome:
-        state = self._batch_state(run, batch)
-        state.review_questions(
-            (run.own_anchors[qid] for qid in batch.question_ids),
-            keys=frozenset(a for qid in batch.question_ids for a in run.key_anchors[qid]),
-            contexts=run.context_anchors,
-            title=run.title_anchors,
-            reason=reason,
-        )
-        return BatchOutcome(state)
 
     def _merged(
         self, run: DocxConversionRun, batch: ConversionBatch, outcome: BatchOutcome
@@ -424,7 +408,20 @@ class DocxConversionPipeline:
         provisional = provisional_result(
             trial, families, frozenset(pending), governed_anchors(run.contexts, families)
         )
-        update = conversion_update(provisional.document, families, filled, pending)
+        sources = retry_sources_by_anchor(
+            families=families,
+            own_anchors=run.own_anchors,
+            key_anchors=run.key_anchors,
+            chunks=run.job.chunks,
+            label_kinds=run.label_kinds,
+        )
+        document, assets_by_id = with_source_assets(
+            document=with_retry_sources(provisional.document, sources),
+            chunks=run.job.chunks,
+            assets_by_id=provisional.assets_by_id,
+        )
+        provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
+        update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
         run.state = trial
         run.families = families
         run.filled = list(filled)
@@ -441,10 +438,30 @@ class DocxConversionPipeline:
             governed_anchors(run.contexts, run.families),
             tuple(f.question_anchors for f in run.families),
         )
-        update = conversion_update(result.document, run.families, tuple(run.filled), ())
-        checks = assembly_check(result.document, manifest, run.families, update) if manifest else ()
+        sources = retry_sources_by_anchor(
+            families=run.families,
+            own_anchors=run.own_anchors,
+            key_anchors=run.key_anchors,
+            chunks=run.job.chunks,
+            label_kinds=run.label_kinds,
+        )
+        document, assets_by_id = with_source_assets(
+            document=with_retry_sources(result.document, sources),
+            chunks=run.job.chunks,
+            assets_by_id=result.assets_by_id,
+        )
+        update = conversion_update(
+            document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
+        )
+        checks = assembly_check(document, manifest, run.families, update) if manifest else ()
         run.timed("assembly", started)
         return DocxConversionOutcome(
-            result=replace(result, events=(*result.events, *checks), timings=tuple(run.timings)),
+            result=replace(
+                result,
+                document=document,
+                assets_by_id=assets_by_id,
+                events=(*result.events, *checks),
+                timings=tuple(run.timings),
+            ),
             update=update,
         )

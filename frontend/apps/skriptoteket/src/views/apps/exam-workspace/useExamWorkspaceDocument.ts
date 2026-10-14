@@ -6,8 +6,9 @@
  *   list and reopen saved documents, edit items locally with immutable
  *   updates, refuse a save the server would reject with Swedish copy naming
  *   the questions,
- *   save versioned revisions, and recover from stale-save conflicts by reloading
- *   the latest saved version.
+ *   save versioned revisions, recover from stale-save conflicts by reloading
+ *   the latest saved version, and reconvert one review question from its
+ *   stored source with a type the teacher keeps or changes.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView`.
@@ -17,6 +18,8 @@
  *   - Writes arriving AI suggestions and keeps their single effect across
  *     saves through `useExamWorkspaceSaveArrivals`, only into the exam
  *     opening that requested them.
+ *   - Delegates the one-question reconversion request lifecycle to
+ *     `useExamWorkspaceItemRetry`.
  *   - Dirty state is derived: the copy differs from the last server document
  *     (`sameDocument`).
  *   - Reports outcomes through the shared toast store.
@@ -27,6 +30,7 @@ import { computed, ref, shallowRef } from "vue";
 import { isApiError } from "../../../api/client";
 import type { ApiError } from "../../../api/client";
 import {
+  examWorkspaceAssetUrl,
   getExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
@@ -56,6 +60,7 @@ import {
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
@@ -165,6 +170,21 @@ export function useExamWorkspaceDocument() {
       return null;
     }
     return current.items.find((item) => item.item_id === selectedItemId.value) ?? null;
+  });
+
+  /** The open document's pictures by asset id, for the editor's image atoms. */
+  const assetUrls = computed<Record<string, string>>(() => {
+    const current = workspaceDocument.value;
+    const lineageId = summary.value?.lineage_id;
+    if (!current || !lineageId || current.assets.length === 0) {
+      return {};
+    }
+    return Object.fromEntries(
+      current.assets.map((asset) => [
+        asset.asset_id,
+        examWorkspaceAssetUrl(lineageId, asset.asset_id, current.revision),
+      ]),
+    );
   });
 
   /** Whether `opening` is the exam opening in front of the teacher now. */
@@ -318,6 +338,15 @@ export function useExamWorkspaceDocument() {
     selectedItemId.value = itemId;
   }
 
+  const { retryItem } = useExamWorkspaceItemRetry({
+    isBusy: () => isBusy.value,
+    openExam,
+    operationBusy,
+    serverDocument,
+    summary,
+    workspaceDocument,
+  });
+
   /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
   function patchItem(
     itemId: string,
@@ -404,6 +433,7 @@ export function useExamWorkspaceDocument() {
   return {
     addItem,
     applyArrivingSuggestions,
+    assetUrls,
     conflictNotice,
     conversionError,
     conversionMessage,
@@ -424,6 +454,7 @@ export function useExamWorkspaceDocument() {
     openExam: computed(() => openExam.value),
     reloadDocument,
     restoreItemSuggestion,
+    retryItem,
     saveDocument,
     savedDocuments,
     savedRevision,

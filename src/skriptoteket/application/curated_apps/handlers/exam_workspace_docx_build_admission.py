@@ -21,6 +21,7 @@ batch for the pipeline to resend with the kind the source shows, once: in the re
 as converted.
 """
 
+from collections import Counter
 from collections.abc import Callable
 
 from pydantic import JsonValue, ValidationError
@@ -276,8 +277,22 @@ def _admit_item(
         context = definition_context(state.chunks, anchors, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
-        own = (chunk for chunk in state.chunks if chunk.anchor in shown)
-        return native_item(with_printed_points(with_accepted_forms(produced, context), own))
+        own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
+        item = native_item(
+            with_printed_points(with_accepted_forms(produced, context), own), chunks=own
+        )
+        source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
+        emitted = Counter(item.body_asset_ids())
+        if source_images != emitted:
+            # A picture the reply did not place, or placed twice, would otherwise move,
+            # vanish or double; the question's own source, pictures at their exact place,
+            # is the honest result.
+            missing = source_images - emitted
+            extra = emitted - source_images
+            raise ValueError(
+                f"source pictures differ: missing {dict(missing)}, extra {dict(extra)}"
+            )
+        return item
 
     built = _built(index, anchors, state, seen, build)
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))

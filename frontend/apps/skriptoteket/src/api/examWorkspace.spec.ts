@@ -39,7 +39,7 @@ function buildDocument(revision: number): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: ["Besvara alla frågor."],
+    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
     items: [
       {
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },

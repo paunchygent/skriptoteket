@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyAssetState,
   atomIds,
   gapChipLabel,
   parseAcceptedValues,
   partsFromParagraphElement,
+  renderParagraphElement,
   sameAtomSequence,
   segmentsFromParts,
 } from "./examWorkspaceBodySegments";
@@ -65,6 +67,44 @@ describe("gapChipLabel", () => {
 describe("parseAcceptedValues", () => {
   it("splits on commas, trims and drops empty values", () => {
     expect(parseAcceptedValues(" a , b,, ")).toEqual(["a", "b"]);
+  });
+});
+
+describe("asset segment rendering", () => {
+  it("renders a mapped asset as an image and an unmapped asset as the placeholder", () => {
+    const element = document.createElement("div");
+    renderParagraphElement(element, [{ kind: "asset", asset_id: "asset_001" }], [], {
+      asset_001: "https://gateway.test/assets/asset_001",
+    });
+
+    const atom = element.querySelector<HTMLElement>('[data-atom="asset"]')!;
+    const image = atom.querySelector("img")!;
+    expect(image.getAttribute("src")).toBe("https://gateway.test/assets/asset_001");
+    expect(atom.hasAttribute("data-label")).toBe(false);
+    expect(segmentsFromParts(partsFromParagraphElement(element))).toEqual([
+      { kind: "asset", asset_id: "asset_001" },
+    ]);
+
+    applyAssetState(atom, "asset_001", {});
+    expect(atom.querySelector("img")).toBeNull();
+    expect(atom.getAttribute("data-label")).toBe("Bild");
+  });
+
+  it("updates the image source in place and keeps one image per atom", () => {
+    const element = document.createElement("div");
+    renderParagraphElement(element, [{ kind: "asset", asset_id: "asset_001" }], [], {
+      asset_001: "https://gateway.test/assets/one.png",
+    });
+    const atom = element.querySelector<HTMLElement>('[data-atom="asset"]')!;
+    const image = atom.querySelector("img")!;
+
+    applyAssetState(atom, "asset_001", { asset_001: "https://gateway.test/assets/two.png" });
+    expect(atom.querySelector("img")).toBe(image);
+    expect(image.getAttribute("src")).toBe("https://gateway.test/assets/two.png");
+
+    applyAssetState(atom, "asset_001", { asset_001: "https://gateway.test/assets/two.png" });
+    expect(atom.querySelectorAll("img")).toHaveLength(1);
+    expect(atom.querySelector("img")).toBe(image);
   });
 });
 

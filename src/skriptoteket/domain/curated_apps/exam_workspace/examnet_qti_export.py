@@ -26,11 +26,18 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiMatchEntry,
     ExamNetQtiMatchPair,
+    ExamNetQtiPromptSegment,
     ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     ExamLanguageLabels,
     exam_language_labels,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
+    image_resources as stem_image_resources,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
+    prompt_paragraphs as body_prompt_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKeyOrigin,
@@ -40,6 +47,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
     NativeExamParent,
     NativeGapSegment,
+    NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_text_lines,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -73,7 +84,13 @@ def native_exam_to_examnet_qti_items(
         parent = document.parent_of(item.item_id)
         if parent is None:
             qti_items.append(
-                _qti_item(item=item, assets=assets, assets_by_id=assets_by_id, labels=labels)
+                _standalone_with_stem(
+                    item=item,
+                    stem=document.instructions,
+                    assets=assets,
+                    assets_by_id=assets_by_id,
+                    labels=labels,
+                )
             )
         elif parent.parent_id not in emitted_parent_ids:
             emitted_parent_ids.add(parent.parent_id)
@@ -81,6 +98,7 @@ def native_exam_to_examnet_qti_items(
             qti_items.append(
                 _parent_qti_item(
                     parent=parent,
+                    global_stem=document.instructions,
                     children=children,
                     assets=assets,
                     assets_by_id=assets_by_id,
@@ -90,16 +108,62 @@ def native_exam_to_examnet_qti_items(
     return tuple(qti_items)
 
 
+def _standalone_with_stem(
+    *,
+    item: NativeExamItem,
+    stem: tuple[NativeParagraph, ...],
+    assets: Mapping[str, NativeExamAsset],
+    assets_by_id: Mapping[str, bytes],
+    labels: ExamLanguageLabels,
+) -> ExamNetQtiItem:
+    stem_resources = stem_image_resources(
+        stem,
+        owner_id=item.item_id,
+        labels=labels,
+        assets=assets,
+        assets_by_id=assets_by_id,
+    )
+    child = _qti_item(
+        item=item,
+        assets=assets,
+        assets_by_id=assets_by_id,
+        labels=labels,
+        first_image_number=len(stem_resources) + 1,
+    )
+    if not stem:
+        return child
+    return replace(
+        child,
+        prompt_lines=(*body_text_lines(stem), *child.prompt_lines),
+        prompt_paragraphs=body_prompt_paragraphs(
+            (*stem, *item.body),
+            gap_ids=_placed_gap_ids(item),
+        )
+        if stem_resources or child.image_resources
+        else (),
+        image_resources=(*stem_resources, *child.image_resources),
+    )
+
+
 def _parent_qti_item(
     *,
     parent: NativeExamParent,
+    global_stem: tuple[NativeParagraph, ...],
     children: tuple[NativeExamItem, ...],
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
     labels: ExamLanguageLabels,
 ) -> ExamNetQtiItem:
+    stem = (*global_stem, *parent.instruction)
+    stem_resources = stem_image_resources(
+        stem,
+        owner_id=parent.parent_id,
+        labels=labels,
+        assets=assets,
+        assets_by_id=assets_by_id,
+    )
     qti_children: list[ExamNetQtiItem] = []
-    image_count = 0
+    image_count = len(stem_resources)
     for child in children:
         qti_child = _qti_item(
             item=child,
@@ -116,7 +180,15 @@ def _parent_qti_item(
         # One child has nothing to share: a stem outside its interaction would be
         # rejected, so the instruction joins the child's own prompt.
         return replace(
-            first, item_id=parent_id, prompt_lines=(*parent.instruction, *first.prompt_lines)
+            first,
+            item_id=parent_id,
+            prompt_lines=(*body_text_lines(stem), *first.prompt_lines),
+            prompt_paragraphs=body_prompt_paragraphs(
+                (*stem, *children[0].body), gap_ids=_placed_gap_ids(children[0])
+            )
+            if stem_resources or first.image_resources
+            else (),
+            image_resources=(*stem_resources, *first.image_resources),
         )
     manual = any(
         child.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED for child in qti_children
@@ -127,15 +199,19 @@ def _parent_qti_item(
         sequence=first.sequence,
         title=_parent_title(children, labels),
         interaction_type=first.interaction_type,
-        prompt_lines=parent.instruction,
+        prompt_lines=body_text_lines(stem),
+        prompt_paragraphs=body_prompt_paragraphs(stem) if stem_resources else (),
         max_score=sum(scored) if scored else None,
         evaluation_mode=(
             ExamNetQtiEvaluationMode.MANUAL_UNKEYED
             if manual
             else ExamNetQtiEvaluationMode.AUTOMATIC
         ),
-        image_resources=tuple(image for child in qti_children for image in child.image_resources),
-        instruction_lines=parent.instruction,
+        image_resources=(
+            *stem_resources,
+            *(image for child in qti_children for image in child.image_resources),
+        ),
+        instruction_lines=body_text_lines(stem),
         children=tuple(qti_children),
     )
 
@@ -181,6 +257,7 @@ def _base_qti_item(
         title=labels.item_title(item),
         interaction_type=_INTERACTION_TYPE_BY_KIND[item.kind],
         prompt_lines=item.plain_text_lines(),
+        prompt_paragraphs=_prompt_paragraphs(item),
         max_score=item.points,
         source_item_type=item.kind.value,
         image_resources=_image_resources(
@@ -285,6 +362,13 @@ def _placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
         for segment in paragraph.segments
         if isinstance(segment, NativeGapSegment)
     )
+
+
+def _prompt_paragraphs(item: NativeExamItem) -> tuple[tuple[ExamNetQtiPromptSegment, ...], ...]:
+    """Keep positioned picture/gap carriers; positionless producers use prompt_lines."""
+    if not item.body_asset_ids():
+        return ()
+    return body_prompt_paragraphs(item.body, gap_ids=_placed_gap_ids(item))
 
 
 def _image_resources(

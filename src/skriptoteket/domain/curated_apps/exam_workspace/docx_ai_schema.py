@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
 )
 
-DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v12"
+DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v13"
 
 
 def _object(value: JsonValue) -> dict[str, JsonValue]:
@@ -57,9 +57,12 @@ def _anchor_list(anchors: list[JsonValue], *, min_items: int | None) -> dict[str
 
 
 def docx_build_output_spec(
-    *, anchors: Iterable[str], kinds: Iterable[NativeExamItemKind]
+    *,
+    anchors: Iterable[str],
+    kinds: Iterable[NativeExamItemKind],
+    asset_ids: Iterable[str] = (),
 ) -> StructuredOutputSpec:
-    """The envelope schema with anchors and item kinds limited to one batch."""
+    """The envelope schema with anchors, item kinds and picture ids limited to one batch."""
     schema = _object(_strict_schema(DocxBuildEnvelope.model_json_schema()))
     allowed: list[JsonValue] = list(dict.fromkeys(anchors))
     definitions = _object(schema["$defs"])
@@ -82,29 +85,47 @@ def docx_build_output_spec(
     segment_fields = _object(segment["properties"])
     description = _object(segment_fields["text"]).get("description", "")
 
-    def segment_shape(kind: str, text: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    def segment_shape(
+        kind: str,
+        text: dict[str, JsonValue],
+        *,
+        asset: dict[str, JsonValue] | None = None,
+        accepted: dict[str, JsonValue] | None = None,
+    ) -> dict[str, JsonValue]:
         return {
             "type": "object",
             "properties": {
                 "kind": {"type": "string", "enum": [kind]},
                 "text": text,
-                "accepted_values": segment_fields["accepted_values"],
+                "accepted_values": (
+                    segment_fields["accepted_values"] if accepted is None else accepted
+                ),
+                "asset_id": asset if asset is not None else {"type": "null"},
             },
-            "required": ["kind", "text", "accepted_values"],
+            "required": ["kind", "text", "accepted_values", "asset_id"],
             "additionalProperties": False,
         }
 
-    # Text and gap segments are two shapes: a text segment requires non-empty text and
-    # a gap segment requires null text, so kind and text can never disagree (O1).
-    text_shape = segment_shape(
-        "text", {"type": "string", "minLength": 1, "description": description}
-    )
+    # Text, gap and asset segments are distinct shapes: text requires non-empty text,
+    # gap requires null text, and asset requires one of the batch's own picture ids, so
+    # kind and its fields can never disagree (O1).
+    shapes: list[JsonValue] = [
+        segment_shape("text", {"type": "string", "minLength": 1, "description": description})
+    ]
     if NativeExamItemKind.GAP_FILL in batch_kinds:
-        gap_shape = segment_shape("gap", {"type": "null", "description": description})
-        definitions["ProducedSegment"] = {"anyOf": [text_shape, gap_shape]}
-    else:
         # Only gap_fill answers in gaps; any other kind copies a printed blank as text.
-        definitions["ProducedSegment"] = text_shape
+        shapes.append(segment_shape("gap", {"type": "null", "description": description}))
+    allowed_assets: list[JsonValue] = list(dict.fromkeys(asset_ids))
+    if allowed_assets:
+        shapes.append(
+            segment_shape(
+                "asset",
+                {"type": "null", "description": description},
+                asset={"type": "string", "enum": allowed_assets},
+                accepted={**_object(segment_fields["accepted_values"]), "maxItems": 0},
+            )
+        )
+    definitions["ProducedSegment"] = {"anyOf": shapes} if len(shapes) > 1 else shapes[0]
     return StructuredOutputSpec(
         schema_name="docx_exam_build",
         schema_version=DOCX_BUILD_SCHEMA_VERSION,

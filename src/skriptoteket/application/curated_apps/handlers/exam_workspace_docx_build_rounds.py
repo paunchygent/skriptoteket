@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass
+from typing import Protocol
 from uuid import UUID
 
 import structlog
@@ -22,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import (
     docx_build_output_spec,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import marked_source_text
 from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     converter_kind_rule,
 )
@@ -115,7 +117,9 @@ Rules:
      accepted_values.
   3. An answer line "Label: value" whose field the question asks the student to produce:
      the label stays text and the value becomes the gap's accepted_values. A value that
-     prints a label after each of its units or parts follows rule 4 instead.
+     prints a label after each of its units or parts follows rule 4 instead. A phrase
+     printed after a field label is given material unless the question's instruction asks
+     the student for it; it stays text and is never a gap.
   4. A facit that prints a sentence with a label after each of its units, or a word split
      into parts joined with + and a label after each part: each label is one gap placed
      right after its unit or part, and that label is the gap's accepted_values. The units, or
@@ -183,6 +187,12 @@ Rules:
   it, so no question repeats its wording. Wording printed inside a question's own chunk
   is that question's text, also when other questions print the same wording: copy all of
   it into that question's body.
+- Source image markers <image asset_id="..."/> identify pictures at their exact place in a
+  chunk. Copy each picture into an asset segment with that asset_id at the same place among
+  the body's text and gaps; a picture-only chunk becomes a paragraph of asset segments.
+  Never copy the marker as text, move a picture to the end, invent an asset_id or omit a
+  picture from the question's own chunks. A picture in a facit chunk stays in
+  answer_key_anchors and never becomes a student-visible asset segment.
 - source_anchors lists every chunk the question uses: its heading, prompt, options and blanks.
   A chunk of kind drawing is a picture with no text; the question it stands with lists it in
   its source_anchors.
@@ -217,9 +227,22 @@ class DocxRoundReply:
     reconciliation_failure: str | None = None
 
 
+class DocxBuildExchangeProtocol(Protocol):
+    """The one batch exchange the conversion pipeline and the retry handler depend on.
+
+    ``DocxBuildRoundExchange`` reserves a token lease, calls the provider and reconciles
+    the measured usage behind this method; a test double serves one canned reply through
+    the same seam.
+    """
+
+    async def exchange(
+        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> DocxRoundReply: ...
+
+
 def _model_chunk(chunk: DocxChunk) -> dict[str, str]:
-    """The model reads the italic-marked text; people only ever see the plain text."""
-    return {"anchor": chunk.anchor, "kind": chunk.kind, "text": chunk.marked_text}
+    """Keep source pictures at their marked-text positions without sending their bytes."""
+    return {"anchor": chunk.anchor, "kind": chunk.kind, "text": marked_source_text(chunk)}
 
 
 def build_batch_request(
@@ -232,7 +255,11 @@ def build_batch_request(
     profile: StructuredLLMProviderProfile,
 ) -> StructuredLLMRequest:
     """Prepare one batch within the provider's text budget; its schema names its anchors."""
-    spec = docx_build_output_spec(anchors=(chunk.anchor for chunk in pending), kinds=kinds)
+    spec = docx_build_output_spec(
+        anchors=(chunk.anchor for chunk in pending),
+        kinds=kinds,
+        asset_ids=(image.asset_id for chunk in pending for image in chunk.images),
+    )
     payload = json.dumps(
         {
             "item_kinds": sorted(kind.value for kind in kinds),
@@ -262,7 +289,7 @@ def build_batch_request(
     )
 
 
-class DocxBuildRoundExchange:
+class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
     """Own reservation, provider failure handling and measured reconciliation."""
 
     def __init__(

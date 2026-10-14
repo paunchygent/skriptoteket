@@ -40,9 +40,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
-    DRAWING_SHOWN,
-    LEFT_OUT_REASON,
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id_for
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    native_export_blockers,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -164,8 +164,24 @@ _BETWEEN_GROUPING: dict[str, JsonValue] = {
 }
 
 
-def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
+def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dict[str, JsonValue]:
     """A converted free-text item in the shape the converter's schema returns."""
+    body: list[JsonValue] = [
+        {"segments": [{"kind": "text", "text": text[3:], "accepted_values": []}]}
+    ]
+    body.extend(
+        {
+            "segments": [
+                {
+                    "kind": "asset",
+                    "text": None,
+                    "accepted_values": [],
+                    "asset_id": asset_id,
+                }
+            ]
+        }
+        for asset_id in asset_ids
+    )
     return {
         "source_anchors": [f"body:{anchor:04d}" for anchor in anchors],
         "outcome": "converted",
@@ -173,7 +189,7 @@ def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
         "review_reason": None,
         "kind": "free_text",
         "printed_label": text[0],
-        "body": [{"segments": [{"kind": "text", "text": text[3:], "accepted_values": []}]}],
+        "body": body,
         "points": 1,
         "choices": [],
         "match_left": [],
@@ -344,7 +360,13 @@ async def test_a_merged_cell_reaches_the_labeler_as_an_image_and_a_lost_picture_
     events = [e for e in outcome.result.events if e.code == "labeler_source_image_unavailable"]
     assert [e.anchors for e in events] == [("body:0004",)]
     converted = [r.item_id for r in provider.requests if r.item_id.startswith("docx_")]
-    assert "docx_wi-01" in converted, "the unlabeled question still converts"
+    assert "docx_wi-01" not in converted, "a named missing picture must not reach conversion"
+    assert any(
+        "figur.emf" in reason
+        for item in outcome.result.document.items
+        for reason in item.review.reasons
+    )
+    assert any(event.code == "source_picture_missing" for event in outcome.result.events)
     assert outcome.update.pending == ()
 
 
@@ -381,10 +403,21 @@ async def test_a_picture_or_text_box_alone_in_its_paragraph_reaches_the_labeler_
     batches = {
         r.item_id: r.user_payload for r in provider.requests if r.item_id.startswith("docx_w")
     }
-    (unlabeled,) = [
-        payload for item_id, payload in batches.items() if item_id.startswith("docx_wi")
-    ]
-    assert '"body:0008"' in unlabeled, "the unlabeled question still converts with its picture"
+    assert not any(item_id.startswith("docx_wi") for item_id in batches), (
+        "the missing EMF is review-only"
+    )
+    missing_question = next(
+        item
+        for item in outcome.result.document.items
+        if any("figur.emf" in reason for reason in item.review.reasons)
+    )
+    assert missing_question.review.state.value == "review_required"
+    assert missing_question.retry_source is not None
+    assert missing_question.retry_source.has_missing_pictures()
+    assert any(
+        blocker.item_id == missing_question.item_id and blocker.reason == "unbuilt_question"
+        for blocker in native_export_blockers(outcome.result.document)
+    )
     labeled = "".join(
         payload for item_id, payload in batches.items() if item_id.startswith("docx_w1")
     )
@@ -393,11 +426,16 @@ async def test_a_picture_or_text_box_alone_in_its_paragraph_reaches_the_labeler_
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("claimed", [True, False], ids=["question-claims", "converter-skips"])
-async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_claimed(
-    claimed: bool,
+@pytest.mark.parametrize("carried", [True, False], ids=["carrier-placed", "carrier-missing"])
+async def test_a_picture_between_two_questions_places_the_carrier_or_falls_back_to_source(
+    carried: bool,
 ):
-    first = _converted(f"1. {_PICTURE_STEM}", *((2, 3) if claimed else (2,)))
+    asset_id = asset_id_for(_png())
+    first = _converted(
+        f"1. {_PICTURE_STEM}",
+        *((2, 3) if carried else (2,)),
+        asset_ids=(asset_id,) if carried else (),
+    )
     items = (first, _converted("2. Beskriv vädret i dag.", 4))
 
     title: dict[str, JsonValue] = {"text": "Bildfrågor", "source_anchors": ["body:0001"]}
@@ -405,24 +443,28 @@ async def test_a_picture_between_two_questions_assembles_whether_or_not_it_is_cl
     _, provider, outcome = await _convert(_between_exam(), _BETWEEN_GROUPING, items, title)
 
     (grouping,) = [r for r in provider.requests if r.item_id.startswith("docx_grouping")]
-    assert "[body:0003] (drawing) \n" in grouping.user_payload
+    assert f'[body:0003] (drawing) <image asset_id="{asset_id}"/>' in grouping.user_payload
     (holding,) = [
         r
         for r in provider.requests
         if r.item_id.startswith("docx_w") and '"body:0003"' in r.user_payload
     ]
     payload = json.loads(holding.user_payload)
-    assert {"anchor": "body:0003", "kind": "drawing", "text": ""} in payload["chunks"]
+    assert {
+        "anchor": "body:0003",
+        "kind": "drawing",
+        "text": f'<image asset_id="{asset_id}"/>',
+    } in payload["chunks"]
 
     document = outcome.result.document
     assert document.title == "Bildfrågor"
     placed = [(item.source_anchor, item.review.state.value) for item in document.items]
-    if claimed:
+    if carried:
         assert placed == [("body:0002", "review_complete"), ("body:0004", "review_complete")]
     else:
         assert placed == [
             ("body:0002", "review_required"),
             ("body:0004", "review_complete"),
-        ], "a picture its question's item leaves out stays with the item under a check mark"
-        assert document.items[0].review.reasons[-2:] == (LEFT_OUT_REASON, DRAWING_SHOWN)
+        ], "a picture the reply did not place keeps the question's own source, picture included"
+    assert document.items[0].body_asset_ids() == (asset_id,)
     assert outcome.update.pending == ()

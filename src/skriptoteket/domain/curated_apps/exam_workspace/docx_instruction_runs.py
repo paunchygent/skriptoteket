@@ -11,7 +11,7 @@ exactly the governed questions (D40).
 
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
@@ -29,7 +29,7 @@ Placed = tuple[int, tuple[str, ...], NativeExamItem]
 _NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
 # A question line that opens with quoted material, after any list label.
 _OPENS_WITH_QUOTE = re.compile(r"^\s*(?:\w{1,3}[.)]\s*)?[\"“‘«„]")
-_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
+_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)](?:\s+|$)")
 
 
 @dataclass(frozen=True)
@@ -54,10 +54,14 @@ class Run:
 
 @dataclass(frozen=True)
 class Joined:
-    """An instruction printed inside an item's own chunks, and where in the item it belongs."""
+    """An instruction printed inside an item's own chunks, and where in the item it belongs.
+
+    ``sources`` are the instruction's exact source chunks, pictures and offsets included,
+    so the body it becomes keeps every chunk at its own place.
+    """
 
     origin: int
-    texts: tuple[str, ...]
+    sources: tuple[DocxChunk, ...]
     later: tuple[str, ...]
     opens: bool
 
@@ -125,14 +129,40 @@ def heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
     and points leaves nothing. A numbered question line set in a heading style, such
     as "Fråga 6. Ange …", leaves its stem, which the item already prints.
     """
-    text = " ".join(POINT_LABEL.sub(" ", chunk.text).split())
+    return _heading_content(chunk, item)[0]
+
+
+def _heading_content(chunk: DocxChunk, item: NativeExamItem | None) -> tuple[str, tuple[int, ...]]:
+    """Normalize heading wording while retaining each shown character's source index.
+
+    Deleted labels consume no shown characters. A picture in deleted wording therefore
+    stays at that boundary; surviving words and collapsed whitespace keep their order.
+    """
+    characters = list(chunk.text)
+    origins = list(range(len(chunk.text)))
+    for match in reversed(list(POINT_LABEL.finditer(chunk.text))):
+        characters[match.start() : match.end()] = [" "]
+        origins[match.start() : match.end()] = [match.start()]
+    stripped = "".join(characters)
+    words = list(re.finditer(r"\S+", stripped))
+    normalized: list[int] = []
+    for word in words:
+        if normalized:
+            normalized.append(origins[word.start() - 1])
+        normalized.extend(origins[word.start() : word.end()])
+    text = " ".join(word.group() for word in words)
     label = (item.printed_label or "") if item is not None else ""
     if label and text.casefold().startswith(label.casefold()):
-        text = text[len(label) :].lstrip(" .):-").strip()
+        prefix = len(label)
+        prefix += len(text[prefix:]) - len(text[prefix:].lstrip(" .):-"))
     else:
-        text = _NUMBERED_LINE.sub("", text, count=1).strip()
-    # The separator before a removed points label ("Del 2: Satsdelar, 8 poäng") goes with it.
-    return text.rstrip(" ,;")
+        numbered = _NUMBERED_LINE.match(text)
+        prefix = numbered.end() if numbered else 0
+    text = text[prefix:]
+    normalized = normalized[prefix:]
+    left = len(text) - len(text.lstrip())
+    text = text.strip().rstrip(" ,;")
+    return text, tuple(normalized[left : left + len(text)])
 
 
 def instruction_runs(
@@ -163,7 +193,7 @@ def instruction_runs(
             joined.setdefault(owner, []).append(
                 Joined(
                     origin=origin,
-                    texts=tuple(chunk.text for chunk in sources),
+                    sources=sources,
                     later=tuple(folded(c.text) for c in own if positions[c.anchor] > at[-1]),
                     opens=not any(positions[c.anchor] < at[0] for c in own),
                 )
@@ -222,10 +252,10 @@ def with_heading_runs(
         at = positions[chunk.anchor]
         if (
             chunk.kind != "heading"
-            or not chunk.text.strip()
+            or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
             or at == 0
             or chunk.anchor in title_anchors
-            or points_line(chunk.text)
+            or (points_line(chunk.text) and not chunk.images and not chunk.missing_images)
         ):
             continue
         if chunk.anchor in owner:
@@ -251,6 +281,34 @@ def with_heading_runs(
         )
     shape = SectionShape(boundaries, labels, frozenset(r.sources[0].anchor for r in headings))
     return [*runs, *headings], shape
+
+
+def _shown_heading(chunk: DocxChunk, item: NativeExamItem | None) -> DocxChunk:
+    """Place every picture through the same deterministic deletion as heading text."""
+    text, origins = _heading_content(chunk, item)
+    if text == chunk.text:
+        return chunk
+
+    def shown_offset(offset: int) -> int:
+        return sum(origin < offset for origin in origins)
+
+    return replace(
+        chunk,
+        text=text,
+        marked_text=text,
+        images=tuple(
+            replace(
+                image, offset=shown_offset(image.offset), marked_offset=shown_offset(image.offset)
+            )
+            for image in chunk.images
+        ),
+        missing_images=tuple(
+            replace(
+                image, offset=shown_offset(image.offset), marked_offset=shown_offset(image.offset)
+            )
+            for image in chunk.missing_images
+        ),
+    )
 
 
 def _span(
@@ -296,15 +354,14 @@ def reaches(
             )
             chunk = run.sources[0]
             # A chunk the grouping marks as governing keeps its whole text (D40).
-            text = (
-                chunk.text.strip()
+            shown = (
+                chunk
                 if run.governs
-                else heading_wording(chunk, ordered[reach[0]][2] if len(reach) == 1 else None)
+                else _shown_heading(chunk, ordered[reach[0]][2] if len(reach) == 1 else None)
             )
-            if not text or not reach:
+            if not reach or not (shown.text or shown.images or shown.missing_images):
                 reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))
                 continue
-            shown = DocxChunk(chunk.anchor, chunk.kind, text, chunk.marked_text)
             reached.append(
                 Run(
                     run.origin,
@@ -321,7 +378,10 @@ def reaches(
             continue
         sources = (
             tuple(
-                c for c in run.sources if c.text.strip() and c.anchor not in shape.heading_anchors
+                c
+                for c in run.sources
+                if (c.text.strip() or c.images or c.missing_images)
+                and c.anchor not in shape.heading_anchors
             )
             if run.governs
             else tuple(

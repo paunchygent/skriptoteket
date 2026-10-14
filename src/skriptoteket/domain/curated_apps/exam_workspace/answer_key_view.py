@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeMatchPair,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 
 class AnswerKeyViewKind(StrEnum):
@@ -192,7 +193,7 @@ def answer_key_item_view(
     return AnswerKeyItemView(
         item_id=item.item_id,
         kind=kind,
-        instruction="\n".join(parent.instruction) if parent else "",
+        instruction=body_plain_text(parent.instruction) if parent else "",
         stem_text="\n".join(item.plain_text_lines()),
         choices=tuple((choice_int_id(choice.choice_id), choice.text) for choice in item.choices),
         gap_count=len(gap_ids),

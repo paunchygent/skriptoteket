@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiManualFollowUp,
     ExamNetQtiManualFollowUpReason,
+    ExamNetQtiPromptImage,
     ExamNetQtiTextEntryGap,
     ExamNetQtiUnsupportedResource,
 )
@@ -74,7 +75,13 @@ def _parent_errors(parent: ExamNetQtiItem) -> tuple[str, ...]:
     errors: list[str] = []
     if not _SAFE_IDENTIFIER_PATTERN.fullmatch(parent.item_id):
         errors.append(f"Item {parent.item_id} has an unsafe QTI identifier.")
-    if not any(line.strip() for line in parent.instruction_lines):
+    positioned_picture = any(
+        isinstance(segment, ExamNetQtiPromptImage)
+        and 0 <= segment.image_index < len(parent.image_resources)
+        for paragraph in parent.prompt_paragraphs
+        for segment in paragraph
+    )
+    if not any(line.strip() for line in parent.instruction_lines) and not positioned_picture:
         errors.append(f"Item {parent.item_id} has no instruction text.")
     child_ids = tuple(child.item_id for child in parent.children)
     if len(set(child_ids)) != len(child_ids):
@@ -91,7 +98,13 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     errors: list[str] = []
     if not _SAFE_IDENTIFIER_PATTERN.fullmatch(item.item_id):
         errors.append(f"Item {item.item_id} has an unsafe QTI identifier.")
-    if not any(line.strip() for line in item.prompt_lines):
+    positioned_picture = any(
+        isinstance(segment, ExamNetQtiPromptImage)
+        and 0 <= segment.image_index < len(item.image_resources)
+        for paragraph in item.prompt_paragraphs
+        for segment in paragraph
+    )
+    if not any(line.strip() for line in item.prompt_lines) and not positioned_picture:
         errors.append(f"Item {item.item_id} has no prompt text.")
     if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
         item.max_score is None or not math.isfinite(item.max_score) or item.max_score <= 0

@@ -59,6 +59,9 @@ class DocxConversionRun:
         self.own_anchors: dict[str, tuple[str, ...]] = {}
         self.key_anchors: dict[str, tuple[str, ...]] = {}
         self.kinds: dict[str, NativeExamItemKind] = {}
+        # The labeler's first type per question, kept before a type-conflict resend
+        # overwrites ``kinds``; the retry source persists it (TASK-SKRIPT-39-05-09 D1).
+        self.label_kinds: dict[str, NativeExamItemKind] = {}
         self.resent: set[str] = set()
         self.second_wave_dispatches = 0
         self.filled: list[str] = []

@@ -87,7 +87,9 @@ def _suggestion(
 def _parent(instruction: tuple[str, ...]) -> NativeExamParent:
     return NativeExamParent(
         parent_id="parent_001",
-        instruction=instruction,
+        instruction=tuple(
+            NativeParagraph(segments=(NativeTextSegment(text=text),)) for text in instruction
+        ),
         item_ids=("item_001",),
     )
 

@@ -17,8 +17,11 @@
  *   - Receives the layout from `useExamWorkspaceLayout` through the view and
  *     composes `ExamWorkspaceQuestionList`, `ExamWorkspaceItemTable`,
  *     `ExamWorkspaceItemEditor`, and `ExamWorkspaceItemDrawer`.
- *   - Holds no state: every edit, step, and add is emitted to the view,
- *     which owns it through the workspace composables.
+ *   - Holds no state: every edit, step, add, and reconversion is emitted to
+ *     the view, which owns it through the workspace composables; the open
+ *     document's picture URLs are handed down to the item editor, and the
+ *     exam's shared instructions are shown once, read-only, above the
+ *     question list with the same renderer as a parent's stem.
  */
 
 import { computed } from "vue";
@@ -26,19 +29,26 @@ import { computed } from "vue";
 import type {
   NativeExamBodySegment,
   NativeExamItem,
+  NativeExamItemKind,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceItemDrawer from "./ExamWorkspaceItemDrawer.vue";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./ExamWorkspaceItemTable.vue";
 import ExamWorkspaceQuestionList from "./ExamWorkspaceQuestionList.vue";
+import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
+import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 
 const props = defineProps<{
+  /** Asset URL per asset id, handed down to the question-text editor. */
+  assetUrls?: Record<string, string>;
   detailsOpen: boolean;
   disabled: boolean;
   exportBlockersByItemId: Record<string, string[]>;
+  /** The exam's shared instructions, already resolved for read-only display. */
+  globalInstructions: ExamWorkspaceSharedParagraph[];
   itemCount: number;
   itemRows: ExamWorkspaceItemRow[];
   layout: ExamWorkspaceLayout;
@@ -53,6 +63,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   add: [];
   markReviewed: [itemId: string];
+  retry: [itemId: string, kind: NativeExamItemKind];
   select: [itemId: string];
   step: [offset: number];
   "update:detailsOpen": [open: boolean];
@@ -110,6 +121,12 @@ const redigeraGridClass = computed(() => {
       :disabled="disabled"
       @add="emit('add')"
     >
+      <ExamWorkspaceSharedInstruction
+        v-if="globalInstructions.length > 0"
+        :paragraphs="globalInstructions"
+        class="border-b border-navy/15 bg-canvas px-3 py-2"
+        data-test="exam-workspace-global-instruction"
+      />
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
         :readiness-by-item-id="readinessByItemId"
@@ -127,6 +144,7 @@ const redigeraGridClass = computed(() => {
         <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
           <ExamWorkspaceItemEditor
             v-if="selectedItem"
+            :asset-urls="assetUrls"
             :attention-count="selectedReadiness.length"
             :details-open="detailsOpen"
             :disabled="disabled || selectedItemLocked"
@@ -177,6 +195,7 @@ const redigeraGridClass = computed(() => {
         :readiness="selectedReadiness"
         :server-blockers="selectedServerBlockers"
         @close="emit('update:detailsOpen', false)"
+        @retry="(itemId, kind) => emit('retry', itemId, kind)"
       />
     </div>
   </div>

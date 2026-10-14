@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 
 import type {
   ExamWorkspaceConversionUnit,
+  NativeExamBodyParagraph,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
@@ -49,6 +50,10 @@ function buildItem(itemId: string, text: string): NativeExamItem {
   };
 }
 
+function paragraph(text: string): NativeExamBodyParagraph {
+  return { segments: [{ kind: "text", text }] };
+}
+
 function buildDocument(
   revision: number,
   items: NativeExamItem[],
@@ -57,7 +62,7 @@ function buildDocument(
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    instructions: ["Svara på alla frågor."],
+    instructions: [paragraph("Svara på alla frågor.")],
     items: items.map((item, index) => ({ ...item, sequence: index + 1 })),
     origin: { kind: "docx_import" },
     parents: [],
@@ -213,7 +218,7 @@ describe("mergeConversionRevision", () => {
     const local = buildDocument(1, [...baseItems, added], {
       parents: [
         {
-          instruction: ["Gemensam text"],
+          instruction: [paragraph("Gemensam text")],
           item_ids: ["item_003", "item_004"],
           parent_id: "parent_001",
         },
@@ -369,7 +374,7 @@ describe("mergeConversionRevision", () => {
     const withParent = buildDocument(1, baseItems, {
       parents: [
         {
-          instruction: ["Gemensam"],
+          instruction: [paragraph("Gemensam")],
           item_ids: ["item_001", "item_002"],
           parent_id: "parent_001",
         },
@@ -379,15 +384,15 @@ describe("mergeConversionRevision", () => {
       2,
       [baseItems[0]!, ...convertedItems, baseItems[2]!],
       {
-        instructions: ["Nya anvisningar."],
+        instructions: [paragraph("Nya anvisningar.")],
         parents: [
           {
-            instruction: ["Gemensam"],
+            instruction: [paragraph("Gemensam")],
             item_ids: ["item_002", "item_004"],
             parent_id: "parent_001",
           },
           {
-            instruction: ["Borta"],
+            instruction: [paragraph("Borta")],
             item_ids: ["item_099"],
             parent_id: "parent_002",
           },
@@ -406,7 +411,7 @@ describe("mergeConversionRevision", () => {
     });
 
     expect(document.title).toBe("Serverns titel");
-    expect(document.instructions).toEqual(["Nya anvisningar."]);
+    expect(document.instructions).toEqual([paragraph("Nya anvisningar.")]);
     expect(document.parents.map((parent) => parent.item_ids)).toEqual([
       ["item_002", "item_004"],
     ]);

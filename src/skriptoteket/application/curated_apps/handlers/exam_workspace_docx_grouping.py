@@ -35,6 +35,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ManifestInvalid,
     manifest_from_output,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import marked_source_text
 from skriptoteket.protocols.exam_grouping import (
     ExamGrouperProtocol,
     ExamGrouping,
@@ -131,7 +132,9 @@ GROUPING_SCHEMA: dict[str, JsonValue] = {
 
 
 def render_chunks(chunks: tuple[DocxChunk, ...]) -> str:
-    return "\n".join(f"[{chunk.anchor}] ({chunk.kind}) {chunk.marked_text}" for chunk in chunks)
+    return "\n".join(
+        f"[{chunk.anchor}] ({chunk.kind}) {marked_source_text(chunk)}" for chunk in chunks
+    )
 
 
 def build_grouping_request(

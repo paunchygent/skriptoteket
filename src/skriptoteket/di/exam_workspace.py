@@ -10,6 +10,9 @@ from __future__ import annotations
 import httpx
 from dishka import Provider, Scope, provide
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_assets import (
+    GetExamWorkspaceAssetHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
@@ -23,11 +26,17 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
+    DocxBuildRoundExchange,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionPipeline,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry import (
+    RetryExamWorkspaceItemHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
@@ -55,6 +64,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_conversion_profile,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import (
@@ -65,10 +77,12 @@ from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
+    GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -174,6 +188,38 @@ class ExamWorkspaceProvider(Provider):
     ) -> GetExamWorkspaceConversionStatusHandlerProtocol:
         return GetExamWorkspaceConversionStatusHandler(jobs=jobs)
 
+    @provide(scope=Scope.REQUEST)
+    def retry_item_handler(
+        self,
+        client: httpx.AsyncClient,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+        leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        settings: Settings,
+    ) -> RetryExamWorkspaceItemHandlerProtocol:
+        """Provide the one-question retry handler; its one converter call rides the exchange."""
+        return RetryExamWorkspaceItemHandler(
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            exchange=DocxBuildRoundExchange(
+                provider=OpenAIAnswerKeyStructuredProvider(
+                    client=client,
+                    base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+                    api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                    timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
+                ),
+                leases=leases,
+                uow=uow,
+                clock=clock,
+            ),
+            profile=build_luna_docx_conversion_profile(settings),
+            enabled=settings.LLM_ANSWER_KEY_ENABLED,
+        )
+
     @provide(scope=Scope.APP)
     def container_codec(self) -> ExamWorkspaceContainerCodecProtocol:
         """Provide the fail-closed container codec."""
@@ -226,6 +272,16 @@ class ExamWorkspaceProvider(Provider):
         return GetExamWorkspaceDocumentHandler(
             vault_files=vault_files, codec=codec, store=store, jobs=jobs, uow=uow
         )
+
+    @provide(scope=Scope.REQUEST)
+    def asset_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+    ) -> GetExamWorkspaceAssetHandlerProtocol:
+        """Provide the head-revision picture reader for the editor."""
+        return GetExamWorkspaceAssetHandler(vault_files=vault_files, codec=codec, store=store)
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
