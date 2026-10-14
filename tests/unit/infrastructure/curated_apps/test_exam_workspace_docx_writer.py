@@ -111,7 +111,10 @@ def _all_kinds_document() -> NativeExamDocument:
         document_id=uuid4(),
         revision=1,
         title="Grammatikprov",
-        instructions=("Svenska 2", "Total: 9,5 poäng"),
+        instructions=(
+            NativeParagraph(segments=(NativeTextSegment(text="Svenska 2"),)),
+            NativeParagraph(segments=(NativeTextSegment(text="Total: 9,5 poäng"),)),
+        ),
         items=items,
         origin=NativeExamDocumentOrigin(kind="created"),
     )

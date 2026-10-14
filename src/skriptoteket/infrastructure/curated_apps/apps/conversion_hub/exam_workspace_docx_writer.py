@@ -23,6 +23,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_asset_ids,
+    body_text_lines,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 _ITEM_HEADING_STYLE = "Heading 3"
@@ -32,20 +36,38 @@ _CHOICE_KINDS = (
 )
 
 
+def _reject_unrenderable_shared_pictures(document: NativeExamDocument) -> None:
+    """Fail closed on a shared-instruction picture this text-only writer cannot embed.
+
+    The Word export takes no asset payloads, so it cannot place a picture at its source
+    position. A shared instruction that carries one is reported instead of silently
+    exporting without it; item body pictures keep their existing plain-text rendering.
+    """
+    bodies = (document.instructions, *(parent.instruction for parent in document.parents))
+    asset_ids = sorted({asset_id for body in bodies for asset_id in body_asset_ids(body)})
+    if asset_ids:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message="Word-exporten kan inte visa en bild i en delad instruktion.",
+            details={"asset_ids": asset_ids},
+        )
+
+
 class ExamWorkspaceDocxWriter:
     """Deterministic DOCX export via python-docx."""
 
     def build_docx_bytes(self, document: NativeExamDocument) -> bytes:
         labels = exam_language_labels(document)
+        _reject_unrenderable_shared_pictures(document)
         output = Document()
         output.add_heading(document.title, level=1)
-        for line in document.instructions:
+        for line in body_text_lines(document.instructions):
             output.add_paragraph(line)
 
         for item in document.items:
             parent = document.parent_of(item.item_id)
             if parent is not None and parent.item_ids[0] == item.item_id:
-                for line in parent.instruction:
+                for line in body_text_lines(parent.instruction):
                     output.add_paragraph(line)
             output.add_heading(labels.item_title(item), level=3)
             for line in item.plain_text_lines():

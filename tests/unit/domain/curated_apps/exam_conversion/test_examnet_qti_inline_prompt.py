@@ -7,8 +7,9 @@ Purpose:
     out-of-range or repeated segment indexes.
 
 Relationships:
-    - Exercises `domain.examnet_qti_item_xml` and `domain.examnet_qti_xml`
-      with contract items built directly, without DigiExam or native adapters.
+    - Exercises `domain.examnet_qti_item_xml` and
+      `domain.examnet_qti_inline_prompt` with contract items built directly,
+      without DigiExam or native adapters.
 """
 
 from __future__ import annotations
@@ -25,6 +26,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiPromptImage,
     ExamNetQtiPromptText,
     ExamNetQtiTextEntryGap,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
+    append_interaction_prompt,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
@@ -61,6 +65,42 @@ def _gap(number: int, accepted_values: tuple[str, ...]) -> ExamNetQtiTextEntryGa
         label=f"Lucka {number}",
         accepted_values=accepted_values,
     )
+
+
+def test_public_inline_renderers_render_without_item_serialization() -> None:
+    item = ExamNetQtiItem(
+        item_id="q1",
+        sequence=1,
+        title="Fråga 1",
+        interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+        prompt_lines=("Beskriv bilden.",),
+        max_score=1,
+        prompt_paragraphs=(
+            (
+                ExamNetQtiPromptText("Före "),
+                ExamNetQtiPromptGap(0),
+                ExamNetQtiPromptImage(0),
+                ExamNetQtiPromptText(" efter."),
+            ),
+        ),
+        text_entry_gaps=(_gap(1, ("alfa",)),),
+        image_resources=(_image(1, "Bild 1"),),
+    )
+    body = ElementTree.Element(_tag("itemBody"))
+
+    append_interaction_prompt(body, item, (_IMAGE_PATHS[0],))
+
+    prompt = body.find(_tag("prompt"))
+    assert prompt is not None
+    assert prompt.text == "Före "
+    gap_entry, image = list(prompt)
+    assert gap_entry.attrib == {
+        "responseIdentifier": "RESPONSE_gap_001",
+        "expectedLength": "8",
+    }
+    assert gap_entry.tail is None
+    assert image.attrib == {"src": _IMAGE_PATHS[0], "alt": "Bild 1"}
+    assert image.tail == " efter."
 
 
 def test_rich_free_text_prompt_places_the_image_between_its_text_runs() -> None:

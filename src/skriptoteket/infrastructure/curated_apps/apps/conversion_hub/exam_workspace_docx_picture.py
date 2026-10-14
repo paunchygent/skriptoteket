@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import io
 from dataclasses import dataclass
-from typing import Literal, cast
+from typing import Literal
 
 from docx.document import Document as DocxDocument
 from docx.oxml.ns import qn
@@ -296,8 +296,8 @@ def _quarter_turns(raw: str | None) -> int | str:
 
 def _nearest_picture(blip: BaseOxmlElement) -> BaseOxmlElement | None:
     for ancestor in blip.iterancestors():
-        if ancestor.tag == _PIC:
-            return cast("BaseOxmlElement", ancestor)
+        if isinstance(ancestor, BaseOxmlElement) and ancestor.tag == _PIC:
+            return ancestor
     return None
 
 
@@ -337,14 +337,16 @@ def _raster_as_png(payload: bytes) -> tuple[bytes, int, int] | None:
 
 
 def _frame(image: Image.Image) -> Image.Image:
-    """The first frame in a PNG-safe mode; a declared transparency keeps its alpha."""
-    return image.convert("RGBA" if "transparency" in image.info else "RGB")
+    """The first frame in a PNG-safe mode; alpha in the mode or metadata is kept."""
+    has_alpha_band = any(band.upper() == "A" for band in image.getbands())
+    return image.convert("RGBA" if has_alpha_band or "transparency" in image.info else "RGB")
 
 
 def _png_bytes(image: Image.Image) -> tuple[bytes, int, int]:
     """PNG bytes of exactly these pixels; a fresh canvas drops source metadata and EXIF."""
     width, height = image.size
     clean = Image.new(image.mode, image.size)
+    # Copy every band, alpha included; never composite an alpha picture onto opaque black.
     clean.paste(image, (0, 0))
     output = io.BytesIO()
     clean.save(output, format="PNG")

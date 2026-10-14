@@ -11,97 +11,58 @@ no source type codes, and no source page/line spans.
 from __future__ import annotations
 
 import math
-from enum import StrEnum
-from typing import Annotated, Literal, Union
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace import native_exam_parent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeSegment as NativeSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetryChunk as NativeExamRetryChunk,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetryImage as NativeExamRetryImage,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetryMissingImage as NativeExamRetryMissingImage,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetrySource,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    ASSET_ID_PATTERN,
+    CHOICE_ID_PATTERN,
+    GAP_ID_PATTERN,
+    ITEM_ID_PATTERN,
+    MATCH_LEFT_ID_PATTERN,
+    MATCH_RIGHT_ID_PATTERN,
+    SHA256_PATTERN,
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
+    NativeParseOrigin,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v1"] = "native_exam_document_v1"
 
 NativeExamParent = native_exam_parent.NativeExamParent
 parent_points = native_exam_parent.parent_points
-_ITEM_ID_PATTERN = r"^item_[0-9]{3,4}$"
-_CHOICE_ID_PATTERN = r"^choice_[0-9]{3}$"
-_GAP_ID_PATTERN = r"^gap_[0-9]{3}$"
-_MATCH_LEFT_ID_PATTERN = r"^left_[0-9]{3}$"
-_MATCH_RIGHT_ID_PATTERN = r"^right_[0-9]{3}$"
-_ASSET_ID_PATTERN = r"^asset_[0-9a-f]{16}$"
-_SHA256_PATTERN = r"^[0-9a-f]{64}$"
-
-
-class NativeExamItemKind(StrEnum):
-    """Writer-proven item subset (EPIC-SKRIPT-39 E3)."""
-
-    FREE_TEXT = "free_text"
-    SINGLE_CHOICE = "single_choice"
-    MULTIPLE_RESPONSE = "multiple_response"
-    GAP_FILL = "gap_fill"
-    MATCHING = "matching"
-
-
-class NativeParseOrigin(StrEnum):
-    DETERMINISTIC = "deterministic"
-    LLM_PARSED = "llm_parsed"
-    TEACHER_CREATED = "teacher_created"
-
-
-class NativeItemReviewState(StrEnum):
-    REVIEW_REQUIRED = "review_required"
-    REVIEW_COMPLETE = "review_complete"
-
-
-class NativeAnswerKeyOrigin(StrEnum):
-    """Provenance vocabulary aligned with the exam-conversion review states."""
-
-    ABSENT = "absent"
-    NOT_APPLICABLE = "not_applicable"
-    SOURCE_PROVIDED = "source_provided"
-    TEACHER_AUTHORED = "teacher_authored"
-    MACHINE_PROPOSED = "machine_proposed"
-    REVIEWED_ADVISORY = "reviewed_advisory"
-
-
-class NativeTextSegment(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    kind: Literal["text"] = "text"
-    text: str = Field(min_length=1)
-
-
-class NativeGapSegment(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    kind: Literal["gap"] = "gap"
-    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
-
-
-class NativeAssetSegment(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    kind: Literal["asset"] = "asset"
-    asset_id: str = Field(pattern=_ASSET_ID_PATTERN)
-
-
-NativeSegment = Annotated[
-    Union[NativeTextSegment, NativeGapSegment, NativeAssetSegment],
-    Field(discriminator="kind"),
-]
-
-
-class NativeParagraph(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    segments: tuple[NativeSegment, ...] = Field(min_length=1)
 
 
 class NativeChoice(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    choice_id: str = Field(pattern=_CHOICE_ID_PATTERN)
+    choice_id: str = Field(pattern=CHOICE_ID_PATTERN)
     text: str = Field(min_length=1)
 
 
@@ -110,7 +71,7 @@ class NativeMatchLeft(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    left_id: str = Field(pattern=_MATCH_LEFT_ID_PATTERN)
+    left_id: str = Field(pattern=MATCH_LEFT_ID_PATTERN)
     text: str = Field(min_length=1)
 
 
@@ -119,7 +80,7 @@ class NativeMatchRight(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    right_id: str = Field(pattern=_MATCH_RIGHT_ID_PATTERN)
+    right_id: str = Field(pattern=MATCH_RIGHT_ID_PATTERN)
     text: str = Field(min_length=1)
 
 
@@ -128,14 +89,14 @@ class NativeMatchPair(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    left_id: str = Field(pattern=_MATCH_LEFT_ID_PATTERN)
-    right_id: str = Field(pattern=_MATCH_RIGHT_ID_PATTERN)
+    left_id: str = Field(pattern=MATCH_LEFT_ID_PATTERN)
+    right_id: str = Field(pattern=MATCH_RIGHT_ID_PATTERN)
 
 
 class NativeGap(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
+    gap_id: str = Field(pattern=GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
 
     @field_validator("accepted_values")
@@ -160,7 +121,7 @@ class NativeGapAcceptedValues(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    gap_id: str = Field(pattern=_GAP_ID_PATTERN)
+    gap_id: str = Field(pattern=GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = Field(min_length=1)
 
     @field_validator("accepted_values")
@@ -186,7 +147,7 @@ class NativeAnswerKeySuggestion(BaseModel):
     correct_choice_ids: tuple[str, ...] = ()
     match_pairs: tuple[NativeMatchPair, ...] = ()
     gap_accepted_values: tuple[NativeGapAcceptedValues, ...] = ()
-    fingerprint: str = Field(pattern=_SHA256_PATTERN)
+    fingerprint: str = Field(pattern=SHA256_PATTERN)
     provider_profile_id: str = Field(min_length=1)
     model: str = Field(min_length=1)
     prompt_template_version: str = Field(min_length=1)
@@ -201,93 +162,11 @@ class NativeItemReview(BaseModel):
     reasons: tuple[str, ...] = ()
 
 
-class NativeExamRetryImage(BaseModel):
-    """One picture a source chunk carries, by reference (TASK-SKRIPT-39-05-09 D1).
-
-    The asset's payload lives once, in the container; this keeps the picture's identity and
-    its place in the chunk's plain and marked text so a retry can rebuild the chunk's
-    image from the saved document manifest and payload.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    asset_id: str = Field(pattern=_ASSET_ID_PATTERN)
-    offset: int = Field(ge=0)
-    marked_offset: int = Field(ge=0)
-
-
-class NativeExamRetryMissingImage(BaseModel):
-    """A named picture the source could not preserve as a faithful native PNG/JPEG."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    reference: str = Field(min_length=1)
-    media_type: str = Field(min_length=1)
-    offset: int = Field(ge=0)
-    marked_offset: int = Field(ge=0)
-
-
-class NativeExamRetryChunk(BaseModel):
-    """One original source chunk kept for a question's retry (TASK-SKRIPT-39-05-09 D1).
-
-    ``text`` is the plain wording people see and ``marked_text`` the model's wording with
-    its italics marked, both exactly as the conversion read them. ``images`` name the
-    pictures the chunk carries, at their places, so a retry rebuilds each image from the
-    container's saved payload instead of storing the bytes a second time.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    anchor: str = Field(min_length=1)
-    kind: str = Field(min_length=1)
-    text: str
-    marked_text: str
-    images: tuple[NativeExamRetryImage, ...] = ()
-    missing_images: tuple[NativeExamRetryMissingImage, ...] = ()
-
-    @model_validator(mode="after")
-    def _image_offsets_within_text(self) -> "NativeExamRetryChunk":
-        """Each picture sits at its exact place in the stored plain and marked text."""
-        pictures: tuple[NativeExamRetryImage | NativeExamRetryMissingImage, ...] = (
-            *self.images,
-            *self.missing_images,
-        )
-        for image in pictures:
-            if image.offset > len(self.text):
-                raise ValueError("retry image offset is beyond the chunk's text")
-            if image.marked_offset > len(self.marked_text):
-                raise ValueError("retry image marked offset is beyond the chunk's marked text")
-        return self
-
-
-class NativeExamRetrySource(BaseModel):
-    """The original source and first label of one grouped question (D1).
-
-    The DOCX bytes are gone once conversion ends, so this is the only source a question can
-    be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
-    ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
-    the conversion read. ``label_kind`` is the labeler's first type, kept before a
-    type-conflict resend changed the pipeline's kind.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    chunks: tuple[NativeExamRetryChunk, ...] = Field(min_length=1)
-    key_chunks: tuple[NativeExamRetryChunk, ...] = ()
-    context_chunks: tuple[NativeExamRetryChunk, ...] = ()
-    label_kind: NativeExamItemKind
-
-    def has_missing_pictures(self) -> bool:
-        return any(
-            chunk.missing_images for chunk in (*self.chunks, *self.key_chunks, *self.context_chunks)
-        )
-
-
 class NativeExamAsset(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    asset_id: str = Field(pattern=_ASSET_ID_PATTERN)
-    sha256: str = Field(pattern=_SHA256_PATTERN)
+    asset_id: str = Field(pattern=ASSET_ID_PATTERN)
+    sha256: str = Field(pattern=SHA256_PATTERN)
     media_type: Literal["image/png", "image/jpeg"]
     byte_length: int = Field(gt=0)
     width: int | None = Field(default=None, gt=0)
@@ -299,7 +178,7 @@ class NativeExamDocumentOrigin(BaseModel):
 
     kind: Literal["docx_import", "created"]
     source_filename: str | None = None
-    source_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
+    source_sha256: str | None = Field(default=None, pattern=SHA256_PATTERN)
     extractor_version: str | None = None
 
     @model_validator(mode="after")
@@ -313,7 +192,7 @@ class NativeExamDocumentOrigin(BaseModel):
 class NativeExamItem(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    item_id: str = Field(pattern=_ITEM_ID_PATTERN)
+    item_id: str = Field(pattern=ITEM_ID_PATTERN)
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
     printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
@@ -545,7 +424,7 @@ class NativeExamDocument(BaseModel):
     document_id: UUID
     revision: int = Field(ge=1)
     title: str = Field(min_length=1)
-    instructions: tuple[str, ...] = ()
+    instructions: tuple[NativeParagraph, ...] = ()
     items: tuple[NativeExamItem, ...] = Field(min_length=1)
     parents: tuple[NativeExamParent, ...] = ()
     assets: tuple[NativeExamAsset, ...] = ()
@@ -570,6 +449,16 @@ class NativeExamDocument(BaseModel):
                 if asset_id not in known_assets:
                     raise ValueError(f"item {item.item_id} references unknown asset")
                 referenced.add(asset_id)
+        shared_bodies = (self.instructions, *(parent.instruction for parent in self.parents))
+        for body in shared_bodies:
+            for paragraph in body:
+                for segment in paragraph.segments:
+                    if isinstance(segment, NativeGapSegment):
+                        raise ValueError("shared instructions cannot contain response gaps")
+                    if isinstance(segment, NativeAssetSegment):
+                        if segment.asset_id not in known_assets:
+                            raise ValueError("shared instructions reference unknown asset")
+                        referenced.add(segment.asset_id)
         orphans = known_assets - referenced
         if orphans:
             raise ValueError(f"unreferenced assets: {sorted(orphans)}")

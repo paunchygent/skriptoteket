@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
     release_governing_chunks,
     unclaimed_governing,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import (
+    heading_wording,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
 )
@@ -53,6 +56,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_asset_ids,
+    body_plain_text,
+    source_paragraphs,
+)
 
 _BLANK = NativeTextSegment(text="____")
 
@@ -66,10 +74,6 @@ def _missing_picture_reason(missing: DocxMissingImage) -> str:
         f"Bilden {missing.reference} ({missing.media_type}) kan inte visas i provet. "
         "Granska frågan manuellt."
     )
-
-
-def _missing_picture_text(missing: DocxMissingImage) -> str:
-    return f"[Bild saknas: {missing.reference} ({missing.media_type})]"
 
 
 def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
@@ -173,47 +177,12 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
     )
 
 
-def _review_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
-    """One chunk's plain text as a paragraph, each picture at its exact source place.
-
-    A picture the chunker could not turn into a ``DocxImage`` has no payload, so its exact
-    place holds a named text placeholder instead: the teacher sees which picture is missing
-    and where, and a picture-only chunk still becomes a non-empty paragraph.
-    """
-    placements: list[tuple[int, NativeSegment]] = [
-        (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
-    ]
-    placements.extend(
-        (missing.offset, NativeTextSegment(text=_missing_picture_text(missing)))
-        for missing in chunk.missing_images
-    )
-    if not placements:
-        if not chunk.text:
-            return None
-        return NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
-    placements.sort(key=lambda placement: placement[0])
-    segments: list[NativeSegment] = []
-    cursor = 0
-    for offset, segment in placements:
-        before = chunk.text[cursor:offset]
-        if before:
-            segments.append(NativeTextSegment(text=before))
-        segments.append(segment)
-        cursor = offset
-    after = chunk.text[cursor:]
-    if after:
-        segments.append(NativeTextSegment(text=after))
-    return NativeParagraph(segments=tuple(segments))
-
-
 def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
     """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
     chunk in source order, whatever the model wrote; it keeps the question's printed points
     and every picture at its exact place in the chunk's text, and names every picture the
     conversion could not show beside the caller's ``reason``."""
-    body = tuple(
-        paragraph for chunk in chunks if (paragraph := _review_paragraph(chunk)) is not None
-    )
+    body = source_paragraphs(chunks)
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
@@ -261,15 +230,19 @@ def _ordered_items(
 
 
 def asset_manifest(
-    items: Iterable[NativeExamItem], chunks: Iterable[DocxChunk]
+    items: Iterable[NativeExamItem],
+    chunks: Iterable[DocxChunk],
+    *,
+    shared_bodies: Iterable[tuple[NativeParagraph, ...]] = (),
 ) -> tuple[tuple[NativeExamAsset, ...], Mapping[str, bytes]]:
-    """The pictures the items reference: native metadata and payloads, in asset-id order.
+    """The pictures the document references: native metadata and payloads, in asset-id order.
 
-    Every picture an item's student body references and every picture its stored retry
-    source keeps (facit and read-only context included) is carried, because the native
-    contract rejects an orphan asset; the QTI export reads the body references only, so a
-    source-only picture never reaches a student. The container requires payloads to match
-    the document's asset list exactly.
+    Every picture an item's student body references, every picture a shared instruction
+    body places at its source position (a parent or the document-global instruction), and
+    every picture an item's stored retry source keeps (facit and read-only context
+    included) is carried, because the native contract rejects an orphan asset; the QTI
+    export reads the body references only, so a source-only picture never reaches a
+    student. The container requires payloads to match the document's asset list exactly.
     """
     images: dict[str, DocxImage] = {}
     for chunk in chunks:
@@ -281,6 +254,7 @@ def asset_manifest(
             for item in items
             for asset_id in (*item.body_asset_ids(), *item.source_asset_ids())
         }
+        | {asset_id for body in shared_bodies for asset_id in body_asset_ids(body)}
     )
     missing = [asset_id for asset_id in referenced if asset_id not in images]
     if missing:
@@ -298,6 +272,43 @@ def asset_manifest(
     )
     payloads = {asset_id: images[asset_id].payload for asset_id in referenced}
     return assets, MappingProxyType(payloads)
+
+
+def _instruction_paragraphs(
+    instruction: ProducedMetadata, by_anchor: Mapping[str, DocxChunk]
+) -> tuple[NativeParagraph, ...]:
+    """The document-global instruction's admitted wording, pictures at their source place.
+
+    The converter copies each instruction from its source chunk, sometimes without a
+    printed points label a heading carries; a source whose wording equals the admitted
+    wording either way keeps every picture at its exact source place. A wording the
+    converter changed leaves its pictures without a truthful place, so it is refused
+    instead of dropping them or moving them silently.
+    """
+    sources = tuple(by_anchor[a] for a in instruction.source_anchors if a in by_anchor)
+    raw = source_paragraphs(sources)
+    if body_plain_text(raw) == instruction.text:
+        return raw
+    normalized = source_paragraphs(
+        DocxChunk(
+            chunk.anchor,
+            chunk.kind,
+            heading_wording(chunk, None),
+            chunk.marked_text,
+        )
+        if chunk.kind == "heading"
+        else chunk
+        for chunk in sources
+    )
+    if body_plain_text(normalized) == instruction.text:
+        # The source's pictured wording is canonical: removing a printed heading
+        # prefix would invalidate the pixel-relative offsets. Keep it verbatim.
+        return raw if any(chunk.images or chunk.missing_images for chunk in sources) else normalized
+    if body_asset_ids(raw):
+        raise ValueError(
+            f"instruction pictures have no faithful place: {instruction.source_anchors}"
+        )
+    return (NativeParagraph(segments=(NativeTextSegment(text=instruction.text),)),)
 
 
 def assemble_build_result(
@@ -347,7 +358,18 @@ def assemble_build_result(
             chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
         )
     items = placed.items
-    assets, assets_by_id = asset_manifest(items, chunks)
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    global_instructions = tuple(
+        paragraph
+        for index, instruction in enumerate(instructions)
+        if index not in placed.landed
+        for paragraph in _instruction_paragraphs(instruction, by_anchor)
+    )
+    shared_bodies = (
+        *(parent.instruction for parent in placed.parents),
+        global_instructions,
+    )
+    assets, assets_by_id = asset_manifest(items, chunks, shared_bodies=shared_bodies)
     # Document-level notes only: each item shows its own reasons (D8).
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     if title is not None:
@@ -361,7 +383,7 @@ def assemble_build_result(
         document_id=document_id,
         revision=1,
         title=document_title,
-        instructions=tuple(v.text for i, v in enumerate(instructions) if i not in placed.landed),
+        instructions=global_instructions,
         items=items,
         parents=placed.parents,
         assets=assets,

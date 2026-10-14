@@ -236,15 +236,22 @@ def with_source_assets(
     chunks: tuple[DocxChunk, ...],
     assets_by_id: Mapping[str, bytes],
 ) -> tuple[NativeExamDocument, Mapping[str, bytes]]:
-    """The document plus every picture its retry sources reference, and their payloads.
+    """The document plus every picture its bodies and retry sources reference, payloads too.
 
-    A picture only the facit or the read-only context carries is source material: it becomes
-    a declared asset the retry source references, never an item's student-visible segment,
-    so the document contract stays whole and no export gains a teacher-only picture. The
-    manifest builder counts both body and source references and fails closed on a picture no
-    chunk carries; the merged document is validated before it is used.
+    A picture a student-visible shared instruction body places (a parent or the
+    document-global instruction) is delivered material and is counted like an item body.
+    A picture only the facit or the read-only context carries is source material: it
+    becomes a declared asset the retry source references, never a student-visible
+    segment, so the document contract stays whole and no export gains a teacher-only
+    picture. The manifest builder counts item bodies, source references and shared
+    instruction bodies and fails closed on a picture no chunk carries; the merged
+    document is validated before it is used.
     """
-    assets, payloads = asset_manifest(document.items, chunks)
+    assets, payloads = asset_manifest(
+        document.items,
+        chunks,
+        shared_bodies=(*(parent.instruction for parent in document.parents), document.instructions),
+    )
     merged_document = NativeExamDocument.model_validate(
         document.model_copy(update={"assets": assets}).model_dump()
     )

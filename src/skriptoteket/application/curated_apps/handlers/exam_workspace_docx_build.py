@@ -14,7 +14,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ad
     admit_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
-    DocxBuildRoundExchange,
+    DocxBuildExchangeProtocol,
     DocxBuildRoundFailure,
     build_batch_request,
 )
@@ -86,7 +86,7 @@ async def convert_batch(
     state: DocxBuildState,
     batch: ConversionBatch,
     families: dict[str, QuestionFamily],
-    exchange: DocxBuildRoundExchange,
+    exchange: DocxBuildExchangeProtocol,
     profile: StructuredLLMProviderProfile,
 ) -> BatchOutcome:
     """Send the batch once and admit the schema-valid response."""

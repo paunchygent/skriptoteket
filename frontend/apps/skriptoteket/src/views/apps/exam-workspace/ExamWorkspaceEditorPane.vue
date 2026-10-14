@@ -19,7 +19,9 @@
  *     `ExamWorkspaceItemEditor`, and `ExamWorkspaceItemDrawer`.
  *   - Holds no state: every edit, step, add, and reconversion is emitted to
  *     the view, which owns it through the workspace composables; the open
- *     document's picture URLs are handed down to the item editor.
+ *     document's picture URLs are handed down to the item editor, and the
+ *     exam's shared instructions are shown once, read-only, above the
+ *     question list with the same renderer as a parent's stem.
  */
 
 import { computed } from "vue";
@@ -34,6 +36,8 @@ import ExamWorkspaceItemDrawer from "./ExamWorkspaceItemDrawer.vue";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./ExamWorkspaceItemTable.vue";
 import ExamWorkspaceQuestionList from "./ExamWorkspaceQuestionList.vue";
+import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
+import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 
@@ -43,6 +47,8 @@ const props = defineProps<{
   detailsOpen: boolean;
   disabled: boolean;
   exportBlockersByItemId: Record<string, string[]>;
+  /** The exam's shared instructions, already resolved for read-only display. */
+  globalInstructions: ExamWorkspaceSharedParagraph[];
   itemCount: number;
   itemRows: ExamWorkspaceItemRow[];
   layout: ExamWorkspaceLayout;
@@ -115,6 +121,12 @@ const redigeraGridClass = computed(() => {
       :disabled="disabled"
       @add="emit('add')"
     >
+      <ExamWorkspaceSharedInstruction
+        v-if="globalInstructions.length > 0"
+        :paragraphs="globalInstructions"
+        class="border-b border-navy/15 bg-canvas px-3 py-2"
+        data-test="exam-workspace-global-instruction"
+      />
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
         :readiness-by-item-id="readinessByItemId"

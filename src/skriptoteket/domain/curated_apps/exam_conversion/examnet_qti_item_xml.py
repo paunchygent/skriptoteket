@@ -23,20 +23,24 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
-    MAP_RESPONSE_TEMPLATE,
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
+    append_gap_fill_body,
+    append_images,
+    append_shared_instruction_body,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     QTI_NAMESPACE,
     QTI_SCHEMA_LOCATION,
     XSI_NAMESPACE,
-    append_gap_fill_body,
-    append_images,
+    qti_tag,
+    xsi_tag,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
+    MAP_RESPONSE_TEMPLATE,
     append_interaction,
     append_response_declaration,
     append_score_outcome,
     emits_map_response,
-    normalized_prompt_lines,
-    qti_tag,
-    xsi_tag,
 )
 
 
@@ -102,7 +106,12 @@ def _append_parent_item(
     image_paths: tuple[str, ...],
 ) -> None:
     children = tuple(_qualified_child(child) for child in parent.children)
-    child_image_paths = _split_image_paths(children, image_paths)
+    stem_image_count = len(parent.image_resources) - sum(
+        len(child.image_resources) for child in children
+    )
+    if stem_image_count < 0:
+        raise ValueError("Parent image pool does not include its child resources.")
+    child_image_paths = _split_image_paths(children, image_paths[stem_image_count:])
     mapped_response_ids: list[str] = []
     for child in children:
         if child.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
@@ -120,8 +129,7 @@ def _append_parent_item(
         )
     append_score_outcome(root, parent)
     item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
-    for line in normalized_prompt_lines(parent.instruction_lines):
-        ElementTree.SubElement(item_body, qti_tag("p")).text = line
+    append_shared_instruction_body(item_body, parent, image_paths)
     for child, paths in zip(children, child_image_paths, strict=True):
         _append_child_body(item_body, child, paths)
     if mapped_response_ids:

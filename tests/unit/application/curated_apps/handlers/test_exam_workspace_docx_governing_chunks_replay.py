@@ -19,6 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamParent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
@@ -86,7 +87,7 @@ async def test_a_governing_chunk_an_item_prints_at_its_start_moves_to_the_parent
     document = outcome.result.document
     governed = _governed_items(outcome.update, governs)
     parent = _parent_of(document, governed)
-    assert parent.instruction == (text[anchor],)
+    assert body_text_lines(parent.instruction) == (text[anchor],)
     assert list(parent.item_ids) == governed
     first = next(item for item in document.items if item.item_id == governed[0])
     assert first.source_anchor != anchor
@@ -114,7 +115,7 @@ async def test_a_governing_chunk_that_is_an_item_whole_body_is_kept_there_and_re
     document = outcome.result.document
     governed = _governed_items(outcome.update, governs)
     parent = _parent_of(document, governed)
-    assert parent.instruction == (text[instruction], text[listed])
+    assert body_text_lines(parent.instruction) == (text[instruction], text[listed])
     assert list(parent.item_ids) == governed
     assert all(item.source_anchor != listed for item in document.items)
     codes = [(e.code, e.anchors) for e in outcome.result.events]
@@ -134,7 +135,7 @@ async def test_a_governing_heading_keeps_its_text_on_the_parent():
     document = outcome.result.document
     governed = _governed_items(outcome.update, governs)
     parent = _parent_of(document, governed)
-    assert parent.instruction == (chunks[heading].text, chunks[instruction].text)
+    assert body_text_lines(parent.instruction) == (chunks[heading].text, chunks[instruction].text)
     assert list(parent.item_ids) == governed
     assert chunks[heading].text not in document.instructions
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []

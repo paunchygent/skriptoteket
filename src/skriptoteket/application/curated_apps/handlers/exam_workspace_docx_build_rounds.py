@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass
+from typing import Protocol
 from uuid import UUID
 
 import structlog
@@ -226,6 +227,19 @@ class DocxRoundReply:
     reconciliation_failure: str | None = None
 
 
+class DocxBuildExchangeProtocol(Protocol):
+    """The one batch exchange the conversion pipeline and the retry handler depend on.
+
+    ``DocxBuildRoundExchange`` reserves a token lease, calls the provider and reconciles
+    the measured usage behind this method; a test double serves one canned reply through
+    the same seam.
+    """
+
+    async def exchange(
+        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> DocxRoundReply: ...
+
+
 def _model_chunk(chunk: DocxChunk) -> dict[str, str]:
     """Keep source pictures at their marked-text positions without sending their bytes."""
     return {"anchor": chunk.anchor, "kind": chunk.kind, "text": marked_source_text(chunk)}
@@ -275,7 +289,7 @@ def build_batch_request(
     )
 
 
-class DocxBuildRoundExchange:
+class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
     """Own reservation, provider failure handling and measured reconciliation."""
 
     def __init__(

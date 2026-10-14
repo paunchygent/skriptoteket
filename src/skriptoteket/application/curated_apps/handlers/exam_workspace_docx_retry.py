@@ -37,7 +37,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build im
     convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
-    DocxBuildRoundExchange,
+    DocxBuildExchangeProtocol,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
@@ -98,7 +98,7 @@ class RetryExamWorkspaceItemHandler:
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-        exchange: DocxBuildRoundExchange,
+        exchange: DocxBuildExchangeProtocol,
         profile: StructuredLLMProviderProfile,
         enabled: bool,
     ) -> None:

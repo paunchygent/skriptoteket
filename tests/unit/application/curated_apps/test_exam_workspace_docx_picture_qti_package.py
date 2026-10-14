@@ -28,7 +28,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeAssetSegment,
     NativeExamParent,
     NativeItemReviewState,
+    NativeParagraph,
     NativeParseOrigin,
+    NativeTextSegment,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
@@ -113,7 +115,11 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "parents": (
                     NativeExamParent(
                         parent_id="parent_001",
-                        instruction=("Gemensam instruktion.",),
+                        instruction=(
+                            NativeParagraph(
+                                segments=(NativeTextSegment(text="Gemensam instruktion."),)
+                            ),
+                        ),
                         item_ids=(document.items[0].item_id,),
                     ),
                 )

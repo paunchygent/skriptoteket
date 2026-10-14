@@ -18,6 +18,8 @@
  *   - Writes arriving AI suggestions and keeps their single effect across
  *     saves through `useExamWorkspaceSaveArrivals`, only into the exam
  *     opening that requested them.
+ *   - Delegates the one-question reconversion request lifecycle to
+ *     `useExamWorkspaceItemRetry`.
  *   - Dirty state is derived: the copy differs from the last server document
  *     (`sameDocument`).
  *   - Reports outcomes through the shared toast store.
@@ -31,7 +33,6 @@ import {
   examWorkspaceAssetUrl,
   getExamWorkspaceDocument,
   listExamWorkspaceDocuments,
-  retryExamWorkspaceItem,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
@@ -40,11 +41,10 @@ import type {
   NativeExamBodySegment,
   NativeExamDocument,
   NativeExamItem,
-  NativeExamItemKind,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { nextItemId, sameDocument, sameValue } from "./examWorkspaceConversionMerge";
+import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
 import {
   newTeacherItem,
   reviewed,
@@ -60,6 +60,7 @@ import {
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
@@ -67,7 +68,6 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
 
-const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
 const SAVE_SUCCESS_COPY = "Provet är sparat.";
 const SAVE_FAILURE_COPY = "Det gick inte att spara provet. Försök igen.";
 const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
@@ -338,78 +338,14 @@ export function useExamWorkspaceDocument() {
     selectedItemId.value = itemId;
   }
 
-  /**
-   * The opening, lineage and saved revision a retry request was sent for are
-   * still the ones in front of the teacher.
-   */
-  function retryRequestIsLive(
-    opening: ExamWorkspaceOpening,
-    lineageId: string,
-    revision: number,
-  ): boolean {
-    return (
-      openExam.value === opening &&
-      summary.value?.lineage_id === lineageId &&
-      workspaceDocument.value?.revision === revision &&
-      serverDocument.value?.revision === revision
-    );
-  }
-
-  /**
-   * Reconvert one review question from the saved revision's stored source
-   * with the teacher's chosen type (TASK-SKRIPT-39-05-09 D1). The reply
-   * replaces only that draft item, and only while the same opening still
-   * stands on the same revision with that item unedited; a reply that lost
-   * its place, or a failure of a request that did, changes nothing.
-   */
-  async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
-    const current = workspaceDocument.value;
-    const currentSummary = summary.value;
-    const opening = openExam.value;
-    if (!current || !currentSummary || !opening || isBusy.value) {
-      return;
-    }
-    const target = current.items.find((item) => item.item_id === itemId) ?? null;
-    if (
-      target === null ||
-      target.retry_source === null ||
-      target.review.state !== "review_required"
-    ) {
-      return;
-    }
-    const lineageId = currentSummary.lineage_id;
-    const revision = current.revision;
-    operationBusy.value = true;
-    try {
-      const response = await retryExamWorkspaceItem(lineageId, current, itemId, kind);
-      const draft = workspaceDocument.value;
-      const draftTarget = draft?.items.find((item) => item.item_id === itemId) ?? null;
-      if (
-        draft === null ||
-        response.lineage_id !== lineageId ||
-        !retryRequestIsLive(opening, lineageId, revision) ||
-        draftTarget === null ||
-        !sameValue(draftTarget, target)
-      ) {
-        return;
-      }
-      workspaceDocument.value = {
-        ...draft,
-        items: draft.items.map((item) => (item.item_id === itemId ? response.item : item)),
-      };
-    } catch (error) {
-      if (!retryRequestIsLive(opening, lineageId, revision)) {
-        return;
-      }
-      const serverCopy =
-        isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
-          ? error.message
-          : null;
-      toast.failure(serverCopy || RETRY_FAILURE_COPY);
-    } finally {
-      operationBusy.value = false;
-    }
-  }
+  const { retryItem } = useExamWorkspaceItemRetry({
+    isBusy: () => isBusy.value,
+    openExam,
+    operationBusy,
+    serverDocument,
+    summary,
+    workspaceDocument,
+  });
 
   /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
   function patchItem(

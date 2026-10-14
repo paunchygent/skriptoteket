@@ -8,14 +8,16 @@
  *   show the per-item blockers from the server's last refused export.
  *
  * Relationships:
- *   - Shows a parent's shared instruction and total points once above its
- *     first child; children are marked with a left rule.
+ *   - Shows a parent's shared instruction (text and pictures, read-only)
+ *     and total points once above its first child; children are marked with a
+ *     left rule.
  *   - Rendered by `ExamWorkspaceView` in the Redigera list panel and in the
  *     phone question sheet; emits `select` with the item id and the view
  *     selects it through `useExamWorkspaceDocument`.
  */
 
 import { IconCheck, IconWarning } from "../../../components/icons";
+import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
 import { PARENT_HEADING_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 
@@ -49,12 +51,7 @@ const emit = defineEmits<{
         :data-test="`exam-workspace-parent-${row.parentBlock.parentId}`"
       >
         <span class="font-semibold">{{ PARENT_HEADING_COPY }}</span>
-        <span
-          v-for="(line, lineIndex) in row.parentBlock.instruction"
-          :key="lineIndex"
-          class="block"
-          data-test="exam-workspace-parent-instruction-line"
-        >{{ line }}</span>
+        <ExamWorkspaceSharedInstruction :paragraphs="row.parentBlock.instruction" />
         <span
           class="font-semibold text-navy/80"
           data-test="exam-workspace-parent-points"

@@ -24,7 +24,7 @@ const ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace";
 
 export type NativeExamDocument = Schemas["NativeExamDocument-Output"];
 export type NativeExamItem = Schemas["NativeExamItem-Output"];
-export type NativeExamParent = Schemas["NativeExamParent"];
+export type NativeExamParent = Schemas["NativeExamParent-Output"];
 export type NativeExamBodyParagraph = Schemas["NativeParagraph"];
 export type NativeExamBodySegment = NativeExamBodyParagraph["segments"][number];
 export type NativeExamItemKind = Schemas["NativeExamItemKind"];

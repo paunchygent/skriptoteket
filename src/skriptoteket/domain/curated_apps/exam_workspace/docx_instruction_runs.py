@@ -54,10 +54,14 @@ class Run:
 
 @dataclass(frozen=True)
 class Joined:
-    """An instruction printed inside an item's own chunks, and where in the item it belongs."""
+    """An instruction printed inside an item's own chunks, and where in the item it belongs.
+
+    ``sources`` are the instruction's exact source chunks, pictures and offsets included,
+    so the body it becomes keeps every chunk at its own place.
+    """
 
     origin: int
-    texts: tuple[str, ...]
+    sources: tuple[DocxChunk, ...]
     later: tuple[str, ...]
     opens: bool
 
@@ -163,7 +167,7 @@ def instruction_runs(
             joined.setdefault(owner, []).append(
                 Joined(
                     origin=origin,
-                    texts=tuple(chunk.text for chunk in sources),
+                    sources=sources,
                     later=tuple(folded(c.text) for c in own if positions[c.anchor] > at[-1]),
                     opens=not any(positions[c.anchor] < at[0] for c in own),
                 )
@@ -253,6 +257,21 @@ def with_heading_runs(
     return [*runs, *headings], shape
 
 
+def _shown_heading(chunk: DocxChunk, text: str) -> DocxChunk:
+    """A heading's shown wording, its pictures kept only at their exact source place.
+
+    Wording the printed points label or question number rewrites changes every offset
+    after the removed text, so a picture can no longer be placed where it stood. Such a
+    heading is refused instead of kept, moved or dropped silently; a wording that is the
+    source text itself keeps every picture and missing-picture placeholder exact.
+    """
+    if text == chunk.text:
+        return chunk
+    if chunk.images or chunk.missing_images:
+        raise ValueError(f"heading pictures have no faithful place: {chunk.anchor}")
+    return DocxChunk(chunk.anchor, chunk.kind, text, chunk.marked_text)
+
+
 def _span(
     run: Run, ordered: list[Placed], boundaries: list[int], starts: list[int], chunk_count: int
 ) -> tuple[int, ...]:
@@ -302,14 +321,15 @@ def reaches(
                 else heading_wording(chunk, ordered[reach[0]][2] if len(reach) == 1 else None)
             )
             if not text or not reach:
+                if reach and (chunk.images or chunk.missing_images):
+                    raise ValueError(f"heading pictures have no faithful place: {chunk.anchor}")
                 reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))
                 continue
-            shown = DocxChunk(chunk.anchor, chunk.kind, text, chunk.marked_text)
             reached.append(
                 Run(
                     run.origin,
                     run.start,
-                    (shown,),
+                    (_shown_heading(chunk, text),),
                     reach,
                     reach,
                     run.governs,

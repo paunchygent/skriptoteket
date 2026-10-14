@@ -7,6 +7,9 @@ import io
 import pytest
 from docx import Document
 from docx.document import Document as DocxDocument
+from docx.opc.constants import RELATIONSHIP_TYPE
+from docx.opc.packuri import PackURI
+from docx.opc.part import Part
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls, qn
 from docx.oxml.text.paragraph import CT_P
@@ -138,9 +141,10 @@ def test_picture_size_carries_into_render() -> None:
 
 def test_emf_picture_is_unavailable() -> None:
     document, paragraph = _picture_document((40, 40))
-    for part in document.part.related_parts.values():
-        if part.content_type == "image/png":
-            part._content_type = "image/x-emf"
+    # A real unsupported payload, not PNG bytes with a lying package MIME.
+    part = Part(PackURI("/word/media/diagram.emf"), "image/x-emf", b"\x01\x00\x00\x00", None)
+    rid = document.part.relate_to(part, RELATIONSHIP_TYPE.IMAGE)
+    next(paragraph.iter(qn("a:blip"))).set(qn("r:embed"), rid)
     with pytest.raises(LabelerSourceImageUnavailable) as raised:
         DocxBlockImageRenderer(document).render(paragraph, anchor="body:0007")
     assert raised.value.anchor == "body:0007"

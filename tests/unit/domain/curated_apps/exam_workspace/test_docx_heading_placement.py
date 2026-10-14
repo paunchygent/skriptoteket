@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 
 _NOTHING_GOVERNED: MappingProxyType[str, frozenset[str]] = MappingProxyType({})
 
@@ -138,7 +139,7 @@ def test_heading_over_a_group_forms_the_parent_without_an_instruction_line() -> 
 
     assert len(placed.parents) == 1
     parent = placed.parents[0]
-    assert parent.instruction == ("Del B: Cellen",)
+    assert body_text_lines(parent.instruction) == ("Del B: Cellen",)
     assert parent.item_ids == ("item_001", "item_002")
     # The lone question under the next heading carries it in its own body instead.
     assert placed.items[2].plain_text_lines()[0] == "Del C"
@@ -161,7 +162,7 @@ def test_group_heading_opens_the_parent_instruction_ahead_of_printed_instruction
     )
 
     assert len(placed.parents) == 1
-    assert placed.parents[0].instruction == ("Ord och begrepp", "Fyll i rätt ord.")
+    assert body_text_lines(placed.parents[0].instruction) == ("Ord och begrepp", "Fyll i rätt ord.")
     assert placed.parents[0].item_ids == ("item_001", "item_002")
 
 
@@ -216,7 +217,7 @@ def test_section_heading_before_owned_question_headings_forms_the_parent() -> No
     )
 
     assert len(placed.parents) == 1
-    assert placed.parents[0].instruction == ("Cellens delar",)
+    assert body_text_lines(placed.parents[0].instruction) == ("Cellens delar",)
     assert placed.parents[0].item_ids == ("item_001", "item_002")
     # The questions keep their own headings in their bodies, exactly once.
     assert placed.items[0].plain_text_lines()[0].startswith("Beskriv kärnan.")
@@ -253,7 +254,7 @@ def test_governing_heading_opens_the_parent_ahead_of_an_earlier_governing_line()
     )
 
     assert len(placed.parents) == 1
-    assert placed.parents[0].instruction == ("Cellens delar", "Namn: ____")
+    assert body_text_lines(placed.parents[0].instruction) == ("Cellens delar", "Namn: ____")
 
 
 def test_line_before_a_section_heading_stays_document_level() -> None:
@@ -283,7 +284,10 @@ def test_line_before_a_section_heading_stays_document_level() -> None:
     )
 
     assert len(placed.parents) == 1
-    assert placed.parents[0].instruction == ("A. Multiple choice", "Choose the best answer.")
+    assert body_text_lines(placed.parents[0].instruction) == (
+        "A. Multiple choice",
+        "Choose the best answer.",
+    )
     assert 0 not in placed.landed
     assert all("Name:" not in line for item in placed.items for line in item.plain_text_lines())
 
@@ -333,7 +337,7 @@ def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions
     assert len(document.parents) == 1
     parent = document.parents[0]
     assert parent.item_ids == ("item_001", "item_002", "item_003")
-    assert parent.instruction == ("Besvara alla frågor.",)
+    assert body_text_lines(parent.instruction) == ("Besvara alla frågor.",)
     assert "Använd följande ord för fråga två och tre" not in document.items[0].plain_text_lines()
     assert document.items[1].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
     assert document.items[2].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"

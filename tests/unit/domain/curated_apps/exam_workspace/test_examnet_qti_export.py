@@ -2,12 +2,16 @@
 
 import hashlib
 from uuid import uuid4
+from xml.etree import ElementTree
 
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
+    serialize_qti_assessment_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
@@ -22,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocumentOrigin,
     NativeExamItem,
     NativeExamItemKind,
+    NativeExamParent,
     NativeGap,
     NativeGapSegment,
     NativeItemReview,
@@ -172,6 +177,77 @@ class TestChoiceMapping:
 
 
 class TestGapFillMapping:
+    @pytest.mark.parametrize("shared_parent", [False, True])
+    def test_rich_prompt_reordered_gaps_bind_the_answers_at_their_placed_blanks(
+        self,
+        shared_parent: bool,
+    ) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.GAP_FILL,
+            body=(
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Beta: "),
+                        NativeGapSegment(gap_id="gap_002"),
+                        NativeAssetSegment(asset_id=_ASSET_ID),
+                        NativeTextSegment(text="Alpha: "),
+                        NativeGapSegment(gap_id="gap_001"),
+                    )
+                ),
+            ),
+            points=2,
+            gaps=(
+                NativeGap(gap_id="gap_001", accepted_values=("alpha",)),
+                NativeGap(gap_id="gap_002", accepted_values=("beta",)),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
+            review=_review_complete(),
+        )
+        asset = NativeExamAsset(
+            asset_id=_ASSET_ID,
+            media_type="image/png",
+            byte_length=len(_ASSET_PAYLOAD),
+            sha256=hashlib.sha256(_ASSET_PAYLOAD).hexdigest(),
+        )
+        document = _document((item,), (asset,))
+        if shared_parent:
+            document = document.model_copy(
+                update={
+                    "parents": (
+                        NativeExamParent(
+                            parent_id="parent_001",
+                            instruction=_text_body("Gemensam instruktion."),
+                            item_ids=(item.item_id,),
+                        ),
+                    )
+                }
+            )
+        (qti_item,) = native_exam_to_examnet_qti_items(
+            document,
+            assets_by_id={_ASSET_ID: _ASSET_PAYLOAD},
+        )
+        root = ElementTree.fromstring(
+            serialize_qti_assessment_item(qti_item, image_paths=("../images/diagram.png",)),
+        )
+        placed = tuple(
+            element.attrib["responseIdentifier"]
+            for element in root.iter()
+            if element.tag.rsplit("}", 1)[-1] == "textEntryInteraction"
+        )
+        prefix = "item_001_" if shared_parent else ""
+        assert placed == (f"{prefix}RESPONSE_gap_002", f"{prefix}RESPONSE_gap_001")
+        declarations = {
+            element.attrib["identifier"]: tuple(
+                child.text for child in element.iter() if child.tag.rsplit("}", 1)[-1] == "value"
+            )
+            for element in root.iter()
+            if element.tag.rsplit("}", 1)[-1] == "responseDeclaration"
+        }
+        assert declarations[placed[0]] == ("beta",)
+        assert declarations[placed[1]] == ("alpha",)
+
     def test_gaps_follow_body_placement_order_with_native_gap_ids(self) -> None:
         item = NativeExamItem(
             item_id="item_001",

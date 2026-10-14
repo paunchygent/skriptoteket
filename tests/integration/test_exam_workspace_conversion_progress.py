@@ -7,9 +7,7 @@ pipeline's batches.
 
 from __future__ import annotations
 
-from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from hashlib import sha256
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -22,45 +20,22 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
-    ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
-    ExamWorkspaceConversionProgress,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
-    ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    GetExamWorkspaceConversionStatusHandler,
-    GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
-    SaveExamWorkspaceDocumentHandler,
 )
-from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id_for
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAssetSegment,
-    NativeExamAsset,
     NativeExamDocument,
     NativeExamItemKind,
-    NativeParagraph,
     NativeParseOrigin,
     NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
-    ExamWorkspaceContainerCodec,
-)
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
-)
-from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
-from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
-    PostgreSQLUserVaultFileRepository,
 )
 from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
     PostgreSQLUserVaultUsageRepository,
@@ -72,6 +47,13 @@ from skriptoteket.protocols.docx_conversion_progress import (
     OutlineQuestion,
 )
 from tests.fixtures.time_fixtures import FixedClock
+from tests.integration.exam_workspace_conversion_support import (
+    SETTINGS,
+    WORKER,
+    ConversionWorld,
+    Ids,
+    batch,
+)
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
 )
@@ -83,75 +65,6 @@ from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_supp
 )
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
-
-_WORKER = "conversion-worker"
-_SETTINGS = Settings.model_construct(
-    VAULT_MAX_FILE_BYTES=5_000_000, VAULT_MAX_TOTAL_BYTES=50_000_000
-)
-
-
-class _Ids:
-    def new_uuid(self) -> UUID:
-        return uuid4()
-
-
-class _World:
-    def __init__(
-        self, session: AsyncSession, storage: LocalVaultStorage, clock: FixedClock
-    ) -> None:
-        self.uow = SQLAlchemyUnitOfWork(session)
-        self.jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        self.vault_files = PostgreSQLUserVaultFileRepository(session)
-        self.codec = ExamWorkspaceContainerCodec()
-        self.store = ExamWorkspaceDocumentStore(
-            vault_files=self.vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(session),
-            vault_storage=storage,
-            uow=self.uow,
-            clock=clock,
-            settings=_SETTINGS,
-        )
-        self.progress = ExamWorkspaceConversionProgress(
-            jobs=self.jobs,
-            users=PostgreSQLUserRepository(session),
-            vault_files=self.vault_files,
-            store=self.store,
-            codec=self.codec,
-            uow=self.uow,
-            clock=clock,
-            id_generator=_Ids(),
-        )
-        self.status = GetExamWorkspaceConversionStatusHandler(jobs=self.jobs)
-
-    async def opened(self, actor: User, lineage_id: UUID) -> ExamWorkspaceDocumentResponse:
-        return await GetExamWorkspaceDocumentHandler(
-            vault_files=self.vault_files,
-            codec=self.codec,
-            store=self.store,
-            jobs=self.jobs,
-            uow=self.uow,
-        ).handle(actor=actor, lineage_id=lineage_id)
-
-    async def open(self, actor: User, lineage_id: UUID) -> NativeExamDocument:
-        return (await self.opened(actor, lineage_id)).document
-
-    async def teacher_save(
-        self, actor: User, document: NativeExamDocument
-    ) -> ExamWorkspaceDocumentResponse:
-        return await SaveExamWorkspaceDocumentHandler(
-            vault_files=self.vault_files,
-            codec=self.codec,
-            store=self.store,
-            id_generator=_Ids(),
-            jobs=self.jobs,
-        ).handle(
-            actor=actor,
-            lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=document.revision,
-                document=document.model_copy(update={"revision": document.revision + 1}),
-            ),
-        )
 
 
 def _texts(document: NativeExamDocument) -> list[str]:
@@ -180,18 +93,6 @@ async def _usage(session_factory: async_sessionmaker[AsyncSession], actor: User)
         return 0 if usage is None else usage.bytes_total
 
 
-def _batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpdate:
-    return conversion_update(
-        [
-            ("q1", [choice("p1", "Fråga ett")]),
-            ("q2", [choice("p2", q2)] if q2 else [placeholder("p2", "Källtext två")]),
-            ("q3", [choice("p3", q3)] if q3 else [placeholder("p3", "Källtext tre")]),
-        ],
-        pending=tuple(q for q, done in (("q2", q2), ("q3", q3)) if not done),
-        document_id=lineage_id,
-    )
-
-
 async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_one_copy(
     session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
@@ -205,13 +106,13 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
             uow=SQLAlchemyUnitOfWork(session),
             clock=clock,
-            settings=_SETTINGS,
-            id_generator=_Ids(),
+            settings=SETTINGS,
+            id_generator=Ids(),
         ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
-        world = _World(session, storage, clock)
+        world = ConversionWorld(session, storage, clock)
         async with world.uow:
             claimed = await world.jobs.claim_next(
-                worker_id=_WORKER,
+                worker_id=WORKER,
                 now=now,
                 lease_ttl=timedelta(minutes=15),
                 source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
@@ -220,7 +121,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
         lineage_id = queued.lineage_id
 
         await world.progress.outline(
-            worker_id=_WORKER,
+            worker_id=WORKER,
             job_id=queued.job_id,
             outline=ConversionOutline(
                 title=None,
@@ -240,7 +141,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
 
         # First batch: revision 1 holds q1 and placeholders for q2 and q3.
         await world.progress.batch_ready(
-            worker_id=_WORKER, job_id=queued.job_id, update=_batch(lineage_id, q2=None, q3=None)
+            worker_id=WORKER, job_id=queued.job_id, update=batch(lineage_id, q2=None, q3=None)
         )
         first = await world.open(actor, lineage_id)
         assert first.revision == 1
@@ -250,14 +151,14 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
         await world.progress.batch_ready(
             worker_id="stale-worker",
             job_id=queued.job_id,
-            update=_batch(lineage_id, q2="Fel", q3="Fel"),
+            update=batch(lineage_id, q2="Fel", q3="Fel"),
         )
         assert (await world.open(actor, lineage_id)).revision == 1
 
     # In another session the teacher opens the unfinished exam: the response names the
     # running conversion and the placeholders it still owns.
     async with session_factory() as teacher_session:
-        teacher = _World(teacher_session, storage, clock)
+        teacher = ConversionWorld(teacher_session, storage, clock)
         response = await teacher.opened(actor, lineage_id)
         opened = response.document
         assert response.conversion is not None
@@ -289,11 +190,11 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
         assert saved.conversion is not None and saved.conversion.document_revision == 1
 
     async with session_factory() as session:
-        world = _World(session, storage, clock)
+        world = ConversionWorld(session, storage, clock)
         await world.progress.batch_ready(
-            worker_id=_WORKER,
+            worker_id=WORKER,
             job_id=queued.job_id,
-            update=_batch(lineage_id, q2="Fråga två", q3=None),
+            update=batch(lineage_id, q2="Fråga två", q3=None),
         )
         # q2's batch replaces its placeholder; the teacher's q1 stays.
         third = await world.open(actor, lineage_id)
@@ -302,9 +203,9 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
         assert third.items[1].kind is NativeExamItemKind.SINGLE_CHOICE
 
         await world.progress.batch_ready(
-            worker_id=_WORKER,
+            worker_id=WORKER,
             job_id=queued.job_id,
-            update=_batch(lineage_id, q2="Fråga två", q3="Fråga tre"),
+            update=batch(lineage_id, q2="Fråga två", q3="Fråga tre"),
         )
         fourth = await world.open(actor, lineage_id)
         assert _texts(fourth) == ["Lärarens fråga ett", "Fråga två", "Fråga tre"]
@@ -323,17 +224,17 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
     assert await _usage(session_factory, actor) == sum(size for _, size in live)
 
     async with session_factory() as session:
-        world = _World(session, storage, clock)
+        world = ConversionWorld(session, storage, clock)
         file_id = uuid4()
         async with world.uow:
             await world.progress.publish_final(
-                worker_id=_WORKER,
+                worker_id=WORKER,
                 job_id=queued.job_id,
                 lineage_id=lineage_id,
                 actor=actor,
                 file_id=file_id,
                 name="prov.provdokument.zip",
-                update=_batch(lineage_id, q2="Fråga två", q3="Fråga tre slutlig"),
+                update=batch(lineage_id, q2="Fråga två", q3="Fråga tre slutlig"),
                 notes=("Facit: 1 Ja",),
             )
         final = await world.open(actor, lineage_id)
@@ -371,24 +272,24 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
             jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
             uow=SQLAlchemyUnitOfWork(session),
             clock=clock,
-            settings=_SETTINGS,
-            id_generator=_Ids(),
+            settings=SETTINGS,
+            id_generator=Ids(),
         ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
         lineage_id = queued.lineage_id
-        world = _World(session, storage, clock)
+        world = ConversionWorld(session, storage, clock)
         async with world.uow:
             await world.jobs.claim_next(
-                worker_id=_WORKER,
+                worker_id=WORKER,
                 now=now,
                 lease_ttl=timedelta(minutes=15),
                 source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
             )
         await world.progress.batch_ready(
-            worker_id=_WORKER, job_id=queued.job_id, update=sectioned(q2=None, q3=None)
+            worker_id=WORKER, job_id=queued.job_id, update=sectioned(q2=None, q3=None)
         )
 
     async with session_factory() as teacher_session:
-        teacher = _World(teacher_session, storage, clock)
+        teacher = ConversionWorld(teacher_session, storage, clock)
         opened = await teacher.open(actor, lineage_id)
         q1, q2, q3 = opened.items
         section = opened.parents[0]
@@ -433,9 +334,9 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
         )
 
     async with session_factory() as session:
-        world = _World(session, storage, clock)
+        world = ConversionWorld(session, storage, clock)
         await world.progress.batch_ready(
-            worker_id=_WORKER,
+            worker_id=WORKER,
             job_id=queued.job_id,
             update=sectioned(q2="Fråga två", q3="Fråga tre"),
         )
@@ -449,118 +350,3 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
         assert [parent.item_ids for parent in final.parents] == [
             tuple(item.item_id for item in final.items[:3])
         ]
-
-
-_PICTURE = b"provisional-picture-bytes"
-_PICTURE_ID = asset_id_for(_PICTURE)
-
-
-def _picture_batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpdate:
-    """A batch whose q1 item carries the source picture, payloads included."""
-    update = _batch(lineage_id, q2=q2, q3=q3)
-    first = update.document.items[0]
-    item = first.model_copy(
-        update={
-            "body": (
-                NativeParagraph(
-                    segments=(
-                        NativeTextSegment(text="Fråga ett"),
-                        NativeAssetSegment(asset_id=_PICTURE_ID),
-                    )
-                ),
-            )
-        }
-    )
-    asset = NativeExamAsset(
-        asset_id=_PICTURE_ID,
-        sha256=sha256(_PICTURE).hexdigest(),
-        media_type="image/png",
-        byte_length=len(_PICTURE),
-    )
-    document = update.document.model_copy(
-        update={"items": (item, *update.document.items[1:]), "assets": (asset,)}
-    )
-    return replace(update, document=document, assets_by_id={_PICTURE_ID: _PICTURE})
-
-
-async def test_a_picture_survives_provisional_saves_and_later_batches(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
-) -> None:
-    actor = await create_owner(session_factory)
-    now = datetime.now(UTC)
-    clock = FixedClock(now)
-    storage = LocalVaultStorage(vault_root=tmp_path)
-
-    async with session_factory() as session:
-        queued = await ImportExamWorkspaceDocumentHandler(
-            jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(session),
-            uow=SQLAlchemyUnitOfWork(session),
-            clock=clock,
-            settings=_SETTINGS,
-            id_generator=_Ids(),
-        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
-        world = _World(session, storage, clock)
-        async with world.uow:
-            claimed = await world.jobs.claim_next(
-                worker_id=_WORKER,
-                now=now,
-                lease_ttl=timedelta(minutes=15),
-                source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
-            )
-        assert claimed is not None
-        lineage_id = queued.lineage_id
-        await world.progress.outline(
-            worker_id=_WORKER,
-            job_id=queued.job_id,
-            outline=ConversionOutline(
-                title=None,
-                questions=tuple(
-                    OutlineQuestion(
-                        question_id=q, position=i, anchors=(f"p{i + 1}",), source_text=q
-                    )
-                    for i, q in enumerate(("q1", "q2", "q3"))
-                ),
-            ),
-        )
-        # First batch: the picture lands in revision 1 with its payload beside it.
-        await world.progress.batch_ready(
-            worker_id=_WORKER,
-            job_id=queued.job_id,
-            update=_picture_batch(lineage_id, q2=None, q3=None),
-        )
-        first = await world.open(actor, lineage_id)
-        assert first.items[0].body_asset_ids() == (_PICTURE_ID,)
-
-    async with session_factory() as session:
-        world = _World(session, storage, clock)
-        head = await world.vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        assert head is not None
-        container = world.codec.parse(
-            content=await world.store.load_version(actor=actor, vault_file=head)
-        )
-        assert container.assets_by_id == {_PICTURE_ID: _PICTURE}
-
-        # A later batch keeps the first batch's picture and payload.
-        await world.progress.batch_ready(
-            worker_id=_WORKER,
-            job_id=queued.job_id,
-            update=_picture_batch(lineage_id, q2="Fråga två", q3=None),
-        )
-        reopened = await world.open(actor, lineage_id)
-        assert reopened.revision == 2
-        assert reopened.items[0].body_asset_ids() == (_PICTURE_ID,)
-
-        # A teacher save keeps the picture and its payload beside the new revision.
-        saved = await world.teacher_save(actor, reopened)
-        assert saved.summary.version == 3
-        assert saved.document.items[0].body_asset_ids() == (_PICTURE_ID,)
-        head = await world.vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        assert head is not None
-        container = world.codec.parse(
-            content=await world.store.load_version(actor=actor, vault_file=head)
-        )
-        assert container.assets_by_id == {_PICTURE_ID: _PICTURE}

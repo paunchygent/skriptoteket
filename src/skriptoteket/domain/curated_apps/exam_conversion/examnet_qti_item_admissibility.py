@@ -75,7 +75,13 @@ def _parent_errors(parent: ExamNetQtiItem) -> tuple[str, ...]:
     errors: list[str] = []
     if not _SAFE_IDENTIFIER_PATTERN.fullmatch(parent.item_id):
         errors.append(f"Item {parent.item_id} has an unsafe QTI identifier.")
-    if not any(line.strip() for line in parent.instruction_lines):
+    positioned_picture = any(
+        isinstance(segment, ExamNetQtiPromptImage)
+        and 0 <= segment.image_index < len(parent.image_resources)
+        for paragraph in parent.prompt_paragraphs
+        for segment in paragraph
+    )
+    if not any(line.strip() for line in parent.instruction_lines) and not positioned_picture:
         errors.append(f"Item {parent.item_id} has no instruction text.")
     child_ids = tuple(child.item_id for child in parent.children)
     if len(set(child_ids)) != len(child_ids):

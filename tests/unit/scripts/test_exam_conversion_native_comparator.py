@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParseOrigin,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.scripts.exam_conversion_corpus_support import (
     STEMS,
     gold_exam,
@@ -182,11 +183,15 @@ def test_a_parent_instruction_moved_onto_every_child_passes():
     for stem, recorded, parent, _ in cases:
         items = list(recorded.items)
         for i in _positions(recorded, parent):
-            items[i] = _text(items[i], "\n".join(parent.instruction))
+            items[i] = _text(items[i], body_plain_text(parent.instruction))
         moved = _replace_parent(
             recorded.model_copy(update={"items": tuple(items)}),
             parent,
-            parent.model_copy(update={"instruction": ("Svara.",)}),
+            parent.model_copy(
+                update={
+                    "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Svara."),)),)
+                }
+            ),
         )
         comparison = _compare(stem, moved)
         assert all(comparison.items[i].passed for i in _positions(recorded, parent)), stem
@@ -222,7 +227,13 @@ def test_dropping_the_parent_instruction_loses_instruction_words_only():
     failing = _failing_children(
         cases,
         lambda recorded, parent: _replace_parent(
-            recorded, parent, parent.model_copy(update={"instruction": ("Svara.",)})
+            recorded,
+            parent,
+            parent.model_copy(
+                update={
+                    "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Svara."),)),)
+                }
+            ),
         ),
     )
     assert len(failing) >= 3
@@ -237,10 +248,17 @@ def test_a_childs_answer_disclosed_in_its_parent_instruction_leaks():
     index = recorded.items.index(child)
     answer = child.gaps[0].accepted_values[0]
     assert answer == "play"
-    assert answer not in "\n".join(parent.instruction).lower()
+    assert answer not in body_plain_text(parent.instruction).lower()
     assert _compare(_DIAGNOSTIC).items[index].passed
 
-    disclosed = parent.model_copy(update={"instruction": (*parent.instruction, answer)})
+    disclosed = parent.model_copy(
+        update={
+            "instruction": (
+                *parent.instruction,
+                NativeParagraph(segments=(NativeTextSegment(text=answer),)),
+            )
+        }
+    )
     mutated = _replace_parent(recorded, parent, disclosed)
     assert mutated.items is recorded.items
     comparison = _compare(_DIAGNOSTIC, mutated)
@@ -253,7 +271,7 @@ def test_unchanged_native_parent_instructions_and_word_banks_do_not_leak(stem: s
     assert recorded.parents
     if stem == _WORD_BANK:
         assert any(
-            value.lower() in "\n".join(parent.instruction).lower()
+            value.lower() in body_plain_text(parent.instruction).lower()
             for parent in recorded.parents
             for index in _positions(recorded, parent)
             for gap in recorded.items[index].gaps

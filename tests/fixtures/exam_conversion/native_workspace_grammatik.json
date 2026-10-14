@@ -4,8 +4,22 @@
   "revision": 1,
   "title": "Omprov: grammatik och språkstrukturer",
   "instructions": [
-    "Svenska 2",
-    "Total: 38 poäng"
+    {
+      "segments": [
+        {
+          "kind": "text",
+          "text": "Svenska 2"
+        }
+      ]
+    },
+    {
+      "segments": [
+        {
+          "kind": "text",
+          "text": "Total: 38 poäng"
+        }
+      ]
+    }
   ],
   "items": [
     {

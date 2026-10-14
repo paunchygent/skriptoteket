@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+)
 
 if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -25,21 +30,23 @@ class NativeExamParent(BaseModel):
 
     A parent owns no points and no answer key: each child item keeps its own kind, points
     and answer key, as an Exam.net information block holds questions of any type (D27).
+    Its instruction is one body of positioned paragraphs: the shared wording with every
+    shared picture at its exact source place (F2), never a gap the student fills.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     parent_id: str = Field(pattern=_PARENT_ID_PATTERN)
-    instruction: tuple[str, ...] = Field(min_length=1)
+    instruction: tuple[NativeParagraph, ...] = Field(min_length=1)
     item_ids: tuple[str, ...] = Field(min_length=1)
 
-    @field_validator("instruction")
-    @classmethod
-    def _non_blank_lines(cls, lines: tuple[str, ...]) -> tuple[str, ...]:
-        for line in lines:
-            if not line.strip():
-                raise ValueError("parent instruction lines must be non-blank")
-        return lines
+    @model_validator(mode="after")
+    def _instruction_is_shared_text(self) -> "NativeExamParent":
+        for paragraph in self.instruction:
+            for segment in paragraph.segments:
+                if isinstance(segment, NativeGapSegment):
+                    raise ValueError("a parent instruction cannot place a gap")
+        return self
 
 
 def validate_parent_structure(

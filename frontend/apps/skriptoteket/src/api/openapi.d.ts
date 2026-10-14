@@ -6098,7 +6098,7 @@ export interface components {
              * Instructions
              * @default []
              */
-            instructions: string[];
+            instructions: components["schemas"]["NativeParagraph"][];
             /** Items */
             items: components["schemas"]["NativeExamItem-Input"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
@@ -6106,7 +6106,7 @@ export interface components {
              * Parents
              * @default []
              */
-            parents: components["schemas"]["NativeExamParent"][];
+            parents: components["schemas"]["NativeExamParent-Input"][];
             /** Revision */
             revision: number;
             /**
@@ -6134,7 +6134,7 @@ export interface components {
              * Instructions
              * @default []
              */
-            instructions: string[];
+            instructions: components["schemas"]["NativeParagraph"][];
             /** Items */
             items: components["schemas"]["NativeExamItem-Output"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
@@ -6142,7 +6142,7 @@ export interface components {
              * Parents
              * @default []
              */
-            parents: components["schemas"]["NativeExamParent"][];
+            parents: components["schemas"]["NativeExamParent-Output"][];
             /** Revision */
             revision: number;
             /**
@@ -6274,10 +6274,29 @@ export interface components {
          *
          *     A parent owns no points and no answer key: each child item keeps its own kind, points
          *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     Its instruction is one body of positioned paragraphs: the shared wording with every
+         *     shared picture at its exact source place (F2), never a gap the student fills.
          */
-        NativeExamParent: {
+        "NativeExamParent-Input": {
             /** Instruction */
-            instruction: string[];
+            instruction: components["schemas"]["NativeParagraph"][];
+            /** Item Ids */
+            item_ids: string[];
+            /** Parent Id */
+            parent_id: string;
+        };
+        /**
+         * NativeExamParent
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
+         *
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     Its instruction is one body of positioned paragraphs: the shared wording with every
+         *     shared picture at its exact source place (F2), never a gap the student fills.
+         */
+        "NativeExamParent-Output": {
+            /** Instruction */
+            instruction: components["schemas"]["NativeParagraph"][];
             /** Item Ids */
             item_ids: string[];
             /** Parent Id */

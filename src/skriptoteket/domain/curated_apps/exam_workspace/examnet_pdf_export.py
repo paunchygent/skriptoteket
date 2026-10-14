@@ -19,7 +19,7 @@ Relationships:
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from html import escape
 from types import MappingProxyType
 
@@ -66,6 +66,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamItemKind,
     NativeGapSegment,
+    NativeParagraph,
     NativeTextSegment,
 )
 
@@ -127,13 +128,19 @@ def native_exam_to_pdf_document(
 
     items: list[DigiExamExamNetPdfItemRender] = []
     warnings: list[DigiExamExamNetPdfWarning] = []
+    document_instruction_html = _document_instruction_html(
+        document, asset_paths_by_id=asset_paths_by_id, labels=labels
+    )
     for item in document.items:
         item_render, item_warnings = _render_item(
             item=item,
             asset_paths_by_id=asset_paths_by_id,
             labels=labels,
             context=context,
-            parent_instruction_html=_parent_instruction_html(document, item),
+            document_instruction_html=document_instruction_html,
+            parent_instruction_html=_parent_instruction_html(
+                document, item, asset_paths_by_id=asset_paths_by_id, labels=labels
+            ),
         )
         warnings.extend(item_warnings)
         if item_render is not None:
@@ -155,6 +162,7 @@ def _render_item(
     asset_paths_by_id: Mapping[str, str],
     labels: ExamLanguageLabels,
     context: ExamNetPdfTargetProfileContext,
+    document_instruction_html: str,
     parent_instruction_html: str,
 ) -> tuple[DigiExamExamNetPdfItemRender | None, tuple[DigiExamExamNetPdfWarning, ...]]:
     if item.points is None:
@@ -179,7 +187,7 @@ def _render_item(
     item_semantics = _pdf_item_semantics(
         item=item,
         points=item.points,
-        prompt_html=parent_instruction_html + prompt_html,
+        prompt_html=document_instruction_html + parent_instruction_html + prompt_html,
     )
     strategy_result = DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY.render(
         item=item_semantics,
@@ -233,13 +241,34 @@ def _pdf_item_semantics(
     )
 
 
-def _parent_instruction_html(document: NativeExamDocument, item: NativeExamItem) -> str:
-    """The parent's instruction, printed once with the first child item."""
+def _document_instruction_html(
+    document: NativeExamDocument,
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """The exam-wide shared instruction, printed once with every top-level item."""
+    body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    return f'<div class="document-instruction">{body}</div>' if body else ""
+
+
+def _parent_instruction_html(
+    document: NativeExamDocument,
+    item: NativeExamItem,
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """The parent's instruction, printed once with the first child item.
+
+    Every paragraph keeps its wording and every shared picture at its source place, exactly
+    as an item body does; a missing or invalid picture already blocked the whole export.
+    """
     parent = document.parent_of(item.item_id)
     if parent is None or parent.item_ids[0] != item.item_id:
         return ""
-    lines = "".join(f"<p>{escape(line)}</p>" for line in parent.instruction)
-    return f'<div class="parent-instruction">{lines}</div>'
+    body = _body_html(parent.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    return f'<div class="parent-instruction">{body}</div>'
 
 
 def _prompt_html(
@@ -248,8 +277,18 @@ def _prompt_html(
     asset_paths_by_id: Mapping[str, str],
     labels: ExamLanguageLabels,
 ) -> str:
+    return _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
+
+
+def _body_html(
+    body: Iterable[NativeParagraph],
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """One native body as HTML: one ``<p>`` per paragraph, pictures inline at their place."""
     paragraphs: list[str] = []
-    for paragraph in item.body:
+    for paragraph in body:
         parts: list[str] = []
         for segment in paragraph.segments:
             if isinstance(segment, NativeTextSegment):

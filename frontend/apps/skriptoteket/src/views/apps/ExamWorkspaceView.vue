@@ -25,6 +25,9 @@
  *     converts, and the editor pane locks it until that batch arrives.
  *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
  *     drawer) render the workspace; phones add a question bar and sheet.
+ *   - Resolves the open document's shared instructions and each parent's stem
+ *     against its picture URLs once, so the list and sheet show the same text
+ *     and diagrams read-only.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
@@ -38,10 +41,12 @@ import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue"
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
+import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
 import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
@@ -136,7 +141,16 @@ const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
 const items = computed(() => workspaceDocument.value?.items ?? []);
 
 const itemRows = computed(() =>
-  toExamWorkspaceItemRows(items.value, workspaceDocument.value?.parents ?? []),
+  toExamWorkspaceItemRows(
+    items.value,
+    workspaceDocument.value?.parents ?? [],
+    assetUrls.value,
+  ),
+);
+
+/** The exam's shared instructions with their pictures resolved, once above the rows. */
+const globalInstructions = computed(() =>
+  examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
 );
 
 const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
@@ -374,6 +388,7 @@ async function handleSave(): Promise<void> {
             :asset-urls="assetUrls"
             :disabled="isBusy"
             :export-blockers-by-item-id="exportBlockersByItemId"
+            :global-instructions="globalInstructions"
             :item-count="items.length"
             :item-rows="itemRows"
             :layout="layout"
@@ -405,6 +420,12 @@ async function handleSave(): Promise<void> {
       title="Frågor"
       @close="questionSheetOpen = false"
     >
+      <ExamWorkspaceSharedInstruction
+        v-if="globalInstructions.length > 0"
+        :paragraphs="globalInstructions"
+        class="border-b border-navy/15 bg-canvas px-3 py-2"
+        data-test="exam-workspace-global-instruction"
+      />
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
         :readiness-by-item-id="readinessByItemId"

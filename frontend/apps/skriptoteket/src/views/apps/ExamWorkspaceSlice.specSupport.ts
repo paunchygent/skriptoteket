@@ -119,7 +119,7 @@ export function buildDocument(): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: ["Besvara alla frågor."],
+    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
     items,
     origin: {
       extractor_version: "docx-extractor-1",

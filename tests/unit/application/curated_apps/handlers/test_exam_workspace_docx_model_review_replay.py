@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     FIXTURES,
     build_replay,
@@ -85,8 +86,10 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     # following question opens Del 3.
     parents = [document.parent_of(i.item_id) for i in (previous, item, following)]
     assert parents[0] is not None and parents[0] == parents[1]
-    assert parents[0].instruction == ("Del 2: grammatik och språkstrukturer",)
-    assert parents[2] is not None and parents[2].instruction == ("Del 3: kortsvar",)
+    assert body_text_lines(parents[0].instruction) == ("Del 2: grammatik och språkstrukturer",)
+    assert parents[2] is not None and body_text_lines(parents[2].instruction) == (
+        "Del 3: kortsvar",
+    )
     assert ("unbuilt_question", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }

@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamParent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -103,7 +104,7 @@ def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_
 
     parent = build.parent_of("body:0019")
     assert parent is not None
-    assert parent.instruction == (wording,)
+    assert body_text_lines(parent.instruction) == (wording,)
     assert parent == build.parent_of("body:0022")
     assert parent.item_ids == (build.item("body:0019").item_id, build.item("body:0022").item_id)
     for anchor in ("body:0019", "body:0022"):
@@ -122,7 +123,7 @@ def test_mixed_kind_run_is_one_parent_and_no_child_repeats_the_instruction():
     parent = build.parent_of("body:0037")
     assert parent is not None and parent == build.parent_of("body:0045")
     # The section heading opens the parent's instruction (T2, 39-05-08).
-    assert parent.instruction == ("Del 2: Satsdelar", wording)
+    assert body_text_lines(parent.instruction) == ("Del 2: Satsdelar", wording)
     assert parent.item_ids == (first.item_id, second.item_id)
     for item in (first, second):
         assert wording not in item.plain_text_lines()
@@ -142,5 +143,5 @@ def test_instruction_reaching_a_single_item_is_still_copied_not_parented():
     # the instruction reaching one item stays a copy in that item, not a parent line.
     parent = build.parent_of("body:0056")
     assert parent is not None and parent == build.parent_of("body:0066")
-    assert parent.instruction == ("Del 3: Bisatser och komplex meningsbyggnad",)
+    assert body_text_lines(parent.instruction) == ("Del 3: Bisatser och komplex meningsbyggnad",)
     assert build.item("body:0056").plain_text_lines()[0] == wording
