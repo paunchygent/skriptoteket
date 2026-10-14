@@ -1,0 +1,626 @@
+{
+  "title": {
+    "text": "F Advanced Vocabulary Revision: Linking words (13 points)",
+    "source_anchors": [
+      "body:0141"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Complete the sentences below with a suitable linking word. Choose from the following. (Not all the linking words will be used.)",
+      "source_anchors": [
+        "body:0142"
+      ],
+      "points": null
+    },
+    {
+      "text": "consequently | in other words | on the one hand\nfor instance | in spite of | once\nhowever | moreover | thereby\nin conclusion | no sooner | unless\nin order to | on the contrary | whereas",
+      "source_anchors": [
+        "body:0143"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0145",
+    "body:0147",
+    "body:0149",
+    "body:0151",
+    "body:0153",
+    "body:0155",
+    "body:0157",
+    "body:0159",
+    "body:0161",
+    "body:0163",
+    "body:0165",
+    "body:0167",
+    "body:0169"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0144"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "a",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Using cannabis regularly can be addictive. ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Moreover"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", it can lead to taking harder drugs such as heroin.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>Moreover</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0146"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "b",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Unless",
+                "unles"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " the government does something about the National Health Service now, things will only get worse in the future.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>Unless</i> (Also accepted: unles)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0148"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "c",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A lot of money has already been spent on education. A lot more, ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "however"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", will have to be spent in the future.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>however</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0150"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "d",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She went to work in Paris as an au pair ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in order to"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " improve her French.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>in order to</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0152"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "e",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "In spite of"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " all the mistakes you’ve made, this is still a very good essay.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>In spite of</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0154"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "f",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "James had too much to eat and drink last night and, ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "consequently"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", he had a bad night’s sleep.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>consequently</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0156"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "g",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Whereas"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Tom is very good at science, his brother is absolutely hopeless.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>Whereas</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0158"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "h",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Are you in favour of fox hunting?” “No, ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "on the contrary"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", I believe it’s cruel, barbaric and should be banned!”",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>on the contrary</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0160"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "i",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Soldiers are taught to be obedient – ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "in other words"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", to obey orders without question.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>in other words</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0162"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "j",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "There are many different ways of getting rich. You could, ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "for instance"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", win £1 million on the National Lottery.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>for instance</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0164"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "k",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "In conclusion"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", I would like to thank you all for coming to the meeting tonight and I do hope to see you here again soon.”",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>In conclusion</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0166"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "l",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When a dog ran across the street, the car in front of us stopped suddenly, ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "thereby"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " causing a collision.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>thereby</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0168"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "m",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "No sooner"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " had the Prime Minister started his speech when some of the audience started booing loudly.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: <i>No sooner</i>",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

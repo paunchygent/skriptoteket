@@ -3,8 +3,8 @@
 The production job handler, ``build_docx_conversion_pipeline`` composition, progress port, job
 queue, token ledger, vault storage and QTI validators run unchanged. Only the network is
 replaced: ``RecordedTransport`` (``exam_workspace_docx_background_support``) serves the live
-replies recorded in ``tests/fixtures/exam_conversion/docx_build_v10/<exam>/`` to the real HTTP
-adapters.
+replies recorded in
+``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/`` to the real HTTP adapters.
 """
 
 from __future__ import annotations

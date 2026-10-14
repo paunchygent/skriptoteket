@@ -1,7 +1,7 @@
 """Recorded transport and production composition for the DOCX background job proofs.
 
 ``RecordedTransport`` serves the live replies recorded in
-``tests/fixtures/exam_conversion/docx_build_v10/<exam>/`` to the real HTTP adapters, so the
+``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/`` to the real HTTP adapters, so the
 job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue, token
 ledger, vault storage and QTI validators run unchanged around it.
 """

@@ -1,33 +1,50 @@
-"""Replay of a one-family live run in which a section's points line misled the last question (D38).
+"""A printed section total is split over its questions and its points line is no item (D38, D6).
 
-``docx_build_v11_one_family_points`` holds the recordings of the course exam whose first
-section prints "15 poäng" on its heading and again on a points line after its fifteenth
-question. The fifteenth question's batch owned that line, gave the question the whole
-total as its own points and left the line unclaimed.
+The fresh course-exam recording prints "15 poäng" on the section heading and again on a
+points line after the section's fifteenth question. Each of the fifteen questions that
+prints no points of its own carries one estimated point, and the points line itself stays
+exam-level instruction text with no item.
 """
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    FIXTURES,
     build_replay,
+    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_ROOT = FIXTURES / "docx_build_v11_one_family_points"
-_COURSE_EXAM = "svenska_2_kursavslutande_prov_med_facit"
-_FIRST_SECTION = tuple(f"body:{start:04d}" for start in (8, *range(13, 53, 3)))
+_EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _POINTS_LINE = "body:0055"
+_POINTS_TEXT = "Poäng: 15 poäng"
+
+
+def _section_anchors() -> list[str]:
+    questions = recording(_EXAM, "docx_grouping_1")["questions"]
+    assert isinstance(questions, list)
+    anchors: list[str] = []
+    for question in questions:
+        assert isinstance(question, dict)
+        if question["id"] not in {f"q{n}" for n in range(1, 16)}:
+            continue
+        own = question["anchors"]
+        assert isinstance(own, list) and own
+        anchors.append(str(own[0]))
+    assert len(anchors) == 15
+    return anchors
 
 
 async def test_section_total_is_split_over_its_questions_and_its_points_line_is_no_item():
-    replay = build_replay(_COURSE_EXAM, root=_ROOT, families_per_batch=1)
+    replay = build_replay(_EXAM)
     outcome = await replay.pipeline.convert(job=replay.job())
 
-    items = {item.source_anchor: item for item in outcome.result.document.items}
-    section = [items[anchor] for anchor in _FIRST_SECTION]
+    document = outcome.result.document
+    by_anchor = {item.source_anchor: item for item in document.items}
+    section = [by_anchor[anchor] for anchor in _section_anchors()]
     assert [item.points for item in section] == [1] * 15
     assert all(item.points_estimated for item in section)
     assert not any(item.review.reasons for item in section)
-    assert _POINTS_LINE not in items
+    assert _POINTS_LINE not in by_anchor
+    assert _POINTS_TEXT in body_text_lines(document.instructions)

@@ -1,35 +1,32 @@
-"""Matching items from a recorded conversion, with their answer key removed."""
+"""Matching items from the fresh live recordings, with their answer key removed."""
 
-import json
-from pathlib import Path
 from uuid import uuid4
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
     NativeExamItemKind,
 )
-
-_RECORDING = Path(
-    "tests/fixtures/exam_conversion/docx_build_v7/"
-    "bf26_english_1_unit_test_kap_1_2_med_facit/round1.json"
+from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
+    ENGLISH_EXAM,
+    recorded_converted_items,
 )
 
 
-def recorded_matching_items(*, keyed: bool = False) -> tuple[NativeExamItem, ...]:
+def recorded_matching_items(
+    *, keyed: bool = False, exam: str = ENGLISH_EXAM
+) -> tuple[NativeExamItem, ...]:
     """Native matching items of the recording; ``keyed=False`` drops every pair (origin ABSENT)."""
 
-    produced = json.loads(_RECORDING.read_text())["items"]
     items: list[NativeExamItem] = []
-    for raw in produced:
-        if raw["kind"] != NativeExamItemKind.MATCHING.value:
+    for produced in recorded_converted_items(exam):
+        if produced.kind is not NativeExamItemKind.MATCHING:
             continue
         if not keyed:
-            raw = {**raw, "match_pairs": []}
-        item = native_item(ProducedItem.model_validate(raw))
+            produced = produced.model_copy(update={"match_pairs": ()})
+        item = native_item(produced)
         sequence = len(items) + 1
         items.append(
             NativeExamItem.model_validate(

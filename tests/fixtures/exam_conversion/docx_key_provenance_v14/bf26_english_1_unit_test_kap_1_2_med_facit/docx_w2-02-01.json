@@ -1,0 +1,60 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0026"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0025"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cars are ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "constantly"
+              ],
+              "spelling_candidates": [
+                "constanty",
+                "constanly",
+                "constantlyy"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ständigt) passing our house, even late at night.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: constantly",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

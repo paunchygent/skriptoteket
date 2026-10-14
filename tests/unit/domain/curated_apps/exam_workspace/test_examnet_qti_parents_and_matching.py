@@ -119,7 +119,8 @@ def _package(items: tuple[ExamNetQtiItem, ...]) -> tuple[zipfile.ZipFile, str]:
 
 
 @pytest.mark.parametrize("exam", sorted(_BASELINE))
-def test_standalone_items_serialize_byte_for_byte_as_before_the_parent_layout(exam: str):
+def test_recorded_standalone_items_serialize_to_the_current_exporter_bytes(exam: str):
+    """Each converted item's standalone XML is fixed for the fresh v14 recordings."""
     mismatched = []
     for item in recorded_items(exam):
         expected = _BASELINE[exam].get(f"{item.sequence:03d}")
@@ -132,6 +133,34 @@ def test_standalone_items_serialize_byte_for_byte_as_before_the_parent_layout(ex
             mismatched.append(item.item_id)
     assert not mismatched
     assert len(_BASELINE[exam]) >= 8
+
+
+@pytest.mark.parametrize("exam", sorted(_BASELINE))
+def test_a_parents_child_serializes_byte_for_byte_as_the_same_item_standalone(exam: str):
+    """The parent layout wraps children without changing any child's own XML."""
+    items = recorded_items(exam)
+    standalone = {
+        item.item_id: item
+        for item in native_exam_to_examnet_qti_items(recorded_document(items=items))
+    }
+    checked: set[NativeExamItemKind] = set()
+    for start in range(len(items) - 1):
+        window = items[start : start + 2]
+        kind = window[0].kind
+        if window[1].kind is not kind or kind in checked:
+            continue
+        checked.add(kind)
+        parent = parent_over("parent_001", _INSTRUCTION, *(item.sequence for item in window))
+        document = recorded_document((parent,), items=items)
+        (exported,) = [item for item in native_exam_to_examnet_qti_items(document) if item.children]
+        assert [child.item_id for child in exported.children] == [
+            item.item_id for item in window
+        ], (exam, kind)
+        for child in exported.children:
+            assert serialize_qti_assessment_item(child) == serialize_qti_assessment_item(
+                standalone[child.item_id]
+            ), (exam, child.item_id)
+    assert checked
 
 
 # --- matching lists (F1) and distractors (D7) -------------------------------------------

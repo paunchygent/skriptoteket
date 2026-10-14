@@ -1,0 +1,57 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0112"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0111"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The bikes belong to three boys. Complete the sentence with a form of boy.\nThese are the ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "boys’",
+                "boys'"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " bikes.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: boys’ (Also accepted: boys’)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

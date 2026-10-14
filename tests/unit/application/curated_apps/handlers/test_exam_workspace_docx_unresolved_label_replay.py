@@ -1,47 +1,68 @@
 """A question the second pass leaves unresolved converts with its first-pass label (D23).
 
-``docx_build_v14_low17_unresolved_label`` holds the unedited live recordings of a
-one-family-per-batch run. The first pass labels the question holding body:0086 gap_fill below
-the acceptance threshold, and the second pass answers unresolved. The question must reach a
-gap_fill batch, where the type_conflict resend can still correct a wrong label, and never a
-free_text batch.
+The fresh grammar-exam recording escalates q2 to the second pass, where it returns
+``gap_fill``. This test serves the same recording with that label rewritten to
+``unresolved`` in memory (explicitly synthetic): the converter batches the question with the
+first pass's top label, so it reaches a gap_fill batch and converts, never a free_text one.
 """
+
+from __future__ import annotations
 
 import json
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+    StructuredLLMRequest,
+    StructuredLLMResponse,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamItemKind,
+)
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    FIXTURES,
+    ReplayProvider,
     build_replay,
-    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_ROOT = FIXTURES / "docx_build_v14_low17_unresolved_label"
-_EXAM = "svenska_2_kursavslutande_prov_med_facit"
-_QUESTION = "q20"
-_STEM = "body:0086"
+_EXAM = "svenska_2_grammatik_omprov_variant_1_med_facit"
+_QUESTION = "q2"
+_OWN = ("body:0016", "body:0017")
+
+
+class _UnresolvedLabel(ReplayProvider):
+    """Serve the fresh recordings with q2's second-pass label rewritten to unresolved."""
+
+    async def complete_structured(
+        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> StructuredLLMResponse:
+        response = await super().complete_structured(request=request, profile=profile)
+        if request.item_id != "label_b:q2":
+            return response
+        return StructuredLLMResponse(
+            content={"label": ItemTypeLabel.UNRESOLVED.value},
+            finish_reason=response.finish_reason,
+            usage=response.usage,
+        )
 
 
 async def test_an_unresolved_second_pass_label_converts_in_the_first_pass_label_batch():
-    assert recording(_EXAM, f"label_b_{_QUESTION}", root=_ROOT) == {
-        "label": ItemTypeLabel.UNRESOLVED.value
-    }
+    provider = _UnresolvedLabel(_EXAM)
+    replay = build_replay(_EXAM, provider=provider)
+    outcome = await replay.pipeline.convert(job=replay.job())
 
-    replay = build_replay(_EXAM, root=_ROOT, families_per_batch=1)
-    await replay.pipeline.convert(job=replay.job())
-
-    batches = [
-        json.loads(request.user_payload)
-        for request in replay.provider.requests
-        if request.item_id.startswith("docx_w")
-    ]
+    assert "label_b:q2" in provider.request_ids
     holding = [
-        payload["item_kinds"]
-        for payload in batches
-        if _STEM in {chunk["anchor"] for chunk in payload["chunks"]}
+        json.loads(request.user_payload)["item_kinds"]
+        for request in provider.requests
+        if request.item_id.startswith("docx_w2")
+        and set(_OWN) & {chunk["anchor"] for chunk in json.loads(request.user_payload)["chunks"]}
     ]
     assert holding == [[ItemTypeLabel.GAP_FILL.value]]
+    (item_id,) = outcome.update.item_ids[_QUESTION]
+    (item,) = [i for i in outcome.result.document.items if i.item_id == item_id]
+    assert item.kind is NativeExamItemKind.GAP_FILL
+    assert not item.review.reasons

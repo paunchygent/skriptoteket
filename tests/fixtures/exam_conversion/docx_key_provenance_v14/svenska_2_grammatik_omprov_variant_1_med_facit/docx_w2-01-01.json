@@ -1,0 +1,129 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0066",
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Analysera en komplex mening.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Mening: Att flera elever blev sjuka förklarar varför redovisningen sköts upp.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Skriv bisatserna. Bisats 1: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Att flera elever blev sjuka"
+              ],
+              "spelling_candidates": [
+                "At flera elever blev sjuka"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "varför redovisningen sköts upp"
+              ],
+              "spelling_candidates": [
+                "varför redovisningen sköt upp"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2 satsdel: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Skriv bisatserna. Bisats 1: Att flera elever blev sjuka Bisats 2: varför redovisningen sköts upp\nb) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: S Bisats 2 satsdel: DO",
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

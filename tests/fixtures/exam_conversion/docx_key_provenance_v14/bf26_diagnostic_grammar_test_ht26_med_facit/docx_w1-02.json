@@ -1,0 +1,830 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0045"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0039",
+    "body:0041",
+    "body:0047",
+    "body:0049",
+    "body:0051",
+    "body:0053",
+    "body:0055",
+    "body:0057",
+    "body:0059",
+    "body:0061",
+    "body:0063",
+    "body:0065",
+    "body:0067",
+    "body:0069",
+    "body:0071",
+    "body:0073"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0038"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "had been waiting",
+                "had waited",
+                "’d been waiting",
+                "'d been waiting",
+                "’d waited",
+                "'d waited"
+              ],
+              "spelling_candidates": [
+                "had been waitng",
+                "had been waIting",
+                "had waited",
+                "had ben waiting"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (hade väntat) for the train for two hours, when they announced that there would be no trains that day.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: had been waiting (Also accepted: had waited, ’d been waiting, ’d waited)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0040"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "would buy",
+                "’d buy",
+                "'d buy"
+              ],
+              "spelling_candidates": [
+                "woud buy",
+                "would by"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (skulle köpa) that computer if I were you.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: would buy (Also accepted: ’d buy)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0046"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I bought ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "this furniture"
+              ],
+              "spelling_candidates": [
+                "this furnitue",
+                "this furnituer"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (de här möblerna) in the sale.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: this furniture",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0048"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Politics is"
+              ],
+              "spelling_candidates": [
+                "Politics are",
+                "Politcs is"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (Politik är) important.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Politics is",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0050"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "22",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We have ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "planned"
+              ],
+              "spelling_candidates": [
+                "planed",
+                "plannned"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (planerat) to go on a trip to the Bahamas this winter.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: planned",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0052"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "23",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I bought ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "these"
+              ],
+              "spelling_candidates": [
+                "thes",
+                "thees"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (de här) shoes really cheaply.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: these",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0054"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "24",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She was not used ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "to working"
+              ],
+              "spelling_candidates": [
+                "to workng",
+                "to workin"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (vid att arbeta) so late.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: to working",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0056"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "25",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I don’t want the red jumper. I prefer ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "the blue one"
+              ],
+              "spelling_candidates": [
+                "the blue on",
+                "the bluse one"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (den blåa).",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: the blue one",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0058"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "26",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Those are"
+              ],
+              "spelling_candidates": [
+                "Thsoe are",
+                "Those is"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (Det där är) the only sweaters we have in your size.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Those are",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0060"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "27",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "History"
+              ],
+              "spelling_candidates": [
+                "Histroy",
+                "Hstory"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (Historien) often repeats itself.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: History",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0062"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "28",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I was very suspicious ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "of",
+                "about"
+              ],
+              "spelling_candidates": [
+                "off",
+                "abotu"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (mot) his behaviour.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: of (Also accepted: about)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "29",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "He speaks English very ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "badly"
+              ],
+              "spelling_candidates": [
+                "baldy",
+                "badlly"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (dåligt).",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: badly",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0066"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "30",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I would like ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "some advice",
+                "a piece of advice",
+                "a bit of advice"
+              ],
+              "spelling_candidates": [
+                "some advcie",
+                "a piece of advcie",
+                "a bit of advcie"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ett råd).",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: some advice (Also accepted: a piece of advice, a bit of advice)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0068"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "31",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Both ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "the young and the old"
+              ],
+              "spelling_candidates": [
+                "the young and the od",
+                "the young and the ol"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (de unga och de gamla) feel that they have too little influence.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: the young and the old",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "32",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I’m so tired. I ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "have been working",
+                "have worked",
+                "’ve been working",
+                "'ve been working",
+                "’ve worked",
+                "'ve worked"
+              ],
+              "spelling_candidates": [
+                "have been workng",
+                "have been workin",
+                "have workd"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (har arbetat) hard all day.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: have been working (Also accepted: have worked, ’ve been working, ’ve worked)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0072"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "33",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She is ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "the only one"
+              ],
+              "spelling_candidates": [
+                "the only on",
+                "the onyl one"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (den enda) who can help us in this situation.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: the only one",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

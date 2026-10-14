@@ -1,0 +1,342 @@
+{
+  "title_anchors": [
+    "body:0002"
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "anchors": [
+        "body:0006",
+        "body:0007"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0008"
+      ]
+    },
+    {
+      "id": "q2",
+      "anchors": [
+        "body:0009",
+        "body:0010"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0011"
+      ]
+    },
+    {
+      "id": "q3",
+      "anchors": [
+        "body:0012",
+        "body:0013"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0014"
+      ]
+    },
+    {
+      "id": "q4",
+      "anchors": [
+        "body:0015",
+        "body:0016"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0017"
+      ]
+    },
+    {
+      "id": "q5",
+      "anchors": [
+        "body:0018",
+        "body:0019",
+        "body:0020"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0021"
+      ]
+    },
+    {
+      "id": "q6",
+      "anchors": [
+        "body:0022",
+        "body:0023"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0024"
+      ]
+    },
+    {
+      "id": "q7",
+      "anchors": [
+        "body:0025",
+        "body:0026"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0027"
+      ]
+    },
+    {
+      "id": "q8",
+      "anchors": [
+        "body:0028",
+        "body:0029"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0030"
+      ]
+    },
+    {
+      "id": "q9",
+      "anchors": [
+        "body:0032",
+        "body:0033",
+        "body:0034"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0035"
+      ]
+    },
+    {
+      "id": "q10",
+      "anchors": [
+        "body:0038",
+        "body:0039",
+        "body:0040"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0041"
+      ]
+    },
+    {
+      "id": "q11",
+      "anchors": [
+        "body:0044",
+        "body:0045",
+        "body:0046"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0047"
+      ]
+    },
+    {
+      "id": "q12",
+      "anchors": [
+        "body:0050",
+        "body:0051",
+        "body:0052"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0053"
+      ]
+    },
+    {
+      "id": "q13",
+      "anchors": [
+        "body:0056",
+        "body:0057",
+        "body:0058"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0059"
+      ]
+    },
+    {
+      "id": "q14",
+      "anchors": [
+        "body:0062",
+        "body:0063",
+        "body:0064"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0065"
+      ]
+    },
+    {
+      "id": "q15",
+      "anchors": [
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0071"
+      ]
+    },
+    {
+      "id": "q16",
+      "anchors": [
+        "body:0074",
+        "body:0075",
+        "body:0076"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0077"
+      ]
+    },
+    {
+      "id": "q17",
+      "anchors": [
+        "body:0080",
+        "body:0081",
+        "body:0082"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0083"
+      ]
+    },
+    {
+      "id": "q18",
+      "anchors": [
+        "body:0086",
+        "body:0087",
+        "body:0088"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0089"
+      ]
+    },
+    {
+      "id": "q19",
+      "anchors": [
+        "body:0092",
+        "body:0093",
+        "body:0094"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0095"
+      ]
+    },
+    {
+      "id": "q20",
+      "anchors": [
+        "body:0098",
+        "body:0099",
+        "body:0100"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0101"
+      ]
+    },
+    {
+      "id": "q21",
+      "anchors": [
+        "body:0104",
+        "body:0105",
+        "body:0106"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0107"
+      ]
+    },
+    {
+      "id": "q22",
+      "anchors": [
+        "body:0111",
+        "body:0112",
+        "body:0113"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0114"
+      ]
+    },
+    {
+      "id": "q23",
+      "anchors": [
+        "body:0117",
+        "body:0118",
+        "body:0119"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0120"
+      ]
+    },
+    {
+      "id": "q24",
+      "anchors": [
+        "body:0123",
+        "body:0124",
+        "body:0125"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0126"
+      ]
+    },
+    {
+      "id": "q25",
+      "anchors": [
+        "body:0129",
+        "body:0130",
+        "body:0131"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0132"
+      ]
+    },
+    {
+      "id": "q26",
+      "anchors": [
+        "body:0135",
+        "body:0136",
+        "body:0137"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0138"
+      ]
+    },
+    {
+      "id": "q27",
+      "anchors": [
+        "body:0141",
+        "body:0142",
+        "body:0143"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0144"
+      ]
+    },
+    {
+      "id": "q28",
+      "anchors": [
+        "body:0147",
+        "body:0148",
+        "body:0149"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": [
+        "body:0150"
+      ]
+    }
+  ],
+  "shared_contexts": [],
+  "other_anchors": [
+    "body:0003",
+    "body:0005",
+    "body:0108"
+  ]
+}

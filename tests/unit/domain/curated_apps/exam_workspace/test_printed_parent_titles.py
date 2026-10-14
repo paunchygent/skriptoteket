@@ -1,19 +1,18 @@
 """Parent titles span the children's printed labels, not Exam.net running numbers (D20).
 
-The exams are converted from a recorded live run whose items carry printed labels. The
-expected title is the question part of gold's own parent label, such as "Question 1–7" in
-"Part 3, Question 1–7", so the check holds for every recorded exam without naming one.
-Running numbers continue across parts; printed numbers restart, so the two differ.
+The exams are converted from the fresh live recordings; each parent's QTI title is the span
+of its children's printed labels, which restart across parts while the running numbers
+continue. Item titles stay the running question label, and an added image gets an alt text
+that never names a question.
 """
 
 import hashlib
 import re
-from pathlib import Path
+from dataclasses import dataclass
 from xml.etree import ElementTree
 
 import pytest
 
-from scripts.exam_conversion_eval.gold import GoldParent
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
 )
@@ -26,56 +25,86 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAssetSegment,
     NativeExamAsset,
+    NativeExamDocument,
+    NativeExamItem,
+    NativeExamParent,
     NativeParagraph,
 )
-from tests.unit.scripts.exam_conversion_corpus_support import gold_exam, replayed
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 
-_LABELLED = Path("tests/fixtures/exam_conversion/docx_build_v9")
-_STEMS = tuple(sorted(path.name for path in _LABELLED.iterdir() if path.is_dir()))
+_GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
+_GRAMMAR_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
+_POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
+_STEMS = (_GRAMMAR_1, _GRAMMAR_2, _POETRY)
+_RESTARTED = "body:0111"
 
 
-def _parent_titles(stem: str) -> list[tuple[str, str, str]]:
-    """(QTI title, gold's printed span, running-number span) for each parent, in order."""
-    document, _ = replayed(stem, _LABELLED)
-    gold_parents = [item for item in gold_exam(stem).items if isinstance(item, GoldParent)]
-    assert len(document.parents) == len(gold_parents), stem
-    titles = {item.item_id: item.title for item in native_exam_to_examnet_qti_items(document)}
-    rows: list[tuple[str, str, str]] = []
-    for parent, gold in zip(document.parents, gold_parents, strict=True):
-        first = document.item_by_id(parent.item_ids[0])
-        last = document.item_by_id(parent.item_ids[-1])
-        word = gold.source_label.split(",")[-1].split()[0]
-        running = f"{word} {first.sequence}–{last.sequence}"
-        rows.append((titles[parent.parent_id], gold.source_label.split(",")[-1].strip(), running))
-    return rows
+@dataclass(frozen=True)
+class _Build:
+    document: NativeExamDocument
+
+    def item(self, anchor: str) -> NativeExamItem:
+        return next(item for item in self.document.items if item.source_anchor == anchor)
+
+    def parent_of(self, anchor: str) -> NativeExamParent | None:
+        return self.document.parent_of(self.item(anchor).item_id)
+
+    def children(self, parent: NativeExamParent) -> list[NativeExamItem]:
+        return [self.document.item_by_id(item_id) for item_id in parent.item_ids]
+
+
+_BUILDS: dict[str, _Build] = {}
+
+
+async def _build(exam: str) -> _Build:
+    if exam not in _BUILDS:
+        replay = build_replay(exam)
+        outcome = await replay.pipeline.convert(job=replay.job())
+        assert not outcome.result.events, exam
+        _BUILDS[exam] = _Build(outcome.result.document)
+    return _BUILDS[exam]
+
+
+def _titles(document: NativeExamDocument) -> dict[str, str]:
+    return {item.item_id: item.title for item in native_exam_to_examnet_qti_items(document)}
 
 
 @pytest.mark.parametrize("stem", _STEMS)
-def test_parent_titles_are_the_printed_span(stem: str) -> None:
-    for title, printed, _ in _parent_titles(stem):
-        assert title == printed, stem
+async def test_parent_titles_span_the_childrens_printed_labels(stem: str):
+    build = await _build(stem)
+    document = build.document
+    labels = exam_language_labels(document)
+    titles = _titles(document)
 
-
-@pytest.mark.parametrize("stem", _STEMS)
-def test_every_child_of_a_parent_keeps_a_printed_label(stem: str) -> None:
-    document, _ = replayed(stem, _LABELLED)
+    assert document.parents
     for parent in document.parents:
-        assert all(document.item_by_id(item_id).printed_label for item_id in parent.item_ids)
+        children = build.children(parent)
+        assert all(child.printed_label for child in children), stem
+        assert titles[parent.parent_id] == labels.printed_span(
+            children[0].printed_label or "", children[-1].printed_label or ""
+        ), stem
 
 
-def test_the_recordings_hold_a_part_whose_numbering_restarts() -> None:
-    restarted = [
-        (stem, printed, running)
-        for stem in _STEMS
-        for _, printed, running in _parent_titles(stem)
-        if printed != running
-    ]
-    assert restarted
+async def test_a_part_whose_numbering_restarts_titles_the_printed_span_not_the_running_numbers():
+    build = await _build(_POETRY)
+    document = build.document
+    labels = exam_language_labels(document)
+    parent = build.parent_of(_RESTARTED)
+    assert parent is not None
+    children = build.children(parent)
+    titles = _titles(document)
+
+    running = labels.question_label(children[0].sequence, children[-1].sequence)
+    printed = labels.printed_span(children[0].printed_label or "", children[-1].printed_label or "")
+    assert running == "Question 22–28"
+    assert printed == "Question 1–7"
+    assert titles[parent.parent_id] == printed != running
 
 
 @pytest.mark.parametrize("stem", _STEMS)
-def test_printed_labels_never_enter_student_visible_text(stem: str) -> None:
-    document, _ = replayed(stem, _LABELLED)
+async def test_printed_labels_never_enter_student_visible_text(stem: str):
+    build = await _build(stem)
+    document = build.document
     numbered = [item for item in document.items if re.search(r"\d", item.printed_label or "")]
     assert numbered
     for item in numbered:
@@ -93,19 +122,22 @@ _ASSET = NativeExamAsset(
 
 
 @pytest.mark.parametrize("stem", _STEMS)
-def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: str) -> None:
-    """No item carries a title (39-05-08): its QTI title is its question label, a printed
-    label titles only parents, and an image added to the item never names it."""
-    document, _ = replayed(stem, _LABELLED)
+async def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: str):
+    """No item carries a printed title (39-05-08): its QTI title is its running question
+    label, a printed label titles only parents, and an image added to the item never
+    names it."""
+    build = await _build(stem)
+    document = build.document
     labels = exam_language_labels(document)
     untitled = [item for item in document.items if item.printed_label]
     assert untitled
-    if stem == "bf26_english_1_unit_test_kap_1_2_med_facit":
-        (restarted,) = [item for item in untitled if item.sequence == 28]
-        assert restarted.printed_label == "1"
-        assert labels.image == "Image"
+
     for item in untitled:
-        assert labels.item_title(item) == labels.question_label(item.sequence), item.printed_label
+        (single,) = native_exam_to_examnet_qti_items(
+            document.model_copy(update={"items": (item,), "parents": ()})
+        )
+        assert single.title == labels.question_label(item.sequence), (stem, item.printed_label)
+
         illustrated = item.model_copy(
             update={
                 "body": (
@@ -122,8 +154,6 @@ def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(stem: st
         )
         exported = native_exam_to_examnet_qti_items(changed, assets_by_id={_ASSET.asset_id: _PNG})
         (qti,) = [entry for entry in exported if entry.image_resources]
-        if document.parent_of(item.item_id) is None:
-            assert qti.title == labels.question_label(item.sequence), (stem, item.printed_label)
         xml = ElementTree.fromstring(serialize_qti_assessment_item(qti, image_paths=("image.png",)))
         body = xml.find("{*}itemBody")
         assert body is not None

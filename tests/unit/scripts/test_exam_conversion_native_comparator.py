@@ -1,5 +1,6 @@
 """The five-principle comparator judged on native documents replayed from recordings."""
 
+from dataclasses import dataclass
 from uuid import uuid4
 
 import pytest
@@ -61,64 +62,69 @@ def _facit(item: GoldItem) -> str | None:
     return lines[-1].rsplit(":", 1)[1].strip() if lines else None
 
 
-def _mutations(mutate, principle: str) -> list[tuple[str, int, ExamComparison, ExamComparison]]:
-    """Per exam, the first item that meets the principle and the mutation applies to.
+@dataclass(frozen=True)
+class _LeakHit:
+    """One deliberate facit leak: an open gold question, the converted free-text item whose
+    wording pairs with it, and that item with the facit appended."""
 
-    Each hit is judged before and after the mutation.
-    """
-    hits = []
+    stem: str
+    gold_index: int
+    item_index: int
+    leaked: NativeExamItem
+    baseline: ExamComparison
+    comparison: ExamComparison
+
+
+def _facit_leak_hits() -> list[_LeakHit]:
+    """Per open gold question that keeps a facit, the first converted free-text item where
+    appending that facit makes the comparator report leakage on that question."""
+    hits: list[_LeakHit] = []
     for stem in STEMS:
         recorded, _ = replayed(stem)
         baseline = _compare(stem)
-        for index, item in enumerate(recorded.items):
-            if principle in _failed(baseline, index):
+        free_text = [
+            (index, item)
+            for index, item in enumerate(recorded.items)
+            if item.kind is NativeExamItemKind.FREE_TEXT
+            and item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+        ]
+        for gold_index, question in enumerate(gold_exam(stem).questions):
+            facit = _facit(question)
+            if facit is None or "no_answer_leakage" in _failed(baseline, gold_index):
                 continue
-            mutated = mutate(stem, index, item)
-            if mutated is not None:
-                hits.append(
-                    (stem, index, baseline, _compare(stem, with_item(recorded, index, mutated)))
-                )
-                break
+            for item_index, item in free_text:
+                leaked = _text(item, facit)
+                comparison = _compare(stem, with_item(recorded, item_index, leaked))
+                if "no_answer_leakage" in _failed(comparison, gold_index):
+                    hits.append(
+                        _LeakHit(stem, gold_index, item_index, leaked, baseline, comparison)
+                    )
+                    break
     return hits
 
 
-def _leak_facit(stem: str, index: int, item: NativeExamItem) -> NativeExamItem | None:
-    """An open question with the teacher's facit appended, when its gold keeps one."""
-    gold = gold_exam(stem)
-    if len(gold.questions) != len(replayed(stem)[0].items):
-        return None
-    facit = _facit(gold.questions[index])
-    if facit is None or item.kind is not NativeExamItemKind.FREE_TEXT:
-        return None
-    return _text(item, facit)
-
-
 def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
-    hits = _mutations(_leak_facit, "no_answer_leakage")
+    hits = _facit_leak_hits()
     # Only exams with an open question whose gold keeps a teacher's facit can leak it.
-    with_facit = {
-        s
-        for s in STEMS
-        if s.startswith("svenska_2") and any(_facit(q) for q in gold_exam(s).questions)
-    }
+    with_facit = {stem for stem in STEMS if any(_facit(q) for q in gold_exam(stem).questions)}
     assert with_facit
-    assert {stem for stem, *_ in hits} >= with_facit
-    for stem, index, baseline, mutated in hits:
-        assert "no_answer_leakage" not in _failed(baseline, index), stem
-        assert "no_answer_leakage" in _failed(mutated, index), stem
+    assert {hit.stem for hit in hits} >= with_facit
+    for hit in hits:
+        assert "no_answer_leakage" not in _failed(hit.baseline, hit.gold_index), hit.stem
+        assert "no_answer_leakage" in _failed(hit.comparison, hit.gold_index), hit.stem
 
 
-def _leaked_as(stem: str, index: int, review: NativeItemReview) -> set[str]:
-    """The failed principles of the facit-leaked item when it carries `review`."""
-    recorded, _ = replayed(stem)
-    leaked = _leak_facit(stem, index, recorded.items[index])
-    assert leaked is not None
-    reviewed = leaked.model_copy(update={"review": review})
-    return _failed(_compare(stem, with_item(recorded, index, reviewed)), index)
+def _leaked_as(hit: _LeakHit, review: NativeItemReview) -> set[str]:
+    """The failed principles of the hit's gold question when its leaked item carries `review`."""
+    recorded, _ = replayed(hit.stem)
+    reviewed = hit.leaked.model_copy(update={"review": review})
+    return _failed(
+        _compare(hit.stem, with_item(recorded, hit.item_index, reviewed)), hit.gold_index
+    )
 
 
 def test_a_review_item_built_from_source_never_leaks_but_a_converted_one_under_review_does():
-    hits = _mutations(_leak_facit, "no_answer_leakage")
+    hits = _facit_leak_hits()
     assert hits
     from_source = NativeItemReview(
         state=NativeItemReviewState.REVIEW_REQUIRED,
@@ -130,10 +136,10 @@ def test_a_review_item_built_from_source_never_leaks_but_a_converted_one_under_r
         parse_origin=NativeParseOrigin.LLM_PARSED,
         reasons=("Frågan behöver granskas.",),
     )
-    for stem, index, _, mutated in hits:
-        assert "no_answer_leakage" in _failed(mutated, index), stem
-        assert "no_answer_leakage" not in _leaked_as(stem, index, from_source), stem
-        assert "no_answer_leakage" in _leaked_as(stem, index, converted_under_review), stem
+    for hit in hits:
+        assert "no_answer_leakage" in _failed(hit.comparison, hit.gold_index), hit.stem
+        assert "no_answer_leakage" not in _leaked_as(hit, from_source), hit.stem
+        assert "no_answer_leakage" in _leaked_as(hit, converted_under_review), hit.stem
 
 
 def _clean_parents() -> list[tuple[str, NativeExamDocument, NativeExamParent, ExamComparison]]:

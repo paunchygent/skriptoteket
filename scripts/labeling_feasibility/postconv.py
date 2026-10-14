@@ -17,47 +17,28 @@ from scripts.labeling_feasibility.methods import MethodResult, decide
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
-RECORDINGS = Path("tests/fixtures/exam_conversion")
-# Every recorded whole-exam conversion fixture, keyed by corpus exam.
+RECORDINGS = Path("tests/fixtures/exam_conversion/docx_key_provenance_v14")
+# Current batched producer replies, including retry replies. Grouping and Decisions
+# responses are not converted items and must never enter the post-conversion checks.
 RECORDED_CONVERSIONS: dict[str, tuple[str, ...]] = {
-    "bf26_diagnostic_grammar_test_ht26_med_facit": (
-        "bf26_diagnostic_grammar_docx_build_response.json",
-    ),
-    "bf26_english_1_unit_test_kap_1_2_med_facit": (
-        "bf26_english_1_docx_build_response.json",
-        "bf26_english_1_docx_build_response_round1.json",
-        "bf26_english_1_docx_build_response_round2.json",
-    ),
-    "chapter_4_poetry_and_lyrics_quiz_med_facit": ("chapter_4_poetry_docx_build_response.json",),
-    "metodprov_vetenskaplig_metod_med_facit": ("metodprov_docx_build_response.json",),
-    "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit": (
-        "sa24_solid_gold_3_docx_build_response_round1.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_1_med_facit": (
-        "svenska_2_grammatik_variant_1_docx_build_response.json",
-    ),
-    "svenska_2_grammatik_omprov_variant_2_med_facit": (
-        "svenska_2_grammatik_variant_2_docx_build_response.json",
-    ),
-    "svenska_2_kursavslutande_prov_med_facit": (
-        "svenska_2_kursavslutande_prov_docx_build_response.json",
-        "svenska_2_kursavslutande_prov_docx_build_response_v2.json",
-        "svenska_2_kursavslutande_prov_docx_build_response_v3.json",
-    ),
+    exam.name: tuple(
+        str(path.relative_to(RECORDINGS)) for path in sorted(exam.glob("docx_w*.json"))
+    )
+    for exam in sorted(RECORDINGS.iterdir())
+    if exam.is_dir()
 }
 
 
 def visible_lines(item: dict[str, Any]) -> list[str]:
-    """Student-visible title and body lines; gaps shown as [___] with their cue, options apart."""
-    lines = [item.get("title") or ""]
-    for row in item.get("body") or []:
+    """Current producer body lines; gaps shown as [___], choices rendered separately."""
+    lines: list[str] = []
+    for row in item["body"]:
         parts = []
-        for segment in row.get("segments") or []:
-            if segment.get("kind") == "gap":
-                hint = segment.get("hint")
-                parts.append(f"[___] ({hint})" if hint else "[___]")
-            else:
-                parts.append(segment.get("text") or "")
+        for segment in row["segments"]:
+            if segment["kind"] == "gap":
+                parts.append("[___]")
+            elif segment["kind"] == "text":
+                parts.append(segment["text"])
         lines += "".join(parts).split("\n")
     return [line for line in lines if line.strip()]
 
@@ -67,7 +48,7 @@ def render_item(index: int, item: dict[str, Any], text: dict[str, str], *, with_
     lines += [f"[{anchor}] {text[anchor]}" for anchor in item["source_anchors"] if anchor in text]
     lines.append("Student-visible item:")
     lines += visible_lines(item)
-    options = [choice["text"] for choice in item.get("choices") or []]
+    options = [choice["text"] for choice in item["choices"]]
     if options:
         lines.append("Options: " + " | ".join(options))
     if with_kind:
@@ -76,9 +57,7 @@ def render_item(index: int, item: dict[str, Any], text: dict[str, str], *, with_
 
 
 def exam_instructions(recording: dict[str, Any]) -> list[str]:
-    return [
-        line for entry in recording.get("instructions") or [] for line in entry["text"].split("\n")
-    ]
+    return [line for entry in recording["instructions"] for line in entry["text"].split("\n")]
 
 
 async def check_conversion(
@@ -193,7 +172,7 @@ def check_truth(
     extra: Counter[str] = Counter()
     for line in visible:
         toks = tokens(line)
-        best = max(gold_prompt_lines, key=lambda g: _f1(toks, g), default=[])
+        best: list[str] = max(gold_prompt_lines, key=lambda g: _f1(toks, g), default=[])
         if toks and best and _f1(toks, best) >= 0.5:
             added = Counter(toks) - Counter(best)
             leak = leak or bool(added & keyed_tokens)
@@ -204,7 +183,7 @@ def check_truth(
         len(toks := tokens(choice["text"])) > 1
         and len(toks[0]) == 1
         and tuple(toks) not in gold_choices
-        for choice in item.get("choices") or []
+        for choice in item["choices"]
     )
     labels = (
         sum(extra.values()) >= 2

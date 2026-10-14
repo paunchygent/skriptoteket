@@ -1,0 +1,839 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Vocabulary Matching (9 points)",
+      "source_anchors": [
+        "body:0057"
+      ],
+      "points": 9
+    },
+    {
+      "text": "Grammar and Corrections (14 points)",
+      "source_anchors": [
+        "body:0095"
+      ],
+      "points": 14
+    },
+    {
+      "text": "Type only the missing word or the replacement requested in each item. Do not copy the whole sentence.",
+      "source_anchors": [
+        "body:0096"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0042",
+    "body:0044",
+    "body:0046",
+    "body:0048",
+    "body:0050",
+    "body:0052",
+    "body:0054",
+    "body:0098",
+    "body:0100",
+    "body:0102",
+    "body:0104",
+    "body:0106",
+    "body:0108",
+    "body:0110",
+    "body:0114",
+    "body:0122"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0041",
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The group discussed ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "various"
+              ],
+              "spelling_candidates": [
+                "varous"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (olika) ways to solve the problem.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: various",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0043",
+        "body:0044"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": " ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "however"
+              ],
+              "spelling_candidates": [
+                "howevre"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (emellertid), it kept me warm.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: however",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The stain on the white shirt was ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "noticeable"
+              ],
+              "spelling_candidates": [
+                "noticable"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (märkbar) from across the room.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: noticeable",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0047",
+        "body:0048"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Can you ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "recognize",
+                "recognise"
+              ],
+              "spelling_candidates": [
+                "recgonize",
+                "recognzie"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (känna igen) this song from its first few seconds?",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: recognize (Also accepted: recognise)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0049",
+        "body:0050"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "22",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Her ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "resilience"
+              ],
+              "spelling_candidates": [
+                "resiliance",
+                "resileince"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (återhämtningsförmåga) helped her start again after she lost her job.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: resilience",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0051",
+        "body:0052"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "23",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After a hard year, we hope to ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "bounce back"
+              ],
+              "spelling_candidates": [
+                "bonce back",
+                "bounce bak",
+                "bounce bac"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (repa sig) and enjoy school again.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: bounce back",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0053",
+        "body:0054"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "24",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A strong fence can ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "prevent"
+              ],
+              "spelling_candidates": [
+                "prevetn",
+                "pervent"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (förhindra) animals from reaching the road.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: prevent",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0097",
+        "body:0098"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the full form of the bold contraction.\nWe can’t come to the meeting.\nAnswer: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "cannot"
+              ],
+              "spelling_candidates": [
+                "cantno"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: cannot",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0099",
+        "body:0100"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the full form of the bold contraction.\nWe’re waiting for your reply.\nAnswer: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "we are"
+              ],
+              "spelling_candidates": [
+                "we rae",
+                "we a re"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: we are",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0101",
+        "body:0102"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use a form of book. Write the whole missing word.\nI borrowed three ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "books"
+              ],
+              "spelling_candidates": [
+                "bokos"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " from the library.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: books",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0103",
+        "body:0104"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use a form of student. Write the whole missing word.\nBoth ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "students"
+              ],
+              "spelling_candidates": [
+                "studnets",
+                "studetns"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " finished their work.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: students",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0105",
+        "body:0106"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use the present form of walk. Write the whole missing word.\nMia ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "walks"
+              ],
+              "spelling_candidates": [
+                "wakls"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " to school every day.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: walks",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0107",
+        "body:0108"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use the present form of play. Write the whole missing word.\nMy friends ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "play"
+              ],
+              "spelling_candidates": [
+                "paly"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " soccer after school every Friday.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: play",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0109",
+        "body:0110"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The car belongs to one teacher. Complete the sentence with a form of teacher.\nThis is the ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "teacher’s",
+                "teacher's"
+              ],
+              "spelling_candidates": [
+                "teahcer’s",
+                "teacher,s",
+                "teacher’"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " car.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: teacher’s (Also accepted: teacher’s)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0113",
+        "body:0114"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Replace only the bold word. Write one word.\nIts time for lunch.\nAnswer: ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "it’s",
+                "it's"
+              ],
+              "spelling_candidates": [
+                "i’ts",
+                "it,s"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: it’s (Also accepted: it’s)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0121",
+        "body:0122"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Use can and you once each to complete the statement. Write only the two missing words.\nTomorrow ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "you can"
+              ],
+              "spelling_candidates": [
+                "yuo can",
+                "you acn"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " bring your notebook.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: you can",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

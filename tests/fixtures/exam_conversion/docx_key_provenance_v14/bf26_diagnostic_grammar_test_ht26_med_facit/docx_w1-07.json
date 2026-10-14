@@ -1,0 +1,121 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Translate the words in brackets into English.",
+      "source_anchors": [
+        "body:0219"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0215",
+    "body:0221"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0214"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "101",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "They hadn’t met since ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Christmas"
+              ],
+              "spelling_candidates": [
+                "Christams",
+                "Chrismas",
+                "Christmass"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (jul).",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Christmas",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    },
+    {
+      "source_anchors": [
+        "body:0220"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "103",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You ",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "should be",
+                "ought to be"
+              ],
+              "spelling_candidates": [
+                "shoudl be",
+                "should bee",
+                "ought too be"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " more careful about your health.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: should be (Also accepted: ought to be)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

@@ -1,98 +1,159 @@
-"""A question the model marks for review shows its source as printed (D32, user decision
-2026-10-11).
+"""A review item holds the whole question, whether the model marked it or it failed to build.
 
-``docx_build_v12_low14_model_review`` holds the live recordings of a one-family-per-batch run
-in which the model returned ``outcome: review`` for a question whose lettered parts carry their
-answers inline. The review item holds every chunk the question owns, in source order, facit
-included, between its neighbouring questions. The grouping gives no shared context governing
-two or more of those three questions; the printed section headings still parent them, the
-review item included (T2, D27). The document stays blocked for export while the review
-item is there.
+The first test serves the fresh course-exam recording with q16's reply rewritten in memory
+(explicitly synthetic): the item keeps its shape but its outcome becomes ``review``. The
+review item shows every chunk of the question, facit included, between its neighbours, and
+it blocks export. The second test rewrites q20's item into a gapless statement that lists
+only part of its question; the native contract rejects it, and the review item still shows
+every own chunk of the question plus every chunk the reply listed, in source order.
 """
 
-import pytest
+from __future__ import annotations
 
+import copy
+
+import pytest
+from pydantic import JsonValue
+
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+    StructuredLLMRequest,
+    StructuredLLMResponse,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItem,
-    NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    FIXTURES,
+    ReplayProvider,
     build_replay,
     corpus_chunks,
-    recording,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_ROOT = FIXTURES / "docx_build_v12_low14_model_review"
 _EXAM = "svenska_2_kursavslutande_prov_med_facit"
-_QUESTION = ("body:0085", "body:0086", "body:0087")
-_PREVIOUS_QUESTION = "body:0079"
-_NEXT_QUESTION = "body:0093"
-_SECTION = ("q19", "q20", "q21")
+_REPLY = "docx_w1-02"
+_QUESTION = "body:0061"
+_QUESTION_OWN = ("body:0061", "body:0063")
+_FAILED_QUESTION = "body:0085"
+_FAILED_OWN = ("body:0085", "body:0086")
+_FAILED_LISTED = "body:0087"
+_REASON = "Otydlig uppgift."
 
 
-def _paragraphs(item: NativeExamItem) -> list[str]:
-    return [
-        segment.text
-        for paragraph in item.body
-        for segment in paragraph.segments
-        if isinstance(segment, NativeTextSegment)
+def _anchors(entry: dict[str, JsonValue]) -> list[JsonValue]:
+    value = entry["source_anchors"]
+    assert isinstance(value, list)
+    return list(value)
+
+
+def _item(content: dict[str, JsonValue], anchor: str) -> dict[str, JsonValue]:
+    items = content["items"]
+    assert isinstance(items, list)
+    (item,) = [entry for entry in items if isinstance(entry, dict) and anchor in _anchors(entry)]
+    return item
+
+
+def _marked_for_review(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    item = _item(content, _QUESTION)
+    item["outcome"] = "review"
+    item["review_reason"] = _REASON
+    return content
+
+
+def _failed_item(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    item = _item(content, _FAILED_QUESTION)
+    item["key_source"] = None
+    item["source_anchors"] = [_FAILED_QUESTION, _FAILED_LISTED]
+    item["body"] = [
+        {
+            "segments": [
+                {
+                    "kind": "text",
+                    "text": "De väntar inte. är en huvudsats.",
+                    "accepted_values": [],
+                    "spelling_candidates": [],
+                    "asset_id": None,
+                }
+            ]
+        }
     ]
+    return content
+
+
+class _RewrittenReplies(ReplayProvider):
+    """Serve the fresh recordings with one reply rewritten in memory for one scenario."""
+
+    def __init__(self, exam: str, rewrite) -> None:
+        super().__init__(exam)
+        self._rewrite = rewrite
+
+    async def complete_structured(
+        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+    ) -> StructuredLLMResponse:
+        response = await super().complete_structured(request=request, profile=profile)
+        if self.recording_ids.get(request.item_id) != _REPLY:
+            return response
+        content = copy.deepcopy(response.content)
+        assert isinstance(content, dict)
+        return StructuredLLMResponse(
+            content=self._rewrite(content),
+            finish_reason=response.finish_reason,
+            usage=response.usage,
+        )
 
 
 async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_order():
-    replay = build_replay(_EXAM, root=_ROOT, families_per_batch=1)
+    replay = build_replay(_EXAM, provider=_RewrittenReplies(_EXAM, _marked_for_review))
     outcome = await replay.pipeline.convert(job=replay.job())
 
     document = outcome.result.document
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
-    by_anchor = {item.source_anchor: item for item in document.items}
-    item = by_anchor[_QUESTION[0]]
-    assert item.kind is NativeExamItemKind.FREE_TEXT
+    (item,) = [i for i in document.items if i.source_anchor == _QUESTION]
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
-    assert item.review.reasons == (
-        "AI-tolkningen markerade frågan för granskning: "
-        "Uppgiften saknar en tydlig instruktion eller fråga.",
-    )
-    assert _paragraphs(item) == [text[anchor] for anchor in _QUESTION]
-    assert not hasattr(item, "title"), "items carry no title (39-05-08)"
-    # The source-text fallback keeps the question's printed points (O3, 39-05-08).
-    assert item.points == 2
-    previous, following = by_anchor[_PREVIOUS_QUESTION], by_anchor[_NEXT_QUESTION]
-    assert not previous.review.reasons and not following.review.reasons
-    assert previous.sequence + 1 == item.sequence == following.sequence - 1
-    contexts = recording(_EXAM, "docx_grouping_1", root=_ROOT)["shared_contexts"]
-    assert isinstance(contexts, list)
-    shared = [
-        c
-        for c in contexts
-        if isinstance(c, dict)
-        and isinstance(c["governs"], list)
-        and len(set(c["governs"]) & set(_SECTION)) >= 2
-    ]
-    assert shared == [], "the grouping governs this section; assert its parent instead"
-    # The printed section headings parent the questions, the review item included
-    # (T2, D27): the review item and its predecessor share the Del 2 parent, and the
-    # following question opens Del 3.
-    parents = [document.parent_of(i.item_id) for i in (previous, item, following)]
-    assert parents[0] is not None and parents[0] == parents[1]
-    assert body_text_lines(parents[0].instruction) == ("Del 2: grammatik och språkstrukturer",)
-    assert parents[2] is not None and body_text_lines(parents[2].instruction) == (
-        "Del 3: kortsvar",
-    )
+    assert item.review.reasons == (f"AI-tolkningen markerade frågan för granskning: {_REASON}",)
+    printed = "\n".join(item.plain_text_lines())
+    own_positions = [printed.index(text[anchor]) for anchor in _QUESTION_OWN]
+    assert own_positions == sorted(own_positions), "the question's chunks left source order"
+    for anchor in _QUESTION_OWN:
+        assert text[anchor] in printed
+    for other in document.items:
+        if other.sequence not in {item.sequence - 1, item.sequence + 1}:
+            continue
+        assert not other.review.reasons, "the fault spread to a neighbouring question"
     assert ("unbuilt_question", item.item_id) in {
         (blocker.reason, blocker.item_id) for blocker in native_export_blockers(document)
     }
     events = [e for e in outcome.result.events if e.code == "model_review"]
-    assert [e.anchors for e in events] == [_QUESTION]
+    assert [e.anchors for e in events] == [
+        (  # one event, naming the admitted anchors
+            _QUESTION,
+            "body:0062",
+            _QUESTION_OWN[1],
+            "body:0064",
+        )
+    ]
     assert outcome.update.pending == ()
+
+
+async def test_a_failed_item_listing_part_of_its_question_becomes_a_review_item_of_the_whole():
+    replay = build_replay(_EXAM, provider=_RewrittenReplies(_EXAM, _failed_item))
+    outcome = await replay.pipeline.convert(job=replay.job())
+
+    document = outcome.result.document
+    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
+    (item,) = [i for i in document.items if i.source_anchor == _FAILED_QUESTION]
+    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    printed = "\n".join(item.plain_text_lines())
+    for anchor in (*_FAILED_OWN, _FAILED_LISTED):
+        assert text[anchor] in printed, f"{anchor} is missing from the review item"
+    assert all(
+        other.source_anchor not in {_FAILED_OWN[1], _FAILED_LISTED}
+        for other in document.items
+        if other.item_id != item.item_id
+    )

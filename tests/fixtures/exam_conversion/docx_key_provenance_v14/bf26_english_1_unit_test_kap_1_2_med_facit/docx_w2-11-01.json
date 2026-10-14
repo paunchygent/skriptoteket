@@ -1,0 +1,40 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0116"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0115"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "single_choice",
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write its or it’s.\nThe school changed ____________ lunch menu.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: its",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}

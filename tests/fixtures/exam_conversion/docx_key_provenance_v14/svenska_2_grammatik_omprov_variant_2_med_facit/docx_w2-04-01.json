@@ -1,0 +1,153 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Del 2: Satsdelar, 8 poäng",
+      "source_anchors": [
+        "body:0034"
+      ],
+      "points": 8
+    },
+    {
+      "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "source_anchors": [
+        "body:0035"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0038",
+    "body:0039",
+    "body:0040",
+    "body:0041"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skriv satsdelen för den markerade delen.",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel:",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "adverbial"
+              ],
+              "spelling_candidates": [
+                "adverbi​al"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel:",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "indirekt objekt"
+              ],
+              "spelling_candidates": [
+                "indireckt objekt",
+                "indirekt obekt"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Rummet blev tyst. Markerad del: tyst Satsdel:",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "predikativ/predikatsfyllnad"
+              ],
+              "spelling_candidates": [
+                "predikativ/predikatsfyllnad"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel:",
+              "accepted_values": [],
+              "spelling_candidates": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "direkt objekt"
+              ],
+              "spelling_candidates": [
+                "direckt objekt",
+                "direkt obekt"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Tåget stannade vid perrongen. Markerad del: vid perrongen Satsdel: adverbial\nb) Mentorn gav gruppen nya uppgifter. Markerad del: gruppen Satsdel: indirekt objekt\nc) Rummet blev tyst. Markerad del: tyst Satsdel: predikativ/predikatsfyllnad\nd) Vi hämtade pärmen i klassrummet. Markerad del: pärmen Satsdel: direkt objekt",
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "marking_guide": null
+    }
+  ]
+}
