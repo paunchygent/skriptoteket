@@ -12,12 +12,12 @@
   - TASK-SKRIPT-39-05-05 `done` (user closure 2026-10-14).
   - TASK-SKRIPT-39-05-06 `done` 2026-10-14 (review approved 2c13468e, merged).
   - [TASK-SKRIPT-39-05-09](docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md)
-    `in_progress` (story item 6), Sol 6.1 lead in the same worktree as 39-05-06.
+    `done` 2026-10-14 (review approved 659973e5, merged eafb1487; staging walk
+    and Exam.net import exam 5331367 in retained
+    `01a13798-9df1-75fa-a4c5-bd755b4bfd85` `evidence/walk/TASK-SKRIPT-39-05-09/`).
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12, staging walk `63de8094`, retained
-    `evidence/staging-walk/walk-63de8094.md`). Next: plan story item 6: label-first
-    review with per-question retry, picture in review items and marks, the D44
-    low-27 miss and the D31 Exam.net rubric test import.
+    `evidence/staging-walk/walk-63de8094.md`).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P16: seven types, parents with children, and (P14-P16,

@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-14'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-14'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer approved the repair 659973e5 after review of 0beba709 and rereview of c20ce483; merged eafb1487. D44 live replay on low-27 Fråga 6 kept all six given phrases as text. Staging walk at eafb1487: pictures in editor and review items, label-first retry reconverted only the chosen question, QTI export with 4 inline pictures, Exam.net import exam 5331367 kept every picture with SUN inline. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-09/ and evidence/walk/TASK-SKRIPT-39-05-09/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
 - A teacher keeps or changes a question's type and reconverts only that question;
