@@ -61,7 +61,9 @@ keys the AI interpreted or invented and can take an interpretation back.
   the first today).
 
 Out of scope: adding misspellings after conversion when the teacher edits
-an answer (a later feature).
+an answer (a later feature), redoing an undone interpretation (per-question
+retry already exists), and keys from the answer-key suggestion button
+(user decision 2026-10-14).
 
 ## Contract Inputs
 
