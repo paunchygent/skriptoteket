@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "880f310ed5f28124eda244a5abb01532f8f56a60954b0975508c991f187b38b7",
+  "source_set_digest": "d2b24dba0a5167655b4a2558b5d53e4f33f802dc2d3b6120b59c86a5c0dfce9a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4986,6 +4986,25 @@
         "decided_at": "2026-10-14",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer approved the repair 659973e5 after review of 0beba709 and rereview of c20ce483; merged eafb1487. D44 live replay on low-27 Fråga 6 kept all six given phrases as text. Staging walk at eafb1487: pictures in editor and review items, label-first retry reconverted only the chosen question, QTI export with 4 inline pictures, Exam.net import exam 5331367 kept every picture with SUN inline. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-09/ and evidence/walk/TASK-SKRIPT-39-05-09/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-10",
+      "type": "task",
+      "title": "Tolkad av AI with undo, checked AI-invented keys, automatic misspellings and Visa som text",
+      "path": "docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

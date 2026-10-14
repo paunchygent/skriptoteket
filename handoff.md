@@ -15,6 +15,9 @@
     `done` 2026-10-14 (review approved 659973e5, merged eafb1487; staging walk
     and Exam.net import exam 5331367 in retained
     `01a13798-9df1-75fa-a4c5-bd755b4bfd85` `evidence/walk/TASK-SKRIPT-39-05-09/`).
+  - [TASK-SKRIPT-39-05-10](docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md)
+    `in_progress` (story item 5, D1-D10), Sol 6.1 lead; retained
+    `01a13a87-acac-7730-bb4e-746618d73cfd`. Done = green staging walk plus Exam.net import.
   - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
     `done` (user closure 2026-10-12, staging walk `63de8094`, retained
     `evidence/staging-walk/walk-63de8094.md`).

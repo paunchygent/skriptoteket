@@ -100,8 +100,10 @@ Planned order; each task is scaffolded and contracted before work starts.
 3. Corpus breadth: Decisions classification, retries for failing items
    only, and general rules added only where the eval loop shows a need,
    until every corpus item meets the conversion principles against its gold.
-4. Matching kind: native model, editor, and QTI export.
-5. Teacher surface: "Tolkad av AI" with undo, automatic misspellings, and
+4. Matching kind: native model, editor, and QTI export (delivered in
+   `TASK-SKRIPT-39-05-03`, D1, D7, D8).
+5. `TASK-SKRIPT-39-05-10` teacher surface: AI glyph with undo on interpreted
+   keys, checked AI-invented keys, automatic misspellings, and
    "Visa som text".
 6. `TASK-SKRIPT-39-05-09` (done 2026-10-14): label-first per-question retry;
    DOCX pictures as positioned exam assets in review and converted items, the
