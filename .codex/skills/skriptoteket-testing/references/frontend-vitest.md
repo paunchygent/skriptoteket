@@ -10,7 +10,7 @@ This is not the browser-automation lane.
 - `integrated-frontend-stack/references/testing.md`
 - `integrated-frontend-stack/references/state-and-api.md` when stores,
   schemas, or API clients are involved
-- `docs/runbooks/runbook-testing.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
 
 ## Rules
 

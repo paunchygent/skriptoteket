@@ -7,7 +7,7 @@ tests.
 
 - `.codex/rules/054-alembic-migrations.md`
 - `.codex/rules/053-sqlalchemy-patterns.md`
-- `docs/runbooks/runbook-testing.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
 - `local-devops` plus its Skriptoteket reference for dev DB/container lanes
 
 ## Rules

@@ -19,7 +19,7 @@ pytest or Vitest.
 
 ## PDF And Export Behavior
 
-- Use `docs/runbooks/runbook-testing.md` for local PDF renderer caveats.
+- Use `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md` for local PDF renderer caveats.
 - For WeasyPrint `HTML(string=...)`, prove `base_url` and relative asset
   resolution instead of papering over missing images.
 - Klassrumskartan-owned PDF rendering stays local to Skriptoteket; Sir Convert

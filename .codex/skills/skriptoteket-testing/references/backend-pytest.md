@@ -6,7 +6,7 @@ application tests.
 ## Read First
 
 - `.codex/rules/070-testing-standards.md`
-- `docs/runbooks/runbook-testing.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
 - `.codex/skills/skriptoteket-backend-dev/SKILL.md`
 - Relevant architecture rules from `.codex/rules/000-rule-index.md`, usually
   `020`, `040`, `042`, `048`, and `053`.
@@ -31,6 +31,6 @@ application tests.
 
 ## Commands
 
-Use the command map in `docs/runbooks/runbook-testing.md` and `AGENTS.md`.
+Use the command map in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md` and `AGENTS.md`.
 Prefer focused pytest targets while iterating, then the backend close-out gates
 required for the touched layer.

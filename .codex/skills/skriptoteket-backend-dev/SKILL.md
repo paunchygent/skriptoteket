@@ -103,6 +103,6 @@ For roadmap/critical-path work, start from `docs/reference/ref-implementation-ma
 
 ## Testing protocol (backend)
 
-- Follow `.codex/rules/070-testing-standards.md` and `docs/runbooks/runbook-testing.md`.
+- Follow `.codex/rules/070-testing-standards.md` and `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`.
 - Default: `pdm run test` (unit tests mock protocols; integration uses Docker/testcontainers).
 - Also run: `pdm run lint` and `pdm run typecheck` for backend changes.
