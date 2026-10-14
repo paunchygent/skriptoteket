@@ -12,6 +12,11 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 
 export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: {
       correct_choice_ids: [],
       match_pairs: [

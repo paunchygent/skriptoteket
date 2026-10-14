@@ -30,6 +30,11 @@ import {
 
 function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [
       {
@@ -44,8 +49,8 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     ],
     choices: [],
     gaps: [
-      { accepted_values: ["100"], gap_id: "gap_001" },
-      { accepted_values: [], gap_id: "gap_002" },
+      { accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" },
+      { accepted_values: [], automatic_values: [], gap_id: "gap_002" },
     ],
     item_id: "item_001",
     kind: "gap_fill",
@@ -73,8 +78,8 @@ describe("isPartiallyKeyedGapItem", () => {
   it("accepts a gap item keyed in every gap", () => {
     const item = buildGapItem({
       gaps: [
-        { accepted_values: ["100"], gap_id: "gap_001" },
-        { accepted_values: ["0"], gap_id: "gap_002" },
+        { accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" },
+        { accepted_values: ["0"], automatic_values: [], gap_id: "gap_002" },
       ],
     });
     expect(isPartiallyKeyedGapItem(item)).toBe(false);

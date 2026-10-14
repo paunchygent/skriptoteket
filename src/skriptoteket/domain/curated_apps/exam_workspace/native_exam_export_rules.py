@@ -19,6 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 _TRUSTED_KEY_ORIGINS = frozenset(
     {
         NativeAnswerKeyOrigin.SOURCE_PROVIDED,
+        NativeAnswerKeyOrigin.AI_INTERPRETED,
         NativeAnswerKeyOrigin.TEACHER_AUTHORED,
         NativeAnswerKeyOrigin.REVIEWED_ADVISORY,
     }

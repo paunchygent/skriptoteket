@@ -67,20 +67,39 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         "kind": "asset",
         "text": None,
         "accepted_values": [],
+        "spelling_candidates": [],
         "asset_id": image.asset_id,
     }
     segments: list[dict[str, object]] = (
         [asset]
         if picture_only
         else [
-            {"kind": "text", "text": "Beskriv:  ", "accepted_values": [], "asset_id": None},
+            {
+                "kind": "text",
+                "text": "Beskriv:  ",
+                "accepted_values": [],
+                "spelling_candidates": [],
+                "asset_id": None,
+            },
             asset,
-            {"kind": "text", "text": "bilden.", "accepted_values": [], "asset_id": None},
+            {
+                "kind": "text",
+                "text": "bilden.",
+                "accepted_values": [],
+                "spelling_candidates": [],
+                "asset_id": None,
+            },
         ]
     )
     if kind == "gap_fill":
         segments.append(
-            {"kind": "gap", "text": None, "accepted_values": ["symbol"], "asset_id": None}
+            {
+                "kind": "gap",
+                "text": None,
+                "accepted_values": ["symbol"],
+                "spelling_candidates": [],
+                "asset_id": None,
+            }
         )
     produced = ProducedItem.model_validate(
         {
@@ -90,6 +109,8 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
             "review_reason": None,
             "kind": kind,
             "printed_label": "Fråga 1",
+            "key_source": None if kind == "free_text" else "copied",
+            "facit_text": None if kind == "free_text" else "Facit: symbol",
             "body": [{"segments": segments}],
             "points": 1,
             "choices": [],

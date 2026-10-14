@@ -161,10 +161,15 @@ def _append_gap_response_declaration(
     if not values:
         return False
     correct_response = ElementTree.SubElement(declaration, qti_tag("correctResponse"))
+    if gap_points is None:
+        # No mapping exists without own gap points, so every accepted value must
+        # stand as its own correct response instead of dropping all but the first (D10).
+        for value in values:
+            value_element = ElementTree.SubElement(correct_response, qti_tag("value"))
+            value_element.text = value
+        return False
     value_element = ElementTree.SubElement(correct_response, qti_tag("value"))
     value_element.text = values[0]
-    if gap_points is None:
-        return False
     mapping = ElementTree.SubElement(
         declaration,
         qti_tag("mapping"),

@@ -91,6 +91,9 @@ const {
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  undoItemInterpretation,
+  removeItemAutomaticValue,
+  showItemGapAsText,
   updateItemMarkingGuide,
   updateItemMatchEntryText,
   updateItemMatchPairs,
@@ -146,6 +149,10 @@ const itemRows = computed(() =>
     workspaceDocument.value?.parents ?? [],
     assetUrls.value,
   ),
+);
+
+const selectedAiKeyLabel = computed(() =>
+  itemRows.value.find((row) => row.itemId === selectedItemId.value)?.aiKeyLabel ?? null,
 );
 
 /** The exam's shared instructions with their pictures resolved, once above the rows. */
@@ -312,6 +319,7 @@ async function handleSave(): Promise<void> {
 
         <ExamWorkspacePhoneQuestionBar
           v-if="isPhone && mode === 'redigera' && selectedItem"
+          :ai-key-label="selectedAiKeyLabel"
           :needs-attention="readinessEntries.length > 0"
           :position="selectedPosition"
           :sheet-open="questionSheetOpen"
@@ -405,6 +413,9 @@ async function handleSave(): Promise<void> {
             @update-choice-text="updateItemChoiceText"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
+            @undo-interpretation="undoItemInterpretation"
+            @remove-automatic-value="removeItemAutomaticValue"
+            @show-gap-as-text="showItemGapAsText"
             @update-marking-guide="updateItemMarkingGuide"
             @update-match-entry-text="updateItemMatchEntryText"
             @update-match-pairs="updateItemMatchPairs"

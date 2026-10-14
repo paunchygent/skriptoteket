@@ -34,6 +34,11 @@ export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
 
 export function buildFreeTextItem(sequence: number): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [
       { segments: [{ kind: "text", text: `Fråga ${sequence}: beskriv med egna ord.` }] },
@@ -101,7 +106,7 @@ export function buildDocument(): NativeExamDocument {
           ],
         },
       ],
-      gaps: [{ accepted_values: ["100"], gap_id: "gap_001" }],
+      gaps: [{ accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" }],
       kind: "gap_fill",
       review: {
         confidence: 0.5,
@@ -129,7 +134,7 @@ export function buildDocument(): NativeExamDocument {
     },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "NO-prov HT25",
   };
 }

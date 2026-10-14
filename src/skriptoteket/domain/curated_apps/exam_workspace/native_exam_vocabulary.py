@@ -50,6 +50,7 @@ class NativeAnswerKeyOrigin(StrEnum):
     ABSENT = "absent"
     NOT_APPLICABLE = "not_applicable"
     SOURCE_PROVIDED = "source_provided"
+    AI_INTERPRETED = "ai_interpreted"
     TEACHER_AUTHORED = "teacher_authored"
     MACHINE_PROPOSED = "machine_proposed"
     REVIEWED_ADVISORY = "reviewed_advisory"

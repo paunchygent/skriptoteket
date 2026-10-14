@@ -122,6 +122,10 @@ function choiceItem(
 ): NativeExamItem {
   return {
     ai_suggestion: previous,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [...correctChoiceIds], match_pairs: [], origin },
     body: [{ segments: [{ kind: "text", text: "Vilket är huvudordet?" }] }],
     choices: [

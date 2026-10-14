@@ -45,6 +45,29 @@ def _damerau_levenshtein(left: str, right: str) -> int:
     return matrix[len(left) + 1][len(right) + 1]
 
 
+def filter_answer_spelling_candidates(
+    accepted_values: tuple[str, ...], candidates: tuple[str, ...]
+) -> tuple[str, ...]:
+    """Keep distinct, bounded spellings in producer order, at most three per answer."""
+    answers = tuple(dict.fromkeys(normalize_answer(value) for value in accepted_values))
+    counts = dict.fromkeys(answers, 0)
+    seen = set(answers)
+    kept: list[str] = []
+    for candidate in candidates:
+        normalized = normalize_answer(candidate)
+        if not normalized or normalized in seen:
+            continue
+        for answer in answers:
+            if counts[answer] < 3 and is_allowed_answer_spelling_variant(
+                answer, candidate, other_gold_answers=answers
+            ):
+                kept.append(candidate.strip())
+                seen.add(normalized)
+                counts[answer] += 1
+                break
+    return tuple(kept)
+
+
 def is_allowed_answer_spelling_variant(
     gold_answer: str, candidate: str, *, other_gold_answers: Collection[str] = ()
 ) -> bool:

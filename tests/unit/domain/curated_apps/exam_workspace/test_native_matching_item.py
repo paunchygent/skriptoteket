@@ -81,9 +81,18 @@ def _produced(
         outcome="converted",
         review_reason=None,
         kind=NativeExamItemKind.MATCHING,
+        key_source="copied" if keyed else None,
+        facit_text="Correct answer: 1–B, 2–A, 3–C" if keyed else None,
         body=tuple(
             ProducedParagraph(
-                segments=(ProducedSegment(kind="text", text=line, accepted_values=()),)
+                segments=(
+                    ProducedSegment(
+                        kind="text",
+                        text=line,
+                        accepted_values=(),
+                        spelling_candidates=(),
+                    ),
+                )
             )
             for line in stems
         ),

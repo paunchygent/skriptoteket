@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItemKind,
 )
 
-DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v13"
+DOCX_BUILD_SCHEMA_VERSION = "docx_exam_build_v14"
 
 
 def _object(value: JsonValue) -> dict[str, JsonValue]:
@@ -100,9 +100,14 @@ def docx_build_output_spec(
                 "accepted_values": (
                     segment_fields["accepted_values"] if accepted is None else accepted
                 ),
+                "spelling_candidates": (
+                    segment_fields["spelling_candidates"]
+                    if kind == "gap"
+                    else {**_object(segment_fields["spelling_candidates"]), "maxItems": 0}
+                ),
                 "asset_id": asset if asset is not None else {"type": "null"},
             },
-            "required": ["kind", "text", "accepted_values", "asset_id"],
+            "required": ["kind", "text", "accepted_values", "spelling_candidates", "asset_id"],
             "additionalProperties": False,
         }
 

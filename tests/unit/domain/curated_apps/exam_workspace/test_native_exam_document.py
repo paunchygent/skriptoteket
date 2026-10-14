@@ -1,5 +1,6 @@
 """Unit tests for the source-neutral native exam document (ST-SKRIPT-39-04)."""
 
+import json
 from uuid import uuid4
 
 import pytest
@@ -26,6 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json i
     parse_native_exam_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    item_has_trusted_key,
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -84,11 +86,14 @@ def _gap_fill_item(
     item_id: str = "item_001",
     accepted: tuple[str, ...] = ("NF",),
     origin: NativeAnswerKeyOrigin = NativeAnswerKeyOrigin.SOURCE_PROVIDED,
+    automatic: tuple[str, ...] = (),
+    facit_text: str | None = None,
 ) -> NativeExamItem:
     return NativeExamItem(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.GAP_FILL,
+        facit_text=facit_text,
         body=(
             NativeParagraph(
                 segments=(
@@ -98,7 +103,13 @@ def _gap_fill_item(
             ),
         ),
         points=2,
-        gaps=(NativeGap(gap_id="gap_001", accepted_values=accepted),),
+        gaps=(
+            NativeGap(
+                gap_id="gap_001",
+                accepted_values=accepted,
+                automatic_values=automatic,
+            ),
+        ),
         answer_key=NativeAnswerKey(origin=origin),
         review=_review(),
     )
@@ -139,6 +150,33 @@ class TestSerializationRoundTrip:
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(b'{"schema_version": "native_exam_document_v1"}')
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_document_declares_the_v2_schema(self) -> None:
+        assert _document(_free_text_item()).schema_version == "native_exam_document_v2"
+
+    def test_saved_v1_payload_has_no_compatibility_reader(self) -> None:
+        document = _document(_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v1"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_round_trip_preserves_facit_text_and_automatic_values(self) -> None:
+        document = _document(
+            _gap_fill_item(
+                accepted=("katt",),
+                automatic=("kat", "ktat", "kattn", "hund"),
+                facit_text="Djuret som eftersöks är en katt.",
+            )
+        )
+        (item,) = document.items
+
+        assert item.facit_text == "Djuret som eftersöks är en katt."
+        assert item.gaps[0].automatic_values == ("kat", "ktat", "kattn")
+        assert parse_native_exam_document(native_exam_document_json_bytes(document)) == document
 
 
 class TestItemInvariants:
@@ -290,6 +328,17 @@ class TestExportBlockers:
         reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "machine_proposed_key_unreviewed" in reasons
 
+    def test_ai_interpreted_key_is_trusted_and_does_not_block_export(self) -> None:
+        item = _single_choice_item(origin=NativeAnswerKeyOrigin.AI_INTERPRETED)
+
+        assert item_has_trusted_key(item)
+        assert native_export_blockers(_document(item)) == ()
+
+    def test_machine_proposed_key_is_not_trusted(self) -> None:
+        item = _single_choice_item(origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED)
+
+        assert not item_has_trusted_key(item)
+
     @pytest.mark.parametrize(
         "kind",
         [
@@ -318,3 +367,78 @@ class TestExportBlockers:
         item = _free_text_item().model_copy(update={"points": None})
         reasons = {blocker.reason for blocker in native_export_blockers(_document(item))}
         assert "missing_points" in reasons
+
+
+class TestAutomaticValues:
+    def test_automatic_values_keep_only_bounded_disjoint_spellings(self) -> None:
+        gap = NativeGap(
+            gap_id="gap_001",
+            accepted_values=("mobiltelefon",),
+            automatic_values=(
+                "mobiltelefone",
+                "mobiltelefons",
+                "mobil",
+                "mobiltelefon",
+                "Mobiltelefone",
+                "mobiltelefonx",
+                "mobiltelefony",
+                "mobiltelefonz",
+            ),
+        )
+
+        assert gap.automatic_values == ("mobiltelefone", "mobiltelefons", "mobiltelefonx")
+
+    def test_automatic_values_without_an_accepted_value_are_dropped(self) -> None:
+        gap = NativeGap(gap_id="gap_001", automatic_values=("NE",))
+
+        assert gap.automatic_values == ()
+
+    def test_automatic_values_equal_to_an_accepted_value_case_folded_are_dropped(self) -> None:
+        gap = NativeGap(
+            gap_id="gap_001",
+            accepted_values=("NF",),
+            automatic_values=("nf", "NE"),
+        )
+
+        assert gap.automatic_values == ("NE",)
+
+    def test_a_changed_accepted_value_drops_its_orphaned_automatic_values(self) -> None:
+        item = _gap_fill_item(accepted=("katt",), automatic=("kat", "ktat", "kattn"))
+        edited = NativeExamItem.model_validate(
+            {
+                **item.model_dump(),
+                "gaps": [
+                    {
+                        **item.gaps[0].model_dump(),
+                        "accepted_values": ["hund"],
+                    }
+                ],
+            }
+        )
+
+        assert edited.gaps[0].automatic_values == ()
+
+    def test_absent_key_admits_no_automatic_values_without_accepted_values(self) -> None:
+        item = _gap_fill_item(
+            origin=NativeAnswerKeyOrigin.ABSENT,
+            accepted=(),
+            automatic=("NE",),
+        )
+
+        assert item.gaps[0].automatic_values == ()
+
+
+class TestApiOutputSchema:
+    def test_output_schemas_require_the_new_frontend_fields(self) -> None:
+        gap_schema = NativeGap.model_json_schema(mode="serialization")
+        item_schema = NativeExamItem.model_json_schema(mode="serialization")
+
+        assert "automatic_values" in gap_schema.get("required", ())
+        assert "facit_text" in item_schema.get("required", ())
+
+    def test_input_schemas_keep_the_defaults_optional(self) -> None:
+        gap_schema = NativeGap.model_json_schema(mode="validation")
+        item_schema = NativeExamItem.model_json_schema(mode="validation")
+
+        assert "automatic_values" not in gap_schema.get("required", ())
+        assert "facit_text" not in item_schema.get("required", ())

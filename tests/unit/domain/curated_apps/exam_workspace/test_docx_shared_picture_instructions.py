@@ -76,7 +76,20 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
                 "outcome": "converted",
                 "review_reason": None,
                 "kind": "free_text",
-                "body": [{"segments": [{"kind": "text", "text": text, "accepted_values": []}]}],
+                "key_source": None,
+                "facit_text": None,
+                "body": [
+                    {
+                        "segments": [
+                            {
+                                "kind": "text",
+                                "text": text,
+                                "accepted_values": [],
+                                "spelling_candidates": [],
+                            }
+                        ]
+                    }
+                ],
                 "points": 1,
                 "choices": [],
             }

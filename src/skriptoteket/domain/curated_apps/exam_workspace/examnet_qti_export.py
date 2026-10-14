@@ -336,7 +336,11 @@ def _gap_fill_item(
     item: NativeExamItem, base_item: ExamNetQtiItem, labels: ExamLanguageLabels
 ) -> ExamNetQtiItem:
     accepted_values_by_gap_id = {
-        gap.gap_id: tuple(value.strip() for value in gap.accepted_values if value.strip())
+        gap.gap_id: tuple(
+            value.strip()
+            for value in (*gap.accepted_values, *gap.automatic_values)
+            if value.strip()
+        )
         for gap in item.gaps
     }
     return replace(

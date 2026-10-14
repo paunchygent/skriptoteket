@@ -70,11 +70,23 @@ def _end_picture(text: str) -> DocxImage:
 
 
 def _text(text: str) -> dict[str, object]:
-    return {"kind": "text", "text": text, "accepted_values": [], "asset_id": None}
+    return {
+        "kind": "text",
+        "text": text,
+        "accepted_values": [],
+        "spelling_candidates": [],
+        "asset_id": None,
+    }
 
 
 def _asset(asset_id: str) -> dict[str, object]:
-    return {"kind": "asset", "text": None, "accepted_values": [], "asset_id": asset_id}
+    return {
+        "kind": "asset",
+        "text": None,
+        "accepted_values": [],
+        "spelling_candidates": [],
+        "asset_id": asset_id,
+    }
 
 
 def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
@@ -85,6 +97,8 @@ def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
                 "outcome": "converted",
                 "review_reason": None,
                 "kind": "free_text",
+                "key_source": None,
+                "facit_text": None,
                 "body": [{"segments": [_text(text)]}],
                 "points": 1,
                 "choices": [],
@@ -109,6 +123,8 @@ def _joined_item(paragraphs: _PARAGRAPHS) -> NativeExamItem:
                 "outcome": "converted",
                 "review_reason": None,
                 "kind": "free_text",
+                "key_source": None,
+                "facit_text": None,
                 "body": [{"segments": segments} for segments in paragraphs],
                 "points": 1,
                 "choices": [],

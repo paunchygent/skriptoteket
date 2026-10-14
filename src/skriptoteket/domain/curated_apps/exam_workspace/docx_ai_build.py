@@ -5,6 +5,9 @@ from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
+    filter_answer_spelling_candidates,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -129,7 +132,20 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
                 segments.append(_BLANK)
             elif segment.kind == "gap":
                 gap_id = f"gap_{len(gaps) + 1:03d}"
-                gaps.append(NativeGap(gap_id=gap_id, accepted_values=segment.accepted_values))
+                automatic = (
+                    filter_answer_spelling_candidates(
+                        segment.accepted_values, segment.spelling_candidates
+                    )
+                    if produced.key_source in {"copied", "interpreted"}
+                    else ()
+                )
+                gaps.append(
+                    NativeGap(
+                        gap_id=gap_id,
+                        accepted_values=segment.accepted_values,
+                        automatic_values=automatic,
+                    )
+                )
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
                 segments.append(NativeTextSegment(text=segment.text))
@@ -153,12 +169,22 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         origin = NativeAnswerKeyOrigin.NOT_APPLICABLE
     else:
-        origin = NativeAnswerKeyOrigin.SOURCE_PROVIDED if keyed else NativeAnswerKeyOrigin.ABSENT
+        origins = {
+            "copied": NativeAnswerKeyOrigin.SOURCE_PROVIDED,
+            "interpreted": NativeAnswerKeyOrigin.AI_INTERPRETED,
+            "invented": NativeAnswerKeyOrigin.MACHINE_PROPOSED,
+        }
+        origin = (
+            origins[produced.key_source]
+            if keyed and produced.key_source is not None
+            else NativeAnswerKeyOrigin.ABSENT
+        )
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=produced.kind,
         printed_label=produced.printed_label,
+        facit_text=produced.facit_text,
         body=tuple(body),
         points=produced.points,
         choices=choices,

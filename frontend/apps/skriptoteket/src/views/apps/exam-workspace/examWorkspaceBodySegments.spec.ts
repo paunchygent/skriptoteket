@@ -57,10 +57,13 @@ describe("atom sequence comparison", () => {
 
 describe("gapChipLabel", () => {
   it("joins accepted values or falls back to the gap number", () => {
-    expect(gapChipLabel({ gap_id: "gap_001", accepted_values: ["Stockholm", "Sthlm"] }, 1)).toBe(
-      "Stockholm / Sthlm",
-    );
-    expect(gapChipLabel({ gap_id: "gap_002", accepted_values: [] }, 2)).toBe("Lucka 2");
+    expect(
+      gapChipLabel(
+        { gap_id: "gap_001", accepted_values: ["Stockholm", "Sthlm"], automatic_values: [] },
+        1,
+      ),
+    ).toBe("Stockholm / Sthlm");
+    expect(gapChipLabel({ gap_id: "gap_002", accepted_values: [], automatic_values: [] }, 2)).toBe("Lucka 2");
   });
 });
 
