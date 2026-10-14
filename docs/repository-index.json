@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d2b24dba0a5167655b4a2558b5d53e4f33f802dc2d3b6120b59c86a5c0dfce9a",
+  "source_set_digest": "581d2bc8c663da0eeabc3f8cd65e15f4d21dd4e647cefb7fc36982a967d32e78",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4991,7 +4991,7 @@
     {
       "id": "TASK-SKRIPT-39-05-10",
       "type": "task",
-      "title": "Tolkad av AI with undo, checked AI-invented keys, automatic misspellings and Visa som text",
+      "title": "AI glyph with undo on interpreted keys, checked AI-invented keys, automatic misspellings and Visa som text",
       "path": "docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md",
       "status": "in_progress",
       "task_kind": "story",

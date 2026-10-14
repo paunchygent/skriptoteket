@@ -1,8 +1,8 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-10
-title: Tolkad av AI with undo, checked AI-invented keys, automatic misspellings and
-  Visa som text
+title: AI glyph with undo on interpreted keys, checked AI-invented keys, automatic
+  misspellings and Visa som text
 repository: skriptoteket
 owners:
 - kind: service
@@ -25,9 +25,8 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-Delivers ST-SKRIPT-39-05 item 5 (story terms A8-A11): the teacher sees what
-the AI decided and can take it back, and is asked only about keys the AI
-invented.
+Delivers ST-SKRIPT-39-05 item 5 (story terms A8-A11): the teacher sees which
+keys the AI interpreted or invented and can take an interpretation back.
 
 - **Key source.** The DOCX conversion model states each item's key source:
   copied from the teacher's facit, interpreted from it, or invented without
@@ -62,8 +61,7 @@ invented.
   the first today).
 
 Out of scope: adding misspellings after conversion when the teacher edits
-an answer (a later feature), redoing an undone interpretation (per-question
-retry already exists), and keys from the answer-key suggestion button.
+an answer (a later feature).
 
 ## Contract Inputs
 
@@ -84,19 +82,19 @@ retry already exists), and keys from the answer-key suggestion button.
 
 ## Core Vertical And Performance
 
-Walking skeleton: one corpus DOCX with facit uploads on staging, converts in
-the background job, and opens with at least one interpreted key, one gap
-with automatic misspellings, and one invented key; the teacher works through
-them in the editor, saves, and the QTI export imports into Exam.net with the
-expected keys. Key source and misspelling candidates come from the existing
-batched conversion calls; no extra model call per item.
+Walking skeleton: one DOCX exam with facit, where one item has no facit
+entry, uploads on staging, converts in the background job, and opens with at
+least two interpreted keys, one gap with automatic misspellings, and one
+invented key; the teacher works through them in the editor, saves, and the
+QTI export imports into Exam.net with the expected keys. Conversion calls
+stay batched (story term A2).
 
 ## Validation
 
 Done means a green agent-driven staging walk on the pushed `main` revision,
 with the result read back from Exam.net:
 
-1. Upload a corpus exam with facit and wait for the conversion.
+1. Upload the walk exam and wait for the conversion.
 2. An interpreted key shows the AI glyph; undo clears the key, shows the
    facit text, and export is blocked until the teacher sets the key.
 3. Another interpreted key loses its glyph on "Markera som granskad".
@@ -109,12 +107,9 @@ with the result read back from Exam.net:
    accepted answers of their gap, the removed one is absent, and the gap
    turned into text is plain text.
 
-The corpus eval run stays at its current pass level.
-
 ## Stop Conditions
 
-- The conversion model cannot state key source reliably on the corpus
-  (interpreted or invented keys misreported in the eval run).
+- The conversion model misreports a key's source on the walk exam.
 - Exam.net does not accept several accepted values for a gap without own
   gap points.
 - A change needs a term outside this contract.
