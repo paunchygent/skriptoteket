@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Protocol
 from uuid import UUID
 
@@ -80,7 +81,12 @@ class GetExamWorkspaceAssetHandlerProtocol(Protocol):
 class ExamWorkspaceDocxWriterProtocol(Protocol):
     """Minimal validated DOCX writer for native exam documents (D3)."""
 
-    def build_docx_bytes(self, document: "NativeExamDocument") -> bytes: ...
+    def build_docx_bytes(
+        self,
+        document: "NativeExamDocument",
+        *,
+        assets_by_id: Mapping[str, bytes] = MappingProxyType({}),
+    ) -> bytes: ...
 
     def validate_docx_bytes(self, content: bytes, *, expected_item_count: int) -> None: ...
 

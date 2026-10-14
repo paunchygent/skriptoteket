@@ -28,7 +28,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
     with_heading_runs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAssetSegment,
     NativeExamItem,
     NativeExamParent,
     NativeParagraph,
@@ -73,37 +72,60 @@ def _printed(item: NativeExamItem, text: str) -> bool:
     )
 
 
-def _body_paragraphs(
-    item: NativeExamItem, paragraphs: Sequence[NativeParagraph]
-) -> tuple[NativeParagraph, ...]:
-    """Positioned paragraphs the item does not already hold, deduplicated.
+def _paragraph_content(paragraph: NativeParagraph) -> tuple[tuple[str, str], ...]:
+    """Positioned content independent of how adjacent text runs were split."""
+    parts: list[tuple[str, str]] = []
+    for segment in paragraph.segments:
+        if segment.kind == "text":
+            if parts and parts[-1][0] == "text":
+                parts[-1] = ("text", parts[-1][1] + segment.text)
+            else:
+                parts.append(("text", segment.text))
+        elif segment.kind == "asset":
+            parts.append(("asset", segment.asset_id))
+        else:
+            parts.append(("gap", segment.gap_id))
+    return tuple(parts)
 
-    A paragraph the item's own body already holds, and a picture the body already places,
-    is never inserted twice: the duplicate picture segment is dropped while its paragraph's
-    wording stays. Wording the item already prints as whole lines is left out.
+
+def _body_paragraphs(
+    item: NativeExamItem,
+    paragraphs: Sequence[NativeParagraph],
+    delivered: list[NativeParagraph],
+) -> tuple[NativeParagraph, ...]:
+    """Omit only already-delivered content, accounting for each paragraph occurrence.
+
+    A text echo is not a positioned picture paragraph, and an asset id identifies bytes,
+    not a source occurrence. Each complete matching body paragraph consumes one source
+    occurrence; repeated source paragraphs remain repeated. Text-only instructions keep
+    the existing whole-line wording check.
     """
-    placed = set(body_asset_ids(item.body))
     kept: list[NativeParagraph] = []
     for paragraph in paragraphs:
-        if paragraph in item.body:
-            continue
-        segments = tuple(
-            segment
-            for segment in paragraph.segments
-            if not (isinstance(segment, NativeAssetSegment) and segment.asset_id in placed)
+        matching = next(
+            (
+                shown
+                for shown in delivered
+                if _paragraph_content(shown) == _paragraph_content(paragraph)
+            ),
+            None,
         )
-        if not segments:
+        if matching is not None:
+            delivered.remove(matching)
             continue
-        shown = NativeParagraph(segments=segments)
-        text = body_plain_text((shown,))
-        if shown in kept or (text and _printed(item, text)):
+        text = body_plain_text((paragraph,))
+        if not body_asset_ids((paragraph,)) and text and _printed(item, text):
             continue
-        kept.append(shown)
+        kept.append(paragraph)
     return tuple(kept)
 
 
-def _with_paragraphs(item: NativeExamItem, paragraphs: Sequence[NativeParagraph]) -> NativeExamItem:
-    return item.model_copy(update={"body": (*_body_paragraphs(item, paragraphs), *item.body)})
+def _with_paragraphs(
+    item: NativeExamItem, paragraphs: Sequence[NativeParagraph], delivered: list[NativeParagraph]
+) -> NativeExamItem:
+    return item.model_copy(
+        update={"body": (*_body_paragraphs(item, paragraphs, delivered), *item.body)}
+    )
 
 
 def _renders_one_of(paragraph: NativeParagraph, chunks: Sequence[str]) -> bool:
@@ -111,7 +133,9 @@ def _renders_one_of(paragraph: NativeParagraph, chunks: Sequence[str]) -> bool:
     return bool(text) and any(chunk.startswith(text) for chunk in chunks)
 
 
-def _with_joined(item: NativeExamItem, joined: Sequence[Joined]) -> NativeExamItem:
+def _with_joined(
+    item: NativeExamItem, joined: Sequence[Joined], delivered: list[NativeParagraph]
+) -> NativeExamItem:
     """Place each joined instruction before the body paragraph that renders the next own chunk.
 
     Every source chunk keeps its exact place, a shared picture included; a paragraph the
@@ -120,7 +144,7 @@ def _with_joined(item: NativeExamItem, joined: Sequence[Joined]) -> NativeExamIt
     paragraph can be located by ends the body.
     """
     for entry in joined:
-        added = _body_paragraphs(item, source_paragraphs(entry.sources))
+        added = _body_paragraphs(item, source_paragraphs(entry.sources), delivered)
         at = (
             0
             if entry.opens
@@ -144,10 +168,12 @@ def _parent_instruction(group: Sequence[Run]) -> tuple[NativeParagraph, ...]:
     chunker could not show keeps its named placeholder there.
     """
     paragraphs: list[NativeParagraph] = []
+    seen_anchors: set[str] = set()
     for run in sorted(group, key=lambda entry: (not entry.heading, entry.start)):
-        for paragraph in source_paragraphs(run.sources):
-            if paragraph not in paragraphs:
-                paragraphs.append(paragraph)
+        for chunk in run.sources:
+            if chunk.anchor not in seen_anchors:
+                paragraphs.extend(source_paragraphs((chunk,)))
+                seen_anchors.add(chunk.anchor)
     return tuple(paragraphs)
 
 
@@ -216,15 +242,20 @@ def place_section_instructions(
             # instruction that cannot be a parent.
             targets = targets[:1]
         for k in targets:
-            if run.heading and run.raw and _printed(ordered[k][2], run.raw):
+            if (
+                run.heading
+                and run.raw
+                and not any(chunk.images or chunk.missing_images for chunk in run.sources)
+                and _printed(ordered[k][2], run.raw)
+            ):
                 continue
             carried.setdefault(k, []).extend(source_paragraphs(run.sources))
-    items = tuple(
-        _with_paragraphs(_with_joined(item, joined.get(k, [])), carried.get(k, [])).model_copy(
-            update={"item_id": _item_id(k), "sequence": k + 1}
-        )
-        for k, (_, _, item) in enumerate(ordered)
-    )
+    items: list[NativeExamItem] = []
+    for k, (_, _, item) in enumerate(ordered):
+        delivered = list(item.body)
+        item = _with_joined(item, joined.get(k, []), delivered)
+        item = _with_paragraphs(item, carried.get(k, []), delivered)
+        items.append(item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
@@ -234,5 +265,5 @@ def place_section_instructions(
         for number, group in enumerate(groups, start=1)
     )
     return SectionInstructions(
-        items, parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
+        tuple(items), parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
     )

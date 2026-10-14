@@ -385,13 +385,18 @@ def merge_conversion(
         item.model_copy(update={"sequence": sequence})
         for sequence, item in enumerate(ordered, start=1)
     )
-    assets = merged_assets(head=head, delivered=target.assets, items=items)
-
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
     instructions, instructions_digest = _choose(
         head.instructions, target.instructions, progress.instructions_digest
     )
     parents, parents_digest = _merge_parents(head, target, progress, id_map, items)
+    assets = merged_assets(
+        head=head,
+        delivered=target.assets,
+        items=items,
+        instructions=instructions,
+        parents=parents,
+    )
     document = head.model_copy(
         update={
             "revision": head.revision + 1,
