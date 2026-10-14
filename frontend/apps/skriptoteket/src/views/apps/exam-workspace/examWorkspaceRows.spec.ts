@@ -22,6 +22,11 @@ import {
 
 function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ segments: [{ kind: "text", text: "Beskriv fotosyntesen." }] }],
     choices: [],
@@ -125,6 +130,7 @@ describe("examWorkspaceRows", () => {
     );
 
     expect(row).toEqual({
+      aiKeyLabel: null,
       itemId: "item_001",
       parentBlock: null,
       parentChild: null,

@@ -7,11 +7,14 @@
  *   text, with every gap shown as an inline chip and every image as a fixed
  *   atom that renders the actual picture once its asset URL is known and the
  *   "Bild" placeholder until then. Activating a gap chip opens a small
- *   popover where the teacher edits that gap's accepted answers. Gaps and
+ *   popover where the teacher edits that gap's accepted answers, removes an
+ *   automatic answer the conversion added, or replaces the whole gap with
+ *   its first accepted answer as plain text ("Visa som text"). Closing that
+ *   popover focuses the paragraph, because the removed chip cannot. Gaps and
  *   images are the Exam.net contract, so typing, pasting, cutting, dragging,
  *   dropping or undo can never remove, add or reorder them. While `disabled`
- *   is set, nothing can be edited and an open popover closes without
- *   committing.
+ *   is set, nothing can be edited, an open popover closes without
+ *   committing, and no gap change is forwarded.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
@@ -81,9 +84,17 @@ const props = defineProps<{
 const emit = defineEmits<{
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
 }>();
 
-type OpenGap = { itemId: string; gapId: string; top: number; left: number };
+type OpenGap = {
+  itemId: string;
+  gapId: string;
+  paragraphIndex: number;
+  top: number;
+  left: number;
+};
 
 const editableMode = detectEditableMode();
 const editorRoot = ref<HTMLElement | null>(null);
@@ -313,23 +324,23 @@ function handleDragOver(event: DragEvent): void {
   }
 }
 
-function handleParagraphClick(event: MouseEvent): void {
+function handleParagraphClick(paragraphIndex: number, event: MouseEvent): void {
   const chip = chipFromEvent(event);
   if (chip) {
     event.preventDefault();
-    openPopover(chip);
+    openPopover(paragraphIndex, chip);
   }
 }
 
-function handleParagraphKeydown(event: KeyboardEvent): void {
+function handleParagraphKeydown(paragraphIndex: number, event: KeyboardEvent): void {
   const chip = chipFromEvent(event);
   if (chip && (event.key === "Enter" || event.key === " ")) {
     event.preventDefault();
-    openPopover(chip);
+    openPopover(paragraphIndex, chip);
   }
 }
 
-function openPopover(chip: HTMLElement): void {
+function openPopover(paragraphIndex: number, chip: HTMLElement): void {
   if (props.disabled) {
     return;
   }
@@ -346,6 +357,7 @@ function openPopover(chip: HTMLElement): void {
   openGap.value = {
     itemId: props.item.item_id,
     gapId,
+    paragraphIndex,
     top: chipRect.bottom - rootRect.top + 4,
     // Keep the popover inside the editor when the chip sits near the right edge.
     left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
@@ -370,6 +382,26 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
     return;
   }
   emit("updateGapValues", itemId, gapId, acceptedValues);
+}
+
+function handleGapAutomaticValueRemoval(itemId: string, gapId: string, value: string): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("removeAutomaticValue", itemId, gapId, value);
+}
+
+/** The chip this action removes cannot keep focus, so the paragraph takes it. */
+function handleGapAsText(itemId: string, gapId: string): void {
+  if (props.disabled) {
+    return;
+  }
+  const paragraphIndex = openGap.value?.paragraphIndex ?? null;
+  closePopover(false);
+  emit("showGapAsText", itemId, gapId);
+  if (paragraphIndex !== null) {
+    paragraphElements[paragraphIndex]?.focus();
+  }
 }
 </script>
 
@@ -403,8 +435,8 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
         @compositionstart="handleCompositionStart(paragraphIndex)"
         @compositionend="handleCompositionEnd(paragraphIndex)"
         @paste="handlePaste(paragraphIndex, $event)"
-        @click="handleParagraphClick"
-        @keydown="handleParagraphKeydown"
+        @click="handleParagraphClick(paragraphIndex, $event)"
+        @keydown="handleParagraphKeydown(paragraphIndex, $event)"
         @dragstart="handleDragStart"
         @dragover="handleDragOver"
         @drop.prevent
@@ -418,9 +450,12 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
         :gap-id="openGap.gapId"
         :gap-number="openGapNumber"
         :gap="openGapModel"
+        :gap-count="item.gaps.length"
         :top="openGap.top"
         :left="openGap.left"
         @commit="handleGapCommit"
+        @remove-automatic-value="handleGapAutomaticValueRemoval"
+        @show-gap-as-text="handleGapAsText"
         @close="closePopover"
       />
     </div>

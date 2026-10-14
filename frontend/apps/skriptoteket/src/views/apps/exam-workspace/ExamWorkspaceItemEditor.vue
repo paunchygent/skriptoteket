@@ -27,7 +27,7 @@
 
 import { computed, useId } from "vue";
 
-import { IconCheck, IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
+import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarning } from "../../../components/icons";
 
 import type {
   NativeExamBodySegment,
@@ -51,7 +51,7 @@ import {
 } from "./examWorkspaceItemSaveRules";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceParentChild } from "./examWorkspaceParents";
-import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import { examWorkspaceAiKeyLabel, examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
   attentionCount: number;
@@ -68,6 +68,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   markReviewed: [itemId: string];
+  undoInterpretation: [itemId: string];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
   next: [];
   previous: [];
   toggleDetails: [];
@@ -96,6 +99,8 @@ const matchHintId = useId();
 const matchKeyHintId = useId();
 
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
+
+const aiKeyLabel = computed(() => examWorkspaceAiKeyLabel(props.item.answer_key.origin));
 
 const typeUncertain = computed(
   () =>
@@ -219,6 +224,20 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
       </h2>
+      <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center">
+        <span
+          v-if="aiKeyLabel"
+          role="img"
+          :aria-label="aiKeyLabel"
+          :title="aiKeyLabel"
+          data-test="exam-workspace-editor-ai-key"
+        >
+          <IconAi
+            :size="18"
+            aria-hidden="true"
+          />
+        </span>
+      </span>
       <span
         v-if="typeUncertain"
         class="text-xs text-navy/65"
@@ -229,7 +248,7 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         data-test="exam-workspace-review-badge"
       >
         <span
-          v-if="item.review.state === 'review_required'"
+          v-if="item.review.state === 'review_required' || item.answer_key.origin === 'machine_proposed'"
           class="inline-flex items-center gap-2 text-xs font-semibold leading-tight text-navy"
         >
           <IconWarning
@@ -250,16 +269,40 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
           />
           Granskad
         </span>
-        <button
-          v-if="item.review.state === 'review_required'"
-          type="button"
-          class="btn-ghost shadow-none"
-          :disabled="disabled"
-          data-test="exam-workspace-mark-reviewed"
-          @click="emit('markReviewed', item.item_id)"
-        >
-          Markera som granskad
-        </button>
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+          <button
+            v-if="item.answer_key.origin === 'ai_interpreted'"
+            type="button"
+            class="inline-flex h-11 w-11 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40 sm:h-9 sm:w-9"
+            aria-label="Ångra AI-tolkningen"
+            title="Ångra AI-tolkningen"
+            :disabled="disabled"
+            data-test="exam-workspace-undo-interpretation"
+            @click="emit('undoInterpretation', item.item_id)"
+          >
+            <IconUndo
+              :size="18"
+              aria-hidden="true"
+            />
+          </button>
+        </span>
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+          <button
+            v-if="item.review.state === 'review_required' || aiKeyLabel"
+            type="button"
+            class="inline-flex h-11 w-11 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40 sm:h-9 sm:w-9"
+            aria-label="Markera som granskad"
+            title="Markera som granskad"
+            :disabled="disabled"
+            data-test="exam-workspace-mark-reviewed"
+            @click="emit('markReviewed', item.item_id)"
+          >
+            <IconCheck
+              :size="18"
+              aria-hidden="true"
+            />
+          </button>
+        </span>
         <button
           type="button"
           class="btn-ghost shadow-none"
@@ -285,6 +328,15 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       Deluppgift {{ parentChild.childIndex + 1 }} av {{ parentChild.childCount }}. Den gemensamma
       instruktionen visas i listan över frågor. {{ PARENT_CHILD_LOCKED_COPY }}
     </p>
+
+    <div
+      v-if="item.answer_key.origin === 'absent' && item.facit_text"
+      class="border-l-4 border-navy/35 pl-3 text-sm text-navy"
+      data-test="exam-workspace-original-facit"
+    >
+      <p class="text-xs font-semibold text-navy/80">Facit i originalet</p>
+      <p class="whitespace-pre-wrap">{{ item.facit_text }}</p>
+    </div>
 
     <div class="grid gap-3">
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
@@ -319,6 +371,8 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       :disabled="disabled"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+      @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
     />
 

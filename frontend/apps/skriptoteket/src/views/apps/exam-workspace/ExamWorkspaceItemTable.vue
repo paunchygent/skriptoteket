@@ -4,8 +4,9 @@
  *
  * Domain purpose:
  *   List the exam's questions compactly for selection in Redigera: sequence,
- *   title, type, points, and whether the question is ready for export, and
- *   show the per-item blockers from the server's last refused export.
+ *   title, type, points, whether the question is ready for export, and the
+ *   AI's mark when it wrote the question's key, and show the per-item
+ *   blockers from the server's last refused export.
  *
  * Relationships:
  *   - Shows a parent's shared instruction (text and pictures, read-only)
@@ -16,7 +17,7 @@
  *     selects it through `useExamWorkspaceDocument`.
  */
 
-import { IconCheck, IconWarning } from "../../../components/icons";
+import { IconAi, IconCheck, IconWarning } from "../../../components/icons";
 import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
 import { PARENT_HEADING_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
@@ -69,6 +70,24 @@ const emit = defineEmits<{
           <span class="min-w-0 flex-1 truncate text-sm leading-snug">
             <span class="font-semibold">{{ row.sequence }}.</span>
             {{ row.title }}
+          </span>
+          <span
+            class="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center"
+            :data-test="`exam-workspace-item-ai-slot-${row.itemId}`"
+          >
+            <span
+              v-if="row.aiKeyLabel"
+              role="img"
+              :aria-label="row.aiKeyLabel"
+              :title="row.aiKeyLabel"
+              :data-test="`exam-workspace-item-ai-key-${row.itemId}`"
+            >
+              <IconAi
+                :size="16"
+                class="h-4 w-4 text-navy"
+                aria-hidden="true"
+              />
+            </span>
           </span>
           <IconWarning
             v-if="readinessByItemId[row.itemId]"

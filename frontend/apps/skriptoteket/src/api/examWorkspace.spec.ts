@@ -42,6 +42,11 @@ function buildDocument(revision: number): NativeExamDocument {
     instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
     items: [
       {
+        ai_suggestion: null,
+        facit_text: null,
+        marking_guide: null,
+        printed_label: null,
+        retry_source: null,
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
         body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
@@ -70,7 +75,7 @@ function buildDocument(revision: number): NativeExamDocument {
     },
     parents: [],
     revision,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "NO-prov HT25",
   };
 }

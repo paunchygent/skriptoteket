@@ -42,7 +42,7 @@ export function buildResponse(
       },
       parents: [],
       revision: 1,
-      schema_version: "native_exam_document_v1",
+      schema_version: "native_exam_document_v2",
       title: "English 1",
     },
     notes: [],

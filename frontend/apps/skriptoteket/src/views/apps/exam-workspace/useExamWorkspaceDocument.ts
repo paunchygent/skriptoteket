@@ -51,6 +51,9 @@ import {
   withChoiceText,
   withCorrectChoices,
   withGapValues,
+  withGapAsText,
+  withoutAutomaticValue,
+  withoutInterpretedKey,
   withMarkingGuide,
   withMatchEntryText,
   withMatchPairs,
@@ -411,6 +414,18 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withGapValues(item, gapId, acceptedValues));
   }
 
+  function undoItemInterpretation(itemId: string): void {
+    patchItem(itemId, withoutInterpretedKey);
+  }
+
+  function removeItemAutomaticValue(itemId: string, gapId: string, value: string): void {
+    patchItem(itemId, (item) => withoutAutomaticValue(item, gapId, value));
+  }
+
+  function showItemGapAsText(itemId: string, gapId: string): void {
+    patchItem(itemId, (item) => withGapAsText(item, gapId));
+  }
+
   function markItemReviewed(itemId: string): void {
     patchItem(itemId, reviewed);
   }
@@ -466,6 +481,9 @@ export function useExamWorkspaceDocument() {
     updateItemChoiceText,
     updateItemCorrectChoices,
     updateItemGapValues,
+    undoItemInterpretation,
+    removeItemAutomaticValue,
+    showItemGapAsText,
     updateItemMarkingGuide,
     updateItemMatchEntryText,
     updateItemMatchPairs,

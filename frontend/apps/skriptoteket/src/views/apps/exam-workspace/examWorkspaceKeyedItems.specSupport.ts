@@ -61,6 +61,10 @@ export function choiceItem(
 ): NativeExamItem {
   return {
     ai_suggestion: previous,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: key, match_pairs: [], origin },
     body: [{ segments: [{ kind: "text", text: "Vilka är verb?" }] }],
     choices: choiceIds.map((choice_id) => ({ choice_id, text: choice_id })),
@@ -88,10 +92,14 @@ export function gapItem(
   }
   return {
     ai_suggestion: previous,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin },
     body: [{ segments }],
     choices: [],
-    gaps: key.map(([gap_id, accepted_values]) => ({ accepted_values, gap_id })),
+    gaps: key.map(([gap_id, accepted_values]) => ({ accepted_values, automatic_values: [], gap_id })),
     item_id: "item_001",
     kind: "gap_fill",
     match_left: [],

@@ -82,8 +82,8 @@ function buildTwoGapResponse(
                 },
               ],
               gaps: [
-                { accepted_values: ["100"], gap_id: "gap_001" },
-                { accepted_values: ["0"], gap_id: "gap_002" },
+                { accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" },
+                { accepted_values: ["0"], automatic_values: [], gap_id: "gap_002" },
               ],
             }
           : item,

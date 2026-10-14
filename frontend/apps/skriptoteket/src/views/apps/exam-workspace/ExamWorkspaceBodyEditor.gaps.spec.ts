@@ -163,7 +163,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await wrapper.setProps({
       item: {
         ...item,
-        gaps: [item.gaps[0]!, { accepted_values: ["0", "noll"], gap_id: "gap_002" }],
+        gaps: [item.gaps[0]!, { accepted_values: ["0", "noll"], automatic_values: [], gap_id: "gap_002" }],
       },
     });
 

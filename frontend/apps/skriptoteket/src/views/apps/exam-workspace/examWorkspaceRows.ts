@@ -3,8 +3,8 @@
  *
  * Domain purpose:
  *   Map native exam items to the compact teacher-facing table rows with
- *   Swedish type and review-status labels, and saved-document summaries to
- *   short list labels.
+ *   Swedish type, review-status and AI-key labels, and saved-document
+ *   summaries to short list labels.
  *
  * Relationships:
  *   - Pure functions consumed by `ExamWorkspaceView`.
@@ -12,6 +12,7 @@
  */
 
 import type {
+  NativeExamAnswerKeyOrigin,
   NativeExamItem,
   NativeExamItemKind,
   NativeExamParent,
@@ -49,6 +50,12 @@ export type ExamWorkspaceItemRow = {
   typeLabel: string;
   pointsLabel: string;
   statusLabel: string;
+  /**
+   * Set when the conversion AI wrote the key: "Tolkad av AI" for a key it
+   * interpreted from the facit, "Förslag från AI" for a key it invented
+   * without one. Null when the key came from the facit or the teacher.
+   */
+  aiKeyLabel: string | null;
   reviewRequired: boolean;
   reviewReasons: string[];
   /** Set on a child question: where it sits in its parent. */
@@ -74,6 +81,20 @@ export function examWorkspaceTypeLabel(kind: NativeExamItemKind): string {
 
 export function examWorkspaceReviewStatusLabel(state: NativeExamReviewState): string {
   return state === "review_required" ? "Behöver granskas" : "Granskad";
+}
+
+/**
+ * The AI mark for an item's key: the AI read the teacher's facit, or invented
+ * a key without one. Null for every other origin.
+ */
+export function examWorkspaceAiKeyLabel(origin: NativeExamAnswerKeyOrigin): string | null {
+  if (origin === "ai_interpreted") {
+    return "Tolkad av AI";
+  }
+  if (origin === "machine_proposed") {
+    return "Förslag från AI";
+  }
+  return null;
 }
 
 export function examWorkspacePointsLabel(points: number | null): string {
@@ -121,6 +142,7 @@ export function toExamWorkspaceItemRow(
   const title = examWorkspaceQuestionLabel(item.sequence);
 
   return {
+    aiKeyLabel: examWorkspaceAiKeyLabel(item.answer_key.origin),
     itemId: item.item_id,
     parentBlock,
     parentChild,

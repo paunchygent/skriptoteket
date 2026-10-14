@@ -36,7 +36,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
         return { kind: "text" as const, text: segment.text ?? "" };
       }
       const gapId = `gap_${String(gaps.length + 1).padStart(3, "0")}`;
-      gaps.push({ accepted_values: segment.accepted_values, gap_id: gapId });
+      gaps.push({ accepted_values: segment.accepted_values, automatic_values: [], gap_id: gapId });
       return { gap_id: gapId, kind: "gap" as const };
     }),
   }));
@@ -45,6 +45,11 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     text: choice.text,
   }));
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: {
       correct_choice_ids: recorded.choices.flatMap((choice, index) =>
         choice.correct ? [`choice_${String.fromCharCode(97 + index)}`] : [],
@@ -105,7 +110,7 @@ export function buildParentDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [buildRecordedParent()],
     revision: 1,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "English 1",
   };
 }

@@ -24,6 +24,11 @@ function buildChoiceItem(
   overrides: Partial<NativeExamItem> = {},
 ): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
     body: [{ segments: [{ kind: "text", text: "Vilket ämne är en gas?" }] }],
     choices: [

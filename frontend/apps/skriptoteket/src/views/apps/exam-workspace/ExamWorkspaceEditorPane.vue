@@ -63,6 +63,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   add: [];
   markReviewed: [itemId: string];
+  undoInterpretation: [itemId: string];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
   retry: [itemId: string, kind: NativeExamItemKind];
   select: [itemId: string];
   step: [offset: number];
@@ -154,6 +157,9 @@ const redigeraGridClass = computed(() => {
             :show-navigation="!isPhone"
             :total="itemCount"
             @mark-reviewed="emit('markReviewed', $event)"
+            @undo-interpretation="emit('undoInterpretation', $event)"
+            @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+            @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
             @next="emit('step', 1)"
             @previous="emit('step', -1)"
             @toggle-details="emit('update:detailsOpen', !detailsOpen)"

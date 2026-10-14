@@ -25,6 +25,11 @@ import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversion
 
 function buildItem(itemId: string, text: string): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: {
       correct_choice_ids: [],
       match_pairs: [],
@@ -67,7 +72,7 @@ function buildDocument(
     origin: { kind: "docx_import" },
     parents: [],
     revision,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "Prov",
     ...overrides,
   };

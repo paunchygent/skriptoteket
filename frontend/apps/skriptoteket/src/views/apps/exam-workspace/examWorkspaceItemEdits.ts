@@ -111,6 +111,14 @@ export function withGapValues(
   gapId: string,
   acceptedValues: string[],
 ): NativeExamItem {
+  const current = item.gaps.find((gap) => gap.gap_id === gapId);
+  if (
+    !current ||
+    (current.accepted_values.length === acceptedValues.length &&
+      current.accepted_values.every((value, index) => value === acceptedValues[index]))
+  ) {
+    return item;
+  }
   const gaps = item.gaps.map((gap) =>
     gap.gap_id === gapId ? { ...gap, accepted_values: acceptedValues } : gap,
   );
@@ -122,11 +130,66 @@ export function withGapValues(
   };
 }
 
+/** Remove the conversion interpretation without losing the teacher's source facit. */
+export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
+  if (item.answer_key.origin !== "ai_interpreted") {
+    return item;
+  }
+  return {
+    ...item,
+    answer_key: { ...item.answer_key, origin: "absent", correct_choice_ids: [], match_pairs: [] },
+    gaps: item.gaps.map((gap) => ({ ...gap, accepted_values: [], automatic_values: [] })),
+  };
+}
+
+/** Removing an automatic answer is a teacher change of the answer key. */
+export function withoutAutomaticValue(
+  item: NativeExamItem,
+  gapId: string,
+  value: string,
+): NativeExamItem {
+  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
+  if (!gap || !gap.automatic_values.includes(value)) {
+    return item;
+  }
+  return {
+    ...item,
+    answer_key: { ...item.answer_key, origin: "teacher_authored" },
+    gaps: item.gaps.map((candidate) =>
+      candidate.gap_id === gapId
+        ? { ...candidate, automatic_values: candidate.automatic_values.filter((entry) => entry !== value) }
+        : candidate,
+    ),
+  };
+}
+
+/** Keep at least one gap and the item's points when turning an answer into text. */
+export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamItem {
+  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
+  const text = gap?.accepted_values[0];
+  if (item.gaps.length <= 1 || !text) {
+    return item;
+  }
+  return {
+    ...item,
+    answer_key: { ...item.answer_key, origin: "teacher_authored" },
+    gaps: item.gaps.filter((candidate) => candidate.gap_id !== gapId),
+    body: item.body.map((paragraph) => ({
+      ...paragraph,
+      segments: paragraph.segments.map((segment) =>
+        segment.kind === "gap" && segment.gap_id === gapId
+          ? { kind: "text" as const, text }
+          : segment,
+      ),
+    })),
+  };
+}
+
 export function reviewed(item: NativeExamItem): NativeExamItem {
   return {
     ...item,
     answer_key:
-      item.answer_key.origin === "machine_proposed"
+      item.answer_key.origin === "machine_proposed" || item.answer_key.origin === "ai_interpreted"
         ? { ...item.answer_key, origin: "reviewed_advisory" }
         : item.answer_key,
     review: { ...item.review, state: "review_complete" },
@@ -270,6 +333,10 @@ export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
 export function newTeacherItem(itemId: string, sequence: number): NativeExamItem {
   return {
     ai_suggestion: null,
+    facit_text: null,
+    marking_guide: null,
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
     choices: [],
