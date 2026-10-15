@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "06aaa093a63cc7d3b051d0c8ae3fe993c305fbbd3147500ab4ef09ff5b9189a7",
+  "source_set_digest": "25fd53a0320709ad5f86f24167808057679cf89144175023d79e1f8ab04195cb",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2633,6 +2633,25 @@
       "type": "task",
       "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
       "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-08-36",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-08-36-02",
+      "type": "task",
+      "title": "Keep signed-in shell help and account actions reachable across breakpoints",
+      "path": "docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
