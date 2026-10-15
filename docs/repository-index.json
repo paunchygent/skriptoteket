@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "148d25687b874deb9bbd8f6ea812ebd504ea935b975ad29e71ab258a32758861",
+  "source_set_digest": "34a8ac63910d8507f5c4b7402bae03635c773bb0a43338aeebf49ae53f367d44",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5313,6 +5313,25 @@
       "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-08",
+      "type": "task",
+      "title": "Source formatting: conversion keeps bold, italic, underline, sub/superscript and heading levels deterministically through editor and QTI export",
+      "path": "docs/backlog/tasks/task-skript-39-09-08-source-formatting-conversion-keeps-bold-italic-underline-sub-superscript-and-heading-levels-deterministically-through-editor-and-qti-export.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
