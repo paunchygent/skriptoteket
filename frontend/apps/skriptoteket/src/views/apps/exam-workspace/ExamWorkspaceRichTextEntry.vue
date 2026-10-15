@@ -15,6 +15,8 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceChoiceField` for each choice and by
  *     `ExamWorkspaceKategoriseraGrid` for every row and category.
+ *   - Passes the entry's semantic owner down to every paragraph, so the
+ *     toolbar target follows the item, choice or Kategorisera entry.
  *   - Emits the whole entry body on any paragraph edit;
  *     `examWorkspaceItemEdits` applies it to the document.
  */
@@ -22,6 +24,7 @@
 import type { NativeExamBodyParagraph, NativeExamBodySegment } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
 import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
+import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 const props = withDefaults(
   defineProps<{
@@ -33,8 +36,16 @@ const props = withDefaults(
     describedBy?: string;
     /** The paragraph border colour, so an empty or correct entry can mark itself. */
     borderClass?: string;
+    /** The item, surface and entry this body belongs to; a standalone entry keys on its paragraphs. */
+    owner?: RichTextSurfaceOwner;
   }>(),
-  { disabled: false, invalid: false, describedBy: undefined, borderClass: "border-navy/35" },
+  {
+    disabled: false,
+    invalid: false,
+    describedBy: undefined,
+    borderClass: "border-navy/35",
+    owner: undefined,
+  },
 );
 
 const emit = defineEmits<{
@@ -68,6 +79,7 @@ function handleHeading(paragraphIndex: number, headingLevel: RichTextHeadingLeve
       :key="paragraphIndex"
       :paragraph="paragraph"
       :paragraph-index="paragraphIndex"
+      :owner="owner"
       :gaps="[]"
       :disabled="disabled"
       :border-class="borderClass"

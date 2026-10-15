@@ -48,6 +48,21 @@ function selectSurface(element: HTMLElement): void {
   document.dispatchEvent(new Event("selectionchange"));
 }
 
+/** Select a character range inside one surface's first text node, like a drag. */
+function selectTextRange(element: HTMLElement, start: number, end: number): void {
+  const node = document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode();
+  if (!node) {
+    throw new Error("rich surface has no text node");
+  }
+  const range = document.createRange();
+  range.setStart(node, start);
+  range.setEnd(node, end);
+  const selection = window.getSelection()!;
+  selection.removeAllRanges();
+  selection.addRange(range);
+  document.dispatchEvent(new Event("selectionchange"));
+}
+
 const QUESTION = '[data-test="exam-workspace-body-paragraph-0"]';
 const OPTION = '[data-test="exam-workspace-choice-text-choice_001"]';
 const MATCH_LEFT = '[data-test="exam-workspace-match-left-text-left_001"]';
@@ -172,6 +187,208 @@ describe("ExamWorkspaceItemEditor shared rich-text target", () => {
           },
         ],
       ],
+    ]);
+    wrapper.unmount();
+  });
+
+  it("releases the previous item's saved option selection when the native item is replaced", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectSurface(option.element as HTMLElement);
+
+    const next = buildChoiceWithText();
+    next.item_id = "item_002";
+    next.choices[0]!.body = plainBody("New option");
+    await wrapper.setProps({ item: next });
+
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+
+    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
+    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("releases a saved option selection when a replacement item repeats the same entry text", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectSurface(option.element as HTMLElement);
+
+    const sameText = buildChoiceWithText();
+    sameText.item_id = "item_002";
+    await wrapper.setProps({ item: sameText });
+
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+
+    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("releases a saved option selection when the same item's option body is replaced", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectSurface(option.element as HTMLElement);
+
+    const replaced = buildChoiceWithText();
+    replaced.choices[0]!.body = plainBody("Replaced option");
+    await wrapper.setProps({ item: replaced });
+
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+
+    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("releases a saved matching entry when the matching item is replaced with the same entry ids", async () => {
+    const wrapper = mountEditor(buildMatchingItem());
+    const entry = wrapper.get(MATCH_LEFT);
+
+    await entry.trigger("focus");
+    selectSurface(entry.element as HTMLElement);
+
+    const base = buildMatchingItem();
+    const next = buildMatchingItem({
+      item_id: "item_002",
+      match_left: base.match_left.map((left) =>
+        left.left_id === "left_001" ? { ...left, body: plainBody("another row") } : left,
+      ),
+    });
+    await wrapper.setProps({ item: next });
+
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+
+    expect(wrapper.emitted("updateMatchEntryBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("keeps every glyph off a stale question when the browser range crosses rich surfaces", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const question = wrapper.get(QUESTION);
+    const option = wrapper.get(OPTION);
+
+    await question.trigger("focus");
+    selectSurface(question.element as HTMLElement);
+
+    const questionText = document
+      .createTreeWalker(question.element, NodeFilter.SHOW_TEXT)
+      .nextNode()!;
+    const optionText = document.createTreeWalker(option.element, NodeFilter.SHOW_TEXT).nextNode()!;
+    const range = document.createRange();
+    range.setStart(questionText, 0);
+    range.setEnd(optionText, 3);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+    await wrapper.get(HEADING_2).trigger("click");
+
+    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
+    expect(wrapper.emitted("updateParagraphHeading")).toBeUndefined();
+    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("keeps the same option selection across repeated toggles while the toolbar holds focus", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectSurface(option.element as HTMLElement);
+
+    await wrapper.get(BOLD).trigger("click");
+    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
+      { kind: "text", marks: ["bold"], text: "Option" },
+    ]);
+
+    // The browser drops the range while the toolbar button holds focus; the
+    // saved paragraph offsets must keep the same surface for the next toggle.
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
+      { kind: "text", marks: [], text: "Option" },
+    ]);
+    wrapper.unmount();
+  });
+
+  it("keeps a split-run saved selection when the emitted body echoes back as props", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectTextRange(option.element as HTMLElement, 0, 2);
+
+    await wrapper.get(BOLD).trigger("click");
+    const marked = bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!;
+    expect(marked.segments).toEqual([
+      { kind: "text", marks: ["bold"], text: "Op" },
+      { kind: "text", marks: [], text: "tion" },
+    ]);
+
+    // The document stores the body exactly as the toggle emitted it.
+    const echoed = buildChoiceWithText();
+    echoed.choices[0]!.body = [marked];
+    await wrapper.setProps({ item: echoed });
+
+    // The browser drops the range while the toolbar button holds focus; the
+    // saved offsets must survive the split run and still cover "Op".
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
+      { kind: "text", marks: [], text: "Option" },
+    ]);
+    wrapper.unmount();
+  });
+
+  it("keeps a saved selection when a mark-only update merges the split run back", async () => {
+    const wrapper = mountEditor(buildChoiceWithText());
+    const option = wrapper.get(OPTION);
+
+    await option.trigger("focus");
+    selectTextRange(option.element as HTMLElement, 0, 2);
+    await wrapper.get(BOLD).trigger("click");
+    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
+      { kind: "text", marks: ["bold"], text: "Op" },
+      { kind: "text", marks: [], text: "tion" },
+    ]);
+
+    // The owner normalizes the mark-split run back into one text run; only
+    // run boundaries changed, so the saved offsets must survive.
+    const merged = buildChoiceWithText();
+    merged.choices[0]!.body = [
+      { heading_level: null, segments: [{ kind: "text", marks: ["bold"], text: "Option" }] },
+    ];
+    await wrapper.setProps({ item: merged });
+
+    window.getSelection()!.removeAllRanges();
+    document.dispatchEvent(new Event("selectionchange"));
+
+    await wrapper.get(BOLD).trigger("click");
+    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
+      { kind: "text", marks: [], text: "Op" },
+      { kind: "text", marks: ["bold"], text: "tion" },
     ]);
     wrapper.unmount();
   });

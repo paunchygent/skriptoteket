@@ -135,6 +135,28 @@ export function segmentsKey(segments: NativeExamBodySegment[]): string {
   return JSON.stringify(segments);
 }
 
+/**
+ * Stable comparison key for a paragraph's semantic content: text and atoms
+ * only, with contiguous text runs merged, so a mark or heading change keeps
+ * the same key.
+ */
+export function contentKey(segments: NativeExamBodySegment[]): string {
+  const items: Array<[string, string]> = [];
+  for (const segment of segments) {
+    if (segment.kind === "text") {
+      const previous = items[items.length - 1];
+      if (previous && previous[0] === "text") {
+        previous[1] += segment.text;
+      } else {
+        items.push(["text", segment.text]);
+      }
+      continue;
+    }
+    items.push([segment.kind, segment.kind === "gap" ? segment.gap_id : segment.asset_id]);
+  }
+  return JSON.stringify(items);
+}
+
 /** Chip text: the accepted answers, or "Lucka N" while the gap has none. */
 export function gapChipLabel(gap: NativeExamGap | undefined, gapNumber: number): string {
   if (gap && gap.accepted_values.length > 0) {

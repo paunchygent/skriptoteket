@@ -22,6 +22,7 @@ import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examW
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
 import { EMPTY_CHOICE_TEXT_GUIDANCE, hasEmptyChoiceText } from "./examWorkspaceItemSaveRules";
 import { isEmptyBody } from "./examWorkspaceRichText";
+import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -68,6 +69,11 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
 
 function choiceLetter(index: number): string {
   return String.fromCharCode(65 + index);
+}
+
+/** The semantic owner of one option, so its saved toolbar selection follows this item's entry. */
+function choiceOwner(choiceId: string): RichTextSurfaceOwner {
+  return { itemId: props.item.item_id, surface: "choice", entryId: choiceId };
 }
 </script>
 
@@ -116,6 +122,7 @@ function choiceLetter(index: number): string {
         :disabled="disabled"
         :invalid="isEmptyBody(choice.body)"
         :label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
+        :owner="choiceOwner(choice.choice_id)"
         :test-id="`exam-workspace-choice-text-${choice.choice_id}`"
         @update-body="(body) => emit('updateBody', choice.choice_id, body)"
       />

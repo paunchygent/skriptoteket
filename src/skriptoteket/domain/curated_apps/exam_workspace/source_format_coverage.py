@@ -108,7 +108,9 @@ def entry_label_end(text: str, ordinal: int) -> int | None:
             end += 1
         else:
             continue
-        while end < len(text) and (text[end].isspace() or text[end] in _LABEL_SEPARATORS):
+        while end < len(text) and text[end] in _LABEL_SEPARATORS:
+            end += 1
+        while end < len(text) and text[end].isspace():
             end += 1
         return end
     return None
@@ -199,13 +201,9 @@ def complete_source_formatting(
             )
         for match in POINT_LABEL.finditer(chunk.text):
             covered.update(range(offset + match.start(), offset + match.end()))
-        if printed_label and chunk.text.startswith(printed_label):
-            covered.update(range(offset, offset + len(printed_label)))
-            at = len(printed_label)
-            while at < len(chunk.text) and (chunk.text[at].isspace() or chunk.text[at] in ".):-"):
-                covered.add(offset + at)
-                at += 1
         offset += len(chunk.text)
+    if body_source.label_span is not None:
+        covered.update(range(*body_source.label_span))
     missing = [
         index
         for index, marks in enumerate(body_source.marks)
@@ -220,7 +218,27 @@ def complete_source_formatting(
         and paragraph.start not in heading_chunk_paragraphs
         and paragraph.start not in projected
     ]
-    if not missing and not unprojected_headings:
+    if unprojected_headings:
+        # Restore only the omitted source-backed blocks. Existing native
+        # paragraphs retain their atoms (pictures/gaps), wording and ownership;
+        # choices and matching entries never enter the question body.
+        merged = list(zip(body_source.output_anchors, body, strict=True))
+        for paragraph in unprojected_headings:
+            start = paragraph.start
+            if body_source.label_span is not None and start == body_source.label_span[0]:
+                start = body_source.label_span[1]
+            restored = body_source.fragments(start, paragraph.end)
+            insertion = next(
+                (index for index, (anchor, _) in enumerate(merged) if anchor > paragraph.start),
+                len(merged),
+            )
+            merged[insertion:insertion] = [(paragraph.start, value) for value in restored]
+            covered.update(range(paragraph.start, paragraph.end))
+            body_source.covered.update(range(paragraph.start, paragraph.end))
+        body_source.path = "rebuilt"
+        body = tuple(value for _, value in merged)
+        missing = [index for index in missing if index not in covered]
+    if not missing:
         return body
     if not can_rebuild_body:
         raise FormattingTransferError("unrepresented source marks cannot be isolated from entries")

@@ -24,11 +24,13 @@
  *     guards edits that would touch an atom; `examWorkspaceBodySelection`
  *     keeps the caret across a mark rebuild.
  *   - `useExamWorkspaceRichTextTarget` registers this paragraph as the
- *     item editor's one active toolbar target while it owns the selection,
- *     and drops its saved range when another rich surface takes over.
+ *     item editor's one active toolbar target while it owns the selection.
+ *     The saved range is bound to this paragraph's owner and content, so it
+ *     is dropped when another rich surface takes over or when the item or
+ *     its text is replaced.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useId, watch } from "vue";
 
 import type {
   NativeExamBodyParagraph,
@@ -48,6 +50,7 @@ import {
   applyAssetState,
   applyChipState,
   ATOM_ATTRIBUTE,
+  contentKey,
   ensureTrailingBreak,
   partsFromParagraphElement,
   refreshAtomIndexes,
@@ -58,7 +61,11 @@ import {
   segmentsKey,
 } from "./examWorkspaceBodySegments";
 import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
-import { useExamWorkspaceRichTextTarget } from "./useExamWorkspaceRichTextTarget";
+import {
+  richTextOwnerKey,
+  useExamWorkspaceRichTextTarget,
+  type RichTextSurfaceOwner,
+} from "./useExamWorkspaceRichTextTarget";
 
 const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
 const DELETE_NEXT_TO_GAP_COPY =
@@ -112,6 +119,8 @@ const props = withDefaults(
     borderClass?: string;
     /** Gaps and pictures inside a choice or matching entry render without the popover contract. */
     interactiveGaps?: boolean;
+    /** This paragraph's item, surface and entry; a standalone paragraph keys on itself. */
+    owner?: RichTextSurfaceOwner;
   }>(),
   {
     assetUrls: undefined,
@@ -120,6 +129,7 @@ const props = withDefaults(
     variant: "paragraph",
     borderClass: "border-navy/35",
     interactiveGaps: true,
+    owner: undefined,
   },
 );
 
@@ -134,9 +144,18 @@ const emit = defineEmits<{
 const elementRef = ref<HTMLElement | null>(null);
 const composing = ref(false);
 const renderedKey = ref<string | undefined>(undefined);
+const renderedContent = ref<string | undefined>(undefined);
+
+const standaloneOwnerId = useId();
 
 const selection = useExamWorkspaceRichTextTarget({
   element: elementRef,
+  ownerKey: () =>
+    richTextOwnerKey(
+      props.owner ?? { itemId: standaloneOwnerId, surface: "question", entryId: null },
+      props.paragraphIndex,
+    ),
+  contentRevision: () => renderedContent.value,
   headingLevel: () => props.paragraph.heading_level ?? null,
   toggleMark: (mark) => toggleMark(mark),
   toggleHeading: (level) => toggleHeading(level),
@@ -174,6 +193,7 @@ function renderNow(): void {
   );
   refreshAtomIndexes(element, props.paragraphIndex, props.paragraph.segments);
   renderedKey.value = segmentsKey(props.paragraph.segments);
+  renderedContent.value = contentKey(props.paragraph.segments);
 }
 
 function refreshChips(): void {
@@ -204,6 +224,11 @@ watch(
     if (composing.value) {
       return;
     }
+    if (contentKey(props.paragraph.segments) !== renderedContent.value) {
+      // The owner replaced this paragraph's text or atoms: a saved range's
+      // offsets point at content this paragraph never showed.
+      selection.invalidate();
+    }
     if (segmentsKey(props.paragraph.segments) !== renderedKey.value) {
       renderNow();
     }
@@ -233,6 +258,7 @@ function toggleMark(mark: BodyMark): void {
   const segments = segmentsFromParts(next);
   refreshAtomIndexes(element, props.paragraphIndex, segments);
   renderedKey.value = segmentsKey(segments);
+  renderedContent.value = contentKey(segments);
   emit("status", null);
   emit("updateSegments", segments);
   selection.restoreSelection(offsets);
@@ -240,7 +266,7 @@ function toggleMark(mark: BodyMark): void {
 
 /** Set or clear this paragraph's heading level; the owner stores the native value. */
 function toggleHeading(level: RichTextHeadingLevel): void {
-  if (props.disabled) {
+  if (props.disabled || !selection.isCurrentTarget()) {
     return;
   }
   const current = props.paragraph.heading_level ?? null;
@@ -284,6 +310,7 @@ function handleInput(event?: Event): void {
     return;
   }
   renderedKey.value = key;
+  renderedContent.value = contentKey(segments);
   emit("updateSegments", segments);
 }
 

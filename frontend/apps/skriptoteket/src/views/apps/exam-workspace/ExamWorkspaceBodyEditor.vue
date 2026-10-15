@@ -44,6 +44,7 @@ import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 type HeadingLevel = 1 | 2 | 3;
 type ParagraphInstance = InstanceType<typeof ExamWorkspaceBodyParagraph>;
@@ -93,6 +94,13 @@ const activeMarks = computed(() => activeRichTextTarget.value?.marks.value ?? []
 const activeHeading = computed<HeadingLevel | null>(
   () => activeRichTextTarget.value?.headingLevel() ?? null,
 );
+
+/** The question text's semantic owner, so its saved toolbar selection follows the selected item. */
+const questionOwner = computed<RichTextSurfaceOwner>(() => ({
+  itemId: props.item.item_id,
+  surface: "question",
+  entryId: null,
+}));
 
 /** Imperative paragraph refs; deliberately not reactive, so a toolbar click reaches the live component. */
 const paragraphRefs: (ParagraphInstance | null)[] = [];
@@ -213,6 +221,7 @@ watch(
         :ref="(element) => setParagraphRef(paragraphIndex, element)"
         :paragraph="paragraph"
         :paragraph-index="paragraphIndex"
+        :owner="questionOwner"
         :gaps="item.gaps"
         :asset-urls="assetUrls"
         :disabled="disabled"

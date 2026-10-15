@@ -28,6 +28,7 @@ import {
 } from "./examWorkspaceAnswerKeyRules";
 import { EMPTY_MATCH_TEXT_GUIDANCE, hasEmptyMatchText } from "./examWorkspaceItemSaveRules";
 import { bodyText, isEmptyBody } from "./examWorkspaceRichText";
+import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -66,6 +67,15 @@ function handleTick(leftId: string, rightId: string, event: Event): void {
 function entryBorderClass(body: NativeExamBodyParagraph[]): string {
   return isEmptyBody(body) ? "border-warning" : "border-navy/35";
 }
+
+/** The semantic owner of one matching entry, so its saved toolbar selection follows the row or column. */
+function matchOwner(side: "left" | "right", entryId: string): RichTextSurfaceOwner {
+  return {
+    itemId: props.item.item_id,
+    surface: side === "left" ? "match-left" : "match-right",
+    entryId,
+  };
+}
 </script>
 
 <template>
@@ -99,6 +109,7 @@ function entryBorderClass(body: NativeExamBodyParagraph[]): string {
                 :disabled="disabled"
                 :invalid="isEmptyBody(right.body)"
                 :label="`Text för kategori ${rightIndex + 1}`"
+                :owner="matchOwner('right', right.right_id)"
                 :test-id="`exam-workspace-match-right-text-${right.right_id}`"
                 class="font-semibold"
                 @update-body="(body) => emit('updateEntryBody', 'right', right.right_id, body)"
@@ -123,6 +134,7 @@ function entryBorderClass(body: NativeExamBodyParagraph[]): string {
                 :disabled="disabled"
                 :invalid="isEmptyBody(left.body)"
                 :label="`Text för rad ${leftIndex + 1}`"
+                :owner="matchOwner('left', left.left_id)"
                 :test-id="`exam-workspace-match-left-text-${left.left_id}`"
                 @update-body="(body) => emit('updateEntryBody', 'left', left.left_id, body)"
               />

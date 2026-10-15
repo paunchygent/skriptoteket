@@ -79,18 +79,21 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
     source_paragraphs,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
+    produced_entry_body,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     NativeSourceEntry,
     complete_source_formatting,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_entries import restore_entries
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructions import (
     instruction_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
-    SourceFormatting,
-    formatted_text,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_item_formatting import (
+    item_source_formatting,
 )
 
 _BLANK = NativeTextSegment(text="____", marks=())
@@ -140,11 +143,9 @@ def native_item(
     if unresolved:
         raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
     known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
-    choice_source = SourceFormatting(chunk_list)
+    formatting = item_source_formatting(produced, chunk_list)
     choices = tuple(
-        NativeChoice(
-            choice_id=f"choice_{index:03d}", body=formatted_text(choice.text, choice_source)
-        )
+        NativeChoice(choice_id=f"choice_{index:03d}", body=produced_entry_body(choice.text))
         for index, choice in enumerate(produced.choices, start=1)
     )
     correct = tuple(
@@ -187,9 +188,9 @@ def native_item(
                 segments.append(NativeTextSegment(text=segment.text, marks=()))
         if segments:
             body.append(NativeParagraph(heading_level=None, segments=tuple(segments)))
-    body_source = SourceFormatting(chunk_list, ignored=(produced.printed_label or "",))
+    body_source = formatting.body
     answers = {gap.gap_id: gap.accepted_values for gap in gaps}
-    can_rebuild_body = not (choices or produced.match_left or produced.match_right or known_assets)
+    can_rebuild_body = not known_assets
     try:
         formatted_body = body_source.body(body, answers=answers)
     except FormattingTransferError:
@@ -198,13 +199,12 @@ def native_item(
         # Identified text-only source can recover the whole body when no individual
         # paragraph wins alignment. Only a genuinely failed source rebuild escapes.
         formatted_body = body_source.rebuild_body(answers)
-    left_source, right_source = SourceFormatting(chunk_list), SourceFormatting(chunk_list)
     match_left = tuple(
-        NativeMatchLeft(left_id=f"left_{index:03d}", body=formatted_text(text, left_source))
+        NativeMatchLeft(left_id=f"left_{index:03d}", body=produced_entry_body(text))
         for index, text in enumerate(produced.match_left, start=1)
     )
     match_right = tuple(
-        NativeMatchRight(right_id=f"right_{index:03d}", body=formatted_text(text, right_source))
+        NativeMatchRight(right_id=f"right_{index:03d}", body=produced_entry_body(text))
         for index, text in enumerate(produced.match_right, start=1)
     )
     left_ids = {
@@ -248,11 +248,10 @@ def native_item(
     criteria: tuple[NativeExamCriterion, ...] = ()
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         criteria, points, points_estimated = free_text_criteria(produced)
-    sources = (body_source, choice_source, left_source, right_source)
-    covered = set().union(*(source.covered for source in sources))
-    choices = restore_entries(choices, choice_source, covered)
-    match_left = restore_entries(match_left, left_source, covered)
-    match_right = restore_entries(match_right, right_source, covered)
+    sources = formatting.sources
+    choices = formatting.restore("choices", choices)
+    match_left = formatting.restore("match_left", match_left)
+    match_right = formatting.restore("match_right", match_right)
     formatted_body = complete_source_formatting(
         chunk_list,
         sources,
@@ -262,13 +261,9 @@ def native_item(
         answers=answers,
         can_rebuild_body=can_rebuild_body,
         entries=(
-            NativeSourceEntry(sequence, ordinal, start, end)
-            for sequence, source in (
-                ("choices", choice_source),
-                ("match_left", left_source),
-                ("match_right", right_source),
-            )
-            for ordinal, (start, end) in enumerate(source.entry_spans, start=1)
+            NativeSourceEntry(surface.sequence, ordinal, start, end)
+            for surface in formatting.surfaces
+            for ordinal, (start, end) in enumerate(surface.source.entry_spans, start=1)
         ),
     )
     if formatting_observer is not None:

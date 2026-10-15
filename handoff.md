@@ -75,11 +75,11 @@
   `81a6f064` repairs both; report: session `01a13c92`,
   `evidence/impl/TASK-SKRIPT-39-09-07/repair-report.md`.
   Next: independent rereview, parent-owned polish and staging/Exam.net walk.
-  Task 8 `in_progress`, repair owner Pi `c308a11a`, branch `codex/task-skript-39-09-08`:
-  R1–R5/O1/O2 repaired; 99 backend / 40 frontend tests pass; replay unchanged
-  (304 exact, 7 aligned, 2 admitted rebuilt, 0 formatting Granska). Report:
-  session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-08/repair-report.md`.
-  Next: independent rereview, then parent-owned polish and staging/Exam.net import.
+  Task 8 `in_progress`, repair owner Pi `a3cf3942`, branch `codex/task-skript-39-09-08`:
+  R7/R6/R3/R5 second repair implemented; 73 backend / 13 rich-target tests pass.
+  Replay unchanged: 304 exact, 7 aligned, 2 admitted rebuilt, 0 formatting Granska.
+  Report: session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-08/repair2-report.md`.
+  Next: independent rereview, parent toolbar polish and authenticated browser/Exam.net walk.
   No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion

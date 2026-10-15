@@ -6,10 +6,12 @@
  *   the live browser selection sits in this paragraph or in another rich
  *   surface, remember this paragraph's own range across a mark rebuild,
  *   publish the marks at that range for the toolbar's pressed state, and
- *   make this paragraph the registry's active target. A paragraph action
- *   never falls back to a saved range when another surface owns the
- *   selection, and the saved range is dropped as soon as another target
- *   takes over.
+ *   make this paragraph the registry's active target. A saved range binds to
+ *   the semantic owner — item, surface, entry and paragraph — and to the
+ *   content revision it was taken from, so replacing the native item or its
+ *   text releases the range instead of formatting whatever now occupies the
+ *   old offsets. A paragraph action never falls back to a stale saved range,
+ *   and the saved range is dropped as soon as another target takes over.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceBodyParagraph`; the registry and target shape
@@ -18,7 +20,7 @@
  *     `examWorkspaceBodySegments` and marks from `examWorkspaceBodyMarks`.
  */
 
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { marksForOffsets } from "./examWorkspaceBodyMarks";
@@ -32,6 +34,22 @@ import {
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel, RichTextTarget } from "./examWorkspaceRichTextTarget";
 
+/** The item surface a paragraph belongs to: the question text, a choice option or a matching row/column. */
+export type RichTextSurface = "question" | "choice" | "match-left" | "match-right";
+
+/** The semantic owner of one paragraph: the item, its surface and the entry inside it. */
+export type RichTextSurfaceOwner = {
+  itemId: string;
+  surface: RichTextSurface;
+  /** The choice or matching entry id; null on the question text. */
+  entryId: string | null;
+};
+
+/** The identity a saved selection binds to: the owner plus one paragraph and its content revision. */
+export function richTextOwnerKey(owner: RichTextSurfaceOwner, paragraphIndex: number): string {
+  return [owner.itemId, owner.surface, owner.entryId ?? "", paragraphIndex].join("\u0000");
+}
+
 export type RichTextTargetHost = {
   /** The offsets a paragraph action may use, or null when another surface owns the selection. */
   resolveOffsets(): ParagraphSelection | null;
@@ -43,6 +61,17 @@ export type RichTextTargetHost = {
   activate(): void;
   /** Take the live selection's offsets and marks if it sits in this paragraph. */
   rememberSelection(): void;
+  /** Whether this paragraph is still the surface the toolbar may act on: no other rich surface owns it. */
+  isCurrentTarget(): boolean;
+  /** Drop this paragraph's saved range and active state because its owner or content was replaced. */
+  invalidate(): void;
+};
+
+/** A remembered range together with the paragraph identity and content it was taken from. */
+type SavedSelection = {
+  offsets: ParagraphSelection;
+  ownerKey: string;
+  revision: string | undefined;
 };
 
 function partMarks(element: HTMLElement, offsets: ParagraphSelection): BodyMark[] {
@@ -78,6 +107,10 @@ function liveSelectionOutside(element: HTMLElement): boolean {
 
 export function useExamWorkspaceRichTextTarget(options: {
   element: Ref<HTMLElement | null>;
+  /** The paragraph's semantic owner and index; a changed key drops its saved range. */
+  ownerKey: () => string;
+  /** The rendered content revision; replaced content drops a range taken from other text. */
+  contentRevision: () => string | undefined;
   /** This paragraph's stored heading level. */
   headingLevel: () => RichTextHeadingLevel | null;
   toggleMark: (mark: BodyMark) => void;
@@ -85,17 +118,39 @@ export function useExamWorkspaceRichTextTarget(options: {
 }): RichTextTargetHost {
   const registry = useRichTextTargetRegistry();
   const marks = ref<BodyMark[]>([]);
-  let savedOffsets: ParagraphSelection | null = null;
+  let saved: SavedSelection | null = null;
+
+  /** Drop the saved range and pressed state; the registry calls it when another surface takes over. */
+  function release(): void {
+    saved = null;
+    marks.value = [];
+  }
+
+  function savedMatchesCurrent(): boolean {
+    return (
+      saved !== null &&
+      saved.ownerKey === options.ownerKey() &&
+      saved.revision === options.contentRevision()
+    );
+  }
+
+  /** Release the saved range and the active target because the owner or its content was replaced. */
+  function invalidate(): void {
+    release();
+    registry.deactivate(target);
+  }
 
   const target: RichTextTarget = {
     marks,
     headingLevel: options.headingLevel,
     toggleMark: options.toggleMark,
     toggleHeading: options.toggleHeading,
-    release: () => {
-      savedOffsets = null;
-    },
+    release,
   };
+
+  function savedFrom(offsets: ParagraphSelection): SavedSelection {
+    return { offsets, ownerKey: options.ownerKey(), revision: options.contentRevision() };
+  }
 
   function publishMarks(offsets: ParagraphSelection): void {
     const element = options.element.value;
@@ -116,11 +171,11 @@ export function useExamWorkspaceRichTextTarget(options: {
     const offsets = selectionOffsets(element);
     if (!offsets) {
       if (liveSelectionOutside(element)) {
-        savedOffsets = null;
+        invalidate();
       }
       return;
     }
-    savedOffsets = offsets;
+    saved = savedFrom(offsets);
     activate();
     publishMarks(offsets);
   }
@@ -138,9 +193,20 @@ export function useExamWorkspaceRichTextTarget(options: {
     const selection = window.getSelection();
     selection?.removeAllRanges();
     selection?.addRange(range);
-    savedOffsets = offsets;
+    saved = savedFrom(offsets);
     activate();
     publishMarks(offsets);
+  }
+
+  function isCurrentTarget(): boolean {
+    const element = options.element.value;
+    if (!element) {
+      return false;
+    }
+    if (liveSelectionOutside(element)) {
+      return false;
+    }
+    return registry.active.value === target;
   }
 
   function resolveOffsets(): ParagraphSelection | null {
@@ -150,7 +216,7 @@ export function useExamWorkspaceRichTextTarget(options: {
     }
     const live = selectionOffsets(element);
     if (live) {
-      savedOffsets = live;
+      saved = savedFrom(live);
       return live;
     }
     if (liveSelectionOutside(element) || registry.active.value !== target) {
@@ -158,8 +224,20 @@ export function useExamWorkspaceRichTextTarget(options: {
       // paragraph owns): never apply a stale saved range here.
       return null;
     }
-    return savedOffsets;
+    if (!savedMatchesCurrent()) {
+      // The item, entry or text was replaced: the old offsets point at
+      // content this paragraph never showed.
+      invalidate();
+      return null;
+    }
+    return saved?.offsets ?? null;
   }
+
+  watch(options.ownerKey, () => {
+    // The owner changed (another item, entry or paragraph): any saved range
+    // belongs to a different surface's text.
+    invalidate();
+  });
 
   onMounted(() => {
     document.addEventListener("selectionchange", rememberSelection);
@@ -170,5 +248,13 @@ export function useExamWorkspaceRichTextTarget(options: {
     registry.deactivate(target);
   });
 
-  return { resolveOffsets, publishMarks, restoreSelection, activate, rememberSelection };
+  return {
+    resolveOffsets,
+    publishMarks,
+    restoreSelection,
+    activate,
+    rememberSelection,
+    isCurrentTarget,
+    invalidate,
+  };
 }

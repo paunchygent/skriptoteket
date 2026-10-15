@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_gap_alignment import gap_spans
 
+# Existing inline-key recognition shared by projection and source ownership.
+ANSWER_LABEL = re.compile(r"\b(?:svar|facit|answer key)\s*:", re.IGNORECASE)
+
 
 def align_paragraph(
     paragraph: NativeParagraph,
@@ -41,8 +44,8 @@ def align_paragraph(
     mapped: dict[int, int] = {}
     represented: set[int] = set()
     alignment_source = source_text
-    inline_key = re.search(r"\b(?:svar|facit|answer key)\s*:", source_text, re.IGNORECASE)
-    if inline_key and not re.search(r"\b(?:svar|facit|answer key)\s*:", target, re.IGNORECASE):
+    inline_key = ANSWER_LABEL.search(source_text)
+    if inline_key and not ANSWER_LABEL.search(target):
         # The returned prompt may deliberately use the worked expression after
         # an inline key label. Do not let an identical unmarked word in the
         # original question steal the match from that formatted expression.
@@ -62,16 +65,11 @@ def align_paragraph(
     if placements is not None:
         for start, end in placements:
             represented.update(range(start, end))
-    # Printed labels have their own native field. They are not missing prompt text.
+    # The caller supplies the exact located structural span, including its
+    # delimiter. Following punctuation belongs to content, not to the label.
     for label in ignored:
         if label and source_text.startswith(label):
             represented.update(range(len(label)))
-            at = len(label)
-            while at < len(source_text) and (
-                source_text[at].isspace() or source_text[at] in ".):-"
-            ):
-                represented.add(at)
-                at += 1
     lost = any(
         marks and not source_text[index].isspace() and index not in represented
         for index, marks in enumerate(source_marks)

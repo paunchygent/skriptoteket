@@ -1,0 +1,115 @@
+"""A native entry continuation never absorbs points or source answer tails."""
+
+import pytest
+
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
+    DocxChunk,
+    DocxSourceParagraph,
+    DocxSourceRun,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+
+pytestmark = pytest.mark.unit
+
+
+def _chunk(anchor, text, *, marked=False):
+    return DocxChunk(
+        anchor,
+        "paragraph",
+        text,
+        text,
+        runs=(DocxSourceRun(0, text, ("bold",) if marked else ()),),
+        paragraphs=(DocxSourceParagraph(0, text, None),),
+    )
+
+
+def _produced(chunks, *, kind="single_choice", facit_text=None, choices=None, **changes):
+    return ProducedItem.model_validate(
+        {
+            "source_anchors": [chunk.anchor for chunk in chunks],
+            "outcome": "converted",
+            "review_reason": None,
+            "kind": kind,
+            "printed_label": None,
+            "points": 2,
+            "facit_text": facit_text,
+            "key_source": None,
+            "body": [
+                {"segments": [{"kind": "text", "text": "Choose an answer.", "accepted_values": []}]}
+            ],
+            "choices": choices
+            if choices is not None
+            else [{"text": "red", "correct": False}, {"text": "blue", "correct": False}],
+            **changes,
+        }
+    )
+
+
+@pytest.mark.parametrize("separator", [" ", "\n"])
+@pytest.mark.parametrize(
+    "tail,facit",
+    [
+        ("(2 p)", None),
+        ("Svar: blue", None),
+        ("Svar: blue", "blue"),
+    ],
+)
+def test_bold_final_choice_tail_stays_out_of_the_student_entry(separator, tail, facit):
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue" + separator + tail, marked=True),
+    )
+    produced = _produced(chunks, facit_text=facit)
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body).strip() for choice in result.choices] == ["red", "blue"]
+    assert body_plain_text(result.body) == "Choose an answer."
+    assert result.facit_text == facit
+    assert result.points == 2
+
+
+def test_matching_answer_tail_does_not_join_the_last_right_entry():
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "1. red A. warm 2. blue B. cold Svar: 2-B", marked=True),
+    )
+    produced = _produced(
+        chunks,
+        kind="matching",
+        choices=[],
+        match_left=["red", "blue"],
+        match_right=["warm", "cold"],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(entry.body).strip() for entry in result.match_left] == ["red", "blue"]
+    assert [body_plain_text(entry.body).strip() for entry in result.match_right] == ["warm", "cold"]
+    assert result.facit_text is None
+
+
+def test_ordinary_literal_answer_label_inside_entry_content_survives():
+    literal = 'Explain the literal phrase "answer key:" in context.'
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. " + literal, marked=True),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": literal, "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert body_plain_text(result.choices[1].body) == literal
+    assert all(segment.marks == ("bold",) for segment in result.choices[1].body[0].segments)
+
+
+def test_literal_answer_label_in_an_omitted_ordinary_continuation_is_rebuilt():
+    literal = 'Explain the literal phrase "answer key:" in context.'
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue\n" + literal, marked=True),
+    )
+    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    assert body_plain_text(result.choices[1].body) == "blue\n" + literal
