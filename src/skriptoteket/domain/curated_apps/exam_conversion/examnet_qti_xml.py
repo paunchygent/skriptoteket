@@ -12,7 +12,7 @@ Relationships:
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
@@ -48,6 +48,7 @@ __all__ = [
     "append_response_declaration",
     "append_score_outcome",
     "emits_map_response",
+    "emits_all_or_nothing",
     "qti_tag",
     "xsi_tag",
 ]
@@ -122,18 +123,14 @@ def append_response_declaration(
         for value in values:
             value_element = ElementTree.SubElement(correct_response, qti_tag("qti-value"))
             value_element.text = value
-    if (
-        values
-        and item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
-        and item.max_score is not None
-    ):
-        mapped_values = _split_point_values(item.max_score, len(values))
+    mapped_value = _equal_choice_point_value(item)
+    if values and mapped_value is not None:
         mapping = ElementTree.SubElement(
             declaration,
             qti_tag("qti-mapping"),
             {"default-value": "0", "lower-bound": "0", "upper-bound": str(item.max_score)},
         )
-        for value, mapped_value in zip(values, mapped_values, strict=True):
+        for value in values:
             ElementTree.SubElement(
                 mapping,
                 qti_tag("qti-map-entry"),
@@ -187,28 +184,39 @@ def _append_gap_response_declaration(
 def _gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
     if item.max_score is None or not item.text_entry_gaps:
         return None
-    return _split_point_values(item.max_score, len(item.text_entry_gaps))
-
-
-def _split_point_values(total: int | float, count: int) -> tuple[str, ...]:
-    decimal_total = Decimal(str(total))
-    exponent = decimal_total.as_tuple().exponent
-    decimal_places = max(2, -exponent) if isinstance(exponent, int) else 2
-    unit = Decimal(1).scaleb(-decimal_places)
-    total_units = int(decimal_total / unit)
-    while total_units < count:
-        decimal_places += 1
-        unit = Decimal(1).scaleb(-decimal_places)
-        total_units = int(decimal_total / unit)
-    base_units, extra_units = divmod(total_units, count)
-    return tuple(
-        _format_point_units(base_units + (1 if index < extra_units else 0), decimal_places)
-        for index in range(count)
+    value = (Decimal(str(item.max_score)) / len(item.text_entry_gaps)).quantize(
+        Decimal("0.01"), rounding=ROUND_DOWN
     )
+    if value == 0:
+        return None
+    return (_format_points(value),) * len(item.text_entry_gaps)
 
 
-def _format_point_units(units: int, decimal_places: int) -> str:
-    value = Decimal(units).scaleb(-decimal_places)
+def _automatic_choice_value_count(item: ExamNetQtiItem) -> int:
+    if item.evaluation_mode != ExamNetQtiEvaluationMode.AUTOMATIC or item.max_score is None:
+        return 0
+    if item.interaction_type in {
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
+    }:
+        return len(item.correct_choice_identifiers)
+    if item.interaction_type == ExamNetQtiInteractionType.MATCHING:
+        return len(item.match_pairs)
+    return 0
+
+
+def _equal_choice_point_value(item: ExamNetQtiItem) -> str | None:
+    count = _automatic_choice_value_count(item)
+    if not count:
+        return None
+    total = Decimal(str(item.max_score))
+    share = (total / count).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    if share * count != total:
+        return None
+    return _format_points(share)
+
+
+def _format_points(value: Decimal) -> str:
     return format(value, "f").rstrip("0").rstrip(".") or "0"
 
 
@@ -217,7 +225,13 @@ def emits_map_response(item: ExamNetQtiItem) -> bool:
         return item.free_text_criterion_points is not None
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
         return False
-    return item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
+    return _equal_choice_point_value(item) is not None
+
+
+def emits_all_or_nothing(item: ExamNetQtiItem) -> bool:
+    """Use all-or-nothing only for keyed automatic choice or matching items."""
+
+    return bool(_automatic_choice_value_count(item)) and _equal_choice_point_value(item) is None
 
 
 def append_score_outcome(root: ElementTree.Element, item: ExamNetQtiItem) -> None:

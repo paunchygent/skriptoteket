@@ -154,14 +154,14 @@ def test_unresolved_assessment_item_ref_fails_preflight() -> None:
     assert "qti-assessment-item-ref href items/missing.xml does not resolve" in report.errors[0]
 
 
-def test_package_root_image_src_fails_preflight() -> None:
+def test_image_src_outside_items_images_fails_preflight() -> None:
     plan = _sample_plan("image-single-choice-mcq")
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
         lambda xml: _replaced(
             xml,
-            'src="../resources/item_001-image_001.png"',
+            'src="images/item_001-image_001.png"',
             'src="resources/item_001-image_001.png"',
         ),
     )
@@ -169,7 +169,25 @@ def test_package_root_image_src_fails_preflight() -> None:
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "refuted package-root style" in report.errors[0]
+    assert "must resolve under items/images/" in report.errors[0]
+
+
+def test_resources_image_src_fails_preflight() -> None:
+    plan = _sample_plan("image-single-choice-mcq")
+    package_bytes = _mutated_zip_bytes(
+        plan,
+        "items/item_001.xml",
+        lambda xml: _replaced(
+            xml,
+            'src="images/item_001-image_001.png"',
+            'src="../resources/item_001-image_001.png"',
+        ),
+    )
+
+    report = _preflight(plan, package_bytes)
+
+    assert report.package_status == ExamNetQtiPackageStatus.FAILED
+    assert "must resolve under items/images/" in report.errors[0]
 
 
 def test_match_correct_template_fails_preflight() -> None:
@@ -183,7 +201,25 @@ def test_match_correct_template_fails_preflight() -> None:
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "match_correct qti-response-processing template" in report.errors[0]
+    assert "must not combine the match_correct template with a qti-mapping" in report.errors[0]
+
+
+def test_match_correct_template_without_mapping_passes_preflight() -> None:
+    plan = _sample_plan("single-choice-mcq")
+    package_bytes = _mutated_zip_bytes(
+        plan,
+        "items/item_001.xml",
+        lambda xml: _replaced(
+            _regex_removed(xml, r"<qti-mapping[^>]*>.*?</qti-mapping>"),
+            "rptemplates/map_response",
+            "rptemplates/match_correct",
+        ),
+    )
+
+    report = _preflight(plan, package_bytes)
+
+    assert report.package_status == ExamNetQtiPackageStatus.PASSED
+    assert report.errors == ()
 
 
 def test_unreferenced_item_resource_fails_preflight() -> None:

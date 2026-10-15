@@ -37,7 +37,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI
 
 pytestmark = pytest.mark.unit
 
-_IMAGE_PATHS = ("../resources/q1-image_001.png", "../resources/q1-image_002.png")
+_IMAGE_PATHS = ("images/q1-image_001.png", "images/q1-image_002.png")
 
 
 def _tag(local_name: str) -> str:
