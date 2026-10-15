@@ -20,10 +20,14 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id_for
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
     NativeExamRetryMissingImage,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
     NativeItemReviewState,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode

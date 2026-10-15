@@ -24,13 +24,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeExamParent,
-    NativeItemReviewState,
     NativeParagraph,
-    NativeParseOrigin,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+    NativeParseOrigin,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,

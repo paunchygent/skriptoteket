@@ -14,9 +14,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
     NativeExamItemKind,
 )
 

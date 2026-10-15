@@ -20,16 +20,22 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
     SectionInstructions,
     place_section_instructions,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeItemReview,
-    NativeItemReviewState,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
-    NativeParseOrigin,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 

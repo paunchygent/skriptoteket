@@ -16,7 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import SharedContext
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate

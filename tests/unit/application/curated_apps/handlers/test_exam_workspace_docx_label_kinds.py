@@ -34,6 +34,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,

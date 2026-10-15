@@ -22,11 +22,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     ImportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id_for
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeExamAsset,
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (

@@ -26,9 +26,11 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     WorkspaceAnswerKeyRequestPayload,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
 )
 from skriptoteket.domain.errors import DomainError
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (

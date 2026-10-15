@@ -1,8 +1,8 @@
 """Parents of the native exam document: shared instructions over consecutive child items.
 
 Governing decisions: TASK-SKRIPT-39-05-03 rule 7 and D10, ST-SKRIPT-39-06 P4. A parent
-owns no points and no answer key; each child item keeps its own. The document re-exports
-these names from `native_exam_document`.
+owns no points and no answer key; each child item keeps its own. Parent structure and
+point aggregation live here, independently of item-kind validation.
 """
 
 from __future__ import annotations
@@ -19,6 +19,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
         NativeExamDocument,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
         NativeExamItem,
     )
 

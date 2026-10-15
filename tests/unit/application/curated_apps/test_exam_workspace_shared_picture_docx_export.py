@@ -24,7 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     exam_language_labels,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
 )

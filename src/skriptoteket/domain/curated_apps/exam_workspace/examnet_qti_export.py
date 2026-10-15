@@ -39,15 +39,23 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     prompt_paragraphs as body_prompt_paragraphs,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeExamAsset,
-    NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeExamParent,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_text_lines,

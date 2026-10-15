@@ -6,7 +6,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (

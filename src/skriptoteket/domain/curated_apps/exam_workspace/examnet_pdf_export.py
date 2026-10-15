@@ -61,14 +61,20 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
     ExamLanguageLabels,
     exam_language_labels,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
 )
 
 NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})

@@ -27,7 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import ma
 from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     converter_kind_rule,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.protocols.clock import ClockProtocol

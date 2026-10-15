@@ -26,17 +26,29 @@ from typing import TypeGuard
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeAnswerKeySuggestion,
-    NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeExamParent,
-    NativeGapAcceptedValues,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
-    NativeMatchPair,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
+    NativeMatchPair,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKeySuggestion,
+    NativeGapAcceptedValues,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 

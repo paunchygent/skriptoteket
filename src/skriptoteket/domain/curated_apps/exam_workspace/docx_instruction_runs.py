@@ -21,7 +21,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     uses_term,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
 
 Placed = tuple[int, tuple[str, ...], NativeExamItem]
 
