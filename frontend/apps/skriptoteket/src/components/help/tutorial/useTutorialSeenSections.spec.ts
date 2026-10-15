@@ -292,6 +292,42 @@ describe("useTutorialSeenSections for signed-in users", () => {
     expect(profileSeen()).toEqual(["planner_rules"]);
   });
 
+  it("keeps a dismissal made by the next user while the previous user's write is still in flight", async () => {
+    const first = deferred<unknown>();
+    apiMocks.apiPatch.mockReturnValueOnce(first.promise);
+    const auth = useAuthStore();
+    auth.user = { id: "user-1" } as typeof auth.user;
+    auth.profile = signedInProfile([]) as typeof auth.profile;
+    const seen = useTutorialSeenSections("authenticated");
+    seen.markSeen("planner_overview");
+
+    auth.clear();
+    await flush();
+    auth.user = { id: "user-2" } as typeof auth.user;
+    auth.profile = { ...signedInProfile([]), user_id: "user-2" } as typeof auth.profile;
+    await flush();
+    apiMocks.apiPatch.mockResolvedValueOnce({
+      user: { id: "user-2" },
+      profile: { ...signedInProfile(["planner_rules"]), user_id: "user-2" },
+    });
+    seen.markSeen("planner_rules");
+    expect(seen.isSeen("planner_rules")).toBe(true);
+    // The first user's response settles only now.
+    first.resolve(profileResponse(["planner_overview"]));
+    await flush();
+    await flush();
+
+    expect(apiMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(apiMocks.apiPatch).toHaveBeenNthCalledWith(2, SETTINGS_PATH, {
+      tutorial_seen_sections: ["planner_rules"],
+    });
+    expect(seen.isSeen("planner_overview")).toBe(false);
+    expect(seen.isSeen("planner_rules")).toBe(true);
+    expect(seen.persistence.value).toBe("confirmed");
+    expect((auth.user as { id: string } | null)?.id).toBe("user-2");
+    expect(profileSeen()).toEqual(["planner_rules"]);
+  });
+
   it("keeps a section pending until an acknowledged profile list includes it", async () => {
     const auth = useAuthStore();
     auth.profile = signedInProfile([]) as typeof auth.profile;

@@ -102,8 +102,9 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
         lastWriteFailed.value = false;
         const writerId = currentUserId.value;
         if (writerId === null) {
-          resetChain();
-          return;
+          // Nothing to write without a session; the identity watch already
+          // cleared the chain.
+          continue;
         }
         const sections = unionOf(profileSeen.value, acknowledged.value, pending.value);
         try {
@@ -111,10 +112,11 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
             tutorial_seen_sections: sections,
           });
           if (currentUserId.value !== writerId) {
-            // The session ended or changed while this write was in flight; the
-            // response belongs to the old session and must not revive it.
-            resetChain();
-            return;
+            // The session ended or changed while this write was in flight. The
+            // response belongs to the old session and must not revive it; the
+            // identity watch already reset the chain, and any write the new
+            // session queued meanwhile runs on the next loop pass.
+            continue;
           }
           auth.user = response.user;
           auth.profile = response.profile;
@@ -123,8 +125,7 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
           pending.value = pending.value.filter((section) => !stored.includes(section));
         } catch {
           if (currentUserId.value !== writerId) {
-            resetChain();
-            return;
+            continue;
           }
           lastWriteFailed.value = true;
           toast.failure(TUTORIAL_COPY.seenSaveFailed);
