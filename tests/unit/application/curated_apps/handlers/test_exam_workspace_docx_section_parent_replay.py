@@ -43,9 +43,15 @@ async def test_a_governing_instruction_is_the_parent_of_every_question_it_govern
     governed_items = [item_id for qid in governed for item_id in outcome.update.item_ids[qid]]
     parent = document.parent_of(governed_items[0])
     assert parent is not None, "the first governed question has no section parent"
-    assert body_text_lines(parent.instruction) == ("Flervalsfrågor", text[_INSTRUCTION])
+    # The section title above the subsection heading opens its own parent (TASK-SKRIPT-39-09-09).
+    assert body_text_lines(parent.instruction) == (
+        "Del 1: litteraturhistoria",
+        "Flervalsfrågor",
+        text[_INSTRUCTION],
+    )
     assert list(parent.item_ids) == governed_items
     for item in document.items:
         assert text[_INSTRUCTION] not in item.plain_text_lines()
     assert text[_INSTRUCTION] not in body_text_lines(document.instructions)
+    assert not any(line.startswith("Del 1") for line in body_text_lines(document.instructions))
     assert [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"] == []
