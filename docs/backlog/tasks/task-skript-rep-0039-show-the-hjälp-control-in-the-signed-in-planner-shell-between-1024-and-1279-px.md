@@ -39,7 +39,7 @@ from 1024 px up, with the same help panel behind it, without duplicating app
 lanes in the drawer.
 
 Owner: the user's Mac Claude session (2026-10-15), which repairs this together
-with HuleEdu TASK-HULE-REP-0142 and then reruns the ST-SKRIPT-08-36 walk.
+with HuleEdu TASK-HULE-01-06-14 and then reruns the ST-SKRIPT-08-36 walk.
 
 ## Contract Inputs
 
