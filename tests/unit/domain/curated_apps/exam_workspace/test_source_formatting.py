@@ -10,6 +10,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
+    NativeSegment,
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
@@ -26,6 +27,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
 )
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
 
 
 def _source(*runs: tuple[str, tuple[str, ...]], heading: int | None = None) -> DocxChunk:
@@ -86,8 +92,8 @@ def test_plain_teacher_repeated_word_copies_each_occurrence_marks_in_order():
     source = SourceFormatting((_source(("ord ", ("italic",)), ("ord", ("bold",))),))
     first = formatted_text("ord", source)
     second = formatted_text("ord", source)
-    assert first[0].segments[0].marks == ("italic",)
-    assert second[0].segments[0].marks == ("bold",)
+    assert _as_text(first[0].segments[0]).marks == ("italic",)
+    assert _as_text(second[0].segments[0]).marks == ("bold",)
 
 
 def test_rebuilt_prompt_keeps_source_marks_and_model_gap():
@@ -97,7 +103,7 @@ def test_rebuilt_prompt_keeps_source_marks_and_model_gap():
         answers={"gap_001": ("katt",)},
     )
     assert body_plain_text(result) == "Skriv ordet [___] i luckan."
-    assert result[0].segments[-1].marks == ("italic",)
+    assert _as_text(result[0].segments[-1]).marks == ("italic",)
     assert result[0].segments[1].kind == "gap"
     assert "katt" not in body_plain_text(result)
 
@@ -147,7 +153,7 @@ def test_inserted_characters_never_inherit_source_marks():
     result = formatted_text(
         "Frasen stora katt", SourceFormatting((_source(("Frasen ", ()), ("katt", ("italic",))),))
     )
-    assert [(s.text, s.marks) for p in result for s in p.segments] == [
+    assert [(_as_text(s).text, _as_text(s).marks) for p in result for s in p.segments] == [
         ("Frasen stora ", ()),
         ("katt", ("italic",)),
     ]
@@ -167,7 +173,7 @@ def test_wholly_omitted_marked_paragraph_is_rebuilt_not_silently_lost():
         can_rebuild_body=True,
     )
     assert body_plain_text(result) == "Läs frågan.\nViktig fras"
-    assert result[1].segments[0].marks == ("italic",)
+    assert _as_text(result[1].segments[0]).marks == ("italic",)
     assert source.path == "rebuilt"
 
 
@@ -186,8 +192,8 @@ def test_flattened_table_rows_keep_separators_and_each_cell_mark():
     )
     for body in (source_paragraphs((chunk,)), formatted_text(text, SourceFormatting((chunk,)))):
         assert body_plain_text(body) == text
-        assert body[0].segments[0].marks == ("bold",)
-        assert body[0].segments[-1].marks == ("italic",)
+        assert _as_text(body[0].segments[0]).marks == ("bold",)
+        assert _as_text(body[0].segments[-1]).marks == ("italic",)
 
 
 def test_source_review_preserves_all_marks_and_heading():
@@ -196,7 +202,11 @@ def test_source_review_preserves_all_marks_and_heading():
     )
     body = source_paragraphs((source,))
     assert body[0].heading_level == 3
-    assert [s.marks for s in body[0].segments] == [("superscript",), ("subscript",), ("underline",)]
+    assert [_as_text(s).marks for s in body[0].segments] == [
+        ("superscript",),
+        ("subscript",),
+        ("underline",),
+    ]
 
 
 def test_rebuilt_paragraph_drops_the_printed_label_native_field_already_carries():
@@ -208,7 +218,7 @@ def test_rebuilt_paragraph_drops_the_printed_label_native_field_already_carries(
         (chunk,), (source,), source, body, printed_label="1", answers={}, can_rebuild_body=True
     )
     assert body_plain_text(result) == "Identify the important concept."
-    assert result[0].segments[0].marks == ("bold",)
+    assert _as_text(result[0].segments[0]).marks == ("bold",)
 
 
 def test_omitted_size_heading_paragraph_is_rebuilt_with_its_level():
@@ -270,8 +280,8 @@ def test_omitted_marked_word_before_free_text_body_is_rebuilt_from_source():
         (safety,), (source,), source, body, printed_label=None, answers={}, can_rebuild_body=True
     )
     assert body_plain_text(result) == "Safety. Do not mix acids."
-    assert result[0].segments[0].text == "Safety."
-    assert result[0].segments[0].marks == ("bold",)
+    assert _as_text(result[0].segments[0]).text == "Safety."
+    assert _as_text(result[0].segments[0]).marks == ("bold",)
     assert source.path == "rebuilt"
 
 
