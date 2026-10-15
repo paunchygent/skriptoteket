@@ -1,10 +1,11 @@
 """Parity proof for the in-process dxe -> Exam.net bundle walking skeleton.
 
 Purpose:
-    Prove that the ported exam-conversion chain reproduces the Sir
-    Convert-a-Lot outputs at revision 41be61a6 for one real DigiExam fixture
-    with a deterministic teacher overlay: byte parity for the QTI package and
-    deterministic structural parity for the Exam.net-profile PDF.
+    Prove that the exam-conversion chain reproduces the committed reference
+    outputs for one real DigiExam fixture with a deterministic teacher
+    overlay: byte parity with the QTI 3.0 package regenerated in
+    TASK-SKRIPT-39-09-01 and deterministic structural parity for the
+    Exam.net-profile PDF.
 
 Relationships:
     Exercises ``InProcessExamConversionProducer`` with the real QTI package
@@ -81,7 +82,7 @@ def test_bundle_contains_the_three_examnet_artifacts(bundle_entries: dict[str, b
 
 
 @pytest.mark.unit
-def test_qti_package_bytes_match_sir_convert_reference(
+def test_qti_package_bytes_match_the_committed_reference(
     bundle_entries: dict[str, bytes],
 ) -> None:
     reference = (_FIXTURE_DIR / "reference-qti-package.zip").read_bytes()

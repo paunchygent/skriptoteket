@@ -1,4 +1,4 @@
-"""QTI 2.1 package planning for Exam.net-oriented artifacts.
+"""QTI 3.0 package planning for Exam.net-oriented artifacts.
 
 Purpose:
     Build deterministic, filesystem-free QTI package plans including item XML,

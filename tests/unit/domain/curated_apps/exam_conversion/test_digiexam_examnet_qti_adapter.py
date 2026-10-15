@@ -60,9 +60,9 @@ def test_zero_or_absent_open_ended_points_stay_manual_native_text(
     assert adapted_item.free_text_criterion_points is None
     assert adapter_result.manual_follow_ups == ()
     assert plan.status == ExamNetQtiPackageStatus.PASSED
-    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}extendedTextInteraction") is not None
-    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}mapping") is None
-    assert item_xml.find(f"{{{QTI_NAMESPACE}}}responseProcessing") is None
+    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction") is not None
+    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is None
+    assert item_xml.find(f"{{{QTI_NAMESPACE}}}qti-response-processing") is None
 
 
 def test_positive_open_ended_points_keep_criterion_scoring() -> None:
@@ -80,9 +80,9 @@ def test_positive_open_ended_points_keep_criterion_scoring() -> None:
     assert adapted_item.free_text_criterion_points == 3
     assert adapter_result.manual_follow_ups == ()
     assert plan.status == ExamNetQtiPackageStatus.PASSED
-    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}extendedTextInteraction") is not None
-    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}mapping") is not None
-    assert item_xml.find(f"{{{QTI_NAMESPACE}}}responseProcessing") is not None
+    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction") is not None
+    assert item_xml.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is not None
+    assert item_xml.find(f"{{{QTI_NAMESPACE}}}qti-response-processing") is not None
 
 
 def _open_ended_exam(*, max_score: int) -> DigiExamIntermediateExam:

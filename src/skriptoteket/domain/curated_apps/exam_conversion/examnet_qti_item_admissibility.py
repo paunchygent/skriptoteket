@@ -1,4 +1,4 @@
-"""QTI 2.1 item admissibility and manual follow-up for Exam.net packages.
+"""QTI 3.0 item admissibility and manual follow-up for Exam.net packages.
 
 Purpose:
     Decide whether supplied QTI items can all be represented in a package and

@@ -59,10 +59,10 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
 
 _INSTRUCTION = "Answer every question in this part."
 _INTERACTION_BY_KIND = {
-    NativeExamItemKind.SINGLE_CHOICE: "choiceInteraction",
-    NativeExamItemKind.MULTIPLE_RESPONSE: "choiceInteraction",
-    NativeExamItemKind.MATCHING: "matchInteraction",
-    NativeExamItemKind.FREE_TEXT: "extendedTextInteraction",
+    NativeExamItemKind.SINGLE_CHOICE: "qti-choice-interaction",
+    NativeExamItemKind.MULTIPLE_RESPONSE: "qti-choice-interaction",
+    NativeExamItemKind.MATCHING: "qti-match-interaction",
+    NativeExamItemKind.FREE_TEXT: "qti-extended-text-interaction",
 }
 
 
@@ -99,20 +99,20 @@ def test_mixed_parent_is_one_item_with_one_interaction_per_child_in_order():
     assert [child.item_id for child in parent.children] == [f"item_{n:03d}" for n in numbers]
     assert len(set(kinds)) == 3
     root = ElementTree.fromstring(serialize_qti_assessment_item(parent, image_paths=()))
-    body = root.find(_tag("itemBody"))
+    body = root.find(_tag("qti-item-body"))
     assert body is not None
     blocks = list(body)
     assert blocks[0].tag == _tag("p") and blocks[0].text == _INSTRUCTION
     owners = []
     for block in blocks[1:]:
-        identifier = block.attrib.get("responseIdentifier")
+        identifier = block.attrib.get("response-identifier")
         if identifier is not None:
             owners.append((block.tag, identifier))
     expected = []
     for number, kind in zip(numbers, kinds, strict=True):
         child_id = f"item_{number:03d}"
         if kind is NativeExamItemKind.GAP_FILL:
-            expected.append((_tag("gapMatchInteraction"), f"{child_id}_SEPARATOR"))
+            expected.append((_tag("qti-gap-match-interaction"), f"{child_id}_SEPARATOR"))
         else:
             expected.append((_tag(_INTERACTION_BY_KIND[kind]), f"{child_id}_RESPONSE"))
     assert owners == expected
@@ -121,7 +121,7 @@ def test_mixed_parent_is_one_item_with_one_interaction_per_child_in_order():
 def test_each_mixed_child_keeps_its_own_response_and_mapping_and_score_sums_them():
     numbers, _, parent = _mixed_parent()
     root = ElementTree.fromstring(serialize_qti_assessment_item(parent, image_paths=()))
-    declarations = {d.attrib["identifier"]: d for d in root.iter(_tag("responseDeclaration"))}
+    declarations = {d.attrib["identifier"]: d for d in root.iter(_tag("qti-response-declaration"))}
     mapped: list[str] = []
     for number, child in zip(numbers, parent.children, strict=True):
         child_id = f"item_{number:03d}"
@@ -136,24 +136,29 @@ def test_each_mixed_child_keeps_its_own_response_and_mapping_and_score_sums_them
             entries = [f"{child_id}_RESPONSE"]
         for identifier in entries:
             declaration = declarations[identifier]
-            assert declaration.find(f"{_tag('correctResponse')}/{_tag('value')}") is not None
-            assert declaration.find(_tag("mapping")) is not None
+            assert (
+                declaration.find(f"{_tag('qti-correct-response')}/{_tag('qti-value')}") is not None
+            )
+            assert declaration.find(_tag("qti-mapping")) is not None
         mapped.extend(entries)
     assert {
-        declarations[f"item_{numbers[k]:03d}_RESPONSE"].attrib["baseType"]
+        declarations[f"item_{numbers[k]:03d}_RESPONSE"].attrib["base-type"]
         for k, child in enumerate(parent.children)
         if child.interaction_type is not ExamNetQtiInteractionType.GAP_FILL
     } == {"directedPair", "identifier"}
 
     summed = [
-        m.attrib["identifier"] for m in root.iterfind(f".//{_tag('sum')}/{_tag('mapResponse')}")
+        m.attrib["identifier"]
+        for m in root.iterfind(f".//{_tag('qti-sum')}/{_tag('qti-map-response')}")
     ]
     assert summed == mapped
-    (score,) = (s for s in root.iter(_tag("setOutcomeValue")) if s.attrib["identifier"] == "SCORE")
-    assert score.find(_tag("sum")) is not None
+    (score,) = (
+        s for s in root.iter(_tag("qti-set-outcome-value")) if s.attrib["identifier"] == "SCORE"
+    )
+    assert score.find(_tag("qti-sum")) is not None
     assert parent.max_score == sum(child.max_score or 0 for child in parent.children)
-    outcomes = {o.attrib["identifier"]: o for o in root.iter(_tag("outcomeDeclaration"))}
-    max_score = outcomes["MAXSCORE"].find(f".//{_tag('value')}")
+    outcomes = {o.attrib["identifier"]: o for o in root.iter(_tag("qti-outcome-declaration"))}
+    max_score = outcomes["MAXSCORE"].find(f".//{_tag('qti-value')}")
     assert max_score is not None and max_score.text == str(parent.max_score)
 
 

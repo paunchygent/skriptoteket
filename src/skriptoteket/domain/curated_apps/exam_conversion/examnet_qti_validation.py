@@ -36,11 +36,13 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiValidatorResult,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import IMSCP_NAMESPACE
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
+    MATCH_CORRECT_TEMPLATE,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
 
 _FORBIDDEN_PACKAGE_SUFFIXES = (".mp3", ".wav", ".m4a", ".pdf", ".ggb")
-_ITEM_RESOURCE_TYPE = "imsqti_item_xmlv2p1"
-_MATCH_CORRECT_TEMPLATE = "http://www.imsglobal.org/question/qti_v2p1/rptemplates/match_correct"
+_ITEM_RESOURCE_TYPE = "imsqti_item_xmlv3p0"
 
 
 def build_examnet_qti_validation_report(
@@ -216,13 +218,15 @@ def _validate_assessment_test(
     test_root = _parse_xml(archive.read(href), href, errors)
     if test_root is None:
         return tuple(errors)
-    if test_root.tag != f"{{{QTI_NAMESPACE}}}assessmentTest":
-        errors.append(f"{href} root is not a QTI assessmentTest.")
+    if test_root.tag != f"{{{QTI_NAMESPACE}}}qti-assessment-test":
+        errors.append(f"{href} root is not a qti-assessment-test.")
     ref_hrefs: set[str] = set()
-    for item_ref in test_root.findall(f".//{{{QTI_NAMESPACE}}}assessmentItemRef"):
+    for item_ref in test_root.findall(f".//{{{QTI_NAMESPACE}}}qti-assessment-item-ref"):
         ref_href = item_ref.attrib.get("href")
         if ref_href is None or ref_href not in names:
-            errors.append(f"assessmentItemRef href {ref_href} does not resolve inside the package.")
+            errors.append(
+                f"qti-assessment-item-ref href {ref_href} does not resolve inside the package."
+            )
         if ref_href is not None:
             ref_hrefs.add(ref_href)
     item_hrefs = {
@@ -231,7 +235,9 @@ def _validate_assessment_test(
         if resource.attrib.get("type") == _ITEM_RESOURCE_TYPE and "href" in resource.attrib
     }
     for item_href in sorted(item_hrefs - ref_hrefs):
-        errors.append(f"Item resource href {item_href} is not referenced by an assessmentItemRef.")
+        errors.append(
+            f"Item resource href {item_href} is not referenced by a qti-assessment-item-ref."
+        )
     return tuple(errors)
 
 
@@ -252,16 +258,20 @@ def _validate_contract_rules(
     return tuple(errors)
 
 
-_GAP_MATCH_TAG = f"{{{QTI_NAMESPACE}}}gapMatchInteraction"
+_GAP_MATCH_TAG = f"{{{QTI_NAMESPACE}}}qti-gap-match-interaction"
 
 
 def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
-    body = root.find(f"{{{QTI_NAMESPACE}}}itemBody")
+    body = root.find(f"{{{QTI_NAMESPACE}}}qti-item-body")
     if body is None:
         return ()
     interaction_tags = tuple(
         f"{{{QTI_NAMESPACE}}}{tag}"
-        for tag in ("choiceInteraction", "matchInteraction", "extendedTextInteraction")
+        for tag in (
+            "qti-choice-interaction",
+            "qti-match-interaction",
+            "qti-extended-text-interaction",
+        )
     )
     interactions = tuple(child for child in body.iter() if child.tag in interaction_tags)
     if not interactions:
@@ -269,7 +279,7 @@ def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str,
     errors: list[str] = []
     for interaction in interactions:
         local_tag = interaction.tag.removeprefix(f"{{{QTI_NAMESPACE}}}")
-        prompt = interaction.find(f"{{{QTI_NAMESPACE}}}prompt")
+        prompt = interaction.find(f"{{{QTI_NAMESPACE}}}qti-prompt")
         if prompt is None or not _prompt_has_content(prompt):
             errors.append(f"{name} {local_tag} must carry a non-empty prompt.")
     children = tuple(body)
@@ -301,10 +311,12 @@ def _prompt_has_content(prompt: ElementTree.Element) -> bool:
 
 def _positive_mapping_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
     errors: list[str] = []
-    for entry in root.iter(f"{{{QTI_NAMESPACE}}}mapEntry"):
-        raw_value = entry.attrib.get("mappedValue")
+    for entry in root.iter(f"{{{QTI_NAMESPACE}}}qti-map-entry"):
+        raw_value = entry.attrib.get("mapped-value")
         if raw_value is None or not _is_positive_number(raw_value):
-            errors.append(f"{name} mapEntry mappedValue {raw_value!r} must be a positive number.")
+            errors.append(
+                f"{name} qti-map-entry mapped-value {raw_value!r} must be a positive number."
+            )
     return tuple(errors)
 
 
@@ -312,21 +324,21 @@ def _scoring_shape_errors(name: str, root: ElementTree.Element) -> tuple[str, ..
     errors: list[str] = []
     declarations = {
         declaration.attrib.get("identifier", ""): declaration
-        for declaration in root.findall(f"{{{QTI_NAMESPACE}}}responseDeclaration")
+        for declaration in root.findall(f"{{{QTI_NAMESPACE}}}qti-response-declaration")
     }
-    for tag in ("choiceInteraction", "matchInteraction"):
+    for tag in ("qti-choice-interaction", "qti-match-interaction"):
         for interaction in root.iter(f"{{{QTI_NAMESPACE}}}{tag}"):
             if "shuffle" in interaction.attrib:
                 errors.append(f"{name} {tag} must not carry a shuffle attribute.")
-            declaration = declarations.get(interaction.attrib.get("responseIdentifier", ""))
+            declaration = declarations.get(interaction.attrib.get("response-identifier", ""))
             if declaration is None:
                 continue
-            has_mapping = declaration.find(f"{{{QTI_NAMESPACE}}}mapping") is not None
-            has_correct = declaration.find(f"{{{QTI_NAMESPACE}}}correctResponse") is not None
+            has_mapping = declaration.find(f"{{{QTI_NAMESPACE}}}qti-mapping") is not None
+            has_correct = declaration.find(f"{{{QTI_NAMESPACE}}}qti-correct-response") is not None
             if has_mapping and not has_correct:
-                errors.append(f"{name} {tag} has a mapping without correctResponse.")
+                errors.append(f"{name} {tag} has a qti-mapping without qti-correct-response.")
     errors.extend(_match_correct_template_errors(name, root))
-    for interaction in root.iter(f"{{{QTI_NAMESPACE}}}matchInteraction"):
+    for interaction in root.iter(f"{{{QTI_NAMESPACE}}}qti-match-interaction"):
         errors.extend(_matching_left_coverage_errors(name, interaction, declarations))
     return tuple(errors)
 
@@ -334,14 +346,14 @@ def _scoring_shape_errors(name: str, root: ElementTree.Element) -> tuple[str, ..
 def _match_correct_template_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
     has_choice_or_match = any(
         root.find(f".//{{{QTI_NAMESPACE}}}{tag}") is not None
-        for tag in ("choiceInteraction", "matchInteraction")
+        for tag in ("qti-choice-interaction", "qti-match-interaction")
     )
     if not has_choice_or_match:
         return ()
     return tuple(
-        f"{name} must not use the match_correct responseProcessing template."
-        for processing in root.findall(f"{{{QTI_NAMESPACE}}}responseProcessing")
-        if processing.attrib.get("template") == _MATCH_CORRECT_TEMPLATE
+        f"{name} must not use the match_correct qti-response-processing template."
+        for processing in root.findall(f"{{{QTI_NAMESPACE}}}qti-response-processing")
+        if processing.attrib.get("template") == MATCH_CORRECT_TEMPLATE
     )
 
 
@@ -350,14 +362,14 @@ def _matching_left_coverage_errors(
     interaction: ElementTree.Element,
     declarations: dict[str, ElementTree.Element],
 ) -> tuple[str, ...]:
-    match_sets = interaction.findall(f"{{{QTI_NAMESPACE}}}simpleMatchSet")
+    match_sets = interaction.findall(f"{{{QTI_NAMESPACE}}}qti-simple-match-set")
     if not match_sets:
         return ()
     covered: set[str] = set()
-    declaration = declarations.get(interaction.attrib.get("responseIdentifier", ""))
+    declaration = declarations.get(interaction.attrib.get("response-identifier", ""))
     if declaration is not None:
         for value in declaration.findall(
-            f"{{{QTI_NAMESPACE}}}correctResponse/{{{QTI_NAMESPACE}}}value"
+            f"{{{QTI_NAMESPACE}}}qti-correct-response/{{{QTI_NAMESPACE}}}qti-value"
         ):
             pair = (value.text or "").split()
             if pair:
@@ -365,7 +377,7 @@ def _matching_left_coverage_errors(
     return tuple(
         f"{name} matching left choice {choice.attrib.get('identifier', '')} "
         "has no correct association."
-        for choice in match_sets[0].findall(f"{{{QTI_NAMESPACE}}}simpleAssociableChoice")
+        for choice in match_sets[0].findall(f"{{{QTI_NAMESPACE}}}qti-simple-associable-choice")
         if choice.attrib.get("identifier", "") not in covered
     )
 
@@ -395,8 +407,8 @@ def _validate_item_image_references(
         item_root = _parse_xml(archive.read(name), name, errors)
         if item_root is None:
             continue
-        if item_root.tag != f"{{{QTI_NAMESPACE}}}assessmentItem":
-            errors.append(f"{name} root is not a QTI assessmentItem.")
+        if item_root.tag != f"{{{QTI_NAMESPACE}}}qti-assessment-item":
+            errors.append(f"{name} root is not a qti-assessment-item.")
         for image in item_root.findall(f".//{{{QTI_NAMESPACE}}}img"):
             image_src = image.attrib.get("src")
             if image_src is None:

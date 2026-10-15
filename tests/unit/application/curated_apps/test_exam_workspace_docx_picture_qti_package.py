@@ -165,7 +165,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         images = [element for element in root.iter() if element.tag.rsplit("}", 1)[-1] == "img"]
         assert len(images) == 1
         picture_parent = next(parent for parent in root.iter() if images[0] in list(parent))
-        assert picture_parent.tag.rsplit("}", 1)[-1] in {"prompt", "p"}
+        assert picture_parent.tag.rsplit("}", 1)[-1] in {"qti-prompt", "p"}
         if picture_only:
             assert not any(text.strip() for text in picture_parent.itertext())
         else:
@@ -174,7 +174,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         if kind == "gap_fill":
             assert [child.tag.rsplit("}", 1)[-1] for child in picture_parent] == [
                 "img",
-                "textEntryInteraction",
+                "qti-text-entry-interaction",
             ]
         relative = PurePosixPath(item_path).parent / images[0].attrib["src"]
         parts: list[str] = []

@@ -1,7 +1,7 @@
 """Exam.net-oriented QTI package contracts.
 
 Purpose:
-    Define the reusable value objects for QTI 2.1 package generation,
+    Define the reusable value objects for QTI 3.0 package generation,
     validation reporting, proof-gated Exam.net support, and manual follow-up.
 
 Relationships:
@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Literal, TypeAlias
 
-EXAMNET_QTI_VERSION: Literal["2.1"] = "2.1"
+EXAMNET_QTI_VERSION: Literal["3.0"] = "3.0"
 EXAMNET_QTI_PACKAGE_SCHEMA_VERSION: Literal["examnet_qti_package_plan_v1"] = (
     "examnet_qti_package_plan_v1"
 )
@@ -252,7 +252,7 @@ class ExamNetQtiPackagePlan:
 
     schema_version: Literal["examnet_qti_package_plan_v1"]
     generator_version: Literal["examnet_qti_2_1_v1"]
-    qti_version: Literal["2.1"]
+    qti_version: Literal["3.0"]
     profile_id: Literal["examnet_qti_2_1_v1", "unkeyed_manual_qti_2_1_v1"]
     package_name: str
     status: ExamNetQtiPackageStatus
@@ -281,7 +281,7 @@ class ExamNetQtiValidationReport:
 
     schema_version: Literal["examnet_qti_validation_report_v1"]
     generator_version: Literal["examnet_qti_2_1_v1"]
-    qti_version: Literal["2.1"]
+    qti_version: Literal["3.0"]
     profile_id: Literal["examnet_qti_2_1_v1", "unkeyed_manual_qti_2_1_v1"]
     package_filename: str
     package_sha256: str | None

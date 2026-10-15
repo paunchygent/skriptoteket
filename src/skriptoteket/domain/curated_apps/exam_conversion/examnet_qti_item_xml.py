@@ -1,7 +1,7 @@
-"""QTI 2.1 assessmentItem serialization for Exam.net-oriented packages.
+"""QTI 3.0 qti-assessment-item serialization for Exam.net-oriented packages.
 
 Purpose:
-    Serialize one governed Exam.net QTI item to assessmentItem XML without file
+    Serialize one governed Exam.net QTI item to qti-assessment-item XML without file
     system or service-route concerns. A standalone item is one interaction; a
     parent item is the shared-instruction layout: the instruction at the top of
     the item body, then one interaction per child with its own response, and a
@@ -54,12 +54,12 @@ def serialize_qti_assessment_item(
     ElementTree.register_namespace("", QTI_NAMESPACE)
     ElementTree.register_namespace("xsi", XSI_NAMESPACE)
     root = ElementTree.Element(
-        qti_tag("assessmentItem"),
+        qti_tag("qti-assessment-item"),
         {
             "identifier": item.item_id,
             "title": item.title,
             "adaptive": "false",
-            "timeDependent": "false",
+            "time-dependent": "false",
             xsi_tag("schemaLocation"): QTI_SCHEMA_LOCATION,
         },
     )
@@ -85,7 +85,7 @@ def _append_standalone_item(
 ) -> None:
     append_response_declaration(root, item)
     append_score_outcome(root, item)
-    item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
+    item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
         append_gap_fill_body(item_body, item, image_paths)
         if not item.prompt_paragraphs:
@@ -95,7 +95,7 @@ def _append_standalone_item(
     if emits_map_response(item):
         ElementTree.SubElement(
             root,
-            qti_tag("responseProcessing"),
+            qti_tag("qti-response-processing"),
             {"template": MAP_RESPONSE_TEMPLATE},
         )
 
@@ -117,18 +117,18 @@ def _append_parent_item(
         if child.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
             ElementTree.SubElement(
                 root,
-                qti_tag("responseDeclaration"),
+                qti_tag("qti-response-declaration"),
                 {
                     "identifier": _separator_identifier(child),
                     "cardinality": "multiple",
-                    "baseType": "directedPair",
+                    "base-type": "directedPair",
                 },
             )
         mapped_response_ids.extend(
             append_response_declaration(root, child, _response_identifier(child))
         )
     append_score_outcome(root, parent)
-    item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
+    item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
     append_shared_instruction_body(item_body, parent, image_paths)
     for child, paths in zip(children, child_image_paths, strict=True):
         _append_child_body(item_body, child, paths)
@@ -148,8 +148,8 @@ def _append_child_body(
     # every Lucktext child sentence keeps each sentence a sub-question of its own.
     ElementTree.SubElement(
         item_body,
-        qti_tag("gapMatchInteraction"),
-        {"responseIdentifier": _separator_identifier(child)},
+        qti_tag("qti-gap-match-interaction"),
+        {"response-identifier": _separator_identifier(child)},
     )
     append_gap_fill_body(item_body, child, image_paths)
     if not child.prompt_paragraphs:
@@ -157,13 +157,13 @@ def _append_child_body(
 
 
 def _append_score_sum(root: ElementTree.Element, response_ids: tuple[str, ...]) -> None:
-    processing = ElementTree.SubElement(root, qti_tag("responseProcessing"))
+    processing = ElementTree.SubElement(root, qti_tag("qti-response-processing"))
     set_score = ElementTree.SubElement(
-        processing, qti_tag("setOutcomeValue"), {"identifier": "SCORE"}
+        processing, qti_tag("qti-set-outcome-value"), {"identifier": "SCORE"}
     )
-    total = ElementTree.SubElement(set_score, qti_tag("sum"))
+    total = ElementTree.SubElement(set_score, qti_tag("qti-sum"))
     for response_id in response_ids:
-        ElementTree.SubElement(total, qti_tag("mapResponse"), {"identifier": response_id})
+        ElementTree.SubElement(total, qti_tag("qti-map-response"), {"identifier": response_id})
 
 
 def _qualified_child(child: ExamNetQtiItem) -> ExamNetQtiItem:
