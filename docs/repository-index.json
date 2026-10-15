@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7a81a18a06c2a308619ba4e8edca498812835f763ca3d15a08982e2cedcaff00",
+  "source_set_digest": "d9a55f81759e899df82454f7f2adf4b39746037d41dd4997b3d81b528001cb3f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5097,6 +5097,25 @@
         "decided_at": "2026-10-15",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol, high) approved 83d522c6 with no findings (merged 6807d20c). Staging walk at 6807d20c: DigiExam conversion with a picture imported into Exam.net as 5333308 (picture shown, all-or-nothing 4p, equal 1p and 3p rows, gaps 0.66 x3); workspace export with a 2p three-pair grid subquestion imported as 5333310 (ALL_CORRECT 1p, Q16 flag case). Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-02/ and evidence/walk/TASK-SKRIPT-39-09-02/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-03",
+      "type": "task",
+      "title": "Kategorisera grid: many-to-many keys, uniform tick value, grid-only export and DOCX category sorting",
+      "path": "docs/backlog/tasks/task-skript-39-09-03-kategorisera-grid-many-to-many-keys-uniform-tick-value-grid-only-export-and-docx-category-sorting.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
