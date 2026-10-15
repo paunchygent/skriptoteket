@@ -56,7 +56,7 @@ def test_post_missing_choice_key_blocks_qti_package(
 
     assert not (sample_dir / "qti-package.zip").exists()
     assert json_string(report, "package_status") == "blocked"
-    assert json_string(report, "profile_id") == "examnet_qti_2_1_v1"
+    assert json_string(report, "profile_id") == "examnet_qti_3_0_v1"
     follow_up = first_manual_follow_up(report)
     assert json_string(follow_up, "reason_code") == (
         ExamNetQtiManualFollowUpReason.MANUAL_ANSWER_KEY_REQUIRED

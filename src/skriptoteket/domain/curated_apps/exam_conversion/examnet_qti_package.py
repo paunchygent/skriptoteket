@@ -228,7 +228,7 @@ def _target_support_status(
 
 def _profile_id(
     items: tuple[ExamNetQtiItem, ...],
-) -> Literal["examnet_qti_2_1_v1", "unkeyed_manual_qti_2_1_v1"]:
+) -> Literal["examnet_qti_3_0_v1", "unkeyed_manual_qti_3_0_v1"]:
     if any(item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED for item in items):
         return EXAMNET_QTI_MANUAL_UNKEYED_PROFILE_ID
     return EXAMNET_QTI_AUTOMATIC_PROFILE_ID
