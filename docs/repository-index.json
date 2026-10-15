@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a1ca55d708c730cde29611d416d17a0aeccb754a16e82482a2017c65364c576f",
+  "source_set_digest": "1c31fb0623b8bb035a1b2cf48363ded991849cece762461f88880919dacfdbac",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5347,7 +5347,7 @@
       "type": "task",
       "title": "Source formatting: conversion keeps bold, italic, underline, sub/superscript and heading levels deterministically through editor and QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-08-source-formatting-conversion-keeps-bold-italic-underline-sub-superscript-and-heading-levels-deterministically-through-editor-and-qti-export.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5358,7 +5358,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User waived the review after repair 6 (2026-10-15). Five Pi ruthless-reviewer rounds requested changes on a864a085 through 60256eb1; repair 6 66e2fe37 fixed the last findings (token-level provenance, alignment boundary costs, linear exact allocation): 287 focused tests, recorded corpus 304 exact / 7 aligned / 2 rebuilt / 0 Granska, every timing row under 1 s. Merged 0262f054 and pushed with toolbar divider e72f27f3. Staging walk on e72f27f3: formateringsprov_t08.docx kept bold, italic, underline, sup, sub and H1-H3 in the editor; Cmd+I toggled a mark and saved. QTI export and Exam.net import 5339805 showed strong, em, u, sup, sub and h1-h3. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/impl/TASK-SKRIPT-39-09-08/ and evidence/reviews/TASK-SKRIPT-39-09-08/."
       }
     },
     {

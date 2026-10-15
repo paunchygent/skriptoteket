@@ -8,10 +8,13 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-15'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User waived the review after repair 6 (2026-10-15). Five Pi ruthless-reviewer rounds requested changes on a864a085 through 60256eb1; repair 6 66e2fe37 fixed the last findings (token-level provenance, alignment boundary costs, linear exact allocation): 287 focused tests, recorded corpus 304 exact / 7 aligned / 2 rebuilt / 0 Granska, every timing row under 1 s. Merged 0262f054 and pushed with toolbar divider e72f27f3. Staging walk on e72f27f3: formateringsprov_t08.docx kept bold, italic, underline, sup, sub and H1-H3 in the editor; Cmd+I toggled a mark and saved. QTI export and Exam.net import 5339805 showed strong, em, u, sup, sub and h1-h3. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/impl/TASK-SKRIPT-39-09-08/ and evidence/reviews/TASK-SKRIPT-39-09-08/.'
 task_kind: story
 acceptance_criteria:
 - Converting a DOCX keeps bold, italic, underline, superscript and subscript on every student-visible text run, copied by code from the source runs and never chosen by the model.
@@ -156,3 +159,5 @@ The recorded corpus is the focused performance and fallback-frequency check.
 | F4  | Formatting applies to question text, shared and exam instructions, choice options and matching entries; criteria and facit stay plain. |
 | F5  | The editor shows formatting and toggles it with Ctrl/Cmd+B/I/U and a compact glyph toolbar (B, I, U, sup, sub, heading level). |
 | F6  | The QTI export writes strong, em, u, sup, sub and h1-h3; the old plain format is removed without compatibility readers. |
+| F7  | The model may reword questions; formatting survival is judged on real exams so teachers rarely fix formatting by hand, not on constructed edge cases (user 2026-10-15). |
+| F8  | Whether a score annotation such as (2 p) stays in visible text is unimportant (user 2026-10-15). |

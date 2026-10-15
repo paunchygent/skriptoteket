@@ -69,11 +69,10 @@
   live DOCX eval found a many-to-many grid rejected at admission (key-source
   rule); diagnosis waits for the Hemma storage hold. Task 4 `done` (a3525650;
   Exam.net 5337577); task 5 `done` (5c8c540f, fix 4b54bceb; Exam.net 5337942).
-  Tasks 6 and 7 `done` (6da3a609, e9e1fcc3). Task 8 `in_progress`: repair 6
-  `66e2fe37` merged to main (user waived further review 2026-10-15); 287 focused
-  tests, replay 304/7/2/0, worst timing row <1 s. Reports: session `01a13c92`,
-  `evidence/impl/TASK-SKRIPT-39-09-08/repair6-report.md`. Next: staging and
-  Exam.net walk, then task and story closeout.
+  Tasks 6, 7 and 8 `done` (8: merge 0262f054, divider e72f27f3; review waived by
+  user; staging walk and Exam.net import 5339805 show all marks and h1-h3).
+  Next: story ST-SKRIPT-39-09 closeout and epic summary. Open defect: section
+  headings (Del A/Del B) stack at the top instead of before their questions.
   No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
