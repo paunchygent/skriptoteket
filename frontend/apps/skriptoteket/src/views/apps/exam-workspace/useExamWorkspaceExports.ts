@@ -31,6 +31,9 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 
+/** A save from elsewhere moved the head; exporting again fails until the teacher reloads it. */
+const EXPORT_STALE_COPY = "Provet har sparats någon annanstans. Läs in på nytt och exportera igen.";
+
 export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlockerReason, string> =
   {
     machine_proposed_key_unreviewed: "Facitförslaget är inte godkänt.",
@@ -154,7 +157,7 @@ export function useExamWorkspaceExports(
       }
       toast.warning(
         isApiError(error) && error.status === 409
-          ? "Det sparade provet har ändrats. Exportera igen för att se listan för rätt version."
+          ? EXPORT_STALE_COPY
           : "QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.",
       );
     }
@@ -183,6 +186,10 @@ export function useExamWorkspaceExports(
         exportBlockersByItemId.value = groupBlockers(blockers);
         exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
         toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
+      } else if (isApiError(error) && error.status === 409) {
+        exportBlockersByItemId.value = {};
+        exportNotice.value = EXPORT_STALE_COPY;
+        toast.warning(EXPORT_STALE_COPY);
       } else {
         exportBlockersByItemId.value = {};
         exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;

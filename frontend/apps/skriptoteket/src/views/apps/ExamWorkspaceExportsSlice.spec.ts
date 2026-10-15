@@ -260,6 +260,21 @@ describe("ExamWorkspaceView export slice", () => {
     );
   });
 
+  it("points to the reload control when a save elsewhere moved the saved exam", async () => {
+    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+      new ApiError({ code: "CONFLICT", message: "stale", status: 409 }),
+    );
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
+    await flushPromises();
+
+    const notice = wrapper.find('[data-test="exam-workspace-export-notice"]').text();
+    expect(notice).toContain("Läs in på nytt");
+    expect(notice).not.toContain("Försök igen");
+  });
+
   it("disables exports while there are unsaved edits", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
