@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d, staging rebuilt on b8e43394; the Mac browser walk on 2026-10-15 passed guest desktop, guest narrow and signed-in steps (PATCH 200, no reopen after reload) with the Klass thumbnail in Hjälp (evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55.
 task_kind: story
 acceptance_criteria:
 - GET /static/media/klassrumskartan/clips.json and the clip file are served with range
@@ -76,3 +80,7 @@ Core vertical: manifest on the media directory, served by the static mount, read
 | T09 | Signed-in seen-state writes are serialized per host: one PATCH in flight, the next write sends the full union of acknowledged and pending sections, a section is confirmed only when the acknowledged profile list contains it. Dismissal suppresses the dialog for the page load whether or not the write has been acknowledged. |
 | T10 | A failed seen-state write keeps its sections pending for the next write and surfaces one toast (`seenSaveFailed`); the profile store holds only acknowledged server state. No silent fallback. |
 | T11 | The gate skips a section while any `[role="dialog"]` element or `.planner-overlay-backdrop` is present (modal or not, including the share-links panel, MicroHelp popovers and the top-panel mode sheet) or while Hjälp is open; a skipped section is re-evaluated on the next help-context change, not by timer. Wait conditions (manifest, seen-state, upgrade gate) restart the fixed 500 ms delay. |
+| T12 | Behavioural proof: Mac browser walk on staging b8e43394, 2026-10-15 (walk-2026-10-15/WALK.md). Guest desktop: dialog opened by itself, paused, `preload=none`, no mp4 request before play; Stäng stored the T03 key and a reload did not reopen. Guest 900 px: no dialog, Hjälp thumbnail played the clip (206). Signed-in: dialog, Stäng sent PATCH 200 with `["planner_overview"]`, same-pane reload showed no dialog; the reload re-read the profile from the server, which is the same read a fresh browser performs after sign-in, so the fresh-browser variant of AC 3 was not walked separately. Other sections stayed disabled without a class list, so their empty-thumbnail state was not opened (manifest publishes only `klass`). |
+| T13 | Finding F1 (staging sign-out fails): the HuleEdu staging Vite dev server on 15174 answers the cross-origin preflight for `/api/v1/auth/logout` itself with Vite's default CORS, without `Access-Control-Allow-Credentials`. Owner HuleEdu; repair TASK-HULE-REP-0142. Not a defect of this task. |
+| T14 | Finding F2 (signed-in planner shell at 1024–1279 px shows only Meny, no Hjälp control): pre-existing top-bar breakpoint gap in `AuthTopBar.vue` (`--xl-sidebar-breakpoint` hidden from 768 px, shown from 1280 px) and the drawer omits Hjälp by design. The first-use dialog still opens; replay from Hjälp is unreachable at those widths when signed in. Repair TASK-SKRIPT-REP-0039. |
+| T15 | Minor: the Hjälp badge rounds `duration_seconds` 78 to 1:18 while the player shows the media duration 1:17; accepted, the manifest value is the published metadata. |

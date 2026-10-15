@@ -3,17 +3,18 @@
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
   parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
-  (walking skeleton) merged to main `ef92afd8`, pushed in `03ba322d`; backend
-  review approved `8576afb7`, frontend approved `3c95199d` (records under
-  `evidence/reviews/ST-SKRIPT-08-36/`). staging rebuilt on `03ba322d`, healthy;
-  draft Klass clip (synthetic timing, badge) published to
-  `/home/paunchygent/apps/skriptoteket-media/dev/klassrumskartan/`; HTTP checks in
-  `evidence/dev-stack-03ba322d/`. Next: a Mac-side session runs the staging
-  walk (guest + proof user, `staging-walk` skill, origin via
-  `hemma-shared-tunnel`); Hemma sessions have no browser. Then task closure. User gates:
-  talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), render approval before
-  publish, ElevenLabs draft spend, prod media mount deploy. Guide step 3 wording
-  (paste does not parse Skola24 text) still needs correction.
+  (walking skeleton) `done` 2026-10-15: reviews approved `8576afb7`/`3c95199d`,
+  main `03ba322d`, Mac browser walk on staging `b8e43394` passed guest and
+  signed-in steps (`evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md`).
+  Draft Klass clip (synthetic timing, badge) on dev media. Next: remaining clips
+  wait on user gates in HuleFilm ST-VIDEO-12-01 (talmanus approval for 7 clips,
+  ElevenLabs draft spend, render approval, prod media deploy). Guide step 3
+  wording (paste does not parse Skola24 text) still needs correction.
+
+- [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
+  `proposed`: signed-in planner shell at 1024–1279 px has no reachable Hjälp
+  control (walk finding F2, pre-existing `AuthTopBar.vue` breakpoint gap).
+  Sibling: HuleEdu TASK-HULE-REP-0142 (staging Vite preflight blocks sign-out).
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`

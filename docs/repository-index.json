@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f14d6b9dda5340e67b635f6c167dd0913badee72f250e1da453eca9cb49cf3b7",
+  "source_set_digest": "b6ae072af3f4f23aa684953e62b0bf886b1ee17ccdc86f68a12d190466c2e22d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2633,7 +2633,7 @@
       "type": "task",
       "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
       "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
       "owners": [
@@ -2644,7 +2644,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d, staging rebuilt on b8e43394; the Mac browser walk on 2026-10-15 passed guest desktop, guest narrow and signed-in steps (PATCH 200, no reopen after reload) with the Klass thumbnail in Hjälp (evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55."
       }
     },
     {
@@ -6248,6 +6252,24 @@
       "title": "Retire repository rules and route staging walks to staging-walk",
       "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
       "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0039",
+      "type": "task",
+      "title": "Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px",
+      "path": "docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md",
+      "status": "proposed",
       "task_kind": "repository",
       "owners": [
         {
