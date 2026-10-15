@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "65595e9f344ba4d47e7b22d987b1632a85624054ce7efa6563527a4fc7f0a7f2",
+  "source_set_digest": "5dfd9d4cd48e662f11638ee09fdbb6accc807219e27e74a7f99972ff381f386f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2633,7 +2633,7 @@
       "type": "task",
       "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
       "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
       "owners": [
@@ -2644,7 +2644,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d. Walk 1 on staging b8e43394 was ruled failed by the user on F1/F2 (T16); after TASK-SKRIPT-08-36-02 (Hjälp at 1024 px) and HuleEdu TASK-HULE-01-06-14 (staging preflight) landed, walk 2 on 2026-10-15 15:21-15:35 UTC in visible Chrome on the Mac passed all five steps as guest and as skriptoteket-proof-user@local.dev (evidence/staging-walk-prep-b8e43394/walk-2-2026-10-15/WALK.md, 27 screenshots), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55."
       }
     },
     {
@@ -6357,7 +6361,7 @@
       "type": "task",
       "title": "Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px",
       "path": "docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md",
-      "status": "in_progress",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
