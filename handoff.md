@@ -16,8 +16,11 @@
   Task 02 (Hjälp at 1024 px) `done` `ff25a484`; TASK-SKRIPT-REP-0039 canceled as
   its duplicate. Draft Klass clip (synthetic timing) on dev media. Next: real
   clips wait on HuleFilm ST-VIDEO-12-01 gates (talmanus approval in progress,
-  ElevenLabs draft spend, render approval, prod media deploy). Guide step 3
-  wording (paste does not parse Skola24 text) still needs correction.
+  ElevenLabs draft spend, render approval, prod media deploy). Talmanus review
+  package (BRIEF.md, repomix, 20 staging screenshots) retained at
+  `evidence/talmanus-review-package-2026-10-15/`, sent to the Mac 2026-10-15.
+  Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
+  parses Skola24; correction and `generate-planner-help` regen still pending.
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
