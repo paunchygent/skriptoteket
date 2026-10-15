@@ -7,11 +7,14 @@
  *   not change; later criteria start at 1 point. Editing a text or valid
  *   points emits the full list; points that are not a whole number of at
  *   least 1 are marked and never emitted. While criteria exist, the question
- *   points are read-only. Other kinds show no criteria.
+ *   points are read-only. An added row's text field takes focus once the new
+ *   list arrives, and leaving invalid points restores the last valid points.
+ *   Other kinds show no criteria.
  */
 
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
@@ -35,8 +38,9 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
   };
 }
 
-function mountEditor(item: NativeExamItem) {
+function mountEditor(item: NativeExamItem, options: { attachTo?: HTMLElement } = {}) {
   return mount(ExamWorkspaceItemEditor, {
+    ...options,
     props: {
       attentionCount: 0,
       detailsOpen: false,
@@ -104,6 +108,34 @@ describe("ExamWorkspaceItemEditor Fritext criteria", () => {
 
     expect(points.attributes("aria-invalid")).toBe("true");
     expect(wrapper.find('[data-test="exam-workspace-criterion-points-hint"]').exists()).toBe(true);
+    expect(wrapper.emitted("updateCriteria")).toBeUndefined();
+  });
+
+  it("focuses the added row's text field when the new list arrives", async () => {
+    const item = buildFreeTextItem({ criteria: TWO_CRITERIA, points: 3 });
+    const wrapper = mountEditor(item, { attachTo: document.body });
+
+    await wrapper.get(ADD).trigger("click");
+    const [[, criteria]] = wrapper.emitted("updateCriteria") as [[string, typeof TWO_CRITERIA]];
+    await wrapper.setProps({ item: { ...item, criteria, points: 4 } });
+    await nextTick();
+
+    expect(document.activeElement).toBe(
+      wrapper.get('[data-test="exam-workspace-criterion-text-2"]').element,
+    );
+    wrapper.unmount();
+  });
+
+  it("restores the last valid points and clears the mark when invalid points lose focus", async () => {
+    const wrapper = mountEditor(buildFreeTextItem({ criteria: TWO_CRITERIA, points: 3 }));
+    const points = wrapper.get<HTMLInputElement>('[data-test="exam-workspace-criterion-points-1"]');
+
+    await points.setValue("0");
+    await points.trigger("blur");
+
+    expect(points.element.value).toBe("2");
+    expect(points.attributes("aria-invalid")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-workspace-criterion-points-hint"]').exists()).toBe(false);
     expect(wrapper.emitted("updateCriteria")).toBeUndefined();
   });
 
