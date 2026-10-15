@@ -7,7 +7,7 @@ description: Repo-local testing router for Skriptoteket. Use when planning, writ
 
 Use this skill as the repo-local testing decision surface. It owns the
 Skriptoteket testing taxonomy and invariants; operational command detail lives
-in repo docs-as-code, rules, runbooks, and shared stack skills.
+in repo docs-as-code, runbooks, and shared stack skills.
 
 ## Workflow
 
@@ -20,8 +20,7 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
    required close-out gate for the touched layer.
 4. Use named `pdm run ...` surfaces from the repo root. Do not invent raw
    commands when a repo wrapper exists.
-5. If a UI route, auth path, or browser-visible behavior changes, run a live
-   functional check and record the exact proof in `handoff.md`.
+5. Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Invariants
 
@@ -35,9 +34,7 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
   `tests/fixtures/` modules.
 - A test that requires broad monkeypatching usually signals the production
   boundary needs a protocol, DI seam, or smaller module.
-- Browser/protected-API proof is an agent-driven click-through walk in a real
-  browser session that signs in through the HuleEdu browser-session ceremony.
-  Never use Playwright. Raw Vite inspection is not authenticated proof.
+- Use the shared staging-walk skill for staging and browser proof on Hemma.
 - Migration tests must prove idempotency with the Docker/Testcontainers lane.
 
 ## Reference Router
@@ -46,7 +43,7 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
 | ------------------------------------------------------------------ | ----------------------------------- |
 | Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`      |
 | Frontend Vitest/component tests                                    | `references/frontend-vitest.md`     |
-| Browser walk, screenshots, authenticated UI proof                  | `references/browser-automation.md`  |
+| Browser walk, screenshots, authenticated UI proof                  | Use the shared staging-walk skill for staging and browser proof on Hemma. |
 | Alembic migrations and schema drift                                | `references/migrations.md`          |
 | Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md` |
 
@@ -57,9 +54,7 @@ in repo docs-as-code, rules, runbooks, and shared stack skills.
   and `pdm run fe-lint`; add `pdm run fe-build` for shipped UI surfaces.
 - Migration change: docker-marked migration test plus the documented dev DB
   upgrade lane.
-- Browser-visible change: click-through walk in a real browser session on the
-  appropriate stack (integrated proof on Hemma staging); authenticated paths
-  use HuleEdu Gateway, not local shortcuts.
+- Use the shared staging-walk skill for staging and browser proof on Hemma.
 - Docs or skill surface change: `pdm run skills-validate` when skills changed,
   `pdm run docs-validate` when docs or docs routing changed, and
   `git diff --check`.

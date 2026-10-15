@@ -1,5 +1,12 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
+  `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
+  D1-D2 live routing edits pass focused gates (2026-10-11; retained session
+  `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
+  Rule deletion is blocked: migration hook demands replacements, contrary to D1.
+  Next: parent resolves hook, delete rules, rerun gates, commit for review.
+
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
   `in_progress`; owner Claude parent. `fix/retire-convert-references` at
   `d97caf5b` merged to main after the original reviewer approved the F1/F2

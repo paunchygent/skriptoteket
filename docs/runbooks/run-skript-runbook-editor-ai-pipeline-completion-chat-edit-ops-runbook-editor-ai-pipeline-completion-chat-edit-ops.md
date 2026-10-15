@@ -160,17 +160,7 @@ Relevant code:
 
 ### Source: Reproduce in the editor
 
-Reproduce inline-completion and edit-ops problems with an agent-driven
-click-through walk of the real editor in a real browser session, per
-`.codex/rules/075-browser-automation.md`. Never use Playwright.
-
-1. Seed the tool through the script bank and open it in the editor.
-2. Place the cursor at the anchor and delete the lines that form the edit hole.
-3. Trigger inline completion or editor chat, then capture screenshots plus the
-   network and console reads for the completion or edit-ops request.
-
-The `scripts/diagnose_ghost_text.py` and `scripts/diagnose_edit_ops.py`
-Playwright scripts are history, not a reproduction or proof lane.
+Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Expected Results
 

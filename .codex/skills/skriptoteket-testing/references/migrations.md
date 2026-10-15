@@ -5,8 +5,7 @@ tests.
 
 ## Read First
 
-- `.codex/rules/054-alembic-migrations.md`
-- `.codex/rules/053-sqlalchemy-patterns.md`
+- `.codex/skills/skriptoteket-backend-dev/SKILL.md`
 - `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
 - `local-devops` plus its Skriptoteket reference for dev DB/container lanes
 
@@ -24,5 +23,5 @@ tests.
 
 ## Commands
 
-Use the exact migration command surface in `.codex/rules/054-alembic-migrations.md`.
+Use the migration command surfaces in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md` and `local-devops` plus its Skriptoteket reference.
 Run the docker-marked test lane before applying the migration to the dev DB.

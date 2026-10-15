@@ -5,14 +5,14 @@ pytest or Vitest.
 
 ## Worker And Runtime
 
-- Read `.codex/rules/062-execution-queue-worker-loop.md`.
+- Read `docs/decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md`.
 - Use backend protocol/DI seams for worker dependencies.
 - Test enqueue/dequeue, retry, terminal state, idempotency, and correlation
   behavior without hiding state transitions in broad mocks.
 
 ## Observability
 
-- Use `observability-stack` plus `.codex/rules/090-observability-index.md`.
+- Use `observability-stack`.
 - Assert structured log fields, correlation IDs, metric names/labels, and trace
   boundaries where behavior depends on them.
 - Do not leak PII or secrets into proof artifacts.
@@ -27,7 +27,8 @@ pytest or Vitest.
 
 ## Curated Apps
 
-- Read `.codex/rules/025-curated-apps.md` and the app-owned reference/backlog
+- Read `repo-code-map` and the app-owned reference/backlog
   docs before adding tests.
 - Test the app contract at its natural boundary: domain projection, API
-  contract, SPA interaction, or retained browser proof.
+  contract, or SPA interaction.
+- Use the shared staging-walk skill for staging and browser proof on Hemma.

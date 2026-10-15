@@ -15,23 +15,14 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
 - Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
   use the package-owned `pdm run new-*` scaffolders, and close doc changes with
   `pdm run docs-validate`.
-- Follow `.codex/rules/000-rule-index.md` for targeted repo rules.
 - Unit of Work owns commit/rollback; repositories never commit; map
   `DomainError` to HTTP only at the web boundary.
-- For UI or route changes, run a live functional check and record exact
-  verification in `handoff.md`.
-- Browser proof is an agent-driven click-through walk of the real application
-  in a real browser session; never use Playwright. Authenticated walks pass the
-  repo preflight and sign in through the HuleEdu browser-session ceremony.
-  Never derive auth proof from prior shell snippets, direct product-backend
-  credential POSTs, or local session-cookie shortcuts.
+- Use the shared `staging-walk` skill for staging and browser proof on Hemma.
 
 ## Session Start
 
 1. Check `handoff.md` for current-state pointers.
-2. Load `.codex/rules/000-rule-index.md` only when repo rules are needed, then
-   open the specific rule files the task requires.
-3. Use `docs/index.md` for durable docs discovery and backlog context.
+2. Use `docs/index.md` for durable docs discovery and backlog context.
 
 ## Repo-Specific Routes
 
@@ -60,7 +51,6 @@ copied repo-local skills.
 
 - `.codex/agents/`: Codex subagents, explicit delegation only.
 - `.codex/skills/`: truly Skriptoteket-specific skills only.
-- `.codex/rules/`: targeted repo rules.
 - `handoff.md`: current-state handoff; keep it under 200 lines.
 - `.codex/long-term-memory/index.md`: durable session-history doorway.
 - `.codex/long-term-memory/entries/`: retained session-history entries.
@@ -96,7 +86,7 @@ Default close-out:
 - Handoff update: `pdm run handoff-validate` and `pdm run docs-validate`
 - Backend change: `pdm run lint`, `pdm run typecheck`, and focused tests
 - Frontend change: use `integrated-frontend-stack` for the focused
-  Vitest/typecheck/build/browser proof
+  Vitest/typecheck/build checks
 
 Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
 `docker compose up -d db` should not be stopped unless the user asks.

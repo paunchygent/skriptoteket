@@ -9,8 +9,7 @@ REDACTED = "[REDACTED]"
 
 _KEY_SPLIT_RE = re.compile(r"[^a-z0-9]+", re.IGNORECASE)
 
-# Base set aligned with `.codex/rules/091-structured-logging.md`,
-# normalized to lowercase + underscores.
+# Sensitive keys normalized to lowercase + underscores.
 _SENSITIVE_EXACT_KEYS = frozenset(
     {
         "password",
