@@ -8,7 +8,9 @@
  *   the teacher's point breakdown, so a non-empty list sets the question's
  *   points to their sum, and Exam.net receives one 1-point row per criterion
  *   point. The first added criterion takes the question's current whole
- *   points, so adding it leaves the total unchanged.
+ *   points, so adding it leaves the total unchanged. An added row's text field
+ *   takes focus, and leaving a points field with invalid points restores its
+ *   last valid points.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for free-text items only; the
@@ -18,7 +20,7 @@
  *   - Reads the rules and Swedish guidance from `examWorkspaceItemSaveRules`.
  */
 
-import { ref, useId, watch } from "vue";
+import { nextTick, ref, useId, watch } from "vue";
 
 import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";
 import { IconPlus, IconTrash } from "../../../components/icons";
@@ -41,11 +43,30 @@ const textHintId = useId();
 const pointsHintId = useId();
 /** Rows whose typed points are not a whole number of at least 1; never emitted. */
 const invalidPoints = ref<Set<number>>(new Set());
+const fieldset = ref<HTMLFieldSetElement | null>(null);
+/** The row an add asked for; its text field takes focus when the parent renders it. */
+const pendingFocusRow = ref<number | null>(null);
 
 watch(
   () => props.item.item_id,
   () => {
     invalidPoints.value = new Set();
+    pendingFocusRow.value = null;
+  },
+);
+
+watch(
+  () => props.item.criteria.length,
+  async (length) => {
+    const row = pendingFocusRow.value;
+    if (row === null || length <= row) {
+      return;
+    }
+    pendingFocusRow.value = null;
+    await nextTick();
+    fieldset.value
+      ?.querySelector<HTMLInputElement>(`[data-test="exam-workspace-criterion-text-${row}"]`)
+      ?.focus();
   },
 );
 
@@ -77,10 +98,22 @@ function handlePoints(index: number, event: Event): void {
   emit("update", replaceAt(index, { ...props.item.criteria[index], points: Number(raw) }));
 }
 
+/** Leaving a field with invalid points restores its last valid points. */
+function handlePointsBlur(index: number, event: FocusEvent): void {
+  if (!invalidPoints.value.has(index)) {
+    return;
+  }
+  (event.target as HTMLInputElement).value = String(props.item.criteria[index].points);
+  const next = new Set(invalidPoints.value);
+  next.delete(index);
+  invalidPoints.value = next;
+}
+
 function handleAdd(): void {
   const current = props.item.points;
   const first = props.item.criteria.length === 0;
   const points = first && current !== null && Number.isInteger(current) && current >= 1 ? current : 1;
+  pendingFocusRow.value = props.item.criteria.length;
   emit("update", [...props.item.criteria, { text: "", points }]);
 }
 
@@ -101,6 +134,7 @@ function isEmptyText(criterion: NativeExamCriterion): boolean {
 
 <template>
   <fieldset
+    ref="fieldset"
     class="grid gap-2"
     data-test="exam-workspace-criteria"
   >
@@ -138,6 +172,7 @@ function isEmptyText(criterion: NativeExamCriterion): boolean {
         :aria-describedby="invalidPoints.has(index) ? pointsHintId : undefined"
         :data-test="`exam-workspace-criterion-points-${index}`"
         @input="handlePoints(index, $event)"
+        @blur="handlePointsBlur(index, $event)"
       >
       <button
         type="button"

@@ -11,12 +11,11 @@ Your job is to understand, reproduce, narrow, and explain the problem before pro
 Before debugging, load and follow:
 - AGENTS.md
 - handoff.md
-- .codex/rules/000-rule-index.md
 - .codex/skills/skriptoteket-backend-dev/SKILL.md
 - local-devops
 - integrated-frontend-stack when frontend or SPA files are involved
-- .codex/rules/075-browser-automation.md when UI reproduction or browser proof is needed
-- .codex/rules/090-observability-index.md when logs, metrics, traces, or correlation IDs matter
+- Use the shared staging-walk skill for staging and browser proof on Hemma
+- observability-stack when logs, metrics, traces, or correlation IDs matter
 
 Stack awareness:
 - Backend: FastAPI monolith with DDD and Clean Architecture boundaries under src/skriptoteket/
@@ -43,14 +42,12 @@ Canonical developer tools and commands:
 - Health check: curl -sSf http://127.0.0.1:8000/healthz >/dev/null
 - Quality gates: pdm run lint, pdm run typecheck, pdm run test
 - Frontend gates: pdm run fe-lint, pdm run fe-type-check, pdm run fe-test
-- UI smoke and runtime probes: pdm run ui-smoke, pdm run ui-editor-smoke, pdm run ui-runtime-smoke, pdm run ui-hmr-probe
 - OpenAPI and API types: pdm run openapi-export-v1, pdm run fe-gen-api-types
 
 Debugging standards:
 - For backend issues, reason through domain, application, web, infrastructure, and DI boundaries rather than treating the stack as a blob.
 - For frontend issues, check route ownership, auth transport, API client behavior, composables/stores, and generated contract types.
 - For local runtime issues, prefer repo scripts over ad hoc Docker or uvicorn commands.
-- For UI issues, reproduce with an agent-driven click-through walk in a real browser session; never use Playwright.
 - For observability, use correlation IDs and the repo's logging expectations before guessing.
 
 Output contract:

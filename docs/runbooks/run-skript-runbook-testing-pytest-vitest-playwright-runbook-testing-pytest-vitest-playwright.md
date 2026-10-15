@@ -30,8 +30,7 @@ pdm run fe-lint
 pdm run fe-test
 ```
 
-UI and route proof is an agent-driven click-through walk in a real browser
-session (see "UI / E2E (browser walk)" below). Agents never use Playwright.
+Use the shared staging-walk skill for staging and browser proof on Hemma.
 ### Changed-component quality
 
 For normal repository changes, use the package-owned changed-component gate:
@@ -111,42 +110,8 @@ pdm run fe-test-coverage
 - The canonical filtered command surface is `pdm run fe-test ...` (or `pnpm -C frontend/apps/skriptoteket test ...`), not raw `pnpm ... exec vitest ...`.
 - The SPA wrapper now normalizes both app-local targets like `src/views/apps/ClassroomPlannerEntryView.spec.ts` and repo-root targets like `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.spec.ts`.
 ### UI / E2E (browser walk)
-Prove browser-level flows and regressions with an agent-driven click-through
-walk of the real application in a real browser session: the Claude built-in
-browser pane, the user's Chrome through Claude in Chrome, or the Codex internal
-browser. Never use Playwright or Vitest for this proof. Protected routes enter
-through the HuleEdu browser-session ceremony; capture screenshots and
-accessibility-tree or DOM reads, and record the walk in `handoff.md`.
 
-Integrated proof walks Hemma staging at `http://127.0.0.1:15173` through the
-Mac tunnel, per
-`docs/runbooks/run-skript-skriptoteket-staging-on-hemma-skriptoteket-staging-on-hemma.md`.
-
-For protected shared-auth flows, run Skriptoteket through the Docker `web`
-service (`skriptoteket_web`, alias `skriptoteket-web`) so HuleEdu Gateway can
-reach app continuation through `hule-network`. Host Uvicorn is not a valid
-backend for Gateway-authenticated browser proof.
-
-For host Vite shared-auth proof, use the split local lane:
-
-```bash
-pdm run dev-stack web-start
-pdm run fe-dev-shared-auth
-```
-
-This keeps protected `/api/...` calls on the local HuleEdu Gateway while public
-`/api/v1/public/...` calls continue to use the Docker-backed Skriptoteket web
-service. If public app routes return a Vite-level `500 Internal Server Error`,
-first verify that the Docker `web` service is running and reachable on
-`http://localhost:8000`.
-
-The repository's Playwright scripts (`pdm run pr-025x-*`, `ui-*-smoke`) are
-history, not a proof lane. Do not run them as proof.
-
-Reference:
-
-- `.codex/rules/075-browser-automation.md`
-- `docs/runbooks/run-skript-runbook-agent-browser-automation-mcp-chrome-playwright-runbook-agent-browser-automation-mcp-chrome-playwright.md`
+Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Preconditions
 The source record did not define a separate section for this package heading.

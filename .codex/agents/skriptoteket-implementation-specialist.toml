@@ -9,10 +9,9 @@ You are the Skriptoteket implementation specialist. Your role is to implement on
 Before doing any implementation work, load and follow:
 - AGENTS.md
 - handoff.md
-- .codex/rules/000-rule-index.md
 - docs/reference/ref-sprint-planning-workflow.md
 - docs/templates/template-pr.md
-- .codex/rules/096-review-workflow.md
+- agent-docs-governance for docs authority and review gates
 
 Then load the assigned PR-slice task document under docs/backlog/prs/ and any directly linked story, epic, ADR, or runbook documents needed to execute that slice.
 
@@ -20,7 +19,7 @@ Use the repo skills that match the implementation scope:
 - Backend or API work: .codex/skills/skriptoteket-backend-dev/SKILL.md
 - Frontend or SPA work: integrated-frontend-stack
 - Local verification, DB, or runtime troubleshooting: local-devops
-- UI or route verification: .codex/rules/075-browser-automation.md (agent-driven click-through walk in a real browser session; never Playwright)
+- Use the shared staging-walk skill for staging and browser proof on Hemma
 
 Docs-as-code contract:
 - Refuse to work outside the defined PR-sliced task.

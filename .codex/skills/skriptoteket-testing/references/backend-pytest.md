@@ -5,11 +5,8 @@ application tests.
 
 ## Read First
 
-- `.codex/rules/070-testing-standards.md`
 - `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
 - `.codex/skills/skriptoteket-backend-dev/SKILL.md`
-- Relevant architecture rules from `.codex/rules/000-rule-index.md`, usually
-  `020`, `040`, `042`, `048`, and `053`.
 
 ## Rules
 
@@ -23,11 +20,7 @@ application tests.
   UoW owns transaction behavior.
 - Keep fixtures named by domain purpose. Shared fixtures live under
   `tests/fixtures/`, not as hidden behavior in `tests/conftest.py`.
-- Backend dev tests or live probes that cross the HuleEdu Gateway shared-auth
-  boundary must use the Docker `skriptoteket_web` service, not host Uvicorn.
-  The Gateway resolves `skriptoteket-web:8000` on `hule-network`; host
-  `pdm run dev` is only valid for isolated backend work that does not claim
-  Gateway/browser-session proof.
+- Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Commands
 

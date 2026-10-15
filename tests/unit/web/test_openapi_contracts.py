@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-_RULE_REF = ".codex/rules/040-fastapi-blueprint.md (OpenAPI-safe typing)"
+_TYPING_REF = ".codex/skills/skriptoteket-backend-dev/SKILL.md (OpenAPI-safe typing)"
 _ROUTE_MODULE_DIRS = (
     "src/skriptoteket/web/api/v1",
     "src/skriptoteket/web/routes",
@@ -96,7 +96,7 @@ def test_route_modules_follow_openapi_safe_typing_rules() -> None:
 
     message_lines = [
         "OpenAPI-safe routing rules violated (these can break `/docs` and `/openapi.json`).",
-        f"See {_RULE_REF}.",
+        f"See {_TYPING_REF}.",
     ]
 
     if future_import_violations:
@@ -132,7 +132,7 @@ def test_openapi_schema_builds() -> None:
                 [
                     f"OpenAPI schema generation failed: {exc!r}",
                     "This commonly indicates an OpenAPI-unsafe route signature/type hint.",
-                    f"See {_RULE_REF}.",
+                    f"See {_TYPING_REF}.",
                 ]
             )
         )

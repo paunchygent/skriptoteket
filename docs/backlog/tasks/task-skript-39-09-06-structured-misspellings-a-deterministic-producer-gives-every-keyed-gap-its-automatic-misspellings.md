@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 7d4ae4a5 and approved its repair; the under-four-characters rule 2647de47 was approved and merged as ebe212f1. Walk at cbe58ae1: a live gap key gained three spellings for substantivfras and none for KS or NF; Exam.net import 5339195 holds the keys and six spellings as accepted gap values. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-06/ and evidence/walk/TASK-SKRIPT-39-09-06/walk-cbe58ae1.md.'
 task_kind: story
 acceptance_criteria:
 - A teacher keys an accepted answer in any gap and gets up to 3 realistic automatic

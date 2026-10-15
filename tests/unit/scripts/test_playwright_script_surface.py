@@ -6,9 +6,8 @@ Domain purpose:
     production proof fixtures.
 
 Relationships:
-    - Enforces the browser-automation policy in `.codex/rules/075-browser-automation.md`.
-    - Preserves the retained HuleEdu auth/share proofs while routing small
-      iterative checks to the Codex internal browser.
+    - Preserves the historical HuleEdu auth/share script inventory.
+    - Use the shared `staging-walk` skill for staging and browser proof on Hemma.
 """
 
 from __future__ import annotations

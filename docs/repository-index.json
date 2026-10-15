@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "685769b0846c3618e8983b9e70cfb074f4a9d13f6a4110825830907a655d0382",
+  "source_set_digest": "e59fff3ba63024974343924d2a7227487b7cfaf64f9507d57d8ec1ebfa063a03",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5232,7 +5232,7 @@
       "type": "task",
       "title": "Kategorisera grid: many-to-many keys, uniform tick value, grid-only export and DOCX category sorting",
       "path": "docs/backlog/tasks/task-skript-39-09-03-kategorisera-grid-many-to-many-keys-uniform-tick-value-grid-only-export-and-docx-category-sorting.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5243,7 +5243,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on c6e0e28c and 0fa48e19, approved 07bede41 (merged 2ebed4cb). Live eval found valid type_conflict replies rejected by the key validator; repair 7c8c6bd7 approved and merged. Walk at 7c8c6bd7: kategorisera exam converted to two Kategorisera grids with vila keyed to two columns; tick 0.5 gave 2 points; export imported into Exam.net as 5339116, categorizingItems 2p with four 0.5 rules and answers [1,2]. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-03/ and evidence/walk/TASK-SKRIPT-39-09-03/walk-7c8c6bd7.md."
       }
     },
     {
@@ -5297,7 +5301,7 @@
       "type": "task",
       "title": "Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings",
       "path": "docs/backlog/tasks/task-skript-39-09-06-structured-misspellings-a-deterministic-producer-gives-every-keyed-gap-its-automatic-misspellings.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5308,7 +5312,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 7d4ae4a5 and approved its repair; the under-four-characters rule 2647de47 was approved and merged as ebe212f1. Walk at cbe58ae1: a live gap key gained three spellings for substantivfras and none for KS or NF; Exam.net import 5339195 holds the keys and six spellings as accepted gap values. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-06/ and evidence/walk/TASK-SKRIPT-39-09-06/walk-cbe58ae1.md."
       }
     },
     {
@@ -5316,7 +5324,7 @@
       "type": "task",
       "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5327,7 +5335,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 0881fa9c and approved repair ff544d93. Walk at 19d9d8ef: Svenska 2 v26 export listed Fråga 17 at 0.66 per gap and the criteria of Fråga 21-24; Exam.net import 5339161 showed exactly those losses (Fråga 17 1.98 p, freeText items without criteria). The all-or-nothing case has no corpus item and rests on unit tests. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-07/ and evidence/walk/TASK-SKRIPT-39-09-07/walk-19d9d8ef.md."
       }
     },
     {

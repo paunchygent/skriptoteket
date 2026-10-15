@@ -1,7 +1,6 @@
 # Frontend Vitest
 
 Use this reference for ordinary Skriptoteket Vue/Vite unit and component tests.
-This is not the browser-automation lane.
 
 ## Read First
 
@@ -20,8 +19,7 @@ This is not the browser-automation lane.
 - Keep API client boundaries mocked through module exports and assert endpoint,
   parameters, schema parsing, and user-facing outcomes.
 - Avoid snapshot-heavy tests for dynamic UI.
-- Layout, responsive behavior, auth ceremonies, and screenshots require browser
-  proof through the browser automation lane.
+- Use the shared `staging-walk` skill for staging and browser proof on Hemma.
 
 ## Commands
 

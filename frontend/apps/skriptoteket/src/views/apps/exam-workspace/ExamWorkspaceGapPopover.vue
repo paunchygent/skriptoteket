@@ -154,7 +154,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="absolute z-10 grid w-[min(28rem,100%)] gap-2 border border-navy bg-panel p-3 shadow-[var(--huleedu-shadow-md)]"
+    class="absolute z-10 grid w-[min(28rem,100%)] gap-2 border border-navy bg-modal p-3 shadow-[var(--huleedu-shadow-md)]"
     :style="{ top: `${top}px`, left: `${left}px` }"
     role="dialog"
     :aria-label="`Godkända svar för lucka ${gapNumber}`"

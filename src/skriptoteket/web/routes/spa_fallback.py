@@ -11,7 +11,7 @@ Relationships:
       build canonical sitemap and robots URLs.
 
 NOTE: Do NOT use `from __future__ import annotations` in router modules.
-See .codex/rules/040-fastapi-blueprint.md (OpenAPI-safe typing).
+See tests/unit/web/test_openapi_contracts.py for the OpenAPI typing checks.
 """
 
 from pathlib import Path

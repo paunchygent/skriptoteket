@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 0881fa9c and approved repair ff544d93. Walk at 19d9d8ef: Svenska 2 v26 export listed Fråga 17 at 0.66 per gap and the criteria of Fråga 21-24; Exam.net import 5339161 showed exactly those losses (Fråga 17 1.98 p, freeText items without criteria). The all-or-nothing case has no corpus item and rests on unit tests. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-07/ and evidence/walk/TASK-SKRIPT-39-09-07/walk-19d9d8ef.md.'
 task_kind: story
 acceptance_criteria:
 - After a successful QTI export the export panel lists every Fritext question with criteria, with each criterion's text and points to paste into Exam.net.
