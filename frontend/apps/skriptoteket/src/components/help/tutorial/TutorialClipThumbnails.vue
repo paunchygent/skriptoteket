@@ -14,8 +14,9 @@
 
 import { computed, ref } from "vue";
 
+import { resolveTutorialMediaUrl } from "../../../api/tutorialClips";
 import TutorialClipDialog from "./TutorialClipDialog.vue";
-import { resolveMediaUrl, useTutorialClipManifest } from "./tutorialClipManifest";
+import { useTutorialClipManifest } from "./useTutorialClipManifest";
 import { formatClipDuration, TUTORIAL_COPY } from "./tutorialCopy";
 
 const props = defineProps<{ section: string }>();
@@ -49,7 +50,7 @@ const openClipId = ref<string | null>(null);
         >
           <span class="relative block aspect-video w-full overflow-hidden border border-navy/20 bg-navy/10">
             <img
-              :src="resolveMediaUrl(clip.poster)"
+              :src="resolveTutorialMediaUrl(clip.poster)"
               alt=""
               loading="lazy"
               decoding="async"

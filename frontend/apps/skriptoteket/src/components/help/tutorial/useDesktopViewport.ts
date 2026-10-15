@@ -4,25 +4,19 @@
  * Purpose:
  *   Report whether the planner shows its desktop composition, the 1024px
  *   breakpoint in `klassrumskartan-responsive-workspace.css`, as a reactive
- *   boolean. Tests provide `DESKTOP_VIEWPORT_KEY` to force a value.
+ *   boolean read from `window.matchMedia`.
  *
  * Relationships:
  *   - pattern copied from `views/apps/exam-workspace/useExamWorkspaceLayout.ts`
  *   - read by `useTutorialFirstUse.ts`
  */
 
-import { inject, onScopeDispose, ref } from "vue";
-import type { InjectionKey, Ref } from "vue";
+import { onScopeDispose, ref } from "vue";
+import type { Ref } from "vue";
 
-export const DESKTOP_VIEWPORT_QUERY = "(min-width: 1024px)";
-
-export const DESKTOP_VIEWPORT_KEY: InjectionKey<Ref<boolean>> = Symbol("desktop-viewport");
+const DESKTOP_VIEWPORT_QUERY = "(min-width: 1024px)";
 
 export function useDesktopViewport(): Ref<boolean> {
-  const provided = inject(DESKTOP_VIEWPORT_KEY, null);
-  if (provided) {
-    return provided;
-  }
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return ref(false);
   }

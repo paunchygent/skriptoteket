@@ -18,7 +18,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 
 import IconRun from "../../icons/IconRun.vue";
 import IconX from "../../icons/IconX.vue";
-import { resolveMediaUrl, type TutorialClip } from "./tutorialClipManifest";
+import { resolveTutorialMediaUrl, type TutorialClip } from "../../../api/tutorialClips";
 import { formatClipDuration, TUTORIAL_COPY } from "./tutorialCopy";
 
 const props = defineProps<{
@@ -204,8 +204,8 @@ onBeforeUnmount(() => {
               controls
               playsinline
               preload="none"
-              :poster="resolveMediaUrl(currentClip.poster)"
-              :src="resolveMediaUrl(currentClip.video)"
+              :poster="resolveTutorialMediaUrl(currentClip.poster)"
+              :src="resolveTutorialMediaUrl(currentClip.video)"
               data-test="tutorial-clip-video"
               @play="hasStarted = true"
               @error="onVideoError"

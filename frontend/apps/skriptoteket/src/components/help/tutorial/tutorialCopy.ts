@@ -2,7 +2,8 @@
  * Swedish copy for the Klassrumskartan tutorial clips.
  *
  * Relationships:
- *   - read by `TutorialClipDialog.vue` and `TutorialClipThumbnails.vue`
+ *   - read by `TutorialClipDialog.vue`, `TutorialClipThumbnails.vue` and
+ *     `useTutorialSeenSections.ts`
  */
 
 export const TUTORIAL_COPY = Object.freeze({
@@ -12,6 +13,7 @@ export const TUTORIAL_COPY = Object.freeze({
   loadError: "Klippet kunde inte laddas just nu.",
   moreClips: "Fler klipp",
   thumbnailsLabel: "Klipp",
+  seenSaveFailed: "Kunde inte spara att du sett klippet. Försöker igen nästa gång.",
 });
 
 /** Formats a clip duration in whole seconds as m:ss (for example 1:05). */

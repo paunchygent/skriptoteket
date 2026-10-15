@@ -2,8 +2,8 @@ import { mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
+import type { TutorialClip } from "../../../api/tutorialClips";
 import TutorialClipDialog from "./TutorialClipDialog.vue";
-import type { TutorialClip } from "./tutorialClipManifest";
 
 const clips: TutorialClip[] = [
   {

@@ -12,9 +12,9 @@
  *     the seen-state source and an unblocked guest-upgrade gate. Each time one
  *     of them changes, the 500 ms delay restarts.
  *   - After the delay the section opens only if it has clips, is unseen, the
- *     viewport is desktop, the Hjälp panel is closed and no other modal planner
- *     dialog is present. Otherwise it is dropped until the next context change;
- *     no timer retries it.
+ *     viewport is desktop, the Hjälp panel is closed and no other dialog is
+ *     present. Otherwise it is dropped until the next context change; no timer
+ *     retries it.
  *
  * Relationships:
  *   - used by `TutorialFirstUseGate.vue`, mounted by `ClassroomPlannerEntryView`
@@ -27,24 +27,26 @@ import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
 import { useHelp } from "../useHelp";
 import {
   isTutorialSection,
-  useTutorialClipManifest,
   type TutorialClip,
   type TutorialSection,
-} from "./tutorialClipManifest";
+} from "../../../api/tutorialClips";
 import { useDesktopViewport } from "./useDesktopViewport";
+import { useTutorialClipManifest } from "./useTutorialClipManifest";
 import { useTutorialSeenSections, type TutorialHostMode } from "./useTutorialSeenSections";
 
-export const TUTORIAL_FIRST_USE_DELAY_MS = 500;
+const TUTORIAL_FIRST_USE_DELAY_MS = 500;
 
 /**
- * Modal planner surfaces that must not be covered. The planner's own overlay
- * dialogs (confirmations, roster and room modals) use the shared backdrop class
- * without a dialog role, so both forms count.
+ * Dialogs that must not be covered. Any element with the dialog role counts,
+ * modal or not, such as the nonmodal Delade länkar panel. The planner's own
+ * overlay dialogs (confirmations, roster and room modals) use the shared
+ * backdrop class without a dialog role, so that class counts as well. The
+ * Hjälp panel is checked separately through `useHelp().isOpen`.
  */
-export const FOREIGN_MODAL_SELECTOR = '[role="dialog"][aria-modal="true"], .planner-overlay-backdrop';
+const FOREIGN_DIALOG_SELECTOR = '[role="dialog"], .planner-overlay-backdrop';
 
-export function isForeignModalPresent(root: ParentNode = document): boolean {
-  return root.querySelector(FOREIGN_MODAL_SELECTOR) !== null;
+function isForeignDialogPresent(root: ParentNode = document): boolean {
+  return root.querySelector(FOREIGN_DIALOG_SELECTOR) !== null;
 }
 
 export type TutorialFirstUse = {
@@ -56,9 +58,7 @@ export type TutorialFirstUse = {
 export function useTutorialFirstUse(options: {
   hostMode: TutorialHostMode;
   blocked: MaybeRefOrGetter<boolean>;
-  delayMs?: number;
 }): TutorialFirstUse {
-  const delayMs = options.delayMs ?? TUTORIAL_FIRST_USE_DELAY_MS;
   const help = useHelp();
   const manifest = useTutorialClipManifest();
   const seen = useTutorialSeenSections(options.hostMode);
@@ -92,7 +92,7 @@ export function useTutorialFirstUse(options: {
       seen.isSeen(section) ||
       !isDesktop.value ||
       help.isOpen.value ||
-      isForeignModalPresent()
+      isForeignDialogPresent()
     ) {
       return;
     }
@@ -104,7 +104,7 @@ export function useTutorialFirstUse(options: {
     if (!pendingSection.value || openSection.value || !startupReady.value) {
       return;
     }
-    timer = setTimeout(evaluate, delayMs);
+    timer = setTimeout(evaluate, TUTORIAL_FIRST_USE_DELAY_MS);
   }
 
   watch(

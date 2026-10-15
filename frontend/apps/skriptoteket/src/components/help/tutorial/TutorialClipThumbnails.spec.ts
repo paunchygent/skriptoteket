@@ -1,9 +1,6 @@
 import { mount, type VueWrapper } from "@vue/test-utils";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-
-import TutorialClipThumbnails from "./TutorialClipThumbnails.vue";
-import { loadTutorialClipManifest, resetTutorialClipManifestCacheForTests } from "./tutorialClipManifest";
 
 const manifest = {
   schema_version: 1,
@@ -31,6 +28,15 @@ const manifest = {
 };
 
 let wrapper: VueWrapper | null = null;
+let TutorialClipThumbnails: typeof import("./TutorialClipThumbnails.vue").default;
+let loadTutorialClipManifest: typeof import("./useTutorialClipManifest").loadTutorialClipManifest;
+
+beforeEach(async () => {
+  // The manifest cache is module state for one app load; start each test fresh.
+  vi.resetModules();
+  TutorialClipThumbnails = (await import("./TutorialClipThumbnails.vue")).default;
+  ({ loadTutorialClipManifest } = await import("./useTutorialClipManifest"));
+});
 
 async function mountWith(response: Response, section = "planner_overview") {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response));
@@ -43,7 +49,6 @@ async function mountWith(response: Response, section = "planner_overview") {
 afterEach(() => {
   wrapper?.unmount();
   wrapper = null;
-  resetTutorialClipManifestCacheForTests();
   vi.unstubAllGlobals();
   document.body.innerHTML = "";
 });
