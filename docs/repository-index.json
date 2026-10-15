@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "aa7bbe0a37fbd6b06746fe6f05b691b6091213d1737212894f473acd6df6df9f",
+  "source_set_digest": "36f826db414c0dd274fe1e68e2f383d6d1914dc151eb799969bcf98943a5fcaa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5372,7 +5372,7 @@
       "type": "task",
       "title": "Section headings: a higher-level heading opens its own questions instead of becoming exam-wide text",
       "path": "docs/backlog/tasks/task-skript-39-09-09-section-headings-a-higher-level-heading-opens-its-own-questions-instead-of-becoming-exam-wide-text.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5383,7 +5383,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Fix b62c8a98 merged b0b090cc; 15 focused tests pass; recorded-corpus diff changes only svenska_2_kursavslutande (Del 1 opens its parent); staging walk document ab1682a6 and Exam.net import 5339836 show each heading once in its own group; user directed no review ceremony for small fixes."
       }
     },
     {

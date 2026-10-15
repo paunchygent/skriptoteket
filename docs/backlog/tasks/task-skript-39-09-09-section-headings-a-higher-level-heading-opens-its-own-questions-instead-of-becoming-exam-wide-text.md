@@ -8,10 +8,13 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-15'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Fix b62c8a98 merged b0b090cc; 15 focused tests pass; recorded-corpus diff changes only svenska_2_kursavslutande (Del 1 opens its parent); staging walk document ab1682a6 and Exam.net import 5339836 show each heading once in its own group; user directed no review ceremony for small fixes.'
 task_kind: story
 acceptance_criteria:
 - A DOCX whose Heading 1 section titles each sit above Heading 2 subsections converts
