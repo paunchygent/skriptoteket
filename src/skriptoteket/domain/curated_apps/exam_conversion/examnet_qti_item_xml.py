@@ -37,9 +37,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
     MAP_RESPONSE_TEMPLATE,
+    RESPONSE_IDENTIFIER,
     append_interaction,
     append_response_declaration,
     append_score_outcome,
+    emits_all_or_nothing,
     emits_map_response,
 )
 
@@ -98,6 +100,8 @@ def _append_standalone_item(
             qti_tag("qti-response-processing"),
             {"template": MAP_RESPONSE_TEMPLATE},
         )
+    elif emits_all_or_nothing(item) and item.max_score is not None:
+        _append_score_sum(root, (), ((RESPONSE_IDENTIFIER, item.max_score),))
 
 
 def _append_parent_item(
@@ -132,8 +136,13 @@ def _append_parent_item(
     append_shared_instruction_body(item_body, parent, image_paths)
     for child, paths in zip(children, child_image_paths, strict=True):
         _append_child_body(item_body, child, paths)
-    if mapped_response_ids:
-        _append_score_sum(root, tuple(mapped_response_ids))
+    all_or_nothing_responses = tuple(
+        (_response_identifier(child), child.max_score)
+        for child in children
+        if emits_all_or_nothing(child) and child.max_score is not None
+    )
+    if mapped_response_ids or all_or_nothing_responses:
+        _append_score_sum(root, tuple(mapped_response_ids), all_or_nothing_responses)
 
 
 def _append_child_body(
@@ -156,14 +165,55 @@ def _append_child_body(
         append_images(item_body, child.image_resources, image_paths)
 
 
-def _append_score_sum(root: ElementTree.Element, response_ids: tuple[str, ...]) -> None:
+def _append_score_sum(
+    root: ElementTree.Element,
+    response_ids: tuple[str, ...],
+    all_or_nothing_responses: tuple[tuple[str, int | float], ...],
+) -> None:
     processing = ElementTree.SubElement(root, qti_tag("qti-response-processing"))
     set_score = ElementTree.SubElement(
         processing, qti_tag("qti-set-outcome-value"), {"identifier": "SCORE"}
     )
-    total = ElementTree.SubElement(set_score, qti_tag("qti-sum"))
+    initial = ElementTree.SubElement(set_score, qti_tag("qti-base-value"), {"base-type": "float"})
+    initial.text = "0"
     for response_id in response_ids:
-        ElementTree.SubElement(total, qti_tag("qti-map-response"), {"identifier": response_id})
+        _append_mapped_score(processing, response_id)
+    for response_id, points in all_or_nothing_responses:
+        _append_all_or_nothing_score(processing, response_id, points)
+
+
+def _append_mapped_score(processing: ElementTree.Element, response_id: str) -> None:
+    condition = ElementTree.SubElement(processing, qti_tag("qti-response-condition"))
+    response_if = ElementTree.SubElement(condition, qti_tag("qti-response-if"))
+    # Avoid relying on an engine-specific map-response(NULL) result: NULL in a
+    # sum would otherwise erase points already awarded to other children.
+    not_null = ElementTree.SubElement(response_if, qti_tag("qti-not"))
+    is_null = ElementTree.SubElement(not_null, qti_tag("qti-is-null"))
+    ElementTree.SubElement(is_null, qti_tag("qti-variable"), {"identifier": response_id})
+    total = _append_score_addition(response_if)
+    ElementTree.SubElement(total, qti_tag("qti-map-response"), {"identifier": response_id})
+
+
+def _append_all_or_nothing_score(
+    processing: ElementTree.Element, response_id: str, max_score: int | float
+) -> None:
+    condition = ElementTree.SubElement(processing, qti_tag("qti-response-condition"))
+    response_if = ElementTree.SubElement(condition, qti_tag("qti-response-if"))
+    match = ElementTree.SubElement(response_if, qti_tag("qti-match"))
+    ElementTree.SubElement(match, qti_tag("qti-variable"), {"identifier": response_id})
+    ElementTree.SubElement(match, qti_tag("qti-correct"), {"identifier": response_id})
+    total = _append_score_addition(response_if)
+    points = ElementTree.SubElement(total, qti_tag("qti-base-value"), {"base-type": "float"})
+    points.text = str(max_score)
+
+
+def _append_score_addition(response_if: ElementTree.Element) -> ElementTree.Element:
+    set_score = ElementTree.SubElement(
+        response_if, qti_tag("qti-set-outcome-value"), {"identifier": "SCORE"}
+    )
+    total = ElementTree.SubElement(set_score, qti_tag("qti-sum"))
+    ElementTree.SubElement(total, qti_tag("qti-variable"), {"identifier": "SCORE"})
+    return total
 
 
 def _qualified_child(child: ExamNetQtiItem) -> ExamNetQtiItem:

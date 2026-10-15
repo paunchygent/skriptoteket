@@ -281,11 +281,7 @@ def test_parent_of_recorded_gap_fill_children_is_one_item_with_a_separator_befor
             declarations[entry_id].find(f"{_tag('qti-correct-response')}/{_tag('qti-value')}")
             is not None
         )
-    summed = [
-        m.attrib["identifier"]
-        for m in root.iterfind(f".//{_tag('qti-sum')}/{_tag('qti-map-response')}")
-    ]
-    assert summed == entry_ids
+    _assert_guarded_mapped_scores(root, entry_ids)
     outcomes = {o.attrib["identifier"]: o for o in root.iter(_tag("qti-outcome-declaration"))}
     max_score_value = outcomes["MAXSCORE"].find(f".//{_tag('qti-value')}")
     assert max_score_value is not None
@@ -332,15 +328,40 @@ def test_parent_of_recorded_choice_children_holds_each_stem_in_its_own_interacti
     assert [b.attrib["response-identifier"] for b in blocks[1:]] == [
         f"item_{n:03d}_RESPONSE" for n in numbers
     ]
-    summed = [
-        m.attrib["identifier"]
-        for m in root.iterfind(f".//{_tag('qti-sum')}/{_tag('qti-map-response')}")
-    ]
-    assert summed == [f"item_{n:03d}_RESPONSE" for n in numbers]
+    _assert_guarded_mapped_scores(root, [f"item_{n:03d}_RESPONSE" for n in numbers])
     response_processing = root.find(_tag("qti-response-processing"))
     assert response_processing is not None
     assert response_processing.attrib.get("template") is None
     assert archive.read("items/parent_001.xml")
+
+
+def _assert_guarded_mapped_scores(root: ElementTree.Element, response_ids: list[str]) -> None:
+    processing = root.find(_tag("qti-response-processing"))
+    assert processing is not None
+    initial = processing.find(_tag("qti-set-outcome-value"))
+    assert initial is not None
+    assert initial.attrib == {"identifier": "SCORE"}
+    initial_value = initial.find(_tag("qti-base-value"))
+    assert initial_value is not None
+    assert initial_value.attrib == {"base-type": "float"}
+    assert initial_value.text == "0"
+    conditions = processing.findall(f"{_tag('qti-response-condition')}/{_tag('qti-response-if')}")
+    assert len(conditions) == len(response_ids)
+    for condition, response_id in zip(conditions, response_ids, strict=True):
+        predicate = condition.find(
+            f"{_tag('qti-not')}/{_tag('qti-is-null')}/{_tag('qti-variable')}"
+        )
+        assert predicate is not None
+        assert predicate.attrib == {"identifier": response_id}
+        addition = condition.find(_tag("qti-set-outcome-value"))
+        assert addition is not None
+        assert addition.attrib == {"identifier": "SCORE"}
+        previous_score = addition.find(f"{_tag('qti-sum')}/{_tag('qti-variable')}")
+        assert previous_score is not None
+        assert previous_score.attrib == {"identifier": "SCORE"}
+        mapped_score = addition.find(f"{_tag('qti-sum')}/{_tag('qti-map-response')}")
+        assert mapped_score is not None
+        assert mapped_score.attrib == {"identifier": response_id}
 
 
 def test_parent_of_recorded_matching_children_keeps_each_item_lists_in_native_order():
