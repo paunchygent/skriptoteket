@@ -176,8 +176,8 @@ class TestGapFillMapping:
             gaps=(
                 NativeGap(
                     gap_id="gap_001",
-                    accepted_values=("NF",),
-                    automatic_values=("NE", "NFn"),
+                    accepted_values=("nominalfras",),
+                    automatic_values=("nominalfas", "nomminalfras"),
                 ),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.AI_INTERPRETED),
@@ -185,7 +185,11 @@ class TestGapFillMapping:
         )
         (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
-        assert qti_item.text_entry_gaps[0].accepted_values == ("NF", "NE", "NFn")
+        assert qti_item.text_entry_gaps[0].accepted_values == (
+            "nominalfras",
+            "nominalfas",
+            "nomminalfras",
+        )
 
     def test_gap_without_points_writes_every_accepted_value_in_the_correct_response(self) -> None:
         item = NativeExamItem(
@@ -203,8 +207,8 @@ class TestGapFillMapping:
             gaps=(
                 NativeGap(
                     gap_id="gap_001",
-                    accepted_values=("NF",),
-                    automatic_values=("NE",),
+                    accepted_values=("nominalfras",),
+                    automatic_values=("nominalfas",),
                 ),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
@@ -221,5 +225,5 @@ class TestGapFillMapping:
             for child in element
             if child.tag.rsplit("}", 1)[-1] == "qti-value"
         )
-        assert correct_values == ("NF", "NE")
+        assert correct_values == ("nominalfras", "nominalfas")
         assert [e for e in root.iter() if e.tag.rsplit("}", 1)[-1] == "qti-mapping"] == []

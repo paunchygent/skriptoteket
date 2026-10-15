@@ -316,3 +316,18 @@ def test_shipped_data_survives_the_producer(language: Language) -> None:
             assert value not in data.valid_words
         produced = produced or bool(result)
     assert produced
+
+
+def test_answers_under_four_characters_get_no_misspellings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install(
+        monkeypatch,
+        {"sv": _FixtureData(keyboard={"n": ("b", "h", "j"), "e": ("r",)})},
+    )
+
+    assert produce_answer_misspellings(("NF", "ett"), language="sv") == ()
+    assert produce_answer_misspellings(("nett",), language="sv") == ("bett", "hett", "jett")
+    assert not is_allowed_answer_spelling_variant("NF", "bf")
+    assert not is_allowed_answer_spelling_variant("abc", "abd")
+    assert is_allowed_answer_spelling_variant("abcd", "abce")
