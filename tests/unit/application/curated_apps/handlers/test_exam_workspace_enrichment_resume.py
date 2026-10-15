@@ -22,7 +22,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceEnrichmentState
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
 from skriptoteket.domain.errors import DomainError

@@ -82,13 +82,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     question_source_anchors,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItemKind,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     retry_sources_by_anchor,
     with_retry_sources,
     with_source_assets,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.docx_conversion_progress import (

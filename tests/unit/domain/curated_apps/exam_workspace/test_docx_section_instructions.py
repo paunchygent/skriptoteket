@@ -19,9 +19,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

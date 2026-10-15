@@ -49,8 +49,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     with_accepted_forms,
     with_printed_points,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
 )

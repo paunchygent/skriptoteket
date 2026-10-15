@@ -27,7 +27,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: {

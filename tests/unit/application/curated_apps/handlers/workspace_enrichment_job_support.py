@@ -52,19 +52,27 @@ from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_item_views,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeChoice,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
     NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
     NativeItemReviewState,
-    NativeParagraph,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,

@@ -27,10 +27,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
     reaches,
     with_heading_runs,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItem,
-    NativeExamParent,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,

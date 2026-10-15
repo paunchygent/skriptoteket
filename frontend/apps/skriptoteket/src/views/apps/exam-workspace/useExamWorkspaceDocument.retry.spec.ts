@@ -86,7 +86,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ segments: [{ kind: "text", text: "Förklara begreppet." }] }],

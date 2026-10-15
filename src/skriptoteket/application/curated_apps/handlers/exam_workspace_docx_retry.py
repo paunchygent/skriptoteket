@@ -52,8 +52,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetrySource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
@@ -64,6 +67,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source im
     source_asset_ids,
     source_missing_picture_reasons,
     source_review_item,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User

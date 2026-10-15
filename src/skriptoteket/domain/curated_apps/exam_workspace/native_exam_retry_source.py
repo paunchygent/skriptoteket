@@ -32,12 +32,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
     NativeExamRetryMissingImage,
     NativeExamRetrySource,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
     NativeItemReviewState,
 )
 

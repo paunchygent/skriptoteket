@@ -96,7 +96,7 @@ const {
   undoItemInterpretation,
   removeItemAutomaticValue,
   showItemGapAsText,
-  updateItemMarkingGuide,
+  updateItemCriteria,
   updateItemMatchEntryText,
   updateItemMatchPairs,
   updateItemParagraphSegments,
@@ -418,7 +418,7 @@ async function handleSave(): Promise<void> {
             @undo-interpretation="undoItemInterpretation"
             @remove-automatic-value="removeItemAutomaticValue"
             @show-gap-as-text="showItemGapAsText"
-            @update-marking-guide="updateItemMarkingGuide"
+            @update-criteria="updateItemCriteria"
             @update-match-entry-text="updateItemMatchEntryText"
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"

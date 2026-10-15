@@ -24,11 +24,15 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     ImportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User

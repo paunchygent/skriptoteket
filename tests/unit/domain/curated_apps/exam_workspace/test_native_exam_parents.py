@@ -6,16 +6,20 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamDocument,
-    NativeExamParent,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
-    parent_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+    parent_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (

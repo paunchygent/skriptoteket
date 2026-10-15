@@ -11,7 +11,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import 
     SectionPoints,
     split_section_totals,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
@@ -108,6 +111,29 @@ def test_section_total_is_shared_equally_and_each_share_carries_the_check_mark()
     assert _marked(split.accepted) == [False] * 5 + [True] * 15
     assert [item for item, _ in split.accepted[:5]] == [item for item, _ in accepted[:5]]
     assert split.absorbed == frozenset()
+
+
+def test_criteria_points_are_fixed_before_splitting_the_remaining_section_total():
+    chunks = _chunks(_SECTIONED)
+    accepted, instructions = _sectioned_inputs(chunks)
+    item, anchors = accepted[5]
+    criterion_item = NativeExamItem.model_validate(
+        {
+            **item.model_dump(),
+            "points": 3,
+            "points_estimated": True,
+            "criteria": [NativeExamCriterion(text="Bedöm resonemanget.", points=3)],
+        }
+    )
+    accepted = (*accepted[:5], (criterion_item, anchors), *accepted[6:])
+
+    split = _split(chunks, accepted, instructions)
+
+    assert split.accepted[5][0] == criterion_item
+    assert _points(split.accepted)[6:] == [1] * 12 + [None] * 2
+    for result, _ in split.accepted:
+        if result.criteria:
+            assert result.points == sum(criterion.points for criterion in result.criteria)
 
 
 def test_points_the_model_gave_a_member_whose_source_prints_none_become_the_share():

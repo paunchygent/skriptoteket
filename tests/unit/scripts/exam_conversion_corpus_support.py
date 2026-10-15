@@ -9,6 +9,8 @@ from pathlib import Path
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem, GoldParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

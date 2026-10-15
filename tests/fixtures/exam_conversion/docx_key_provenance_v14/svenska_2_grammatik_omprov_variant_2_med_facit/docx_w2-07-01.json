@@ -69,7 +69,12 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": "a) Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).\nb) Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).\nc) Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv)."
+      "criteria": [
+        {
+          "text": "a) Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).\nb) Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).\nc) Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv).",
+          "points": null
+        }
+      ]
     }
   ]
 }

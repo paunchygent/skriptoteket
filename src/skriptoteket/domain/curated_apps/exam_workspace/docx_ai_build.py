@@ -37,27 +37,40 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     printed_points,
     title_without_answer_key,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeChoice,
+    NativeGapSegment,
+    NativeParagraph,
+    NativeSegment,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchPair,
     NativeMatchRight,
-    NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
     NativeParseOrigin,
-    NativeSegment,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
@@ -90,6 +103,61 @@ def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
         for missing in chunk.missing_images:
             reasons.setdefault(missing.reference, _missing_picture_reason(missing))
     return tuple(reasons.values())
+
+
+def _whole_points(value: int | float) -> int | None:
+    """The value as an int when it is a whole number, else None."""
+    return int(value) if float(value).is_integer() else None
+
+
+def _free_text_criteria(
+    produced: ProducedItem,
+) -> tuple[tuple[NativeExamCriterion, ...], int | float | None, bool]:
+    """The criteria the key states, the item's points and whether conversion estimated them.
+
+    R14: a criterion the answer key states whole points for keeps them, and the item's
+    points are their sum, or the item's own printed points when it prints them and they
+    match. A guide without per-criterion points becomes one criterion at the item's whole
+    printed points, or at 1 point when the item prints none, and counts as estimated. A
+    fractional item point or criterion point, or a criteria sum that differs from the
+    item's printed points, raises so admission keeps the question's source as its review
+    item.
+    """
+    criteria = produced.criteria
+    if not criteria:
+        if produced.points is None:
+            return (), None, False
+        points = _whole_points(produced.points)
+        if points is None:
+            raise ValueError("free_text points are not whole")
+        return (), points, False
+    if any(criterion.points is None for criterion in criteria):
+        if len(criteria) != 1:
+            raise ValueError("a guide without per-criterion points is one criterion")
+        (criterion,) = criteria
+        points = 1 if produced.points is None else _whole_points(produced.points)
+        if points is None or points < 1:
+            raise ValueError("free_text points are not whole")
+        return (NativeExamCriterion(text=criterion.text, points=points),), points, True
+    whole_points: list[int] = []
+    for criterion in criteria:
+        if criterion.points is None:
+            raise ValueError("free_text criterion points must be stated together")
+        points = _whole_points(criterion.points)
+        if points is None or points < 1:
+            raise ValueError("free_text criterion points are not whole")
+        whole_points.append(points)
+    native = tuple(
+        NativeExamCriterion(text=criterion.text, points=points)
+        for criterion, points in zip(criteria, whole_points, strict=True)
+    )
+    total = sum(whole_points)
+    if produced.points is None:
+        return native, total, False
+    stated = _whole_points(produced.points)
+    if stated is None or stated != total:
+        raise ValueError("free_text criteria sum does not match the item's stated points")
+    return native, stated, False
 
 
 def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> NativeExamItem:
@@ -179,6 +247,11 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
             if keyed and produced.key_source is not None
             else NativeAnswerKeyOrigin.ABSENT
         )
+    criteria: tuple[NativeExamCriterion, ...] = ()
+    points = produced.points
+    points_estimated = False
+    if produced.kind is NativeExamItemKind.FREE_TEXT:
+        criteria, points, points_estimated = _free_text_criteria(produced)
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
@@ -186,15 +259,14 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
         printed_label=produced.printed_label,
         facit_text=produced.facit_text,
         body=tuple(body),
-        points=produced.points,
+        points=points,
+        points_estimated=points_estimated,
         choices=choices,
         gaps=tuple(gaps),
         match_left=match_left,
         match_right=match_right,
         answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct, match_pairs=pairs),
-        marking_guide=(
-            produced.marking_guide if produced.kind is NativeExamItemKind.FREE_TEXT else None
-        ),
+        criteria=criteria,
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.LLM_PARSED,

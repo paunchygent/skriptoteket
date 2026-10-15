@@ -18,11 +18,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     LEFT_OUT_REASON,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 
 pytestmark = pytest.mark.unit
@@ -67,7 +71,7 @@ def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
         "match_left": [],
         "match_right": [],
         "match_pairs": [],
-        "marking_guide": "",
+        "criteria": [],
     }
     item.update(fields)
     return item
@@ -241,7 +245,7 @@ def test_a_dropped_line_of_inline_options_is_read_option_by_option():
                     kind="single_choice",
                     key_source="invented",
                     choices=choices,
-                    marking_guide=None,
+                    criteria=[],
                 )
             ]
         },
@@ -268,7 +272,7 @@ def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
                     kind="single_choice",
                     key_source="invented",
                     choices=choices,
-                    marking_guide=None,
+                    criteria=[],
                 )
             ]
         },
@@ -339,7 +343,7 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
                     body=[{"segments": [_text(stem)]}],
                     points=None,
                     choices=choices,
-                    marking_guide=None,
+                    criteria=[],
                 )
             ]
         },
@@ -378,7 +382,7 @@ def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_lab
                     body=[{"segments": [_text(texts[0])]}],
                     points=None,
                     choices=choices,
-                    marking_guide=None,
+                    criteria=[],
                 )
             ]
         },
@@ -418,7 +422,7 @@ def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the
                     body=[{"segments": [_text("Vilket ord är ett substantiv?")]}],
                     points=None,
                     choices=choices,
-                    marking_guide=None,
+                    criteria=[],
                 )
             ]
         },

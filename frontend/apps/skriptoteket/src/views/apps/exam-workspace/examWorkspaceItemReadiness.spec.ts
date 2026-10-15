@@ -5,7 +5,8 @@
  *   Each question reports the same reasons the server export gate refuses
  *   with (review required, unreviewed machine key, keyed question without a
  *   key, missing points) plus the states the save refuses (a partial gap
- *   key, points not greater than zero, a choice without text), in a stable
+ *   key, points not greater than zero, a choice without text, criteria
+ *   that lack text or points or are not the item's points), in a stable
  *   order; ready
  *   questions report nothing and are left out of the per-item copy map.
  */
@@ -17,6 +18,10 @@ import {
   examWorkspaceItemReadiness,
   examWorkspaceReadinessByItemId,
 } from "./examWorkspaceItemReadiness";
+import {
+  CRITERIA_POINTS_MISMATCH_GUIDANCE,
+  INVALID_CRITERION_POINTS_GUIDANCE,
+} from "./examWorkspaceItemSaveRules";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE, PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import {
   buildMatchingItem,
@@ -28,7 +33,7 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
@@ -280,6 +285,78 @@ describe("examWorkspaceItemReadiness for matching items", () => {
 
     expect(examWorkspaceReadinessByItemId([item])).toEqual({
       [item.item_id]: [INCOMPLETE_MATCH_KEY_GUIDANCE],
+    });
+  });
+});
+
+function buildCriteriaItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
+  return {
+    ...buildChoiceItem({
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      choices: [],
+      kind: "free_text",
+      points: 3,
+    }),
+    criteria: [
+      { points: 2, text: "Definition" },
+      { points: 1, text: "Exempel" },
+    ],
+    ...overrides,
+  };
+}
+
+describe("examWorkspaceItemReadiness for free-text criteria", () => {
+  it("reports nothing when a non-empty criteria list sums to the item's points", () => {
+    expect(examWorkspaceItemReadiness(buildCriteriaItem())).toEqual([]);
+  });
+
+  it("reports a criterion whose text is empty or whitespace only", () => {
+    const blank = buildCriteriaItem({
+      criteria: [
+        { points: 2, text: " \n\t " },
+        { points: 1, text: "Exempel" },
+      ],
+    });
+
+    expect(examWorkspaceItemReadiness(blank)).toEqual(["empty_criterion_text"]);
+  });
+
+  it("reports criteria reasons in a stable order", () => {
+    const item = buildCriteriaItem({
+      criteria: [{ points: 1.5, text: "" }],
+    });
+
+    expect(examWorkspaceItemReadiness(item)).toEqual([
+      "empty_criterion_text",
+      "invalid_criterion_points",
+      "criteria_points_mismatch",
+    ]);
+  });
+
+  it("reports criteria on a question that is not free text", () => {
+    const item = buildChoiceItem({ criteria: [{ points: 1, text: "Definition" }] });
+
+    expect(examWorkspaceItemReadiness(item)).toEqual(["criteria_on_wrong_kind"]);
+  });
+
+  it("maps the criteria reasons to their Swedish copy by item id", () => {
+    const item = buildCriteriaItem({ points: 2 });
+
+    expect(examWorkspaceReadinessByItemId([item])).toEqual({
+      item_001: [CRITERIA_POINTS_MISMATCH_GUIDANCE],
+    });
+  });
+
+  it("maps invalid criterion points to their Swedish copy by item id", () => {
+    const item = buildCriteriaItem({
+      criteria: [
+        { points: 1.5, text: "Definition" },
+        { points: 1.5, text: "Exempel" },
+      ],
+    });
+
+    expect(examWorkspaceReadinessByItemId([item])).toEqual({
+      item_001: [INVALID_CRITERION_POINTS_GUIDANCE],
     });
   });
 });
