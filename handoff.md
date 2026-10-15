@@ -16,7 +16,7 @@
 - [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
   `in_progress`, owner: the user's Mac session: signed-in planner shell at
   1024–1279 px has no reachable Hjälp control (walk F2, `AuthTopBar.vue`
-  breakpoint gap). Sibling HuleEdu TASK-HULE-REP-0142 (staging Vite preflight).
+  breakpoint gap). Sibling HuleEdu TASK-HULE-01-06-14 (staging Vite preflight, Mac Sol lead).
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
