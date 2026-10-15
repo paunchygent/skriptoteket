@@ -2,6 +2,9 @@
 
 from collections.abc import Collection
 
+# A 1-3 character answer is a code, number or abbreviation: one changed letter makes a
+# different answer, so it gets no extra spellings (user decision 2026-10-15).
+MIN_SPELLING_VARIANT_ANSWER_LENGTH = 4
 SHORT_ANSWER_MAX_LENGTH = 6
 SHORT_ANSWER_MAX_DISTANCE = 1
 LONG_ANSWER_MAX_DISTANCE = 2
@@ -79,6 +82,8 @@ def is_allowed_answer_spelling_variant(
     gold = normalize_answer(gold_answer)
     variant = normalize_answer(candidate)
     if not gold or not variant or gold == variant:
+        return False
+    if len(gold) < MIN_SPELLING_VARIANT_ANSWER_LENGTH:
         return False
     if variant in {normalize_answer(value) for value in other_gold_answers}:
         return False

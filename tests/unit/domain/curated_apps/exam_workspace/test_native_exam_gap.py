@@ -52,11 +52,16 @@ class TestAutomaticValues:
     def test_automatic_values_equal_to_an_accepted_value_case_folded_are_dropped(self) -> None:
         gap = NativeGap(
             gap_id="gap_001",
-            accepted_values=("NF",),
-            automatic_values=("nf", "NE"),
+            accepted_values=("Nominalfras",),
+            automatic_values=("nominalfras", "Nominalfas"),
         )
 
-        assert gap.automatic_values == ("NE",)
+        assert gap.automatic_values == ("Nominalfas",)
+
+    def test_an_accepted_value_under_four_characters_keeps_no_automatic_values(self) -> None:
+        gap = NativeGap(gap_id="gap_001", accepted_values=("NF",), automatic_values=("NE",))
+
+        assert gap.automatic_values == ()
 
     def test_a_changed_accepted_value_drops_its_orphaned_automatic_values(self) -> None:
         item = make_gap_fill_item(accepted=("katt",), automatic=("kat", "ktat", "kattn"))
