@@ -348,6 +348,20 @@ def test_fractional_scores_survive_qti_mapping_maximum_and_gap_allocation() -> N
     )
     assert choice_max_value.text == "10.5"
 
+    multiple_response = _item_xml(plan, "item_003.xml")
+    multiple_mapping = _find(multiple_response, f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    assert multiple_mapping.attrib["upper-bound"] == "7.5"
+    assert [
+        entry.attrib["mapped-value"]
+        for entry in multiple_mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
+    ] == ["3.75", "3.75"]
+    multiple_max_value = _find(
+        multiple_response,
+        f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']/"
+        f"{{{QTI_NAMESPACE}}}qti-default-value/{{{QTI_NAMESPACE}}}qti-value",
+    )
+    assert multiple_max_value.text == "7.5"
+
     gap = _item_xml(plan, "item_004.xml")
     mappings = gap.findall(f".//{{{QTI_NAMESPACE}}}qti-mapping")
     assert len(mappings) == 3

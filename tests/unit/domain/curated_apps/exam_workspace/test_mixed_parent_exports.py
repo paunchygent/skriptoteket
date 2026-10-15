@@ -152,10 +152,27 @@ def test_each_mixed_child_keeps_its_own_response_and_mapping_and_score_sums_them
         for m in root.iterfind(f".//{_tag('qti-sum')}/{_tag('qti-map-response')}")
     ]
     assert summed == mapped
-    (score,) = (
-        s for s in root.iter(_tag("qti-set-outcome-value")) if s.attrib["identifier"] == "SCORE"
-    )
-    assert score.find(_tag("qti-sum")) is not None
+    processing = root.find(_tag("qti-response-processing"))
+    assert processing is not None
+    score = processing.find(_tag("qti-set-outcome-value"))
+    assert score is not None and score.attrib == {"identifier": "SCORE"}
+    initial_value = score.find(_tag("qti-base-value"))
+    assert initial_value is not None and initial_value.text == "0"
+    conditions = processing.findall(f"{_tag('qti-response-condition')}/{_tag('qti-response-if')}")
+    assert len(conditions) == len(mapped)
+    guarded = [
+        variable.attrib["identifier"]
+        for condition in conditions
+        for variable in condition.findall(
+            f"{_tag('qti-not')}/{_tag('qti-is-null')}/{_tag('qti-variable')}"
+        )
+    ]
+    assert guarded == mapped
+    for condition in conditions:
+        addition = condition.find(_tag("qti-set-outcome-value"))
+        assert addition is not None and addition.attrib == {"identifier": "SCORE"}
+        previous = addition.find(f"{_tag('qti-sum')}/{_tag('qti-variable')}")
+        assert previous is not None and previous.attrib == {"identifier": "SCORE"}
     assert parent.max_score == sum(child.max_score or 0 for child in parent.children)
     outcomes = {o.attrib["identifier"]: o for o in root.iter(_tag("qti-outcome-declaration"))}
     max_score = outcomes["MAXSCORE"].find(f".//{_tag('qti-value')}")

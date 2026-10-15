@@ -65,7 +65,7 @@ def test_positive_fractional_free_text_keeps_criterion_scoring() -> None:
     assert entry.attrib["mapped-value"] == "0.25"
 
 
-def test_gap_allocation_preserves_fraction_beyond_whole_cents() -> None:
+def test_gap_allocation_rounds_equal_share_down_to_whole_cents() -> None:
     item = ExamNetQtiItem(
         item_id="item_001",
         sequence=1,
@@ -87,8 +87,8 @@ def test_gap_allocation_preserves_fraction_beyond_whole_cents() -> None:
     mappings = root.findall(f".//{{{QTI_NAMESPACE}}}qti-mapping")
     allocations = tuple(mapping.attrib["upper-bound"] for mapping in mappings)
 
-    assert allocations == ("0.042", "0.042", "0.041")
-    assert sum(Decimal(value) for value in allocations) == Decimal("0.125")
+    assert allocations == ("0.04", "0.04", "0.04")
+    assert sum(Decimal(value) for value in allocations) == Decimal("0.12")
     max_score = root.find(
         f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']/"
         f"{{{QTI_NAMESPACE}}}qti-default-value/{{{QTI_NAMESPACE}}}qti-value"

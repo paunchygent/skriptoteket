@@ -15,6 +15,7 @@ Relationships:
 from __future__ import annotations
 
 import hashlib
+import posixpath
 import re
 from typing import Literal
 
@@ -79,7 +80,9 @@ def build_examnet_qti_package_plan(
     image_files_by_item_id: dict[str, tuple[ExamNetQtiPackageFile, ...]] = {}
     for item in ordered_items:
         image_files = tuple(_image_file(item, image) for image in item.image_resources)
-        image_paths = tuple(f"../{image.relative_path}" for image in image_files)
+        image_paths = tuple(
+            posixpath.relpath(image.relative_path, "items") for image in image_files
+        )
         item_xml = serialize_qti_assessment_item(item, image_paths=image_paths)
         item_files.append(
             _package_file(
@@ -187,7 +190,7 @@ def _image_file(item: ExamNetQtiItem, image: ExamNetQtiImageResource) -> ExamNet
     extension = IMAGE_MEDIA_TYPES[image.media_type]
     filename = f"{item.item_id}-{_safe_path_stem(image.asset_id)}{extension}"
     return _package_file(
-        relative_path=f"resources/{filename}",
+        relative_path=f"items/images/{filename}",
         content_type=image.media_type,
         payload=image.payload,
     )

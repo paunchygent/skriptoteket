@@ -67,20 +67,24 @@ def test_choice_packages_encode_single_and_multiple_cardinality(tmp_path: Path) 
         "upper-bound": "4",
     }
     assert _map_entry_pairs(single_item) == [("choice_002", "4")]
-    assert _mapping(multiple_item).attrib == {
-        "default-value": "0",
-        "lower-bound": "0",
-        "upper-bound": "4",
-    }
-    assert _map_entry_pairs(multiple_item) == [
-        ("choice_001", "1.34"),
-        ("choice_002", "1.33"),
-        ("choice_004", "1.33"),
-    ]
+    assert multiple_item.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is None
     assert _response_processing_template(single_item) == (
         "https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"
     )
-    assert _response_processing_template(multiple_item) == MAP_RESPONSE_TEMPLATE
+    multiple_processing = _response_processing(multiple_item)
+    assert "template" not in multiple_processing.attrib
+    multiple_condition = multiple_processing.find(
+        f"{{{QTI_NAMESPACE}}}qti-response-condition/{{{QTI_NAMESPACE}}}qti-response-if"
+    )
+    assert multiple_condition is not None
+    multiple_match = multiple_condition.find(f"{{{QTI_NAMESPACE}}}qti-match")
+    assert multiple_match is not None
+    multiple_variable = multiple_match.find(f"{{{QTI_NAMESPACE}}}qti-variable")
+    multiple_correct = multiple_match.find(f"{{{QTI_NAMESPACE}}}qti-correct")
+    assert multiple_variable is not None
+    assert multiple_correct is not None
+    assert multiple_variable.attrib["identifier"] == "RESPONSE"
+    assert multiple_correct.attrib["identifier"] == "RESPONSE"
     assert next(iter(_choice_interaction(single_item))).tag == f"{{{QTI_NAMESPACE}}}qti-prompt"
     assert (_interaction_prompt(single_item, "qti-choice-interaction").text or "").startswith(
         "Vilket svar kopplar"
@@ -289,10 +293,14 @@ def _map_entry_pairs(item: ElementTree.Element) -> list[tuple[str, str]]:
     return [(entry.attrib["map-key"], entry.attrib["mapped-value"]) for entry in _map_entries(item)]
 
 
-def _response_processing_template(item: ElementTree.Element) -> str:
+def _response_processing(item: ElementTree.Element) -> ElementTree.Element:
     processing = item.find(f"{{{QTI_NAMESPACE}}}qti-response-processing")
     assert processing is not None
-    return processing.attrib["template"]
+    return processing
+
+
+def _response_processing_template(item: ElementTree.Element) -> str:
+    return _response_processing(item).attrib["template"]
 
 
 def _correct_values(item: ElementTree.Element) -> list[str]:

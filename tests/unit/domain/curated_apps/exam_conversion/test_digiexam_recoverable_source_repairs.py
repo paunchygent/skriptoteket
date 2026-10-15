@@ -239,6 +239,7 @@ def test_unresolved_prompt_image_positions_become_qti_placeholder_without_resour
     with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:
         names = set(archive.namelist())
         assert not any(name.startswith("resources/") for name in names)
+        assert not any(name.startswith("items/images/") for name in names)
         manifest = archive.read("imsmanifest.xml").decode("utf-8")
         item_xml = archive.read("items/item_001.xml").decode("utf-8")
 
