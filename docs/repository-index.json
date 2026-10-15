@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5dfd9d4cd48e662f11638ee09fdbb6accc807219e27e74a7f99972ff381f386f",
+  "source_set_digest": "150dc0ebcae19ecc1c9ed4af1b82630733ba76cfaeda2dbc8368f1fdbe5823ae",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5320,7 +5320,7 @@
       "type": "task",
       "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5331,7 +5331,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 0881fa9c and approved repair ff544d93. Walk at 19d9d8ef: Svenska 2 v26 export listed Fråga 17 at 0.66 per gap and the criteria of Fråga 21-24; Exam.net import 5339161 showed exactly those losses (Fråga 17 1.98 p, freeText items without criteria). The all-or-nothing case has no corpus item and rests on unit tests. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-07/ and evidence/walk/TASK-SKRIPT-39-09-07/walk-19d9d8ef.md."
       }
     },
     {
