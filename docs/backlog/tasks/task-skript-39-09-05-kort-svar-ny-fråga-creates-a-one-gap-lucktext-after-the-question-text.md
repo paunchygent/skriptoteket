@@ -14,7 +14,7 @@ closeout_review:
 task_kind: story
 acceptance_criteria:
 - A teacher picks Kort svar from Ny fråga, gets a Lucktext with one gap after the
-  question text, keys accepted answers with automatic misspellings, and Exam.net imports
+  question text, keys accepted answers, and Exam.net imports
   it as a one-gap Lucktext
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
@@ -31,7 +31,8 @@ the question text.
   paragraph holding one gap, with no accepted values and no points, in review
   state like other teacher-created items.
 - **Keying.** The gap is keyed through the existing gap popover with accepted
-  answers and automatic misspellings; no new key path is added.
+  answers; no new key path is added. Automatic misspellings for
+  teacher-keyed gaps are delivered by task 6 (R17).
 - **Export.** The item exports through the task 2 Lucktext route; Exam.net
   imports it as a one-gap Lucktext (V99–V104).
 - **Out of scope.** A distinct simpleAnswer export (no construction produces
@@ -48,8 +49,7 @@ the question text.
 
 ## Core Vertical And Performance
 
-A teacher picks Kort svar, writes the question, keys "Stockholm" with its
-automatic misspellings, saves and exports; Exam.net imports a one-gap
+A teacher picks Kort svar, writes the question, keys "Stockholm", saves and exports; Exam.net imports a one-gap
 Lucktext with the accepted answers keyed. No performance concern.
 
 ## Validation
@@ -69,4 +69,4 @@ Lucktext with the accepted answers keyed. No performance concern.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | T1  | "Ny fråga" offers Kort svar, which creates a Lucktext with one gap after the question text (Q14). |
-| T2  | Kort svar is keyed through the existing gap popover with accepted answers and automatic misspellings (Q14). |
+| T2  | Kort svar is keyed through the existing gap popover with accepted answers; its automatic misspellings come from task 6 (Q14, R17). |

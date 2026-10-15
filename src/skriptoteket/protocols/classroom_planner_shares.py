@@ -13,20 +13,24 @@ Relationships:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
-from skriptoteket.application.curated_apps.classroom_planner.exports import (
-    PreparedGroupingExportContract,
-    PreparedSeatingExportContract,
-)
-from skriptoteket.application.curated_apps.classroom_planner.shares import (
-    ClassroomPlannerShareArtifact,
-    ClassroomPlannerSharePreviewAsset,
-    PublicGuestSharePersistenceResult,
-    RenderedClassroomPlannerShare,
-)
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
+
+if TYPE_CHECKING:
+    # Annotation-only imports from the application layer; a runtime import
+    # creates a cycle through the classroom_planner package.
+    from skriptoteket.application.curated_apps.classroom_planner.exports import (
+        PreparedGroupingExportContract,
+        PreparedSeatingExportContract,
+    )
+    from skriptoteket.application.curated_apps.classroom_planner.shares import (
+        ClassroomPlannerShareArtifact,
+        ClassroomPlannerSharePreviewAsset,
+        PublicGuestSharePersistenceResult,
+        RenderedClassroomPlannerShare,
+    )
 
 
 class ClassroomPlannerShareArtifactRepositoryProtocol(Protocol):

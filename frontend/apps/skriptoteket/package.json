@@ -39,7 +39,8 @@
     "pixi.js": "^8.17.1",
     "vue": "catalog:",
     "vue-draggable-plus": "^0.6.1",
-    "vue-router": "catalog:"
+    "vue-router": "catalog:",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

@@ -40,6 +40,9 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
             classroom_planner_grouping_seating_distance_enabled=(
                 profile.classroom_planner_grouping_seating_distance_enabled
             ),
+            classroom_planner_tutorial_seen_sections=(
+                profile.classroom_planner_tutorial_seen_sections
+            ),
             locale=profile.locale,
             created_at=profile.created_at,
             updated_at=profile.updated_at,
@@ -63,6 +66,9 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
         model.classroom_planner_use_history = profile.classroom_planner_use_history
         model.classroom_planner_grouping_seating_distance_enabled = (
             profile.classroom_planner_grouping_seating_distance_enabled
+        )
+        model.classroom_planner_tutorial_seen_sections = (
+            profile.classroom_planner_tutorial_seen_sections
         )
         model.locale = profile.locale
         model.updated_at = profile.updated_at

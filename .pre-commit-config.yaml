@@ -55,6 +55,10 @@ repos:
           (?x)^(migrations/versions/.*\.py|
           tests/integration/test_migration_.*\.py|
           tests/integration/migration_schema_assertions\.py|
+          tests/integration/migration_schema_identity_assertions\.py|
+          tests/integration/migration_schema_planner_assertions\.py|
+          tests/integration/migration_schema_checkpoint_assertions\.py|
+          tests/integration/migration_schema_conversion_assertions\.py|
           scripts/check_migration_test_coverage\.py)$
         pass_filenames: false
 

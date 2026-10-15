@@ -8,16 +8,17 @@
  *
  * Relationships:
  *   - consumed by `useClassroomState.ts`
- *   - writes through `classroomPlannerSmartPreferences.ts`
+ *   - writes through `api/classroomPlannerSettings.ts`
  *   - updates the auth profile snapshot after successful profile persistence
  */
 
 import { computed, ref } from "vue";
 
+import { updateClassroomPlannerSettings } from "../../api/classroomPlannerSettings";
 import { useAuthStore } from "../../stores/auth";
-import {
-  type ClassroomPlannerSmartPreferenceKey,
-  persistAuthenticatedClassroomPlannerSmartPreference,
+import type {
+  ClassroomPlannerSmartPreferenceKey,
+  ClassroomPlannerSmartPreferencePatch,
 } from "./classroomPlannerSmartPreferences";
 
 type SmartPreferenceLaneResult =
@@ -43,9 +44,8 @@ export function useClassroomPlannerSmartPreferenceLane() {
     const write = writeTail
       .catch(() => undefined)
       .then(async () => {
-        const response = await persistAuthenticatedClassroomPlannerSmartPreference({
-          [key]: enabled,
-        });
+        const patch: ClassroomPlannerSmartPreferencePatch = { [key]: enabled };
+        const response = await updateClassroomPlannerSettings(patch);
         auth.user = response.user;
         auth.profile = response.profile;
       });
