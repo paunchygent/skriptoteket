@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3f99653a7069c62ac9b52bd030cc76c4bac62d0bb9e85cd7b652d21a9293d4e4",
+  "source_set_digest": "a88e3e8e71b8c3435f8cce481944916b5387b72604b2bc74687ebe94b620b166",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5058,7 +5058,7 @@
       "type": "task",
       "title": "Rewire the labeling feasibility report to the v14 batch recordings",
       "path": "docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5069,7 +5069,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Codex Sol 6.1 ruthless-reviewer requested changes on the rewire (typed loader, 615-line methods.py, dead code) and approved the repair committed as aae91639. Evaluate on an empty evidence dir with no API keys exits 0; converter_today identical for all eight exams before and after the repair; ruff, ruff format and explicit-file mypy (13 files) pass. Records in Skriptoteket session 01a13f02-cbaf-71c0-bb3b-f16fc81c7017 evidence/ (parent-evaluate, parent-evaluate-2, repair-summary.md, results/)."
       }
     },
     {

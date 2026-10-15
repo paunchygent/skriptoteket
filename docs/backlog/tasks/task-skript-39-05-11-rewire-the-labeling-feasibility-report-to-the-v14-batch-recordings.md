@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Codex Sol 6.1 ruthless-reviewer requested changes on the rewire (typed loader, 615-line methods.py, dead code) and approved the repair committed as aae91639. Evaluate on an empty evidence dir with no API keys exits 0; converter_today identical for all eight exams before and after the repair; ruff, ruff format and explicit-file mypy (13 files) pass. Records in Skriptoteket session 01a13f02-cbaf-71c0-bb3b-f16fc81c7017 evidence/ (parent-evaluate, parent-evaluate-2, repair-summary.md, results/).'
 task_kind: story
 acceptance_criteria:
 - The evaluate command scores the converter baseline from the committed v14 docx_w batch recordings for all eight corpus exams, with no path argument
