@@ -92,6 +92,10 @@ const MARK_SHORTCUTS: Partial<Record<BodyMark, string>> = {
       />
     </button>
     <template v-if="showHeadings">
+      <span
+        class="mx-1 h-5 w-px bg-navy/20"
+        aria-hidden="true"
+      />
       <button
         v-for="level in HEADING_LEVELS"
         :key="level"
