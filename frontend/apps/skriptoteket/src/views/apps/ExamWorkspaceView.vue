@@ -32,6 +32,7 @@
 
 import { computed, onMounted, ref, watch } from "vue";
 
+import { IconPlus } from "../../components/icons";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
@@ -455,6 +456,10 @@ async function handleSave(): Promise<void> {
           data-test="exam-workspace-phone-add-free_text"
           @click="handleAddItem('free_text')"
         >
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
           Fritext
         </button>
         <button
@@ -466,6 +471,10 @@ async function handleSave(): Promise<void> {
           data-test="exam-workspace-phone-add-short_answer"
           @click="handleAddItem('short_answer')"
         >
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
           Kort svar
         </button>
       </div>

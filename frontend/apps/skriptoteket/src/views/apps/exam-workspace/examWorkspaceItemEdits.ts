@@ -347,7 +347,12 @@ export function newTeacherItem(
     marking_guide: null,
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+    // A Fritext carries no key; a short answer starts unkeyed until the teacher keys its gap.
+    answer_key: {
+      correct_choice_ids: [],
+      match_pairs: [],
+      origin: shortAnswer ? "absent" : "not_applicable",
+    },
     body: shortAnswer
       ? [question, { segments: [{ kind: "gap", gap_id: "gap_001" }] }]
       : [question],

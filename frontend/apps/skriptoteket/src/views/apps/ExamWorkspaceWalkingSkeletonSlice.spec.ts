@@ -183,6 +183,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     ];
     const added = params.document.items.find((item) => item.item_id === "item_009")!;
     expect(added.kind).toBe("gap_fill");
+    expect(added.answer_key.origin).toBe("absent");
     expect(added.body).toEqual([
       { segments: [{ kind: "text", text: "Ny fråga" }] },
       { segments: [{ kind: "gap", gap_id: "gap_001" }] },
