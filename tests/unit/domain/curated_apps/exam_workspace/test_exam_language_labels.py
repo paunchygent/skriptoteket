@@ -21,7 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeParagraph,
     NativeTextSegment,
 )
-from tests.unit.scripts.exam_conversion_corpus_support import STEMS, gold_exam, replayed
+from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
 
 _LABEL_WORDS = {"Fråga", "Question", "Lucka", "Gap", "Bild", "Image"}
 
@@ -34,7 +34,7 @@ def _gold_label_word(stem: str) -> str:
     return match.group(1)
 
 
-@pytest.mark.parametrize("stem", STEMS)
+@pytest.mark.parametrize("stem", RECORDED_STEMS)
 def test_exported_labels_use_the_exam_language(stem: str) -> None:
     document, _ = replayed(stem)
     expected = _gold_label_word(stem)
@@ -50,7 +50,7 @@ def test_exported_labels_use_the_exam_language(stem: str) -> None:
     assert not foreign, f"{stem} shows labels of another language: {sorted(foreign)}"
 
 
-@pytest.mark.parametrize("stem", STEMS)
+@pytest.mark.parametrize("stem", RECORDED_STEMS)
 def test_parent_titles_span_their_children_in_the_exam_language(stem: str) -> None:
     document, _ = replayed(stem)
     labels = exam_language_labels(document)

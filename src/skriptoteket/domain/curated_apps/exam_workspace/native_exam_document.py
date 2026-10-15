@@ -11,6 +11,7 @@ no source type codes, and no source page/line spans.
 from __future__ import annotations
 
 import math
+from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
@@ -226,6 +227,10 @@ class NativeExamItem(BaseModel):
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
+    # One uniform tick value per matching grid (T2), positive with at most two decimals.
+    # None for every other kind. No saved document is defaulted: a matching item saved
+    # without it fails validation, and a new item gets 1 from its creator.
+    tick_points: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     points_estimated: bool = False  # points split from a printed section total (D6)
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
@@ -293,6 +298,7 @@ class NativeExamItem(BaseModel):
             raise ValueError("only free_text items carry a marking guide")
 
         self._answer_key_invariants(frozenset(choice_ids))
+        self._tick_points_invariants()
         self._suggestion_invariants()
         self._body_gap_invariants(gap_ids)
         return self
@@ -338,6 +344,29 @@ class NativeExamItem(BaseModel):
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
+    def _tick_points_invariants(self) -> None:
+        """One uniform tick value per grid: points are exactly tick value × ticks (T2).
+
+        A matching item always carries ``tick_points`` and a stored document is never
+        defaulted, so an item saved under the old one-to-one rule fails validation. With
+        no key there are no ticks, so there are no derived points either: a positive
+        ``points`` can never equal a zero product.
+        """
+
+        if self.kind is not NativeExamItemKind.MATCHING:
+            if self.tick_points is not None:
+                raise ValueError("only matching items carry tick_points")
+            return
+        if self.tick_points is None:
+            raise ValueError("matching items need a tick_points value")
+        ticks = len(self.answer_key.match_pairs)
+        if self.points is None:
+            if ticks:
+                raise ValueError("matching points must equal tick_points times the number of pairs")
+            return
+        if Decimal(str(self.points)) != self.tick_points * ticks:
+            raise ValueError("matching points must equal tick_points times the number of pairs")
+
     def _suggestion_invariants(self) -> None:
         """Check the kept suggestion's own shape, never its currency.
 
@@ -348,7 +377,7 @@ class NativeExamItem(BaseModel):
         and it stays stored so the fingerprint can report it out of date.
         Only the suggestion's own shape is invariant here: exactly one
         payload family carries the proposed key (choice ids, match pairs
-        or gap accepted values) and no entry is named twice within it.
+        or gap accepted values) and no match pair repeats within it.
         Producer validation against the requested question and the current
         answer key's constraints live in their own checks, so a stored
         historical suggestion never becomes a valid active key by storage.
@@ -366,33 +395,32 @@ class NativeExamItem(BaseModel):
             raise ValueError("a kept suggestion proposes exactly one kind of key")
         if len(set(suggestion.correct_choice_ids)) != len(suggestion.correct_choice_ids):
             raise ValueError("suggested choice ids must be unique")
-        paired_left = [pair.left_id for pair in suggestion.match_pairs]
-        if len(set(paired_left)) != len(paired_left):
-            raise ValueError("a suggestion pairs each left entry at most once")
-        paired_right = [pair.right_id for pair in suggestion.match_pairs]
-        if len(set(paired_right)) != len(paired_right):
-            raise ValueError("a suggestion pairs each right entry at most once")
+        pair_keys = [(pair.left_id, pair.right_id) for pair in suggestion.match_pairs]
+        if len(set(pair_keys)) != len(pair_keys):
+            raise ValueError("a suggestion pairs a left and right entry at most once")
         suggested_gap_ids = [entry.gap_id for entry in suggestion.gap_accepted_values]
         if len(set(suggested_gap_ids)) != len(suggested_gap_ids):
             raise ValueError("a suggestion names each gap at most once")
 
     def _match_pair_invariants(self, pairs: tuple[NativeMatchPair, ...]) -> None:
-        """Every left entry is paired once; unpaired right entries are distractors."""
+        """Every left entry is paired at least once; right entries may repeat or stay unused."""
         if self.answer_key.correct_choice_ids:
             raise ValueError("matching items key pairs, not choices")
         self._match_pairs_valid(pairs)
 
     def _match_pairs_valid(self, pairs: tuple[NativeMatchPair, ...]) -> None:
+        """A many-to-many key: every pair is used once, every left entry at least once."""
         left_ids = {entry.left_id for entry in self.match_left}
         right_ids = {entry.right_id for entry in self.match_right}
-        paired_left = [pair.left_id for pair in pairs]
-        paired_right = [pair.right_id for pair in pairs]
-        if set(paired_left) - left_ids or set(paired_right) - right_ids:
+        if {pair.left_id for pair in pairs} - left_ids or {
+            pair.right_id for pair in pairs
+        } - right_ids:
             raise ValueError("match pairs must refer to declared entries")
-        if sorted(paired_left) != sorted(left_ids):
-            raise ValueError("a keyed matching item pairs every left entry exactly once")
-        if len(set(paired_right)) != len(paired_right):
-            raise ValueError("a keyed matching item pairs each right entry at most once")
+        if {pair.left_id for pair in pairs} != left_ids:
+            raise ValueError("a keyed matching item pairs every left entry at least once")
+        pair_keys = [(pair.left_id, pair.right_id) for pair in pairs]
+        if len(set(pair_keys)) != len(pair_keys):
+            raise ValueError("a matching item pairs a left and right entry at most once")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []

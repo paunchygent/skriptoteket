@@ -52,6 +52,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     },
     sequence: 0,
     source_anchor: null,
+    tick_points: null,
   };
 }
 

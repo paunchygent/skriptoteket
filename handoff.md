@@ -32,7 +32,9 @@
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Next: task 3
-  Kategorisera grid.
+  Kategorisera backend: branch `codex/task-skript-39-09-03`, Pi `377f15ac`.
+  Proof/blockers: session `01a13c92` `evidence/impl/TASK-SKRIPT-39-09-03/`.
+  Next parent: UI, review, configured gold eval and staging/Exam.net import.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
@@ -180,8 +182,6 @@
 
 ## Facts
 
-- Session Date: 2026-10-10
-- Last Refreshed: 2026-10-10
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support

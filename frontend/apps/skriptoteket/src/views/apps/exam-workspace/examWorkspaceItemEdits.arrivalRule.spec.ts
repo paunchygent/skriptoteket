@@ -143,6 +143,7 @@ function choiceItem(
     review: { confidence: null, parse_origin: "teacher_created", reasons: [], state },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
   };
 }
 

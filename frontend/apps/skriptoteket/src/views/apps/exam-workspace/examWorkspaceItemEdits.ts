@@ -353,5 +353,6 @@ export function newTeacherItem(itemId: string, sequence: number): NativeExamItem
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
   };
 }

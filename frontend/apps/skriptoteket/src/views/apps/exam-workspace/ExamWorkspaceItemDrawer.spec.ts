@@ -42,6 +42,7 @@ const ITEM: NativeExamItem = {
   },
   sequence: 1,
   source_anchor: null,
+  tick_points: null,
 };
 
 const RETRY_SOURCE: NonNullable<NativeExamItem["retry_source"]> = {

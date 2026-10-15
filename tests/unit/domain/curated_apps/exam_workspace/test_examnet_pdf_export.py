@@ -2,6 +2,7 @@
 
 from html import escape
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 import pytest
 
@@ -19,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamItem,
     NativeExamItemKind,
     NativeItemReviewState,
+    NativeMatchPair,
     NativeMatchRight,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
@@ -108,6 +110,11 @@ def _sections(html: str) -> list[str]:
     return html.split('<section class="exam-item">')[1:]
 
 
+def _grid(html: str) -> ET.Element:
+    table = "<table" + html.split("<table", 1)[1].split("</table>", 1)[0] + "</table>"
+    return ET.fromstring(table)
+
+
 def _with_distractor(item: NativeExamItem) -> NativeExamItem:
     extra = NativeMatchRight(
         right_id=f"right_{len(item.match_right) + 1:03d}", text="Spare <entry>"
@@ -116,7 +123,7 @@ def _with_distractor(item: NativeExamItem) -> NativeExamItem:
 
 
 class TestMatchingItems:
-    def test_recorded_matching_items_print_both_lists_in_order_and_pairs_only_in_the_key(
+    def test_recorded_matching_items_print_blank_grid_and_marked_answer_grid(
         self,
     ) -> None:
         items = recorded_items()
@@ -133,14 +140,21 @@ class TestMatchingItems:
                 assert escape(entry.text) in printed
             positions = [printed.index(escape(entry.text)) for entry in item.match_right]
             assert positions == sorted(positions)
-            left_text = {entry.left_id: entry.text for entry in item.match_left}
-            right_text = {entry.right_id: entry.text for entry in item.match_right}
-            for pair in item.answer_key.match_pairs:
-                assert (
-                    f"{escape(left_text[pair.left_id])} – {escape(right_text[pair.right_id])}"
-                    in key
-                )
-                assert " – " not in printed
+            student_grid = _grid(printed)
+            key_grid = _grid(key)
+            correct = {(pair.left_id, pair.right_id) for pair in item.answer_key.match_pairs}
+            assert [node.text for node in student_grid.findall("./thead/tr/th")] == [
+                entry.text for entry in item.match_right
+            ]
+            for row_index, left in enumerate(item.match_left):
+                student_cells = student_grid.findall("./tbody/tr")[row_index].findall("td/span")
+                key_cells = key_grid.findall("./tbody/tr")[row_index].findall("td/span")
+                assert len(student_cells) == len(item.match_right)
+                assert all(cell.text is None for cell in student_cells)
+                assert [cell.text for cell in key_cells] == [
+                    "X" if (left.left_id, right.right_id) in correct else None
+                    for right in item.match_right
+                ]
 
     def test_an_unpaired_right_entry_is_printed_in_the_list_and_never_keyed(self) -> None:
         items = list(recorded_items())
@@ -152,19 +166,53 @@ class TestMatchingItems:
         assert document.status is DigiExamExamNetPdfStatus.SUCCESS
         printed, key = _sections(document.html)[index].split('<div class="answer-key">')
         assert "Spare &lt;entry&gt;" in printed
-        assert "Spare" not in key
+        grid = _grid(key)
+        assert grid.findall("./thead/tr/th")[-1].text == "Spare <entry>"
+        assert all(row.findall("td/span")[-1].text is None for row in grid.findall("./tbody/tr"))
+
+    def test_a_many_to_many_key_marks_every_tick_and_leaves_unused_category_blank(self) -> None:
+        items = list(recorded_items())
+        index = next(i for i, item in enumerate(items) if item.kind is NativeExamItemKind.MATCHING)
+        item = _with_distractor(items[index])
+        existing = {(pair.left_id, pair.right_id) for pair in item.answer_key.match_pairs}
+        extra = next(
+            NativeMatchPair(left_id=item.match_left[0].left_id, right_id=right.right_id)
+            for right in item.match_right[:-1]
+            if (item.match_left[0].left_id, right.right_id) not in existing
+        )
+        pairs = (*item.answer_key.match_pairs, extra)
+        items[index] = NativeExamItem.model_validate(
+            {
+                **dict(item),
+                "tick_points": 0.5,
+                "points": 0.5 * len(pairs),
+                "answer_key": item.answer_key.model_copy(update={"match_pairs": pairs}),
+            }
+        )
+        document = native_exam_to_pdf_document(recorded_document(items=tuple(items)))
+
+        assert document.status is DigiExamExamNetPdfStatus.SUCCESS
+        student, key = _sections(document.html)[index].split('<div class="answer-key">')
+        assert all(cell.text is None for cell in _grid(student).findall("./tbody/tr/td/span"))
+        rows = _grid(key).findall("./tbody/tr")
+        assert [cell.text for cell in rows[0].findall("td/span")].count("X") == 2
+        assert sum(cell.text == "X" for cell in _grid(key).findall("./tbody/tr/td/span")) == len(
+            pairs
+        )
+        assert all(row.findall("td/span")[-1].text is None for row in rows)
+        assert WeasyPrintExamNetPdfRenderer().render_pdf(document=document).startswith(b"%PDF")
 
     def test_a_matching_item_without_a_key_blocks_the_document(self) -> None:
         items = list(recorded_items())
         index = next(i for i, item in enumerate(items) if item.kind is NativeExamItemKind.MATCHING)
         unkeyed = NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)
-        items[index] = items[index].model_copy(update={"answer_key": unkeyed})
+        items[index] = items[index].model_copy(update={"answer_key": unkeyed, "points": None})
 
         document = native_exam_to_pdf_document(recorded_document(items=tuple(items)))
 
         assert document.status is DigiExamExamNetPdfStatus.BLOCKED
         assert [w.code for w in document.warnings] == [
-            DigiExamExamNetPdfWarningCode.MANUAL_ANSWER_KEY_REQUIRED
+            DigiExamExamNetPdfWarningCode.MISSING_POINT_VALUE
         ]
 
     def test_weasyprint_renders_a_document_with_matching_items(self) -> None:

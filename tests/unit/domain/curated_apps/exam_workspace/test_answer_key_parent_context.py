@@ -27,7 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeGapSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from tests.unit.scripts.exam_conversion_corpus_support import STEMS, replayed
+from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, replayed
 
 pytestmark = pytest.mark.unit
 
@@ -43,6 +43,9 @@ def _without_key(document: NativeExamDocument, item_id: str) -> NativeExamDocume
     data = document.model_dump(mode="json")
     child = next(item for item in data["items"] if item["item_id"] == item_id)
     child["answer_key"] = {"origin": "absent"}
+    if child["kind"] == "matching":
+        child["points"] = None
+        child["points_estimated"] = False
     for gap in child["gaps"]:
         gap["accepted_values"] = []
     return NativeExamDocument.model_validate(data)
@@ -62,7 +65,7 @@ def _payload_item(payload: dict[str, JsonValue]) -> dict[str, JsonValue]:
     return item
 
 
-@pytest.mark.parametrize("stem", STEMS)
+@pytest.mark.parametrize("stem", RECORDED_STEMS)
 def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -> None:
     document, _ = replayed(stem)
     before = document.model_dump()
@@ -152,7 +155,7 @@ def test_word_bank_child_payload_keeps_bank_directions_and_numbered_body() -> No
 
 
 def test_a_standalone_question_payload_has_no_instruction() -> None:
-    document, _ = replayed(STEMS[0])
+    document, _ = replayed(RECORDED_STEMS[0])
     standalone = next(
         item
         for item in document.items

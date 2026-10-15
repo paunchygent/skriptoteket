@@ -2,6 +2,7 @@
 
 import io
 import re
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 
@@ -182,7 +183,12 @@ def test_native_item_without_a_facit_leaves_the_matching_item_unkeyed_and_blocks
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
     assert item.answer_key.match_pairs == ()
-    assert {b.reason for b in native_export_blockers(_document(item))} == {"missing_answer_key"}
+    assert item.tick_points == Decimal(1)
+    assert item.points is None
+    assert {b.reason for b in native_export_blockers(_document(item))} == {
+        "missing_answer_key",
+        "missing_points",
+    }
 
 
 @pytest.mark.parametrize("entry", ["left", "right"])
@@ -212,22 +218,33 @@ def test_produced_pair_must_copy_its_entries_exactly(entry: str, alter):
         )
 
 
-def test_produced_pairs_that_use_one_right_entry_twice_fail_the_native_contract():
+def test_produced_pairs_that_use_one_right_entry_twice_are_a_valid_grid():
     gold = _gold_item()
     first, second, third = gold.pairs
     twice = ((first.left, first.right), (second.left, first.right), (third.left, third.right))
 
-    with pytest.raises(ValidationError, match="pairs each right entry at most once"):
-        native_item(_produced(pairs=twice))
+    item = native_item(_produced(pairs=twice))
+
+    right_id = item.answer_key.match_pairs[0].right_id
+    assert [p.left_id for p in item.answer_key.match_pairs if p.right_id == right_id] == [
+        "left_001",
+        "left_002",
+    ]
 
 
-def test_right_entry_used_twice_is_rejected_even_with_a_distractor_to_spare():
+def test_right_entry_used_twice_is_accepted_even_with_a_distractor_to_spare():
     item = _with_distractor(_valid())
     pairs = item.answer_key.match_pairs
     reused = (pairs[0], pairs[1].model_copy(update={"right_id": pairs[0].right_id}), pairs[2])
 
-    with pytest.raises(ValidationError, match="pairs each right entry at most once"):
-        _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": reused}))
+    widened = _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": reused}))
+
+    assert [(p.left_id, p.right_id) for p in widened.answer_key.match_pairs] == [
+        (pairs[0].left_id, pairs[0].right_id),
+        (pairs[1].left_id, pairs[0].right_id),
+        (pairs[2].left_id, pairs[2].right_id),
+    ]
+    assert native_export_blockers(_document(widened)) == ()
 
 
 def test_right_entry_without_a_pair_is_a_distractor_and_the_item_validates():
@@ -255,17 +272,58 @@ def test_left_entry_without_a_pair_is_rejected():
     item = _valid()
     pairs = item.answer_key.match_pairs[:-1]
 
-    with pytest.raises(ValidationError, match="pairs every left entry exactly once"):
+    with pytest.raises(ValidationError, match="pairs every left entry at least once"):
         _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": pairs}))
 
 
-def test_left_entry_paired_twice_is_rejected():
+def test_left_entry_paired_to_two_rights_is_a_valid_grid():
     item = _valid()
     first, second, third = item.answer_key.match_pairs
-    doubled = (first, first.model_copy(update={"right_id": second.right_id}), third)
+    doubled = (first, first.model_copy(update={"right_id": second.right_id}), second, third)
+    tick_points = item.tick_points
+    assert tick_points is not None
 
-    with pytest.raises(ValidationError, match="pairs every left entry exactly once"):
-        _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": doubled}))
+    widened = _with(
+        item,
+        points=tick_points * 4,
+        answer_key=item.answer_key.model_copy(update={"match_pairs": doubled}),
+    )
+
+    assert [p.right_id for p in widened.answer_key.match_pairs if p.left_id == first.left_id] == [
+        first.right_id,
+        second.right_id,
+    ]
+
+
+def test_one_pair_repeated_is_rejected():
+    item = _valid()
+    first, second, third = item.answer_key.match_pairs
+    repeated = (first, first, second, third)
+
+    with pytest.raises(ValidationError, match="pairs a left and right entry at most once"):
+        _with(item, answer_key=item.answer_key.model_copy(update={"match_pairs": repeated}))
+
+
+def test_valid_matching_item_derives_points_from_its_tick_value():
+    item = _valid()
+
+    assert item.tick_points == Decimal(1)
+    assert item.points == len(item.answer_key.match_pairs)
+
+
+def test_matching_points_must_equal_tick_times_ticks():
+    item = _valid()
+    assert item.points is not None
+
+    with pytest.raises(ValidationError, match="tick_points times the number of pairs"):
+        _with(item, points=item.points + 1)
+
+
+def test_matching_item_requires_a_tick_value():
+    item = _valid()
+
+    with pytest.raises(ValidationError, match="need a tick_points value"):
+        _with(item, tick_points=None)
 
 
 @pytest.mark.parametrize(

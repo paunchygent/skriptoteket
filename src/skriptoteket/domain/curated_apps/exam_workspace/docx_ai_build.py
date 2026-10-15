@@ -2,6 +2,7 @@
 
 import hashlib
 from collections.abc import Iterable, Mapping
+from decimal import ROUND_FLOOR, Decimal
 from types import MappingProxyType
 from uuid import UUID
 
@@ -92,6 +93,28 @@ def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
     return tuple(reasons.values())
 
 
+def matching_score(points: int | float | None, ticks: int) -> tuple[Decimal, float, bool]:
+    """One grid's uniform tick value, derived total and estimate flag (Q10, R11-R12).
+
+    ``points`` is the total the answer key prints for the grid, or null when it prints
+    none; ``ticks`` is the number of correct pairs. The tick value is the printed total
+    per tick floored to 2 decimals, or the default 1 without a printed total. The derived
+    total is tick × ticks with the same 2-decimal rounding, and the flag is true when the
+    division was inexact or no total was printed. A tick below 0.01 is refused: no
+    positive value can represent it.
+    """
+    if ticks < 1:
+        raise ValueError("a matching grid needs at least one tick")
+    if points is None:
+        return Decimal(1), float(ticks), True
+    stated = Decimal(str(points))
+    tick = (stated / ticks).quantize(Decimal("0.01"), rounding=ROUND_FLOOR)
+    if tick == 0:
+        raise ValueError(f"points {points} cannot give a positive tick value over {ticks} ticks")
+    total = tick * ticks
+    return tick, float(total), total != stated
+
+
 def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> NativeExamItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
 
@@ -166,6 +189,20 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
         for pair in produced.match_pairs
     )
     keyed = bool(correct) or bool(pairs) or any(gap.accepted_values for gap in gaps)
+    if produced.kind is NativeExamItemKind.MATCHING:
+        if pairs:
+            tick_points, derived_points, points_estimated = matching_score(
+                produced.points, len(pairs)
+            )
+            points: int | float | None = (
+                int(derived_points) if derived_points == int(derived_points) else derived_points
+            )
+        else:
+            # An unkeyed grid keeps the default tick for the editor and no points,
+            # because zero ticks can never equal a positive total.
+            tick_points, points, points_estimated = Decimal(1), None, False
+    else:
+        tick_points, points, points_estimated = None, produced.points, False
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         origin = NativeAnswerKeyOrigin.NOT_APPLICABLE
     else:
@@ -186,7 +223,9 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
         printed_label=produced.printed_label,
         facit_text=produced.facit_text,
         body=tuple(body),
-        points=produced.points,
+        points=points,
+        points_estimated=points_estimated,
+        tick_points=tick_points,
         choices=choices,
         gaps=tuple(gaps),
         match_left=match_left,

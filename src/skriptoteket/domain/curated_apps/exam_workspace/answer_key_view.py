@@ -322,7 +322,12 @@ def _validated_matching_proposal(
     view: AnswerKeyItemView,
     content: dict[str, JsonValue],
 ) -> AnswerKeyItemProposal | None:
-    """Accept one pair per left entry; a right entry is used at most once."""
+    """Accept a many-to-many key: every left entry at least once, each pair once.
+
+    A right entry may serve several left entries or none, and a left entry may
+    take several right entries; only an undeclared entry, an uncovered left
+    entry or a repeated pair is rejected.
+    """
 
     entries = content.get("pairs")
     if not isinstance(entries, list | tuple):
@@ -336,13 +341,13 @@ def _validated_matching_proposal(
         if not _is_int(left_id) or not _is_int(right_id):
             return None
         pairs.append((left_id, right_id))
-    left_ids = [left_id for left_id, _right_id in pairs]
-    right_ids = [right_id for _left_id, right_id in pairs]
-    if sorted(left_ids) != sorted(left_id for left_id, _text in view.match_left):
+    declared_left_ids = {left_id for left_id, _text in view.match_left}
+    declared_right_ids = {right_id for right_id, _text in view.match_right}
+    if {left_id for left_id, _right_id in pairs} != declared_left_ids:
         return None
-    if len(set(right_ids)) != len(right_ids):
+    if not {right_id for _left_id, right_id in pairs} <= declared_right_ids:
         return None
-    if not set(right_ids) <= {right_id for right_id, _text in view.match_right}:
+    if len(set(pairs)) != len(pairs):
         return None
     return AnswerKeyItemProposal(
         item_id=view.item_id,

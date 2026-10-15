@@ -31,7 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,
 )
-from tests.unit.scripts.exam_conversion_corpus_support import STEMS, gold_exam, replayed
+from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
 
 _ENGLISH_MARKERS = (
     "Type:",
@@ -65,7 +65,7 @@ def _gold_label_word(stem: str) -> str:
 def _exported() -> tuple[list[_Exported], int]:
     exported: list[_Exported] = []
     skipped = 0
-    for stem in STEMS:
+    for stem in RECORDED_STEMS:
         document, _ = replayed(stem)
         if document.assets:
             skipped += 1

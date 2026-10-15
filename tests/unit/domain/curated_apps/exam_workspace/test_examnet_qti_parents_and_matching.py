@@ -176,16 +176,24 @@ def test_matching_lists_export_in_native_order_and_index_pairing_does_not_reveal
     assert len(qti_matching) == 3
     for qti in qti_matching:
         item = native[qti.item_id]
-        left, right = _lists(_root(qti))
+        root = _root(qti)
+        left, right = _lists(root)
+        (interaction,) = root.iter(_tag("qti-match-interaction"))
+        left_set, right_set = interaction.findall(_tag("qti-simple-match-set"))
 
         assert [text for _, text in left] == [entry.text for entry in item.match_left]
         assert [text for _, text in right] == [entry.text for entry in item.match_right]
         assert set(zip((i for i, _ in left), (i for i, _ in right), strict=True)) != _correct_pairs(
-            _root(qti)
+            root
         )
-        assert _correct_pairs(_root(qti)) == {
+        assert _correct_pairs(root) == {
             (pair.left_id, pair.right_id) for pair in item.answer_key.match_pairs
         }
+        assert interaction.attrib["max-associations"] == str(len(left) * len(right))
+        assert {choice.attrib["match-max"] for choice in left_set} == {str(len(right))}
+        assert {choice.attrib["match-max"] for choice in right_set} == {str(len(left))}
+        assert not list(root.iter(_tag("qti-associate-interaction")))
+        assert not list(root.iter(_tag("qti-order-interaction")))
 
 
 def test_unpaired_right_entry_is_listed_in_its_place_and_is_not_part_of_the_key():
@@ -212,7 +220,10 @@ def test_unpaired_right_entry_is_listed_in_its_place_and_is_not_part_of_the_key(
     mapping_keys = {e.attrib["map-key"] for e in root.iter(_tag("qti-map-entry"))}
     assert not any("right_099" in key for key in mapping_keys)
     (interaction,) = root.iter(_tag("qti-match-interaction"))
-    assert interaction.attrib["max-associations"] == str(len(left))
+    assert interaction.attrib["max-associations"] == str(len(left) * len(right))
+    left_set, right_set = interaction.findall(_tag("qti-simple-match-set"))
+    assert {choice.attrib["match-max"] for choice in left_set} == {str(len(right))}
+    assert {choice.attrib["match-max"] for choice in right_set} == {str(len(left))}
     _, status = _package((qti,))
     assert status == "passed"
 

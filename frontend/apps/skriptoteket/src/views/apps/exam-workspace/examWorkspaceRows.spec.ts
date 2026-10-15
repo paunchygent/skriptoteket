@@ -45,6 +45,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }

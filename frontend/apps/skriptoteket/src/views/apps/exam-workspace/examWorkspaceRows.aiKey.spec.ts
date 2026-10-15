@@ -46,6 +46,7 @@ function buildItem(origin: NativeExamItem["answer_key"]["origin"]): NativeExamIt
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
   };
 }
 

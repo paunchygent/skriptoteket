@@ -50,6 +50,7 @@ function buildChoiceItem(
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }

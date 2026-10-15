@@ -7,6 +7,7 @@ the stated origins; a fingerprint mismatch reports the suggestion as out
 of date; save and reopen keep the suggestion.
 """
 
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
@@ -168,7 +169,7 @@ class TestFingerprint:
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
             body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
-            points=1,
+            tick_points=Decimal("1"),
             match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
             match_right=(
                 NativeMatchRight(right_id="right_001", text="dog"),
@@ -254,6 +255,7 @@ class TestSuggestionStorage:
             kind=NativeExamItemKind.MATCHING,
             body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
             points=1,
+            tick_points=Decimal("1"),
             match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
             match_right=(
                 NativeMatchRight(right_id="right_001", text="dog"),

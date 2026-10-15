@@ -77,6 +77,7 @@ function buildDocument(): NativeExamDocument {
         },
         sequence: 1,
         source_anchor: null,
+        tick_points: null,
       },
     ],
     origin: {

@@ -20,7 +20,7 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
     recorded_items,
 )
 
-_NEW_CLASSES = ("parent-instruction", "match-left", "match-right")
+_NEW_CLASSES = ("parent-instruction", "matching-grid", "tick-box")
 
 
 def _rules(html: str) -> dict[str, str]:

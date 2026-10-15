@@ -1,5 +1,6 @@
 """Split of printed section totals (D38), checked against real corpus chunks."""
 
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
+)
+from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
+    recorded_matching_items,
 )
 
 pytestmark = pytest.mark.unit
@@ -177,6 +181,47 @@ def test_ten_over_three_questions_gives_four_three_three():
 
     assert _points(split.accepted) == [4, 3, 3]
     assert _marked(split.accepted) == [True] * 3
+
+
+@pytest.mark.parametrize(("total", "tick_points", "points"), [(10, "1.66", 4.98), (6, "1", 3)])
+def test_section_share_updates_matching_tick_and_total_together(total, tick_points, points):
+    chunks = _chunks(_SECTIONED)
+    accepted, _ = _sectioned_inputs(chunks)
+    matching = recorded_matching_items(keyed=True)[0]
+    assert len(matching.answer_key.match_pairs) == 3
+    members = ((matching, accepted[5][1]), accepted[6])
+
+    split = _split(chunks, members, (_line(_anchor(6), total), _line(_anchor(19), 1)))
+
+    updated = split.accepted[0][0]
+    assert updated.tick_points == Decimal(tick_points)
+    assert updated.points == points
+    assert updated.points_estimated is True
+    assert NativeExamItem.model_validate(dict(updated)) == updated
+
+
+def test_unkeyed_grid_keeps_no_total_until_ticks_can_determine_it():
+    chunks = _chunks(_SECTIONED)
+    accepted, _ = _sectioned_inputs(chunks)
+    matching = recorded_matching_items()[0]
+    members = ((matching, accepted[5][1]), accepted[6])
+
+    split = _split(chunks, members, (_line(_anchor(6), 10),))
+
+    updated = split.accepted[0][0]
+    assert updated.points is None
+    assert updated == matching
+    assert NativeExamItem.model_validate(dict(updated)) == updated
+
+
+def test_printed_matching_points_are_not_reallocated_by_section_total():
+    chunks = _chunks(_ALL_PRINTED)
+    matching = recorded_matching_items(keyed=True)[0]
+    members = ((matching, (_anchor(7), _anchor(8))),)
+
+    split = _split(chunks, members, (_line(_anchor(5), 24),))
+
+    assert split.accepted == members
 
 
 def test_mixed_section_splits_what_remains_after_the_printed_points():

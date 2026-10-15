@@ -3,8 +3,10 @@
 Purpose:
     Build the fail-closed Exam.net PDF document plan from a native exam
     document by adapting items into source-neutral PDF item semantics and
-    delegating target policy to the existing Exam.net PDF item strategies. A Swedish
-    exam prints the documented Swedish markers; every other exam prints the default ones.
+    delegating target policy to the existing Exam.net PDF item strategies. Matching
+    items print blank category tables with every correct tick marked in a separate key.
+    A Swedish exam prints the documented Swedish markers; every other exam prints the
+    default ones.
 
 Relationships:
     - Consumes `domain.curated_apps.exam_workspace.native_exam_document`.
