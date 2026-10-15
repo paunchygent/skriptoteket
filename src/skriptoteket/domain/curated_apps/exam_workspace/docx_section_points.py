@@ -3,8 +3,8 @@
 import re
 from dataclasses import dataclass
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import matching_score
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import matching_score
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,

@@ -15,7 +15,7 @@ def validate_answer_key_suggestion(suggestion: NativeAnswerKeySuggestion | None)
     and it stays stored so the fingerprint can report it out of date.
     Only the suggestion's own shape is invariant here: exactly one
     payload family carries the proposed key (choice ids, match pairs
-    or gap accepted values) and no entry is named twice within it.
+    or gap accepted values), with no duplicate choice, row-column pair or gap.
     Producer validation against the requested question and the current
     answer key's constraints live in their own checks, so a stored
     historical suggestion never becomes a valid active key by storage.

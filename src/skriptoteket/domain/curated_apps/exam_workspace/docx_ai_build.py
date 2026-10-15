@@ -2,7 +2,7 @@
 
 import hashlib
 from collections.abc import Iterable, Mapping
-from decimal import ROUND_FLOOR, Decimal
+from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
 
@@ -14,6 +14,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
+    free_text_criteria,
+    matching_score,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -104,83 +108,6 @@ def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
         for missing in chunk.missing_images:
             reasons.setdefault(missing.reference, _missing_picture_reason(missing))
     return tuple(reasons.values())
-
-
-def matching_score(points: int | float | None, ticks: int) -> tuple[Decimal, float, bool]:
-    """One grid's uniform tick value, derived total and estimate flag (Q10, R11-R12).
-
-    ``points`` is the total the answer key prints for the grid, or null when it prints
-    none; ``ticks`` is the number of correct pairs. The tick value is the printed total
-    per tick floored to 2 decimals, or the default 1 without a printed total. The derived
-    total is tick × ticks with the same 2-decimal rounding, and the flag is true when the
-    division was inexact or no total was printed. A tick below 0.01 is refused: no
-    positive value can represent it.
-    """
-    if ticks < 1:
-        raise ValueError("a matching grid needs at least one tick")
-    if points is None:
-        return Decimal(1), float(ticks), True
-    stated = Decimal(str(points))
-    tick = (stated / ticks).quantize(Decimal("0.01"), rounding=ROUND_FLOOR)
-    if tick == 0:
-        raise ValueError(f"points {points} cannot give a positive tick value over {ticks} ticks")
-    total = tick * ticks
-    return tick, float(total), total != stated
-
-
-def _whole_points(value: int | float) -> int | None:
-    """The value as an int when it is a whole number, else None."""
-    return int(value) if float(value).is_integer() else None
-
-
-def _free_text_criteria(
-    produced: ProducedItem,
-) -> tuple[tuple[NativeExamCriterion, ...], int | float | None, bool]:
-    """The criteria the key states, the item's points and whether conversion estimated them.
-
-    R14: a criterion the answer key states whole points for keeps them, and the item's
-    points are their sum, or the item's own printed points when it prints them and they
-    match. A guide without per-criterion points becomes one criterion at the item's whole
-    printed points, or at 1 point when the item prints none, and counts as estimated. A
-    fractional item point or criterion point, or a criteria sum that differs from the
-    item's printed points, raises so admission keeps the question's source as its review
-    item.
-    """
-    criteria = produced.criteria
-    if not criteria:
-        if produced.points is None:
-            return (), None, False
-        points = _whole_points(produced.points)
-        if points is None:
-            raise ValueError("free_text points are not whole")
-        return (), points, False
-    if any(criterion.points is None for criterion in criteria):
-        if len(criteria) != 1:
-            raise ValueError("a guide without per-criterion points is one criterion")
-        (criterion,) = criteria
-        points = 1 if produced.points is None else _whole_points(produced.points)
-        if points is None or points < 1:
-            raise ValueError("free_text points are not whole")
-        return (NativeExamCriterion(text=criterion.text, points=points),), points, True
-    whole_points: list[int] = []
-    for criterion in criteria:
-        if criterion.points is None:
-            raise ValueError("free_text criterion points must be stated together")
-        points = _whole_points(criterion.points)
-        if points is None or points < 1:
-            raise ValueError("free_text criterion points are not whole")
-        whole_points.append(points)
-    native = tuple(
-        NativeExamCriterion(text=criterion.text, points=points)
-        for criterion, points in zip(criteria, whole_points, strict=True)
-    )
-    total = sum(whole_points)
-    if produced.points is None:
-        return native, total, False
-    stated = _whole_points(produced.points)
-    if stated is None or stated != total:
-        raise ValueError("free_text criteria sum does not match the item's stated points")
-    return native, stated, False
 
 
 def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> NativeExamItem:
@@ -286,7 +213,7 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
         )
     criteria: tuple[NativeExamCriterion, ...] = ()
     if produced.kind is NativeExamItemKind.FREE_TEXT:
-        criteria, points, points_estimated = _free_text_criteria(produced)
+        criteria, points, points_estimated = free_text_criteria(produced)
     return NativeExamItem(
         item_id="item_001",
         sequence=1,

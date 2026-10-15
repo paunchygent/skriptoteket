@@ -1,6 +1,6 @@
 ## Current
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
   parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
   (walking skeleton) merged to main `ef92afd8`, pushed in `03ba322d`; backend
@@ -51,10 +51,13 @@
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
-  `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`). Tasks 4 (Fritext criteria,
-  in review), 5 (Kort svar) and 6 (structured misspelling producer, R15-R17)
-  `in_progress` in their own worktrees; task 7 export checklist follows.
+  `in_progress` (TASK-SKRIPT-39-09-03): merge `ee850113`, F1 validated.
+  Owner Pi `e94bd82a`. Next: independent rereview
+  and parent-owned live proof; focused backend and 1370 frontend tests passed;
+  retained `01a13c92` `evidence/impl/TASK-SKRIPT-39-09-03/merge-repair-report.md`.
+  Task 4 (Fritext criteria) is approved and on main. Tasks 5 (Kort svar)
+  and 6 (structured misspelling producer, R15-R17) are `in_progress`
+  in their own worktrees; task 7 export checklist follows.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
