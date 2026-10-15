@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e1713b363c8196ad28bb58b1cb629b5acdb76946d869c47dc697fef8fe87c50e",
+  "source_set_digest": "c3a14aef69c1779d337d066858db63dc4bed716210fd27fdfd80637ac6bf5ef5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -972,6 +972,27 @@
       "readiness_review": {
         "record": "inline",
         "status": "not_started"
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-08-36",
+      "type": "story",
+      "title": "Klassrumskartan tutorial clips in Hjälp with a first-use dialog",
+      "path": "docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
