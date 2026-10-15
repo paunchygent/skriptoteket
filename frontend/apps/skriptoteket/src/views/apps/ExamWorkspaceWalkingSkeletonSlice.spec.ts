@@ -154,7 +154,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-add-item"]').trigger("click");
+    await wrapper.find('[data-test="exam-workspace-add-free_text"]').trigger("click");
 
     expect(wrapper.findAll('[data-test^="exam-workspace-item-row-"]')).toHaveLength(9);
     const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
@@ -164,6 +164,31 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       "Fråga 9",
     );
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+  });
+
+  it("adds a short answer as a Lucktext with one unkeyed gap after the question text", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await wrapper.find('[data-test="exam-workspace-add-short_answer"]').trigger("click");
+
+    const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
+    expect(newRow.text()).toContain("Lucktext");
+    await saveDocument(wrapper);
+
+    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [
+      string,
+      { document: NativeExamDocument; expectedRevision: number },
+    ];
+    const added = params.document.items.find((item) => item.item_id === "item_009")!;
+    expect(added.kind).toBe("gap_fill");
+    expect(added.body).toEqual([
+      { segments: [{ kind: "text", text: "Ny fråga" }] },
+      { segments: [{ kind: "gap", gap_id: "gap_001" }] },
+    ]);
+    expect(added.gaps).toEqual([{ gap_id: "gap_001", accepted_values: [], automatic_values: [] }]);
+    expect(added.points).toBeNull();
   });
 
   it("saves with the bumped client-side revision and the previous expected revision", async () => {

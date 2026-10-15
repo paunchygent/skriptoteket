@@ -327,8 +327,20 @@ export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
   return withSuggestionAsKey(item, suggestion);
 }
 
-/** The free-text question a teacher adds after the last item. */
-export function newTeacherItem(itemId: string, sequence: number): NativeExamItem {
+/** The kinds of question a teacher adds from "Ny fråga". */
+export type TeacherItemKind = "free_text" | "short_answer";
+
+/**
+ * The question a teacher adds after the last item: a free-text question, or a
+ * short answer, which is a Lucktext with one gap after the question text (Q14).
+ */
+export function newTeacherItem(
+  itemId: string,
+  sequence: number,
+  kind: TeacherItemKind,
+): NativeExamItem {
+  const question = { segments: [{ kind: "text" as const, text: "Ny fråga" }] };
+  const shortAnswer = kind === "short_answer";
   return {
     ai_suggestion: null,
     facit_text: null,
@@ -336,11 +348,13 @@ export function newTeacherItem(itemId: string, sequence: number): NativeExamItem
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
+    body: shortAnswer
+      ? [question, { segments: [{ kind: "gap", gap_id: "gap_001" }] }]
+      : [question],
     choices: [],
-    gaps: [],
+    gaps: shortAnswer ? [{ gap_id: "gap_001", accepted_values: [], automatic_values: [] }] : [],
     item_id: itemId,
-    kind: "free_text",
+    kind: shortAnswer ? "gap_fill" : "free_text",
     match_left: [],
     match_right: [],
     points: null,

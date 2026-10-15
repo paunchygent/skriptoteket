@@ -39,6 +39,7 @@ import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConvers
 import ExamWorkspaceConvertingNotice from "./exam-workspace/ExamWorkspaceConvertingNotice.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
+import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
@@ -230,8 +231,8 @@ function goToItem(itemId: string): void {
   detailsOpen.value = true;
 }
 
-function handleAddItem(): void {
-  addItem();
+function handleAddItem(kind: TeacherItemKind): void {
+  addItem(kind);
   questionSheetOpen.value = false;
 }
 
@@ -444,15 +445,28 @@ async function handleSave(): Promise<void> {
         :selected-item-id="selectedItemId"
         @select="selectAndClose"
       />
-      <div class="p-4">
+      <div class="grid grid-cols-2 gap-2 p-4">
         <button
           type="button"
           class="btn-ghost w-full justify-center shadow-none"
           :disabled="isBusy"
-          data-test="exam-workspace-phone-add-item"
-          @click="handleAddItem"
+          title="Ny fråga: fritext"
+          aria-label="Ny fråga: fritext"
+          data-test="exam-workspace-phone-add-free_text"
+          @click="handleAddItem('free_text')"
         >
-          Ny fråga
+          Fritext
+        </button>
+        <button
+          type="button"
+          class="btn-ghost w-full justify-center shadow-none"
+          :disabled="isBusy"
+          title="Ny fråga: kort svar"
+          aria-label="Ny fråga: kort svar"
+          data-test="exam-workspace-phone-add-short_answer"
+          @click="handleAddItem('short_answer')"
+        >
+          Kort svar
         </button>
       </div>
     </ExamWorkspaceSheet>
