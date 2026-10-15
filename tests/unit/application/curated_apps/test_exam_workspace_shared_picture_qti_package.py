@@ -1,6 +1,7 @@
 """Student shared stems retain positioned pictures without exposing facit assets."""
 
 import hashlib
+import posixpath
 import zipfile
 from io import BytesIO
 from uuid import uuid4
@@ -113,7 +114,11 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
         assets_by_id={asset_id: payload},
     )
     with zipfile.ZipFile(BytesIO(package)) as archive:
-        item_path = next(name for name in archive.namelist() if name.startswith("items/"))
+        item_path = next(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         root = ElementTree.fromstring(archive.read(item_path))
         images = [node for node in root.iter() if node.tag.rsplit("}", 1)[-1] == "img"]
         assert len(images) == child_count + 1
@@ -123,7 +128,9 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
         assert stem_picture.tail == " diagrammet."
         assert "".join(root.itertext()).count("Betrakta:") == 1
         for image in images:
-            target = image.attrib["src"].removeprefix("../")
+            target = posixpath.normpath(
+                posixpath.join(posixpath.dirname(item_path), image.attrib["src"])
+            )
             assert archive.read(target) == payload
             with Image.open(BytesIO(archive.read(target))) as actual:
                 actual.verify()
