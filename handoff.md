@@ -30,8 +30,9 @@
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
-  (merged b6d6b3f4; Exam.net 5333228). Next: task 2 port shapes (images in
-  `items/images/`; uneven points all-or-nothing, user decision 2026-10-15).
+  (merged b6d6b3f4; Exam.net 5333228). Task 2 `in_progress` (worktree
+  `codex/task-skript-39-09-02`; Pi units t02-scoring and t02-pictures; probe r19
+  in session 01a13c92 `evidence/probe-r19/`). Next: integrate, goldens, review.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
