@@ -353,13 +353,13 @@ class Settings(BaseSettings):
     # base URL, key and daily token lease. Its model and acceptance threshold
     # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
-    # Type-batched DOCX conversion (TASK-SKRIPT-39-05-04 D29): question families
-    # per converter batch, set after the D26 measurement: one family per batch at
-    # low converter effort (LLM_DOCX_CONVERSION_REASONING_EFFORT) matched 302 of
-    # 314 corpus items with every exam ready within 35 s (2026-10-11). The
-    # grouping pass and the label-only second pass (D23 pass B) observed at most
-    # 566 output tokens per call.
-    LLM_DOCX_BATCH_FAMILIES: int = Field(default=1, ge=1)
+    # Type-batched DOCX conversion: question families per converter batch. Sixteen
+    # families give the converter the neighbouring questions to read the exam's
+    # patterns from; on the 2026-10-16 live corpus runs 16 families matched 307 of
+    # 316 items and one family 298 (TASK-SKRIPT-39-05-13 D6). The grouping pass and
+    # the label-only second pass (D23 pass B) observed at most 566 output tokens per
+    # call.
+    LLM_DOCX_BATCH_FAMILIES: int = Field(default=16, ge=1)
     # Output allowance per question family in a converter batch; each batch
     # reserves and caps its output at this times its families (TASK-SKRIPT-39-05-04
     # R-F2). The largest recorded one-family response body is about 17.5 KB, and

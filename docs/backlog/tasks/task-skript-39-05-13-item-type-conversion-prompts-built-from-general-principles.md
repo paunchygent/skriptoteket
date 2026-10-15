@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-13
 title: Item-type conversion prompts built from general principles
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: in_progress
 closeout_review:
@@ -13,11 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- The DOCX build prompt is a shared core plus one section per item kind, sent only
-  for the kinds in the batch, stated as general principles with positive phrasing
-  and short constructed examples; a live run of every corpus exam resolves the six
-  ST-SKRIPT-39-05 model-quality findings without new regressions, and a staging walk
-  imports one converted exam into Exam.net.
+  - The DOCX build prompt is a shared core plus one section per item kind, sent only for the kinds in the batch, stated as general principles with positive phrasing and short constructed examples; a live run of every corpus exam resolves the six ST-SKRIPT-39-05 model-quality findings without new regressions, and a staging walk imports one converted exam into Exam.net.
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -98,10 +94,11 @@ gets the same assembly. A batch with fewer kinds sends a shorter prompt.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Shared core plus one section per item kind, sent only for the batch's item_kinds, with worked examples (user 2026-10-16). |
-| D2  | Proof is a live run of the affected exams and the full corpus plus one staging walk with an Exam.net import (user 2026-10-16). |
-| D3  | Rules are stated positively; prohibitions about inputs or tools the model never has are removed (user 2026-10-16). |
-| D4  | General principles replace pattern-specific rules; gap placement follows the "directly after the smallest text the answer is about" principle (user 2026-10-16). |
-| D5  | No gold-corpus eval metric is a criterion (user 2026-10-16). |
+| ID  | Decided contract term                                                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Shared core plus one section per item kind, sent only for the batch's item_kinds, with worked examples (user 2026-10-16).                                                                            |
+| D2  | Proof is a live run of the affected exams and the full corpus plus one staging walk with an Exam.net import (user 2026-10-16).                                                                       |
+| D3  | Rules are stated positively; prohibitions about inputs or tools the model never has are removed (user 2026-10-16).                                                                                   |
+| D4  | General principles replace pattern-specific rules; gap placement follows the "directly after the smallest text the answer is about" principle (user 2026-10-16).                                     |
+| D5  | No gold-corpus eval metric is a criterion (user 2026-10-16).                                                                                                                                         |
+| D6  | The converter batches 16 question families by default so each call sees the exam's neighbouring questions; one-family batches measured 298 of 316 items against 307 of 316 for 16 (user 2026-10-16). |
