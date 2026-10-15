@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9a55f81759e899df82454f7f2adf4b39746037d41dd4997b3d81b528001cb3f",
+  "source_set_digest": "f246f76c1530494996aea24740ce14a240b3a0b8e23e052970589ef96ce71709",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5051,6 +5051,29 @@
         "decided_at": "2026-10-14",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer approved the frontend repair e4a5e2eb after review of c7d6db01 (merged c270419e) and the replay repair 42050a03 after review of the re-record commit 87478dcd (merged 426d7551). 118 live v14 replies replace the obsolete recordings; source audit of all eight corpus exams found no misreported key source. Staging walk at c270419e: glyph, undo, review, automatic misspellings and Visa som text passed; Exam.net import exam 5332346 accepted several values per gap (Stockholm, Stockolm; syre, syr). Records in Skriptoteket session 01a13a87-acac-7730-bb4e-746618d73cfd evidence/review/TASK-SKRIPT-39-05-10/ and evidence/walk/TASK-SKRIPT-39-05-10/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-11",
+      "type": "task",
+      "title": "Rewire the labeling feasibility report to the v14 batch recordings",
+      "path": "docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Codex Sol 6.1 ruthless-reviewer requested changes on the rewire (typed loader, 615-line methods.py, dead code) and approved the repair committed as aae91639. Evaluate on an empty evidence dir with no API keys exits 0; converter_today identical for all eight exams before and after the repair; ruff, ruff format and explicit-file mypy (13 files) pass. Records in Skriptoteket session 01a13f02-cbaf-71c0-bb3b-f16fc81c7017 evidence/ (parent-evaluate, parent-evaluate-2, repair-summary.md, results/)."
       }
     },
     {
