@@ -60,14 +60,26 @@ run during the Hemma hold.
 ## Validation
 
 - `pdm run lint` and `pdm run typecheck`.
-- `pdm run test-sequential tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`.
+
+- Focused preflight, destination-admission and before-media-copy regression tests:
+
+  ```bash
+  pdm run test-sequential \
+    tests/unit/scripts/test_sir_convert_trust_lane_preflight.py \
+    tests/unit/scripts/test_sir_convert_trust_lane_destinations.py \
+    tests/unit/scripts/test_audio_transcription_parity_preflight.py
+  ```
+
 - `bash -n scripts/hemma_deploy_and_verify_seating_export.sh` and
   `pdm run shellcheck scripts/hemma_deploy_and_verify_seating_export.sh`.
+
 - Local Compose rendering with synthetic environment values to check web and
   worker defaults; configuration proof does not establish service reachability.
+
 - `pdm run handoff-validate`, `pdm run docs-validate`, and `git diff --check`.
 
-Local execution on 2026-10-15 passed: 22 focused tests (`0002`), full backend
+Original candidate `0656bcfe` local execution on 2026-10-15 passed:
+22 focused tests (`0002`), full backend
 and SPA typecheck (`0004`), shell syntax/ShellCheck (`0005`/`0006`), Compose
 rendering (`0012`: 16 endpoint and eight PDF-strategy assertions), lint (`0013`)
 and docs validation (`0010`). Complete captures are under the assigned retained
@@ -75,6 +87,16 @@ session's `operational-output/commands/01a13f9f-fe59-7ea1-9fcf-c2431433fae6/`.
 Initial lint failures were Markdown formatting and two existing overlong
 Compose comments; both were repaired. All proof is local/static; no live
 service, tunnel, DNS, vhost or certificate verification was performed.
+
+F1/F2 repair on 2026-10-15 replaces raw URL markers and profile-only admission
+with parsed scheme/host/port checks. The helper and tests now have separate URL
+policy, lane-decision and live-entrypoint files, all below 500 lines. The original
+19 test functions and 88 assertions remain. Recorded repair checks passed:
+107 focused tests (85 new destination cases), lint, and backend/SPA typecheck.
+The three reviewer bypasses now reject in the same network-free probe. Repair
+proof is retained in the same session under
+`evidence/implementation/TASK-SKRIPT-REP-0040/repair-report.md`; independent
+rereview and closeout remain with the parent.
 
 ## Stop Conditions
 

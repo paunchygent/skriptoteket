@@ -22,8 +22,22 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 from urllib.error import HTTPError, URLError
-from urllib.parse import ParseResult, urlparse
 from urllib.request import Request, urlopen
+
+from scripts._sir_convert_trust_lane_urls import (
+    base_url_kind as _base_url_kind,
+)
+from scripts._sir_convert_trust_lane_urls import (
+    is_private_destination,
+    is_private_tunnel_destination,
+    is_sanctioned_gateway_url,
+)
+from scripts._sir_convert_trust_lane_urls import (
+    is_sanctioned_hemma_remote_proof_tunnel_url as _is_sanctioned_hemma_remote_proof_tunnel_url,
+)
+from scripts._sir_convert_trust_lane_urls import (
+    redacted_url_origin as _redacted_url_origin,
+)
 
 ProofLane = Literal[
     "auto",
@@ -33,18 +47,7 @@ ProofLane = Literal[
     "mixed-tunnel-debug",
 ]
 
-REMOTE_PRODUCT_HOSTS = {"skriptoteket.hule.education"}
-REMOTE_PROOF_GATEWAY_HOSTS = {"api.hule.education"}
-REMOTE_PROOF_GATEWAY_PATH_PREFIX = "/sir-convert/"
 REMOTE_SERVICE_PROFILES = {"prod", "production", "hemma-production", "hemma"}
-REMOTE_PROOF_SERVICE_PROFILES = {"remote-proof", "hemma-remote-proof"}
-REMOTE_PROOF_TUNNEL_HOSTS = {"127.0.0.1", "localhost", "host.docker.internal"}
-REMOTE_PROOF_TUNNEL_PORTS = {28085, 38085}
-REMOTE_BACKEND_MARKERS = (
-    "127.0.0.1:28085",
-    "host.docker.internal:28085",
-    "sir_convert_a_lot_prod",
-)
 TRUST_LANE_ENV_KEYS = {
     "gateway_backend_url": (
         "SIR_CONVERT_REMOTE_INFERENCE_BACKEND_URL",
@@ -359,18 +362,6 @@ def _base_metadata(value: TrustLanePreflightInput, *, proof_lane: ProofLane) -> 
     return metadata
 
 
-def _base_url_kind(value: str) -> str:
-    parsed = urlparse(value)
-    host = (parsed.hostname or "").lower().rstrip(".")
-    if (
-        parsed.scheme == "https"
-        and host in REMOTE_PRODUCT_HOSTS
-        and _url_port(parsed) in (None, 443)
-    ):
-        return "remote"
-    return "local"
-
-
 def _uses_remote_compute(
     value: TrustLanePreflightInput,
     *,
@@ -383,50 +374,17 @@ def _uses_remote_compute(
         return _has_sanctioned_remote_proof_gateway(value)
     if proof_lane == "hemma-remote-proof":
         return _has_sanctioned_hemma_remote_proof_tunnel(value)
-    profile = (value.sir_convert_service_profile or "").strip().lower()
-    backend_url = (value.gateway_backend_url or "").strip().lower()
-    return profile in REMOTE_SERVICE_PROFILES or any(
-        marker in backend_url for marker in REMOTE_BACKEND_MARKERS
-    )
+    return is_private_destination(value.gateway_backend_url)
 
 
 def _has_sanctioned_remote_proof_gateway(value: TrustLanePreflightInput) -> bool:
-    gateway_url = value.gateway_backend_url
-    if not gateway_url:
-        return False
-    parsed = _parse_urlish(gateway_url.strip())
-    host = (parsed.hostname or "").lower().rstrip(".")
-    return (
-        parsed.scheme == "https"
-        and host in REMOTE_PROOF_GATEWAY_HOSTS
-        and _url_port(parsed) in (None, 443)
-        and parsed.path.startswith(REMOTE_PROOF_GATEWAY_PATH_PREFIX)
-    )
+    return is_sanctioned_gateway_url(value.gateway_backend_url)
 
 
 def _has_sanctioned_hemma_remote_proof_tunnel(value: TrustLanePreflightInput) -> bool:
     return _is_sanctioned_hemma_remote_proof_tunnel_url(
         value.gateway_backend_url,
         service_profile=value.sir_convert_service_profile,
-    )
-
-
-def _is_sanctioned_hemma_remote_proof_tunnel_url(
-    raw_url: str | None,
-    *,
-    service_profile: str | None,
-) -> bool:
-    profile = (service_profile or "").strip().lower()
-    if profile not in REMOTE_PROOF_SERVICE_PROFILES:
-        return False
-    if not raw_url:
-        return False
-    parsed = _parse_urlish(raw_url.strip())
-    host = (parsed.hostname or "").lower().rstrip(".")
-    return (
-        parsed.scheme == "http"
-        and host in REMOTE_PROOF_TUNNEL_HOSTS
-        and _url_port(parsed) in REMOTE_PROOF_TUNNEL_PORTS
     )
 
 
@@ -459,18 +417,19 @@ def _validate_producer_backend(
 
 
 def _producer_backend_uses_remote_compute(raw_url: str) -> bool:
-    lowered = raw_url.strip().lower()
-    return any(marker in lowered for marker in REMOTE_BACKEND_MARKERS)
+    return is_private_destination(raw_url)
 
 
 def _is_mixed_tunnel(value: TrustLanePreflightInput, *, proof_lane: ProofLane) -> bool:
-    if proof_lane == "hemma-remote-proof":
+    if proof_lane == "hemma-remote-proof" or not is_private_destination(value.gateway_backend_url):
         return False
     if proof_lane == "mixed-tunnel-debug":
         return True
-    backend_url = (value.gateway_backend_url or "").strip().lower()
     profile = (value.sir_convert_service_profile or "").strip().lower()
-    return "28085" in backend_url or profile in REMOTE_SERVICE_PROFILES
+    return (
+        is_private_tunnel_destination(value.gateway_backend_url)
+        or profile in REMOTE_SERVICE_PROFILES
+    )
 
 
 def _check_matching_fingerprints(
@@ -501,40 +460,6 @@ def _normalized_fingerprint(value: str | None) -> str | None:
         return None
     normalized = value.strip().lower()
     return normalized.removeprefix("sha256:") or None
-
-
-def _redacted_url_origin(value: str | None) -> str | None:
-    if value is None:
-        return None
-    stripped = value.strip()
-    if not stripped:
-        return None
-    parsed = _parse_urlish(stripped)
-    host = (parsed.hostname or "").lower()
-    if not host:
-        return "<redacted-url>"
-    host_port = _host_port(host, _url_port(parsed))
-    if parsed.scheme and "://" in stripped:
-        return f"{parsed.scheme.lower()}://{host_port}"
-    return host_port
-
-
-def _parse_urlish(value: str) -> ParseResult:
-    if "://" in value:
-        return urlparse(value)
-    return urlparse(f"//{value}")
-
-
-def _url_port(parsed: ParseResult) -> int | None:
-    try:
-        return parsed.port
-    except ValueError:
-        return None
-
-
-def _host_port(host: str, port: int | None) -> str:
-    host_part = f"[{host}]" if ":" in host and not host.startswith("[") else host
-    return f"{host_part}:{port}" if port is not None else host_part
 
 
 def _passed(lane_kind: str, metadata: dict[str, object]) -> TrustLanePreflightResult:

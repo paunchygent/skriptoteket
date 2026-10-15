@@ -1,13 +1,14 @@
 ## Current
 
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
-  `in_progress`, implementation complete on `fix/retire-convert-references`;
-  owner Claude parent for independent review and closeout. Private Docker/tunnel
-  defaults replace the retired host; preflight allowance removed, deploy guard kept.
-  Local lint, typecheck, docs validation, 22 tests, ShellCheck and Compose rendering
-  pass. Evidence: retained `01a13f9f-d6dd-7067-b581-efc395226538`
-  `operational-output/commands/`; closed D1-D4 plan under `evidence/planning/`.
-  Next: independent review. Hemma remains on hold: no SSH/deployment/live proof.
+  `in_progress` on `fix/retire-convert-references`; owner Claude parent for
+  original reviewer rereview and closeout. Codex repaired F1 (parsed destination
+  admission) and F2 (helper/test decomposition); all three original bypasses
+  reject. Local 107 focused tests, lint and backend/SPA typecheck pass.
+  Evidence: retained `01a13f9f-d6dd-7067-b581-efc395226538`,
+  `evidence/implementation/TASK-SKRIPT-REP-0040/repair-report.md`.
+  Next: original reviewer rereview, then parent-owned local integration/closeout.
+  Hemma remains on hold: no SSH/deployment/live proof.
   Namecheap CNAME deletion stays with the user.
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
