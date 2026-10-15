@@ -235,6 +235,63 @@ describe("useTutorialSeenSections for signed-in users", () => {
     expect(profileSeen()).toEqual(["planner_overview", "planner_rules"]);
   });
 
+  it("discards a response that arrives after logout instead of reviving the session", async () => {
+    const done = deferred<unknown>();
+    apiMocks.apiPatch.mockReturnValueOnce(done.promise);
+    const auth = useAuthStore();
+    auth.user = { id: "user-1" } as typeof auth.user;
+    auth.profile = signedInProfile([]) as typeof auth.profile;
+    const seen = useTutorialSeenSections("authenticated");
+
+    seen.markSeen("planner_overview");
+    expect(apiMocks.apiPatch).toHaveBeenCalledTimes(1);
+
+    auth.clear();
+    await flush();
+    done.resolve(profileResponse(["planner_overview"]));
+    await flush();
+
+    expect(auth.isAuthenticated).toBe(false);
+    expect(auth.user).toBeNull();
+    expect(auth.profile).toBeNull();
+    expect(seen.pendingSections.value).toEqual([]);
+    expect(seen.persistence.value).toBe("confirmed");
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("starts a fresh chain for the next user and never sends the previous user's sections", async () => {
+    const first = deferred<unknown>();
+    apiMocks.apiPatch.mockReturnValueOnce(first.promise);
+    const auth = useAuthStore();
+    auth.user = { id: "user-1" } as typeof auth.user;
+    auth.profile = signedInProfile([]) as typeof auth.profile;
+    const seen = useTutorialSeenSections("authenticated");
+    seen.markSeen("planner_overview");
+
+    auth.clear();
+    await flush();
+    auth.user = { id: "user-2" } as typeof auth.user;
+    auth.profile = { ...signedInProfile([]), user_id: "user-2" } as typeof auth.profile;
+    await flush();
+    first.resolve(profileResponse(["planner_overview"]));
+    await flush();
+
+    expect(seen.isSeen("planner_overview")).toBe(false);
+    apiMocks.apiPatch.mockResolvedValueOnce({
+      user: { id: "user-2" },
+      profile: { ...signedInProfile(["planner_rules"]), user_id: "user-2" },
+    });
+    seen.markSeen("planner_rules");
+    await flush();
+
+    expect(apiMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(apiMocks.apiPatch).toHaveBeenNthCalledWith(2, SETTINGS_PATH, {
+      tutorial_seen_sections: ["planner_rules"],
+    });
+    expect((auth.user as { id: string } | null)?.id).toBe("user-2");
+    expect(profileSeen()).toEqual(["planner_rules"]);
+  });
+
   it("keeps a section pending until an acknowledged profile list includes it", async () => {
     const auth = useAuthStore();
     auth.profile = signedInProfile([]) as typeof auth.profile;
