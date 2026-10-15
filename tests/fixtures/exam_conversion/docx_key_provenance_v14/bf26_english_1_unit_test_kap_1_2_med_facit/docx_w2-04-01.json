@@ -1,0 +1,53 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0134"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0132",
+        "body:0133"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You are writing a formal e-mail to Ms. Lind. Which greeting follows the class model?",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. Dear Ms. Lind,",
+      "points": 1,
+      "choices": [
+        {
+          "text": "Hi Ms. Lind,",
+          "correct": false
+        },
+        {
+          "text": "Dear Sir or Madam,",
+          "correct": false
+        },
+        {
+          "text": "Dear Ms. Lind,",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

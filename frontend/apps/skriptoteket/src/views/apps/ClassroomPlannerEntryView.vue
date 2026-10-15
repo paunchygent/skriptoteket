@@ -9,6 +9,8 @@
 
 import { computed, unref } from "vue";
 
+import TutorialFirstUseGate from "../../components/help/tutorial/TutorialFirstUseGate.vue";
+
 import { useClassroomPlannerGuestUpgrade } from "./useClassroomPlannerGuestUpgrade";
 import { hasClassroomPlannerGuestUpgradeMeaningfulConsumption } from "./classroomPlannerGuestUpgradeOutcome";
 import ClassroomPlannerGuestOverviewView from "./ClassroomPlannerGuestOverviewView.vue";
@@ -34,6 +36,12 @@ const authenticatedGuestUpgradeSummary = authenticatedGuestUpgrade.summary;
 const authenticatedGuestUpgradeIsBlocking = authenticatedGuestUpgrade.isBlocking;
 const authenticatedGuestUpgradeShouldShowPrompt = authenticatedGuestUpgrade.shouldShowPrompt;
 const authenticatedPlannerRefreshKey = authenticatedGuestUpgrade.plannerRefreshKey;
+// The first-use tutorial waits while the guest-upgrade gate checks or prompts.
+const authenticatedTutorialBlocked = computed(
+  () =>
+    Boolean(unref(authenticatedGuestUpgradeIsBlocking)) ||
+    Boolean(unref(authenticatedGuestUpgradeShouldShowPrompt)),
+);
 const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
   const receipt = unref(authenticatedGuestUpgradeLastReceipt);
   return hasClassroomPlannerGuestUpgradeMeaningfulConsumption(receipt) ? receipt : null;
@@ -132,6 +140,11 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
       @import="authenticatedGuestUpgrade.importGuestWorkspace"
       @postpone="authenticatedGuestUpgrade.postponeGuestWorkspace"
     />
+
+    <TutorialFirstUseGate
+      host-mode="authenticated"
+      :blocked="authenticatedTutorialBlocked"
+    />
   </section>
 
   <section
@@ -139,5 +152,10 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
     class="flex flex-col"
   >
     <ClassroomPlannerGuestOverviewView />
+
+    <TutorialFirstUseGate
+      host-mode="public"
+      :blocked="false"
+    />
   </section>
 </template>

@@ -8,7 +8,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemb
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     chunks_by_anchor,
 )

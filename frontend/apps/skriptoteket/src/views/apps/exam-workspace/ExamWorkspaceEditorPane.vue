@@ -7,59 +7,74 @@
  *   tablet the question list sits beside the dominating item editor, on phones
  *   the editor is the whole screen. The question details drawer docks beside
  *   the editor on desktop and overlays it on tablet and phone. The pane shows
- *   the selected question's save readiness, export blockers, and waiting
- *   answer-key proposal in the drawer and the attention count on the editor.
+ *   the selected question's save readiness and export blockers in the
+ *   drawer and the attention count on the editor.
+ *   A selected placeholder whose batch still converts disables its editor and
+ *   drawer; the question list stays usable.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the open document in Redigera mode.
  *   - Receives the layout from `useExamWorkspaceLayout` through the view and
  *     composes `ExamWorkspaceQuestionList`, `ExamWorkspaceItemTable`,
  *     `ExamWorkspaceItemEditor`, and `ExamWorkspaceItemDrawer`.
- *   - Holds no state: every edit, step, add, and proposal decision is emitted
- *     to the view, which owns it through the workspace composables.
+ *   - Holds no state: every edit, step, add, and reconversion is emitted to
+ *     the view, which owns it through the workspace composables; the open
+ *     document's picture URLs are handed down to the item editor, and the
+ *     exam's shared instructions are shown once, read-only, above the
+ *     question list with the same renderer as a parent's stem.
  */
 
 import { computed } from "vue";
 
 import type {
-  ExamWorkspaceAnswerKeyProposal,
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
+  NativeExamItemKind,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceItemDrawer from "./ExamWorkspaceItemDrawer.vue";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./ExamWorkspaceItemTable.vue";
 import ExamWorkspaceQuestionList from "./ExamWorkspaceQuestionList.vue";
+import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
+import type { TeacherItemKind } from "./examWorkspaceItemEdits";
+import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 
 const props = defineProps<{
+  /** Asset URL per asset id, handed down to the question-text editor. */
+  assetUrls?: Record<string, string>;
   detailsOpen: boolean;
   disabled: boolean;
   exportBlockersByItemId: Record<string, string[]>;
+  /** The exam's shared instructions, already resolved for read-only display. */
+  globalInstructions: ExamWorkspaceSharedParagraph[];
   itemCount: number;
   itemRows: ExamWorkspaceItemRow[];
   layout: ExamWorkspaceLayout;
-  proposalItemIds: string[];
   readinessByItemId: Record<string, string[]>;
   selectedItem: NativeExamItem | null;
   selectedItemId: string | null;
+  /** The selected item is a placeholder whose batch still converts; its editor and drawer are disabled. */
+  selectedItemLocked: boolean;
   selectedPosition: number;
-  selectedProposal: ExamWorkspaceAnswerKeyProposal | null;
 }>();
 
 const emit = defineEmits<{
-  add: [];
-  approveProposal: [itemId: string];
-  dismissProposal: [itemId: string];
-  editProposal: [itemId: string];
+  add: [kind: TeacherItemKind];
   markReviewed: [itemId: string];
+  undoInterpretation: [itemId: string];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
+  retry: [itemId: string, kind: NativeExamItemKind];
   select: [itemId: string];
   step: [offset: number];
   "update:detailsOpen": [open: boolean];
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateMatchEntryText: [
     itemId: string,
@@ -74,7 +89,7 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
+  updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const isPhone = computed(() => props.layout === "phone");
@@ -110,11 +125,16 @@ const redigeraGridClass = computed(() => {
       v-if="!isPhone"
       :count="itemCount"
       :disabled="disabled"
-      @add="emit('add')"
+      @add="emit('add', $event)"
     >
+      <ExamWorkspaceSharedInstruction
+        v-if="globalInstructions.length > 0"
+        :paragraphs="globalInstructions"
+        class="border-b border-navy/15 bg-canvas px-3 py-2"
+        data-test="exam-workspace-global-instruction"
+      />
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
-        :proposal-item-ids="proposalItemIds"
         :readiness-by-item-id="readinessByItemId"
         :rows="itemRows"
         :selected-item-id="selectedItemId"
@@ -130,15 +150,19 @@ const redigeraGridClass = computed(() => {
         <div :class="isPhone ? 'py-4' : 'mx-auto w-full max-w-[60rem] p-6'">
           <ExamWorkspaceItemEditor
             v-if="selectedItem"
-            :attention-count="selectedReadiness.length + (selectedProposal ? 1 : 0)"
+            :asset-urls="assetUrls"
+            :attention-count="selectedReadiness.length"
             :details-open="detailsOpen"
-            :disabled="disabled"
+            :disabled="disabled || selectedItemLocked"
             :item="selectedItem"
             :parent-child="selectedParentChild"
             :position="selectedPosition"
             :show-navigation="!isPhone"
             :total="itemCount"
             @mark-reviewed="emit('markReviewed', $event)"
+            @undo-interpretation="emit('undoInterpretation', $event)"
+            @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+            @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
             @next="emit('step', 1)"
             @previous="emit('step', -1)"
             @toggle-details="emit('update:detailsOpen', !detailsOpen)"
@@ -152,6 +176,7 @@ const redigeraGridClass = computed(() => {
               (itemId, gapId, acceptedValues) =>
                 emit('updateGapValues', itemId, gapId, acceptedValues)
             "
+            @update-criteria="(itemId, criteria) => emit('updateCriteria', itemId, criteria)"
             @update-match-entry-text="
               (itemId, side, entryId, text) =>
                 emit('updateMatchEntryText', itemId, side, entryId, text)
@@ -162,7 +187,7 @@ const redigeraGridClass = computed(() => {
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)
             "
             @update-points="(itemId, points) => emit('updatePoints', itemId, points)"
-            @update-title="(itemId, title) => emit('updateTitle', itemId, title)"
+            @update-tick-points="(itemId, tickPoints) => emit('updateTickPoints', itemId, tickPoints)"
           />
           <p
             v-else
@@ -174,16 +199,13 @@ const redigeraGridClass = computed(() => {
       </div>
       <ExamWorkspaceItemDrawer
         v-if="detailsOpen && selectedItem"
-        :disabled="disabled"
+        :disabled="disabled || selectedItemLocked"
         :item="selectedItem"
         :layout="layout"
-        :proposed-item="selectedProposal?.proposed_item ?? null"
         :readiness="selectedReadiness"
         :server-blockers="selectedServerBlockers"
-        @approve="emit('approveProposal', $event)"
         @close="emit('update:detailsOpen', false)"
-        @dismiss="emit('dismissProposal', $event)"
-        @edit="emit('editProposal', $event)"
+        @retry="(itemId, kind) => emit('retry', itemId, kind)"
       />
     </div>
   </div>

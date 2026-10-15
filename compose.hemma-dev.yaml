@@ -53,6 +53,7 @@ services:
       RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
       VAULT_ROOT: /var/lib/skriptoteket/vault
+      MEDIA_ROOT: /var/lib/skriptoteket/media
       OTEL_TRACING_ENABLED: "false"
       HEALTHZ_SMTP_CHECK_ENABLED: "false"
       # HuleEdu staging Gateway signed internal identity verification.
@@ -71,6 +72,8 @@ services:
       - /run/user/1000/docker.sock:/run/user/1000/docker.sock:ro
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
+      # Tutorial media; the HuleFilm publish step creates this directory.
+      - /home/paunchygent/apps/skriptoteket-media/dev:/var/lib/skriptoteket/media:ro
       # Only the public key; the staging key directory also holds the
       # Gateway private key.
       - type: bind

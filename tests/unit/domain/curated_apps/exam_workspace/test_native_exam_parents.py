@@ -6,12 +6,22 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
     parent_points,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_document,
     recorded_items,
@@ -39,10 +49,14 @@ def _kind_boundary() -> tuple[int, int]:
     raise AssertionError("recording has a single kind")
 
 
+def _instruction_lines(*lines: str) -> tuple[NativeParagraph, ...]:
+    return tuple(NativeParagraph(segments=(NativeTextSegment(text=line),)) for line in lines)
+
+
 def _parent(parent_id: str, *numbers: int, instruction: tuple[str, ...] = ("Do these.",)):
     return NativeExamParent(
         parent_id=parent_id,
-        instruction=instruction,
+        instruction=_instruction_lines(*instruction),
         item_ids=tuple(f"item_{number:03d}" for number in numbers),
     )
 
@@ -88,11 +102,16 @@ def test_children_listed_out_of_sequence_order_are_rejected():
         recorded_document((_parent("parent_001", second, first),))
 
 
-def test_children_of_different_kinds_are_rejected():
+def test_children_of_different_kinds_share_one_parent_and_survive_a_json_round_trip():
     first, second = _kind_boundary()
+    items = recorded_items()
+    assert items[first - 1].kind is not items[second - 1].kind
 
-    with pytest.raises(ValidationError, match="share one item kind"):
-        recorded_document((_parent("parent_001", first, second),))
+    document = recorded_document((_parent("parent_001", first, second),), items=items)
+    again = NativeExamDocument.model_validate_json(native_exam_document_json_bytes(document))
+
+    assert again.parents == document.parents
+    assert again.parent_of(f"item_{first:03d}") == again.parent_of(f"item_{second:03d}")
 
 
 def test_a_child_that_is_not_an_item_is_rejected():
@@ -133,14 +152,25 @@ def test_one_child_listed_twice_is_rejected():
         {"parent_id": "parent_1"},
         {"parent_id": "item_001"},
         {"instruction": ()},
-        {"instruction": ("Do these.", "   ")},
+        {"instruction": (NativeParagraph(segments=(NativeGapSegment(gap_id="gap_001"),)),)},
         {"item_ids": ()},
         {"unknown_field": "x"},
     ],
-    ids=["short_id", "wrong_prefix", "no_instruction", "blank_line", "no_children", "extra_field"],
+    ids=[
+        "short_id",
+        "wrong_prefix",
+        "no_instruction",
+        "gap_instruction",
+        "no_children",
+        "extra_field",
+    ],
 )
 def test_malformed_parent_fields_are_rejected(fields: dict):
-    valid = {"parent_id": "parent_001", "instruction": ("Do these.",), "item_ids": ("item_001",)}
+    valid = {
+        "parent_id": "parent_001",
+        "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Do these."),)),),
+        "item_ids": ("item_001",),
+    }
 
     with pytest.raises(ValidationError):
         NativeExamParent.model_validate({**valid, **fields})
@@ -153,7 +183,7 @@ def test_document_saved_without_parents_still_parses_and_keeps_its_schema_versio
     document = NativeExamDocument.model_validate(saved)
 
     assert document.parents == ()
-    assert document.schema_version == "native_exam_document_v1"
+    assert document.schema_version == "native_exam_document_v2"
 
 
 def test_legacy_fixture_without_parents_parses():
@@ -169,4 +199,4 @@ def test_parents_survive_a_json_round_trip():
     again = NativeExamDocument.model_validate_json(native_exam_document_json_bytes(document))
 
     assert again.parents == document.parents
-    assert again.parents[0].instruction == ("One.", "Two.")
+    assert body_text_lines(again.parents[0].instruction) == ("One.", "Two.")

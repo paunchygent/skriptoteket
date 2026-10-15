@@ -5,7 +5,7 @@
  * Domain purpose:
  *   Convert a .docx exam into files Exam.net imports as intended, in two
  *   modes switched in one stable toolbar: Filer (import, saved exams,
- *   readiness, QTI/PDF/DOCX files, answer-key proposals) and Redigera
+ *   readiness, QTI/PDF/DOCX files, answer-key suggestions) and Redigera
  *   (question list plus one dominating editor, with question details in a
  *   drawer). Save state stays in the toolbar in both modes. Desktop is the
  *   canonical composition; tablet narrows it and overlays the drawer; phone
@@ -20,28 +20,35 @@
  *     .docx files through `useExamWorkspaceSourceFile`; selects the
  *     composition through `useExamWorkspaceLayout`; mirrors the export gate
  *     and the save rules per question through `examWorkspaceItemReadiness`.
- *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry.
+ *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry;
+ *     `ExamWorkspaceConvertingNotice` marks a question whose batch still
+ *     converts, and the editor pane locks it until that batch arrives.
  *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
  *     drawer) render the workspace; phones add a question bar and sheet.
+ *   - Resolves the open document's shared instructions and each parent's stem
+ *     against its picture URLs once, so the list and sheet show the same text
+ *     and diagrams read-only.
  */
 
 import { computed, onMounted, ref, watch } from "vue";
 
+import { IconPlus } from "../../components/icons";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
 import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
+import ExamWorkspaceConvertingNotice from "./exam-workspace/ExamWorkspaceConvertingNotice.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
+import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
+import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
-import {
-  examWorkspaceDisplayTitle,
-  toExamWorkspaceItemRows,
-} from "./exam-workspace/examWorkspaceRows";
+import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
@@ -55,22 +62,30 @@ const layout = useExamWorkspaceLayout();
 
 const {
   addItem,
-  applyProposal,
+  applyArrivingSuggestions,
+  assetUrls,
   conflictNotice,
   conversionError,
   conversionMessage,
+  conversionProgress,
+  convertingItemIds,
   isConverting,
   retryConversionStatus,
+  importBlocked,
   importDocument,
   isBusy,
   isDirty,
+  isOpen,
   loadSavedDocuments,
   markItemReviewed,
   notes,
   openDocument,
+  openExam,
   reloadDocument,
+  retryItem,
   saveDocument,
   savedDocuments,
+  savedRevision,
   selectItem,
   selectedItem,
   selectedItemId,
@@ -78,34 +93,40 @@ const {
   updateItemChoiceText,
   updateItemCorrectChoices,
   updateItemGapValues,
+  undoItemInterpretation,
+  removeItemAutomaticValue,
+  showItemGapAsText,
+  updateItemCriteria,
   updateItemMatchEntryText,
   updateItemMatchPairs,
   updateItemParagraphSegments,
   updateItemPoints,
-  updateItemTitle,
+  updateItemTickPoints,
   workspaceDocument,
 } = useExamWorkspaceDocument();
 
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
-  useExamWorkspaceSourceFile(importDocument);
+  useExamWorkspaceSourceFile(importDocument, importBlocked);
 
-const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
-  useExamWorkspaceExports(summary);
+const { exportBlockersByItemId, exportChecklist, exportDocument, exportNotice, exportingTarget } =
+  useExamWorkspaceExports(summary, workspaceDocument);
 
 const {
-  dismissProposal,
+  enrichmentLookupError,
   enrichmentMessage,
   isEnrichmentPending,
   isRequesting,
-  openProposals,
-  proposalForItem,
-  rejectedItemIds,
-  rejectProposal,
-  requestProposals,
-  resetProposalDecisionsAfterSave,
-} = useExamWorkspaceEnrichment(summary);
+  requestSuggestionsForAll,
+  retryEnrichmentLookup,
+} = useExamWorkspaceEnrichment({
+  applySuggestions: applyArrivingSuggestions,
+  document: workspaceDocument,
+  isOpen,
+  openExam,
+  savedRevision,
+});
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
@@ -126,7 +147,20 @@ const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
 const items = computed(() => workspaceDocument.value?.items ?? []);
 
 const itemRows = computed(() =>
-  toExamWorkspaceItemRows(items.value, workspaceDocument.value?.parents ?? []),
+  toExamWorkspaceItemRows(
+    items.value,
+    workspaceDocument.value?.parents ?? [],
+    assetUrls.value,
+  ),
+);
+
+const selectedAiKeyLabel = computed(() =>
+  itemRows.value.find((row) => row.itemId === selectedItemId.value)?.aiKeyLabel ?? null,
+);
+
+/** The exam's shared instructions with their pictures resolved, once above the rows. */
+const globalInstructions = computed(() =>
+  examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
 );
 
 const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
@@ -138,16 +172,7 @@ const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
       itemId: item.item_id,
       reasons: readinessByItemId.value[item.item_id] ?? [],
       sequence: item.sequence,
-      title: examWorkspaceDisplayTitle(item.title, item.sequence),
     })),
-);
-
-const proposalItemIds = computed(() =>
-  openProposals.value.map((proposal) => proposal.item_id),
-);
-
-const selectedProposal = computed(() =>
-  selectedItem.value ? proposalForItem(selectedItem.value.item_id) : null,
 );
 
 const selectedPosition = computed(() => {
@@ -159,8 +184,10 @@ const otherSavedDocuments = computed(() =>
   savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
 );
 
+// Suggestion requests send the editor's current document, so unsaved
+// changes never disable them (TASK-SKRIPT-39-04-07).
 const enrichmentDisabled = computed(
-  () => isDirty.value || isBusy.value || isRequesting.value || isEnrichmentPending.value,
+  () => isBusy.value || isRequesting.value || isEnrichmentPending.value,
 );
 
 // A newly open exam goes into the address and starts in Redigera; closing
@@ -173,19 +200,6 @@ watch(
       mode.value = "filer";
     } else if (lineageId !== previousLineageId) {
       mode.value = "redigera";
-    }
-  },
-);
-
-// A waiting answer-key proposal is the next thing to decide, so the desktop
-// drawer opens by itself for it. Tablet and phone overlays take focus, which
-// would interrupt typing; there the count on the "Detaljer" toggle shows it.
-watch(
-  () => selectedProposal.value?.item_id ?? null,
-  (proposalItemId) => {
-    if (proposalItemId && layout.value === "desktop") {
-      questionSheetOpen.value = false;
-      detailsOpen.value = true;
     }
   },
 );
@@ -219,8 +233,8 @@ function goToItem(itemId: string): void {
   detailsOpen.value = true;
 }
 
-function handleAddItem(): void {
-  addItem();
+function handleAddItem(kind: TeacherItemKind): void {
+  addItem(kind);
   questionSheetOpen.value = false;
 }
 
@@ -233,27 +247,7 @@ function handleExport(target: ExamWorkspaceExportTarget): void {
 }
 
 async function handleSave(): Promise<void> {
-  const rejectedProposalItemIds = [...rejectedItemIds.value];
-  if (await saveDocument(rejectedProposalItemIds)) {
-    resetProposalDecisionsAfterSave();
-  }
-}
-
-function handleApproveProposal(itemId: string): void {
-  const proposal = proposalForItem(itemId);
-  if (proposal) {
-    applyProposal(itemId, proposal.proposed_item, true);
-    dismissProposal(itemId);
-  }
-}
-
-function handleEditProposal(itemId: string): void {
-  const proposal = proposalForItem(itemId);
-  if (proposal) {
-    applyProposal(itemId, proposal.proposed_item, false);
-    dismissProposal(itemId);
-    detailsOpen.value = false;
-  }
+  await saveDocument();
 }
 </script>
 
@@ -328,6 +322,7 @@ function handleEditProposal(itemId: string): void {
 
         <ExamWorkspacePhoneQuestionBar
           v-if="isPhone && mode === 'redigera' && selectedItem"
+          :ai-key-label="selectedAiKeyLabel"
           :needs-attention="readinessEntries.length > 0"
           :position="selectedPosition"
           :sheet-open="questionSheetOpen"
@@ -341,6 +336,7 @@ function handleEditProposal(itemId: string): void {
       <ExamWorkspaceConversionStatus
         :conversion-message="conversionMessage"
         :conversion-error="conversionError"
+        :conversion-progress="conversionProgress"
         :is-converting="isConverting"
         @retry="retryConversionStatus"
       />
@@ -364,10 +360,13 @@ function handleEditProposal(itemId: string): void {
           <ExamWorkspaceFilesMode
             :compact="isPhone"
             :enrichment-disabled="enrichmentDisabled"
+            :enrichment-lookup-error="enrichmentLookupError"
             :enrichment-message="enrichmentMessage"
+            :export-checklist="exportChecklist"
             :export-notice="exportNotice"
             :exporting-target="exportingTarget"
             :has-document="workspaceDocument !== null"
+            :import-blocked="importBlocked"
             :is-busy="isBusy"
             :is-dirty="isDirty"
             :notes="notes"
@@ -379,7 +378,8 @@ function handleEditProposal(itemId: string): void {
             @go-to-item="goToItem"
             @open="openDocument"
             @reload="reloadDocument"
-            @request-proposals="requestProposals"
+            @request-proposals="requestSuggestionsForAll"
+            @retry-enrichment-lookup="retryEnrichmentLookup"
             @select-file="handleSelectedFile"
           />
         </div>
@@ -391,35 +391,41 @@ function handleEditProposal(itemId: string): void {
           aria-label="Redigera"
           data-test="exam-workspace-workspace"
         >
+          <ExamWorkspaceConvertingNotice
+            v-if="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
+          />
           <ExamWorkspaceEditorPane
             v-if="workspaceDocument"
             v-model:details-open="detailsOpen"
+            :asset-urls="assetUrls"
             :disabled="isBusy"
             :export-blockers-by-item-id="exportBlockersByItemId"
+            :global-instructions="globalInstructions"
             :item-count="items.length"
             :item-rows="itemRows"
             :layout="layout"
-            :proposal-item-ids="proposalItemIds"
             :readiness-by-item-id="readinessByItemId"
             :selected-item="selectedItem"
             :selected-item-id="selectedItemId"
+            :selected-item-locked="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
             :selected-position="selectedPosition"
-            :selected-proposal="selectedProposal"
             @add="handleAddItem"
-            @approve-proposal="handleApproveProposal"
-            @dismiss-proposal="rejectProposal"
-            @edit-proposal="handleEditProposal"
             @mark-reviewed="markItemReviewed"
+            @retry="retryItem"
             @select="selectItem"
             @step="stepItem"
             @update-choice-text="updateItemChoiceText"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
+            @undo-interpretation="undoItemInterpretation"
+            @remove-automatic-value="removeItemAutomaticValue"
+            @show-gap-as-text="showItemGapAsText"
+            @update-criteria="updateItemCriteria"
             @update-match-entry-text="updateItemMatchEntryText"
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
             @update-points="updateItemPoints"
-            @update-title="updateItemTitle"
+            @update-tick-points="updateItemTickPoints"
           />
         </div>
       </div>
@@ -430,23 +436,49 @@ function handleEditProposal(itemId: string): void {
       title="Frågor"
       @close="questionSheetOpen = false"
     >
+      <ExamWorkspaceSharedInstruction
+        v-if="globalInstructions.length > 0"
+        :paragraphs="globalInstructions"
+        class="border-b border-navy/15 bg-canvas px-3 py-2"
+        data-test="exam-workspace-global-instruction"
+      />
       <ExamWorkspaceItemTable
         :export-blockers-by-item-id="exportBlockersByItemId"
-        :proposal-item-ids="proposalItemIds"
         :readiness-by-item-id="readinessByItemId"
         :rows="itemRows"
         :selected-item-id="selectedItemId"
         @select="selectAndClose"
       />
-      <div class="p-4">
+      <div class="grid grid-cols-2 gap-2 p-4">
         <button
           type="button"
           class="btn-ghost w-full justify-center shadow-none"
           :disabled="isBusy"
-          data-test="exam-workspace-phone-add-item"
-          @click="handleAddItem"
+          title="Ny fråga: fritext"
+          aria-label="Ny fråga: fritext"
+          data-test="exam-workspace-phone-add-free_text"
+          @click="handleAddItem('free_text')"
         >
-          Ny fråga
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
+          Fritext
+        </button>
+        <button
+          type="button"
+          class="btn-ghost w-full justify-center shadow-none"
+          :disabled="isBusy"
+          title="Ny fråga: kort svar"
+          aria-label="Ny fråga: kort svar"
+          data-test="exam-workspace-phone-add-short_answer"
+          @click="handleAddItem('short_answer')"
+        >
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
+          Kort svar
         </button>
       </div>
     </ExamWorkspaceSheet>

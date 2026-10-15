@@ -1,0 +1,57 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0101"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0099",
+        "body:0100",
+        "body:0101",
+        "body:0102"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Fråga 22",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Upplysningen och romantiken",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Förklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": [
+        {
+          "text": "Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+          "points": null
+        }
+      ]
+    }
+  ]
+}

@@ -9,10 +9,14 @@
  *   remove, add or reorder them. Atom labels live in a `data-label`
  *   attribute rendered by CSS, so copying or dragging question text never
  *   carries a gap's accepted answers or the "Bild" marker into the text.
+ *   An asset atom with a known URL renders the real image as a child while
+ *   the atom keeps its identity and guards; without a URL the atom stays
+ *   the "Bild" placeholder instead of claiming a picture that is not
+ *   loaded.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceBodyEditor`, which renders `data-label` through
- *     a `::before` rule.
+ *     a `::before` rule and passes the asset URL map through.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
@@ -30,6 +34,10 @@ export const ATOM_ATTRIBUTE = "data-atom";
 export const TRAILING_BREAK_ATTRIBUTE = "data-trailing-break";
 /** Data attribute holding an atom's visible label; CSS renders it, so it is not text content. */
 export const LABEL_ATTRIBUTE = "data-label";
+/** Data attribute marking the real `<img>` a resolved asset atom renders. */
+export const ASSET_IMAGE_ATTRIBUTE = "data-asset-image";
+/** Visible label of an asset atom whose picture is not loaded. */
+export const ASSET_PLACEHOLDER_LABEL = "Bild";
 
 const CHIP_BASE_CLASSES = [
   "mx-0.5",
@@ -53,6 +61,7 @@ const CHIP_EMPTY_CLASSES = ["border-warning", "bg-warning/10"];
 const ASSET_CLASSES = [
   "mx-0.5",
   "inline-block",
+  "max-w-full",
   "select-none",
   "border",
   "border-navy/35",
@@ -63,6 +72,7 @@ const ASSET_CLASSES = [
   "leading-normal",
   "text-navy",
 ];
+const ASSET_IMAGE_CLASSES = ["block", "h-auto", "max-w-full"];
 
 /**
  * Build model segments from editor parts: adjacent text merges into one
@@ -226,6 +236,7 @@ export function applyChipState(chip: HTMLElement, gaps: NativeExamGap[]): void {
 export function createAtomElement(
   segment: NativeExamAtomSegment,
   gaps: NativeExamGap[],
+  assetUrls?: Record<string, string>,
 ): HTMLElement {
   const element = document.createElement("span");
   element.setAttribute("contenteditable", "false");
@@ -241,12 +252,51 @@ export function createAtomElement(
   } else {
     element.setAttribute(ATOM_ATTRIBUTE, "asset");
     element.setAttribute("data-asset-id", segment.asset_id);
-    element.setAttribute(LABEL_ATTRIBUTE, "Bild");
     element.setAttribute("role", "img");
-    element.setAttribute("aria-label", "Bild");
     element.classList.add(...ASSET_CLASSES);
+    applyAssetState(element, segment.asset_id, assetUrls);
   }
   return element;
+}
+
+/**
+ * Bring an asset atom in line with the asset URL map: a known URL renders
+ * the actual picture inside the atom, an unknown URL keeps the "Bild"
+ * placeholder. Only the atom's own attribute and image child change, so a
+ * nearby caret and every sibling node stay in place.
+ */
+export function applyAssetState(
+  element: HTMLElement,
+  assetId: string,
+  assetUrls?: Record<string, string>,
+): void {
+  const url = assetUrls?.[assetId];
+  const image = element.querySelector<HTMLImageElement>(`img[${ASSET_IMAGE_ATTRIBUTE}]`);
+  if (!url) {
+    image?.remove();
+    element.setAttribute(LABEL_ATTRIBUTE, ASSET_PLACEHOLDER_LABEL);
+    element.setAttribute("aria-label", ASSET_PLACEHOLDER_LABEL);
+    return;
+  }
+  element.removeAttribute(LABEL_ATTRIBUTE);
+  element.setAttribute("aria-label", ASSET_PLACEHOLDER_LABEL);
+  if (image) {
+    if (image.getAttribute("src") !== url) {
+      image.setAttribute("src", url);
+    }
+    return;
+  }
+  element.appendChild(createAssetImage(url));
+}
+
+function createAssetImage(url: string): HTMLImageElement {
+  const image = document.createElement("img");
+  image.setAttribute(ASSET_IMAGE_ATTRIBUTE, "");
+  image.setAttribute("src", url);
+  image.setAttribute("alt", "");
+  image.setAttribute("draggable", "false");
+  image.classList.add(...ASSET_IMAGE_CLASSES);
+  return image;
 }
 
 /** Replace a paragraph element's content with the DOM for its segments. */
@@ -254,9 +304,12 @@ export function renderParagraphElement(
   element: HTMLElement,
   segments: NativeExamBodySegment[],
   gaps: NativeExamGap[],
+  assetUrls?: Record<string, string>,
 ): void {
   const nodes: Node[] = segments.map((segment) =>
-    segment.kind === "text" ? document.createTextNode(segment.text) : createAtomElement(segment, gaps),
+    segment.kind === "text"
+      ? document.createTextNode(segment.text)
+      : createAtomElement(segment, gaps, assetUrls),
   );
   element.replaceChildren(...nodes, createTrailingBreak());
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "abeabc3a2fd7245c3ab62d687785c20c5645a7963dac599ff29b8fb5cd9c15b1",
+  "source_set_digest": "e59fff3ba63024974343924d2a7227487b7cfaf64f9507d57d8ec1ebfa063a03",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -571,7 +571,7 @@
       "type": "epic",
       "title": "Shared design-system convergence",
       "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md",
-      "status": "ready",
+      "status": "active",
       "owners": [
         {
           "kind": "service",
@@ -745,6 +745,27 @@
       "readiness_review": {
         "record": "inline",
         "status": "not_started"
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-06-17",
+      "type": "story",
+      "title": "Migration idempotency harness supports merge revisions",
+      "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -972,6 +993,27 @@
       "readiness_review": {
         "record": "inline",
         "status": "not_started"
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-08-36",
+      "type": "story",
+      "title": "Klassrumskartan tutorial clips in Hjälp with a first-use dialog",
+      "path": "docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -2281,11 +2323,74 @@
       }
     },
     {
+      "id": "ST-SKRIPT-39-07",
+      "type": "story",
+      "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
+      "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-08",
+      "type": "story",
+      "title": "Course and tag metadata for saved exams",
+      "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-09",
+      "type": "story",
+      "title": "QTI 3.0 native export for Exam.net",
+      "path": "docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md",
+      "status": "active",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "ST-SKRIPT-40-01",
       "type": "story",
       "title": "Converge tokens, components and action buttons onto the shared package",
       "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2307,6 +2412,27 @@
       "title": "Converge icons onto the shared glyph vocabulary",
       "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
       "status": "ready",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-03",
+      "type": "story",
+      "title": "Bring every Skriptoteket screen onto the shared visual direction",
+      "path": "docs/backlog/stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md",
+      "status": "proposed",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2363,6 +2489,25 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-17-01",
+      "type": "task",
+      "title": "Resolve merge-revision parents in the migration idempotency support",
+      "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -2478,6 +2623,48 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-08-36-01",
+      "type": "task",
+      "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
+      "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-08-36",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d. Walk 1 on staging b8e43394 was ruled failed by the user on F1/F2 (T16); after TASK-SKRIPT-08-36-02 (Hjälp at 1024 px) and HuleEdu TASK-HULE-01-06-14 (staging preflight) landed, walk 2 on 2026-10-15 15:21-15:35 UTC in visible Chrome on the Mac passed all five steps as guest and as skriptoteket-proof-user@local.dev (evidence/staging-walk-prep-b8e43394/walk-2-2026-10-15/WALK.md, 27 screenshots), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-08-36-02",
+      "type": "task",
+      "title": "Keep signed-in shell help and account actions reachable across breakpoints",
+      "path": "docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-08-36",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4628,6 +4815,107 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-05",
+      "type": "task",
+      "title": "Restyle the exam workspace to the shared design direction",
+      "path": "docs/backlog/tasks/task-skript-39-04-05-restyle-the-exam-workspace-to-the-shared-design-direction.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-06",
+      "type": "task",
+      "title": "Send each converted question's original wording and build steps to the exam workspace",
+      "path": "docs/backlog/tasks/task-skript-39-04-06-send-each-converted-question-s-original-wording-and-build-steps-to-the-exam-workspace.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-07",
+      "type": "task",
+      "title": "Keep AI answer-key suggestions on each question and request them per question",
+      "path": "docs/backlog/tasks/task-skript-39-04-07-keep-ai-answer-key-suggestions-on-each-question-and-request-them-per-question.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-04-07 on 2026-10-13 and waived independent review of the final F11/F12 repair ace0cc39. Ruthless-reviewer rereviews ended at changes_requested on c5c98fbc with only F11/F12 open (retained evidence/reviews/TASK-SKRIPT-39-04-07/rereview-c5c98fbc.md); repair evidence/implementation/TASK-SKRIPT-39-04-07/repair4/report.md; merged main 838baea9; T7 staging walk evidence/staging-walk-838baea9/README.md, all in session 01a133f5-7568-7aa9-8c03-d65722dbff09."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-08",
+      "type": "task",
+      "title": "Save exported exam files in Mina filer, list each exam once and prune autosaved versions",
+      "path": "docs/backlog/tasks/task-skript-39-04-08-save-exported-exam-files-in-mina-filer-list-each-exam-once-and-prune-autosaved-versions.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-09",
+      "type": "task",
+      "title": "Resume a pending answer-key suggestion after reload and block importing over unsaved edits",
+      "path": "docs/backlog/tasks/task-skript-39-04-09-resume-a-pending-answer-key-suggestion-after-reload-and-block-importing-over-unsaved-edits.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-13",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer rereview approved d09bd286 after the F1 lock, F2 retry and F3 test-synchronization repairs (retained evidence/reviews/TASK-SKRIPT-39-04-09/rereview-d09bd286.md); merged main c018ae9e and deployed to Hemma staging; all seven Validation walk steps passed in the built-in browser on c018ae9e and the user closed the task on 2026-10-13 (evidence/staging-walk-c018ae9e/README.md), all in session 01a13559-bf2e-760d-a690-3a3dea446cd5."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -4695,7 +4983,7 @@
       "type": "task",
       "title": "Label items with a Decisions classifier and convert type-focused batches in parallel",
       "path": "docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4706,7 +4994,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-04 on 2026-10-12 after the staging walk on main 63de8094, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/staging-walk/walk-63de8094.md (kursavslutande 24/24, Fråga 20 correct, placeholder locked in importing and reloaded pages, export 200 and gate 422); the D44 low-27 miss and the D31 Exam.net rubric test move to the ST-SKRIPT-39-05 follow-up task"
       }
     },
     {
@@ -4714,7 +5004,7 @@
       "type": "task",
       "title": "Remove answer-key wording from converted exam titles",
       "path": "docs/backlog/tasks/task-skript-39-05-05-remove-answer-key-wording-from-converted-exam-titles.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -4725,7 +5015,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-05 on 2026-10-14 (\"finish up the story items\") after review approval 83501383, merge ece1b674 and the 2026-10-11 staging walk, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-05/staging-walk-ece1b674/"
       }
     },
     {
@@ -4733,9 +5025,331 @@
       "type": "task",
       "title": "Judge a staging-converted exam document against its gold with one command",
       "path": "docs/backlog/tasks/task-skript-39-05-06-judge-a-staging-converted-exam-document-against-its-gold-with-one-command.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-14",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer review of 20463fca found F1 (crashed conversion printed the gold title as an observed title); repair 2c13468e approved on rereview; merged into main. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-06/."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-07",
+      "type": "task",
+      "title": "Block export only on missing values and flag possible parsing issues only where wording is lost",
+      "path": "docs/backlog/tasks/task-skript-39-05-07-block-export-only-on-missing-values-and-flag-possible-parsing-issues-only-where-wording-is-lost.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-13",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-07 on 2026-10-13 and kept both export copy strings as implemented. Independent review approved 58dabe3f (retained evidence/reviews/TASK-SKRIPT-39-05-07/rereview-58dabe3f.md); D9 eval evidence/task-skript-39-05-07-d9-eval/README.md; staging walk on main ebc2a9c7 evidence/staging-walk-ebc2a9c7/README.md, all in session 01a13274-4a76-75e2-a17f-2e05fa66bd3a."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-08",
+      "type": "task",
+      "title": "Stop producing question titles at import and turn printed group headings into instructions",
+      "path": "docs/backlog/tasks/task-skript-39-05-08-stop-producing-question-titles-at-import-and-turn-printed-group-headings-into-instructions.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-14",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer approved 5e532690 after findings F1-F6 and T7 were resolved, and approved the walk fix 3411b5ec (QTI preflight counts gap-match interactions); merged cc89175b. Staging walk at cc89175b after T6 deletion of 34 exams: biology import 19 questions without titles, section headings open each group instruction, QTI export 5,743 bytes, Exam.net import exam 5326264 with 4 information blocks carrying the headings and 19 sub-questions (matching as categorizingItems, gap fills, free text). Records in Skriptoteket session 01a13559-bf2e-760d-a690-3a3dea446cd5 evidence/review/TASK-SKRIPT-39-05-08/ and evidence/walk/TASK-SKRIPT-39-05-08/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-09",
+      "type": "task",
+      "title": "Label-first per-question retry, DOCX pictures as exam assets, field-label gaps and the marking-guide rubric",
+      "path": "docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-14",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer approved the repair 659973e5 after review of 0beba709 and rereview of c20ce483; merged eafb1487. D44 live replay on low-27 Fråga 6 kept all six given phrases as text. Staging walk at eafb1487: pictures in editor and review items, label-first retry reconverted only the chosen question, QTI export with 4 inline pictures, Exam.net import exam 5331367 kept every picture with SUN inline. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-09/ and evidence/walk/TASK-SKRIPT-39-05-09/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-10",
+      "type": "task",
+      "title": "AI glyph with undo on interpreted keys, checked AI-invented keys, automatic misspellings and Visa som text",
+      "path": "docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-14",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer approved the frontend repair e4a5e2eb after review of c7d6db01 (merged c270419e) and the replay repair 42050a03 after review of the re-record commit 87478dcd (merged 426d7551). 118 live v14 replies replace the obsolete recordings; source audit of all eight corpus exams found no misreported key source. Staging walk at c270419e: glyph, undo, review, automatic misspellings and Visa som text passed; Exam.net import exam 5332346 accepted several values per gap (Stockholm, Stockolm; syre, syr). Records in Skriptoteket session 01a13a87-acac-7730-bb4e-746618d73cfd evidence/review/TASK-SKRIPT-39-05-10/ and evidence/walk/TASK-SKRIPT-39-05-10/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-11",
+      "type": "task",
+      "title": "Rewire the labeling feasibility report to the v14 batch recordings",
+      "path": "docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Codex Sol 6.1 ruthless-reviewer requested changes on the rewire (typed loader, 615-line methods.py, dead code) and approved the repair committed as aae91639. Evaluate on an empty evidence dir with no API keys exits 0; converter_today identical for all eight exams before and after the repair; ruff, ruff format and explicit-file mypy (13 files) pass. Records in Skriptoteket session 01a13f02-cbaf-71c0-bb3b-f16fc81c7017 evidence/ (parent-evaluate, parent-evaluate-2, repair-summary.md, results/)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-12",
+      "type": "task",
+      "title": "Repoint the parent-document spec support at the v14 English recording",
+      "path": "docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "User chose \"Merge, push, walk\" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-01",
+      "type": "task",
+      "title": "QTI 3.0 walking skeleton: workspace export of a single-choice question imports into Exam.net",
+      "path": "docs/backlog/tasks/task-skript-39-09-01-qti-3-0-walking-skeleton-workspace-export-of-a-single-choice-question-imports-into-exam-net.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested one change on 0b66adff (generator and profile ids still named 2.1) and approved the repair 59bd596a (merged b6d6b3f4). Staging walk at b6d6b3f4: QTI export of document 55aecb08 imported into Exam.net as exam 5333228 with both single-choice keys, the gap answers, the grid and all points as in the workspace. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-01/ and evidence/walk/TASK-SKRIPT-39-09-01/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-02",
+      "type": "task",
+      "title": "QTI 3.0 port: proven Exam.net shapes for pictures, uneven points and gap values in both lanes",
+      "path": "docs/backlog/tasks/task-skript-39-09-02-qti-3-0-port-proven-exam-net-shapes-for-pictures-uneven-points-and-gap-values-in-both-lanes.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol, high) approved 83d522c6 with no findings (merged 6807d20c). Staging walk at 6807d20c: DigiExam conversion with a picture imported into Exam.net as 5333308 (picture shown, all-or-nothing 4p, equal 1p and 3p rows, gaps 0.66 x3); workspace export with a 2p three-pair grid subquestion imported as 5333310 (ALL_CORRECT 1p, Q16 flag case). Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-02/ and evidence/walk/TASK-SKRIPT-39-09-02/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-03",
+      "type": "task",
+      "title": "Kategorisera grid: many-to-many keys, uniform tick value, grid-only export and DOCX category sorting",
+      "path": "docs/backlog/tasks/task-skript-39-09-03-kategorisera-grid-many-to-many-keys-uniform-tick-value-grid-only-export-and-docx-category-sorting.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on c6e0e28c and 0fa48e19, approved 07bede41 (merged 2ebed4cb). Live eval found valid type_conflict replies rejected by the key validator; repair 7c8c6bd7 approved and merged. Walk at 7c8c6bd7: kategorisera exam converted to two Kategorisera grids with vila keyed to two columns; tick 0.5 gave 2 points; export imported into Exam.net as 5339116, categorizingItems 2p with four 0.5 rules and answers [1,2]. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-03/ and evidence/walk/TASK-SKRIPT-39-09-03/walk-7c8c6bd7.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-04",
+      "type": "task",
+      "title": "Fritext criteria: a criteria list replaces the marking guide and exports as 1-point rows",
+      "path": "docs/backlog/tasks/task-skript-39-09-04-fritext-criteria-a-criteria-list-replaces-the-marking-guide-and-exports-as-1-point-rows.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 28454af4 (oversized model and test modules) and approved the repair at dddf0d2f (merged a3525650). Staging walk at a3525650: DOCX-converted document a57a952f carries conversion-filled Fritext criteria; the criteria editor set 2+2+2 and 5; QTI export wrote 20 one-point rows, imported into Exam.net as 5337577 with 6, 5, 3 and 6 one-point rules. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-04/ and evidence/walk/TASK-SKRIPT-39-09-04/walk-record.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-05",
+      "type": "task",
+      "title": "Kort svar: Ny fråga creates a one-gap Lucktext after the question text",
+      "path": "docs/backlog/tasks/task-skript-39-09-05-kort-svar-ny-fråga-creates-a-one-gap-lucktext-after-the-question-text.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) reviewed b58778a8, rereviewed b0afb311 and approved 41972ac6 (merged 5c8c540f). Staging walk found standalone Lucktext gaps bound to literal underscore lines; fixed in 4b54bceb. Walk at 4b54bceb: Ny fråga: kort svar, keyed Stockholm, 1 point; export imported into Exam.net as 5337942, a one-gap fillGaps task with Stockholm keyed and one 1-point rule. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-05/ and evidence/walk/TASK-SKRIPT-39-09-05/walk-record.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-06",
+      "type": "task",
+      "title": "Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings",
+      "path": "docs/backlog/tasks/task-skript-39-09-06-structured-misspellings-a-deterministic-producer-gives-every-keyed-gap-its-automatic-misspellings.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 7d4ae4a5 and approved its repair; the under-four-characters rule 2647de47 was approved and merged as ebe212f1. Walk at cbe58ae1: a live gap key gained three spellings for substantivfras and none for KS or NF; Exam.net import 5339195 holds the keys and six spellings as accepted gap values. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-06/ and evidence/walk/TASK-SKRIPT-39-09-06/walk-cbe58ae1.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-07",
+      "type": "task",
+      "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
+      "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 0881fa9c and approved repair ff544d93. Walk at 19d9d8ef: Svenska 2 v26 export listed Fråga 17 at 0.66 per gap and the criteria of Fråga 21-24; Exam.net import 5339161 showed exactly those losses (Fråga 17 1.98 p, freeText items without criteria). The all-or-nothing case has no corpus item and rests on unit tests. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-07/ and evidence/walk/TASK-SKRIPT-39-09-07/walk-19d9d8ef.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-08",
+      "type": "task",
+      "title": "Source formatting: conversion keeps bold, italic, underline, sub/superscript and heading levels deterministically through editor and QTI export",
+      "path": "docs/backlog/tasks/task-skript-39-09-08-source-formatting-conversion-keeps-bold-italic-underline-sub-superscript-and-heading-levels-deterministically-through-editor-and-qti-export.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
       "owners": [
         {
           "kind": "service",
@@ -4752,7 +5366,7 @@
       "type": "task",
       "title": "Adopt the shared tokens, theme and logo through design-system sync",
       "path": "docs/backlog/tasks/task-skript-40-01-01-adopt-the-shared-tokens-theme-and-logo-through-design-system-sync.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -4765,7 +5379,9 @@
         "record": "inline",
         "status": "approved",
         "reviewer": "ruthless-code-review",
-        "decided_at": "2026-09-28T00:54:42+02:00"
+        "decided_at": "2026-09-28T00:54:42+02:00",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed the task on 2026-10-12 after the Hemma staging walk at main fc42b918 passed (home, tool list, Klassrumskartan planner and modal; Skriptoteket retained session 01a13061-ff38-7099-aa3d-e23f6e5bba43 evidence/staging-walk/walk-40-01-01-fc42b918.md)."
       }
     },
     {
@@ -5736,6 +6352,42 @@
       "title": "Retire repository rules and route staging walks to staging-walk",
       "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
       "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0039",
+      "type": "task",
+      "title": "Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px",
+      "path": "docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md",
+      "status": "canceled",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0040",
+      "type": "task",
+      "title": "Retire Sir Convert public-host defaults and align private conversion lanes",
+      "path": "docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
@@ -8662,6 +9314,34 @@
       ]
     },
     {
+      "id": "REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction",
+      "type": "reference",
+      "title": "Exam workspace approved mockups for the shared design direction",
+      "path": "docs/reference/ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md",
+      "status": "active",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype",
+      "type": "reference",
+      "title": "Exam workspace editor with drawers prototype",
+      "path": "docs/reference/ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md",
+      "status": "draft",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
       "id": "REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5",
       "type": "reference",
       "title": "Klassrumskartan SVG redesign v5",
@@ -9238,6 +9918,20 @@
       ],
       "retired_ids": [
         "REF-devops-skill-research"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type",
+      "type": "reference",
+      "title": "Exam.net QTI import routes per question type",
+      "path": "docs/reference/ref-skript-research-exam-net-qti-import-routes-per-question-type-exam-net-qti-import-routes-per-question-type.md",
+      "status": "draft",
+      "reference_kind": "research",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

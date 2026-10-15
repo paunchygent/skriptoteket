@@ -1,20 +1,20 @@
-"""QTI 2.1 assessmentTest serialization for Exam.net-oriented packages.
+"""QTI 3.0 qti-assessment-test serialization for Exam.net-oriented packages.
 
 Purpose:
-    Serialize the package-level assessmentTest that wires every generated
+    Serialize the package-level `qti-assessment-test` that wires every generated
     assessment item into one linear test part, matching the empirically
     confirmed Exam.net import skeleton.
 
 Relationships:
     - Used by `domain.examnet_qti_package` when planning package files.
-    - Shares the QTI 2.1 namespace constants with `domain.examnet_qti_xml`.
+    - Imports the QTI 3.0 namespace constants from `domain.examnet_qti_terms`.
 """
 
 from __future__ import annotations
 
 from xml.etree import ElementTree
 
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     QTI_NAMESPACE,
     QTI_SCHEMA_LOCATION,
     XSI_NAMESPACE,
@@ -22,7 +22,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
 
 EXAMNET_QTI_ASSESSMENT_TEST_PATH = "assessment.xml"
 EXAMNET_QTI_TEST_RESOURCE_IDENTIFIER = "res_test"
-EXAMNET_QTI_TEST_RESOURCE_TYPE = "imsqti_test_xmlv2p1"
+EXAMNET_QTI_TEST_RESOURCE_TYPE = "imsqti_test_xmlv3p0"
 
 
 def serialize_qti_assessment_test(
@@ -30,30 +30,30 @@ def serialize_qti_assessment_test(
     title: str,
     item_ids: tuple[str, ...],
 ) -> bytes:
-    """Serialize the package assessmentTest to UTF-8 XML bytes."""
+    """Serialize the package `qti-assessment-test` to UTF-8 XML bytes."""
 
     ElementTree.register_namespace("", QTI_NAMESPACE)
     ElementTree.register_namespace("xsi", XSI_NAMESPACE)
     root = ElementTree.Element(
-        _qti("assessmentTest"),
+        _qti("qti-assessment-test"),
         {
+            _xsi("schemaLocation"): QTI_SCHEMA_LOCATION,
             "identifier": "examnet_qti_test",
             "title": title,
-            _xsi("schemaLocation"): QTI_SCHEMA_LOCATION,
         },
     )
     part = ElementTree.SubElement(
         root,
-        _qti("testPart"),
+        _qti("qti-test-part"),
         {
             "identifier": "part_001",
-            "navigationMode": "linear",
-            "submissionMode": "individual",
+            "navigation-mode": "linear",
+            "submission-mode": "individual",
         },
     )
     section = ElementTree.SubElement(
         part,
-        _qti("assessmentSection"),
+        _qti("qti-assessment-section"),
         {
             "identifier": "section_001",
             "title": title,
@@ -63,7 +63,7 @@ def serialize_qti_assessment_test(
     for item_id in item_ids:
         ElementTree.SubElement(
             section,
-            _qti("assessmentItemRef"),
+            _qti("qti-assessment-item-ref"),
             {
                 "identifier": f"ref_{item_id}",
                 "href": f"items/{item_id}.xml",

@@ -1,0 +1,125 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0017",
+        "body:0018",
+        "body:0019",
+        "body:0020",
+        "body:0021",
+        "body:0022"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Ange frastyp.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skriv NF, PF eller VF.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) De trötta eleverna Frastyp: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "NF"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) hade väntat Frastyp: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "VF"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) på bussen Frastyp: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) efter skolan Frastyp: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "PF"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) De trötta eleverna Frastyp: NF\nb) hade väntat Frastyp: VF\nc) på bussen Frastyp: PF\nd) efter skolan Frastyp: PF",
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

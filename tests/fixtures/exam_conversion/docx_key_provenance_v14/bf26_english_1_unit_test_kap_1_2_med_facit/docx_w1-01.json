@@ -1,0 +1,756 @@
+{
+  "title": {
+    "text": "BF26 English 1 Unit Test — 45 minutes — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Vocabulary: Write the Word or Phrase (24 points)",
+      "source_anchors": [
+        "body:0005"
+      ],
+      "points": 24
+    },
+    {
+      "text": "Complete each sentence with the word or phrase from the chapter 1–2 vocabulary list. The Swedish cue gives the meaning. Use the list form and write the whole missing word or phrase. Check your spelling. Each gap is worth 1 point.",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 59 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": 59
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0008",
+    "body:0010",
+    "body:0012",
+    "body:0014",
+    "body:0016",
+    "body:0018",
+    "body:0020",
+    "body:0022",
+    "body:0024",
+    "body:0028",
+    "body:0030",
+    "body:0032",
+    "body:0034",
+    "body:0036",
+    "body:0038",
+    "body:0040"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0007"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This job requires the ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "ability"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (förmåga) to work well with other people.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: ability",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0009"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After the flood, the family faced a ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "forced"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (påtvingad) move.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: forced",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0011"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The family needed time alone to ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "grieve"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (sörja) after their loss.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: grieve",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I was ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "astonished"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (häpen) when I won tickets to the final.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: astonished",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0015"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Regular breaks can ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "alleviate"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (lindra) stress during a busy day.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: alleviate",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0017"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The cake fell onto the floor. ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "needless to say"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ", nobody wanted a slice. (självfallet)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: needless to say",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0019"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After several lessons, I am ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "only now"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (först nu) starting to understand the rules.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: only now",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0021"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "8",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Even a little smoke can ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "trigger"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (utlösa) the alarm.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: trigger",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0023"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "9",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The store sells ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a range of"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (en rad av) tools for different jobs.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: a range of",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0027"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Noise can ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "affect"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (påverka) your concentration while you study.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: affect",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0029"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You do not need to ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "fret"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (oroa sig) about the cost; the trip is free.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: fret",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0031"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "I sent a message to ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "reassure"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (lugna) my parents that I was safe.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: reassure",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0033"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "persistent"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ihållande) rain kept us indoors for three days.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: persistent",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0035"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Setting up the new computer was ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "plain sailing"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (problemfritt); everything worked the first time.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: plain sailing",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0037"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The driver made a ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sudden"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (plötslig) stop when a dog ran into the road.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: sudden",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0039"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When I pressed the button, the screen lit up ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "instantly"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (ögonblickligen).",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: instantly",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

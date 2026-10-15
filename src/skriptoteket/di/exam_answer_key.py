@@ -17,15 +17,13 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
     GetAnswerKeyLeaseStatusHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    ExamWorkspaceDocumentStore,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    EnqueueExamWorkspaceEnrichmentHandler,
-    GetExamWorkspaceEnrichmentStatusHandler,
+    FindExamWorkspaceAnswerKeySuggestionsHandler,
+    GetExamWorkspaceAnswerKeySuggestionsStatusHandler,
+    RequestExamWorkspaceAnswerKeySuggestionsHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
@@ -65,19 +63,20 @@ from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamAnswerKeyProposedOverlayRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
 )
 from skriptoteket.protocols.exam_conversion import (
     ExamConversionArtifactStoreProtocol,
     InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
-    EnqueueExamWorkspaceEnrichmentHandlerProtocol,
-    ExamWorkspaceContainerCodecProtocol,
-    GetExamWorkspaceEnrichmentStatusHandlerProtocol,
+    FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
+    GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol,
+    RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.protocols.vault import VaultFileRepositoryProtocol, VaultStorageProtocol
+from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 
 class ExamAnswerKeyProvider(Provider):
@@ -87,6 +86,12 @@ class ExamAnswerKeyProvider(Provider):
     def exam_answer_key_enrichment_job_repository(
         self, session: AsyncSession
     ) -> ExamAnswerKeyEnrichmentJobRepositoryProtocol:
+        return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
+
+    @provide(scope=Scope.REQUEST)
+    def exam_workspace_suggestion_job_query(
+        self, session: AsyncSession
+    ) -> ExamWorkspaceSuggestionJobQueryProtocol:
         return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
 
     @provide(scope=Scope.REQUEST)
@@ -158,9 +163,6 @@ class ExamAnswerKeyProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-        vault_files: VaultFileRepositoryProtocol,
-        vault_storage: VaultStorageProtocol,
-        workspace_codec: ExamWorkspaceContainerCodecProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
@@ -175,42 +177,46 @@ class ExamAnswerKeyProvider(Provider):
             uow=uow,
             clock=clock,
             id_generator=id_generator,
-            vault_files=vault_files,
-            vault_storage=vault_storage,
-            workspace_codec=workspace_codec,
             docx_handler=docx_handler,
         )
 
     @provide(scope=Scope.REQUEST)
-    def enqueue_exam_workspace_enrichment_handler(
+    def request_exam_workspace_answer_key_suggestions_handler(
         self,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         settings: Settings,
+        vault_files: VaultFileRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> EnqueueExamWorkspaceEnrichmentHandlerProtocol:
-        return EnqueueExamWorkspaceEnrichmentHandler(
+    ) -> RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol:
+        return RequestExamWorkspaceAnswerKeySuggestionsHandler(
             enrichment_jobs=enrichment_jobs,
+            suggestion_jobs=suggestion_jobs,
             enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
+            vault_files=vault_files,
             uow=uow,
             clock=clock,
             id_generator=id_generator,
         )
 
     @provide(scope=Scope.REQUEST)
-    def exam_workspace_enrichment_status_handler(
+    def exam_workspace_answer_key_suggestions_status_handler(
         self,
-        vault_files: VaultFileRepositoryProtocol,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
-        store: ExamWorkspaceDocumentStore,
-        codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> GetExamWorkspaceEnrichmentStatusHandlerProtocol:
-        return GetExamWorkspaceEnrichmentStatusHandler(
-            vault_files=vault_files,
+    ) -> GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol:
+        return GetExamWorkspaceAnswerKeySuggestionsStatusHandler(
             enrichment_jobs=enrichment_jobs,
-            proposed_overlays=proposed_overlays,
-            store=store,
-            codec=codec,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def find_exam_workspace_answer_key_suggestions_handler(
+        self,
+        suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+    ) -> FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol:
+        return FindExamWorkspaceAnswerKeySuggestionsHandler(
+            suggestion_jobs=suggestion_jobs,
+            vault_files=vault_files,
         )

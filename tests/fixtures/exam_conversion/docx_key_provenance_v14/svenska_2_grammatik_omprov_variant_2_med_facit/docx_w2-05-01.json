@@ -1,0 +1,302 @@
+{
+  "title": {
+    "text": "Omprov: grammatik och språkstrukturer",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Svenska 2",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 38 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": 38
+    },
+    {
+      "text": "Del 1: Morfem och fraser, 12 poäng",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 12
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0008",
+        "body:0009",
+        "body:0010",
+        "body:0011",
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Dela upp orden i morfem.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) sol",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + ros",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + or",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + na",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + s",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) läs",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + bar",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + het",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + en",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) hand",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + boll",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + foge-s + spel",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + are",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + na",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " + s",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) solrosornas Svar: sol (R) + ros (R) + or (B) + na (B) + s (B)\nb) läsbarheten Svar: läs (R) + bar (A) + het (A) + en (B)\nc) handbollsspelarnas Svar: hand (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

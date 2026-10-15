@@ -1,7 +1,7 @@
 """Tests for the keyed QTI Exam.net QTI package contract.
 
 Purpose:
-    Prove deterministic QTI 2.1 sample package generation, image packaging,
+    Prove deterministic QTI 3.0 sample package generation, image packaging,
     unsupported-resource reporting, assessment-test manifest wiring, and
     DigiExam IR adapter alignment, ported from Sir Convert-a-Lot at revision
     41be61a6.
@@ -84,19 +84,19 @@ def test_image_packages_include_manifest_hrefs_and_resolved_item_images(tmp_path
         with zipfile.ZipFile(sample_dir / "qti-package.zip") as archive:
             names = set(archive.namelist())
             assert "imsmanifest.xml" in names
-            image_names = {name for name in names if name.startswith("resources/")}
-            assert image_names == {"resources/item_001-image_001.png"}
+            image_names = {name for name in names if name.startswith("items/images/")}
+            assert image_names == {"items/images/item_001-image_001.png"}
+            assert not any(name.startswith("resources/") for name in names)
             manifest = archive.read("imsmanifest.xml").decode("utf-8")
             item_xml = archive.read("items/item_001.xml").decode("utf-8")
 
-        assert '<file href="resources/item_001-image_001.png"' in manifest
-        assert 'src="../resources/item_001-image_001.png"' in item_xml
-        assert 'src="resources/item_001-image_001.png"' not in item_xml
+        assert '<file href="items/images/item_001-image_001.png"' in manifest
+        assert 'src="images/item_001-image_001.png"' in item_xml
+        assert "resources/" not in manifest
+        assert "resources/" not in item_xml
         item = ElementTree.fromstring(item_xml)
-        prompt_images = item.findall(f".//{{{QTI_NAMESPACE}}}prompt/{{{QTI_NAMESPACE}}}img")
-        assert [image.attrib["src"] for image in prompt_images] == [
-            "../resources/item_001-image_001.png"
-        ]
+        prompt_images = item.findall(f".//{{{QTI_NAMESPACE}}}qti-prompt/{{{QTI_NAMESPACE}}}img")
+        assert [image.attrib["src"] for image in prompt_images] == ["images/item_001-image_001.png"]
         assert item_body_paragraphs(item) == []
         report = read_report(sample_dir / "qti-validation-report.json")
         assert json_string(report, "package_sha256") == _sha256(sample_dir / "qti-package.zip")
@@ -132,7 +132,7 @@ def test_all_sample_packages_wire_assessment_test_into_manifest() -> None:
         assert "assessment.xml" in names
         resources = manifest.findall(f".//{{{IMSCP_NAMESPACE}}}resource")
         test_resources = [
-            resource for resource in resources if resource.attrib["type"] == "imsqti_test_xmlv2p1"
+            resource for resource in resources if resource.attrib["type"] == "imsqti_test_xmlv3p0"
         ]
         assert len(test_resources) == 1
         assert test_resources[0].attrib["identifier"] == "res_test"
@@ -144,7 +144,7 @@ def test_all_sample_packages_wire_assessment_test_into_manifest() -> None:
         item_identifiers = {
             resource.attrib["identifier"]
             for resource in resources
-            if resource.attrib["type"] == "imsqti_item_xmlv2p1"
+            if resource.attrib["type"] == "imsqti_item_xmlv3p0"
         }
         dependency_refs = {
             dependency.attrib["identifierref"]
@@ -152,8 +152,8 @@ def test_all_sample_packages_wire_assessment_test_into_manifest() -> None:
         }
         assert item_identifiers
         assert dependency_refs == item_identifiers
-        assert assessment.tag == f"{{{QTI_NAMESPACE}}}assessmentTest"
-        item_refs = assessment.findall(f".//{{{QTI_NAMESPACE}}}assessmentItemRef")
+        assert assessment.tag == f"{{{QTI_NAMESPACE}}}qti-assessment-test"
+        item_refs = assessment.findall(f".//{{{QTI_NAMESPACE}}}qti-assessment-item-ref")
         assert item_refs
         assert all(item_ref.attrib["href"] in names for item_ref in item_refs)
 
@@ -182,7 +182,7 @@ def test_digiexam_ir_adapter_feeds_reusable_qti_package_plan() -> None:
     with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:
         item_xml = archive.read("items/item_001.xml") + archive.read("items/item_002.xml")
     assert b"choice_002" in item_xml
-    assert b"extendedTextInteraction" in item_xml
+    assert b"qti-extended-text-interaction" in item_xml
 
 
 def _validator_statuses(report: dict[str, object]) -> list[str]:

@@ -4,30 +4,45 @@ id: REF-SKRIPT-GENERAL-reference-home-server-architecture-overview
 title: 'Reference: Home Server Architecture Overview'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-home-server-architecture
+  - REF-home-server-architecture
 summary: 'Reference: Home Server Architecture Overview'
 ---
 
 ## Overview
+
 The source record did not define a separate section for this package heading.
 
 ## Facts And Semantics
+
 ### Source record
+
 Context-only architecture overview for Hemma. Operational steps live in the runbooks.
 
-Current edge behavior was re-verified on 2026-03-28:
+Historical edge observation (2026-03-28; Sir retirement supersedes it below):
 
-- active proxy-routed services: Skriptoteket, Sir Convert-a-Lot, Projektveckor
-- `skriptoteket.hule.education` remains the `DEFAULT_HOST`
-- `hule.education`, `api.hule.education`, and `ws.hule.education` currently resolve to
-  Hemma but fall through to the Skriptoteket default vhost because no dedicated HuleEdu
-  container has claimed those hosts yet
+- proxy-routed services at that time: Skriptoteket, Sir Convert-a-Lot and Projektveckor
+- `skriptoteket.hule.education` was the `DEFAULT_HOST`
+
+The 2026-05-02 nginx-proxy reference records `hule.education`,
+`api.hule.education`, and `ws.hule.education` as claimed by HuleEdu runtime
+services on `hule-network`; under that reference they must not inherit the
+Skriptoteket default vhost. No new host proof was collected for this overview.
+
+Sir Convert-a-Lot public host retired (2026-10-15, source-based):
+
+- The user retired `convert.hule.education` on 2026-10-15. The source
+  retirement is Sir `fix/retire-convert-public-edge` commit `904d0e3f` with
+  accepted `ADR-SIRCON-0014`.
+- Sir Convert-a-Lot's supported service lane is private:
+  `sir_convert_a_lot_prod:8085` on `hule-network`
+  (`http://sir_convert_a_lot_prod:8085`). Sir production remains offline by
+  user decision, and Namecheap CNAME deletion stays with the user.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -39,10 +54,9 @@ Current edge behavior was re-verified on 2026-03-28:
 │  - Auto-discovers containers via VIRTUAL_HOST env var        │
 │  - SSL termination (certs from acme-companion)               │
 │  - Active routes: skriptoteket.hule.education → skriptoteket│
-│                   convert.hule.education → Sir Convert      │
 │                   projektveckor.hule.education → portal     │
 │  - Default host: skriptoteket.hule.education               │
-│  - Reserved but unresolved: hule.education, api/ws.hule... │
+│  - HuleEdu-owned (2026-05-02): hule.education, api/ws.hule... │
 ├──────────────────────────────────────────────────────────────┤
 │  acme-companion (nginxproxy/acme-companion:2.4)              │
 │  - Auto-generates Let's Encrypt certificates                 │
@@ -50,21 +64,23 @@ Current edge behavior was re-verified on 2026-03-28:
 │  - Auto-renews before expiry                                 │
 └────────────────────────────┬────────────────────────────────┘
                              │
-    ┌────────────────────────┼────────────────────────┐
-    │                        │                        │
-    ▼                        ▼                        ▼
-┌─────────────┐      ┌─────────────┐         ┌─────────────┐
-│ skriptoteket │      │ sir convert │         │projektveckor│
-│     :8000    │      │    :8085    │         │    :8000    │
-└─────────────┘      └─────────────┘         └─────────────┘
+    ┌────────────────────────┐
+    │                        │
+    ▼                        ▼
+┌─────────────┐      ┌─────────────┐
+│ skriptoteket │      │projektveckor│
+│     :8000    │      │    :8000    │
+└─────────────┘      └─────────────┘
         │
         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  shared-postgres (hule-network)                              │
-│  - PostgreSQL 16 (shared across services)                   │
-│  - Additional app containers can join the same bridge       │
+│  hule-network private services                               │
+│  - shared-postgres: PostgreSQL 16 (shared across services)  │
+│  - sir_convert_a_lot_prod:8085: private Sir Convert-a-Lot   │
+│    (public convert.hule.education retired 2026-10-15)       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## Decisions And Interpretation
+
 The source record did not define a separate section for this package heading.

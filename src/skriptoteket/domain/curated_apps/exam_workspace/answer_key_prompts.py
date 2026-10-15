@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompt
     GAP_FILL_PROMPT_TEMPLATE_VERSION,
     _choice_answer_shape,
     _choice_user_instruction,
+    numbered_gap_labels,
     system_prompt_for_answer_key_item,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import DigiExamItemType
@@ -46,17 +47,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyViewKind,
 )
 
-MATCHING_PROMPT_TEMPLATE_VERSION = "workspace_matching_answer_key_prompt_v1"
+MATCHING_PROMPT_TEMPLATE_VERSION = "workspace_matching_answer_key_prompt_v2"
 MATCHING_ANSWER_KEY_DECISION_SCHEMA_VERSION = "workspace_matching_answer_key_decision_v1"
 MATCHING_ITEM_TYPE = "matching"
 
 MATCHING_ANSWER_KEY_SYSTEM_PROMPT = (
     f"{BASE_ANSWER_KEY_SYSTEM_PROMPT} For matching items, infer the "
-    "teacher-intended pairing of each left entry with one right entry from the "
-    "visible item text and both entry lists. Evaluate each left entry "
-    "independently against every right entry. Pair every left entry exactly "
-    "once and use each right entry at most once; right entries that match no "
-    "left entry are distractors and stay unused."
+    "teacher-intended category grid from the visible item text and both entry "
+    "lists. Left entries are rows and right entries are categories. Evaluate "
+    "every row against every category and return every correct tick: a row "
+    "must have at least one correct category and may have several. A category "
+    "may apply to several rows or none. Never repeat an identical pair."
 )
 
 _ITEM_TYPE_BY_VIEW_KIND: dict[AnswerKeyViewKind, DigiExamItemType] = {
@@ -113,7 +114,7 @@ def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:
 def _item_payload(view: AnswerKeyItemView, text_key: str, text: str) -> dict[str, JsonValue]:
     """The item as the student reads it: a grouped question also shows its parent's instruction."""
 
-    item: dict[str, JsonValue] = {"item_id": view.item_id, "title": view.title}
+    item: dict[str, JsonValue] = {"item_id": view.item_id}
     if view.instruction:
         item["instruction"] = view.instruction
     item[text_key] = text
@@ -129,11 +130,12 @@ def matching_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict
             "item_type": MATCHING_ITEM_TYPE,
             "instruction": (
                 "Read the item as a teacher-authored exam question. The student "
-                "matches each left entry to one right entry. Choose the "
-                "teacher-intended right entry for every left entry. Use each "
-                "right entry at most once; a right entry that matches no left "
-                "entry is a distractor and stays unused. Use only the provided "
-                "left_id and right_id values."
+                "categorizes the left entries (rows) using the right entries "
+                "(categories). Choose every teacher-intended correct category "
+                "for every row, including several categories when correct. "
+                "Every row needs at least one tick; a category may be used by "
+                "several rows or remain unused. Use only the provided left_id "
+                "and right_id values, without repeating an identical pair."
             ),
         },
         "item": _item_payload(view, "stem", view.stem_text),
@@ -144,10 +146,11 @@ def matching_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict
         "output": {
             "provider_output_mode": "json_schema",
             "answer_shape": (
-                "Return a JSON object with a pairs array holding exactly one "
-                "object per left entry, each with the integer left_id and the "
-                "integer right_id of its matching right entry. Every left_id "
-                "appears once and no right_id appears twice."
+                "Return a JSON object with a pairs array holding one object "
+                "per correct tick, each with the integer left_id and integer "
+                "right_id. Every left_id appears at least once; a left_id or "
+                "right_id may appear in several distinct pairs. A right_id "
+                "may also be absent. No identical pair appears twice."
             ),
         },
     }
@@ -184,7 +187,12 @@ def choice_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[s
 def gap_fill_answer_key_model_payload_from_view(view: AnswerKeyItemView) -> dict[str, JsonValue]:
     """Build the model-facing payload for a gap-fill workspace item."""
 
-    gap_entries: list[JsonValue] = [{"gap_number": index} for index in range(1, view.gap_count + 1)]
+    gap_entries: list[JsonValue] = [
+        {"gap_number": number, "label": label}
+        for number, label in enumerate(
+            numbered_gap_labels(view.cloze_text, view.gap_count), start=1
+        )
+    ]
     return {
         "task": {
             "name": "complete_teacher_intended_gap_fill_answer_key",

@@ -1,0 +1,76 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046",
+        "body:0047",
+        "body:0048",
+        "body:0049"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Fråga 5",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gör satsdelsanalys av meningarna.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Klassen läste inte texten i klassrummet. Analys:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Mentorn skickade eleverna ett tydligt schema på morgonen. Analys:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Dagen blev stressig efter beskedet. Analys:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": "Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv). Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv). Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv).",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": [
+        {
+          "text": "a) Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).\nb) Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).\nc) Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv).",
+          "points": null
+        }
+      ]
+    }
+  ]
+}

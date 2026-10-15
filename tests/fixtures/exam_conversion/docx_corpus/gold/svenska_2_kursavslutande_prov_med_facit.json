@@ -8,8 +8,9 @@
   "notes": [
     "Draft transcribed directly from source OOXML and inline facit; 24 source-numbered items, 36 points.",
     "Del 1 has one Fråga 1 heading over numbered questions 1-15; these remain fifteen items.",
-    "Individual points for questions 1-15 are inferred from their 15-point section. User confirmation includes this inference.",
-    "Open short-answer rubrics and partial-credit allocation are outside the comparator; no automatic acceptance set is invented."
+    "Individual points for questions 1-15 are their 15-point section total split evenly over the 15 questions, which print no points of their own (D38, user decision 2026-10-11).",
+    "Open short-answer rubrics and partial-credit allocation are outside the comparator; no automatic acceptance set is invented.",
+    "Fråga 20 is gap_fill by user decision 2026-10-11: the source prints each blank already filled with its italic answer."
   ],
   "items": [
     {
@@ -32,7 +33,7 @@
             "Hederskultur"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -50,7 +51,7 @@
             "Lakonisk stil"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -68,7 +69,7 @@
             "Allegori"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -86,7 +87,7 @@
             "Idealism och realism"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -104,7 +105,7 @@
             "Kraft och list"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -122,7 +123,7 @@
             "Versmåttet"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -140,7 +141,7 @@
             "Förnuft och nytta"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -158,7 +159,7 @@
             "Satir"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -176,7 +177,7 @@
             "Upplysningens gränser"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -194,7 +195,7 @@
             "Förnuft och känsla"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -212,7 +213,7 @@
             "Vetenskap och ansvar"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -230,7 +231,7 @@
             "Romantiken"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -248,7 +249,7 @@
             "Från Guds ordning till människans möjligheter"
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -266,7 +267,7 @@
             "Robinson använder naturen praktiskt; Werther speglar känslor i den."
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         },
         {
@@ -284,176 +285,190 @@
             "Den används främst för nytta och kritik, sedan för känsla och inre liv."
           ],
           "notes": [
-            "One point inferred from the 15-point section containing 15 questions; user confirmation pending."
+            "One point: the 15-point section total split evenly over its 15 questions, which print no points of their own (D38, user decision 2026-10-11)."
           ]
         }
       ]
     },
     {
-      "source_label": "Fråga 16",
-      "kind": "gap_fill",
-      "points": 3,
-      "prompt": "Morfem\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek [___]\nb) I ordet lekfullheten är -full och -het [___]\nc) I ordet lekfullheten är -en [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 16–20",
+      "instruction": "Del 2: grammatik och språkstrukturer",
+      "children": [
         {
-          "accepted_values": [
-            "R"
+          "source_label": "Fråga 16",
+          "kind": "gap_fill",
+          "points": 3,
+          "prompt": "Morfem\nAnvänd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.\na) I ordet lekfullheten är lek [___]\nb) I ordet lekfullheten är -full och -het [___]\nc) I ordet lekfullheten är -en [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "R"
+              ]
+            },
+            {
+              "accepted_values": [
+                "A"
+              ]
+            },
+            {
+              "accepted_values": [
+                "B"
+              ]
+            }
+          ],
+          "notes": [
+            "Subpart b groups -full and -het under one answer A, as printed; whole-item points stay 3. No partial-credit rule is inferred."
           ]
         },
         {
-          "accepted_values": [
-            "A"
-          ]
+          "source_label": "Fråga 17",
+          "kind": "gap_fill",
+          "points": 3,
+          "prompt": "Fraser\nAnvänd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en [___]\nb) Frasen på skolgården är en [___]\nc) Frasen kan vila är en [___]",
+          "gaps": [
+            {
+              "accepted_values": [
+                "NF"
+              ]
+            },
+            {
+              "accepted_values": [
+                "PF"
+              ]
+            },
+            {
+              "accepted_values": [
+                "VF"
+              ]
+            }
+          ],
+          "notes": []
         },
         {
-          "accepted_values": [
-            "B"
-          ]
+          "source_label": "Fråga 18",
+          "kind": "gap_fill",
+          "points": 4,
+          "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nNoah [___] skrev [___] brevet [___] tydligt [___].",
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "DO"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Adv"
+              ]
+            }
+          ],
+          "notes": []
+        },
+        {
+          "source_label": "Fråga 19",
+          "kind": "gap_fill",
+          "points": 4,
+          "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nAlva [___] är [___] inte [___] färdig [___].",
+          "gaps": [
+            {
+              "accepted_values": [
+                "S"
+              ]
+            },
+            {
+              "accepted_values": [
+                "P"
+              ]
+            },
+            {
+              "accepted_values": [
+                "SA"
+              ]
+            },
+            {
+              "accepted_values": [
+                "Pf"
+              ]
+            }
+          ],
+          "notes": []
+        },
+        {
+          "source_label": "Fråga 20",
+          "kind": "gap_fill",
+          "points": 2,
+          "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
+          "gaps": [
+            {
+              "accepted_values": [
+                "huvudsats"
+              ]
+            },
+            {
+              "accepted_values": [
+                "före"
+              ]
+            }
+          ],
+          "notes": []
         }
-      ],
-      "notes": [
-        "Subpart b groups -full and -het under one answer A, as printed; whole-item points stay 3. No partial-credit rule is inferred."
       ]
     },
     {
-      "source_label": "Fråga 17",
-      "kind": "gap_fill",
-      "points": 3,
-      "prompt": "Fraser\nAnvänd NF = nominalfras, PF = prepositionsfras och VF = verbfras.\na) Frasen tre korta svar är en [___]\nb) Frasen på skolgården är en [___]\nc) Frasen kan vila är en [___]",
-      "gaps": [
+      "kind": "parent",
+      "source_label": "Fråga 21–24",
+      "instruction": "Del 3: kortsvar",
+      "children": [
         {
-          "accepted_values": [
-            "NF"
+          "source_label": "Fråga 21",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Renässansen\nVad menas med en renässansmänniska?",
+          "notes": [
+            "Svarsexempel: En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         },
         {
-          "accepted_values": [
-            "PF"
+          "source_label": "Fråga 22",
+          "kind": "free_text",
+          "points": 2,
+          "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+          "notes": [
+            "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         },
         {
-          "accepted_values": [
-            "VF"
+          "source_label": "Fråga 23",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Språkstruktur\nVad är en nominalisering?",
+          "notes": [
+            "Svarsexempel: När en handling, egenskap eller process uttrycks som substantiv.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
+          ]
+        },
+        {
+          "source_label": "Fråga 24",
+          "kind": "free_text",
+          "points": 1,
+          "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
+          "notes": [
+            "Svarsexempel: I bisats står inte och andra satsadverbial före det finita verbet.",
+            "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
           ]
         }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 18",
-      "kind": "gap_fill",
-      "points": 4,
-      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nNoah [___] skrev [___] brevet [___] tydligt [___].",
-      "gaps": [
-        {
-          "accepted_values": [
-            "S"
-          ]
-        },
-        {
-          "accepted_values": [
-            "P"
-          ]
-        },
-        {
-          "accepted_values": [
-            "DO"
-          ]
-        },
-        {
-          "accepted_values": [
-            "Adv"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 19",
-      "kind": "gap_fill",
-      "points": 4,
-      "prompt": "Satsdelar\nAnvänd S, P, DO, IO, Pf, Adv och SA.\nAlva [___] är [___] inte [___] färdig [___].",
-      "gaps": [
-        {
-          "accepted_values": [
-            "S"
-          ]
-        },
-        {
-          "accepted_values": [
-            "P"
-          ]
-        },
-        {
-          "accepted_values": [
-            "SA"
-          ]
-        },
-        {
-          "accepted_values": [
-            "Pf"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 20",
-      "kind": "gap_fill",
-      "points": 2,
-      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
-      "gaps": [
-        {
-          "accepted_values": [
-            "huvudsats"
-          ]
-        },
-        {
-          "accepted_values": [
-            "före"
-          ]
-        }
-      ],
-      "notes": []
-    },
-    {
-      "source_label": "Fråga 21",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Renässansen\nVad menas med en renässansmänniska?",
-      "notes": [
-        "Svarsexempel: En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 22",
-      "kind": "free_text",
-      "points": 2,
-      "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
-      "notes": [
-        "Svarsexempel: Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 23",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Språkstruktur\nVad är en nominalisering?",
-      "notes": [
-        "Svarsexempel: När en handling, egenskap eller process uttrycks som substantiv.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
-      ]
-    },
-    {
-      "source_label": "Fråga 24",
-      "kind": "free_text",
-      "points": 1,
-      "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
-      "notes": [
-        "Svarsexempel: I bisats står inte och andra satsadverbial före det finita verbet.",
-        "Source provides a sample answer for teacher grading, not an exhaustive automatic answer set."
       ]
     }
   ]

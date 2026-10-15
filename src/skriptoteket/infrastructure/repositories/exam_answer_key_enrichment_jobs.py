@@ -6,8 +6,9 @@ Purpose:
     tool-run execution queue.
 
 Relationships:
-    Implements ``ExamAnswerKeyEnrichmentJobRepositoryProtocol`` on a
-    request-scoped ``AsyncSession``; commit/rollback is owned by the UoW.
+    Implements ``ExamAnswerKeyEnrichmentJobRepositoryProtocol`` and the
+    workspace suggestion lookups of ``ExamWorkspaceSuggestionJobQueryProtocol``
+    on a request-scoped ``AsyncSession``; commit/rollback is owned by the UoW.
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import select, update
+from pydantic import JsonValue
+from sqlalchemy import Select, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -28,10 +30,15 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
-from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ExamWorkspaceSuggestionJobQueryProtocol,
+)
 
 
-class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobRepositoryProtocol):
+class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol, ExamWorkspaceSuggestionJobQueryProtocol
+):
     """Postgres enrichment-job ledger with SKIP LOCKED claims."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -49,6 +56,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             source_docx=job.source_docx,
             workspace_lineage_id=job.workspace_lineage_id,
             workspace_document_revision=job.workspace_document_revision,
+            workspace_request_json=job.workspace_request_json,
+            workspace_suggestions_json=job.workspace_suggestions_json,
             retry_identity=job.retry_identity,
             attempts=job.attempts,
             max_attempts=job.max_attempts,
@@ -83,6 +92,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             )
         model.status = job.status.value
         model.source_docx = job.source_docx
+        model.workspace_suggestions_json = job.workspace_suggestions_json
         model.attempts = job.attempts
         model.max_attempts = job.max_attempts
         model.available_at = job.available_at
@@ -90,12 +100,23 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model.locked_until = job.locked_until
         model.last_error = job.last_error
         model.diagnostics = list(job.diagnostics)
+        # conversion_progress is written only by set_conversion_progress.
         model.updated_at = job.updated_at
         model.started_at = job.started_at
         model.finished_at = job.finished_at
         await self._session.flush()
         await self._session.refresh(model)
         return ExamAnswerKeyEnrichmentJob.model_validate(model)
+
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        """Replace the job's persisted conversion progress; never commits."""
+        model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
+        if model is None:
+            raise not_found("ExamAnswerKeyEnrichmentJob", str(job_id))
+        model.conversion_progress = progress
+        await self._session.flush()
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         stmt = select(
@@ -105,6 +126,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             ExamAnswerKeyEnrichmentJobModel.status,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.last_error,
+            ExamAnswerKeyEnrichmentJobModel.conversion_progress,
         ).where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
         row = (await self._session.execute(stmt)).one_or_none()
         return (
@@ -112,6 +134,42 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
             if row
             else None
         )
+
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        stmt = (
+            select(
+                ExamAnswerKeyEnrichmentJobModel.id,
+                ExamAnswerKeyEnrichmentJobModel.owner_user_id,
+                ExamAnswerKeyEnrichmentJobModel.source_kind,
+                ExamAnswerKeyEnrichmentJobModel.status,
+                ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
+                ExamAnswerKeyEnrichmentJobModel.last_error,
+                ExamAnswerKeyEnrichmentJobModel.conversion_progress,
+            )
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.source_kind
+                == ExamAnswerKeySourceKind.DOCX_IMPORT.value,
+                ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
+                ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
+            )
+            .with_for_update(read=True)
+        )
+        row = (await self._session.execute(stmt)).one_or_none()
+        return (
+            ExamWorkspaceConversionJobView.model_validate(row, from_attributes=True)
+            if row
+            else None
+        )
+
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+            ExamAnswerKeyEnrichmentJobModel.id == job_id
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
     async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
         stmt = (
@@ -124,23 +182,93 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(ExamAnswerKeyEnrichmentJobR
         model = result.scalar_one_or_none()
         return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
-    async def get_by_workspace_revision(
+    async def get_latest_workspace_job(
         self,
         *,
         owner_user_id: UUID,
         workspace_lineage_id: UUID,
         workspace_document_revision: int,
     ) -> ExamAnswerKeyEnrichmentJob | None:
-        stmt = select(ExamAnswerKeyEnrichmentJobModel).where(
+        stmt = (
+            self._workspace_jobs(
+                owner_user_id=owner_user_id,
+                workspace_lineage_id=workspace_lineage_id,
+                workspace_document_revision=workspace_document_revision,
+            )
+            .order_by(
+                ExamAnswerKeyEnrichmentJobModel.created_at.desc(),
+                ExamAnswerKeyEnrichmentJobModel.id.desc(),
+            )
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    async def get_active_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+        workspace_request_json: dict[str, JsonValue],
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        stmt = (
+            self._workspace_jobs(
+                owner_user_id=owner_user_id,
+                workspace_lineage_id=workspace_lineage_id,
+                workspace_document_revision=workspace_document_revision,
+            )
+            .where(
+                ExamAnswerKeyEnrichmentJobModel.status.in_(
+                    (
+                        ExamAnswerKeyEnrichmentJobStatus.QUEUED.value,
+                        ExamAnswerKeyEnrichmentJobStatus.RUNNING.value,
+                    )
+                ),
+                ExamAnswerKeyEnrichmentJobModel.workspace_request_json == workspace_request_json,
+            )
+            .order_by(ExamAnswerKeyEnrichmentJobModel.created_at.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
+
+    async def lock_workspace_requests(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> None:
+        # Released when the owning UoW commits or rolls back. The key leaves out
+        # the sent content: equal requests compare by JSONB equality, which a
+        # string hash of the content would not respect.
+        await self._session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:lock_key, 0))"),
+            {
+                "lock_key": (
+                    f"exam-workspace-suggestion:{owner_user_id}:"
+                    f"{workspace_lineage_id}:{workspace_document_revision}"
+                )
+            },
+        )
+
+    @staticmethod
+    def _workspace_jobs(
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> Select[tuple[ExamAnswerKeyEnrichmentJobModel]]:
+        return select(ExamAnswerKeyEnrichmentJobModel).where(
             ExamAnswerKeyEnrichmentJobModel.source_kind == ExamAnswerKeySourceKind.WORKSPACE.value,
             ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.workspace_document_revision
             == workspace_document_revision,
         )
-        result = await self._session.execute(stmt)
-        model = result.scalar_one_or_none()
-        return ExamAnswerKeyEnrichmentJob.model_validate(model) if model else None
 
     async def claim_next(
         self,

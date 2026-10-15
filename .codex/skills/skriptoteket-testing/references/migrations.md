@@ -6,6 +6,8 @@ tests.
 ## Read First
 
 - `.codex/skills/skriptoteket-backend-dev/SKILL.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+- `local-devops` plus its Skriptoteket reference for dev DB/container lanes
 
 ## Rules
 

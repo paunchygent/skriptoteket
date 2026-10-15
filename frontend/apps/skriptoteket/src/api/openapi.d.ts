@@ -1437,6 +1437,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/answer-misspellings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Exam Workspace Misspellings */
+        post: operations["generate_exam_workspace_misspellings_api_v1_apps_documents_conversion_hub_exam_workspace_answer_misspellings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/conversion-jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -1490,7 +1507,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/enrichment": {
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions": {
         parameters: {
             query?: never;
             header?: never;
@@ -1498,16 +1515,73 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Exam Workspace Enrichment
-         * @description Read enrichment status and proposals for the head revision.
+         * Find Exam Workspace Answer Key Suggestions
+         * @description Find the newest suggestion job requested on this saved version, if any.
          */
-        get: operations["get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get"];
+        get: operations["find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get"];
         put?: never;
         /**
-         * Start Exam Workspace Enrichment
-         * @description Start enrichment for the head revision, idempotent per revision.
+         * Request Exam Workspace Answer Key Suggestions
+         * @description Start one suggestion job on the editor-sent document content.
          */
-        post: operations["start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post"];
+        post: operations["request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/answer-key-suggestions/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Exam Workspace Answer Key Suggestions
+         * @description Read one suggestion job's status and its arrived suggestions.
+         */
+        get: operations["get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace Asset */
+        get: operations["get_exam_workspace_asset_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__assets__asset_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/export-checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Exam Workspace Document Checklist
+         * @description List what an Exam.net import of this document's QTI package loses (Q15).
+         */
+        get: operations["export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1525,6 +1599,26 @@ export interface paths {
         get: operations["export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/items/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Exam Workspace Item
+         * @description Reconvert one question from its saved source with the chosen type.
+         */
+        post: operations["retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4959,27 +5053,48 @@ export interface components {
             warning_count: number;
         };
         /**
-         * ExamWorkspaceAnswerKeyProposalItem
-         * @description One advisory prefill proposal with its provider candidate lineage.
+         * ExamWorkspaceAnswerKeySuggestionItem
+         * @description One AI suggestion that arrived for one question.
          */
-        ExamWorkspaceAnswerKeyProposalItem: {
+        ExamWorkspaceAnswerKeySuggestionItem: {
             /** Item Id */
             item_id: string;
-            /** Model */
-            model: string;
-            /** Prompt Template Version */
-            prompt_template_version: string;
-            proposed_item: components["schemas"]["NativeExamItem-Output"];
-            /** Provider Profile Id */
-            provider_profile_id: string;
+            suggestion: components["schemas"]["NativeAnswerKeySuggestion"];
+        };
+        /**
+         * ExamWorkspaceAnswerKeySuggestionsResponse
+         * @description Status of one suggestion job, plus its suggestions once finished.
+         */
+        ExamWorkspaceAnswerKeySuggestionsResponse: {
+            /** Job Id */
+            job_id?: string | null;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Message */
+            message?: string | null;
+            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
+            /**
+             * Suggestions
+             * @default []
+             */
+            suggestions: components["schemas"]["ExamWorkspaceAnswerKeySuggestionItem"][];
         };
         /**
          * ExamWorkspaceConversionStatus
          * @description Owner-visible status of one background DOCX import.
+         *
+         *     ``document_revision`` is the latest revision conversion saved, absent until the
+         *     first batch is ready; ``units`` lets the editor merge each new revision into
+         *     unsaved teacher edits.
          */
         ExamWorkspaceConversionStatus: {
+            /** Document Revision */
+            document_revision: number | null;
             /** Error Message */
-            error_message?: string | null;
+            error_message: string | null;
             /**
              * Job Id
              * Format: uuid
@@ -4990,11 +5105,37 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+            /** Questions Done */
+            questions_done: number;
+            /** Questions Total */
+            questions_total: number;
             /**
              * State
              * @enum {string}
              */
             state: "queued" | "running" | "succeeded" | "failed";
+            /** Units */
+            units: components["schemas"]["ExamWorkspaceConversionUnit"][];
+        };
+        /**
+         * ExamWorkspaceConversionUnit
+         * @description Items conversion last wrote for one question or question-less review item.
+         *
+         *     ``converting`` items are placeholders that only the unit's later batch may change;
+         *     ``ready`` items are converted and editable.
+         */
+        ExamWorkspaceConversionUnit: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Question */
+            question: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "converting" | "ready";
+            /** Unit Id */
+            unit_id: string;
         };
         /**
          * ExamWorkspaceDocumentListResponse
@@ -5007,8 +5148,15 @@ export interface components {
              */
             documents: components["schemas"]["ExamWorkspaceDocumentSummary"][];
         };
-        /** ExamWorkspaceDocumentResponse */
+        /**
+         * ExamWorkspaceDocumentResponse
+         * @description One document revision, with the DOCX import that created its lineage.
+         *
+         *     ``conversion`` is read under the same lock as the document, so its units name exactly
+         *     the placeholders this revision still holds; it is None for a lineage no import created.
+         */
         ExamWorkspaceDocumentResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
             /**
              * Notes
@@ -5041,36 +5189,114 @@ export interface components {
         };
         /**
          * ExamWorkspaceEnrichmentState
-         * @description Teacher-facing state of the enrichment lane for one head revision.
+         * @description Teacher-facing state of one answer-key suggestion job.
          * @enum {string}
          */
-        ExamWorkspaceEnrichmentState: "not_requested" | "not_eligible" | "queued" | "running" | "succeeded" | "failed";
+        ExamWorkspaceEnrichmentState: "not_eligible" | "queued" | "running" | "succeeded" | "failed";
         /**
-         * ExamWorkspaceEnrichmentStatusResponse
-         * @description Status plus advisory proposals for one document head revision.
+         * ExamWorkspaceExportChecklistAllOrNothing
+         * @description One shared-instruction subquestion Exam.net gives 1 point instead of its own (Q16).
          */
-        ExamWorkspaceEnrichmentStatusResponse: {
-            /** Document Revision */
-            document_revision: number;
+        ExamWorkspaceExportChecklistAllOrNothing: {
             /**
-             * Lineage Id
-             * Format: uuid
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
-            lineage_id: string;
-            /** Message */
-            message?: string | null;
+            kind: "all_or_nothing";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistCriterion
+         * @description One Fritext criterion's text and points, which Exam.net replaces with a bare row.
+         */
+        ExamWorkspaceExportChecklistCriterion: {
+            /** Points */
+            points: number;
+            /** Text */
+            text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistFreeTextCriteria
+         * @description One Fritext question whose criteria import as unlabelled 1-point rows (Q13).
+         */
+        ExamWorkspaceExportChecklistFreeTextCriteria: {
+            /** Criteria */
+            criteria: components["schemas"]["ExamWorkspaceExportChecklistCriterion"][];
             /**
-             * Proposals
-             * @default []
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
-            proposals: components["schemas"]["ExamWorkspaceAnswerKeyProposalItem"][];
-            state: components["schemas"]["ExamWorkspaceEnrichmentState"];
+            kind: "free_text_criteria";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistResponse
+         * @description What an Exam.net import of this document's QTI package loses (Q15-Q17).
+         */
+        ExamWorkspaceExportChecklistResponse: {
+            /** Entries */
+            entries: (components["schemas"]["ExamWorkspaceExportChecklistFreeTextCriteria"] | components["schemas"]["ExamWorkspaceExportChecklistAllOrNothing"] | components["schemas"]["ExamWorkspaceExportChecklistRoundedGaps"])[];
+        };
+        /**
+         * ExamWorkspaceExportChecklistRoundedGaps
+         * @description One Lucktext whose rounded per-gap value leaves part of its points unused (Q17).
+         */
+        ExamWorkspaceExportChecklistRoundedGaps: {
+            /** Gap Points */
+            gap_points: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "rounded_gaps";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
         };
         /**
          * ExamWorkspaceExportTarget
          * @enum {string}
          */
         ExamWorkspaceExportTarget: "qti" | "pdf" | "docx";
+        /**
+         * ExamWorkspaceItemRetryResponse
+         * @description The one item a retry replaces its question with; everything else stays put.
+         */
+        ExamWorkspaceItemRetryResponse: {
+            item: components["schemas"]["NativeExamItem-Output"];
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+        };
+        /** ExamWorkspaceMisspellingsRequest */
+        ExamWorkspaceMisspellingsRequest: {
+            /** Accepted Values */
+            accepted_values: string[];
+            /** Document Text */
+            document_text: string;
+            /** Other Gold Answers */
+            other_gold_answers: string[];
+        };
+        /** ExamWorkspaceMisspellingsResponse */
+        ExamWorkspaceMisspellingsResponse: {
+            /** Automatic Values */
+            automatic_values: string[];
+        };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
             /** App Id */
@@ -5910,7 +6136,41 @@ export interface components {
          * @description Provenance vocabulary aligned with the exam-conversion review states.
          * @enum {string}
          */
-        NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "ai_interpreted" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
+        /**
+         * NativeAnswerKeySuggestion
+         * @description One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
+         *
+         *     Holds the proposed key, a SHA-256 fingerprint of the question's
+         *     answer-relevant content when the suggestion was made, and the provider
+         *     lineage that produced it. It lives apart from the item's answer key so
+         *     it survives the teacher accepting or replacing that key.
+         */
+        NativeAnswerKeySuggestion: {
+            /**
+             * Correct Choice Ids
+             * @default []
+             */
+            correct_choice_ids: string[];
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Gap Accepted Values
+             * @default []
+             */
+            gap_accepted_values: components["schemas"]["NativeGapAcceptedValues"][];
+            /**
+             * Match Pairs
+             * @default []
+             */
+            match_pairs: components["schemas"]["NativeMatchPair"][];
+            /** Model */
+            model: string;
+            /** Prompt Template Version */
+            prompt_template_version: string;
+            /** Provider Profile Id */
+            provider_profile_id: string;
+        };
         /** NativeAssetSegment */
         NativeAssetSegment: {
             /** Asset Id */
@@ -5946,6 +6206,16 @@ export interface components {
             /** Width */
             width?: number | null;
         };
+        /**
+         * NativeExamCriterion
+         * @description One Fritext rubric criterion: its text and its whole points (Q12).
+         */
+        NativeExamCriterion: {
+            /** Points */
+            points: number;
+            /** Text */
+            text: string;
+        };
         /** NativeExamDocument */
         "NativeExamDocument-Input": {
             /**
@@ -5962,7 +6232,7 @@ export interface components {
              * Instructions
              * @default []
              */
-            instructions: string[];
+            instructions: components["schemas"]["NativeParagraph"][];
             /** Items */
             items: components["schemas"]["NativeExamItem-Input"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
@@ -5970,15 +6240,15 @@ export interface components {
              * Parents
              * @default []
              */
-            parents: components["schemas"]["NativeExamParent"][];
+            parents: components["schemas"]["NativeExamParent-Input"][];
             /** Revision */
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v1
+             * @default native_exam_document_v2
              * @constant
              */
-            schema_version: "native_exam_document_v1";
+            schema_version: "native_exam_document_v2";
             /** Title */
             title: string;
         };
@@ -5998,7 +6268,7 @@ export interface components {
              * Instructions
              * @default []
              */
-            instructions: string[];
+            instructions: components["schemas"]["NativeParagraph"][];
             /** Items */
             items: components["schemas"]["NativeExamItem-Output"][];
             origin: components["schemas"]["NativeExamDocumentOrigin"];
@@ -6006,15 +6276,15 @@ export interface components {
              * Parents
              * @default []
              */
-            parents: components["schemas"]["NativeExamParent"][];
+            parents: components["schemas"]["NativeExamParent-Output"][];
             /** Revision */
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v1
+             * @default native_exam_document_v2
              * @constant
              */
-            schema_version: "native_exam_document_v1";
+            schema_version: "native_exam_document_v2";
             /** Title */
             title: string;
         };
@@ -6034,6 +6304,7 @@ export interface components {
         };
         /** NativeExamItem */
         "NativeExamItem-Input": {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6043,10 +6314,17 @@ export interface components {
              */
             choices: components["schemas"]["NativeChoice"][];
             /**
+             * Criteria
+             * @default []
+             */
+            criteria: components["schemas"]["NativeExamCriterion"][];
+            /** Facit Text */
+            facit_text?: string | null;
+            /**
              * Gaps
              * @default []
              */
-            gaps: components["schemas"]["NativeGap"][];
+            gaps: components["schemas"]["NativeGap-Input"][];
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
@@ -6062,18 +6340,25 @@ export interface components {
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
             points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
             printed_label?: string | null;
+            retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
+            /** Tick Points */
+            tick_points?: number | string | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
+            ai_suggestion: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
@@ -6083,10 +6368,17 @@ export interface components {
              */
             choices: components["schemas"]["NativeChoice"][];
             /**
+             * Criteria
+             * @default []
+             */
+            criteria: components["schemas"]["NativeExamCriterion"][];
+            /** Facit Text */
+            facit_text: string | null;
+            /**
              * Gaps
              * @default []
              */
-            gaps: components["schemas"]["NativeGap"][];
+            gaps: components["schemas"]["NativeGap-Output"][];
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
@@ -6101,16 +6393,22 @@ export interface components {
              */
             match_right: components["schemas"]["NativeMatchRight"][];
             /** Points */
-            points?: number | null;
+            points: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
             /** Printed Label */
-            printed_label?: string | null;
+            printed_label: string | null;
+            retry_source: components["schemas"]["NativeExamRetrySource-Output"] | null;
             review: components["schemas"]["NativeItemReview"];
             /** Sequence */
             sequence: number;
             /** Source Anchor */
-            source_anchor?: string | null;
-            /** Title */
-            title?: string | null;
+            source_anchor: string | null;
+            /** Tick Points */
+            tick_points: string | null;
         };
         /**
          * NativeExamItemKind
@@ -6120,29 +6418,196 @@ export interface components {
         NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "matching";
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of one kind.
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
          *
-         *     A parent owns no points and no answer key: each child item keeps its own.
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     Its instruction is one body of positioned paragraphs: the shared wording with every
+         *     shared picture at its exact source place (F2), never a gap the student fills.
          */
-        NativeExamParent: {
+        "NativeExamParent-Input": {
             /** Instruction */
-            instruction: string[];
+            instruction: components["schemas"]["NativeParagraph"][];
             /** Item Ids */
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
         };
+        /**
+         * NativeExamParent
+         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
+         *
+         *     A parent owns no points and no answer key: each child item keeps its own kind, points
+         *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     Its instruction is one body of positioned paragraphs: the shared wording with every
+         *     shared picture at its exact source place (F2), never a gap the student fills.
+         */
+        "NativeExamParent-Output": {
+            /** Instruction */
+            instruction: components["schemas"]["NativeParagraph"][];
+            /** Item Ids */
+            item_ids: string[];
+            /** Parent Id */
+            parent_id: string;
+        };
+        /**
+         * NativeExamRetryChunk
+         * @description One original source chunk kept for a question's retry (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     ``text`` is the plain wording people see and ``marked_text`` the model's wording with
+         *     its italics marked, both exactly as the conversion read them. ``images`` name the
+         *     pictures the chunk carries, at their places, so a retry rebuilds each image from the
+         *     container's saved payload instead of storing the bytes a second time.
+         */
+        NativeExamRetryChunk: {
+            /** Anchor */
+            anchor: string;
+            /**
+             * Images
+             * @default []
+             */
+            images: components["schemas"]["NativeExamRetryImage"][];
+            /** Kind */
+            kind: string;
+            /** Marked Text */
+            marked_text: string;
+            /**
+             * Missing Images
+             * @default []
+             */
+            missing_images: components["schemas"]["NativeExamRetryMissingImage"][];
+            /** Text */
+            text: string;
+        };
+        /**
+         * NativeExamRetryImage
+         * @description One picture a source chunk carries, by reference (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     The asset's payload lives once, in the container; this keeps the picture's identity and
+         *     its place in the chunk's plain and marked text so a retry can rebuild the chunk's
+         *     image from the saved document manifest and payload.
+         */
+        NativeExamRetryImage: {
+            /** Asset Id */
+            asset_id: string;
+            /** Marked Offset */
+            marked_offset: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * NativeExamRetryMissingImage
+         * @description A named picture the source could not preserve as a faithful native PNG/JPEG.
+         */
+        NativeExamRetryMissingImage: {
+            /** Marked Offset */
+            marked_offset: number;
+            /** Media Type */
+            media_type: string;
+            /** Offset */
+            offset: number;
+            /** Reference */
+            reference: string;
+        };
+        /**
+         * NativeExamRetrySource
+         * @description The original source and first label of one grouped question (D1).
+         *
+         *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
+         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
+         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
+         *     type-conflict resend changed the pipeline's kind.
+         */
+        "NativeExamRetrySource-Input": {
+            /** Chunks */
+            chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Context Chunks
+             * @default []
+             */
+            context_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Key Chunks
+             * @default []
+             */
+            key_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            label_kind: components["schemas"]["NativeExamItemKind"];
+        };
+        /**
+         * NativeExamRetrySource
+         * @description The original source and first label of one grouped question (D1).
+         *
+         *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
+         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
+         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
+         *     type-conflict resend changed the pipeline's kind.
+         */
+        "NativeExamRetrySource-Output": {
+            /** Chunks */
+            chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Context Chunks
+             * @default []
+             */
+            context_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            /**
+             * Key Chunks
+             * @default []
+             */
+            key_chunks: components["schemas"]["NativeExamRetryChunk"][];
+            label_kind: components["schemas"]["NativeExamItemKind"];
+        };
         /** NativeGap */
-        NativeGap: {
+        "NativeGap-Input": {
             /**
              * Accepted Values
              * @default []
              */
             accepted_values: string[];
+            /**
+             * Automatic Values
+             * @default []
+             */
+            automatic_values: string[];
+            /**
+             * Excluded Automatic Values
+             * @default []
+             */
+            excluded_automatic_values: string[];
             /** Gap Id */
             gap_id: string;
-            /** Hint */
-            hint?: string | null;
+        };
+        /** NativeGap */
+        "NativeGap-Output": {
+            /**
+             * Accepted Values
+             * @default []
+             */
+            accepted_values: string[];
+            /**
+             * Automatic Values
+             * @default []
+             */
+            automatic_values: string[];
+            /**
+             * Excluded Automatic Values
+             * @default []
+             */
+            excluded_automatic_values: string[];
+            /** Gap Id */
+            gap_id: string;
+        };
+        /**
+         * NativeGapAcceptedValues
+         * @description The accepted values one AI suggestion proposes for one gap.
+         */
+        NativeGapAcceptedValues: {
+            /** Accepted Values */
+            accepted_values: string[];
+            /** Gap Id */
+            gap_id: string;
         };
         /** NativeGapSegment */
         NativeGapSegment: {
@@ -7446,6 +7911,19 @@ export interface components {
             message?: string | null;
         };
         /**
+         * RequestExamWorkspaceAnswerKeySuggestionsRequest
+         * @description Editor-sent content for one suggestion request (TASK-SKRIPT-39-04-07).
+         *
+         *     ``document`` is the exam exactly as the editor shows it, saved or not.
+         *     With ``item_id`` the request covers that one question, with or without
+         *     a key; without it, it covers every keyed-kind question without a key.
+         */
+        RequestExamWorkspaceAnswerKeySuggestionsRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Item Id */
+            item_id?: string | null;
+        };
+        /**
          * ResolvePlanDraftRequest
          * @description Deserialize the landing-page resolve request.
          */
@@ -7473,6 +7951,20 @@ export interface components {
             roster_name: string;
             /** Template Name */
             template_name?: string | null;
+        };
+        /**
+         * RetryExamWorkspaceItemRequest
+         * @description Editor-sent content for one single-question reconversion (TASK-SKRIPT-39-05-09 D1).
+         *
+         *     ``document`` is the exam exactly as the editor shows it; the saved head revision is the
+         *     authority for the question's original source, so the draft's own copy of the item is
+         *     never read as source. ``kind`` is the type the teacher keeps or chooses.
+         */
+        RetryExamWorkspaceItemRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Item Id */
+            item_id: string;
+            kind: components["schemas"]["NativeExamItemKind"];
         };
         /**
          * RevertExamConverterCorrectionIntentRequest
@@ -7814,11 +8306,6 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Input"];
             /** Expected Revision */
             expected_revision: number;
-            /**
-             * Rejected Proposal Item Ids
-             * @default []
-             */
-            rejected_proposal_item_ids: string[];
         };
         /** SaveResult */
         SaveResult: {
@@ -8775,6 +9262,8 @@ export interface components {
             grouping_seating_distance_enabled?: boolean | null;
             /** Smart Enabled */
             smart_enabled?: boolean | null;
+            /** Tutorial Seen Sections */
+            tutorial_seen_sections?: string[] | null;
             /** Use History */
             use_history?: boolean | null;
         };
@@ -8951,6 +9440,8 @@ export interface components {
             classroom_planner_grouping_seating_distance_enabled?: boolean | null;
             /** Classroom Planner Smart Enabled */
             classroom_planner_smart_enabled?: boolean | null;
+            /** Classroom Planner Tutorial Seen Sections */
+            classroom_planner_tutorial_seen_sections?: string[] | null;
             /** Classroom Planner Use History */
             classroom_planner_use_history?: boolean | null;
             /**
@@ -11992,6 +12483,39 @@ export interface operations {
             };
         };
     };
+    generate_exam_workspace_misspellings_api_v1_apps_documents_conversion_hub_exam_workspace_answer_misspellings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceMisspellingsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceMisspellingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_exam_workspace_conversion_status_api_v1_apps_documents_conversion_hub_exam_workspace_conversion_jobs__job_id__get: {
         parameters: {
             query?: never;
@@ -12142,9 +12666,11 @@ export interface operations {
             };
         };
     };
-    get_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_get: {
+    find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get: {
         parameters: {
-            query?: never;
+            query: {
+                document_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;
@@ -12159,7 +12685,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"] | null;
                 };
             };
             /** @description Validation Error */
@@ -12173,9 +12699,110 @@ export interface operations {
             };
         };
     };
-    start_exam_workspace_enrichment_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__enrichment_post: {
+    request_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_post: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestExamWorkspaceAnswerKeySuggestionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceAnswerKeySuggestionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_asset_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__assets__asset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get: {
+        parameters: {
+            query: {
+                expected_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;
@@ -12190,7 +12817,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceEnrichmentStatusResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceExportChecklistResponse"];
                 };
             };
             /** @description Validation Error */
@@ -12206,7 +12833,9 @@ export interface operations {
     };
     export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get: {
         parameters: {
-            query?: never;
+            query: {
+                expected_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;
@@ -12223,6 +12852,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryExamWorkspaceItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceItemRetryResponse"];
                 };
             };
             /** @description Validation Error */

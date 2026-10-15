@@ -19,6 +19,7 @@ import { ref } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import type {
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItem,
@@ -33,6 +34,11 @@ export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
 
 export function buildFreeTextItem(sequence: number): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    criteria: [],
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [
       { segments: [{ kind: "text", text: `Fråga ${sequence}: beskriv med egna ord.` }] },
@@ -44,6 +50,7 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     item_id: `item_${String(sequence).padStart(3, "0")}`,
     kind: "free_text",
     points: 2,
+    points_estimated: false,
     review: {
       confidence: 0.9,
       parse_origin: "deterministic",
@@ -52,7 +59,7 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     },
     sequence,
     source_anchor: null,
-    title: `Fråga ${sequence}`,
+    tick_points: null,
   };
 }
 
@@ -68,7 +75,6 @@ export function buildDocument(): NativeExamDocument {
         { choice_id: "choice_c", text: "Nederbörd" },
       ],
       kind: "single_choice",
-      title: "Vattnets kretslopp",
     },
     {
       ...buildFreeTextItem(3),
@@ -89,7 +95,6 @@ export function buildDocument(): NativeExamDocument {
         reasons: ["föreslaget facit behöver godkännas"],
         state: "review_required",
       },
-      title: "Luftens gaser",
     },
     {
       ...buildFreeTextItem(4),
@@ -102,7 +107,7 @@ export function buildDocument(): NativeExamDocument {
           ],
         },
       ],
-      gaps: [{ accepted_values: ["100"], gap_id: "gap_001", hint: null }],
+      gaps: [{ accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" }],
       kind: "gap_fill",
       review: {
         confidence: 0.5,
@@ -110,7 +115,6 @@ export function buildDocument(): NativeExamDocument {
         reasons: ["luckan behöver godkända svar"],
         state: "review_required",
       },
-      title: "Kokpunkt",
     },
     buildFreeTextItem(5),
     buildFreeTextItem(6),
@@ -121,7 +125,7 @@ export function buildDocument(): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: ["Besvara alla frågor."],
+    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
     items,
     origin: {
       extractor_version: "docx-extractor-1",
@@ -131,17 +135,25 @@ export function buildDocument(): NativeExamDocument {
     },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "NO-prov HT25",
   };
 }
 
+/**
+ * A saved document response for `lineage-1`. `conversion` is the import's
+ * status the server reads with the document: a document fetched while an
+ * import is followed always carries it, so the import's specs pass the status
+ * their conversion poll returns for that revision.
+ */
 export function buildResponse(params: {
+  conversion?: ExamWorkspaceConversionStatus | null;
   title?: string;
   version: number;
 }): ExamWorkspaceDocumentResponse {
   const document = buildDocument();
   return {
+    conversion: params.conversion ?? null,
     document: {
       ...document,
       revision: params.version,

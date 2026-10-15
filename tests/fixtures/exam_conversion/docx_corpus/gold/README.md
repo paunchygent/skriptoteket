@@ -3,21 +3,24 @@
 TASK-SKRIPT-39-05-02 G1-G3 owns these source-authored gold files. Each JSON file
 was read from its DOCX and embedded facit, independently of the converter.
 `source_sha256` binds the file to the checked source bytes. The user confirmed all eight
-files on 2026-10-10; each carries `confirmed: true` and a `confirmation_note`
+source-authored files on 2026-10-10; each carries `confirmed: true` and a `confirmation_note`
 recording that decision. The same day the user accepted corrections from a blind
 second labelling to the English 1, poetry and Solid Gold 3 files. A later change to a gold file needs a new user
 confirmation. Unresolved `teacher_questions` prevent confirmation and produce comparison mismatches.
+The ninth file, `svenska_2_kategorisera_ordklasser_med_facit`, is the
+TASK-SKRIPT-39-09-03 R10 agent-authored teacher-style exam: the user chose speed over a
+real exam, so it carries `confirmed: false` and its comparison reports unconfirmed.
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`,
 `schema_version` `exam_conversion_gold_v2`). `items` holds standalone items and
-parents. A parent (`kind: "parent"`) groups consecutive questions of one response
-kind that sit under one source section instruction. It carries `source_label`,
+parents. A parent (`kind: "parent"`) groups the consecutive questions that sit
+under one source section instruction, of any mix of response kinds, as an Exam.net
+information block holds questions of any type. It carries `source_label`,
 the shared `instruction` and `children`, each a complete item whose `prompt`
 omits the instruction lines. A parent's points are the sum of its children's
 points and are not stored. A question that shares its instruction with no
 neighbour stays a standalone item. Source labels are unique across standalone
-items, parents and children. `scripts/exam_conversion_eval/move_gold_to_parents.py`
-performed the one-off move from v1.
+items, parents and children.
 The comparator is `scripts/exam_conversion_eval/compare.py`. A gold file is one
 correct conversion, so the comparator judges the eight conversion principles of
 TASK-SKRIPT-39-05-03 against it rather than textual identity. Reports keep the
@@ -37,10 +40,26 @@ an in-sentence gap is omitted. Matching items preserve the original table
 text in the prompt and state the correct directed pairs in `pairs`. Table rows in
 prompts drop empty cells, including blank matching answer cells.
 
+A Kategorisera grid is a matching item whose left entries are the sorted rows and
+whose right entries are the categories. The prompt keeps the source table, its
+header row and one line per sorted entry; the header's cells are the right list in
+source order and the blank tick cells of the data rows drop. A row's correct
+categories are several pairs that share its `left`, a category may serve several
+rows or none, and a category no tick uses stays in the header. The comparator reads
+every cell after a row's first cell as a right entry, so a header row or a distractor
+row may list several, and it compares the pairs as a set, so their order does not
+count.
+
 Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
 a native free-text item requiring review. `matching` corresponds to the native
 matching kind, whose two lists and directed pairs the comparator reads.
+A facit that prints a label after each unit of a sentence, or after each part
+of a word joined with +, makes each label one gap after its unit or part,
+accepting that label (D39). Every question has points: printed points stay,
+and what remains of a section total after them is split over the section's
+questions that print none, in whole points as evenly as possible, earlier
+questions taking the extra point (D38). Both are user decisions of 2026-10-11.
 
 A conversion is correct when a student on Exam.net meets the same questions,
 answers them the same way and is scored the same as on paper, and the
@@ -120,17 +139,18 @@ response to `<dir>/recordings/` in the recorded fixture format. Live mode is a
 manual eval-loop step, not CI. A conversion crash fails the import job, so the
 report shows it as an exam that converted no items.
 
-| Source exam                 | Gold items | Points |
-| --------------------------- | ---------: | -----: |
-| BF26 diagnostic grammar     |        104 |    105 |
-| BF26 English 1 chapters 1–2 |         53 |     59 |
-| Chapter 4 poetry and lyrics |         28 |     28 |
-| Scientific methodology      |         16 |     20 |
-| Solid Gold 3 Unit 3         |         73 |     74 |
-| Svenska 2 grammar variant 1 |          8 |     38 |
-| Svenska 2 grammar variant 2 |          8 |     38 |
-| Svenska 2 course exam       |         24 |     36 |
-| Total                       |        314 |    398 |
+| Source exam                                        | Gold items | Points |
+| -------------------------------------------------- | ---------: | -----: |
+| BF26 diagnostic grammar                            |        104 |    105 |
+| BF26 English 1 chapters 1–2                        |         53 |     59 |
+| Chapter 4 poetry and lyrics                        |         28 |     28 |
+| Scientific methodology                             |         16 |     20 |
+| Solid Gold 3 Unit 3                                |         73 |     74 |
+| Svenska 2 grammar variant 1                        |          8 |     38 |
+| Svenska 2 grammar variant 2                        |          8 |     38 |
+| Svenska 2 course exam                              |         24 |     36 |
+| Svenska 2 kategorisera ordklasser (agent-authored) |          2 |      7 |
+| Total                                              |        316 |    405 |
 
 Methodology question 2, “Tidningsartiklar”, keeps the source facit C and D.
 The accepted decision keeps B excluded, so the item carries no open

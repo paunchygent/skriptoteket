@@ -1,0 +1,334 @@
+{
+  "title": {
+    "text": "Del 3: Bisatser och komplex meningsbyggnad, 10 poäng",
+    "source_anchors": [
+      "body:0053"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.",
+      "source_anchors": [
+        "body:0054"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0056",
+        "body:0057",
+        "body:0058",
+        "body:0059",
+        "body:0060",
+        "body:0061",
+        "body:0062",
+        "body:0063"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Jag vet att lektionen börjar klockan tio. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att lektionen börjar klockan tio"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Problemet var att eleven satt längst fram. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att eleven satt längst fram"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Pf"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) När genomgången var slut började eleverna skriva. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "När genomgången var slut"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "tidsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "eftersom läraren ville förklara uppgiften igen"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "orsaksbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "e) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Om alla lämnar in i tid"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "villkorsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "f) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "för att gruppen skulle hinna klart"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "avsiktsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Jag vet att lektionen börjar klockan tio. Bisats: att lektionen börjar klockan tio Typ: att-sats Satsdel: DO\nb) Problemet var att eleven satt längst fram. Bisats: att eleven satt längst fram Typ: att-sats Satsdel: Pf\nc) När genomgången var slut började eleverna skriva. Bisats: När genomgången var slut Typ: tidsbisats Satsdel: Adv\nd) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: eftersom läraren ville förklara uppgiften igen Typ: orsaksbisats Satsdel: Adv\ne) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: Om alla lämnar in i tid Typ: villkorsbisats Satsdel: Adv\nf) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: för att gruppen skulle hinna klart Typ: avsiktsbisats Satsdel: Adv\nPoäng: 6 poäng",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

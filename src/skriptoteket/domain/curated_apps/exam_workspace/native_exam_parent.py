@@ -1,19 +1,26 @@
 """Parents of the native exam document: shared instructions over consecutive child items.
 
 Governing decisions: TASK-SKRIPT-39-05-03 rule 7 and D10, ST-SKRIPT-39-06 P4. A parent
-owns no points and no answer key; each child item keeps its own. The document re-exports
-these names from `native_exam_document`.
+owns no points and no answer key; each child item keeps its own. Parent structure and
+point aggregation live here, independently of item-kind validation.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+)
 
 if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
         NativeExamDocument,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
         NativeExamItem,
     )
 
@@ -21,31 +28,34 @@ _PARENT_ID_PATTERN = r"^parent_[0-9]{3}$"
 
 
 class NativeExamParent(BaseModel):
-    """Shared instruction for a run of consecutive child items of one kind.
+    """Shared instruction for a run of consecutive child items of any mix of kinds.
 
-    A parent owns no points and no answer key: each child item keeps its own.
+    A parent owns no points and no answer key: each child item keeps its own kind, points
+    and answer key, as an Exam.net information block holds questions of any type (D27).
+    Its instruction is one body of positioned paragraphs: the shared wording with every
+    shared picture at its exact source place (F2), never a gap the student fills.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     parent_id: str = Field(pattern=_PARENT_ID_PATTERN)
-    instruction: tuple[str, ...] = Field(min_length=1)
+    instruction: tuple[NativeParagraph, ...] = Field(min_length=1)
     item_ids: tuple[str, ...] = Field(min_length=1)
 
-    @field_validator("instruction")
-    @classmethod
-    def _non_blank_lines(cls, lines: tuple[str, ...]) -> tuple[str, ...]:
-        for line in lines:
-            if not line.strip():
-                raise ValueError("parent instruction lines must be non-blank")
-        return lines
+    @model_validator(mode="after")
+    def _instruction_is_shared_text(self) -> "NativeExamParent":
+        for paragraph in self.instruction:
+            for segment in paragraph.segments:
+                if isinstance(segment, NativeGapSegment):
+                    raise ValueError("a parent instruction cannot place a gap")
+        return self
 
 
 def validate_parent_structure(
     parents: tuple[NativeExamParent, ...],
     items: tuple[NativeExamItem, ...],
 ) -> None:
-    """Children exist, belong to one parent, are consecutive in order and share one kind."""
+    """Children exist, belong to one parent and are consecutive in sequence order."""
     parent_ids = [parent.parent_id for parent in parents]
     if len(set(parent_ids)) != len(parent_ids):
         raise ValueError("parent ids must be unique")
@@ -65,8 +75,6 @@ def validate_parent_structure(
             raise ValueError(
                 f"parent {parent.parent_id} children must be consecutive items in sequence order"
             )
-        if len({child.kind for child in children}) != 1:
-            raise ValueError(f"parent {parent.parent_id} children must share one item kind")
 
 
 def parent_points(document: NativeExamDocument, parent: NativeExamParent) -> int | float | None:

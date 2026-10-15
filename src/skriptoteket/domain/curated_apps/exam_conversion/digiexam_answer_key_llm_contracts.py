@@ -14,6 +14,7 @@ Relationships:
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -114,9 +115,44 @@ class StructuredLLMProviderProfile:
             raise ValueError("Structured provider temperature must be between 0 and 2.")
 
 
+# Input-token estimate of one inline source image, added to the text estimate before
+# the lease reservation; reconciliation charges the measured usage afterwards.
+IMAGE_INPUT_TOKEN_ESTIMATE = 1_500
+
+
+@dataclass(frozen=True)
+class SourceImage:
+    """A PNG of one source part that text cannot carry, standing at ``offset`` in its text."""
+
+    png: bytes
+    offset: int
+
+    @property
+    def data_url(self) -> str:
+        """Responses and Decisions take an image only as an inline base64 data URL."""
+        return "data:image/png;base64," + base64.b64encode(self.png).decode("ascii")
+
+
+def input_content(text: str, images: tuple[SourceImage, ...]) -> list[JsonValue]:
+    """User content parts: the text split at each image's offset, each image in its place."""
+    parts: list[JsonValue] = []
+    start = 0
+    for image in sorted(images, key=lambda i: i.offset):
+        if text[start : image.offset]:
+            parts.append({"type": "input_text", "text": text[start : image.offset]})
+        parts.append({"type": "input_image", "image_url": image.data_url})
+        start = image.offset
+    if text[start:] or not parts:
+        parts.append({"type": "input_text", "text": text[start:]})
+    return parts
+
+
 @dataclass(frozen=True)
 class StructuredLLMRequest:
-    """Single-turn item-local structured-output request."""
+    """Single-turn item-local structured-output request.
+
+    ``user_images`` stand at their offsets in ``user_payload``.
+    """
 
     job_id: str
     item_id: str
@@ -127,10 +163,13 @@ class StructuredLLMRequest:
     output_spec: StructuredOutputSpec
     estimated_input_tokens: int
     max_output_tokens: int
+    user_images: tuple[SourceImage, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.job_id.strip():
             raise ValueError("Structured LLM job_id must be non-empty.")
+        if any(not 0 <= image.offset <= len(self.user_payload) for image in self.user_images):
+            raise ValueError("Structured LLM user_images must stand inside user_payload.")
         if not self.item_id.strip():
             raise ValueError("Structured LLM item_id must be non-empty.")
         if not self.item_type.strip():

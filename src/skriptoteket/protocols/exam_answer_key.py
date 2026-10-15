@@ -20,6 +20,8 @@ from datetime import date, datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
+from pydantic import JsonValue
+
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyProposedOverlay,
@@ -103,22 +105,32 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         expected_worker_id: str | None = None,
     ) -> ExamAnswerKeyEnrichmentJob: ...
 
+    async def set_conversion_progress(
+        self, *, job_id: UUID, progress: dict[str, JsonValue]
+    ) -> None:
+        """Replace the job's persisted conversion progress; update never writes it."""
+        ...
+
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         """Read the status-poll columns only; never loads the uploaded source bytes."""
         ...
 
-    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
-        """Lock and refresh the row before publishing a worker's terminal result."""
+    async def lock_conversion_view_by_lineage(
+        self, *, owner_user_id: UUID, workspace_lineage_id: UUID
+    ) -> ExamWorkspaceConversionJobView | None:
+        """Read and share-lock the DOCX import job that created a document lineage.
+
+        The lock holds conversion back until the caller's transaction ends, so a document
+        head read in that transaction matches the job's progress.
+        """
         ...
 
-    async def get_by_workspace_revision(
-        self,
-        *,
-        owner_user_id: UUID,
-        workspace_lineage_id: UUID,
-        workspace_document_revision: int,
-    ) -> ExamAnswerKeyEnrichmentJob | None:
-        """Find the one workspace-lane job pinned to a document revision."""
+    async def get_by_id(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read one job by id without locking it."""
+        ...
+
+    async def get_by_id_for_update(self, *, job_id: UUID) -> ExamAnswerKeyEnrichmentJob | None:
+        """Lock and refresh the row before publishing a worker's terminal result."""
         ...
 
     async def claim_next(
@@ -149,6 +161,45 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         now: datetime,
         lease_ttl: timedelta,
     ) -> bool: ...
+
+
+class ExamWorkspaceSuggestionJobQueryProtocol(Protocol):
+    """Find workspace suggestion jobs by the saved version they were requested on."""
+
+    async def get_latest_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read the newest suggestion job requested against one saved version."""
+        ...
+
+    async def get_active_workspace_job(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+        workspace_request_json: dict[str, JsonValue],
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        """Read a queued or running suggestion job on exactly this sent content."""
+        ...
+
+    async def lock_workspace_requests(
+        self,
+        *,
+        owner_user_id: UUID,
+        workspace_lineage_id: UUID,
+        workspace_document_revision: int,
+    ) -> None:
+        """Serialize suggestion requests on one saved version until the transaction ends.
+
+        Taken inside the caller's unit of work before the active-job lookup,
+        so that lookup and the enqueue that may follow are one decision.
+        """
+        ...
 
 
 class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):

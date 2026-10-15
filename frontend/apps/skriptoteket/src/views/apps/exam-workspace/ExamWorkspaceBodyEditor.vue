@@ -5,11 +5,16 @@
  * Domain purpose:
  *   Let the teacher edit each paragraph of a question as one continuous
  *   text, with every gap shown as an inline chip and every image as a fixed
- *   "Bild" marker. Activating a gap chip opens a small popover where the
- *   teacher edits that gap's accepted answers. Gaps and images are the
- *   Exam.net contract, so typing, pasting, cutting, dragging, dropping or
- *   undo can never remove, add or reorder them. While `disabled` is set,
- *   nothing can be edited and an open popover closes without committing.
+ *   atom that renders the actual picture once its asset URL is known and the
+ *   "Bild" placeholder until then. Activating a gap chip opens a small
+ *   popover where the teacher edits that gap's accepted answers, removes an
+ *   automatic answer the conversion added, or replaces the whole gap with
+ *   its first accepted answer as plain text ("Visa som text"). Closing that
+ *   popover focuses the paragraph, because the removed chip cannot. Gaps and
+ *   images are the Exam.net contract, so typing, pasting, cutting, dragging,
+ *   dropping or undo can never remove, add or reorder them. While `disabled`
+ *   is set, nothing can be edited, an open popover closes without
+ *   committing, and no gap change is forwarded.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
@@ -38,6 +43,7 @@ import {
   selectionRanges,
 } from "./examWorkspaceBodyCaret";
 import {
+  applyAssetState,
   applyChipState,
   ATOM_ATTRIBUTE,
   ensureTrailingBreak,
@@ -71,14 +77,24 @@ function atomGuardCopy(inputType: string, atom: TouchedAtomKind): string {
 const props = defineProps<{
   item: NativeExamItem;
   disabled?: boolean;
+  /** Asset URL per asset id; a mapped picture renders, an unmapped one keeps its placeholder. */
+  assetUrls?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
 }>();
 
-type OpenGap = { itemId: string; gapId: string; top: number; left: number };
+type OpenGap = {
+  itemId: string;
+  gapId: string;
+  paragraphIndex: number;
+  top: number;
+  left: number;
+};
 
 const editableMode = detectEditableMode();
 const editorRoot = ref<HTMLElement | null>(null);
@@ -128,7 +144,7 @@ function renderParagraph(paragraphIndex: number): void {
   if (!element || !paragraph) {
     return;
   }
-  renderParagraphElement(element, paragraph.segments, props.item.gaps);
+  renderParagraphElement(element, paragraph.segments, props.item.gaps, props.assetUrls);
   refreshAtomIndexes(element, paragraphIndex, paragraph.segments);
   renderedKeys[paragraphIndex] = segmentsKey(paragraph.segments);
 }
@@ -159,9 +175,22 @@ function refreshChips(): void {
     .forEach((chip) => applyChipState(chip, props.item.gaps));
 }
 
+/** Update live image atoms in place so an arriving or changed URL never rebuilds the paragraph. */
+function refreshAssets(): void {
+  editorRoot.value
+    ?.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}="asset"]`)
+    .forEach((atom) => {
+      const assetId = atom.getAttribute("data-asset-id");
+      if (assetId) {
+        applyAssetState(atom, assetId, props.assetUrls);
+      }
+    });
+}
+
 onMounted(syncParagraphs);
 watch(() => [props.item.item_id, props.item.body] as const, syncParagraphs, { flush: "post" });
 watch(() => props.item.gaps, refreshChips, { deep: true, flush: "post" });
+watch(() => props.assetUrls, refreshAssets, { deep: true, flush: "post" });
 watch(
   () => props.disabled,
   (disabled) => {
@@ -295,23 +324,23 @@ function handleDragOver(event: DragEvent): void {
   }
 }
 
-function handleParagraphClick(event: MouseEvent): void {
+function handleParagraphClick(paragraphIndex: number, event: MouseEvent): void {
   const chip = chipFromEvent(event);
   if (chip) {
     event.preventDefault();
-    openPopover(chip);
+    openPopover(paragraphIndex, chip);
   }
 }
 
-function handleParagraphKeydown(event: KeyboardEvent): void {
+function handleParagraphKeydown(paragraphIndex: number, event: KeyboardEvent): void {
   const chip = chipFromEvent(event);
   if (chip && (event.key === "Enter" || event.key === " ")) {
     event.preventDefault();
-    openPopover(chip);
+    openPopover(paragraphIndex, chip);
   }
 }
 
-function openPopover(chip: HTMLElement): void {
+function openPopover(paragraphIndex: number, chip: HTMLElement): void {
   if (props.disabled) {
     return;
   }
@@ -328,6 +357,7 @@ function openPopover(chip: HTMLElement): void {
   openGap.value = {
     itemId: props.item.item_id,
     gapId,
+    paragraphIndex,
     top: chipRect.bottom - rootRect.top + 4,
     // Keep the popover inside the editor when the chip sits near the right edge.
     left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
@@ -353,6 +383,26 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
   }
   emit("updateGapValues", itemId, gapId, acceptedValues);
 }
+
+function handleGapAutomaticValueRemoval(itemId: string, gapId: string, value: string): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("removeAutomaticValue", itemId, gapId, value);
+}
+
+/** The chip this action removes cannot keep focus, so the paragraph takes it. */
+function handleGapAsText(itemId: string, gapId: string): void {
+  if (props.disabled) {
+    return;
+  }
+  const paragraphIndex = openGap.value?.paragraphIndex ?? null;
+  closePopover(false);
+  emit("showGapAsText", itemId, gapId);
+  if (paragraphIndex !== null) {
+    paragraphElements[paragraphIndex]?.focus();
+  }
+}
 </script>
 
 <template>
@@ -371,7 +421,7 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
         v-for="(paragraph, paragraphIndex) in item.body"
         :key="paragraphIndex"
         :ref="(element) => setParagraphElement(paragraphIndex, element)"
-        class="min-h-14 whitespace-pre-wrap break-words border border-navy/35 bg-canvas px-4 py-3 text-base leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
+        class="min-h-14 whitespace-pre-wrap [overflow-wrap:anywhere] border border-navy/35 bg-canvas px-4 py-3 text-base leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
         role="textbox"
         aria-multiline="true"
         :aria-label="`Frågetext, stycke ${paragraphIndex + 1}`"
@@ -385,8 +435,8 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
         @compositionstart="handleCompositionStart(paragraphIndex)"
         @compositionend="handleCompositionEnd(paragraphIndex)"
         @paste="handlePaste(paragraphIndex, $event)"
-        @click="handleParagraphClick"
-        @keydown="handleParagraphKeydown"
+        @click="handleParagraphClick(paragraphIndex, $event)"
+        @keydown="handleParagraphKeydown(paragraphIndex, $event)"
         @dragstart="handleDragStart"
         @dragover="handleDragOver"
         @drop.prevent
@@ -400,9 +450,12 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
         :gap-id="openGap.gapId"
         :gap-number="openGapNumber"
         :gap="openGapModel"
+        :gap-count="item.gaps.length"
         :top="openGap.top"
         :left="openGap.left"
         @commit="handleGapCommit"
+        @remove-automatic-value="handleGapAutomaticValueRemoval"
+        @show-gap-as-text="handleGapAsText"
         @close="closePopover"
       />
     </div>

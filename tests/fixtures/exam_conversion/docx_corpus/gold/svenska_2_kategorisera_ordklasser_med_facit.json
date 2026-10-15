@@ -1,0 +1,42 @@
+{
+  "schema_version": "exam_conversion_gold_v2",
+  "source_filename": "svenska_2_kategorisera_ordklasser_med_facit.docx",
+  "source_sha256": "7a0b645cef5b45ee7e3dff58c4c5e5439fb0f31a009149cb3237ec78f36ef297",
+  "title": "Kategorisera orden — Svenska 2",
+  "confirmed": false,
+  "notes": [
+    "Agent-authored fixture for TASK-SKRIPT-39-09-03 (task 3, R10), written 2026-10-15 from the generator script retained in the session's evidence/impl/TASK-SKRIPT-39-09-03. The teacher-style exam has two category-sorting grids, an answer key and printed points; the user did not confirm it.",
+    "Fråga 1 is a Kategorisera grid: rows are the sorted words and columns the word classes. Lärarens facit keys vila to both substantiv and verb, so that row has two correct categories; adjektiv is unused and stays as a column.",
+    "Fråga 2 is a Kategorisera grid over verb forms; every row has exactly one correct category."
+  ],
+  "items": [
+    {
+      "source_label": "Fråga 1",
+      "kind": "matching",
+      "points": 4,
+      "prompt": "Sätt ett kryss i rätt kolumn för varje ord. Ett ord kan höra till fler än en kolumn.\nSubstantiv | Verb | Adjektiv\n1. vila\n2. springa\n3. kärlek",
+      "pairs": [
+        { "left": "vila", "right": "Substantiv" },
+        { "left": "vila", "right": "Verb" },
+        { "left": "springa", "right": "Verb" },
+        { "left": "kärlek", "right": "Substantiv" }
+      ],
+      "notes": [
+        "Facit: vila – substantiv och verb; springa – verb; kärlek – substantiv. Adjektiv is a column no tick uses.",
+        "Four ticks at one point each."
+      ]
+    },
+    {
+      "source_label": "Fråga 2",
+      "kind": "matching",
+      "points": 3,
+      "prompt": "Sätt ett kryss i rätt kolumn för varje verbform.\nPresens | Preteritum | Perfekt\n1. springer\n2. sprang\n3. har sprungit",
+      "pairs": [
+        { "left": "springer", "right": "Presens" },
+        { "left": "sprang", "right": "Preteritum" },
+        { "left": "har sprungit", "right": "Perfekt" }
+      ],
+      "notes": ["Facit: springer – presens; sprang – preteritum; har sprungit – perfekt."]
+    }
+  ]
+}

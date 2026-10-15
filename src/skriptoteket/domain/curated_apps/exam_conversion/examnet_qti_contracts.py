@@ -1,7 +1,7 @@
 """Exam.net-oriented QTI package contracts.
 
 Purpose:
-    Define the reusable value objects for QTI 2.1 package generation,
+    Define the reusable value objects for QTI 3.0 package generation,
     validation reporting, proof-gated Exam.net support, and manual follow-up.
 
 Relationships:
@@ -15,19 +15,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, TypeAlias
 
-EXAMNET_QTI_VERSION: Literal["2.1"] = "2.1"
+EXAMNET_QTI_VERSION: Literal["3.0"] = "3.0"
 EXAMNET_QTI_PACKAGE_SCHEMA_VERSION: Literal["examnet_qti_package_plan_v1"] = (
     "examnet_qti_package_plan_v1"
 )
 EXAMNET_QTI_VALIDATION_REPORT_SCHEMA_VERSION: Literal["examnet_qti_validation_report_v1"] = (
     "examnet_qti_validation_report_v1"
 )
-EXAMNET_QTI_GENERATOR_VERSION: Literal["examnet_qti_2_1_v1"] = "examnet_qti_2_1_v1"
-EXAMNET_QTI_AUTOMATIC_PROFILE_ID: Literal["examnet_qti_2_1_v1"] = "examnet_qti_2_1_v1"
-EXAMNET_QTI_MANUAL_UNKEYED_PROFILE_ID: Literal["unkeyed_manual_qti_2_1_v1"] = (
-    "unkeyed_manual_qti_2_1_v1"
+EXAMNET_QTI_GENERATOR_VERSION: Literal["examnet_qti_3_0_v1"] = "examnet_qti_3_0_v1"
+EXAMNET_QTI_AUTOMATIC_PROFILE_ID: Literal["examnet_qti_3_0_v1"] = "examnet_qti_3_0_v1"
+EXAMNET_QTI_MANUAL_UNKEYED_PROFILE_ID: Literal["unkeyed_manual_qti_3_0_v1"] = (
+    "unkeyed_manual_qti_3_0_v1"
 )
 EXAMNET_QTI_PACKAGE_CONTENT_TYPE: Literal["application/zip"] = "application/zip"
 EXAMNET_QTI_REPORT_CONTENT_TYPE: Literal["application/json"] = "application/json"
@@ -158,13 +158,45 @@ class ExamNetQtiUnsupportedResource:
 
 
 @dataclass(frozen=True)
+class ExamNetQtiPromptText:
+    """One literal text run at its place inside a rich prompt paragraph."""
+
+    text: str
+
+
+@dataclass(frozen=True)
+class ExamNetQtiPromptImage:
+    """One image at its place; ``image_index`` addresses the item's image resources."""
+
+    image_index: int
+
+
+@dataclass(frozen=True)
+class ExamNetQtiPromptGap:
+    """One text-entry gap at its place; ``gap_index`` addresses the item's text-entry gaps."""
+
+    gap_index: int
+
+
+ExamNetQtiPromptSegment: TypeAlias = (
+    ExamNetQtiPromptText | ExamNetQtiPromptImage | ExamNetQtiPromptGap
+)
+
+
+@dataclass(frozen=True)
 class ExamNetQtiItem:
     """One QTI item request in the Exam.net target profile.
 
-    A parent item carries ``children`` (items of one interaction type, in order)
-    and the ``instruction_lines`` they share; it exports as one assessment item
-    holding one interaction per child. Its ``image_resources`` are the children's
+    A parent item carries ``children`` (items of any mix of interaction types, in
+    order) and the ``instruction_lines`` they share; it exports as one assessment
+    item holding one interaction per child, each with its own response, and every
+    reader takes each child's own ``interaction_type``. Its ``image_resources`` are the children's
     in order, so package planning writes every image once under the parent.
+
+    ``prompt_paragraphs`` carries the exact rich placement of text, images, and
+    gaps; its image and gap indexes address this item's own ``image_resources``
+    and ``text_entry_gaps`` in order. An empty value keeps the positionless
+    ``prompt_lines`` rendering with appended images.
     """
 
     item_id: str
@@ -173,6 +205,7 @@ class ExamNetQtiItem:
     interaction_type: ExamNetQtiInteractionType
     prompt_lines: tuple[str, ...]
     max_score: int | float | None
+    prompt_paragraphs: tuple[tuple[ExamNetQtiPromptSegment, ...], ...] = ()
     evaluation_mode: ExamNetQtiEvaluationMode = ExamNetQtiEvaluationMode.AUTOMATIC
     manual_representation: ExamNetQtiManualRepresentation = (
         ExamNetQtiManualRepresentation.NATIVE_INTERACTION
@@ -218,9 +251,9 @@ class ExamNetQtiPackagePlan:
     """Filesystem-free QTI package plan."""
 
     schema_version: Literal["examnet_qti_package_plan_v1"]
-    generator_version: Literal["examnet_qti_2_1_v1"]
-    qti_version: Literal["2.1"]
-    profile_id: Literal["examnet_qti_2_1_v1", "unkeyed_manual_qti_2_1_v1"]
+    generator_version: Literal["examnet_qti_3_0_v1"]
+    qti_version: Literal["3.0"]
+    profile_id: Literal["examnet_qti_3_0_v1", "unkeyed_manual_qti_3_0_v1"]
     package_name: str
     status: ExamNetQtiPackageStatus
     target_support_status: ExamNetQtiTargetSupportStatus
@@ -247,9 +280,9 @@ class ExamNetQtiValidationReport:
     """JSON-serializable QTI validation report contract."""
 
     schema_version: Literal["examnet_qti_validation_report_v1"]
-    generator_version: Literal["examnet_qti_2_1_v1"]
-    qti_version: Literal["2.1"]
-    profile_id: Literal["examnet_qti_2_1_v1", "unkeyed_manual_qti_2_1_v1"]
+    generator_version: Literal["examnet_qti_3_0_v1"]
+    qti_version: Literal["3.0"]
+    profile_id: Literal["examnet_qti_3_0_v1", "unkeyed_manual_qti_3_0_v1"]
     package_filename: str
     package_sha256: str | None
     package_status: ExamNetQtiPackageStatus

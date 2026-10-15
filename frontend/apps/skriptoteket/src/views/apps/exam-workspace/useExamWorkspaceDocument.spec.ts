@@ -7,27 +7,25 @@
  *   flight is never dropped or rolled back to an older version.
  */
 
-import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type {
-  ExamWorkspaceDocumentResponse,
-  ExamWorkspaceDocumentSummary,
-} from "../../../api/examWorkspace";
-import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
-import { mergeSavedDocuments, useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
+import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
+import {
+  buildResponse,
+  currentItem,
+  openMatchingDocument as openWith,
+} from "./useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../../api/examWorkspace", () => apiMocks);
@@ -62,50 +60,15 @@ describe("mergeSavedDocuments", () => {
   });
 });
 
-function buildResponse(): ExamWorkspaceDocumentResponse {
-  return {
-    document: {
-      document_id: "doc-1",
-      items: [buildMatchingItem()],
-      revision: 1,
-      schema_version: 1,
-      title: "English 1",
-    },
-    notes: [],
-    summary: {
-      lineage_id: "lineage-1",
-      name: "english-1.provdokument.zip",
-      saved_at: "2026-10-11T08:00:00Z",
-      vault_file_id: "file-1",
-      version: 1,
-    },
-  } as unknown as ExamWorkspaceDocumentResponse;
-}
-
-async function openMatchingDocument() {
-  apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
-  const state = effectScope().run(() => useExamWorkspaceDocument());
-  if (!state) {
-    throw new Error("expected the document state to be created");
-  }
-  await state.openDocument("lineage-1");
-  await flushPromises();
-  return state;
-}
-
-function currentItem(state: Awaited<ReturnType<typeof openMatchingDocument>>) {
-  const item = state.workspaceDocument.value?.items[0];
-  if (!item) {
-    throw new Error("expected a loaded matching item");
-  }
-  return item;
-}
-
 beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
 });
+
+function openMatchingDocument() {
+  return openWith(apiMocks.getExamWorkspaceDocument);
+}
 
 describe("matching edits in useExamWorkspaceDocument", () => {
   it("changes only the named entry text on its own side", async () => {
@@ -153,13 +116,12 @@ describe("matching edits in useExamWorkspaceDocument", () => {
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
-  it("refuses to save a keyed item that uses a right entry twice", async () => {
+  it("refuses to save a keyed grid with a row left without a tick", async () => {
     const state = await openMatchingDocument();
 
     state.updateItemMatchPairs("item_001", [
       { left_id: "left_001", right_id: "right_002" },
       { left_id: "left_002", right_id: "right_002" },
-      { left_id: "left_003", right_id: "right_003" },
     ]);
 
     await expect(state.saveDocument()).resolves.toBe(false);

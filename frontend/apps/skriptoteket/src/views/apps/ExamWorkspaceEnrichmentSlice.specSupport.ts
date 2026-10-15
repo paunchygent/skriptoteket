@@ -1,14 +1,13 @@
 /**
- * Exam workspace answer-key proposal slice test harness.
+ * Exam workspace answer-key suggestion slice test harness.
  *
  * Slice purpose:
- *   Lock the advisory answer-key loop: request proposals for the saved head
- *   revision, poll until the job settles, show each proposal next to its
- *   item, and let the teacher approve, adjust, or dismiss it.
+ *   Lock the AI suggestion loop: request suggestions for the questions as
+ *   the editor shows them, poll until the job settles, and write each
+ *   arriving suggestion onto its question.
  *
  * Relationships:
- *   - Shared fixtures and interactions for the enrichment specs (polling,
- *     drawer, review, rejection).
+ *   - Shared fixtures and interactions for the enrichment specs.
  *   - Builds on `ExamWorkspaceSlice.specSupport.ts` for the document fixture
  *     and view mounting.
  *   - Each spec owns its own `api/examWorkspace` module mock and passes it in.
@@ -18,8 +17,10 @@ import { flushPromises } from "@vue/test-utils";
 import type { Mock } from "vitest";
 
 import type {
+  ExamWorkspaceAnswerKeySuggestionsStatus,
+  ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
-  ExamWorkspaceEnrichmentStatus,
+  NativeAnswerKeySuggestion,
   NativeExamItem,
 } from "../../api/examWorkspace";
 import { buildResponse, type ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
@@ -27,18 +28,28 @@ import { buildResponse, type ViewWrapper } from "./ExamWorkspaceSlice.specSuppor
 /** The `api/examWorkspace` module mock every enrichment spec declares. */
 export interface EnrichmentApiMocks {
   downloadExamWorkspaceExport: Mock;
+  findExamWorkspaceAnswerKeySuggestions: Mock;
+  getExamWorkspaceAnswerKeySuggestions: Mock;
   getExamWorkspaceDocument: Mock;
-  getExamWorkspaceEnrichment: Mock;
   importExamWorkspaceDocument: Mock;
   getExamWorkspaceConversionStatus: Mock;
   listExamWorkspaceDocuments: Mock;
+  requestExamWorkspaceAnswerKeySuggestions: Mock;
   saveExamWorkspaceDocument: Mock;
-  startExamWorkspaceEnrichment: Mock;
 }
 
-/** Item 2 arrives without a key, so it is the one the provider proposes for. */
-export function buildUnkeyedResponse(version: number): ExamWorkspaceDocumentResponse {
-  const response = buildResponse({ version });
+/** The finished import conversion that every imported revision 1 carries. */
+export const SUCCEEDED_CONVERSION: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
+/** Item 2 arrives without a key, so it is the one the provider suggests for. */
+export function buildUnkeyedResponse(
+  version: number,
+  conversion: ExamWorkspaceConversionStatus | null = null,
+): ExamWorkspaceDocumentResponse {
+  const response = buildResponse({ conversion, version });
   return {
     ...response,
     document: {
@@ -56,41 +67,25 @@ export function buildUnkeyedResponse(version: number): ExamWorkspaceDocumentResp
   };
 }
 
-function proposedItem(): NativeExamItem {
-  const item = buildUnkeyedResponse(1).document.items.find(
-    (candidate) => candidate.item_id === "item_002",
-  );
-  if (!item) {
-    throw new Error("fixture item_002 missing");
-  }
-  return {
-    ...item,
-    answer_key: { correct_choice_ids: ["choice_c"], match_pairs: [], origin: "machine_proposed" },
-    review: {
-      ...item.review,
-      reasons: [...item.review.reasons, "machine_proposed_answer_key"],
-      state: "review_required",
-    },
-  };
-}
+export const SUGGESTION: NativeAnswerKeySuggestion = {
+  correct_choice_ids: ["choice_c"],
+  fingerprint: "a".repeat(64),
+  gap_accepted_values: [],
+  match_pairs: [],
+  model: "luna-low",
+  prompt_template_version: "v1",
+  provider_profile_id: "luna",
+};
 
 export function status(
-  state: ExamWorkspaceEnrichmentStatus["state"],
-  extra: Partial<ExamWorkspaceEnrichmentStatus> = {},
-): ExamWorkspaceEnrichmentStatus {
-  return { document_revision: 1, lineage_id: "lineage-1", proposals: [], state, ...extra };
+  state: ExamWorkspaceAnswerKeySuggestionsStatus["state"],
+  extra: Partial<ExamWorkspaceAnswerKeySuggestionsStatus> = {},
+): ExamWorkspaceAnswerKeySuggestionsStatus {
+  return { job_id: "job-suggest-1", lineage_id: "lineage-1", suggestions: [], state, ...extra };
 }
 
 export const SUCCEEDED = status("succeeded", {
-  proposals: [
-    {
-      item_id: "item_002",
-      model: "luna-low",
-      prompt_template_version: "v1",
-      proposed_item: proposedItem(),
-      provider_profile_id: "luna",
-    },
-  ],
+  suggestions: [{ item_id: "item_002", suggestion: SUGGESTION }],
 });
 
 /** Resets every API mock and imports an unkeyed document with no job requested. */
@@ -98,15 +93,13 @@ export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(SUCCEEDED_CONVERSION);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1, SUCCEEDED_CONVERSION));
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue(status("not_requested"));
 }
 
 export function lastSavedItem(saveMock: Mock, itemId: string): NativeExamItem | undefined {

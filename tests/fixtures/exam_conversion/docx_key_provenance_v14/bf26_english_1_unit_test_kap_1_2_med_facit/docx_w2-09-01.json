@@ -1,0 +1,72 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0066"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0063",
+        "body:0064",
+        "body:0065"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "matching",
+      "printed_label": "2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the word or phrase for each definition.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write the letter of the matching option.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: 1–C, 2–B, 3–A",
+      "points": 3,
+      "choices": [],
+      "match_left": [
+        "short of something that is needed",
+        "very fierce, aggressive, or violent",
+        "fair to both sides in a disagreement"
+      ],
+      "match_right": [
+        "evenhanded",
+        "ferocious",
+        "deficient"
+      ],
+      "match_pairs": [
+        {
+          "left": "short of something that is needed",
+          "right": "deficient"
+        },
+        {
+          "left": "very fierce, aggressive, or violent",
+          "right": "ferocious"
+        },
+        {
+          "left": "fair to both sides in a disagreement",
+          "right": "evenhanded"
+        }
+      ],
+      "criteria": []
+    }
+  ]
+}

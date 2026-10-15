@@ -4,25 +4,26 @@
  *
  * Domain purpose:
  *   List the exam's questions compactly for selection in Redigera: sequence,
- *   title, type, points, and whether the question is ready for export. Flag
- *   questions with an open answer-key proposal and show the per-item
+ *   title, type, points, whether the question is ready for export, and the
+ *   AI's mark when it wrote the question's key, and show the per-item
  *   blockers from the server's last refused export.
  *
  * Relationships:
- *   - Shows a parent's shared instruction and total points once above its
- *     first child; children are marked with a left rule.
+ *   - Shows a parent's shared instruction (text and pictures, read-only)
+ *     and total points once above its first child; children are marked with a
+ *     left rule.
  *   - Rendered by `ExamWorkspaceView` in the Redigera list panel and in the
  *     phone question sheet; emits `select` with the item id and the view
  *     selects it through `useExamWorkspaceDocument`.
  */
 
-import { IconCheck, IconWarning } from "../../../components/icons";
+import { IconAi, IconCheck, IconWarning } from "../../../components/icons";
+import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
 import { PARENT_HEADING_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 
 defineProps<{
   exportBlockersByItemId: Record<string, string[]>;
-  proposalItemIds: string[];
   readinessByItemId: Record<string, string[]>;
   rows: ExamWorkspaceItemRow[];
   selectedItemId: string | null;
@@ -51,12 +52,7 @@ const emit = defineEmits<{
         :data-test="`exam-workspace-parent-${row.parentBlock.parentId}`"
       >
         <span class="font-semibold">{{ PARENT_HEADING_COPY }}</span>
-        <span
-          v-for="(line, lineIndex) in row.parentBlock.instruction"
-          :key="lineIndex"
-          class="block"
-          data-test="exam-workspace-parent-instruction-line"
-        >{{ line }}</span>
+        <ExamWorkspaceSharedInstruction :paragraphs="row.parentBlock.instruction" />
         <span
           class="font-semibold text-navy/80"
           data-test="exam-workspace-parent-points"
@@ -74,6 +70,24 @@ const emit = defineEmits<{
           <span class="min-w-0 flex-1 truncate text-sm leading-snug">
             <span class="font-semibold">{{ row.sequence }}.</span>
             {{ row.title }}
+          </span>
+          <span
+            class="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center"
+            :data-test="`exam-workspace-item-ai-slot-${row.itemId}`"
+          >
+            <span
+              v-if="row.aiKeyLabel"
+              role="img"
+              :aria-label="row.aiKeyLabel"
+              :title="row.aiKeyLabel"
+              :data-test="`exam-workspace-item-ai-key-${row.itemId}`"
+            >
+              <IconAi
+                :size="16"
+                class="h-4 w-4 text-navy"
+                aria-hidden="true"
+              />
+            </span>
           </span>
           <IconWarning
             v-if="readinessByItemId[row.itemId]"
@@ -103,13 +117,6 @@ const emit = defineEmits<{
           v-if="readinessByItemId[row.itemId] && !exportBlockersByItemId[row.itemId]"
           class="sr-only"
         >Behöver åtgärdas före export: {{ readinessByItemId[row.itemId]?.join(' ') }}</span>
-        <span
-          v-if="proposalItemIds.includes(row.itemId)"
-          class="text-xs font-semibold leading-snug text-action"
-          :data-test="`exam-workspace-item-proposal-${row.itemId}`"
-        >
-          Facitförslag finns
-        </span>
         <span
           v-if="exportBlockersByItemId[row.itemId]"
           class="grid gap-0.5 text-xs leading-snug text-error"

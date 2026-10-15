@@ -1,29 +1,29 @@
-"""The eight gold exams and their recorded conversions, for the comparator tests."""
+"""The eight gold exams and their live replays, for the comparator tests."""
 
-import json
+from __future__ import annotations
+
+import asyncio
 from functools import cache
 from pathlib import Path
-from uuid import uuid4
 
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem, GoldParent
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
-    admit_batch,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    RECORDINGS,
+    build_replay,
 )
 
 CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 GOLD = CORPUS / "gold"
-RECORDINGS = Path("tests/fixtures/exam_conversion/docx_build_v7")
 STEMS = tuple(sorted(path.stem for path in GOLD.glob("*.json")))
+# The agent-authored grid exam has no live recording; tests that replay use the recorded set.
+AUTHORED_STEM = "svenska_2_kategorisera_ordklasser_med_facit"
+RECORDED_STEMS = tuple(sorted(path.name for path in RECORDINGS.iterdir() if path.is_dir()))
 
 
 def gold_exam(stem: str) -> GoldExam:
@@ -57,18 +57,16 @@ def question_index(exam: GoldExam, label: str) -> int:
 def replayed(
     stem: str, recordings: Path = RECORDINGS
 ) -> tuple[NativeExamDocument, tuple[str, ...]]:
-    """The exam converted from its recorded provider rounds, with the source chunk texts."""
-    chunks = PythonDocxExamChunker().chunk(content=(CORPUS / f"{stem}.docx").read_bytes())
-    state = DocxBuildState(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename=f"{stem}.docx",
-        source_sha256="0" * 64,
-        chunks=chunks,
-    )
-    for recorded in sorted((recordings / stem).glob("round*.json")):
-        admit_batch(json.loads(recorded.read_text()), state)
-    return state.result().document, tuple(chunk.text for chunk in chunks)
+    """The exam converted from its live recorded replies, with the source chunk texts.
+
+    The conversion is the production pipeline over the fresh recordings; the result is a
+    real, non-gold document that the comparator tests then mutate deliberately. This helper
+    runs the pipeline to completion with ``asyncio.run``, so it is for synchronous tests only.
+    """
+    replay = build_replay(stem, root=recordings)
+    job = replay.job()
+    outcome = asyncio.run(replay.pipeline.convert(job=job))
+    return outcome.result.document, tuple(chunk.text for chunk in job.chunks)
 
 
 def with_item(document: NativeExamDocument, index: int, item: NativeExamItem) -> NativeExamDocument:

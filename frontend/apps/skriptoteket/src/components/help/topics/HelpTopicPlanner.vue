@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import HelpTopicLayout from "../HelpTopicLayout.vue";
+import TutorialClipThumbnails from "../tutorial/TutorialClipThumbnails.vue";
 import { plannerHelpSections, plannerHelpTitles } from "../plannerHelpSections.generated";
 import { useHelp } from "../useHelp";
 
@@ -17,6 +18,7 @@ const html = computed(() => plannerHelpSections[props.section] ?? "");
     :title="title"
     @back="showIndex"
   >
+    <TutorialClipThumbnails :section="props.section" />
     <!-- eslint-disable vue/no-v-html -->
     <div
       class="help-planner-content space-y-3 text-sm text-navy"

@@ -3,56 +3,59 @@
  * Exam workspace item editor.
  *
  * Domain purpose:
- *   Edit one native exam item as the dominating Redigera surface: title,
+ *   Edit one native exam item as the dominating Redigera surface:
  *   points, the question text with inline gaps, choices with the correct
- *   answer, matching lists with the correct right entry per left entry, and
+ *   answer, the Kategorisera grid with its tick value, and
  *   the mark-as-reviewed action. Previous/next and the details
  *   drawer toggle sit in the editor header so moving between questions
  *   never needs the list. Points that are not greater than zero and an
  *   empty choice text are marked invalid at the field with a Swedish hint,
  *   because the save refuses them. While `disabled` (a save or load is
- *   running) every edit control is disabled so no typed edit is lost;
- *   navigation and the details toggle stay available.
+ *   running, or the item is a placeholder whose batch still converts) every
+ *   edit control is disabled; navigation and the details toggle stay
+ *   available.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
  *   - Delegates the question text and gap answers to
- *     `ExamWorkspaceBodyEditor`.
+ *     `ExamWorkspaceBodyEditor`, the Kategorisera grid to
+ *     `ExamWorkspaceKategoriseraGrid` and the Fritext criteria to
+ *     `ExamWorkspaceCriteriaField`; while criteria exist the points are
+ *     their sum and read-only.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the save rules from `examWorkspaceItemSaveRules`.
  *   - Tells the teacher when the question is a child of a parent, which
  *     it cannot move, remove or retype here.
  */
 
-import { computed, useId } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
-import { IconCheck, IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
+import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarning } from "../../../components/icons";
 
 import type {
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
-import {
-  INCOMPLETE_MATCH_KEY_GUIDANCE,
-  isIncompleteMatchingItem,
-} from "./examWorkspaceAnswerKeyRules";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
+import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
-  EMPTY_MATCH_TEXT_GUIDANCE,
   hasEmptyChoiceText,
-  hasEmptyMatchText,
   hasNonPositivePoints,
   isEmptyChoiceText,
   NON_POSITIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceParentChild } from "./examWorkspaceParents";
-import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import { examWorkspaceAiKeyLabel, examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
   attentionCount: number;
+  /** Asset URL per asset id, handed to the question-text editor for picture rendering. */
+  assetUrls?: Record<string, string>;
   detailsOpen: boolean;
   disabled?: boolean;
   item: NativeExamItem;
@@ -64,11 +67,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   markReviewed: [itemId: string];
+  undoInterpretation: [itemId: string];
+  removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  showGapAsText: [itemId: string, gapId: string];
   next: [];
   previous: [];
   toggleDetails: [];
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateMatchEntryText: [
     itemId: string,
@@ -83,15 +90,24 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
-  updateTitle: [itemId: string, title: string];
+  updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const pointsHintId = useId();
 const choiceHintId = useId();
-const matchHintId = useId();
-const matchKeyHintId = useId();
+
+const TYPE_CONFIDENCE_THRESHOLD = 0.95;
+
+const aiKeyLabel = computed(() => examWorkspaceAiKeyLabel(props.item.answer_key.origin));
+
+const typeUncertain = computed(
+  () =>
+    typeof props.item.review.confidence === "number" &&
+    props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,
+);
 
 const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
+const hasCriteria = computed(() => props.item.criteria.length > 0);
 
 function choiceTextClass(choiceId: string, text: string): string {
   if (isEmptyChoiceText(text)) {
@@ -102,9 +118,28 @@ function choiceTextClass(choiceId: string, text: string): string {
     : "border-navy/35";
 }
 
-function handleTitleInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateTitle", props.item.item_id, input.value);
+const isGrid = computed(() => props.item.kind === "matching");
+
+/** A tick value is a positive number with at most 2 decimals (Q10). */
+const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
+
+const tickInvalid = ref(false);
+
+watch(
+  () => props.item.item_id,
+  () => {
+    tickInvalid.value = false;
+  },
+);
+
+/** Keep the last valid tick value in the document; mark the field while the typed value is invalid. */
+function handleTickPointsInput(event: Event): void {
+  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
+  const valid = TICK_POINTS_PATTERN.test(raw) && Number(raw) > 0;
+  tickInvalid.value = !valid;
+  if (valid) {
+    emit("updateTickPoints", props.item.item_id, String(Number(raw)));
+  }
 }
 
 function handlePointsInput(event: Event): void {
@@ -149,31 +184,6 @@ function choiceLetter(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
-function matchTextClass(text: string): string {
-  return isEmptyChoiceText(text) ? "border-warning" : "border-navy/35";
-}
-
-function handleMatchEntryTextInput(side: "left" | "right", entryId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateMatchEntryText", props.item.item_id, side, entryId, input.value);
-}
-
-function selectedRightId(leftId: string): string {
-  return props.item.answer_key.match_pairs.find((pair) => pair.left_id === leftId)?.right_id ?? "";
-}
-
-/** Rebuild the full pair list in left order, with the new choice for one left entry. */
-function handleMatchPairSelect(leftId: string, event: Event): void {
-  const select = event.target as HTMLSelectElement;
-  const pairs: NativeExamMatchPair[] = [];
-  for (const left of props.item.match_left) {
-    const rightId = left.left_id === leftId ? select.value : selectedRightId(left.left_id);
-    if (rightId !== "") {
-      pairs.push({ left_id: left.left_id, right_id: rightId });
-    }
-  }
-  emit("updateMatchPairs", props.item.item_id, pairs);
-}
 </script>
 
 <template>
@@ -212,12 +222,31 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
         Fråga {{ item.sequence }}
         <span class="font-normal text-navy/65">– {{ examWorkspaceTypeLabel(item.kind) }}</span>
       </h2>
+      <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center">
+        <span
+          v-if="aiKeyLabel"
+          role="img"
+          :aria-label="aiKeyLabel"
+          :title="aiKeyLabel"
+          data-test="exam-workspace-editor-ai-key"
+        >
+          <IconAi
+            :size="18"
+            aria-hidden="true"
+          />
+        </span>
+      </span>
+      <span
+        v-if="typeUncertain"
+        class="text-xs text-navy/65"
+        data-test="exam-workspace-type-uncertain"
+      >Kontrollera frågetypen</span>
       <div
         class="ml-auto flex flex-wrap items-center gap-3"
         data-test="exam-workspace-review-badge"
       >
         <span
-          v-if="item.review.state === 'review_required'"
+          v-if="item.review.state === 'review_required' || item.answer_key.origin === 'machine_proposed'"
           class="inline-flex items-center gap-2 text-xs font-semibold leading-tight text-navy"
         >
           <IconWarning
@@ -238,16 +267,40 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
           />
           Granskad
         </span>
-        <button
-          v-if="item.review.state === 'review_required'"
-          type="button"
-          class="btn-ghost shadow-none"
-          :disabled="disabled"
-          data-test="exam-workspace-mark-reviewed"
-          @click="emit('markReviewed', item.item_id)"
-        >
-          Markera som granskad
-        </button>
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+          <button
+            v-if="item.answer_key.origin === 'ai_interpreted'"
+            type="button"
+            class="inline-flex h-11 w-11 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40 sm:h-9 sm:w-9"
+            aria-label="Ångra AI-tolkningen"
+            title="Ångra AI-tolkningen"
+            :disabled="disabled"
+            data-test="exam-workspace-undo-interpretation"
+            @click="emit('undoInterpretation', item.item_id)"
+          >
+            <IconUndo
+              :size="18"
+              aria-hidden="true"
+            />
+          </button>
+        </span>
+        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+          <button
+            v-if="item.review.state === 'review_required' || aiKeyLabel"
+            type="button"
+            class="inline-flex h-11 w-11 items-center justify-center border border-navy/35 bg-panel hover:bg-canvas disabled:opacity-40 sm:h-9 sm:w-9"
+            aria-label="Markera som granskad"
+            title="Markera som granskad"
+            :disabled="disabled"
+            data-test="exam-workspace-mark-reviewed"
+            @click="emit('markReviewed', item.item_id)"
+          >
+            <IconCheck
+              :size="18"
+              aria-hidden="true"
+            />
+          </button>
+        </span>
         <button
           type="button"
           class="btn-ghost shadow-none"
@@ -274,39 +327,64 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       instruktionen visas i listan över frågor. {{ PARENT_CHILD_LOCKED_COPY }}
     </p>
 
-    <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Rubrik
-        <input
-          class="min-h-10 w-full border border-navy/35 bg-panel px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="item.title ?? ''"
-          :disabled="disabled"
-          data-test="exam-workspace-item-title-input"
-          @input="handleTitleInput"
+    <div
+      v-if="item.answer_key.origin === 'absent' && item.facit_text"
+      class="border-l-4 border-navy/35 pl-3 text-sm text-navy"
+      data-test="exam-workspace-original-facit"
+    >
+      <p class="text-xs font-semibold text-navy/80">Facit i originalet</p>
+      <p class="whitespace-pre-wrap">{{ item.facit_text }}</p>
+    </div>
+
+    <div class="grid gap-3">
+      <div class="flex flex-wrap items-end gap-3">
+        <label
+          v-if="item.kind === 'matching'"
+          class="grid gap-1 text-xs font-semibold text-navy/80"
         >
-      </label>
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Poäng
-        <input
-          class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
-          :class="pointsInvalid ? 'border-warning' : 'border-navy/35'"
-          type="number"
-          min="0"
-          step="any"
-          inputmode="decimal"
-          :value="item.points ?? ''"
-          :disabled="disabled"
-          :aria-invalid="pointsInvalid ? 'true' : undefined"
-          :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
-          data-test="exam-workspace-item-points-input"
-          @input="handlePointsInput"
-        >
-      </label>
+          Poäng per kryss
+          <input
+            class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
+            :class="tickInvalid ? 'border-warning' : 'border-navy/35'"
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            :value="item.tick_points ?? ''"
+            :disabled="disabled"
+            :aria-invalid="tickInvalid ? 'true' : undefined"
+            data-test="exam-workspace-item-tick-points-input"
+            @input="handleTickPointsInput"
+          >
+        </label>
+        <label class="grid gap-1 text-xs font-semibold text-navy/80">
+          Poäng
+          <!-- A grid's points are its tick value times its ticks (Q10), and a free-text item's points are its criteria sum, so they are read-only. -->
+          <input
+            class="min-h-10 w-28 border px-3 text-sm font-normal text-navy"
+            :class="[
+              pointsInvalid ? 'border-warning' : 'border-navy/35',
+              isGrid || hasCriteria ? 'bg-canvas' : 'bg-panel',
+            ]"
+            type="number"
+            min="0"
+            step="any"
+            inputmode="decimal"
+            :value="item.points ?? ''"
+            :disabled="disabled"
+            :readonly="isGrid || hasCriteria"
+            :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
+            :aria-invalid="pointsInvalid ? 'true' : undefined"
+            :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
+            data-test="exam-workspace-item-points-input"
+            @input="handlePointsInput"
+          >
+        </label>
+      </div>
       <p
         v-if="hasNonPositivePoints(item)"
         :id="pointsHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy sm:col-span-2"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
         data-test="exam-workspace-points-hint"
       >
         {{ NON_POSITIVE_POINTS_GUIDANCE }}
@@ -314,10 +392,20 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
     </div>
 
     <ExamWorkspaceBodyEditor
+      :asset-urls="assetUrls"
       :disabled="disabled"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+      @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
+    />
+
+    <ExamWorkspaceCriteriaField
+      v-if="item.kind === 'free_text'"
+      :disabled="disabled"
+      :item="item"
+      @update="(criteria) => emit('updateCriteria', item.item_id, criteria)"
     />
 
     <fieldset
@@ -380,92 +468,14 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       </p>
     </fieldset>
 
-    <fieldset
+    <ExamWorkspaceKategoriseraGrid
       v-if="item.kind === 'matching'"
-      class="grid gap-2"
-    >
-      <legend class="mb-2 text-xs font-semibold text-navy/80">
-        Matchning – välj rätt svar för varje rad
-      </legend>
-      <div
-        v-for="(left, leftIndex) in item.match_left"
-        :key="left.left_id"
-        class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,16rem)]"
-      >
-        <span
-          class="w-5 text-center text-sm font-semibold text-navy/70"
-          aria-hidden="true"
-        >{{ leftIndex + 1 }}</span>
-        <input
-          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="matchTextClass(left.text)"
-          type="text"
-          :value="left.text"
-          :disabled="disabled"
-          :aria-invalid="isEmptyChoiceText(left.text) ? 'true' : undefined"
-          :aria-describedby="isEmptyChoiceText(left.text) ? matchHintId : undefined"
-          :aria-label="`Text för rad ${leftIndex + 1}`"
-          :data-test="`exam-workspace-match-left-text-${left.left_id}`"
-          @input="handleMatchEntryTextInput('left', left.left_id, $event)"
-        >
-        <select
-          class="col-start-2 min-h-10 w-full border border-navy/35 bg-panel px-3 text-base text-navy sm:col-start-auto"
-          :value="selectedRightId(left.left_id)"
-          :disabled="disabled"
-          :aria-label="`Rätt svar för rad ${leftIndex + 1}`"
-          :data-test="`exam-workspace-match-pair-${left.left_id}`"
-          @change="handleMatchPairSelect(left.left_id, $event)"
-        >
-          <option value="">
-            Inget svar valt
-          </option>
-          <option
-            v-for="(right, rightIndex) in item.match_right"
-            :key="right.right_id"
-            :value="right.right_id"
-          >
-            {{ choiceLetter(rightIndex) }} – {{ right.text }}
-          </option>
-        </select>
-      </div>
-      <div
-        v-for="(right, rightIndex) in item.match_right"
-        :key="right.right_id"
-        class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2"
-      >
-        <span
-          class="w-5 text-center text-sm font-semibold text-navy/70"
-          aria-hidden="true"
-        >{{ choiceLetter(rightIndex) }}</span>
-        <input
-          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="matchTextClass(right.text)"
-          type="text"
-          :value="right.text"
-          :disabled="disabled"
-          :aria-invalid="isEmptyChoiceText(right.text) ? 'true' : undefined"
-          :aria-describedby="isEmptyChoiceText(right.text) ? matchHintId : undefined"
-          :aria-label="`Text för svar ${choiceLetter(rightIndex)}`"
-          :data-test="`exam-workspace-match-right-text-${right.right_id}`"
-          @input="handleMatchEntryTextInput('right', right.right_id, $event)"
-        >
-      </div>
-      <p
-        v-if="hasEmptyMatchText(item)"
-        :id="matchHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-        data-test="exam-workspace-match-hint"
-      >
-        {{ EMPTY_MATCH_TEXT_GUIDANCE }}
-      </p>
-      <p
-        v-if="isIncompleteMatchingItem(item)"
-        :id="matchKeyHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-        data-test="exam-workspace-match-key-hint"
-      >
-        {{ INCOMPLETE_MATCH_KEY_GUIDANCE }}
-      </p>
-    </fieldset>
+      :disabled="disabled"
+      :item="item"
+      @update-entry-text="
+        (side, entryId, text) => emit('updateMatchEntryText', item.item_id, side, entryId, text)
+      "
+      @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
+    />
   </section>
 </template>

@@ -324,36 +324,52 @@ def test_fractional_scores_survive_qti_mapping_maximum_and_gap_allocation() -> N
         }
 
     free_text = _item_xml(plan, "item_001.xml")
-    max_outcome = _find(free_text, f"{{{QTI_NAMESPACE}}}outcomeDeclaration[@identifier='MAXSCORE']")
-    max_value = _find(max_outcome, f".//{{{QTI_NAMESPACE}}}value")
+    max_outcome = _find(
+        free_text, f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']"
+    )
+    max_value = _find(max_outcome, f".//{{{QTI_NAMESPACE}}}qti-value")
     assert max_value.text == "10.5"
-    mapping = _find(free_text, f".//{{{QTI_NAMESPACE}}}mapping")
-    assert mapping.attrib["upperBound"] == "10.5"
-    map_entry = _find(mapping, f"{{{QTI_NAMESPACE}}}mapEntry")
-    assert map_entry.attrib["mappedValue"] == "10.5"
+    mapping = _find(free_text, f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    assert mapping.attrib["upper-bound"] == "10.5"
+    map_entry = _find(mapping, f"{{{QTI_NAMESPACE}}}qti-map-entry")
+    assert map_entry.attrib["mapped-value"] == "10.5"
 
     choice = _item_xml(plan, "item_002.xml")
-    choice_mapping = _find(choice, f".//{{{QTI_NAMESPACE}}}mapping")
-    assert choice_mapping.attrib["upperBound"] == "10.5"
+    choice_mapping = _find(choice, f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    assert choice_mapping.attrib["upper-bound"] == "10.5"
     assert [
-        entry.attrib["mappedValue"]
-        for entry in choice_mapping.findall(f"{{{QTI_NAMESPACE}}}mapEntry")
+        entry.attrib["mapped-value"]
+        for entry in choice_mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
     ] == ["10.5"]
     choice_max_value = _find(
         choice,
-        f"{{{QTI_NAMESPACE}}}outcomeDeclaration[@identifier='MAXSCORE']/"
-        f"{{{QTI_NAMESPACE}}}defaultValue/{{{QTI_NAMESPACE}}}value",
+        f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']/"
+        f"{{{QTI_NAMESPACE}}}qti-default-value/{{{QTI_NAMESPACE}}}qti-value",
     )
     assert choice_max_value.text == "10.5"
 
-    gap = _item_xml(plan, "item_004.xml")
-    mappings = gap.findall(f".//{{{QTI_NAMESPACE}}}mapping")
-    assert len(mappings) == 3
-    assert [mapping.attrib["upperBound"] for mapping in mappings] == ["3.5", "3.5", "3.5"]
+    multiple_response = _item_xml(plan, "item_003.xml")
+    multiple_mapping = _find(multiple_response, f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    assert multiple_mapping.attrib["upper-bound"] == "7.5"
     assert [
-        entry.attrib["mappedValue"]
+        entry.attrib["mapped-value"]
+        for entry in multiple_mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
+    ] == ["3.75", "3.75"]
+    multiple_max_value = _find(
+        multiple_response,
+        f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']/"
+        f"{{{QTI_NAMESPACE}}}qti-default-value/{{{QTI_NAMESPACE}}}qti-value",
+    )
+    assert multiple_max_value.text == "7.5"
+
+    gap = _item_xml(plan, "item_004.xml")
+    mappings = gap.findall(f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    assert len(mappings) == 3
+    assert [mapping.attrib["upper-bound"] for mapping in mappings] == ["3.5", "3.5", "3.5"]
+    assert [
+        entry.attrib["mapped-value"]
         for mapping in mappings
-        for entry in mapping.findall(f"{{{QTI_NAMESPACE}}}mapEntry")
+        for entry in mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
     ] == ["3.5", "3.5", "3.5"]
 
     report = build_examnet_qti_validation_report(

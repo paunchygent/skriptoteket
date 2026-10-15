@@ -18,17 +18,26 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportTarget,
+    ExamWorkspaceItemRetryResponse,
+    RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
+    ExamWorkspaceMisspellingsRequest,
+    ExamWorkspaceMisspellingsResponse,
 )
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
+    GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
@@ -39,6 +48,20 @@ from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
+
+
+@router.post(
+    "/exam-workspace/answer-misspellings",
+    response_model=ExamWorkspaceMisspellingsResponse,
+)
+def generate_exam_workspace_misspellings(
+    request: ExamWorkspaceMisspellingsRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[GenerateExamWorkspaceMisspellingsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceMisspellingsResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return handler.handle(request=request)
 
 
 @router.get(
@@ -102,17 +125,39 @@ async def get_exam_workspace_document(
 async def export_exam_workspace_document(
     lineage_id: UUID,
     target: ExamWorkspaceExportTarget,
+    expected_revision: int,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> Response:
     require_conversion_hub_access(registry=registry, user=user)
-    result = await handler.handle(actor=user, lineage_id=lineage_id, target=target)
+    result = await handler.handle(
+        actor=user, lineage_id=lineage_id, target=target, expected_revision=expected_revision
+    )
     safe_filename = result.filename.replace('"', "")
     return Response(
         content=result.content,
         media_type=result.media_type,
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+    )
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/export-checklist",
+    response_model=ExamWorkspaceExportChecklistResponse,
+)
+async def export_exam_workspace_document_checklist(
+    lineage_id: UUID,
+    expected_revision: int,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceExportChecklistResponse:
+    """List what an Exam.net import of this document's QTI package loses (Q15)."""
+
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.checklist(
+        actor=user, lineage_id=lineage_id, expected_revision=expected_revision
     )
 
 
@@ -127,5 +172,22 @@ async def save_exam_workspace_document(
     handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/items/retry",
+    response_model=ExamWorkspaceItemRetryResponse,
+)
+async def retry_exam_workspace_item(
+    lineage_id: UUID,
+    request: RetryExamWorkspaceItemRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[RetryExamWorkspaceItemHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceItemRetryResponse:
+    """Reconvert one question from its saved source with the chosen type."""
+
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id, request=request)

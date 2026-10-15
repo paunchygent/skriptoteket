@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-11'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-14'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer review of 20463fca found F1 (crashed conversion printed the gold title as an observed title); repair 2c13468e approved on rereview; merged into main. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-06/.'
 task_kind: story
 acceptance_criteria:
 - pdm run exam-conversion-judge <exam stem> <saved document json> prints the eval
@@ -60,3 +64,26 @@ or network call.
 | ID  | Decided contract term |
 | --- | --------------------- |
 | D1  | `pdm run exam-conversion-judge <exam stem> <document json>` reuses the eval comparator, gold and chunker; accepts the API envelope or a bare document; prints per-principle failures, the title verdict and every mismatch; exits 1 on any failure. |
+
+## Implementation Evidence
+
+- Command: `pdm run exam-conversion-judge <exam stem> <document json>`.
+  `scripts/exam_conversion_eval/judge.py` loads the saved API response or bare
+  native document, the matching corpus gold and DOCX chunks. Shared comparison
+  printing lives in `report.py` and is also used by `exam-conversion-eval`.
+- Historical proof (2026-10-11): session
+  `01a12706-566c-7480-acc3-427145283942`,
+  `evidence/task-skript-39-05-06/summary.md`. Five saved staging documents
+  matched 166/166 items; two historical titles failed. This proof predates
+  the question-title removal and the current conversion pipeline.
+- Current integration and focused proof: session
+  `01a13798-9df1-75fa-a4c5-bd755b4bfd85`,
+  `evidence/implementation/TASK-SKRIPT-39-05-06/result.md`. Local main is
+  merged into the task branch; the shared printer retains the current eval's
+  per-line crash reporting. The exam-title verdict remains independent of
+  removed question titles. Comparator and corpus gold are unchanged by this task.
+- Recorded corpus adversaries cover passing bare/enveloped documents, a
+  points mutation naming its question and principle, a title-only failure,
+  missing questions and untruncated long answer mismatches. A module CLI
+  subprocess test covers success and failure exit statuses without a provider.
+- Independent review and parent integration remain pending.

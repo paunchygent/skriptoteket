@@ -22,7 +22,7 @@ import { useRoute, useRouter } from "vue-router";
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 
 export type ExamWorkspaceAddressParams = {
-  isDirty: Ref<boolean>;
+  isDirty: Readonly<Ref<boolean>>;
   openDocument: (lineageId: string) => Promise<boolean>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
 };

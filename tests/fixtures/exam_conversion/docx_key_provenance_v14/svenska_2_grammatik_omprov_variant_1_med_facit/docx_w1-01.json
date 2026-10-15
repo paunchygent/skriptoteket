@@ -1,0 +1,470 @@
+{
+  "title": {
+    "text": "Omprov: grammatik och språkstrukturer",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Svenska 2",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": null
+    },
+    {
+      "text": "Total: 38 poäng",
+      "source_anchors": [
+        "body:0004"
+      ],
+      "points": 38
+    },
+    {
+      "text": "Del 1: Morfem och fraser, 12 poäng",
+      "source_anchors": [
+        "body:0006"
+      ],
+      "points": 12
+    },
+    {
+      "text": "Del 2: Satsdelar, 8 poäng",
+      "source_anchors": [
+        "body:0034"
+      ],
+      "points": 8
+    },
+    {
+      "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+      "source_anchors": [
+        "body:0035"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0010",
+    "body:0011",
+    "body:0012",
+    "body:0026",
+    "body:0027",
+    "body:0028",
+    "body:0029",
+    "body:0038",
+    "body:0039",
+    "body:0040",
+    "body:0041"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0008",
+        "body:0009",
+        "body:0010",
+        "body:0011",
+        "body:0012",
+        "body:0013"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Dela upp orden i morfem.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) snö + boll + ar + na + s",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) skriv + bar + het + en",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) fot + boll + foge-s + spel + are + na + s",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "R"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "A"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "B"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) snö (R) + boll (R) + ar (B) + na (B) + s (B)\nb) skriv (R) + bar (A) + het (A) + en (B)\nc) fot (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0025",
+        "body:0026",
+        "body:0027",
+        "body:0028",
+        "body:0029",
+        "body:0030"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skriv huvudordet i varje nominalfras.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) de tre nya eleverna från Göteborg Huvudord:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "eleverna"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) min äldre systers trasiga mobiltelefon på köksbordet Huvudord:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "mobiltelefon"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) alla böckerna i den nedersta hyllan Huvudord:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "böckerna"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) den lilla vägen genom skogen Huvudord:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "vägen"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) de tre nya eleverna från Göteborg Huvudord: eleverna\nb) min äldre systers trasiga mobiltelefon på köksbordet Huvudord: mobiltelefon\nc) alla böckerna i den nedersta hyllan Huvudord: böckerna\nd) den lilla vägen genom skogen Huvudord: vägen",
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skriv satsdelen för den markerade delen.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "adverbial"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "indirekt objekt"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Filmen blev spännande. Markerad del: spännande Satsdel:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "predikativ/predikatsfyllnad"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel:",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "direkt objekt"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel: adverbial\nb) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel: indirekt objekt\nc) Filmen blev spännande. Markerad del: spännande Satsdel: predikativ/predikatsfyllnad\nd) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel: direkt objekt",
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

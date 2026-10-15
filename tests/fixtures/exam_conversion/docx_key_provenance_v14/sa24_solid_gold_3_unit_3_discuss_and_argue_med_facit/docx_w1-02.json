@@ -1,0 +1,677 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0035",
+    "body:0037",
+    "body:0039",
+    "body:0041",
+    "body:0043",
+    "body:0045",
+    "body:0047",
+    "body:0049",
+    "body:0051",
+    "body:0055",
+    "body:0057",
+    "body:0059",
+    "body:0061",
+    "body:0063",
+    "body:0065",
+    "body:0067"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0034"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "11",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "stimulant",
+                "stimmulant"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (s…t) – A drug or substance that makes you feel more awake and gives you more energy.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: stimulant (Also accepted: stimmulant)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0036"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "12",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "reside"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (r…e) – A formal word meaning ‘to live in a particular place’.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: reside",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0038"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "13",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "eminent",
+                "emminent"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (e…t) – Famous and respected, especially in a particular profession. (An … architect.)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: eminent (Also accepted: emminent)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0040"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "tenant",
+                "tennant"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (t…t) – Someone who lives in a house, room etc. and pays rent to the person who owns it.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: tenant (Also accepted: tennant)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0042"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "15",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "bladder"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (b…r) – An organ, like a bag, inside the body of a person or animal, where urine is stored before it leaves the body.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: bladder",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0044"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "16",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "melancholy",
+                "mellancholy"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (m…y) – A deep feeling of sadness that lasts for a long time, often without any obvious reasons.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: melancholy (Also accepted: mellancholy)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0046"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "17",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "plump"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (p…p) – Slightly fat in a fairly pleasant way. Often used to avoid saying the word fat.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: plump",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0048"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "18",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "carcass",
+                "carcas"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (c…s) – The body of a dead animal, especially a large one that is soon to be cut up as meat or eaten by wild animals.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: carcass (Also accepted: carcas)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0050"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "19",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "straightforward"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (s…d) – Easy to do or to understand; not complicated.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: straightforward",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0054"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "21",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Don’t be ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "discouraged"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (d…) by the first failure – try again! (modfälld; nedslagen)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: discouraged",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0056"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "22",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We’re all ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "liable"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (l…) to make mistakes when we’re tired. (riskerar /att/)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: liable",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0058"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "23",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Books and articles about robots have ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "proliferated",
+                "prolifferated"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (p…) over the last year. (snabbt ökat i antal)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: proliferated (Also accepted: prolifferated)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0060"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "24",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We took our dog to the vet because it had injured one of its ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "hind"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (h…) legs. (bakre)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: hind",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0062"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "25",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Obesity"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (O…) can increase the risk of heart disease. (fetma)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Obesity",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0064"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "26",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The doctor advised her to take extra vitamin ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "supplements",
+                "supplement",
+                "suplements",
+                "suplement"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (s…). (tillägg, tillskott)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: supplements (Also accepted: supplement, suplements, suplement)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0066"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "27",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“It really wasn’t your fault, Emma! So why do you ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "persist"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (p…) in blaming yourself for what happened?” (envisas)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: persist",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

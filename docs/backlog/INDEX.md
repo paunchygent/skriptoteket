@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=40 | story=326 | task=0 | review=137
-- open | epic=19 | story=62 | task=0
+- total | epic=40 | story=332 | task=0 | review=137
+- open | epic=19 | story=68 | task=0
 
 ## Lookup
 
@@ -313,6 +313,7 @@
 - story | ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md)
 - story | ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md)
 - story | ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md)
+- story | ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md)
 - story | ST-SKRIPT-08-04 | [Catalog help (browse + run)](stories/st-skript-08-04-catalog-help-browse-run.md)
 - story | ST-SKRIPT-08-05 | [Tool results + downloads help](stories/st-skript-08-05-tool-results-downloads-help.md)
 - story | ST-SKRIPT-08-06 | [Contributor help (Mina verktyg + Föreslå skript)](stories/st-skript-08-06-contributor-help-mina-verktyg-f-resl-skript.md)
@@ -322,6 +323,7 @@
 - story | ST-SKRIPT-08-17 | [Tabby edit suggestions + prompt A/B evaluation](stories/st-skript-08-17-tabby-edit-suggestions-prompt-a-b-evaluation.md)
 - story | ST-SKRIPT-08-27 | [Research: editor chat virtual file context retention + tokenizer budgets](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md)
 - story | ST-SKRIPT-08-35 | [Help completion: route coverage, behavior hardening, and copy signoff](stories/st-skript-08-35-help-completion-route-coverage-behavior-hardening-and-copy-signoff.md)
+- story | ST-SKRIPT-08-36 | [Klassrumskartan tutorial clips in Hjälp with a first-use dialog](stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
 - story | ST-SKRIPT-09-05 | [Content-Security-Policy for Vue/Vite SPA](stories/st-skript-09-05-content-security-policy-for-vue-vite-spa.md)
 - story | ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md)
 - story | ST-SKRIPT-09-08 | [Hemma edge observability and reserved-host lockdown](stories/st-skript-09-08-hemma-edge-observability-and-reserved-host-lockdown.md)
@@ -373,8 +375,12 @@
 - story | ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md)
 - story | ST-SKRIPT-39-05 | [AI-first DOCX exam conversion with a gold-corpus eval loop](stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
 - story | ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
+- story | ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md)
+- story | ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
+- story | ST-SKRIPT-39-09 | [QTI 3.0 native export for Exam.net](stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
 - story | ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md)
 - story | ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md)
+- story | ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md)
 - review | REV-EPIC-02 | [Review: Local password reset via emailed token](reviews/review-epic-02-local-password-reset-via-emailed-token.md) | target=EPIC-02, [ST-02-07](stories/story-02-07-local-password-reset-via-emailed-token.md), ADR-0078
 - review | REV-EPIC-06 | [Review: Linter Architecture Refactor](reviews/review-epic-06-linter-architecture-refactor.md) | target=EPIC-06, [ST-06-10](stories/story-06-10-context-rule-architecture.md), [ST-06-11](stories/story-06-11-quick-fix-actions.md), [ST-06-12](stories/story-06-12-lint-panel-navigation.md), [ST-06-13](stories/story-06-13-gutter-filter-polish.md), [ST-06-14](stories/story-06-14-headless-test-harness.md)
 - review | REV-EPIC-07 | [Review: ASGI correlation middleware for access-log correlation](reviews/review-epic-07-correlation-middleware-asgi.md) | target=[EPIC-07](epics/epic-07-observability-and-operations.md), [ST-07-06](stories/story-07-06-asgi-correlation-middleware.md), ADR-0061
@@ -518,8 +524,8 @@
 ### active
 
 - EPIC-SKRIPT-02 | [Identity and access control (RBAC)](epics/epic-skript-02-identity-and-access-control-rbac.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1 | tasks=none
-- EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=9 | tasks=none
+- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1, proposed=1 | tasks=none
+- EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=10 | tasks=none
 - EPIC-SKRIPT-09 | [Security hardening for production deployment](epics/epic-skript-09-security-hardening-for-production-deployment.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-11 | [Full Vue/Vite SPA migration](epics/epic-skript-11-full-vue-vite-spa-migration.md) | stories=active=1, ready=1 | tasks=none
 - EPIC-SKRIPT-14 | [Admin tool authoring (draft-first workflow)](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | stories=active=1, ready=7 | tasks=none
@@ -534,7 +540,8 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=2, proposed=1, done=2 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=2, ready=2, proposed=3, done=2 | tasks=none
+- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=1, ready=1, proposed=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -546,10 +553,11 @@
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-27-04 | [Klassrumskartan — Smart grouping v1](stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md) | epic=[EPIC-SKRIPT-27](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-39-01 | [Walking skeleton for Skriptoteket-owned exam conversion](stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-39-09 | [QTI 3.0 native export for Exam.net](stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 
-- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=ready=2 | tasks=none
 - ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
@@ -562,6 +570,7 @@
 - ST-SKRIPT-08-17 | [Tabby edit suggestions + prompt A/B evaluation](stories/st-skript-08-17-tabby-edit-suggestions-prompt-a-b-evaluation.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-08-27 | [Research: editor chat virtual file context retention + tokenizer budgets](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-08-35 | [Help completion: route coverage, behavior hardening, and copy signoff](stories/st-skript-08-35-help-completion-route-coverage-behavior-hardening-and-copy-signoff.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-08-36 | [Klassrumskartan tutorial clips in Hjälp with a first-use dialog](stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-09-05 | [Content-Security-Policy for Vue/Vite SPA](stories/st-skript-09-05-content-security-policy-for-vue-vite-spa.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-09-08 | [Hemma edge observability and reserved-host lockdown](stories/st-skript-09-08-hemma-edge-observability-and-reserved-host-lockdown.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-11-25 | [SPA route-load performance and network-isolation audit](stories/st-skript-11-25-spa-route-load-performance-and-network-isolation-audit.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
@@ -596,12 +605,15 @@
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-05 | [AI-first DOCX exam conversion with a gold-corpus eval loop](stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### proposed
 
+- ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked
 

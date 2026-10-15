@@ -83,13 +83,31 @@ p {{
   font-weight: 700;
   margin: 0 0 14pt;
 }}
-.match-left,
-.match-right {{
-  margin: 8pt 0 8pt 18pt;
+.matching-grid {{
+  border-collapse: collapse;
+  margin: 8pt 0;
+  width: 100%;
+  table-layout: fixed;
 }}
-.match-left p,
-.match-right p {{
-  margin: 0 0 5pt;
+.matching-grid th,
+.matching-grid td {{
+  border: 0.5pt solid #111;
+  padding: 5pt;
+  overflow-wrap: anywhere;
+}}
+.matching-grid td {{
+  text-align: center;
+}}
+.matching-grid th[scope="row"] {{
+  text-align: left;
+}}
+.tick-box {{
+  border: 1pt solid #111;
+  display: inline-block;
+  width: 12pt;
+  height: 12pt;
+  line-height: 12pt;
+  vertical-align: middle;
 }}
 </style>
 </head>

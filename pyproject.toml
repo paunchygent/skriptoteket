@@ -71,6 +71,7 @@ dependencies = [
     "molmass>=2026.1.8",
     "starlette-dishka>=1.0.2",
     "xlrd>=2.0.1",
+    "pypdfium2>=5.6.0",
 ]
 
 [project.optional-dependencies]
@@ -82,7 +83,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@bfbb0ed228c2f24ffcf032d3362bfe6af537dc00#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@d8989fc2dda4eb15ad6129449f4cb0100ebe6183#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -207,6 +208,7 @@ module = [
     "yaml.*",
     "pypdf.*",
     "pandas.*",
+    "pypdfium2.*",
 ]
 ignore_missing_imports = true
 
@@ -456,6 +458,8 @@ pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_m
 pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --start-backend --start-vite"
 exam-converter-real-dxe-e2e = "python -m scripts.exam_converter_real_dxe_e2e"
 exam-conversion-eval = { cmd = "python -m scripts.exam_conversion_eval", env = { PYTHONPATH = "src" } }
+build-answer-misspellings = { cmd = "python -m scripts.build_answer_misspellings", env = { PYTHONPATH = "src" } }
+exam-conversion-judge = { cmd = "python -m scripts.exam_conversion_eval.judge", env = { PYTHONPATH = "src" } }
 transcript-parity-proof = "python -m scripts.transcript_parity_proof_launcher"
 audio-transcription-reattempt-proof = "python -m scripts.audio_transcription_retryable_reattempt_public_proof"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"

@@ -2,8 +2,9 @@
  * Exam workspace parent presentation.
  *
  * Domain purpose:
- *   A parent is a shared instruction over consecutive child questions of one
- *   kind. The editor shows the instruction once above the first child with
+ *   A parent is a shared instruction over consecutive child questions of any
+ *   mix of kinds, as an Exam.net information block holds questions of any type.
+ *   The editor shows the instruction once above the first child with
  *   the parent's points, the sum of its children's points, and tells the
  *   teacher that a child cannot be moved, removed or retyped here. Parent
  *   authoring belongs to ST-SKRIPT-39-06; this module only reads parents.
@@ -13,17 +14,22 @@
  *     `domain/curated_apps/exam_workspace/native_exam_parent.py`.
  *   - Pure functions consumed by `examWorkspaceRows`, `ExamWorkspaceItemTable`
  *     and `ExamWorkspaceItemEditor`.
+ *   - Resolves shared-instruction paragraphs into ordered text/picture parts
+ *     with `examWorkspaceSharedParagraphs`, so a protected picture URL
+ *     reaches the read-only renderer without a second resolution rule.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
 import type { NativeExamItem, NativeExamParent } from "../../../api/examWorkspace";
+import { examWorkspaceSharedParagraphs } from "./examWorkspaceSharedInstruction";
+import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 
 export const PARENT_HEADING_COPY = "Uppgift med deluppgifter";
 export const PARENT_CHILD_LOCKED_COPY =
   "Deluppgifter kan ännu inte flyttas, tas bort eller byta typ här.";
 
 export type ExamWorkspaceParentBlock = {
-  instruction: string[];
+  instruction: ExamWorkspaceSharedParagraph[];
   parentId: string;
   pointsLabel: string;
 };
@@ -63,6 +69,7 @@ export function examWorkspaceParentPointsLabel(total: number | null): string {
 export function examWorkspaceParentBlocksByFirstChild(
   parents: NativeExamParent[],
   items: NativeExamItem[],
+  assetUrls: Record<string, string> = {},
 ): Record<string, ExamWorkspaceParentBlock> {
   const blocks: Record<string, ExamWorkspaceParentBlock> = {};
   for (const parent of parents) {
@@ -71,7 +78,7 @@ export function examWorkspaceParentBlocksByFirstChild(
       continue;
     }
     blocks[firstChildId] = {
-      instruction: [...parent.instruction],
+      instruction: examWorkspaceSharedParagraphs(parent.instruction, assetUrls),
       parentId: parent.parent_id,
       pointsLabel: examWorkspaceParentPointsLabel(examWorkspaceParentPoints(parent, items)),
     };

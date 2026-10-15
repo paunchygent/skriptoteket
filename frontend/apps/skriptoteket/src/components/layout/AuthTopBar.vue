@@ -83,6 +83,7 @@ function onToggleFocusMode(): void {
         v-if="navLink"
         :to="navLink.to"
         class="top-nav-link"
+        :title="navLink.label"
       >
         {{ navLink.label }}
       </RouterLink>
@@ -163,6 +164,61 @@ function onToggleFocusMode(): void {
   background: linear-gradient(180deg, rgba(18, 27, 24, 0.96), rgba(13, 18, 16, 0.9));
   backdrop-filter: blur(18px);
   color: var(--huleedu-canvas);
+}
+
+/* Immersive game routes have no drawer, so their sole bar stays available at
+   narrow widths and keeps the shared help and logout actions reachable. */
+.top-user-bar--immersive {
+  display: flex;
+  padding: var(--huleedu-space-2) var(--huleedu-space-3);
+}
+
+.top-user-bar--immersive .top-user-bar-left {
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: var(--huleedu-space-3);
+}
+
+.top-user-bar--immersive .top-user-bar-right {
+  flex: 0 0 auto;
+  gap: var(--huleedu-space-2);
+}
+
+.top-user-bar--immersive .top-nav-link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .top-user-bar--immersive {
+    padding: var(--huleedu-space-3) var(--huleedu-space-6);
+  }
+
+  .top-user-bar--immersive .top-user-bar-left {
+    flex: 0 1 auto;
+    min-width: auto;
+    gap: var(--huleedu-space-4);
+  }
+
+  .top-user-bar--immersive .top-user-bar-right {
+    flex: 0 1 auto;
+    gap: var(--huleedu-space-3);
+  }
+
+  .top-user-bar--immersive .top-nav-link {
+    overflow: visible;
+    white-space: normal;
+  }
+}
+
+/* Keep the shared help opener legible on the immersive bar's dark surface. */
+.top-user-bar--immersive button[aria-controls="help-panel"] {
+  color: var(--huleedu-canvas);
+}
+
+.top-user-bar--immersive button[aria-controls="help-panel"]:hover {
+  color: #efc06c;
 }
 
 .top-user-bar-left {

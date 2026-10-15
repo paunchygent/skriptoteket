@@ -2,24 +2,28 @@
  * Parent document fixture for exam workspace specs.
  *
  * Purpose:
- *   Build a native document from the real English recording
- *   (`docx_build_v7/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json`):
- *   its first three gap_fill items are the children of one parent that holds
- *   their shared instruction ("Complete each sentence ..."); its first
- *   single_choice item stays a standalone question after them.
+ *   Build a native document from the real English recordings
+ *   (`docx_key_provenance_v14/bf26_english_1_unit_test_kap_1_2_med_facit/`):
+ *   `docx_w1-01.json` supplies the shared instruction (`instructions[1]`) and
+ *   the first three gap_fill items that are the children of one parent holding
+ *   that instruction ("Complete each sentence ...") as a canonical paragraph
+ *   body; `docx_w1-04.json` supplies the first single_choice item that stays a
+ *   standalone question after them.
  */
 
 import type {
+  NativeExamBodyParagraph,
   NativeExamDocument,
   NativeExamItem,
   NativeExamParent,
 } from "../../../api/examWorkspace";
-import recording from "../../../../../../../tests/fixtures/exam_conversion/docx_build_v7/bf26_english_1_unit_test_kap_1_2_med_facit/round1.json";
+import recording from "../../../../../../../tests/fixtures/exam_conversion/docx_key_provenance_v14/bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-01.json";
+import standaloneRecording from "../../../../../../../tests/fixtures/exam_conversion/docx_key_provenance_v14/bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-04.json";
 
 type RecordedSegment = { kind: string; text: string | null; accepted_values: string[] };
-type RecordedItem = (typeof recording.items)[number];
+type RecordedItem = (typeof recording.items)[number] | (typeof standaloneRecording.items)[number];
 
-const SHARED_INSTRUCTION_INDEX = 2;
+const SHARED_INSTRUCTION_INDEX = 1;
 const CHILD_COUNT = 3;
 
 function itemId(sequence: number): string {
@@ -34,7 +38,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
         return { kind: "text" as const, text: segment.text ?? "" };
       }
       const gapId = `gap_${String(gaps.length + 1).padStart(3, "0")}`;
-      gaps.push({ accepted_values: segment.accepted_values, gap_id: gapId, hint: null });
+      gaps.push({ accepted_values: segment.accepted_values, automatic_values: [], excluded_automatic_values: [], gap_id: gapId });
       return { gap_id: gapId, kind: "gap" as const };
     }),
   }));
@@ -43,6 +47,12 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     text: choice.text,
   }));
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    criteria: [],
+    printed_label: null,
+    retry_source: null,
+    tick_points: null,
     answer_key: {
       correct_choice_ids: recorded.choices.flatMap((choice, index) =>
         choice.correct ? [`choice_${String.fromCharCode(97 + index)}`] : [],
@@ -58,6 +68,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     match_left: [],
     match_right: [],
     points: recorded.points,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -66,13 +77,22 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     },
     sequence,
     source_anchor: null,
-    title: null,
   };
+}
+
+export function buildRecordedParentInstruction(): NativeExamBodyParagraph[] {
+  return [
+    {
+      segments: [
+        { kind: "text", text: recording.instructions[SHARED_INSTRUCTION_INDEX]!.text },
+      ],
+    },
+  ];
 }
 
 export function buildRecordedParent(): NativeExamParent {
   return {
-    instruction: [recording.instructions[SHARED_INSTRUCTION_INDEX]!.text],
+    instruction: buildRecordedParentInstruction(),
     item_ids: Array.from({ length: CHILD_COUNT }, (_, index) => itemId(index + 1)),
     parent_id: "parent_001",
   };
@@ -80,7 +100,9 @@ export function buildRecordedParent(): NativeExamParent {
 
 /** Three gap_fill children of `parent_001` (item_001..item_003) and one standalone item_004. */
 export function buildParentDocument(): NativeExamDocument {
-  const standalone = recording.items.find((recorded) => recorded.kind === "single_choice")!;
+  const standalone = standaloneRecording.items.find(
+    (recorded) => recorded.kind === "single_choice",
+  )!;
   const children = recording.items.slice(0, CHILD_COUNT);
   return {
     assets: [],
@@ -93,7 +115,7 @@ export function buildParentDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [buildRecordedParent()],
     revision: 1,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "English 1",
   };
 }

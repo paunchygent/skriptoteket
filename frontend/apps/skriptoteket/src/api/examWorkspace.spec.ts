@@ -5,7 +5,7 @@
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
  *   import with the `file` field, head-version listing, lineage readback, blob
- *   export downloads per target, and enrichment start/status.
+ *   export downloads per target, and answer-key suggestion request/status.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -15,10 +15,12 @@ import {
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
-  getExamWorkspaceEnrichment,
+  getExamWorkspaceExportChecklist,
+  getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
-  startExamWorkspaceEnrichment,
+  requestExamWorkspaceAnswerKeySuggestions,
+  requestExamWorkspaceAnswerMisspellings,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
@@ -34,14 +36,21 @@ const apiPostMock = vi.mocked(apiPost);
 const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
+const ANSWER_MISSPELLINGS_PATH =
+  "/api/v1/apps/documents.conversion_hub/exam-workspace/answer-misspellings";
 
 function buildDocument(revision: number): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: ["Besvara alla frågor."],
+    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
     items: [
       {
+        ai_suggestion: null,
+        facit_text: null,
+        criteria: [],
+        printed_label: null,
+        retry_source: null,
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
         body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
@@ -51,6 +60,7 @@ function buildDocument(revision: number): NativeExamDocument {
         item_id: "item_001",
         kind: "free_text",
         points: 2,
+        points_estimated: false,
         review: {
           confidence: 0.9,
           parse_origin: "deterministic",
@@ -59,7 +69,7 @@ function buildDocument(revision: number): NativeExamDocument {
         },
         sequence: 1,
         source_anchor: null,
-        title: "Kretsloppet",
+        tick_points: null,
       },
     ],
     origin: {
@@ -70,13 +80,14 @@ function buildDocument(revision: number): NativeExamDocument {
     },
     parents: [],
     revision,
-    schema_version: "native_exam_document_v1",
+    schema_version: "native_exam_document_v2",
     title: "NO-prov HT25",
   };
 }
 
 function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document: buildDocument(revision),
     notes: [],
     summary: {
@@ -153,28 +164,69 @@ describe("examWorkspace transport", () => {
     };
     apiFetchBlobResponseMock.mockResolvedValueOnce(blobResponse);
 
-    const result = await downloadExamWorkspaceExport("lineage-1", "qti");
+    const result = await downloadExamWorkspaceExport("lineage-1", "qti", 2);
 
     expect(apiFetchBlobResponseMock).toHaveBeenCalledWith(
-      `${DOCUMENTS_ROOT}/lineage-1/exports/qti`,
+      `${DOCUMENTS_ROOT}/lineage-1/exports/qti?expected_revision=2`,
     );
     expect(result).toBe(blobResponse);
   });
 
-  it("starts enrichment with POST and reads status with GET on the enrichment path", async () => {
+  it("requests only the checklist for the exported revision", async () => {
+    const response = { entries: [] };
+    apiGetMock.mockResolvedValueOnce(response);
+
+    const result = await getExamWorkspaceExportChecklist("lineage-1", 2);
+
+    expect(apiGetMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/export-checklist?expected_revision=2`,
+    );
+    expect(result).toBe(response);
+  });
+
+  it("requests suggestions with the editor document and reads status per job", async () => {
     const status = {
-      document_revision: 2,
+      job_id: "job-1",
       lineage_id: "lineage-1",
-      proposals: [],
       state: "queued" as const,
+      suggestions: [],
     };
     apiPostMock.mockResolvedValueOnce(status);
     apiGetMock.mockResolvedValueOnce(status);
+    const document = buildDocument(2);
 
-    await startExamWorkspaceEnrichment("lineage-1");
-    await getExamWorkspaceEnrichment("lineage-1");
+    await requestExamWorkspaceAnswerKeySuggestions("lineage-1", document);
+    await requestExamWorkspaceAnswerKeySuggestions("lineage-1", document, "item_001");
+    await getExamWorkspaceAnswerKeySuggestions("lineage-1", "job-1");
 
-    expect(apiPostMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
-    expect(apiGetMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/enrichment`);
+    expect(apiPostMock).toHaveBeenNthCalledWith(
+      1,
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions`,
+      { document, item_id: null },
+    );
+    expect(apiPostMock).toHaveBeenNthCalledWith(
+      2,
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions`,
+      { document, item_id: "item_001" },
+    );
+    expect(apiGetMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions/job-1`,
+    );
+  });
+
+  it("requests misspellings for the newly added answers with the item's gold answers", async () => {
+    const response = { automatic_values: ["Götebprg"] };
+    apiPostMock.mockResolvedValueOnce(response);
+    const request = {
+      accepted_values: ["Göteborg"],
+      other_gold_answers: ["Stockholm", "Göteborg"],
+      document_text: "Hon heter Stockholm och Oslo.",
+    };
+
+    const result = await requestExamWorkspaceAnswerMisspellings(request);
+
+    expect(apiPostMock).toHaveBeenCalledTimes(1);
+    expect(apiPostMock).toHaveBeenCalledWith(ANSWER_MISSPELLINGS_PATH, request);
+    expect(result).toBe(response);
   });
 });

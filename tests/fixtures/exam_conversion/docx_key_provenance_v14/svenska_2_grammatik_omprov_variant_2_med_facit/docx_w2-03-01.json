@@ -1,0 +1,115 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0066",
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 7",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Analysera en komplex mening.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Mening: Att flera datorer slutade fungera förklarar varför provet blev försenat.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Skriv bisatserna. Bisats 1: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Att flera datorer slutade fungera"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "varför provet blev försenat"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "S"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Bisats 2 satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Skriv bisatserna. Bisats 1: Att flera datorer slutade fungera Bisats 2: varför provet blev försenat b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: S Bisats 2 satsdel: DO",
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

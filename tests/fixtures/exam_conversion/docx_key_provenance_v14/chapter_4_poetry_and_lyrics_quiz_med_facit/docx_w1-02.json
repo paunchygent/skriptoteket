@@ -1,0 +1,368 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0083",
+    "body:0089",
+    "body:0095",
+    "body:0101",
+    "body:0107"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0080",
+        "body:0081",
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Part 2B: stanza",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “stanza”.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: A. group of poem lines",
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": true
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0086",
+        "body:0087",
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Part 2B: tone",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “tone”.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: F. attitude toward subject",
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": true
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0092",
+        "body:0093",
+        "body:0094"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Part 2B: rhythm",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “rhythm”.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: C. beat of stressed syllables",
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": true
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0098",
+        "body:0099",
+        "body:0100"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Part 2B: theme",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “theme”.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: D. central message of poem",
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": true
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0104",
+        "body:0105",
+        "body:0106"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": null,
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Part 2B: symbolism",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Select the meaning of “symbolism”.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: G. use of symbols for ideas",
+      "points": 1,
+      "choices": [
+        {
+          "text": "group of poem lines",
+          "correct": false
+        },
+        {
+          "text": "poet’s typical writing manner",
+          "correct": false
+        },
+        {
+          "text": "beat of stressed syllables",
+          "correct": false
+        },
+        {
+          "text": "central message of poem",
+          "correct": false
+        },
+        {
+          "text": "single row of words",
+          "correct": false
+        },
+        {
+          "text": "attitude toward subject",
+          "correct": false
+        },
+        {
+          "text": "use of symbols for ideas",
+          "correct": true
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

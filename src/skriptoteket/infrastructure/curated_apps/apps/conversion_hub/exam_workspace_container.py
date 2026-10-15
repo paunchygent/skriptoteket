@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
     EXAM_WORKSPACE_CONTAINER_SCHEMA_VERSION,
     ExamWorkspaceContainerContent,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
     parse_native_exam_document,
 )
@@ -96,7 +96,7 @@ class ExamWorkspaceContainerCodec:
                     raise _invalid("Dokumentfilen innehåller en otillåten post.")
                 assets_by_id[name[len(_ASSET_PREFIX) :]] = archive.read(name)
 
-            notes_raw = manifest.get("notes", [])
+            notes_raw = manifest.get("notes")
             if not isinstance(notes_raw, list) or any(
                 not isinstance(note, str) for note in notes_raw
             ):

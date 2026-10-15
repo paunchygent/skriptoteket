@@ -1,339 +1,261 @@
-"""Tests for exam workspace enrichment enqueue idempotency and status reads.
+"""Tests for exam workspace answer-key suggestion requests and status reads.
 
 Purpose:
-    Prove the enqueue handler inserts exactly one workspace job per
-    (lineage, revision) and stays inert when the lane is disabled or the
-    document has no unkeyed keyed items, and that the status handler serves
-    job states plus MACHINE_PROPOSED prefill proposals for the head revision.
+    Prove a request runs on the editor-sent content (TASK-SKRIPT-39-04-07):
+    "suggest for all" sends every keyed-kind question without a key, a
+    per-question request sends one question with or without a key, and the
+    status read returns the suggestions stored on the finished job only to
+    the job's owner.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
-    ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
+    enqueue_workspace_enrichment_job,
 )
-from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceEnrichmentState
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    ExamWorkspaceDocumentStore,
+from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceEnrichmentState,
+    RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
-    EnqueueExamWorkspaceEnrichmentHandler,
-    GetExamWorkspaceEnrichmentStatusHandler,
+    WorkspaceAnswerKeyRequestPayload,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKeySuggestion,
 )
-from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
-    EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.container import (
-    ExamWorkspaceContainerContent,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
-    NativeChoice,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
 )
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
-from tests.fixtures.application_fixtures import FakeUow
-from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-    FixedClock,
-    InMemoryEnrichmentJobRepository,
-    InMemoryProposedOverlayRepository,
-    UUIDGenerator,
-)
+from skriptoteket.domain.errors import DomainError
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
 )
-from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
-    InMemoryVaultStorage,
-    InMemoryVaultUsageRepository,
+from tests.unit.application.curated_apps.handlers.workspace_suggestion_handler_support import (
+    NOW,
+    SuggestionHandlerHarness,
+    suggestion_document,
+    suggestion_item,
 )
 
 pytestmark = pytest.mark.unit
 
-_NOW = datetime(2026, 8, 29, 12, 0, 0, tzinfo=UTC)
 
+class TestRequest:
+    async def test_suggest_for_all_skips_keyed_questions(self) -> None:
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
+            harness.lineage_id,
+            suggestion_item(item_id="item_001", sequence=1),
+            suggestion_item(
+                item_id="item_002",
+                sequence=2,
+                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+            ),
+            suggestion_item(item_id="item_003", sequence=3),
+        )
 
-class FakeWorkspaceCodec:
-    def __init__(self, *, container: ExamWorkspaceContainerContent) -> None:
-        self._container = container
+        response = await harness.request(document)
 
-    def build(self, *, content: ExamWorkspaceContainerContent) -> bytes:
-        raise AssertionError("Status reads never rebuild containers.")
+        assert response.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert response.job_id is not None
+        job = harness.jobs.jobs[response.job_id]
+        assert job.source_kind is ExamAnswerKeySourceKind.WORKSPACE
+        assert job.workspace_lineage_id == harness.lineage_id
+        # The job records the saved version the editor's copy stood on.
+        assert job.workspace_document_revision == document.revision == 3
+        payload = WorkspaceAnswerKeyRequestPayload.model_validate(job.workspace_request_json)
+        assert [view.item_id for view in payload.views] == ["item_001", "item_003"]
 
-    def parse(self, *, content: bytes) -> ExamWorkspaceContainerContent:
-        del content
-        return self._container
-
-
-def _review() -> NativeItemReview:
-    return NativeItemReview(
-        state=NativeItemReviewState.REVIEW_COMPLETE,
-        parse_origin=NativeParseOrigin.DETERMINISTIC,
-    )
-
-
-def _document(
-    *,
-    document_id: UUID,
-    revision: int = 1,
-    keyed: bool = False,
-) -> NativeExamDocument:
-    origin = NativeAnswerKeyOrigin.SOURCE_PROVIDED if keyed else NativeAnswerKeyOrigin.ABSENT
-    correct = ("choice_002",) if keyed else ()
-    return NativeExamDocument(
-        document_id=document_id,
-        revision=revision,
-        title="Omprov: grammatik",
-        items=(
-            NativeExamItem(
+    async def test_per_question_request_uses_unsaved_sent_content(self) -> None:
+        harness = SuggestionHandlerHarness()
+        # The saved head is revision 3; the editor sends edited, unsaved
+        # wording for a question that already carries a teacher key.
+        document = suggestion_document(
+            harness.lineage_id,
+            suggestion_item(
                 item_id="item_001",
                 sequence=1,
-                kind=NativeExamItemKind.SINGLE_CHOICE,
-                title="Flervalsfråga",
-                body=(
-                    NativeParagraph(segments=(NativeTextSegment(text="Vilket är huvudordet?"),)),
-                ),
-                points=1,
-                choices=(
-                    NativeChoice(choice_id="choice_001", text="vägen"),
-                    NativeChoice(choice_id="choice_002", text="eleverna"),
-                ),
-                answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct),
-                review=_review(),
-            ),
-        ),
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-
-
-def _enqueue_handler(
-    *,
-    enrichment_jobs: InMemoryEnrichmentJobRepository,
-    enabled: bool = True,
-) -> EnqueueExamWorkspaceEnrichmentHandler:
-    return EnqueueExamWorkspaceEnrichmentHandler(
-        enrichment_jobs=enrichment_jobs,
-        enrichment_enabled=enabled,
-        uow=FakeUow(),
-        clock=FixedClock(_NOW),
-        id_generator=UUIDGenerator(),
-    )
-
-
-class TestEnqueue:
-    async def test_enqueues_one_workspace_job_for_an_unkeyed_document(self) -> None:
-        actor = make_actor()
-        jobs = InMemoryEnrichmentJobRepository()
-        document = _document(document_id=uuid4())
-
-        created = await _enqueue_handler(enrichment_jobs=jobs).handle(
-            actor=actor, document=document
-        )
-
-        assert created is True
-        job = next(iter(jobs.jobs.values()))
-        assert job.source_kind is ExamAnswerKeySourceKind.WORKSPACE
-        assert job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED
-        assert job.workspace_lineage_id == document.document_id
-        assert job.workspace_document_revision == 1
-        assert job.conversion_job_id is None
-        assert job.source_dxe is None
-
-    async def test_enqueue_is_idempotent_per_lineage_and_revision(self) -> None:
-        actor = make_actor()
-        jobs = InMemoryEnrichmentJobRepository()
-        document = _document(document_id=uuid4())
-        handler = _enqueue_handler(enrichment_jobs=jobs)
-
-        first = await handler.handle(actor=actor, document=document)
-        second = await handler.handle(actor=actor, document=document)
-
-        assert first is True
-        assert second is False
-        assert len(jobs.jobs) == 1
-
-    async def test_disabled_lane_and_keyed_documents_enqueue_nothing(self) -> None:
-        actor = make_actor()
-        jobs = InMemoryEnrichmentJobRepository()
-
-        disabled = await _enqueue_handler(enrichment_jobs=jobs, enabled=False).handle(
-            actor=actor, document=_document(document_id=uuid4())
-        )
-        keyed = await _enqueue_handler(enrichment_jobs=jobs).handle(
-            actor=actor, document=_document(document_id=uuid4(), keyed=True)
-        )
-
-        assert disabled is False
-        assert keyed is False
-        assert jobs.jobs == {}
-
-
-class _StatusHarness:
-    def __init__(self, *, document: NativeExamDocument, actor_id: UUID) -> None:
-        self.enrichment_jobs = InMemoryEnrichmentJobRepository()
-        self.proposed_overlays = InMemoryProposedOverlayRepository()
-        self.vault_files = InMemoryVaultFileRepository()
-        self.vault_storage = InMemoryVaultStorage()
-        head_file_id = uuid4()
-        self.vault_files.files[head_file_id] = VaultFile(
-            id=head_file_id,
-            user_id=actor_id,
-            name="prov.provdokument.zip",
-            bytes=1,
-            source_kind=VaultFileSourceKind.APP_EXPORT,
-            document_lineage_id=document.document_id,
-            document_version=document.revision,
-            created_at=_NOW,
-        )
-        self.vault_storage.stored[(actor_id, head_file_id)] = b"container"
-        store = ExamWorkspaceDocumentStore(
-            vault_files=self.vault_files,
-            vault_usage=InMemoryVaultUsageRepository(
-                usage=VaultUsage(user_id=actor_id, bytes_total=0, updated_at=_NOW)
-            ),
-            vault_storage=self.vault_storage,
-            uow=FakeUow(),
-            clock=FixedClock(_NOW),
-            settings=Settings.model_construct(
-                VAULT_MAX_FILE_BYTES=5_000_000,
-                VAULT_MAX_TOTAL_BYTES=50_000_000,
-            ),
-            proposal_carry_forward=CarryExamWorkspaceProposals(
-                enrichment_jobs=self.enrichment_jobs,
-                proposed_overlays=self.proposed_overlays,
-                clock=FixedClock(_NOW),
-                id_generator=UUIDGenerator(),
+                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+                stem="Vilket är subjektet i meningen?",
             ),
         )
-        self.handler = GetExamWorkspaceEnrichmentStatusHandler(
-            vault_files=self.vault_files,
-            enrichment_jobs=self.enrichment_jobs,
-            proposed_overlays=self.proposed_overlays,
-            store=store,
-            codec=FakeWorkspaceCodec(container=ExamWorkspaceContainerContent(document=document)),
+
+        response = await harness.request(document, item_id="item_001")
+
+        assert response.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert response.job_id is not None
+        job = harness.jobs.jobs[response.job_id]
+        payload = WorkspaceAnswerKeyRequestPayload.model_validate(job.workspace_request_json)
+        assert len(payload.views) == 1
+        assert payload.views[0].stem_text == "Vilket är subjektet i meningen?"
+
+    async def test_disabled_lane_and_all_keyed_documents_enqueue_nothing(self) -> None:
+        document = suggestion_document(
+            uuid4(),
+            suggestion_item(
+                item_id="item_001",
+                sequence=1,
+                origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
+            ),
         )
+        disabled = SuggestionHandlerHarness(enabled=False)
+        disabled.lineage_id = document.document_id
+        keyed = SuggestionHandlerHarness()
+        keyed.lineage_id = document.document_id
+        for harness in (disabled, keyed):
+            head = next(iter(harness.vault_files.files.values()))
+            harness.vault_files.files[head.id] = head.model_copy(
+                update={"document_lineage_id": document.document_id}
+            )
+
+        for harness in (disabled, keyed):
+            response = await harness.request_handler.handle(
+                actor=harness.actor,
+                lineage_id=document.document_id,
+                request=RequestExamWorkspaceAnswerKeySuggestionsRequest(document=document),
+            )
+            assert response.state is ExamWorkspaceEnrichmentState.NOT_ELIGIBLE
+            assert response.job_id is None
+        assert disabled.jobs.jobs == {}
+        assert keyed.jobs.jobs == {}
+
+    async def test_request_for_another_teachers_document_is_not_found(self) -> None:
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(uuid4(), suggestion_item(item_id="item_001", sequence=1))
+
+        with pytest.raises(DomainError):
+            await harness.request_handler.handle(
+                actor=harness.actor,
+                lineage_id=document.document_id,
+                request=RequestExamWorkspaceAnswerKeySuggestionsRequest(document=document),
+            )
+        assert harness.jobs.jobs == {}
 
 
 class TestStatus:
-    async def test_not_requested_without_a_job_for_the_head_revision(self) -> None:
-        actor = make_actor()
-        document = _document(document_id=uuid4())
-        harness = _StatusHarness(document=document, actor_id=actor.id)
-
-        response = await harness.handler.handle(actor=actor, lineage_id=document.document_id)
-
-        assert response.state is ExamWorkspaceEnrichmentState.NOT_REQUESTED
-        assert response.document_revision == 1
-        assert response.proposals == ()
-
-    async def test_succeeded_job_serves_machine_proposed_prefill_items(self) -> None:
-        actor = make_actor()
-        document = _document(document_id=uuid4())
-        harness = _StatusHarness(document=document, actor_id=actor.id)
-
-        created = await _enqueue_handler(enrichment_jobs=harness.enrichment_jobs).handle(
-            actor=actor, document=document
+    async def _finished_job(self, harness: SuggestionHandlerHarness, *, succeeded: bool) -> UUID:
+        document = suggestion_document(
+            harness.lineage_id, suggestion_item(item_id="item_001", sequence=1)
         )
-        assert created is True
-        job = next(iter(harness.enrichment_jobs.jobs.values()))
-        harness.enrichment_jobs.jobs[job.id] = job.model_copy(
-            update={"status": ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED}
-        )
-        await harness.proposed_overlays.create(
-            proposed_overlay=ExamAnswerKeyProposedOverlay(
-                id=uuid4(),
-                enrichment_job_id=job.id,
-                conversion_job_id=None,
-                owner_user_id=actor.id,
-                workspace_lineage_id=document.document_id,
-                workspace_document_revision=1,
-                source_file_sha256="a" * 64,
-                source_ir_sha256="b" * 64,
+        response = await harness.request(document)
+        assert response.job_id is not None
+        job = harness.jobs.jobs[response.job_id]
+        if succeeded:
+            suggestion = NativeAnswerKeySuggestion(
+                correct_choice_ids=("choice_002",),
+                fingerprint="a" * 64,
                 provider_profile_id="openai-gpt-5.6-luna",
                 model="gpt-5.6-luna",
-                overlay_json={
-                    "schema_version": EXAM_WORKSPACE_ANSWER_KEY_PROPOSALS_SCHEMA_VERSION,
-                    "lineage_id": str(document.document_id),
-                    "document_revision": 1,
-                    "items": [
-                        {
-                            "item_id": "item_001",
-                            "kind": "choice",
-                            "correct_choice_ids": ["choice_002"],
-                            "gap_accepted_values": {},
-                            "provider_profile_id": "openai-gpt-5.6-luna",
-                            "model": "gpt-5.6-luna",
-                            "prompt_template_version": "digiexam_choice_answer_key_prompt_v1",
-                        }
-                    ],
-                },
-                created_at=_NOW,
+                prompt_template_version="v1",
             )
-        )
+            harness.jobs.jobs[job.id] = job.model_copy(
+                update={
+                    "status": ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                    "workspace_suggestions_json": {
+                        "suggestions": [
+                            {
+                                "item_id": "item_001",
+                                "suggestion": suggestion.model_dump(mode="json"),
+                            }
+                        ]
+                    },
+                }
+            )
+        else:
+            harness.jobs.jobs[job.id] = job.model_copy(
+                update={
+                    "status": ExamAnswerKeyEnrichmentJobStatus.FAILED,
+                    "last_error": "daily_token_lease_exhausted",
+                }
+            )
+        return job.id
 
-        response = await harness.handler.handle(actor=actor, lineage_id=document.document_id)
+    async def test_succeeded_job_returns_its_suggestions(self) -> None:
+        harness = SuggestionHandlerHarness()
+        job_id = await self._finished_job(harness, succeeded=True)
+
+        response = await harness.status_handler.handle(
+            actor=harness.actor, lineage_id=harness.lineage_id, job_id=job_id
+        )
 
         assert response.state is ExamWorkspaceEnrichmentState.SUCCEEDED
-        assert len(response.proposals) == 1
-        proposal = response.proposals[0]
-        assert proposal.item_id == "item_001"
-        assert proposal.provider_profile_id == "openai-gpt-5.6-luna"
-        proposed = proposal.proposed_item
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.answer_key.correct_choice_ids == ("choice_002",)
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
+        assert len(response.suggestions) == 1
+        assert response.suggestions[0].item_id == "item_001"
+        assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
+        assert response.suggestions[0].suggestion.model == "gpt-5.6-luna"
 
-    async def test_failed_job_maps_last_error_to_a_swedish_message(self) -> None:
-        actor = make_actor()
-        document = _document(document_id=uuid4())
-        harness = _StatusHarness(document=document, actor_id=actor.id)
-        created = await _enqueue_handler(enrichment_jobs=harness.enrichment_jobs).handle(
-            actor=actor, document=document
-        )
-        assert created is True
-        job = next(iter(harness.enrichment_jobs.jobs.values()))
-        harness.enrichment_jobs.jobs[job.id] = job.model_copy(
+    async def test_failed_job_returns_suggestions_it_produced_before_the_failure(self) -> None:
+        harness = SuggestionHandlerHarness()
+        job_id = await self._finished_job(harness, succeeded=True)
+        job = harness.jobs.jobs[job_id]
+        harness.jobs.jobs[job_id] = job.model_copy(
             update={
                 "status": ExamAnswerKeyEnrichmentJobStatus.FAILED,
-                "last_error": "daily_token_lease_exhausted",
+                "last_error": "provider_timeout",
             }
         )
 
-        response = await harness.handler.handle(actor=actor, lineage_id=document.document_id)
+        response = await harness.status_handler.handle(
+            actor=harness.actor, lineage_id=harness.lineage_id, job_id=job_id
+        )
+
+        assert response.state is ExamWorkspaceEnrichmentState.FAILED
+        assert response.message is not None
+        assert [entry.item_id for entry in response.suggestions] == ["item_001"]
+        assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
+
+    async def test_failed_job_maps_last_error_to_a_swedish_message(self) -> None:
+        harness = SuggestionHandlerHarness()
+        job_id = await self._finished_job(harness, succeeded=False)
+
+        response = await harness.status_handler.handle(
+            actor=harness.actor, lineage_id=harness.lineage_id, job_id=job_id
+        )
 
         assert response.state is ExamWorkspaceEnrichmentState.FAILED
         assert response.message is not None
         assert "AI-budget" in response.message
 
+    async def test_status_is_hidden_from_other_teachers(self) -> None:
+        harness = SuggestionHandlerHarness()
+        job_id = await self._finished_job(harness, succeeded=True)
+
+        with pytest.raises(DomainError):
+            await harness.status_handler.handle(
+                actor=make_actor(), lineage_id=harness.lineage_id, job_id=job_id
+            )
+
     async def test_queued_job_reports_queued_state(self) -> None:
-        actor = make_actor()
-        document = _document(document_id=uuid4())
-        harness = _StatusHarness(document=document, actor_id=actor.id)
-        created = await _enqueue_handler(enrichment_jobs=harness.enrichment_jobs).handle(
-            actor=actor, document=document
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
+            harness.lineage_id, suggestion_item(item_id="item_001", sequence=1)
         )
-        assert created is True
+        response = await harness.request(document)
+        assert response.job_id is not None
 
-        response = await harness.handler.handle(actor=actor, lineage_id=document.document_id)
+        status = await harness.status_handler.handle(
+            actor=harness.actor, lineage_id=harness.lineage_id, job_id=response.job_id
+        )
 
-        assert response.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert status.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert status.suggestions == ()
+
+
+def test_enqueue_helper_builds_an_editor_content_job() -> None:
+    job = enqueue_workspace_enrichment_job(
+        job_id=uuid4(),
+        owner_user_id=uuid4(),
+        input_filename="Prov",
+        workspace_lineage_id=uuid4(),
+        workspace_document_revision=4,
+        workspace_request_json={"views": []},
+        now=NOW,
+    )
+    assert job.workspace_document_revision == 4
+    assert job.workspace_request_json == {"views": []}

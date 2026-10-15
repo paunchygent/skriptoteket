@@ -1,30 +1,29 @@
-"""Where a section instruction lands in an item, on real live-run recordings.
+"""Where a section instruction lands in an item, on the fresh live recordings.
 
-Each build replays recorded model responses through the admission path and assembles the result
-exactly as a job does. Items and instructions are selected by source anchor.
+Each build runs the production pipeline over one exam's fresh recordings and asserts on the
+assembled document. Items and instructions are selected by source anchor, so the check
+survives a recording refresh; wording is read from the corpus chunks.
 """
 
-import json
+from collections.abc import Mapping
 from dataclasses import dataclass
-from pathlib import Path
-from uuid import uuid4
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
-    admit_batch,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildResult
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    build_replay,
+    corpus_chunks,
 )
 
-_FIXTURES = Path("tests/fixtures/exam_conversion")
 _GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _GRAMMAR_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
 _POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
@@ -32,50 +31,53 @@ _POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 
 @dataclass(frozen=True)
 class _Build:
-    state: DocxBuildState
-    result: DocxBuildResult
+    document: NativeExamDocument
+    chunks: Mapping[str, DocxChunk]
 
     def item(self, anchor: str) -> NativeExamItem:
-        return next(item for item in self.result.document.items if item.source_anchor == anchor)
+        return next(item for item in self.document.items if item.source_anchor == anchor)
 
     def parent_of(self, anchor: str) -> NativeExamParent | None:
-        return self.result.document.parent_of(self.item(anchor).item_id)
+        return self.document.parent_of(self.item(anchor).item_id)
 
     def wording(self, anchor: str) -> str:
-        return self.state.chunk_by_anchor[anchor].text
+        return self.chunks[anchor].text
 
 
-def _build(stem: str) -> _Build:
-    chunks = PythonDocxExamChunker().chunk(
-        content=(_FIXTURES / f"docx_corpus/{stem}.docx").read_bytes()
-    )
-    state = DocxBuildState(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename=f"{stem}.docx",
-        source_sha256="0" * 64,
-        chunks=chunks,
-    )
-    for recording in sorted((_FIXTURES / f"docx_build_round3_live1/{stem}").glob("round*.json")):
-        admit_batch(json.loads(recording.read_text()), state)
-    return _Build(state, state.result())
+_BUILDS: dict[str, _Build] = {}
 
 
-def test_instruction_printed_inside_the_item_opens_the_body_when_the_item_prints_nothing_before():
-    build = _build(_GRAMMAR_1)
+async def _build(exam: str) -> _Build:
+    if exam not in _BUILDS:
+        replay = build_replay(exam)
+        outcome = await replay.pipeline.convert(job=replay.job())
+        # These exams' recordings convert without a producer fault; a fault here would
+        # mean the test's placement claim rests on a broken run.
+        assert not outcome.result.events, exam
+        _BUILDS[exam] = _Build(
+            outcome.result.document, {chunk.anchor: chunk for chunk in corpus_chunks(exam)}
+        )
+    return _BUILDS[exam]
+
+
+async def test_instruction_printed_inside_the_item_opens_the_body_ahead_of_its_parts():
+    build = await _build(_GRAMMAR_1)
     item = build.item("body:0016")
     wording = build.wording("body:0017")
 
     lines = item.plain_text_lines()
-    assert lines[0] == wording
+    # The item's own printed heading opens the body (T1, 39-05-08); the instruction
+    # printed inside the item follows it, ahead of the question's parts.
+    assert lines[0] == "Ange frastyp."
+    assert lines[1] == wording
     assert lines.count(wording) == 1
-    assert lines[1].startswith("a) De trötta eleverna")
-    assert len(lines) == 5
+    assert lines[2].startswith("a) De trötta eleverna")
+    assert len(lines) == 6
 
 
-def test_short_label_survives_when_a_later_sentence_contains_it():
-    for stem in (_GRAMMAR_1, _GRAMMAR_2):
-        build = _build(stem)
+async def test_short_label_survives_when_a_later_sentence_contains_it():
+    for exam in (_GRAMMAR_1, _GRAMMAR_2):
+        build = await _build(exam)
         item = build.item("body:0085")
         lines = item.plain_text_lines()
 
@@ -88,17 +90,19 @@ def test_short_label_survives_when_a_later_sentence_contains_it():
         )
         assert lines.index("Text A") == first_passage - 1
         assert lines.index("Text B") == second_passage - 1
-        assert lines[0] == build.wording("body:0075")
+        # The printed section heading over this one question opens its body (T1, 39-05-08).
+        assert lines[0] == "Del 4: Textanalys"
+        assert lines[1] == build.wording("body:0075")
 
 
-def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_items():
-    build = _build(_POETRY)
+async def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_items():
+    build = await _build(_POETRY)
     wording = build.wording("body:0018")
     assert wording == "Read the sentence:"
 
     parent = build.parent_of("body:0019")
     assert parent is not None
-    assert parent.instruction == (wording,)
+    assert body_text_lines(parent.instruction) == (wording,)
     assert parent == build.parent_of("body:0022")
     assert parent.item_ids == (build.item("body:0019").item_id, build.item("body:0022").item_id)
     for anchor in ("body:0019", "body:0022"):
@@ -108,28 +112,32 @@ def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_
     assert wording not in build.item("body:0025").plain_text_lines()
 
 
-def test_mixed_kind_run_is_still_copied_into_each_item_and_reported():
-    build = _build(_GRAMMAR_1)
+async def test_mixed_kind_run_is_one_parent_and_no_child_repeats_the_instruction():
+    build = await _build(_GRAMMAR_2)
     wording = build.wording("body:0035")
     first, second = build.item("body:0037"), build.item("body:0045")
 
     assert first.kind != second.kind
-    assert build.result.document.parents == ()
-    (event,) = [e for e in build.result.events if e.code == "parent_kinds_mixed"]
-    assert event.anchors == ("body:0035",)
+    parent = build.parent_of("body:0037")
+    assert parent is not None and parent == build.parent_of("body:0045")
+    # The section heading opens the parent's instruction (T2, 39-05-08).
+    assert body_text_lines(parent.instruction) == ("Del 2: Satsdelar", wording)
+    assert parent.item_ids == (first.item_id, second.item_id)
     for item in (first, second):
-        assert item.plain_text_lines()[0] == wording
+        assert wording not in item.plain_text_lines()
 
 
-def test_instruction_reaching_a_single_item_is_still_copied_not_parented():
-    build = _build(_GRAMMAR_1)
+async def test_instruction_reaching_a_single_item_is_still_copied_not_parented():
+    build = await _build(_GRAMMAR_1)
     wording = build.wording("body:0054")
     carriers = [
-        item.source_anchor
-        for item in build.result.document.items
-        if wording in item.plain_text_lines()
+        item.source_anchor for item in build.document.items if wording in item.plain_text_lines()
     ]
 
     assert carriers == ["body:0056"]
-    assert build.parent_of("body:0056") is None
+    # The section heading over the two questions forms their parent (T2, 39-05-08);
+    # the instruction reaching one item stays a copy in that item, not a parent line.
+    parent = build.parent_of("body:0056")
+    assert parent is not None and parent == build.parent_of("body:0066")
+    assert body_text_lines(parent.instruction) == ("Del 3: Bisatser och komplex meningsbyggnad",)
     assert build.item("body:0056").plain_text_lines()[0] == wording

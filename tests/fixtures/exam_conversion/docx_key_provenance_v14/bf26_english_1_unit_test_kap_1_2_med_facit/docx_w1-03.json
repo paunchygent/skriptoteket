@@ -1,0 +1,75 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Language Choice (6 points)",
+      "source_anchors": [
+        "body:0127"
+      ],
+      "points": 6
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0124"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0123"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "14",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Correct the spelling of the bold text.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "We have alot of homework tonight.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Answer: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "a lot"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: a lot",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

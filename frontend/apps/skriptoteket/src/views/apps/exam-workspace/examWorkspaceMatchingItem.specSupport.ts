@@ -12,6 +12,11 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 
 export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    criteria: [],
+    printed_label: null,
+    retry_source: null,
     answer_key: {
       correct_choice_ids: [],
       match_pairs: [
@@ -37,6 +42,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
       { right_id: "right_003", text: "disdain" },
     ],
     points: 3,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -45,7 +51,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
     },
     sequence: 1,
     source_anchor: null,
-    title: "Vocabulary Matching, Question 1",
+    tick_points: "1",
     ...overrides,
   };
 }

@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
     StructuredLLMUsage,
+    input_content,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 
@@ -139,7 +140,7 @@ def build_answer_key_responses_payload(
             {
                 "type": "message",
                 "role": "user",
-                "content": [{"type": "input_text", "text": request.user_payload}],
+                "content": input_content(request.user_payload, request.user_images),
             }
         ],
         "instructions": request.system_prompt,
@@ -247,15 +248,9 @@ def _extract_usage(payload: _JsonObject) -> StructuredLLMUsage:
     usage = payload.get("usage")
     if not isinstance(usage, dict):
         return StructuredLLMUsage()
-    prompt_tokens = _optional_int(usage.get("input_tokens"))
-    if prompt_tokens is None:
-        prompt_tokens = _optional_int(usage.get("prompt_tokens"))
-    completion_tokens = _optional_int(usage.get("output_tokens"))
-    if completion_tokens is None:
-        completion_tokens = _optional_int(usage.get("completion_tokens"))
     return StructuredLLMUsage(
-        prompt_tokens=prompt_tokens,
-        completion_tokens=completion_tokens,
+        prompt_tokens=_optional_int(usage.get("input_tokens")),
+        completion_tokens=_optional_int(usage.get("output_tokens")),
         total_tokens=_optional_int(usage.get("total_tokens")),
     )
 

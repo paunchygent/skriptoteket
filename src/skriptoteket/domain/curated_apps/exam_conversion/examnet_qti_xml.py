@@ -1,4 +1,4 @@
-"""QTI 2.1 element builders for Exam.net-oriented assessment items.
+"""QTI 3.0 element builders for Exam.net-oriented assessment items.
 
 Purpose:
     Build the response declarations, outcomes and interactions of one governed
@@ -12,30 +12,47 @@ Relationships:
 
 from __future__ import annotations
 
-import re
-from collections.abc import Iterator
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiEvaluationMode,
-    ExamNetQtiImageResource,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiTextEntryGap,
 )
-
-QTI_NAMESPACE = "http://www.imsglobal.org/xsd/imsqti_v2p1"
-XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
-QTI_SCHEMA_LOCATION = (
-    "http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd"
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
+    append_interaction_prompt,
 )
-MAP_RESPONSE_TEMPLATE = "http://www.imsglobal.org/question/qti_v2p1/rptemplates/map_response"
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
+    MAP_RESPONSE_TEMPLATE,
+    QTI_NAMESPACE,
+    QTI_SCHEMA_LOCATION,
+    XSI_NAMESPACE,
+    qti_tag,
+    xsi_tag,
+)
+
 RESPONSE_IDENTIFIER = "RESPONSE"
 FREE_TEXT_CRITERION_MAP_KEY = "CRITERION_FULL"
-RESPONSE_IDENTIFIER = "RESPONSE"
-_GAP_MARKER_PATTERN = re.compile(r"(?:\[_+\]|_{3,})")
+
+__all__ = [
+    "FREE_TEXT_CRITERION_MAP_KEY",
+    "MAP_RESPONSE_TEMPLATE",
+    "QTI_NAMESPACE",
+    "QTI_SCHEMA_LOCATION",
+    "RESPONSE_IDENTIFIER",
+    "XSI_NAMESPACE",
+    "append_interaction",
+    "append_response_declaration",
+    "append_score_outcome",
+    "emits_map_response",
+    "emits_all_or_nothing",
+    "gap_point_values",
+    "qti_tag",
+    "xsi_tag",
+]
 
 
 def append_response_declaration(
@@ -48,33 +65,34 @@ def append_response_declaration(
     if item.interaction_type == ExamNetQtiInteractionType.FREE_TEXT:
         declaration = ElementTree.SubElement(
             root,
-            qti_tag("responseDeclaration"),
+            qti_tag("qti-response-declaration"),
             {
                 "identifier": response_id,
                 "cardinality": "single",
-                "baseType": "string",
+                "base-type": "string",
             },
         )
         if item.free_text_criterion_points is not None:
-            points = str(item.free_text_criterion_points)
+            upper_bound, entries = _free_text_mapping(item)
             mapping = ElementTree.SubElement(
                 declaration,
-                qti_tag("mapping"),
-                {"defaultValue": "0", "lowerBound": "0", "upperBound": points},
+                qti_tag("qti-mapping"),
+                {"default-value": "0", "lower-bound": "0", "upper-bound": upper_bound},
             )
-            ElementTree.SubElement(
-                mapping,
-                qti_tag("mapEntry"),
-                {"mapKey": FREE_TEXT_CRITERION_MAP_KEY, "mappedValue": points},
-            )
+            for criterion_map_key, row_value in entries:
+                ElementTree.SubElement(
+                    mapping,
+                    qti_tag("qti-map-entry"),
+                    {"map-key": criterion_map_key, "mapped-value": row_value},
+                )
             return (response_id,)
         return ()
 
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
-        gap_point_values = _gap_point_values(item)
+        gap_values = gap_point_values(item)
         mapped_gap_ids: list[str] = []
         for index, gap in enumerate(item.text_entry_gaps):
-            gap_points = None if gap_point_values is None else gap_point_values[index]
+            gap_points = None if gap_values is None else gap_values[index]
             if _append_gap_response_declaration(root, gap, gap_points):
                 mapped_gap_ids.append(gap.response_identifier)
         return tuple(mapped_gap_ids)
@@ -95,37 +113,65 @@ def append_response_declaration(
 
     declaration = ElementTree.SubElement(
         root,
-        qti_tag("responseDeclaration"),
+        qti_tag("qti-response-declaration"),
         {
             "identifier": response_id,
             "cardinality": cardinality,
-            "baseType": base_type,
+            "base-type": base_type,
         },
     )
     if values:
-        correct_response = ElementTree.SubElement(declaration, qti_tag("correctResponse"))
+        correct_response = ElementTree.SubElement(declaration, qti_tag("qti-correct-response"))
         for value in values:
-            value_element = ElementTree.SubElement(correct_response, qti_tag("value"))
+            value_element = ElementTree.SubElement(correct_response, qti_tag("qti-value"))
             value_element.text = value
-    if (
-        values
-        and item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
-        and item.max_score is not None
-    ):
-        mapped_values = _split_point_values(item.max_score, len(values))
+    mapped_value = _equal_choice_point_value(item)
+    if values and mapped_value is not None:
         mapping = ElementTree.SubElement(
             declaration,
-            qti_tag("mapping"),
-            {"defaultValue": "0", "lowerBound": "0", "upperBound": str(item.max_score)},
+            qti_tag("qti-mapping"),
+            {"default-value": "0", "lower-bound": "0", "upper-bound": str(item.max_score)},
         )
-        for value, mapped_value in zip(values, mapped_values, strict=True):
+        for value in values:
             ElementTree.SubElement(
                 mapping,
-                qti_tag("mapEntry"),
-                {"mapKey": value, "mappedValue": mapped_value},
+                qti_tag("qti-map-entry"),
+                {"map-key": value, "mapped-value": mapped_value},
             )
         return (response_id,)
     return ()
+
+
+def _free_text_mapping(item: ExamNetQtiItem) -> tuple[str, tuple[tuple[str, str], ...]]:
+    """Return the free text mapping's upper bound and one entry per rule row.
+
+    Exam.net reads the response mapping and writes one rule row per map entry at
+    the entry's own value (probe V110, V126-V128), so a criteria item carries one
+    row's value (1) and the item's total (their sum) and is written as one
+    1-point row per criterion point (Q13). An item without criteria carries its
+    total as the row value, so it stays one row worth its points. Criterion text
+    never enters the package; the map keys are opaque and Exam.net replaces them.
+    A value-total ratio that is not a positive whole number cannot come from
+    either lane and raises instead of encoding a corrupt score.
+    """
+
+    value = item.free_text_criterion_points
+    if value is None:
+        raise ValueError("free text mapping requires a criterion value")
+    per_row = Decimal(str(value))
+    total = Decimal(str(item.max_score)) if item.max_score is not None else per_row
+    if per_row <= 0:
+        raise ValueError("free text mapping row value must be positive")
+    row_count = total / per_row
+    if row_count != row_count.to_integral_value() or row_count < 1:
+        raise ValueError("free text mapping rows must be a positive whole number")
+    upper_bound = str(item.max_score) if item.max_score is not None else str(value)
+    count = int(row_count)
+    if count == 1:
+        return upper_bound, ((FREE_TEXT_CRITERION_MAP_KEY, str(value)),)
+    return upper_bound, tuple(
+        (f"CRITERION_{index}", _format_points(per_row)) for index in range(1, count + 1)
+    )
 
 
 def _append_gap_response_declaration(
@@ -136,59 +182,82 @@ def _append_gap_response_declaration(
     values = tuple(value.strip() for value in gap.accepted_values if value.strip())
     declaration = ElementTree.SubElement(
         root,
-        qti_tag("responseDeclaration"),
+        qti_tag("qti-response-declaration"),
         {
             "identifier": gap.response_identifier,
             "cardinality": "single",
-            "baseType": "string",
+            "base-type": "string",
         },
     )
     if not values:
         return False
-    correct_response = ElementTree.SubElement(declaration, qti_tag("correctResponse"))
-    value_element = ElementTree.SubElement(correct_response, qti_tag("value"))
-    value_element.text = values[0]
+    correct_response = ElementTree.SubElement(declaration, qti_tag("qti-correct-response"))
     if gap_points is None:
+        # No mapping exists without own gap points, so every accepted value must
+        # stand as its own correct response instead of dropping all but the first (D10).
+        for value in values:
+            value_element = ElementTree.SubElement(correct_response, qti_tag("qti-value"))
+            value_element.text = value
         return False
+    value_element = ElementTree.SubElement(correct_response, qti_tag("qti-value"))
+    value_element.text = values[0]
     mapping = ElementTree.SubElement(
         declaration,
-        qti_tag("mapping"),
-        {"defaultValue": "0", "lowerBound": "0", "upperBound": gap_points},
+        qti_tag("qti-mapping"),
+        {"default-value": "0", "lower-bound": "0", "upper-bound": gap_points},
     )
     for value in values:
         ElementTree.SubElement(
             mapping,
-            qti_tag("mapEntry"),
-            {"mapKey": value, "mappedValue": gap_points, "caseSensitive": "false"},
+            qti_tag("qti-map-entry"),
+            {"map-key": value, "mapped-value": gap_points, "case-sensitive": "false"},
         )
     return True
 
 
-def _gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
+def gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
+    """The formatted value every gap gets, or None when the writer maps no gap points.
+
+    None means the item carries no total or no gaps, or the rounded-down share is
+    0.00; the QTI writer then writes no gap mapping at all. The checklist reads the
+    same predicate so the two can never disagree about the rounded value.
+    """
+
     if item.max_score is None or not item.text_entry_gaps:
         return None
-    return _split_point_values(item.max_score, len(item.text_entry_gaps))
-
-
-def _split_point_values(total: int | float, count: int) -> tuple[str, ...]:
-    decimal_total = Decimal(str(total))
-    exponent = decimal_total.as_tuple().exponent
-    decimal_places = max(2, -exponent) if isinstance(exponent, int) else 2
-    unit = Decimal(1).scaleb(-decimal_places)
-    total_units = int(decimal_total / unit)
-    while total_units < count:
-        decimal_places += 1
-        unit = Decimal(1).scaleb(-decimal_places)
-        total_units = int(decimal_total / unit)
-    base_units, extra_units = divmod(total_units, count)
-    return tuple(
-        _format_point_units(base_units + (1 if index < extra_units else 0), decimal_places)
-        for index in range(count)
+    value = (Decimal(str(item.max_score)) / len(item.text_entry_gaps)).quantize(
+        Decimal("0.01"), rounding=ROUND_DOWN
     )
+    if value == 0:
+        return None
+    return (_format_points(value),) * len(item.text_entry_gaps)
 
 
-def _format_point_units(units: int, decimal_places: int) -> str:
-    value = Decimal(units).scaleb(-decimal_places)
+def _automatic_choice_value_count(item: ExamNetQtiItem) -> int:
+    if item.evaluation_mode != ExamNetQtiEvaluationMode.AUTOMATIC or item.max_score is None:
+        return 0
+    if item.interaction_type in {
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
+    }:
+        return len(item.correct_choice_identifiers)
+    if item.interaction_type == ExamNetQtiInteractionType.MATCHING:
+        return len(item.match_pairs)
+    return 0
+
+
+def _equal_choice_point_value(item: ExamNetQtiItem) -> str | None:
+    count = _automatic_choice_value_count(item)
+    if not count:
+        return None
+    total = Decimal(str(item.max_score))
+    share = (total / count).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    if share * count != total:
+        return None
+    return _format_points(share)
+
+
+def _format_points(value: Decimal) -> str:
     return format(value, "f").rstrip("0").rstrip(".") or "0"
 
 
@@ -197,81 +266,40 @@ def emits_map_response(item: ExamNetQtiItem) -> bool:
         return item.free_text_criterion_points is not None
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
         return False
-    return item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
+    return _equal_choice_point_value(item) is not None
+
+
+def emits_all_or_nothing(item: ExamNetQtiItem) -> bool:
+    """Use all-or-nothing only for keyed automatic choice or matching items."""
+
+    return bool(_automatic_choice_value_count(item)) and _equal_choice_point_value(item) is None
 
 
 def append_score_outcome(root: ElementTree.Element, item: ExamNetQtiItem) -> None:
     outcome = ElementTree.SubElement(
         root,
-        qti_tag("outcomeDeclaration"),
+        qti_tag("qti-outcome-declaration"),
         {
             "identifier": "SCORE",
             "cardinality": "single",
-            "baseType": "float",
+            "base-type": "float",
         },
     )
-    default_value = ElementTree.SubElement(outcome, qti_tag("defaultValue"))
-    value = ElementTree.SubElement(default_value, qti_tag("value"))
+    default_value = ElementTree.SubElement(outcome, qti_tag("qti-default-value"))
+    value = ElementTree.SubElement(default_value, qti_tag("qti-value"))
     value.text = "0"
     max_score = ElementTree.SubElement(
         root,
-        qti_tag("outcomeDeclaration"),
+        qti_tag("qti-outcome-declaration"),
         {
             "identifier": "MAXSCORE",
             "cardinality": "single",
-            "baseType": "float",
+            "base-type": "float",
         },
     )
-    max_default = ElementTree.SubElement(max_score, qti_tag("defaultValue"))
-    max_value = ElementTree.SubElement(max_default, qti_tag("value"))
+    max_default = ElementTree.SubElement(max_score, qti_tag("qti-default-value"))
+    max_value = ElementTree.SubElement(max_default, qti_tag("qti-value"))
     max_value.text = str(item.max_score or 0)
-
-
-def _append_interaction_prompt(
-    interaction: ElementTree.Element,
-    item: ExamNetQtiItem,
-    image_paths: tuple[str, ...],
-) -> None:
-    prompt = ElementTree.SubElement(interaction, qti_tag("prompt"))
-    lines = normalized_prompt_lines(item.prompt_lines)
-    if len(lines) == 1:
-        prompt.text = lines[0]
-    else:
-        for line in lines:
-            paragraph = ElementTree.SubElement(prompt, qti_tag("p"))
-            paragraph.text = line
-    for image, image_path in zip(item.image_resources, image_paths, strict=True):
-        ElementTree.SubElement(
-            prompt,
-            qti_tag("img"),
-            {
-                "src": image_path,
-                "alt": image.alt_text,
-            },
-        )
-
-
-def normalized_prompt_lines(prompt_lines: tuple[str, ...]) -> tuple[str, ...]:
-    return tuple(
-        normalized for normalized in (" ".join(line.split()) for line in prompt_lines) if normalized
-    )
-
-
-def append_images(
-    parent: ElementTree.Element,
-    images: tuple[ExamNetQtiImageResource, ...],
-    image_paths: tuple[str, ...],
-) -> None:
-    for image, image_path in zip(images, image_paths, strict=True):
-        paragraph = ElementTree.SubElement(parent, qti_tag("p"))
-        ElementTree.SubElement(
-            paragraph,
-            qti_tag("img"),
-            {
-                "src": image_path,
-                "alt": image.alt_text,
-            },
-        )
 
 
 def append_interaction(
@@ -289,89 +317,15 @@ def append_interaction(
     if item.interaction_type == ExamNetQtiInteractionType.FREE_TEXT:
         interaction = ElementTree.SubElement(
             parent,
-            qti_tag("extendedTextInteraction"),
+            qti_tag("qti-extended-text-interaction"),
             {
-                "responseIdentifier": response_id,
-                "expectedLines": "8",
+                "response-identifier": response_id,
+                "expected-lines": "8",
             },
         )
-        _append_interaction_prompt(interaction, item, image_paths)
+        append_interaction_prompt(interaction, item, image_paths)
         return
     _append_match_interaction(parent, item, image_paths, response_id)
-
-
-def append_gap_fill_body(parent: ElementTree.Element, item: ExamNetQtiItem) -> None:
-    gaps = iter(item.text_entry_gaps)
-    used_count = 0
-    for line in _expanded_prompt_lines(item.prompt_lines):
-        used_count += _append_gap_prompt_line(parent, line, gaps)
-    remaining_gaps = item.text_entry_gaps[used_count:]
-    for gap in remaining_gaps:
-        paragraph = ElementTree.SubElement(parent, qti_tag("p"))
-        paragraph.text = f"{gap.label}: "
-        ElementTree.SubElement(
-            paragraph,
-            qti_tag("textEntryInteraction"),
-            {
-                "responseIdentifier": gap.response_identifier,
-                "expectedLength": _expected_text_entry_length(gap),
-            },
-        )
-
-
-def _expanded_prompt_lines(prompt_lines: tuple[str, ...]) -> tuple[str, ...]:
-    lines: list[str] = []
-    for prompt_line in prompt_lines:
-        child_lines = tuple(line.strip() for line in prompt_line.splitlines() if line.strip())
-        lines.extend(child_lines or (prompt_line,))
-    return tuple(lines)
-
-
-def _append_gap_prompt_line(
-    parent: ElementTree.Element,
-    line: str,
-    gaps: Iterator[ExamNetQtiTextEntryGap],
-) -> int:
-    paragraph = ElementTree.SubElement(parent, qti_tag("p"))
-    consumed = 0
-    position = 0
-    tail_target: ElementTree.Element | None = None
-    for match in _GAP_MARKER_PATTERN.finditer(line):
-        text_before_gap = line[position : match.start()]
-        if tail_target is None:
-            paragraph.text = (paragraph.text or "") + text_before_gap
-        else:
-            tail_target.tail = (tail_target.tail or "") + text_before_gap
-        gap = next(gaps, None)
-        if gap is None:
-            if tail_target is None:
-                paragraph.text = (paragraph.text or "") + match.group(0)
-            else:
-                tail_target.tail = (tail_target.tail or "") + match.group(0)
-        else:
-            tail_target = ElementTree.SubElement(
-                paragraph,
-                qti_tag("textEntryInteraction"),
-                {
-                    "responseIdentifier": gap.response_identifier,
-                    "expectedLength": _expected_text_entry_length(gap),
-                },
-            )
-            consumed += 1
-        position = match.end()
-    remaining_text = line[position:]
-    if tail_target is None:
-        paragraph.text = (paragraph.text or "") + remaining_text
-    else:
-        tail_target.tail = (tail_target.tail or "") + remaining_text
-    return consumed
-
-
-def _expected_text_entry_length(gap: ExamNetQtiTextEntryGap) -> str:
-    values = tuple(value.strip() for value in gap.accepted_values if value.strip())
-    if not values:
-        return "20"
-    return str(max(8, min(max(len(value) for value in values), 80)))
 
 
 def _append_choice_interaction(
@@ -385,13 +339,13 @@ def _append_choice_interaction(
         max_choices = str(len(item.correct_choice_identifiers) or len(item.choices))
     interaction = ElementTree.SubElement(
         parent,
-        qti_tag("choiceInteraction"),
+        qti_tag("qti-choice-interaction"),
         {
-            "responseIdentifier": response_id,
-            "maxChoices": max_choices,
+            "response-identifier": response_id,
+            "max-choices": max_choices,
         },
     )
-    _append_interaction_prompt(interaction, item, image_paths)
+    append_interaction_prompt(interaction, item, image_paths)
     for choice in item.choices:
         _append_simple_choice(interaction, choice)
 
@@ -399,7 +353,7 @@ def _append_choice_interaction(
 def _append_simple_choice(parent: ElementTree.Element, choice: ExamNetQtiChoice) -> None:
     choice_element = ElementTree.SubElement(
         parent,
-        qti_tag("simpleChoice"),
+        qti_tag("qti-simple-choice"),
         {"identifier": choice.identifier},
     )
     choice_element.text = choice.text
@@ -411,36 +365,36 @@ def _append_match_interaction(
     image_paths: tuple[str, ...],
     response_id: str,
 ) -> None:
-    # Each visible list keeps its own order; the pairing lives only in the response data.
+    # Kategorisera grid (probe V51): rows are the first set, each row may match every
+    # column; columns the second set, each column may match every row; each visible list
+    # keeps its own order and the pairing lives only in the response data. The response
+    # mapping is the shared equal-share/all-or-nothing path; a native grid's points equal
+    # tick_points x pairs, so its exact share is exactly tick_points.
+    row_count = len(item.match_left)
+    column_count = len(item.match_right)
     interaction = ElementTree.SubElement(
         parent,
-        qti_tag("matchInteraction"),
+        qti_tag("qti-match-interaction"),
         {
-            "responseIdentifier": response_id,
-            "maxAssociations": str(len(item.match_left)),
+            "response-identifier": response_id,
+            "max-associations": str(row_count * column_count),
         },
     )
-    _append_interaction_prompt(interaction, item, image_paths)
-    left_set = ElementTree.SubElement(interaction, qti_tag("simpleMatchSet"))
-    right_set = ElementTree.SubElement(interaction, qti_tag("simpleMatchSet"))
+    append_interaction_prompt(interaction, item, image_paths)
+    left_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
+    right_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
     for entry in item.match_left:
-        _append_associable_choice(left_set, entry.identifier, entry.text)
+        _append_associable_choice(left_set, entry.identifier, entry.text, match_max=column_count)
     for entry in item.match_right:
-        _append_associable_choice(right_set, entry.identifier, entry.text)
+        _append_associable_choice(right_set, entry.identifier, entry.text, match_max=row_count)
 
 
-def _append_associable_choice(parent: ElementTree.Element, identifier: str, text: str) -> None:
+def _append_associable_choice(
+    parent: ElementTree.Element, identifier: str, text: str, *, match_max: int
+) -> None:
     choice = ElementTree.SubElement(
         parent,
-        qti_tag("simpleAssociableChoice"),
-        {"identifier": identifier, "matchMax": "1"},
+        qti_tag("qti-simple-associable-choice"),
+        {"identifier": identifier, "match-max": str(match_max)},
     )
     choice.text = text
-
-
-def qti_tag(local_name: str) -> str:
-    return f"{{{QTI_NAMESPACE}}}{local_name}"
-
-
-def xsi_tag(local_name: str) -> str:
-    return f"{{{XSI_NAMESPACE}}}{local_name}"

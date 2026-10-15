@@ -6,7 +6,8 @@
  *   Let the teacher move between questions on a phone without a list on
  *   screen: previous and next buttons around a "Fråga N av M" picker that
  *   opens the question sheet. A warning glyph on the picker says that some
- *   question would stop an export or a save.
+ *   question would stop an export or a save, and an AI glyph states that the
+ *   current question's key was interpreted or invented by the AI.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` in the phone toolbar in Redigera; the
@@ -15,9 +16,10 @@
 
 import { ChevronDown } from "lucide-vue-next";
 
-import { IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
+import { IconAi, IconNextPage, IconPreviousPage, IconWarning } from "../../../components/icons";
 
 defineProps<{
+  aiKeyLabel: string | null;
   needsAttention: boolean;
   position: number;
   sheetOpen: boolean;
@@ -55,6 +57,24 @@ const emit = defineEmits<{
       @click="emit('openQuestions')"
     >
       <span class="truncate">Fråga {{ position }} av {{ total }}</span>
+      <span
+        class="inline-flex h-4 w-4 shrink-0 items-center justify-center"
+        data-test="exam-workspace-phone-ai-slot"
+      >
+        <span
+          v-if="aiKeyLabel"
+          role="img"
+          :aria-label="aiKeyLabel"
+          :title="aiKeyLabel"
+          data-test="exam-workspace-phone-ai-key"
+        >
+          <IconAi
+            :size="16"
+            class="h-4 w-4 text-navy"
+            aria-hidden="true"
+          />
+        </span>
+      </span>
       <IconWarning
         v-if="needsAttention"
         :size="16"

@@ -2,9 +2,9 @@
  * Exam workspace document state with parents.
  *
  * Expected behavior:
- *   Every edit the editor offers on a child (title, points, text, gap
+ *   Every edit the editor offers on a child (points, text, gap
  *   answers, review) and adding a question leave the parents untouched and the
- *   children consecutive, in sequence order and of one kind, so a save never
+ *   children consecutive and in sequence order, so a save never
  *   sends a parent the server would refuse. A new question is appended after
  *   the last item and never becomes a child.
  */
@@ -21,18 +21,19 @@ import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  requestExamWorkspaceAnswerMisspellings: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
+    conversion: null,
     document,
     notes: [],
     summary: {
@@ -67,7 +68,6 @@ function expectParentsValid(document: NativeExamDocument): void {
     expect(children.map((child) => child.sequence)).toEqual(
       children.map((_, index) => first + index),
     );
-    expect(new Set(children.map((child) => child.kind)).size).toBe(1);
   }
 }
 
@@ -75,6 +75,8 @@ beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
 });
 
 describe("parents in useExamWorkspaceDocument", () => {
@@ -85,12 +87,11 @@ describe("parents in useExamWorkspaceDocument", () => {
     const child = original.items[1]!;
     const gapId = child.gaps[0]!.gap_id;
 
-    state.updateItemTitle("item_002", "Sentence two");
     state.updateItemPoints("item_002", 2);
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
     state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", text: "Edited." }]);
     state.markItemReviewed("item_002");
-    state.addItem();
+    state.addItem("free_text");
 
     await expect(state.saveDocument()).resolves.toBe(true);
 
@@ -116,5 +117,20 @@ describe("parents in useExamWorkspaceDocument", () => {
     const document = state.workspaceDocument.value!;
     expect(document.items.map((item) => item.points)).toEqual([1, 1, null, 1]);
     expect(document.parents).toEqual(buildParentDocument().parents);
+  });
+
+  it("clears the estimate mark when the teacher sets the points", async () => {
+    const estimated = buildParentDocument();
+    estimated.items = estimated.items.map((item) => ({ ...item, points_estimated: true }));
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
+    const state = effectScope().run(() => useExamWorkspaceDocument())!;
+    await state.openDocument("lineage-1");
+    await flushPromises();
+
+    state.updateItemPoints("item_002", 3);
+
+    const items = state.workspaceDocument.value!.items;
+    expect(items.map((item) => item.points_estimated)).toEqual([true, false, true, true]);
+    expect(items[1]!.points).toBe(3);
   });
 });

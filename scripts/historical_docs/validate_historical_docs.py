@@ -33,7 +33,7 @@ from scripts.historical_docs.types import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-CONTRACT_PATH = Path("docs/_meta/docs-contract.yaml")
+CONTRACT_PATH = Path("docs/_meta/historical-docs-contract.yaml")
 
 
 def _to_str_key_mapping(value: YamlValue) -> YamlMapping | None:
@@ -46,7 +46,8 @@ def load_contract() -> YamlMapping:
     if not CONTRACT_PATH.exists():
         raise SystemExit(
             f"[docs-validate] Missing contract: {CONTRACT_PATH}\n"
-            "Create it or restore it. This file is the source of truth."
+            "It is the read-only legacy rule set for historical records; "
+            "the package-owned repository-governance contract governs current documents."
         )
 
     raw_contract = yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8")) or {}
@@ -410,7 +411,7 @@ def main(argv: list[str]) -> int:
             print(f"- {violation.path}: {violation.message}")
         print(
             "\nFix the issues above.\n"
-            "Rules: docs/_meta/docs-contract.yaml\n"
+            "Rules: docs/_meta/historical-docs-contract.yaml\n"
             "Templates: docs/templates/\n"
             "Validator: scripts/historical_docs/validate_historical_docs.py\n"
         )

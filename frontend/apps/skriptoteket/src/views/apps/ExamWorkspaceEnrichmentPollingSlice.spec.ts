@@ -1,15 +1,17 @@
 /**
- * Exam workspace answer-key proposal request and polling behavior.
+ * Exam workspace answer-key suggestion request and polling behavior.
  *
  * Slice purpose:
- *   Lock the request half of the advisory answer-key loop: request proposals
- *   for the saved head revision, poll until the job settles, and show each
- *   proposal next to its item.
+ *   Lock the request half of the AI suggestion loop: request suggestions
+ *   for the questions exactly as the editor shows them, poll until the job
+ *   settles, and write each arriving suggestion onto its question.
  *
  * Expected behavior:
- *   Proposals never change the document on arrival.
- *   Requests need a saved document, a failed poll retries with a doubling
- *   delay and toasts once per failure streak, and polling stops when the job settles or the view unmounts.
+ *   Requests work while the editor has unsaved changes, an arriving
+ *   suggestion for a keyless question becomes its key as
+ *   `machine_proposed`, a failed poll retries with a doubling delay and
+ *   toasts once per failure streak, and polling stops when the job settles
+ *   or the view unmounts.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -18,6 +20,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useToastStore } from "../../stores/toast";
 import { EXAM_WORKSPACE_ENRICHMENT_POLL_MS } from "./exam-workspace/useExamWorkspaceEnrichment";
 import {
+  buildUnkeyedResponse,
+  lastSavedItem,
   requestProposals,
   resetEnrichmentApiMocks,
   status,
@@ -26,23 +30,33 @@ import {
 import {
   importFixtureDocument,
   mountExamWorkspace,
+  saveDocument,
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceAnswerKeySuggestions: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
 
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((pendingResolve) => {
+    resolve = pendingResolve;
+  });
+  return { promise, resolve };
+}
 
 function statusFailureToastCount(): number {
   return vi
@@ -59,18 +73,26 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("ExamWorkspaceView answer-key proposal request and polling", () => {
-  it("polls a queued job until it succeeds and shows the proposal without changing the document", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
+  it("polls a queued job until it succeeds and writes the suggestion onto its question", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
-    apiMocks.getExamWorkspaceEnrichment.mockReset();
-    apiMocks.getExamWorkspaceEnrichment
+    apiMocks.getExamWorkspaceAnswerKeySuggestions
       .mockResolvedValueOnce(status("running"))
       .mockResolvedValueOnce(SUCCEEDED);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
 
     await requestProposals(wrapper);
-    expect(apiMocks.startExamWorkspaceEnrichment).toHaveBeenCalledWith("lineage-1");
+    expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
+    const [lineageId, sentDocument, itemId] =
+      apiMocks.requestExamWorkspaceAnswerKeySuggestions.mock.calls[0];
+    expect(lineageId).toBe("lineage-1");
+    expect(itemId).toBeUndefined();
+    expect(
+      sentDocument.items.find((item: { item_id: string }) => item.item_id === "item_002")
+        ?.answer_key.origin,
+    ).toBe("absent");
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "Facitförslagen väntar på tur.",
     );
@@ -84,24 +106,53 @@ describe("ExamWorkspaceView answer-key proposal request and polling", () => {
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
-      "1 facitförslag att granska.",
+      "1 facitförslag har lagts in på frågorna.",
     );
-    expect(wrapper.find('[data-test="exam-workspace-item-proposal-item_002"]').exists()).toBe(
-      true,
-    );
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    // The suggestion was written onto the question, so the exam is dirty.
+    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(2);
-
-    await selectItemRow(wrapper, "item_002");
-    expect(wrapper.find('[data-test="exam-workspace-proposal-choices"]').text()).toContain(
-      "Nederbörd",
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledWith(
+      "lineage-1",
+      "job-suggest-1",
     );
+
+    await saveDocument(wrapper);
+    const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
+    expect(saved?.answer_key.origin).toBe("machine_proposed");
+    expect(saved?.answer_key.correct_choice_ids).toEqual(["choice_c"]);
+    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_c"]);
+    expect(saved?.review.state).toBe("review_required");
   });
 
-  it("shows the server message when no proposals can be made", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(
+  it("applies suggestions a failed job produced before its provider failure", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
+    apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
+      status("failed", {
+        message: "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
+        suggestions: SUCCEEDED.suggestions,
+      }),
+    );
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
+      "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
+    );
+    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    await saveDocument(wrapper);
+    const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
+    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_c"]);
+  });
+
+  it("shows the server message when no suggestions can be made", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(
       status("not_eligible", { message: "Inga facitförslag kan skapas." }),
     );
     const { wrapper } = await mountExamWorkspace();
@@ -112,27 +163,35 @@ describe("ExamWorkspaceView answer-key proposal request and polling", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "Inga facitförslag kan skapas.",
     );
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(1);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(0);
   });
 
-  it("needs a saved document before proposals can be requested", async () => {
+  it("can be requested while the editor has unsaved changes", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_001");
-    await wrapper.find('[data-test="exam-workspace-item-title-input"]').setValue("Ändrad");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
-    ).toBeDefined();
+    ).toBeUndefined();
+
+    await requestProposals(wrapper);
+    const [, sentDocument] = apiMocks.requestExamWorkspaceAnswerKeySuggestions.mock.calls[0];
+    expect(
+      sentDocument.items.find(
+        (item: { item_id: string; points: number | null }) => item.item_id === "item_001",
+      )?.points,
+    ).toBe(7);
   });
 
   it("retries a failed poll on the next interval until the job settles", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
-    apiMocks.getExamWorkspaceEnrichment.mockReset();
-    apiMocks.getExamWorkspaceEnrichment
+    apiMocks.getExamWorkspaceAnswerKeySuggestions
       .mockRejectedValueOnce(new Error("network"))
       .mockResolvedValueOnce(SUCCEEDED);
 
@@ -146,12 +205,9 @@ describe("ExamWorkspaceView answer-key proposal request and polling", () => {
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(2);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
-      "1 facitförslag att granska.",
-    );
-    expect(wrapper.find('[data-test="exam-workspace-item-proposal-item_002"]').exists()).toBe(
-      true,
+      "1 facitförslag har lagts in på frågorna.",
     );
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
@@ -159,37 +215,35 @@ describe("ExamWorkspaceView answer-key proposal request and polling", () => {
   });
 
   it("shows one failure toast per failed-poll streak and keeps polling with backoff", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
-    apiMocks.getExamWorkspaceEnrichment.mockReset();
-    apiMocks.getExamWorkspaceEnrichment.mockRejectedValue(new Error("network"));
+    apiMocks.getExamWorkspaceAnswerKeySuggestions.mockRejectedValue(new Error("network"));
 
     await requestProposals(wrapper);
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(1);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 2);
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(2);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 4);
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(3);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(3);
     expect(statusFailureToastCount()).toBe(1);
     expect(
       wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
     ).toBeDefined();
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 8);
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(4);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(4);
     expect(statusFailureToastCount()).toBe(1);
   });
 
   it("shows the failure toast again after a successful poll ends the streak", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("queued"));
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
-    apiMocks.getExamWorkspaceEnrichment.mockReset();
-    apiMocks.getExamWorkspaceEnrichment
+    apiMocks.getExamWorkspaceAnswerKeySuggestions
       .mockRejectedValueOnce(new Error("network"))
       .mockResolvedValueOnce(status("running"))
       .mockRejectedValueOnce(new Error("network"));
@@ -200,20 +254,53 @@ describe("ExamWorkspaceView answer-key proposal request and polling", () => {
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(3);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(3);
     expect(statusFailureToastCount()).toBe(2);
   });
 
+  it("does not start polling when the view unmounts while the request is in flight", async () => {
+    const pendingRequest = deferred<ReturnType<typeof status>>();
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValue(pendingRequest.promise);
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await requestProposals(wrapper);
+    wrapper.unmount();
+    pendingRequest.resolve(status("queued"));
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
+
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(0);
+  });
+
+  it("does not schedule another poll when the view unmounts while a poll is in flight", async () => {
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+    const pendingPoll = deferred<ReturnType<typeof status>>();
+    apiMocks.getExamWorkspaceAnswerKeySuggestions.mockReturnValueOnce(pendingPoll.promise);
+
+    await requestProposals(wrapper);
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+    pendingPoll.resolve(status("running"));
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
+
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
+  });
+
   it("stops polling when the view unmounts", async () => {
-    apiMocks.startExamWorkspaceEnrichment.mockResolvedValue(status("running"));
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("running"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
     await requestProposals(wrapper);
-    const callsBeforeUnmount = apiMocks.getExamWorkspaceEnrichment.mock.calls.length;
+    const callsBeforeUnmount = apiMocks.getExamWorkspaceAnswerKeySuggestions.mock.calls.length;
 
     wrapper.unmount();
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
 
-    expect(apiMocks.getExamWorkspaceEnrichment).toHaveBeenCalledTimes(callsBeforeUnmount);
+    expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(callsBeforeUnmount);
   });
 });

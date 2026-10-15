@@ -1,64 +1,40 @@
-"""Mapping tests for the native exam -> Exam.net QTI item adapter."""
+"""Mapping tests for free-text and choice items in the native exam -> Exam.net QTI adapter."""
 
-import hashlib
-from uuid import uuid4
+from xml.etree import ElementTree
 
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
+    ExamNetQtiItem,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
+    serialize_qti_assessment_item,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import QTI_NAMESPACE
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeAssetSegment,
-    NativeChoice,
-    NativeExamAsset,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode
-
-_ASSET_ID = "asset_0123456789abcdef"
-_ASSET_PAYLOAD = b"\x89PNG fake payload"
-
-
-def _review_complete() -> NativeItemReview:
-    return NativeItemReview(
-        state=NativeItemReviewState.REVIEW_COMPLETE,
-        parse_origin=NativeParseOrigin.TEACHER_CREATED,
-    )
-
-
-def _document(
-    items: tuple[NativeExamItem, ...],
-    assets: tuple[NativeExamAsset, ...] = (),
-) -> NativeExamDocument:
-    return NativeExamDocument(
-        document_id=uuid4(),
-        revision=1,
-        title="Prov på svenska",
-        items=items,
-        assets=assets,
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-
-
-def _text_body(text: str) -> tuple[NativeParagraph, ...]:
-    return (NativeParagraph(segments=(NativeTextSegment(text=text),)),)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+)
+from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
+    document_of,
+    review_complete,
+    text_body,
+)
 
 
 class TestFreeTextMapping:
@@ -67,17 +43,16 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            title="Fråga 1 (4 p)",
-            body=_text_body("Resonera om satsdelar."),
+            body=text_body("Resonera om satsdelar."),
             points=4,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            review=_review_complete(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
         assert qti_item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
         assert qti_item.item_id == "item_001"
-        assert qti_item.title == "Fråga 1 (4 p)"
+        assert qti_item.title == "Fråga 1"
         assert qti_item.prompt_lines == ("Resonera om satsdelar.",)
         assert qti_item.max_score == 4
         assert qti_item.free_text_criterion_points == 4
@@ -89,15 +64,65 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            body=_text_body("Resonera fritt."),
+            body=text_body("Resonera fritt."),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            review=_review_complete(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
         assert qti_item.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
         assert qti_item.free_text_criterion_points is None
         assert qti_item.title == "Fråga 1"
+
+    def test_free_text_criteria_flatten_to_one_point_rows(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.FREE_TEXT,
+            body=text_body("Resonera om satsdelar."),
+            points=3,
+            criteria=(
+                NativeExamCriterion(text="Ett korrekt exempel.", points=2),
+                NativeExamCriterion(text="En korrekt förklaring.", points=1),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+            review=review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
+
+        assert qti_item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
+        assert qti_item.evaluation_mode is ExamNetQtiEvaluationMode.AUTOMATIC
+        assert qti_item.max_score == 3
+        assert qti_item.free_text_criterion_points == 1
+        root = ElementTree.fromstring(serialize_qti_assessment_item(qti_item))
+        mapping = root.find(f".//{{{QTI_NAMESPACE}}}qti-mapping")
+        assert mapping is not None
+        assert mapping.attrib == {
+            "default-value": "0",
+            "lower-bound": "0",
+            "upper-bound": "3",
+        }
+        assert [
+            (entry.attrib["map-key"], entry.attrib["mapped-value"])
+            for entry in mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
+        ] == [("CRITERION_1", "1"), ("CRITERION_2", "1"), ("CRITERION_3", "1")]
+        package_xml = serialize_qti_assessment_item(qti_item).decode("utf-8")
+        assert "Ett korrekt exempel." not in package_xml
+        assert "En korrekt förklaring." not in package_xml
+
+    def test_an_inconsistent_criterion_ratio_is_a_programming_error(self) -> None:
+        qti_item = ExamNetQtiItem(
+            item_id="item_001",
+            sequence=1,
+            title="Fråga 1",
+            interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+            prompt_lines=("Resonera.",),
+            max_score=4,
+            free_text_criterion_points=3,
+        )
+
+        with pytest.raises(ValueError, match="positive whole number"):
+            serialize_qti_assessment_item(qti_item)
 
 
 class TestChoiceMapping:
@@ -106,8 +131,7 @@ class TestChoiceMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.SINGLE_CHOICE,
-            title="Fråga 1",
-            body=_text_body("Välj rätt alternativ."),
+            body=text_body("Välj rätt alternativ."),
             points=2,
             choices=(
                 NativeChoice(choice_id="choice_001", text="  Alternativ   ett "),
@@ -117,9 +141,9 @@ class TestChoiceMapping:
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
                 correct_choice_ids=("choice_002",),
             ),
-            review=_review_complete(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
         assert qti_item.interaction_type is ExamNetQtiInteractionType.SINGLE_CHOICE
         assert tuple(choice.identifier for choice in qti_item.choices) == (
@@ -136,7 +160,7 @@ class TestChoiceMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.MULTIPLE_RESPONSE,
-            body=_text_body("Markera alla rätta alternativ."),
+            body=text_body("Markera alla rätta alternativ."),
             points=3,
             choices=(
                 NativeChoice(choice_id="choice_001", text="Ett"),
@@ -147,116 +171,48 @@ class TestChoiceMapping:
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
                 correct_choice_ids=("choice_001", "choice_003"),
             ),
-            review=_review_complete(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
         assert qti_item.interaction_type is ExamNetQtiInteractionType.MULTIPLE_RESPONSE
         assert qti_item.correct_choice_identifiers == ("choice_001", "choice_003")
+
+    def test_ai_interpreted_key_maps_its_correct_identifier(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.SINGLE_CHOICE,
+            body=text_body("Välj."),
+            points=1,
+            choices=(
+                NativeChoice(choice_id="choice_001", text="Ett"),
+                NativeChoice(choice_id="choice_002", text="Två"),
+            ),
+            answer_key=NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.AI_INTERPRETED,
+                correct_choice_ids=("choice_001",),
+            ),
+            review=review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
+
+        assert qti_item.correct_choice_identifiers == ("choice_001",)
 
     def test_absent_answer_key_emits_no_correct_identifiers(self) -> None:
         item = NativeExamItem(
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.SINGLE_CHOICE,
-            body=_text_body("Välj."),
+            body=text_body("Välj."),
             points=1,
             choices=(
                 NativeChoice(choice_id="choice_001", text="Ett"),
                 NativeChoice(choice_id="choice_002", text="Två"),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
-            review=_review_complete(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+        (qti_item,) = native_exam_to_examnet_qti_items(document_of((item,)))
 
         assert qti_item.correct_choice_identifiers == ()
-
-
-class TestGapFillMapping:
-    def test_gaps_follow_body_placement_order_with_native_gap_ids(self) -> None:
-        item = NativeExamItem(
-            item_id="item_001",
-            sequence=1,
-            kind=NativeExamItemKind.GAP_FILL,
-            body=(
-                NativeParagraph(
-                    segments=(
-                        NativeTextSegment(text="a) Först: "),
-                        NativeGapSegment(gap_id="gap_002"),
-                    )
-                ),
-                NativeParagraph(
-                    segments=(
-                        NativeTextSegment(text="b) Sedan: "),
-                        NativeGapSegment(gap_id="gap_001"),
-                    )
-                ),
-            ),
-            points=2,
-            gaps=(
-                NativeGap(gap_id="gap_001", accepted_values=("NF",)),
-                NativeGap(gap_id="gap_002", accepted_values=("VF", "verbfras")),
-            ),
-            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
-            review=_review_complete(),
-        )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
-
-        assert qti_item.interaction_type is ExamNetQtiInteractionType.GAP_FILL
-        assert qti_item.prompt_lines == ("a) Först: [___]", "b) Sedan: [___]")
-        assert tuple(gap.response_identifier for gap in qti_item.text_entry_gaps) == (
-            "RESPONSE_gap_002",
-            "RESPONSE_gap_001",
-        )
-        assert tuple(gap.label for gap in qti_item.text_entry_gaps) == ("Lucka 1", "Lucka 2")
-        assert qti_item.text_entry_gaps[0].accepted_values == ("VF", "verbfras")
-        assert qti_item.text_entry_gaps[1].accepted_values == ("NF",)
-
-
-class TestAssetMapping:
-    def _asset_document(self) -> NativeExamDocument:
-        item = NativeExamItem(
-            item_id="item_001",
-            sequence=1,
-            kind=NativeExamItemKind.FREE_TEXT,
-            body=(
-                NativeParagraph(
-                    segments=(
-                        NativeTextSegment(text="Se bilden."),
-                        NativeAssetSegment(asset_id=_ASSET_ID),
-                    )
-                ),
-            ),
-            points=2,
-            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            review=_review_complete(),
-        )
-        asset = NativeExamAsset(
-            asset_id=_ASSET_ID,
-            sha256=hashlib.sha256(_ASSET_PAYLOAD).hexdigest(),
-            media_type="image/png",
-            byte_length=len(_ASSET_PAYLOAD),
-        )
-        return _document((item,), assets=(asset,))
-
-    def test_referenced_asset_without_payload_raises(self) -> None:
-        with pytest.raises(DomainError) as exc_info:
-            native_exam_to_examnet_qti_items(self._asset_document())
-
-        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-        assert exc_info.value.details["asset_id"] == _ASSET_ID
-
-    def test_referenced_asset_with_payload_maps_to_image_resource(self) -> None:
-        (qti_item,) = native_exam_to_examnet_qti_items(
-            self._asset_document(),
-            assets_by_id={_ASSET_ID: _ASSET_PAYLOAD},
-        )
-
-        (image,) = qti_item.image_resources
-        assert image.asset_id == "image_001"
-        assert image.filename == "item_001-image-001.png"
-        assert image.media_type == "image/png"
-        assert image.payload == _ASSET_PAYLOAD
-        assert image.source_reference == _ASSET_ID
-        assert image.alt_text == "Bild 1"

@@ -1,0 +1,67 @@
+{
+  "title": {
+    "text": "Test Unit 3 Discuss and Argue — answer key",
+    "source_anchors": [
+      "body:0002"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Total: 74 points",
+      "source_anchors": [
+        "body:0003"
+      ],
+      "points": 74
+    }
+  ],
+  "answer_key_anchors": [
+    "body:0006"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0004",
+        "body:0005"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "single_choice",
+      "printed_label": "1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "This sentence is somewhat ___. It could be interpreted in two ways. You’d better rewrite it to make it clearer.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: B. ambiguous",
+      "points": 1,
+      "choices": [
+        {
+          "text": "two-faced",
+          "correct": false
+        },
+        {
+          "text": "ambiguous",
+          "correct": true
+        },
+        {
+          "text": "unreliable",
+          "correct": false
+        }
+      ],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

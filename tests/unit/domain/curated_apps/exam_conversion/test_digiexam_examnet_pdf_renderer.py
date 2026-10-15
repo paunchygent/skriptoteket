@@ -42,7 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIrAnswerKey,
     build_digiexam_intermediate_exam,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
 )

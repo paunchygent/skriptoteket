@@ -123,6 +123,20 @@ def test_unresolved_keys_and_matching_are_expressible() -> None:
     _item(kind="review")
 
 
+def test_matching_accepts_several_pairs_for_one_left_entry() -> None:
+    item = _item(
+        kind="matching",
+        points=4,
+        prompt="Sätt ett kryss i rätt kolumn.\nSubstantiv | Verb | Adjektiv\n1. vila",
+        pairs=(
+            GoldPair(left="vila", right="Substantiv"),
+            GoldPair(left="vila", right="Verb"),
+        ),
+    )
+    assert [pair.left for pair in item.pairs] == ["vila", "vila"]
+    assert {pair.right for pair in item.pairs} == {"Substantiv", "Verb"}
+
+
 @pytest.mark.parametrize(
     "model,payload",
     [

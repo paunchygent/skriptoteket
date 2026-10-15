@@ -30,6 +30,11 @@ import {
 
 function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
+    ai_suggestion: null,
+    facit_text: null,
+    criteria: [],
+    printed_label: null,
+    retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [
       {
@@ -44,14 +49,15 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     ],
     choices: [],
     gaps: [
-      { accepted_values: ["100"], gap_id: "gap_001", hint: null },
-      { accepted_values: [], gap_id: "gap_002", hint: null },
+      { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
+      { accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
     ],
     item_id: "item_001",
     kind: "gap_fill",
     match_left: [],
     match_right: [],
     points: 1,
+    points_estimated: false,
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
@@ -60,7 +66,7 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
-    title: "Kokpunkt",
+    tick_points: null,
     ...overrides,
   };
 }
@@ -73,8 +79,8 @@ describe("isPartiallyKeyedGapItem", () => {
   it("accepts a gap item keyed in every gap", () => {
     const item = buildGapItem({
       gaps: [
-        { accepted_values: ["100"], gap_id: "gap_001", hint: null },
-        { accepted_values: ["0"], gap_id: "gap_002", hint: null },
+        { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
+        { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
       ],
     });
     expect(isPartiallyKeyedGapItem(item)).toBe(false);
@@ -121,12 +127,26 @@ describe("isIncompleteMatchingItem", () => {
     ).toBe(true);
   });
 
-  it("rejects a keyed item that uses one right entry twice", () => {
+  it("accepts one column serving several rows and a row with two ticks", () => {
     expect(
       isIncompleteMatchingItem(
         buildMatchingItemWithPairs([
           [1, 2],
           [2, 2],
+          [2, 3],
+          [3, 3],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a repeated tick", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithPairs([
+          [1, 2],
+          [1, 2],
+          [2, 1],
           [3, 3],
         ]),
       ),
@@ -137,7 +157,7 @@ describe("isIncompleteMatchingItem", () => {
     expect(isIncompleteMatchingItem(buildMatchingItemWithDistractor())).toBe(false);
   });
 
-  it("rejects two left entries choosing the same right entry beside a distractor", () => {
+  it("accepts two rows ticking the same column beside an unused column", () => {
     expect(
       isIncompleteMatchingItem(
         buildMatchingItemWithDistractor({
@@ -152,7 +172,7 @@ describe("isIncompleteMatchingItem", () => {
           },
         }),
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("rejects a distractor item that leaves a left entry unpaired", () => {
@@ -199,7 +219,7 @@ describe("isIncompleteMatchingItem", () => {
 
   it("names the question and carries the guidance", () => {
     expect(incompleteMatchKeyCopy([buildMatchingItem({ sequence: 4 })])).toBe(
-      `Fråga 4 har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
+      `Fråga 4 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
   });
 });

@@ -86,6 +86,22 @@ vi.mock("./ClassroomPlannerGuestUpgradePrompt.vue", () => ({
   },
 }));
 
+vi.mock("../../components/help/tutorial/TutorialFirstUseGate.vue", () => ({
+  default: {
+    props: ["hostMode", "blocked"],
+    template: `<div data-test="tutorial-first-use-gate" :data-host-mode="hostMode" :data-blocked="String(blocked)" />`,
+  },
+}));
+
+function tutorialGate(wrapper: ReturnType<typeof mount>) {
+  const gates = wrapper.findAll("[data-test='tutorial-first-use-gate']");
+  expect(gates).toHaveLength(1);
+  return {
+    hostMode: gates[0]?.attributes("data-host-mode"),
+    blocked: gates[0]?.attributes("data-blocked"),
+  };
+}
+
 describe("ClassroomPlannerEntryView", () => {
   beforeEach(() => {
     guestUpgradeMocks.gateState = "allowed";
@@ -229,5 +245,24 @@ describe("ClassroomPlannerEntryView", () => {
 
     expect(wrapper.find("[data-test='public-classroom-planner-overview']").exists()).toBe(true);
     expect(wrapper.find("[data-test='live-classroom-planner']").exists()).toBe(false);
+  });
+
+  it.each([
+    [{ isBlocking: false, shouldShowPrompt: false }, "false"],
+    [{ isBlocking: true, shouldShowPrompt: false }, "true"],
+    [{ isBlocking: false, shouldShowPrompt: true }, "true"],
+  ])("mounts one tutorial gate on the authenticated host, blocked by the upgrade gate %o", (state, blocked) => {
+    guestUpgradeMocks.isBlocking = state.isBlocking;
+    guestUpgradeMocks.shouldShowPrompt = state.shouldShowPrompt;
+
+    const wrapper = mount(ClassroomPlannerEntryView, { props: { hostMode: "authenticated" } });
+
+    expect(tutorialGate(wrapper)).toEqual({ hostMode: "authenticated", blocked });
+  });
+
+  it("mounts one unblocked tutorial gate on the public host", () => {
+    const wrapper = mount(ClassroomPlannerEntryView, { props: { hostMode: "public" } });
+
+    expect(tutorialGate(wrapper)).toEqual({ hostMode: "public", blocked: "false" });
   });
 });

@@ -1,6 +1,8 @@
 """Accepted items, chunk roles, observed failures and usage for one DOCX build."""
 
-from dataclasses import dataclass, field
+import copy
+from collections.abc import Iterable, Mapping
+from dataclasses import InitVar, dataclass, field
 from uuid import UUID
 
 import structlog
@@ -8,7 +10,11 @@ import structlog
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    NOTHING_GOVERNED,
+    assemble_build_result,
+    review_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -18,46 +24,184 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
     split_section_totals,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    title_without_answer_key,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
+    Language,
+    infer_exam_document_language,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
+from skriptoteket.domain.errors import DomainError
 
 logger = structlog.get_logger(__name__)
 
 NO_ITEM_REASON = "AI-tolkningen gav ingen fråga eller rubrik för källstycket."
 
 
+@dataclass(frozen=True)
+class TypeConflict:
+    """A question the converter reports, or produces, outside the batch's item kinds."""
+
+    anchors: tuple[str, ...]
+    kind: NativeExamItemKind
+
+
 @dataclass
 class DocxBuildState:
-    """Freeze accepted items; every unclaimed chunk keeps the last reason it failed."""
+    """Freeze accepted items; every unclaimed chunk keeps the last reason it failed.
+
+    ``chunks`` is always the whole document, because the opening heading, definitions and
+    section totals are document-wide. A type batch claims only ``claimable`` anchors (None:
+    every anchor), reads ``context_anchors`` as read-only instructions, and admits only
+    ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
+    anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
+    or more questions; one no entry holds becomes its section parent's instruction (D40).
+    """
 
     job_id: UUID
     document_id: UUID
     filename: str
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
+    claimable: frozenset[str] | None = None
+    context_anchors: frozenset[str] = frozenset()
+    allowed_kinds: frozenset[NativeExamItemKind] | None = None
+    batch: str | None = None
+    questions: tuple[tuple[str, ...], ...] = ()
+    governing: frozenset[str] = frozenset()
+    document_language: InitVar[Language | None] = None
+    language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
+    question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
     claimed: set[str] = field(default_factory=set)
     reasons: dict[str, str] = field(default_factory=dict)
-    failures: tuple[str, ...] = ()
+    conflicts: list[TypeConflict] = field(default_factory=list)
+    keep_conflicts: bool = False
+    kept_conflicts: set[str] = field(default_factory=set)
     events: list[DocxBuildEvent] = field(default_factory=list)
-    round: int | None = None
     input_tokens: int | None = None
     output_tokens: int | None = None
     input_complete: bool = True
     output_complete: bool = True
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, document_language: Language | None) -> None:
         # Chunks are fixed for the state's lifetime, so the anchor index is built once.
         self.chunk_by_anchor = {chunk.anchor: chunk for chunk in self.chunks}
         self.known_anchors = frozenset(self.chunk_by_anchor)
+        self.question_by_anchor = {a: own for own in self.questions for a in own}
+        self.language = (
+            document_language
+            if document_language is not None
+            else infer_exam_document_language("\n".join(chunk.text for chunk in self.chunks))
+        )
+
+    @property
+    def owned(self) -> frozenset[str]:
+        return self.known_anchors if self.claimable is None else self.claimable
 
     @property
     def pending(self) -> tuple[DocxChunk, ...]:
-        return tuple(chunk for chunk in self.chunks if chunk.anchor not in self.claimed)
+        owned = self.owned
+        return tuple(
+            chunk
+            for chunk in self.chunks
+            if chunk.anchor in owned and chunk.anchor not in self.claimed
+        )
+
+    def snapshot(self) -> "DocxBuildState":
+        """A copy a trial merge may change without changing this state; items are frozen."""
+        trial = copy.copy(self)
+        trial.accepted = list(self.accepted)
+        trial.key_anchors = set(self.key_anchors)
+        trial.claimed = set(self.claimed)
+        trial.reasons = dict(self.reasons)
+        trial.conflicts = list(self.conflicts)
+        trial.kept_conflicts = set(self.kept_conflicts)
+        trial.events = list(self.events)
+        return trial
+
+    def printed(
+        self, anchors: tuple[str, ...], reason: str, taken: set[str]
+    ) -> tuple[NativeExamItem, tuple[str, ...]]:
+        """The question ``anchors`` belong to as printed, facit included, as one review item.
+
+        The item shows every own chunk of each grouped question ``anchors`` touch and every
+        chunk in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no
+        entry holds yet, which join ``taken``.
+        """
+        shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        extra = tuple(
+            c.anchor
+            for c in self.pending
+            if c.anchor in shown and c.anchor not in anchors and c.anchor not in taken
+        )
+        taken.update(extra)
+        item = review_source_item(tuple(c for c in self.chunks if c.anchor in shown), reason)
+        return item, (*anchors, *extra)
+
+    def review_questions(
+        self,
+        questions: Iterable[tuple[str, ...]],
+        *,
+        keys: frozenset[str],
+        contexts: frozenset[str],
+        title: frozenset[str],
+        reason: str,
+    ) -> None:
+        """Rebuild an unconverted batch from its source alone.
+
+        Each question with an unclaimed own chunk becomes one review item holding the source
+        text of all its own chunks at the question's place. Answer-key chunks stay teacher
+        notes, the grouped title stays the title, and shared section text and headings stay
+        section text, each in its source wording.
+        Every other pending chunk becomes a review item with ``reason``.
+        """
+        for anchors in questions:
+            own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
+            if own:
+                self.accepted.append(self.printed(own, reason, self.claimed))
+                self.claimed.update(own)
+        heading = tuple(c for c in self.pending if c.anchor in title)
+        for chunk in self.pending:
+            if chunk.anchor in keys:
+                self.key_anchors.add(chunk.anchor)
+            elif chunk.anchor not in title and (
+                chunk.anchor in contexts or chunk.kind == "heading"
+            ):
+                section = ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
+                self.instructions = (*self.instructions, section)
+            else:
+                continue
+            self.claimed.add(chunk.anchor)
+        if heading and self.title is None:
+            try:
+                text = title_without_answer_key(" ".join(c.text for c in heading))
+            except DomainError:
+                text = ""
+            if text:
+                anchors = tuple(c.anchor for c in heading)
+                self.title = ProducedMetadata(text=text, source_anchors=anchors)
+                self.claimed.update(anchors)
+        self.fail_all_pending(reason)
+
+    def release(self, anchors: frozenset[str]) -> None:
+        """Hand anchors back to the pipeline: this batch no longer owns or reports them."""
+        self.claimable = self.owned - anchors
+        self.accepted = [entry for entry in self.accepted if not anchors.intersection(entry[1])]
+        self.claimed -= anchors
+        for anchor in anchors:
+            self.reasons.pop(anchor, None)
 
     def record(
         self,
@@ -73,7 +217,7 @@ class DocxBuildState:
             {
                 "stage": stage,
                 "code": code,
-                "round": self.round,
+                "batch": self.batch,
                 "item": item,
                 "anchors": anchors,
                 "detail": detail,
@@ -83,8 +227,9 @@ class DocxBuildState:
         logger.warning("DOCX build failure observed", job_id=str(self.job_id), **event.as_json())
 
     def fail_chunks(self, anchors: tuple[str, ...] | set[str], reason: str) -> None:
+        owned = self.owned
         for anchor in anchors:
-            if anchor in self.known_anchors and anchor not in self.claimed:
+            if anchor in owned and anchor not in self.claimed:
                 self.reasons[anchor] = reason
 
     def fail_all_pending(self, reason: str) -> None:
@@ -101,32 +246,61 @@ class DocxBuildState:
         else:
             self.output_complete = False
 
-    def result(self) -> DocxBuildResult:
-        """Every chunk not built or used as metadata/facit becomes a review item.
+    def result(
+        self,
+        governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+        questions: tuple[tuple[str, ...], ...] = (),
+    ) -> DocxBuildResult:
+        """Every chunk not built or used as metadata/facit becomes a review item, except a
+        governing chunk, which becomes its section parent's instruction.
 
-        A printed section total that cannot be split equally leaves its items without
-        points, which blocks export until a teacher sets them.
+        ``governed`` maps each grouping instruction that governs two or more questions to the
+        anchors those questions own; it decides which items the instruction is the parent of.
+        ``questions`` holds each grouped question's own anchors; an instruction holding one
+        stands only where it lands at that question (D42).
+
+        A printed section total gives each question that prints no points of its own a
+        share marked as estimated (D38, D6). A section's points line the split absorbs is
+        metadata, never a review item.
         """
+        points = split_section_totals(
+            self.chunks,
+            tuple(self.accepted),
+            self.instructions,
+            frozenset(chunk.anchor for chunk in self.pending),
+        )
+        accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        for item, anchors in points.accepted:
+            if anchors in points.review_anchors:
+                reason = "Poängen per kryss blir mindre än 0,01. Kontrollera kategoriseringen."
+                self.record("fallback", "invalid_tick_value", anchors=anchors)
+                accepted.append(self.printed(anchors, reason, self.claimed))
+            else:
+                accepted.append((item, anchors))
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
+            if chunk.anchor in points.absorbed:
+                continue
+            if chunk.anchor in governed and chunk.text:
+                # Assembly makes it its section parent's instruction (D40).
+                review_reasons[chunk.anchor] = NO_ITEM_REASON
+                self.record("fallback", "governing_instruction", anchors=(chunk.anchor,))
+                continue
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
-        accepted, unsplit = split_section_totals(
-            self.chunks, tuple(self.accepted), self.instructions, frozenset(review_reasons)
-        )
-        for anchor in unsplit:
-            self.record("fallback", "section_points_unsplit", anchors=(anchor,))
         result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=self.chunks,
-            accepted=accepted,
+            accepted=tuple(accepted),
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,
             instructions=self.instructions,
+            governed=governed,
+            questions=questions,
             events=tuple(self.events),
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,

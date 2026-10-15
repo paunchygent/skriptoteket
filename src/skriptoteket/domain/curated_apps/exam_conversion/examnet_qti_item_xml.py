@@ -1,7 +1,7 @@
-"""QTI 2.1 assessmentItem serialization for Exam.net-oriented packages.
+"""QTI 3.0 qti-assessment-item serialization for Exam.net-oriented packages.
 
 Purpose:
-    Serialize one governed Exam.net QTI item to assessmentItem XML without file
+    Serialize one governed Exam.net QTI item to qti-assessment-item XML without file
     system or service-route concerns. A standalone item is one interaction; a
     parent item is the shared-instruction layout: the instruction at the top of
     the item body, then one interaction per child with its own response, and a
@@ -23,20 +23,26 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
-    MAP_RESPONSE_TEMPLATE,
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
+    append_gap_fill_body,
+    append_images,
+    append_shared_instruction_body,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     QTI_NAMESPACE,
     QTI_SCHEMA_LOCATION,
     XSI_NAMESPACE,
-    append_gap_fill_body,
-    append_images,
+    qti_tag,
+    xsi_tag,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
+    MAP_RESPONSE_TEMPLATE,
+    RESPONSE_IDENTIFIER,
     append_interaction,
     append_response_declaration,
     append_score_outcome,
+    emits_all_or_nothing,
     emits_map_response,
-    normalized_prompt_lines,
-    qti_tag,
-    xsi_tag,
 )
 
 
@@ -50,12 +56,12 @@ def serialize_qti_assessment_item(
     ElementTree.register_namespace("", QTI_NAMESPACE)
     ElementTree.register_namespace("xsi", XSI_NAMESPACE)
     root = ElementTree.Element(
-        qti_tag("assessmentItem"),
+        qti_tag("qti-assessment-item"),
         {
             "identifier": item.item_id,
             "title": item.title,
             "adaptive": "false",
-            "timeDependent": "false",
+            "time-dependent": "false",
             xsi_tag("schemaLocation"): QTI_SCHEMA_LOCATION,
         },
     )
@@ -81,18 +87,21 @@ def _append_standalone_item(
 ) -> None:
     append_response_declaration(root, item)
     append_score_outcome(root, item)
-    item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
+    item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
-        append_gap_fill_body(item_body, item)
-        append_images(item_body, item.image_resources, image_paths)
+        append_gap_fill_body(item_body, item, image_paths)
+        if not item.prompt_paragraphs:
+            append_images(item_body, item.image_resources, image_paths)
     else:
         append_interaction(item_body, item, image_paths)
     if emits_map_response(item):
         ElementTree.SubElement(
             root,
-            qti_tag("responseProcessing"),
+            qti_tag("qti-response-processing"),
             {"template": MAP_RESPONSE_TEMPLATE},
         )
+    elif emits_all_or_nothing(item) and item.max_score is not None:
+        _append_score_sum(root, (), ((RESPONSE_IDENTIFIER, item.max_score),))
 
 
 def _append_parent_item(
@@ -101,30 +110,39 @@ def _append_parent_item(
     image_paths: tuple[str, ...],
 ) -> None:
     children = tuple(_qualified_child(child) for child in parent.children)
-    child_image_paths = _split_image_paths(children, image_paths)
+    stem_image_count = len(parent.image_resources) - sum(
+        len(child.image_resources) for child in children
+    )
+    if stem_image_count < 0:
+        raise ValueError("Parent image pool does not include its child resources.")
+    child_image_paths = _split_image_paths(children, image_paths[stem_image_count:])
     mapped_response_ids: list[str] = []
     for child in children:
         if child.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
             ElementTree.SubElement(
                 root,
-                qti_tag("responseDeclaration"),
+                qti_tag("qti-response-declaration"),
                 {
                     "identifier": _separator_identifier(child),
                     "cardinality": "multiple",
-                    "baseType": "directedPair",
+                    "base-type": "directedPair",
                 },
             )
         mapped_response_ids.extend(
             append_response_declaration(root, child, _response_identifier(child))
         )
     append_score_outcome(root, parent)
-    item_body = ElementTree.SubElement(root, qti_tag("itemBody"))
-    for line in normalized_prompt_lines(parent.instruction_lines):
-        ElementTree.SubElement(item_body, qti_tag("p")).text = line
+    item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
+    append_shared_instruction_body(item_body, parent, image_paths)
     for child, paths in zip(children, child_image_paths, strict=True):
         _append_child_body(item_body, child, paths)
-    if mapped_response_ids:
-        _append_score_sum(root, tuple(mapped_response_ids))
+    all_or_nothing_responses = tuple(
+        (_response_identifier(child), child.max_score)
+        for child in children
+        if emits_all_or_nothing(child) and child.max_score is not None
+    )
+    if mapped_response_ids or all_or_nothing_responses:
+        _append_score_sum(root, tuple(mapped_response_ids), all_or_nothing_responses)
 
 
 def _append_child_body(
@@ -139,21 +157,63 @@ def _append_child_body(
     # every Lucktext child sentence keeps each sentence a sub-question of its own.
     ElementTree.SubElement(
         item_body,
-        qti_tag("gapMatchInteraction"),
-        {"responseIdentifier": _separator_identifier(child)},
+        qti_tag("qti-gap-match-interaction"),
+        {"response-identifier": _separator_identifier(child)},
     )
-    append_gap_fill_body(item_body, child)
-    append_images(item_body, child.image_resources, image_paths)
+    append_gap_fill_body(item_body, child, image_paths)
+    if not child.prompt_paragraphs:
+        append_images(item_body, child.image_resources, image_paths)
 
 
-def _append_score_sum(root: ElementTree.Element, response_ids: tuple[str, ...]) -> None:
-    processing = ElementTree.SubElement(root, qti_tag("responseProcessing"))
+def _append_score_sum(
+    root: ElementTree.Element,
+    response_ids: tuple[str, ...],
+    all_or_nothing_responses: tuple[tuple[str, int | float], ...],
+) -> None:
+    processing = ElementTree.SubElement(root, qti_tag("qti-response-processing"))
     set_score = ElementTree.SubElement(
-        processing, qti_tag("setOutcomeValue"), {"identifier": "SCORE"}
+        processing, qti_tag("qti-set-outcome-value"), {"identifier": "SCORE"}
     )
-    total = ElementTree.SubElement(set_score, qti_tag("sum"))
+    initial = ElementTree.SubElement(set_score, qti_tag("qti-base-value"), {"base-type": "float"})
+    initial.text = "0"
     for response_id in response_ids:
-        ElementTree.SubElement(total, qti_tag("mapResponse"), {"identifier": response_id})
+        _append_mapped_score(processing, response_id)
+    for response_id, points in all_or_nothing_responses:
+        _append_all_or_nothing_score(processing, response_id, points)
+
+
+def _append_mapped_score(processing: ElementTree.Element, response_id: str) -> None:
+    condition = ElementTree.SubElement(processing, qti_tag("qti-response-condition"))
+    response_if = ElementTree.SubElement(condition, qti_tag("qti-response-if"))
+    # Avoid relying on an engine-specific map-response(NULL) result: NULL in a
+    # sum would otherwise erase points already awarded to other children.
+    not_null = ElementTree.SubElement(response_if, qti_tag("qti-not"))
+    is_null = ElementTree.SubElement(not_null, qti_tag("qti-is-null"))
+    ElementTree.SubElement(is_null, qti_tag("qti-variable"), {"identifier": response_id})
+    total = _append_score_addition(response_if)
+    ElementTree.SubElement(total, qti_tag("qti-map-response"), {"identifier": response_id})
+
+
+def _append_all_or_nothing_score(
+    processing: ElementTree.Element, response_id: str, max_score: int | float
+) -> None:
+    condition = ElementTree.SubElement(processing, qti_tag("qti-response-condition"))
+    response_if = ElementTree.SubElement(condition, qti_tag("qti-response-if"))
+    match = ElementTree.SubElement(response_if, qti_tag("qti-match"))
+    ElementTree.SubElement(match, qti_tag("qti-variable"), {"identifier": response_id})
+    ElementTree.SubElement(match, qti_tag("qti-correct"), {"identifier": response_id})
+    total = _append_score_addition(response_if)
+    points = ElementTree.SubElement(total, qti_tag("qti-base-value"), {"base-type": "float"})
+    points.text = str(max_score)
+
+
+def _append_score_addition(response_if: ElementTree.Element) -> ElementTree.Element:
+    set_score = ElementTree.SubElement(
+        response_if, qti_tag("qti-set-outcome-value"), {"identifier": "SCORE"}
+    )
+    total = ElementTree.SubElement(set_score, qti_tag("qti-sum"))
+    ElementTree.SubElement(total, qti_tag("qti-variable"), {"identifier": "SCORE"})
+    return total
 
 
 def _qualified_child(child: ExamNetQtiItem) -> ExamNetQtiItem:

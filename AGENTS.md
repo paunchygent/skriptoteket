@@ -7,6 +7,11 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
 
 ## Repo Invariants
 
+- Skriptoteket is an unreleased, iterative testbed: backward compatibility is
+  never a requirement. Keep no readers, defaults, aliases, fallbacks or dual
+  paths for older data, schemas, payloads, settings or stored client state;
+  change the format and delete the old path. Compatibility applies only where
+  the user states it explicitly for a named app.
 - Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
   use the package-owned `pdm run new-*` scaffolders, and close doc changes with
   `pdm run docs-validate`.
@@ -31,7 +36,7 @@ product workflow, or command-wrapper context.
 | Planning, decomposition, tranche sequencing                                                                | `agent-planning` plus its Skriptoteket reference                                                                      |
 | Next-session or developer handoff messages                                                                 | `agent-session-handoff` plus its Skriptoteket reference                                                               |
 | Backend architecture, FastAPI, UoW, migrations, runner contracts                                           | `.codex/skills/skriptoteket-backend-dev/SKILL.md`                                                                     |
-| Testing strategy, test implementation, test repair, or test-quality audits                                 | `testing` plus `.codex/skills/skriptoteket-testing/SKILL.md` when repo-specific fixtures, migrations, or gates matter |
+| Testing strategy, test implementation, test repair, or test-quality audits                                 | `.codex/skills/skriptoteket-testing/SKILL.md`; `test-qc-runner` for governed QC runs                                  |
 | Local dev, DB setup, dev stack, command wrappers, local logs                                               | `local-devops` plus its Skriptoteket reference                                                                        |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes                                   | `hemma-devops` plus its Skriptoteket reference                                                                        |
 | SPA, curated-app UI, auth continuation, dense workspaces, frontend tests                                   | `integrated-frontend-stack` plus its Skriptoteket reference                                                           |
@@ -49,7 +54,6 @@ copied repo-local skills.
 - `handoff.md`: current-state handoff; keep it under 200 lines.
 - `.codex/long-term-memory/index.md`: durable session-history doorway.
 - `.codex/long-term-memory/entries/`: retained session-history entries.
-- `CLAUDE.md`: Claude specialist memory only.
 
 When compacting `handoff.md`, move durable session history to
 `.codex/long-term-memory/entries/` first.
@@ -86,10 +90,3 @@ Default close-out:
 
 Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
 `docker compose up -d db` should not be stopped unless the user asks.
-
-## Claude Boundary
-
-`CLAUDE.md` is not a second implementation handbook. It is a narrow specialist
-file for Claude UI layout/design review and idiomatic Swedish copy. Keep Codex
-and engineering work routed through this file, skills, rules, runbooks, and
-docs-as-code.

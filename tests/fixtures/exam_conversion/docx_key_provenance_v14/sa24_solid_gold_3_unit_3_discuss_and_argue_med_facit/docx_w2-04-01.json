@@ -1,0 +1,53 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0053"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0052"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "20",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": " ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "aisle"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (a…e) – A passage between rows of seats in a church, theatre, train, etc., or between rows of shelves in a supermarket.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: aisle",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

@@ -5,9 +5,14 @@
  *   Tell the teacher, while editing, which questions would stop a QTI, PDF,
  *   or DOCX export, so invalid states are explained at the question instead
  *   of discovered at export. The server export gate stays authoritative;
- *   this mirrors its reasons and adds the item states the save refuses:
+ *   this mirrors its reasons, including the unbuilt question (an item
+ *   printed from source that the teacher has not marked reviewed; a
+ *   converted item that needs review does not block), and adds the item
+ *   states the save refuses:
  *   a partial gap key, an incomplete matching key, points that are not
- *   greater than zero, and a choice or matching entry without text.
+ *   greater than zero, a choice or matching entry without text, and
+ *   free-text criteria that lack text, carry invalid points, are not the
+ *   item's points, or sit on a non-free-text item.
  *
  * Relationships:
  *   - Mirrors `native_export_blockers` in
@@ -30,11 +35,19 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import {
+  CRITERIA_ON_WRONG_KIND_GUIDANCE,
+  CRITERIA_POINTS_MISMATCH_GUIDANCE,
   EMPTY_CHOICE_TEXT_GUIDANCE,
+  EMPTY_CRITERION_TEXT_GUIDANCE,
   EMPTY_MATCH_TEXT_GUIDANCE,
+  hasCriteriaOnWrongKind,
+  hasCriteriaPointsMismatch,
   hasEmptyChoiceText,
+  hasEmptyCriterionText,
   hasEmptyMatchText,
+  hasInvalidCriterionPoints,
   hasNonPositivePoints,
+  INVALID_CRITERION_POINTS_GUIDANCE,
   NON_POSITIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
@@ -48,25 +61,42 @@ const KEYED_KINDS = new Set<NativeExamItemKind>([
 
 export type ExamWorkspaceReadinessReason =
   | ExamWorkspaceExportBlockerReason
+  | "criteria_on_wrong_kind"
+  | "criteria_points_mismatch"
   | "empty_choice_text"
+  | "empty_criterion_text"
   | "empty_match_text"
   | "incomplete_match_key"
+  | "invalid_criterion_points"
   | "non_positive_points"
   | "partial_gap_key";
 
 const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
   ...EXAM_WORKSPACE_EXPORT_BLOCKER_COPY,
+  criteria_on_wrong_kind: CRITERIA_ON_WRONG_KIND_GUIDANCE,
+  criteria_points_mismatch: CRITERIA_POINTS_MISMATCH_GUIDANCE,
   empty_choice_text: EMPTY_CHOICE_TEXT_GUIDANCE,
+  empty_criterion_text: EMPTY_CRITERION_TEXT_GUIDANCE,
   empty_match_text: EMPTY_MATCH_TEXT_GUIDANCE,
   incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
+  invalid_criterion_points: INVALID_CRITERION_POINTS_GUIDANCE,
   non_positive_points: NON_POSITIVE_POINTS_GUIDANCE,
   partial_gap_key: PARTIAL_GAP_KEY_GUIDANCE,
 };
 
 export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceReadinessReason[] {
   const reasons: ExamWorkspaceReadinessReason[] = [];
-  if (item.review.state === "review_required") {
-    reasons.push("review_required");
+  const source = item.retry_source;
+  const missingPicture = source
+    ? [...source.chunks, ...source.key_chunks, ...source.context_chunks].some(
+      (chunk) => chunk.missing_images.length > 0,
+    )
+    : false;
+  if (
+    item.review.state === "review_required" &&
+    (item.review.parse_origin === "deterministic" || missingPicture)
+  ) {
+    reasons.push("unbuilt_question");
   }
   if (item.answer_key.origin === "machine_proposed") {
     reasons.push("machine_proposed_key_unreviewed");
@@ -91,6 +121,18 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   }
   if (hasEmptyMatchText(item)) {
     reasons.push("empty_match_text");
+  }
+  if (hasEmptyCriterionText(item)) {
+    reasons.push("empty_criterion_text");
+  }
+  if (hasInvalidCriterionPoints(item)) {
+    reasons.push("invalid_criterion_points");
+  }
+  if (hasCriteriaPointsMismatch(item)) {
+    reasons.push("criteria_points_mismatch");
+  }
+  if (hasCriteriaOnWrongKind(item)) {
+    reasons.push("criteria_on_wrong_kind");
   }
   return reasons;
 }

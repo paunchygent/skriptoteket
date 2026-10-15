@@ -29,10 +29,12 @@ def test_host_dev_settings_use_tmp_roots_for_local_storage(monkeypatch) -> None:
         ENVIRONMENT="development",
         ARTIFACTS_ROOT=Path("/var/lib/skriptoteket/artifacts"),
         VAULT_ROOT=Path("/var/lib/skriptoteket/vault"),
+        MEDIA_ROOT=Path("/var/lib/skriptoteket/media"),
     )
 
     assert settings.ARTIFACTS_ROOT == Path("/tmp/skriptoteket/artifacts")
     assert settings.VAULT_ROOT == Path("/tmp/skriptoteket/vault")
+    assert settings.MEDIA_ROOT == Path("/tmp/skriptoteket/media")
 
 
 def test_host_dev_settings_rewrite_container_only_sir_convert_base_url(monkeypatch) -> None:
@@ -57,11 +59,13 @@ def test_container_runtime_keeps_container_paths_and_urls(monkeypatch) -> None:
         ENVIRONMENT="development",
         ARTIFACTS_ROOT=Path("/var/lib/skriptoteket/artifacts"),
         VAULT_ROOT=Path("/var/lib/skriptoteket/vault"),
+        MEDIA_ROOT=Path("/var/lib/skriptoteket/media"),
         SIR_CONVERT_A_LOT_V2_BASE_URL="http://host.docker.internal:8085",
     )
 
     assert settings.ARTIFACTS_ROOT == Path("/var/lib/skriptoteket/artifacts")
     assert settings.VAULT_ROOT == Path("/var/lib/skriptoteket/vault")
+    assert settings.MEDIA_ROOT == Path("/var/lib/skriptoteket/media")
     assert settings.SIR_CONVERT_A_LOT_V2_BASE_URL == "http://host.docker.internal:8085"
 
 
@@ -143,3 +147,10 @@ def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:
     settings = Settings.model_construct(TRUSTED_PROXY_CIDRS="127.0.0.1/32, 10.0.0.0/8,127.0.0.1/32")
 
     assert settings.trusted_proxy_cidrs == frozenset({"127.0.0.1/32", "10.0.0.0/8"})
+
+
+def test_docx_conversion_defaults_to_one_family_per_batch_at_low_effort() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.LLM_DOCX_BATCH_FAMILIES == 1
+    assert settings.LLM_DOCX_CONVERSION_REASONING_EFFORT == "low"

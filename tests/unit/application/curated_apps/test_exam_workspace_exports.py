@@ -15,21 +15,31 @@ from skriptoteket.application.curated_apps.exam_workspace_exports import (
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_test_xml import (
     EXAMNET_QTI_ASSESSMENT_TEST_PATH,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
     NativeExamDocument,
     NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeGap,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (

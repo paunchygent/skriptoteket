@@ -3,14 +3,16 @@
 Purpose:
     Build the fail-closed Exam.net PDF document plan from a native exam
     document by adapting items into source-neutral PDF item semantics and
-    delegating target policy to the existing Exam.net PDF item strategies. A Swedish
-    exam prints the documented Swedish markers; every other exam prints the default ones.
+    delegating target policy to the existing Exam.net PDF item strategies. Matching
+    items print blank category tables with every correct tick marked in a separate key.
+    A Swedish exam prints the documented Swedish markers; every other exam prints the
+    default ones.
 
 Relationships:
     - Consumes `domain.curated_apps.exam_workspace.native_exam_document`.
     - Reuses the neutral types in
       `domain.curated_apps.exam_conversion.exam_pdf_item_semantics`, the
-      default strategy registry in `examnet_pdf_item_strategies`, and the
+      default strategy registry in `examnet_pdf_item_registry`, and the
       document assembly in `digiexam_examnet_pdf_html`.
     - Mirrors the fail-closed coordination of
       `domain.curated_apps.exam_conversion.digiexam_examnet_pdf`.
@@ -19,7 +21,7 @@ Relationships:
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from html import escape
 from types import MappingProxyType
 
@@ -40,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_promp
 )
 from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics import (
     PdfExamAnswerKeySemantics,
+    PdfExamCriterionSemantics,
     PdfExamGapAnswerSemantics,
     PdfExamGapSemantics,
     PdfExamItemKind,
@@ -48,8 +51,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
     PdfExamMatchPairSemantics,
     PdfExamOptionSemantics,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry import (
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
@@ -58,13 +63,20 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
     ExamLanguageLabels,
     exam_language_labels,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
+    NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
 )
 
 NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
@@ -84,6 +96,7 @@ SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
         single_answer_key_label="Rätt svar",
         multiple_answer_key_label="Rätta svar",
         match_key_label="Rätta par",
+        marking_guide_label="Rättningsmall",
     ),
 )
 
@@ -124,13 +137,19 @@ def native_exam_to_pdf_document(
 
     items: list[DigiExamExamNetPdfItemRender] = []
     warnings: list[DigiExamExamNetPdfWarning] = []
+    document_instruction_html = _document_instruction_html(
+        document, asset_paths_by_id=asset_paths_by_id, labels=labels
+    )
     for item in document.items:
         item_render, item_warnings = _render_item(
             item=item,
             asset_paths_by_id=asset_paths_by_id,
             labels=labels,
             context=context,
-            parent_instruction_html=_parent_instruction_html(document, item),
+            document_instruction_html=document_instruction_html,
+            parent_instruction_html=_parent_instruction_html(
+                document, item, asset_paths_by_id=asset_paths_by_id, labels=labels
+            ),
         )
         warnings.extend(item_warnings)
         if item_render is not None:
@@ -152,6 +171,7 @@ def _render_item(
     asset_paths_by_id: Mapping[str, str],
     labels: ExamLanguageLabels,
     context: ExamNetPdfTargetProfileContext,
+    document_instruction_html: str,
     parent_instruction_html: str,
 ) -> tuple[DigiExamExamNetPdfItemRender | None, tuple[DigiExamExamNetPdfWarning, ...]]:
     if item.points is None:
@@ -176,7 +196,7 @@ def _render_item(
     item_semantics = _pdf_item_semantics(
         item=item,
         points=item.points,
-        prompt_html=parent_instruction_html + prompt_html,
+        prompt_html=document_instruction_html + parent_instruction_html + prompt_html,
     )
     strategy_result = DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY.render(
         item=item_semantics,
@@ -198,6 +218,10 @@ def _pdf_item_semantics(
         points=points,
         prompt_html=prompt_html,
         source_item_type_label=item.kind.value,
+        criteria=tuple(
+            PdfExamCriterionSemantics(text=criterion.text, points=criterion.points)
+            for criterion in item.criteria
+        ),
         options=tuple(
             PdfExamOptionSemantics(option_id=_choice_number(choice.choice_id), text=choice.text)
             for choice in item.choices
@@ -229,13 +253,34 @@ def _pdf_item_semantics(
     )
 
 
-def _parent_instruction_html(document: NativeExamDocument, item: NativeExamItem) -> str:
-    """The parent's instruction, printed once with the first child item."""
+def _document_instruction_html(
+    document: NativeExamDocument,
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """The exam-wide shared instruction, printed once with every top-level item."""
+    body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    return f'<div class="document-instruction">{body}</div>' if body else ""
+
+
+def _parent_instruction_html(
+    document: NativeExamDocument,
+    item: NativeExamItem,
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """The parent's instruction, printed once with the first child item.
+
+    Every paragraph keeps its wording and every shared picture at its source place, exactly
+    as an item body does; a missing or invalid picture already blocked the whole export.
+    """
     parent = document.parent_of(item.item_id)
     if parent is None or parent.item_ids[0] != item.item_id:
         return ""
-    lines = "".join(f"<p>{escape(line)}</p>" for line in parent.instruction)
-    return f'<div class="parent-instruction">{lines}</div>'
+    body = _body_html(parent.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    return f'<div class="parent-instruction">{body}</div>'
 
 
 def _prompt_html(
@@ -244,8 +289,18 @@ def _prompt_html(
     asset_paths_by_id: Mapping[str, str],
     labels: ExamLanguageLabels,
 ) -> str:
+    return _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
+
+
+def _body_html(
+    body: Iterable[NativeParagraph],
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamLanguageLabels,
+) -> str:
+    """One native body as HTML: one ``<p>`` per paragraph, pictures inline at their place."""
     paragraphs: list[str] = []
-    for paragraph in item.body:
+    for paragraph in body:
         parts: list[str] = []
         for segment in paragraph.segments:
             if isinstance(segment, NativeTextSegment):

@@ -57,15 +57,15 @@ def test_positive_fractional_free_text_keeps_criterion_scoring() -> None:
     assert item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
     assert item.max_score == 0.25
     assert item.free_text_criterion_points == 0.25
-    mapping = root.find(f".//{{{QTI_NAMESPACE}}}mapping")
+    mapping = root.find(f".//{{{QTI_NAMESPACE}}}qti-mapping")
     assert mapping is not None
-    assert mapping.attrib["upperBound"] == "0.25"
-    entry = mapping.find(f"{{{QTI_NAMESPACE}}}mapEntry")
+    assert mapping.attrib["upper-bound"] == "0.25"
+    entry = mapping.find(f"{{{QTI_NAMESPACE}}}qti-map-entry")
     assert entry is not None
-    assert entry.attrib["mappedValue"] == "0.25"
+    assert entry.attrib["mapped-value"] == "0.25"
 
 
-def test_gap_allocation_preserves_fraction_beyond_whole_cents() -> None:
+def test_gap_allocation_rounds_equal_share_down_to_whole_cents() -> None:
     item = ExamNetQtiItem(
         item_id="item_001",
         sequence=1,
@@ -84,14 +84,14 @@ def test_gap_allocation_preserves_fraction_beyond_whole_cents() -> None:
     )
 
     root = ElementTree.fromstring(serialize_qti_assessment_item(item))
-    mappings = root.findall(f".//{{{QTI_NAMESPACE}}}mapping")
-    allocations = tuple(mapping.attrib["upperBound"] for mapping in mappings)
+    mappings = root.findall(f".//{{{QTI_NAMESPACE}}}qti-mapping")
+    allocations = tuple(mapping.attrib["upper-bound"] for mapping in mappings)
 
-    assert allocations == ("0.042", "0.042", "0.041")
-    assert sum(Decimal(value) for value in allocations) == Decimal("0.125")
+    assert allocations == ("0.04", "0.04", "0.04")
+    assert sum(Decimal(value) for value in allocations) == Decimal("0.12")
     max_score = root.find(
-        f"{{{QTI_NAMESPACE}}}outcomeDeclaration[@identifier='MAXSCORE']/"
-        f"{{{QTI_NAMESPACE}}}defaultValue/{{{QTI_NAMESPACE}}}value"
+        f"{{{QTI_NAMESPACE}}}qti-outcome-declaration[@identifier='MAXSCORE']/"
+        f"{{{QTI_NAMESPACE}}}qti-default-value/{{{QTI_NAMESPACE}}}qti-value"
     )
     assert max_score is not None
     assert max_score.text == "0.125"

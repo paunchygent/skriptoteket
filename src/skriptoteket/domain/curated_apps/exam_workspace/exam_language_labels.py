@@ -13,8 +13,11 @@ from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 
 _WORD = re.compile(r"[^\W\d_]{2,}")
 # A printed label ends in its number or letter, optionally after a word: "Question 4", "a".
@@ -35,14 +38,18 @@ class ExamLanguageLabels:
     answer_key: str = "✓"
     correct_answer: str = ""
     pair: str = ""
+    marking_guide: str = ""
 
     def question_label(self, first: int | str, last: int | str | None = None) -> str:
         numbers = str(first) if last is None or last == first else f"{first}–{last}"
         return f"{self.question} {numbers}".strip()
 
     def item_title(self, item: NativeExamItem) -> str:
-        """The item's own title, else its running number; printed labels title only parents."""
-        return item.title or self.question_label(item.sequence)
+        """The QTI item title: the question label in the exam's language, such as "Fråga 3".
+
+        Exam.net discards the QTI item title, so it carries no question wording.
+        """
+        return self.question_label(item.sequence)
 
     def printed_span(self, first: str, last: str) -> str:
         """The title over children printed first to last, such as "Question 1–7"."""
@@ -94,6 +101,7 @@ _LANGUAGES = (
             answer_key="Facit",
             correct_answer="Rätt svar",
             pair="Par",
+            marking_guide="Rättningsmall",
         ),
     ),
     _Language(
@@ -111,6 +119,7 @@ _LANGUAGES = (
             answer_key="Answer key",
             correct_answer="Correct answer",
             pair="Pair",
+            marking_guide="Marking guide",
         ),
     ),
 )
@@ -120,11 +129,11 @@ NUMBERS_ONLY = ExamLanguageLabels()
 
 def exam_language_labels(document: NativeExamDocument) -> ExamLanguageLabels:
     """The labels of the language whose function words the exam text uses most."""
-    lines = [document.title, *document.instructions]
+    lines = [document.title, *body_text_lines(document.instructions)]
     for parent in document.parents:
-        lines.extend(parent.instruction)
+        lines.extend(body_text_lines(parent.instruction))
     for item in document.items:
-        lines.extend((item.title or "", *item.plain_text_lines()))
+        lines.extend(item.plain_text_lines())
         lines.extend(choice.text for choice in item.choices)
     words = [word.casefold() for line in lines for word in _WORD.findall(line)]
     counts = [sum(word in language.function_words for word in words) for language in _LANGUAGES]

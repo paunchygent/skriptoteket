@@ -23,8 +23,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
 
     await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
 
-    const popover = wrapper.get('[data-test="exam-workspace-gap-popover"]');
-    expect(popover.text()).toContain("Ledtråd: Celsius");
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
     const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]');
     expect((input.element as HTMLInputElement).value).toBe("100");
     expect(document.activeElement).toBe(input.element);
@@ -164,7 +163,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await wrapper.setProps({
       item: {
         ...item,
-        gaps: [item.gaps[0]!, { accepted_values: ["0", "noll"], gap_id: "gap_002", hint: null }],
+        gaps: [item.gaps[0]!, { accepted_values: ["0", "noll"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" }],
       },
     });
 

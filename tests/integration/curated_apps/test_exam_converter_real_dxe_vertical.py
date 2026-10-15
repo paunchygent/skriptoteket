@@ -7,6 +7,7 @@ from datetime import timedelta
 from pathlib import Path
 from uuid import uuid4
 
+import httpx
 import pytest
 from dishka import make_async_container
 from sqlalchemy import select
@@ -37,17 +38,20 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
+    ExamWorkspaceConversionProgress,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_proposal_carry_forward import (
-    CarryExamWorkspaceProposals,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
+    SerializedUnitOfWork,
 )
 from skriptoteket.config import Settings
+from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     item_is_enrichable,
     plan_answer_key_enrichment,
@@ -107,6 +111,7 @@ from skriptoteket.infrastructure.repositories.user_vault_file_repository import 
 from skriptoteket.infrastructure.repositories.user_vault_usage_repository import (
     PostgreSQLUserVaultUsageRepository,
 )
+from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.workers.exam_answer_key_enrichment import (
     process_next_answer_key_enrichment_job,
@@ -130,6 +135,10 @@ pytestmark = [
 _FIXTURE = Path("tests/fixtures/exam_conversion/real_inputs/1776888013-ak7-lag-och-ratt.dxe")
 _FIXTURE_SHA256 = "ab39bbee54ec9004ce733e0942caa3c4934c37f87c7d35d59c9a16eca4f3839a"
 _PARTIAL_FAILURE_CODE = "partial_enrichment_manual_follow_up_required"
+
+
+def _unreachable(request: httpx.Request) -> httpx.Response:
+    raise AssertionError(f"A DXE job reached the DOCX pipeline network: {request.url}")
 
 
 async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
@@ -203,36 +212,48 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
     vault_files = PostgreSQLUserVaultFileRepository(db_session)
     vault_storage = LocalVaultStorage(vault_root=tmp_path / "vault")
     codec = ExamWorkspaceContainerCodec()
+    settings = Settings.model_construct(
+        VAULT_MAX_FILE_BYTES=5_000_000,
+        VAULT_MAX_TOTAL_BYTES=50_000_000,
+        LLM_ANSWER_KEY_ENABLED=True,
+    )
+    store = ExamWorkspaceDocumentStore(
+        vault_files=vault_files,
+        vault_usage=PostgreSQLUserVaultUsageRepository(db_session),
+        vault_storage=vault_storage,
+        uow=uow,
+        clock=clock,
+        settings=settings,
+    )
+    users = PostgreSQLUserRepository(db_session)
+    docx_progress = ExamWorkspaceConversionProgress(
+        jobs=enrichment_jobs,
+        users=users,
+        vault_files=vault_files,
+        store=store,
+        codec=codec,
+        uow=uow,
+        clock=clock,
+        id_generator=ids,
+    )
+    # A DXE source never reaches the DOCX pipeline; its client and provider must stay unused.
+    docx_client = httpx.AsyncClient(transport=httpx.MockTransport(_unreachable))
     docx_handler = ProcessExamWorkspaceDocxJobHandler(
         jobs=enrichment_jobs,
         chunker=PythonDocxExamChunker(),
-        converter=DocxAIConverter(
+        pipeline=build_docx_conversion_pipeline(
+            client=docx_client,
             provider=provider,
-            profile=provider_route().primary,
+            sleeper=AsyncioSleeper(),
             leases=leases,
-            uow=uow,
+            uow=SerializedUnitOfWork(uow),
             clock=clock,
-            enabled=True,
+            settings=settings,
+            progress=docx_progress,
         ),
-        codec=codec,
-        store=ExamWorkspaceDocumentStore(
-            vault_files=vault_files,
-            vault_usage=PostgreSQLUserVaultUsageRepository(db_session),
-            vault_storage=vault_storage,
-            uow=uow,
-            clock=clock,
-            settings=Settings.model_construct(
-                VAULT_MAX_FILE_BYTES=5_000_000,
-                VAULT_MAX_TOTAL_BYTES=50_000_000,
-            ),
-            proposal_carry_forward=CarryExamWorkspaceProposals(
-                enrichment_jobs=enrichment_jobs,
-                proposed_overlays=overlays,
-                clock=clock,
-                id_generator=ids,
-            ),
-        ),
-        users=PostgreSQLUserRepository(db_session),
+        progress=docx_progress,
+        store=store,
+        users=users,
         uow=uow,
         clock=clock,
         id_generator=ids,
@@ -249,9 +270,6 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         uow=uow,
         clock=clock,
         id_generator=ids,
-        vault_files=vault_files,
-        vault_storage=vault_storage,
-        workspace_codec=codec,
         docx_handler=docx_handler,
     )
     worker_container = make_async_container(
@@ -267,6 +285,7 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         )
     finally:
         await worker_container.close()
+        await docx_client.aclose()
     assert processed
     enrichment_job_id = await db_session.scalar(
         select(ExamAnswerKeyEnrichmentJobModel.id).where(

@@ -2,12 +2,12 @@
 
 Purpose:
     Serialize the `imsmanifest.xml` that lists every item resource, its image
-    files and the assessmentTest resource with its item dependencies.
+    files and the `qti-assessment-test` resource with its item dependencies.
 
 Relationships:
     - Used by `domain.examnet_qti_package` when planning package files.
     - Validated by `domain.examnet_qti_validation` against the same IMS CP namespace.
-    - Shares the XSI namespace constant with `domain.examnet_qti_xml`.
+    - Imports the XSI namespace constant from `domain.examnet_qti_terms`.
 """
 
 from __future__ import annotations
@@ -22,11 +22,14 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_tes
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackageFile,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import XSI_NAMESPACE
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
+    XSI_NAMESPACE,
+)
 
-IMSCP_NAMESPACE = "http://www.imsglobal.org/xsd/imscp_v1p1"
+IMSCP_NAMESPACE = "http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
 IMSCP_SCHEMA_LOCATION = (
-    "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd"
+    "http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1 "
+    "https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_imscpv1p2_v1p0.xsd"
 )
 
 
@@ -40,15 +43,15 @@ def serialize_qti_manifest(
     manifest = ElementTree.Element(
         _cp("manifest"),
         {
-            "identifier": "examnet_qti_package",
             _xsi("schemaLocation"): IMSCP_SCHEMA_LOCATION,
+            "identifier": "examnet_qti_package",
         },
     )
     metadata = ElementTree.SubElement(manifest, _cp("metadata"))
     schema = ElementTree.SubElement(metadata, _cp("schema"))
-    schema.text = "QTIv2.1 Package"
+    schema.text = "QTI Package"
     schema_version = ElementTree.SubElement(metadata, _cp("schemaversion"))
-    schema_version.text = "1.0.0"
+    schema_version.text = "3.0.0"
     ElementTree.SubElement(manifest, _cp("organizations"))
     resources = ElementTree.SubElement(manifest, _cp("resources"))
     for item_file in item_files:
@@ -58,7 +61,7 @@ def serialize_qti_manifest(
             _cp("resource"),
             {
                 "identifier": f"res_{item_id}",
-                "type": "imsqti_item_xmlv2p1",
+                "type": "imsqti_item_xmlv3p0",
                 "href": item_file.relative_path,
             },
         )

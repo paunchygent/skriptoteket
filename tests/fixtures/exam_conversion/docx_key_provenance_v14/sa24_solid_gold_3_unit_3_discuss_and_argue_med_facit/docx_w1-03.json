@@ -1,0 +1,720 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0069",
+    "body:0073",
+    "body:0075",
+    "body:0077",
+    "body:0079",
+    "body:0081",
+    "body:0083",
+    "body:0085",
+    "body:0087",
+    "body:0089",
+    "body:0091",
+    "body:0093",
+    "body:0095",
+    "body:0097",
+    "body:0098",
+    "body:0100",
+    "body:0102"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0068"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "28",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She was given an injection to ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "lessen",
+                "lesen"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (l…) the pain. (minska)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: lessen (Also accepted: lesen)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0072"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "30",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "His earnings are said to amount to £300 000 ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "per annum",
+                "per anum"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (p…). (årligen /2 words/)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: per annum (Also accepted: per anum)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0074"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "31",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Several people were injured in ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "skirmishes"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (s…) during the night. (mindre sammandrabbningar)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: skirmishes",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0076"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "32",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "She’s being ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "touted"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (t…) as the next leader of the party. (framhållen vitt och brett)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: touted",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0078"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "33",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Cycling is a totally ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "sustainable"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (s…) form of transport. (hållbar)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: sustainable",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0080"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "34",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "“Harold has been absent from class six times this term, ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "according",
+                "acording"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (a…), to our records,” said the head teacher to his parents. (enligt)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: according (Also accepted: acording)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "35",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Charles has ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "embarked"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (e…) on a new career as a teacher. (gett sig in i)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: embarked",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0084"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "36",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Of all the essential minerals in the human body, ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calcium"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is the most abundant. It helps the body form bones and teeth.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: calcium",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0086"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "37",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Indigestion"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (I…) is pain caused by difficulty in digesting food.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Indigestion",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0088"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "38",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Malnutrition",
+                "mallnutrition"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (M…) is a poor condition of health caused by a lack of food or a lack of the right type of food.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Malnutrition (Also accepted: mallnutrition)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0090"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "39",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The common usage of the word ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diet"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (d…) is a limited variety or amount of food that you eat for medical reasons or because you want to lose weight.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: diet",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0092"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "40",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "calorie",
+                "callorie"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (c…) is a unit of measurement for energy. We use this term to define the amount of energy in the food we eat. They are found in fats, carbohydrates, proteins and alcohol.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: calorie (Also accepted: callorie)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0094"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "41",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Fibre",
+                "fiber"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (F…) is the indigestible part of plants. It helps to keep your gut healthy and prevent constipation.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Fibre (Also accepted: fiber)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0096"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "42",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "balanced"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (b…) ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "diet"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (d…) is enough, but not too much, of the right kinds of food.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: balanced\nCorrect answer: diet",
+      "points": 2,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0099"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "43",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Carbohydrates"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (C…) are one of several substances such as sugar or starch, which provide the body with energy, or foods containing these substances, such as bread, potatoes, pasta and rice.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Carbohydrates",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0101"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "44",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Additives",
+                "aditives"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " (A…) are substances added to food, to preserve or enhance flavours or appearance.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: Additives (Also accepted: aditives)",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

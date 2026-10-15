@@ -1,0 +1,334 @@
+{
+  "title": {
+    "text": "Del 3: Bisatser och komplex meningsbyggnad, 10 poäng",
+    "source_anchors": [
+      "body:0053"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.",
+      "source_anchors": [
+        "body:0054"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0056",
+        "body:0057",
+        "body:0058",
+        "body:0059",
+        "body:0060",
+        "body:0061",
+        "body:0062",
+        "body:0063"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "gap_fill",
+      "printed_label": "Fråga 6",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Jag hörde att brandlarmet ringde klockan två. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att brandlarmet ringde klockan två"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "DO"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Problemet var att läraren stod vid tavlan. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att läraren stod vid tavlan"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "att-sats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Pf"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) När regnet slutade gick klassen ut. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "När regnet slutade"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "tidsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Eleverna viskade eftersom filmen hade börjat. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "eftersom filmen hade börjat"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "orsaksbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "e) Om bussen kommer i tid hinner vi till lektionen. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Om bussen kommer i tid"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "villkorsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "f) Hon satte alarmet för att hon skulle vakna i tid. Bisats: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "för att hon skulle vakna i tid"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Typ: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "avsiktsbisats"
+              ],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": " Satsdel: ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "gap",
+              "text": null,
+              "accepted_values": [
+                "Adv"
+              ],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "a) Jag hörde att brandlarmet ringde klockan två. Bisats: att brandlarmet ringde klockan två Typ: att-sats Satsdel: DO\nb) Problemet var att läraren stod vid tavlan. Bisats: att läraren stod vid tavlan Typ: att-sats Satsdel: Pf\nc) När regnet slutade gick klassen ut. Bisats: När regnet slutade Typ: tidsbisats Satsdel: Adv\nd) Eleverna viskade eftersom filmen hade börjat. Bisats: eftersom filmen hade börjat Typ: orsaksbisats Satsdel: Adv\ne) Om bussen kommer i tid hinner vi till lektionen. Bisats: Om bussen kommer i tid Typ: villkorsbisats Satsdel: Adv\nf) Hon satte alarmet för att hon skulle vakna i tid. Bisats: för att hon skulle vakna i tid Typ: avsiktsbisats Satsdel: Adv\nPoäng: 6 poäng",
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

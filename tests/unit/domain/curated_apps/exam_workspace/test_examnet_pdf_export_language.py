@@ -14,20 +14,28 @@ import pytest
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategies import (
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
     DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
-    NativeExamItemKind,
-    NativeParagraph,
 )
-from tests.unit.scripts.exam_conversion_corpus_support import STEMS, gold_exam, replayed
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
+from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
+    recorded_matching_items,
+)
+from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
 
 _ENGLISH_MARKERS = (
     "Type:",
@@ -61,7 +69,7 @@ def _gold_label_word(stem: str) -> str:
 def _exported() -> tuple[list[_Exported], int]:
     exported: list[_Exported] = []
     skipped = 0
-    for stem in STEMS:
+    for stem in RECORDED_STEMS:
         document, _ = replayed(stem)
         if document.assets:
             skipped += 1
@@ -116,25 +124,35 @@ def test_swedish_choice_item_prints_documented_markers() -> None:
         if exam.language == "sv"
         and any(item.kind is NativeExamItemKind.SINGLE_CHOICE for item in exam.document.items)
     ]
-    if not choice_exams:
-        pytest.skip("no Swedish single-choice exam exported by the corpus")
+    assert choice_exams, "the current corpus must exercise Swedish choice markers"
     for exam in choice_exams:
         assert "Typ: Flerval" in exam.html
         assert "Rätt svar:" in exam.html
 
 
 def test_swedish_matching_item_prints_documented_markers() -> None:
-    matching = [
-        exam
-        for exam in _EXPORTED
-        if exam.language == "sv"
-        and any(item.kind is NativeExamItemKind.MATCHING for item in exam.document.items)
-    ]
-    if not matching:
-        pytest.skip("no Swedish matching exam in the corpus")
-    for exam in matching:
-        assert "Typ: Matcha ihop" in exam.html
-        assert "Rätta par:" in exam.html
+    # The current Swedish corpus has no matching item. Exercise the exporter
+    # deliberately: retain a real recorded matching key in a Swedish document,
+    # with an explicitly synthetic Swedish instruction, rather than skipping.
+    swedish = next(exam for exam in _EXPORTED if exam.language == "sv")
+    recorded = recorded_matching_items(keyed=True)[0]
+    matching = recorded.model_copy(
+        update={
+            "sequence": 1,
+            "body": (
+                NativeParagraph(
+                    segments=(
+                        NativeTextSegment(text="Para ihop varje uttryck med det som är rätt."),
+                    )
+                ),
+            ),
+        }
+    )
+    document = swedish.document.model_copy(update={"items": (matching,), "parents": ()})
+    result = native_exam_to_pdf_document(document)
+    assert result.status is DigiExamExamNetPdfStatus.SUCCESS
+    assert "Typ: Matcha ihop" in result.html
+    assert "Rätta par:" in result.html
 
 
 _PNG = b"\x89PNG\r\n\x1a\nimage-bytes"

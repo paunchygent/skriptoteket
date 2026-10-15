@@ -2,7 +2,7 @@
 
 Purpose:
     Prove choice, gap-fill, free-text, and matching interactions serialize to
-    the expected QTI 2.1 item XML (cardinality, mappings, prompts, scoring),
+    the expected QTI 3.0 item XML (cardinality, mappings, prompts, scoring),
     ported from Sir Convert-a-Lot at revision 41be61a6.
 
 Relationships:
@@ -23,6 +23,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiExamNetProofStatus,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiMatchEntry,
+    ExamNetQtiMatchPair,
     ExamNetQtiTargetSupportStatus,
     ExamNetQtiTextEntryGap,
 )
@@ -54,38 +56,42 @@ def test_choice_packages_encode_single_and_multiple_cardinality(tmp_path: Path) 
     multiple_item = _item_root(multiple / "qti-package.zip")
 
     assert _response_declaration(single_item).attrib["cardinality"] == "single"
-    assert _choice_interaction(single_item).attrib["maxChoices"] == "1"
+    assert _choice_interaction(single_item).attrib["max-choices"] == "1"
     assert _correct_values(single_item) == ["choice_002"]
     assert _response_declaration(multiple_item).attrib["cardinality"] == "multiple"
-    assert _choice_interaction(multiple_item).attrib["maxChoices"] == "3"
+    assert _choice_interaction(multiple_item).attrib["max-choices"] == "3"
     assert _correct_values(multiple_item) == ["choice_001", "choice_002", "choice_004"]
     assert "shuffle" not in _choice_interaction(single_item).attrib
     assert "shuffle" not in _choice_interaction(multiple_item).attrib
     assert _mapping(single_item).attrib == {
-        "defaultValue": "0",
-        "lowerBound": "0",
-        "upperBound": "4",
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "4",
     }
     assert _map_entry_pairs(single_item) == [("choice_002", "4")]
-    assert _mapping(multiple_item).attrib == {
-        "defaultValue": "0",
-        "lowerBound": "0",
-        "upperBound": "4",
-    }
-    assert _map_entry_pairs(multiple_item) == [
-        ("choice_001", "1.34"),
-        ("choice_002", "1.33"),
-        ("choice_004", "1.33"),
-    ]
+    assert multiple_item.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is None
     assert _response_processing_template(single_item) == (
-        "http://www.imsglobal.org/question/qti_v2p1/rptemplates/map_response"
+        "https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"
     )
-    assert _response_processing_template(multiple_item) == MAP_RESPONSE_TEMPLATE
-    assert next(iter(_choice_interaction(single_item))).tag == f"{{{QTI_NAMESPACE}}}prompt"
-    assert (_interaction_prompt(single_item, "choiceInteraction").text or "").startswith(
+    multiple_processing = _response_processing(multiple_item)
+    assert "template" not in multiple_processing.attrib
+    multiple_condition = multiple_processing.find(
+        f"{{{QTI_NAMESPACE}}}qti-response-condition/{{{QTI_NAMESPACE}}}qti-response-if"
+    )
+    assert multiple_condition is not None
+    multiple_match = multiple_condition.find(f"{{{QTI_NAMESPACE}}}qti-match")
+    assert multiple_match is not None
+    multiple_variable = multiple_match.find(f"{{{QTI_NAMESPACE}}}qti-variable")
+    multiple_correct = multiple_match.find(f"{{{QTI_NAMESPACE}}}qti-correct")
+    assert multiple_variable is not None
+    assert multiple_correct is not None
+    assert multiple_variable.attrib["identifier"] == "RESPONSE"
+    assert multiple_correct.attrib["identifier"] == "RESPONSE"
+    assert next(iter(_choice_interaction(single_item))).tag == f"{{{QTI_NAMESPACE}}}qti-prompt"
+    assert (_interaction_prompt(single_item, "qti-choice-interaction").text or "").startswith(
         "Vilket svar kopplar"
     )
-    assert (_interaction_prompt(multiple_item, "choiceInteraction").text or "").startswith(
+    assert (_interaction_prompt(multiple_item, "qti-choice-interaction").text or "").startswith(
         "Vilka drag stärker"
     )
     assert item_body_paragraphs(single_item) == []
@@ -100,22 +106,22 @@ def test_gap_fill_package_encodes_text_entries_and_accepted_values(tmp_path: Pat
 
     response = _response_declaration(item)
     assert response.attrib["identifier"] == "RESPONSE_gap_001"
-    assert response.attrib["baseType"] == "string"
+    assert response.attrib["base-type"] == "string"
     assert response.attrib["cardinality"] == "single"
-    assert item.find(f".//{{{QTI_NAMESPACE}}}textEntryInteraction") is not None
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-text-entry-interaction") is not None
     assert _correct_values(item) == ["ATP"]
-    assert 'mapKey="ATP"' in xml
-    assert 'mapKey="atp"' in xml
+    assert 'map-key="ATP"' in xml
+    assert 'map-key="atp"' in xml
     assert _mapping(item).attrib == {
-        "defaultValue": "0",
-        "lowerBound": "0",
-        "upperBound": "1",
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "1",
     }
     assert [
-        (entry.attrib["mapKey"], entry.attrib["mappedValue"], entry.attrib["caseSensitive"])
+        (entry.attrib["map-key"], entry.attrib["mapped-value"], entry.attrib["case-sensitive"])
         for entry in _map_entries(item)
     ] == [("ATP", "1", "false"), ("atp", "1", "false")]
-    assert item.find(f"{{{QTI_NAMESPACE}}}responseProcessing") is None
+    assert item.find(f"{{{QTI_NAMESPACE}}}qti-response-processing") is None
     assert json_string(report, "target_support_status") == (
         ExamNetQtiTargetSupportStatus.PROOF_GATED
     )
@@ -152,15 +158,15 @@ def test_gap_fill_package_splits_max_score_equally_across_gaps() -> None:
     with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:
         item = ElementTree.fromstring(archive.read("items/item_001.xml"))
 
-    mappings = item.findall(f".//{{{QTI_NAMESPACE}}}mapping")
+    mappings = item.findall(f".//{{{QTI_NAMESPACE}}}qti-mapping")
     assert len(mappings) == 2
     for mapping in mappings:
         assert mapping.attrib == {
-            "defaultValue": "0",
-            "lowerBound": "0",
-            "upperBound": "1.5",
+            "default-value": "0",
+            "lower-bound": "0",
+            "upper-bound": "1.5",
         }
-    assert [entry.attrib["mappedValue"] for entry in _map_entries(item)] == ["1.5", "1.5", "1.5"]
+    assert [entry.attrib["mapped-value"] for entry in _map_entries(item)] == ["1.5", "1.5", "1.5"]
 
 
 def test_export_only_matching_sample_preserves_visible_content_as_manual_free_text(
@@ -171,11 +177,11 @@ def test_export_only_matching_sample_preserves_visible_content_as_manual_free_te
     item = _item_root(sample_dir / "qti-package.zip")
     report = read_report(sample_dir / "qti-validation-report.json")
 
-    assert item.find(f".//{{{QTI_NAMESPACE}}}extendedTextInteraction") is not None
-    assert item.find(f".//{{{QTI_NAMESPACE}}}correctResponse") is None
-    assert item.find(f".//{{{QTI_NAMESPACE}}}mapping") is None
-    assert item.find(f"{{{QTI_NAMESPACE}}}responseProcessing") is None
-    prompt = _interaction_prompt(item, "extendedTextInteraction")
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction") is not None
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-correct-response") is None
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is None
+    assert item.find(f"{{{QTI_NAMESPACE}}}qti-response-processing") is None
+    prompt = _interaction_prompt(item, "qti-extended-text-interaction")
     prompt_lines = [paragraph.text for paragraph in prompt.findall(f"{{{QTI_NAMESPACE}}}p")]
     assert prompt_lines[:2] == [
         "Para ihop varje begrepp med rätt förklaring.",
@@ -192,16 +198,18 @@ def test_free_text_package_uses_extended_text_without_answer_key(tmp_path: Path)
     sample_dir = write_sample(keyed_sample("free-text"), tmp_path)
     item = _item_root(sample_dir / "qti-package.zip")
 
-    assert item.find(f".//{{{QTI_NAMESPACE}}}extendedTextInteraction") is not None
-    assert item.find(f".//{{{QTI_NAMESPACE}}}correctResponse") is None
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction") is not None
+    assert item.find(f".//{{{QTI_NAMESPACE}}}qti-correct-response") is None
     assert _mapping(item).attrib == {
-        "defaultValue": "0",
-        "lowerBound": "0",
-        "upperBound": "9",
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "9",
     }
     assert _map_entry_pairs(item) == [("CRITERION_FULL", "9")]
     assert _response_processing_template(item) == MAP_RESPONSE_TEMPLATE
-    assert "Resonera kring" in (_interaction_prompt(item, "extendedTextInteraction").text or "")
+    assert "Resonera kring" in (
+        _interaction_prompt(item, "qti-extended-text-interaction").text or ""
+    )
     assert item_body_paragraphs(item) == []
 
 
@@ -210,10 +218,16 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
     item = _item_root(sample_dir / "qti-package.zip")
     report = read_report(sample_dir / "qti-validation-report.json")
 
-    match_interaction = item.find(f".//{{{QTI_NAMESPACE}}}matchInteraction")
+    match_interaction = item.find(f".//{{{QTI_NAMESPACE}}}qti-match-interaction")
     assert match_interaction is not None
     assert "shuffle" not in match_interaction.attrib
-    assert _response_declaration(item).attrib["baseType"] == "directedPair"
+    assert match_interaction.attrib["max-associations"] == "16"
+    left_set, right_set = match_interaction.findall(f"{{{QTI_NAMESPACE}}}qti-simple-match-set")
+    assert {choice.attrib["match-max"] for choice in left_set} == {"4"}
+    assert {choice.attrib["match-max"] for choice in right_set} == {"4"}
+    assert not list(item.iter(f"{{{QTI_NAMESPACE}}}qti-associate-interaction"))
+    assert not list(item.iter(f"{{{QTI_NAMESPACE}}}qti-order-interaction"))
+    assert _response_declaration(item).attrib["base-type"] == "directedPair"
     assert _correct_values(item) == [
         "left_001 right_001",
         "left_002 right_002",
@@ -221,9 +235,9 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
         "left_004 right_004",
     ]
     assert _mapping(item).attrib == {
-        "defaultValue": "0",
-        "lowerBound": "0",
-        "upperBound": "4",
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "4",
     }
     assert _map_entry_pairs(item) == [
         ("left_001 right_001", "1"),
@@ -232,8 +246,8 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
         ("left_004 right_004", "1"),
     ]
     assert _response_processing_template(item) == MAP_RESPONSE_TEMPLATE
-    assert next(iter(match_interaction)).tag == f"{{{QTI_NAMESPACE}}}prompt"
-    assert (_interaction_prompt(item, "matchInteraction").text or "").startswith(
+    assert next(iter(match_interaction)).tag == f"{{{QTI_NAMESPACE}}}qti-prompt"
+    assert (_interaction_prompt(item, "qti-match-interaction").text or "").startswith(
         "Para ihop varje cellstruktur"
     )
     assert item_body_paragraphs(item) == []
@@ -243,24 +257,89 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
     assert json_string(report, "examnet_proof_status") == (ExamNetQtiExamNetProofStatus.NOT_PROVEN)
 
 
+def test_many_to_many_grid_maps_every_row_with_columns_free() -> None:
+    plan = build_examnet_qti_package_plan(
+        package_name="kategorisera-grid",
+        items=(
+            ExamNetQtiItem(
+                item_id="item_001",
+                sequence=1,
+                title="Kategorisera",
+                interaction_type=ExamNetQtiInteractionType.MATCHING,
+                prompt_lines=("Sätt varje ord i rätt kategori.",),
+                max_score=1.5,
+                match_pairs=(
+                    ExamNetQtiMatchPair("left_001", "Rött", "right_001", "Färg"),
+                    ExamNetQtiMatchPair("left_001", "Rött", "right_002", "Frukt"),
+                    ExamNetQtiMatchPair("left_002", "Päron", "right_002", "Frukt"),
+                ),
+                match_left=(
+                    ExamNetQtiMatchEntry("left_001", "Rött"),
+                    ExamNetQtiMatchEntry("left_002", "Päron"),
+                ),
+                match_right=(
+                    ExamNetQtiMatchEntry("right_001", "Färg"),
+                    ExamNetQtiMatchEntry("right_002", "Frukt"),
+                    ExamNetQtiMatchEntry("right_003", "Obrukad"),
+                ),
+            ),
+        ),
+    )
+    with zipfile.ZipFile(BytesIO(build_examnet_qti_zip_bytes(plan))) as archive:
+        item = ElementTree.fromstring(archive.read("items/item_001.xml"))
+
+    match_interaction = item.find(f".//{{{QTI_NAMESPACE}}}qti-match-interaction")
+    assert match_interaction is not None
+    assert match_interaction.attrib["max-associations"] == "6"
+    left_set, right_set = match_interaction.findall(f"{{{QTI_NAMESPACE}}}qti-simple-match-set")
+    assert [choice.attrib["match-max"] for choice in left_set] == ["3", "3"]
+    assert [choice.attrib["match-max"] for choice in right_set] == ["2", "2", "2"]
+    assert _correct_values(item) == [
+        "left_001 right_001",
+        "left_001 right_002",
+        "left_002 right_002",
+    ]
+    assert _map_entry_pairs(item) == [
+        ("left_001 right_001", "0.5"),
+        ("left_001 right_002", "0.5"),
+        ("left_002 right_002", "0.5"),
+    ]
+    assert _mapping(item).attrib == {
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "1.5",
+    }
+    outcomes = {
+        outcome.attrib["identifier"]: outcome
+        for outcome in item.iter(f"{{{QTI_NAMESPACE}}}qti-outcome-declaration")
+    }
+    max_value = outcomes["MAXSCORE"].find(f".//{{{QTI_NAMESPACE}}}qti-value")
+    assert max_value is not None
+    assert max_value.text == "1.5"
+
+
 def _item_root(package_path: Path) -> ElementTree.Element:
     return ElementTree.fromstring(_item_xml(package_path).encode("utf-8"))
 
 
 def _item_xml(package_path: Path) -> str:
     with zipfile.ZipFile(package_path) as archive:
-        item_names = sorted(name for name in archive.namelist() if name.startswith("items/"))
+        item_names = sorted(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         return archive.read(item_names[0]).decode("utf-8")
 
 
 def _response_declaration(item: ElementTree.Element) -> ElementTree.Element:
-    declaration = item.find(f"{{{QTI_NAMESPACE}}}responseDeclaration")
+    declaration = item.find(f"{{{QTI_NAMESPACE}}}qti-response-declaration")
     assert declaration is not None
     return declaration
 
 
 def _choice_interaction(item: ElementTree.Element) -> ElementTree.Element:
-    interaction = item.find(f".//{{{QTI_NAMESPACE}}}choiceInteraction")
+    interaction = item.find(f".//{{{QTI_NAMESPACE}}}qti-choice-interaction")
     assert interaction is not None
     return interaction
 
@@ -268,33 +347,39 @@ def _choice_interaction(item: ElementTree.Element) -> ElementTree.Element:
 def _interaction_prompt(item: ElementTree.Element, tag: str) -> ElementTree.Element:
     interaction = item.find(f".//{{{QTI_NAMESPACE}}}{tag}")
     assert interaction is not None
-    prompt = interaction.find(f"{{{QTI_NAMESPACE}}}prompt")
+    prompt = interaction.find(f"{{{QTI_NAMESPACE}}}qti-prompt")
     assert prompt is not None
     return prompt
 
 
 def _mapping(item: ElementTree.Element) -> ElementTree.Element:
-    mapping = item.find(f".//{{{QTI_NAMESPACE}}}mapping")
+    mapping = item.find(f".//{{{QTI_NAMESPACE}}}qti-mapping")
     assert mapping is not None
     return mapping
 
 
 def _map_entries(item: ElementTree.Element) -> list[ElementTree.Element]:
-    return item.findall(f".//{{{QTI_NAMESPACE}}}mapEntry")
+    return item.findall(f".//{{{QTI_NAMESPACE}}}qti-map-entry")
 
 
 def _map_entry_pairs(item: ElementTree.Element) -> list[tuple[str, str]]:
-    return [(entry.attrib["mapKey"], entry.attrib["mappedValue"]) for entry in _map_entries(item)]
+    return [(entry.attrib["map-key"], entry.attrib["mapped-value"]) for entry in _map_entries(item)]
+
+
+def _response_processing(item: ElementTree.Element) -> ElementTree.Element:
+    processing = item.find(f"{{{QTI_NAMESPACE}}}qti-response-processing")
+    assert processing is not None
+    return processing
 
 
 def _response_processing_template(item: ElementTree.Element) -> str:
-    processing = item.find(f"{{{QTI_NAMESPACE}}}responseProcessing")
-    assert processing is not None
-    return processing.attrib["template"]
+    return _response_processing(item).attrib["template"]
 
 
 def _correct_values(item: ElementTree.Element) -> list[str]:
     return [
         value.text or ""
-        for value in item.findall(f".//{{{QTI_NAMESPACE}}}correctResponse/{{{QTI_NAMESPACE}}}value")
+        for value in item.findall(
+            f".//{{{QTI_NAMESPACE}}}qti-correct-response/{{{QTI_NAMESPACE}}}qti-value"
+        )
     ]

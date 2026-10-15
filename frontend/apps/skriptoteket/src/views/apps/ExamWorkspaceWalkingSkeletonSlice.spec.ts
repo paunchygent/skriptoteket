@@ -20,7 +20,11 @@ import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
-import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../api/examWorkspace";
+import type {
+  ExamWorkspaceConversionStatus,
+  ExamWorkspaceDocumentResponse,
+  NativeExamDocument,
+} from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
 import {
   buildResponse,
@@ -32,13 +36,13 @@ import {
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
+  findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceEnrichment: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  requestExamWorkspaceAnswerMisspellings: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
-  startExamWorkspaceEnrichment: vi.fn(),
 }));
 
 vi.mock("../../api/examWorkspace", () => apiMocks);
@@ -52,11 +56,11 @@ function lastSavedDocument(): NativeExamDocument {
   return params.document;
 }
 
-/** The given items as gap items keyed in two gaps, so one gap can be cleared on its own. */
+/** The imported exam with the given items as gap items keyed in two gaps, so one gap can be cleared on its own. */
 function buildTwoGapResponse(
   gapItemIds: string[] = ["item_004"],
 ): ExamWorkspaceDocumentResponse {
-  const response = buildResponse({ version: 1 });
+  const response = buildResponse({ conversion: succeededConversion, version: 1 });
   return {
     ...response,
     document: {
@@ -79,8 +83,8 @@ function buildTwoGapResponse(
                 },
               ],
               gaps: [
-                { accepted_values: ["100"], gap_id: "gap_001", hint: null },
-                { accepted_values: ["0"], gap_id: "gap_002", hint: null },
+                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
+                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
               ],
             }
           : item,
@@ -89,25 +93,27 @@ function buildTwoGapResponse(
   };
 }
 
+/** The finished import: its poll status, and the conversion its fetched document carries. */
+const succeededConversion: ExamWorkspaceConversionStatus = {
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+};
+
 beforeEach(() => {
-  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue({
-    job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
-  });
+  apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  apiMocks.getExamWorkspaceEnrichment.mockReset();
-  apiMocks.getExamWorkspaceEnrichment.mockResolvedValue({
-    document_revision: 1,
-    lineage_id: "lineage-1",
-    proposals: [],
-    state: "not_requested",
-  });
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse({ version: 1 }));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      buildResponse({ conversion: succeededConversion, version: 1 }),
+    );
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
 });
 
@@ -132,18 +138,18 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
   });
 
-  it("marks the workspace as unsaved when the selected item title is edited", async () => {
+  it("marks the workspace as unsaved when the selected item points are edited", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
 
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').text()).toBe("Osparat");
     expect(wrapper.find('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
-      "Helt ny rubrik",
+      "Fråga 2",
     );
   });
 
@@ -151,7 +157,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-add-item"]').trigger("click");
+    await wrapper.find('[data-test="exam-workspace-add-free_text"]').trigger("click");
 
     expect(wrapper.findAll('[data-test^="exam-workspace-item-row-"]')).toHaveLength(9);
     const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
@@ -163,6 +169,34 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
   });
 
+  it("adds a short answer as a Lucktext with one unkeyed gap after the question text", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await wrapper.find('[data-test="exam-workspace-add-short_answer"]').trigger("click");
+
+    const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
+    expect(newRow.text()).toContain("Lucktext");
+    await saveDocument(wrapper);
+
+    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [
+      string,
+      { document: NativeExamDocument; expectedRevision: number },
+    ];
+    const added = params.document.items.find((item) => item.item_id === "item_009")!;
+    expect(added.kind).toBe("gap_fill");
+    expect(added.answer_key.origin).toBe("absent");
+    expect(added.body).toEqual([
+      { segments: [{ kind: "text", text: "Ny fråga" }] },
+      { segments: [{ kind: "gap", gap_id: "gap_001" }] },
+    ]);
+    expect(added.gaps).toEqual([
+      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [] },
+    ]);
+    expect(added.points).toBeNull();
+  });
+
   it("saves with the bumped client-side revision and the previous expected revision", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
@@ -170,8 +204,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
@@ -183,7 +217,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(params.expectedRevision).toBe(1);
     expect(params.document.revision).toBe(2);
     const savedItem = params.document.items.find((item) => item.item_id === "item_002");
-    expect(savedItem?.title).toBe("Helt ny rubrik");
+    expect(savedItem?.points).toBe(5);
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
     expect(wrapper.text()).toContain("Version 2");
   });
@@ -267,7 +301,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   it("refuses to save a gap item keyed in only some gaps and says why in Swedish", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
@@ -292,7 +327,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   it("names every partially keyed gap item in the plural refusal copy", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse(["item_004", "item_005"]));
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
@@ -362,8 +398,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-item-title-input"]')
-      .setValue("Helt ny rubrik");
+      .find('[data-test="exam-workspace-item-points-input"]')
+      .setValue("5");
     await saveDocument(wrapper);
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");

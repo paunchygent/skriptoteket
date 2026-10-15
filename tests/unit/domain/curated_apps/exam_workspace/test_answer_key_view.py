@@ -1,35 +1,59 @@
 """Unit tests for the neutral answer-key item views (TASK-SKRIPT-39-04-01)."""
 
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
-    MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON,
+    AnswerKeyItemProposal,
+    AnswerKeyItemView,
     AnswerKeyViewKind,
     answer_key_item_views,
-    apply_proposal_to_item,
     proposal_from_model_content,
+    suggestion_from_proposal,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeChoice,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
     NativeParagraph,
-    NativeParseOrigin,
     NativeTextSegment,
 )
-from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
+    NativeMatchLeft,
+    NativeMatchRight,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
+    NativeParseOrigin,
+)
 
 pytestmark = pytest.mark.unit
+
+
+def _suggestion(view, proposal: AnswerKeyItemProposal):
+    return suggestion_from_proposal(
+        view=view,
+        proposal=proposal,
+        provider_profile_id="profile",
+        model="model",
+        prompt_template_version="v1",
+    )
 
 
 def _review() -> NativeItemReview:
@@ -51,7 +75,6 @@ def _choice_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        title="Flervalsfråga",
         body=(NativeParagraph(segments=(NativeTextSegment(text="Vilket är huvudordet?"),)),),
         points=1,
         choices=(
@@ -68,7 +91,6 @@ def _gap_item(*, sequence: int, item_id: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.GAP_FILL,
-        title="Lucktext",
         body=(
             NativeParagraph(
                 segments=(
@@ -87,12 +109,31 @@ def _gap_item(*, sequence: int, item_id: str) -> NativeExamItem:
     )
 
 
+def _matching_item(*, sequence: int, item_id: str) -> NativeExamItem:
+    return NativeExamItem(
+        item_id=item_id,
+        sequence=sequence,
+        kind=NativeExamItemKind.MATCHING,
+        body=(NativeParagraph(segments=(NativeTextSegment(text="Kategorisera."),)),),
+        tick_points=Decimal("1"),
+        match_left=(
+            NativeMatchLeft(left_id="left_001", text="hund"),
+            NativeMatchLeft(left_id="left_002", text="katt"),
+        ),
+        match_right=(
+            NativeMatchRight(right_id="right_001", text="däggdjur"),
+            NativeMatchRight(right_id="right_002", text="fåglar"),
+        ),
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
+        review=_review(),
+    )
+
+
 def _free_text_item(*, sequence: int, item_id: str) -> NativeExamItem:
     return NativeExamItem(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        title="Essäfråga",
         body=(NativeParagraph(segments=(NativeTextSegment(text="Resonera."),)),),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=_review(),
@@ -185,40 +226,71 @@ class TestProposalValidation:
         assert proposal_from_model_content(view=view, content={"1": "gap_001", "2": "x"}) is None
 
 
-class TestApplyProposal:
-    def test_choice_proposal_marks_machine_proposed_and_review_required(self) -> None:
+class TestMatchingProposalValidation:
+    def _view(self) -> AnswerKeyItemView:
+        return answer_key_item_views(_document(_matching_item(sequence=1, item_id="item_001")))[0]
+
+    def test_many_to_many_decision_maps_back_to_native_ids(self) -> None:
+        view = self._view()
+        content: dict[str, JsonValue] = {
+            "pairs": [
+                {"left_id": 1, "right_id": 1},
+                {"left_id": 1, "right_id": 2},
+                {"left_id": 2, "right_id": 1},
+            ]
+        }
+
+        proposal = proposal_from_model_content(view=view, content=content)
+
+        assert proposal is not None
+        assert proposal.match_pairs == (
+            ("left_001", "right_001"),
+            ("left_001", "right_002"),
+            ("left_002", "right_001"),
+        )
+
+    @pytest.mark.parametrize(
+        "pairs",
+        [
+            [(1, 1), (1, 2)],
+            [(1, 1), (1, 1), (2, 2)],
+            [(1, 1), (2, 2), (9, 1)],
+            [(1, 1), (2, 2), (1, 9)],
+            [(1, 1)],
+        ],
+        ids=["uncovered_left", "repeated_pair", "unknown_left", "unknown_right", "no_left_two"],
+    )
+    def test_malformed_many_to_many_decisions_are_rejected(
+        self, pairs: list[tuple[int, int]]
+    ) -> None:
+        content: dict[str, JsonValue] = {
+            "pairs": [{"left_id": left, "right_id": right} for left, right in pairs]
+        }
+
+        assert proposal_from_model_content(view=self._view(), content=content) is None
+
+
+class TestSuggestionFromProposal:
+    def test_choice_suggestion_names_native_choice_ids(self) -> None:
         item = _choice_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"correct_alternative_ids": [2]})
         assert proposal is not None
 
-        proposed = apply_proposal_to_item(item, proposal)
+        suggestion = _suggestion(view, proposal)
 
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.answer_key.correct_choice_ids == ("choice_002",)
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert MACHINE_PROPOSED_ANSWER_KEY_REVIEW_REASON in proposed.review.reasons
-        assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
+        assert suggestion.correct_choice_ids == ("choice_002",)
+        assert suggestion.gap_accepted_values == ()
+        assert suggestion.match_pairs == ()
 
-    def test_gap_proposal_fills_accepted_values_per_gap(self) -> None:
+    def test_gap_suggestion_carries_accepted_values_per_gap(self) -> None:
         item = _gap_item(sequence=1, item_id="item_001")
         view = answer_key_item_views(_document(item))[0]
         proposal = proposal_from_model_content(view=view, content={"1": "Maja", "2": "Lund"})
         assert proposal is not None
 
-        proposed = apply_proposal_to_item(item, proposal)
+        suggestion = _suggestion(view, proposal)
 
-        accepted = {gap.gap_id: gap.accepted_values for gap in proposed.gaps}
+        accepted = {entry.gap_id: entry.accepted_values for entry in suggestion.gap_accepted_values}
         assert accepted == {"gap_002": ("Maja",), "gap_001": ("Lund",)}
-        assert proposed.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
-        assert proposed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-
-    def test_proposal_for_another_item_is_rejected(self) -> None:
-        item = _choice_item(sequence=1, item_id="item_001")
-        view = answer_key_item_views(_document(item))[0]
-        proposal = proposal_from_model_content(view=view, content={"correct_alternative_ids": [2]})
-        assert proposal is not None
-        other = _choice_item(sequence=1, item_id="item_002")
-
-        with pytest.raises(DomainError):
-            apply_proposal_to_item(other, proposal)
+        assert suggestion.correct_choice_ids == ()

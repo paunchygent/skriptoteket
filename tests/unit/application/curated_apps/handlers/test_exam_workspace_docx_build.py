@@ -1,388 +1,367 @@
-"""Whole-exam build replayed from the recorded live provider rounds."""
+"""The type-batched DOCX pipeline replayed from every exam's live recordings.
 
-import io
+Each test builds the production pipeline with ``build_docx_conversion_pipeline`` over the
+recordings in ``docx_key_provenance_v14/<exam>/`` and the corpus DOCX, then challenges
+admission and provenance contracts, not exact equality with the gold exam.
+"""
+
 import json
-import re
-import zipfile
-from datetime import UTC, datetime
-from pathlib import Path
-from unittest.mock import AsyncMock, Mock
-from uuid import uuid4
+from dataclasses import replace
 
 import pytest
+from pydantic import JsonValue
 
-from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
-from skriptoteket.application.curated_apps.exam_workspace_exports import (
-    build_native_examnet_qti_package,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import DocxAIConverter
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
-    admit_batch,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
-    build_round_request,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    StructuredLLMEndpointKind,
-    StructuredLLMProviderProfile,
-    StructuredLLMResponse,
-    StructuredLLMUsage,
+    StructuredLLMBackendFailureCode,
+    StructuredLLMProviderError,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseState,
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import question_families
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import manifest_from_output
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    points_line,
+    title_without_answer_key,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildResult
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamDocument,
-    NativeExamItemKind,
-    NativeItemReviewState,
-    NativeTextSegment,
-    native_export_blockers,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeParseOrigin,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
-    exam_workspace_docx_chunker,
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    RECORDINGS,
+    MissingRecording,
+    ReplayProvider,
+    build_replay,
+    corpus_chunks,
+    recorded_exams,
+    recording,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
-    ExamNetQtiPackageWriter,
-)
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
-)
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
-_NOW = datetime(2026, 10, 10, 18, tzinfo=UTC)
+_QUIZ = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 
 
-def ports():
-    provider = AsyncMock(spec=AnswerKeyStructuredProviderProtocol)
-    leases = AsyncMock(spec=AnswerKeyTokenLeaseRepositoryProtocol)
-    leases.reserve.return_value = AnswerKeyTokenLease(
-        lease_id=uuid4(),
-        utc_day=_NOW.date(),
-        reserved_tokens=20000,
-        state=AnswerKeyTokenLeaseState.RESERVED,
-    )
-    uow = AsyncMock(spec=UnitOfWorkProtocol)
-    clock = Mock(spec=ClockProtocol)
-    clock.now.return_value = _NOW
-    primary = StructuredLLMProviderProfile(
-        "primary", "model", StructuredLLMEndpointKind.RESPONSES, True, 128000, 4096
-    )
-    converter = DocxAIConverter(provider, primary, leases, uow, clock, True)
-    return converter, provider
+def _object(node: JsonValue) -> dict[str, JsonValue]:
+    assert isinstance(node, dict)
+    return node
 
 
-async def test_recorded_quiz_builds_all_items_and_exports_qti():
-    exam = "chapter_4_poetry_and_lyrics_quiz_med_facit"
-    result, chunks = await _replay(exam, *_v7_rounds(exam))
-    items = result.document.items
-    assert result.document.title == (
-        "Chapter 4: Poetry and Lyrics — Vocabulary and Terminology Quiz — answer key"
-    )
-    assert len(items) == len(_gold(exam)) == 28
-    assert sum(item.points or 0 for item in items) == 28
-    assert [item.kind.value for item in items] == [g.kind for g in _gold(exam)]
-    assert all(i.review.state is NativeItemReviewState.REVIEW_COMPLETE for i in items)
-    assert native_export_blockers(result.document) == ()
-    package, report = build_native_examnet_qti_package(
-        result.document, package_name="probe", qti_writer=ExamNetQtiPackageWriter()
-    )
-    assert json.loads(report)["package_status"] == "passed"
-    with zipfile.ZipFile(io.BytesIO(package)) as archive:
-        assert "imsmanifest.xml" in archive.namelist()
-    _assert_no_facit(result, chunks, exam, *_v7_rounds(exam))
+def _list(node: JsonValue) -> list[JsonValue]:
+    assert isinstance(node, list)
+    return node
 
 
-_FIXTURES = Path("tests/fixtures/exam_conversion")
+def _words(text: str) -> str:
+    return " ".join(text.split())
 
 
-def _recorded(name: str) -> StructuredLLMResponse:
-    return StructuredLLMResponse(
-        json.loads((_FIXTURES / name).read_text()), "completed", StructuredLLMUsage()
-    )
+async def _convert(exam: str, **options):
+    replay = build_replay(exam, **options)
+    return replay, await replay.pipeline.convert(job=replay.job())
 
 
-async def _replay(exam: str, *responses: str) -> tuple[DocxBuildResult, list[DocxChunk]]:
-    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
-        content=(_FIXTURES / f"docx_corpus/{exam}.docx").read_bytes()
-    )
-    converter, provider = ports()
-    provider.complete_structured.side_effect = [_recorded(name) for name in responses]
-    result = await converter.convert(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename=f"{exam}.docx",
-        source_sha256="a" * 64,
-        chunks=chunks,
-    )
-    assert provider.complete_structured.await_count == len(responses)
-    return result, list(chunks)
+def _manifest(exam: str):
+    return manifest_from_output(recording(exam, "docx_grouping_1"), corpus_chunks(exam))
 
 
-def _student_texts(document: NativeExamDocument) -> list[str]:
-    texts = [document.title, *document.instructions]
-    for item in document.items:
-        texts.extend(t for t in (item.title,) if t)
-        texts.extend(
-            segment.text
-            for paragraph in item.body
-            for segment in paragraph.segments
-            if isinstance(segment, NativeTextSegment)
-        )
-        texts.extend(choice.text for choice in item.choices)
-        texts.extend(gap.hint for gap in item.gaps if gap.hint)
-    return [" ".join(text.split()) for text in texts]
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exam: str):
+    replay, outcome = await _convert(exam)
+    update = outcome.update
+    document = update.document
+    grouped = [q.question_id for q in _manifest(exam).questions]
 
-
-def _v7_rounds(exam: str) -> tuple[str, ...]:
-    """The prompt v7 live recording rounds of one corpus exam, in order."""
-    return tuple(
-        str(path.relative_to(_FIXTURES))
-        for path in sorted((_FIXTURES / "docx_build_v7" / exam).glob("round*.json"))
-    )
-
-
-def _gold(exam: str) -> tuple[GoldItem, ...]:
-    path = _FIXTURES / f"docx_corpus/gold/{exam}.json"
-    questions: tuple[GoldItem, ...] = GoldExam.model_validate_json(path.read_bytes()).questions
-    return questions
-
-
-def _inline_facit(exam: str) -> set[str]:
-    """Gold blank preceded by its source word, filled with the gold answer: 'lek R'."""
-    leaks: set[str] = set()
-    for item in _gold(exam):
-        parts = item.prompt.split("[___]")
-        for before, gap in zip(parts, item.gaps, strict=False):
-            words = before.split()
-            if words:
-                leaks.update(f"{words[-1]} {value}" for value in gap.accepted_values)
-    return leaks
-
-
-def _assert_no_facit(
-    result: DocxBuildResult, chunks: list[DocxChunk], exam: str, *responses: str
-) -> None:
-    """Neither the model's answer-key chunks nor gold inline answers reach student text."""
-    key_anchors = {
-        anchor
-        for name in responses
-        for anchor in json.loads((_FIXTURES / name).read_text())["answer_key_anchors"]
+    assert list(update.item_ids) == grouped
+    assert update.pending == ()
+    assert set(update.filled) == set(grouped)
+    assert all(update.item_ids[qid] for qid in grouped), "a grouped question lost all its items"
+    mapped = [item_id for ids in update.item_ids.values() for item_id in ids]
+    mapped += update.extra_item_ids
+    assert sorted(mapped) == sorted(item.item_id for item in document.items)
+    anchors = [item.source_anchor for item in document.items]
+    assert len(set(anchors)) == len(anchors), "a chunk anchor starts two items"
+    position = {chunk.anchor: index for index, chunk in enumerate(corpus_chunks(exam))}
+    assert [position[a or ""] for a in anchors] == sorted(position[a or ""] for a in anchors)
+    assert replay.progress.calls[0] == "outline"
+    assert replay.progress.calls.count("batch_ready") == len(replay.progress.updates)
+    request_ids = [request_id for request_id, _ in replay.provider.served]
+    assert len(request_ids) == len(set(request_ids)), "a request id was served twice"
+    served = [name for _, name in replay.provider.served]
+    assert len(served) == len(set(served)), "a producer reply was replayed twice"
+    assert set(served) == {
+        path.stem
+        for path in (RECORDINGS / exam).glob("*.json")
+        if not path.stem.startswith("decisions_")
     }
-    key_texts = {" ".join(c.text.split()) for c in chunks if c.anchor in key_anchors}
-    student = _student_texts(result.document)
-    leaked = sorted(
-        {fact for fact in key_texts | _inline_facit(exam) for text in student if fact in text}
+
+
+@pytest.mark.parametrize("wave", ["docx_w1-", "docx_w2-"])
+async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wave: str, tmp_path):
+    """Isolate one unmodified reply to challenge both converter waves' replay boundary."""
+    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+        StructuredLLMEndpointKind,
+        StructuredLLMProviderProfile,
     )
-    assert key_texts
-    assert leaked == []
 
-
-_ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
-
-
-def _assert_review_events_carry_reasons(result: DocxBuildResult) -> list[str]:
-    """Each model review yields one event whose detail is the review item's own reason."""
-    reviews = [e for e in result.events if e.code == "model_review"]
-    reviewed = {
-        i.source_anchor: i.review.reasons
-        for i in result.document.items
-        if i.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    }
-    assert len(reviews) == len(reviewed)
-    for event in reviews:
-        assert event.detail.startswith("AI-tolkningen markerade frågan för granskning: ")
-        assert reviewed[event.anchors[0]] == (event.detail,)
-    return [e.detail for e in reviews]
-
-
-def _assert_no_italic_tags(document: NativeExamDocument) -> None:
-    """The <i> source marks the model reads never reach student text or answer values."""
-    values = [v for item in document.items for gap in item.gaps for v in gap.accepted_values]
-    texts = _student_texts(document) + values
-    assert not [text for text in texts if "<i>" in text or "</i>" in text]
-
-
-async def test_recorded_english_matching_items_keep_their_lists_and_gold_pairs():
-    exam = _ENGLISH
-    result, chunks = await _replay(exam, *_v7_rounds(exam))
-    items = result.document.items
-    gold = _gold(exam)
-    assert len(items) == len(gold) == 53
-    matching = [n for n, i in enumerate(items) if i.kind is NativeExamItemKind.MATCHING]
-    assert matching == [n for n, g in enumerate(gold) if g.kind == "matching"]
-    assert matching
-    for n in matching:
-        item = items[n]
-        assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
-        left = {entry.left_id: entry.text for entry in item.match_left}
-        right = {entry.right_id: entry.text for entry in item.match_right}
-        pairs = {(left[p.left_id], right[p.right_id]) for p in item.answer_key.match_pairs}
-        assert pairs == {(pair.left, pair.right) for pair in gold[n].pairs}
-    assert native_export_blockers(result.document) == ()
-    _assert_no_facit(result, chunks, exam, *_v7_rounds(exam))
-    _assert_no_italic_tags(result.document)
-
-
-async def test_recorded_english_vocabulary_section_is_one_parent_of_its_gap_fill_items():
-    result, chunks = await _replay(_ENGLISH, *_v7_rounds(_ENGLISH))
-    document = result.document
-    wording = next(c.text for c in chunks if c.anchor == "body:0006")
-
-    parent = document.parents[0]
-    assert parent.parent_id == "parent_001"
-    assert parent.instruction == (wording,)
-    children = [document.item_by_id(item_id) for item_id in parent.item_ids]
-    assert children == list(document.items[:24])
-    assert {c.kind for c in children} == {NativeExamItemKind.GAP_FILL}
-    assert wording not in document.instructions
-    assert not any(wording in " ".join(c.plain_text_lines()) for c in children)
-    assert native_export_blockers(document) == ()
-
-
-_COURSE_EXAM = "svenska_2_kursavslutande_prov_med_facit"
-
-
-def _assert_course_exam_order(result: DocxBuildResult, chunks: list[DocxChunk]) -> None:
-    items = result.document.items
-    gold = _gold(_COURSE_EXAM)
-    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    item_positions = [positions[i.source_anchor or ""] for i in items]
-    assert len(items) == len(gold) == 24
-    assert item_positions == sorted(item_positions)
-    titled = [(n, i.title) for n, i in enumerate(items) if i.title]
-    assert titled
-    for n, title in titled:
-        assert not title.startswith(gold[n].source_label)
-
-
-def _admitted(exam: str, recording: str) -> DocxBuildState:
-    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
-        content=(_FIXTURES / f"docx_corpus/{exam}.docx").read_bytes()
-    )
-    state = DocxBuildState(uuid4(), uuid4(), f"{exam}.docx", "a" * 64, chunks)
-    admit_batch(json.loads((_FIXTURES / recording).read_text()), state)
-    return state
-
-
-_COURSE_V2 = "svenska_2_kursavslutande_prov_docx_build_response_v2.json"
-
-
-def test_recorded_course_exam_review_outcomes_stay_one_item_per_question():
-    state = _admitted(_COURSE_EXAM, _COURSE_V2)
-    reviewed = [
-        (anchors, item)
-        for item, anchors in state.accepted
-        if item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    ]
-    assert [anchors[0] for anchors, _ in reviewed] == [
-        "body:0061",
-        "body:0067",
-        "body:0073",
-        "body:0079",
-        "body:0085",
-    ]
-    assert [item.title.split(".")[0] for _, item in reviewed if item.title] == [
-        f"Fråga {k}" for k in range(16, 21)
-    ]
-    prefix = "AI-tolkningen markerade frågan för granskning: "
-    assert [e.detail for e in state.events if e.code == "model_review"] == [
-        *[f"{prefix}Uppgiftens svarssätt framgår inte av källtexten."] * 4,
-        f"{prefix}Uppgiften saknar instruktion om hur påståendena ska besvaras.",
-    ]
-    assert all(item.review.reasons for _, item in reviewed)
-
-
-def test_recorded_course_exam_items_keeping_their_printed_number_are_rejected_and_stay_pending():
-    state = _admitted(_COURSE_EXAM, _COURSE_V2)
-    kept = ("body:0093", "body:0099", "body:0105", "body:0111")
-    accepted = {anchors[0] for _, anchors in state.accepted}
-    pending = {chunk.anchor for chunk in state.pending}
-
-    assert accepted.isdisjoint(kept)
-    assert set(kept) <= pending
-    rejected = [e for e in state.events if e.code == "source_rule" and e.anchors[0] in kept]
-    assert [e.anchors[0] for e in rejected] == list(kept)
-    for event in rejected:
-        assert f"question number that {event.anchors[0]} prints" in event.detail
-        assert event.anchors[0] in state.reasons
-
-
-@pytest.mark.parametrize("version", ["docx_build_v6", "docx_build_v7"])
-async def test_recorded_course_exam_contract_keeps_one_item_per_question(version: str):
-    result, chunks = await _replay(_COURSE_EXAM, f"{version}/{_COURSE_EXAM}/round1.json")
-    _assert_course_exam_order(result, chunks)
-
-
-async def test_course_exam_round_request_shows_teacher_italics_to_the_model():
-    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
-        content=(_FIXTURES / f"docx_corpus/{_COURSE_EXAM}.docx").read_bytes()
-    )
+    exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
+    replay, _ = await _convert(exam)
+    request = next(r for r in replay.provider.requests if r.item_id.startswith(wave))
+    name = replay.provider.recording_ids[request.item_id]
+    directory = tmp_path / exam
+    directory.mkdir()
+    (directory / f"{name}.json").write_bytes((RECORDINGS / exam / f"{name}.json").read_bytes())
+    provider = ReplayProvider(exam, root=tmp_path)
     profile = StructuredLLMProviderProfile(
-        "primary", "model", StructuredLLMEndpointKind.RESPONSES, True, 128000, 4096
+        "replay", "replay", StructuredLLMEndpointKind.RESPONSES, False, 4096, 1024
     )
-    request = build_round_request(
-        job_id=uuid4(),
-        round_number=1,
-        pending=chunks,
-        answer_key=(),
-        failures=(),
-        profile=profile,
+    invisible = replace(
+        request,
+        user_payload=json.dumps({"chunks": [{"anchor": "body:9999"}], "context_chunks": []}),
     )
-    sent = {c["anchor"]: c["text"] for c in json.loads(request.user_payload)["chunks"]}
-    assert set(sent) == {c.anchor for c in chunks}
-    assert "satsadverbialet <i>före</i> det finita verbet" in sent["body:0086"]
-    assert request.prompt_template_version == "docx_exam_build_v9"
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=invisible, profile=profile)
+    assert provider.served == []
+
+    context_only = replace(
+        request,
+        user_payload=json.dumps(
+            {
+                "chunks": [{"anchor": "body:9999"}],
+                "context_chunks": json.loads(request.user_payload)["chunks"],
+            }
+        ),
+    )
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=context_only, profile=profile)
+    assert provider.served == []
+
+    response = await provider.complete_structured(request=request, profile=profile)
+    assert response.content == recording(exam, name)
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await provider.complete_structured(request=request, profile=profile)
+    assert provider.served == [(request.item_id, name)]
 
 
-async def test_recorded_course_exam_keeps_inline_facit_out_of_student_text():
-    responses = _v7_rounds(_COURSE_EXAM)
-    result, chunks = await _replay(_COURSE_EXAM, *responses)
-    _assert_no_facit(result, chunks, _COURSE_EXAM, *responses)
-    _assert_no_italic_tags(result.document)
-    for n in range(15, 20):
-        item, gold = result.document.items[n], _gold(_COURSE_EXAM)[n]
-        body = " ".join(
-            " ".join(segment.text.split())
-            for paragraph in item.body
-            for segment in paragraph.segments
-            if isinstance(segment, NativeTextSegment)
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
+    replay, outcome = await _convert(exam)
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+
+    origins = {
+        "copied": "source_provided",
+        "interpreted": "ai_interpreted",
+        "invented": "machine_proposed",
+        None: "absent",
+    }
+    produced = {}
+    for request in replay.provider.requests:
+        # A type_conflict resend has no recording; the replay fails it and admission keeps the
+        # question's source review item, which no producer item backs.
+        if not request.item_id.startswith("docx_w") or (
+            request.item_id not in replay.provider.recording_ids
+        ):
+            continue
+        for raw in _list(recording(exam, replay.provider.recording_ids[request.item_id])["items"]):
+            node = _object(raw)
+            if node["outcome"] == "converted":
+                # Admission rejects invalid producer items; only native LLM items below
+                # must have a valid current producer counterpart.
+                produced[str(_list(node["source_anchors"])[0])] = node
+    admitted = [
+        i
+        for i in outcome.result.document.items
+        if i.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    ]
+    assert admitted
+    for item in admitted:
+        assert item.source_anchor is not None
+        producer = ProducedItem.model_validate(produced[item.source_anchor])
+        expected = (
+            "not_applicable" if producer.kind.value == "free_text" else origins[producer.key_source]
         )
-        assert item.kind.value == gold.kind == "gap_fill"
-        # D13: beside gold's short form, a gap accepts only the term the item's text defines.
-        defined = set(re.findall(r"= (\w+)", body))
-        for native_gap, gold_gap in zip(item.gaps, gold.gaps, strict=True):
-            assert set(gold_gap.accepted_values) <= set(native_gap.accepted_values)
-            assert set(native_gap.accepted_values) - set(gold_gap.accepted_values) <= defined
-        for line in gold.prompt.split("\n")[1:]:
-            for fragment in line.split("[___]"):
-                assert " ".join(fragment.split()) in body
+        assert item.answer_key.origin.value == expected
+        assert item.facit_text == producer.facit_text
 
 
-def test_empty_model_text_segments_change_no_item_in_the_recorded_course_exam():
-    """The first live eval run crashed on a review item carrying a text segment with text ""."""
-    content = json.loads((_FIXTURES / _COURSE_V2).read_text())
-    empty: dict[str, object] = {"kind": "text", "text": "", "accepted_values": [], "hint": None}
-    items = content["items"]
-    assert [items[n]["outcome"] for n in (0, 15)] == ["converted", "review"]
-    items[0]["body"][0]["segments"].append(empty)
-    items[0]["body"].append({"segments": [empty]})
-    items[15]["body"][0]["segments"].insert(0, empty)
-    items[15]["body"].append({"segments": [empty]})
-    chunks = exam_workspace_docx_chunker.PythonDocxExamChunker().chunk(
-        content=(_FIXTURES / f"docx_corpus/{_COURSE_EXAM}.docx").read_bytes()
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_automatic_spellings_obey_distance_disjointness_and_quota(exam: str):
+    from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
+        filter_answer_spelling_candidates,
+        is_allowed_answer_spelling_variant,
+        normalize_answer,
     )
-    mutated = DocxBuildState(uuid4(), uuid4(), f"{_COURSE_EXAM}.docx", "a" * 64, chunks)
-    admit_batch(content, mutated)
-    recorded = _admitted(_COURSE_EXAM, _COURSE_V2)
-    assert [item for item, _ in mutated.accepted] == [item for item, _ in recorded.accepted]
-    assert [e.code for e in mutated.events] == [e.code for e in recorded.events]
+
+    _, outcome = await _convert(exam)
+    gaps = [gap for item in outcome.result.document.items for gap in item.gaps]
+    for gap in gaps:
+        assert set(map(normalize_answer, gap.accepted_values)).isdisjoint(
+            map(normalize_answer, gap.automatic_values)
+        )
+        assert (
+            filter_answer_spelling_candidates(gap.accepted_values, gap.automatic_values)
+            == gap.automatic_values
+        )
+        for candidate in gap.automatic_values:
+            assert any(
+                is_allowed_answer_spelling_variant(
+                    answer, candidate, other_gold_answers=gap.accepted_values
+                )
+                for answer in gap.accepted_values
+            )
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_grouping_title_anchors_name_source_text_without_the_facit_label(exam: str):
+    _, outcome = await _convert(exam)
+    manifest = _manifest(exam)
+    text = {chunk.anchor: chunk.text for chunk in corpus_chunks(exam)}
+    assert manifest.title_anchors
+    expected = title_without_answer_key(_words(" ".join(text[a] for a in manifest.title_anchors)))
+    title = _words(outcome.result.document.title)
+    assert title == expected
+    assert title
+    assert "med facit" not in title.casefold()
+    assert "answer key" not in title.casefold()
+
+
+def _unplaced_points_lines(exam: str):
+    manifest = _manifest(exam)
+    placed = {
+        *(a for q in manifest.questions for a in (*q.anchors, *q.key_anchors)),
+        *(c.anchor for c in manifest.contexts),
+    }
+    chunks = corpus_chunks(exam)
+    position = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    first = {q.question_id: position[q.anchors[0]] for q in manifest.questions}
+    found = []
+    for chunk in chunks:
+        if chunk.anchor in placed or not points_line(chunk.text):
+            continue
+        before = [qid for qid, at in first.items() if at <= position[chunk.anchor]]
+        if before:
+            found.append((chunk, before[-1]))
+    return manifest, found
+
+
+@pytest.mark.parametrize("exam", [e for e in recorded_exams() if "grammatik" in e])
+async def test_an_unplaced_points_line_belongs_to_the_question_before_it(exam: str):
+    manifest, found = _unplaced_points_lines(exam)
+    families = {f.question_id: f for f in question_families(manifest, corpus_chunks(exam))}
+    assert found
+    for chunk, previous in found:
+        owners = [qid for qid, family in families.items() if chunk.anchor in family.claims]
+        assert owners == [previous], f"{chunk.anchor} {chunk.text!r}"
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_each_batch_schema_names_only_its_own_anchors_and_kinds_without_ref_siblings(
+    exam: str,
+):
+    replay, _ = await _convert(exam)
+    batches = [r for r in replay.provider.requests if r.item_id.startswith("docx_w")]
+    assert batches
+    for request in batches:
+        payload = json.loads(request.user_payload)
+        own = {c["anchor"] for c in payload["chunks"]}
+        schema = _object(request.output_spec.json_schema)
+        defs = _object(schema["$defs"])
+        assert request.output_spec.schema_version == "docx_exam_build_v14"
+        item_schema = _object(defs["ProducedItem"])
+        assert {"key_source", "facit_text"} <= set(_list(item_schema["required"]))
+        segment_schema = _object(defs["ProducedSegment"])
+        shapes = (
+            [_object(shape) for shape in _list(segment_schema["anyOf"])]
+            if "anyOf" in segment_schema
+            else [segment_schema]
+        )
+        assert all("spelling_candidates" not in _list(shape["required"]) for shape in shapes)
+        lists = [
+            _object(_object(schema["properties"])["answer_key_anchors"]),
+            _object(_object(_object(defs["ProducedItem"])["properties"])["source_anchors"]),
+            _object(_object(_object(defs["ProducedMetadata"])["properties"])["source_anchors"]),
+        ]
+        for node in lists:
+            assert set(_list(_object(node["items"])["enum"])) == own, request.item_id
+        kind = _object(_object(_object(defs["ProducedItem"])["properties"])["kind"])
+        assert kind["enum"] == payload["item_kinds"], request.item_id
+        assert not _ref_with_siblings(schema), request.item_id
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_recorded_source_classes_agree_with_the_manually_audited_facit(exam: str):
+    """The live audit found explicit answer words/letters, not invented or inferred keys.
+
+    Inline Swedish answer slots were checked against the DOCX italic runs. This
+    explicit expectation must be re-audited, not inferred from a model's own label.
+    Free-text marking guides have no objective-key provenance.
+    """
+    paths = sorted((RECORDINGS / exam).glob("docx_w*.json"))
+    assert paths
+    for path in paths:
+        for raw in _list(recording(exam, path.stem)["items"]):
+            node = _object(raw)
+            expected = None if node["kind"] == "free_text" else "copied"
+            assert node["key_source"] == expected, (exam, path.name, node["source_anchors"])
+            if expected == "copied":
+                assert isinstance(node["facit_text"], str) and node["facit_text"].strip()
+
+
+def _ref_with_siblings(node: JsonValue, path: str = "$") -> list[str]:
+    """Schema nodes holding ``$ref`` beside another keyword; strict mode rejects them."""
+    if isinstance(node, list):
+        return [
+            p for i, entry in enumerate(node) for p in _ref_with_siblings(entry, f"{path}[{i}]")
+        ]
+    if not isinstance(node, dict):
+        return []
+    found = [path] if "$ref" in node and len(node) > 1 else []
+    for key, value in node.items():
+        if key in {"properties", "$defs"}:
+            for name, child in _object(value).items():
+                found += _ref_with_siblings(child, f"{path}.{key}.{name}")
+        else:
+            found += _ref_with_siblings(value, f"{path}.{key}")
+    return found
+
+
+async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_items():
+    failing = "docx_w1-02"
+    error = StructuredLLMProviderError(
+        failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
+        message="boom",
+        provider_id="openai-gpt-6-luna",
+        status_code=400,
+    )
+    replay, outcome = await _convert(_QUIZ, failures={failing: error})
+    request = next(r for r in replay.provider.requests if r.item_id == failing)
+    lost = {c["anchor"]: c["text"] for c in json.loads(request.user_payload)["chunks"]}
+    assert lost
+    document = outcome.update.document
+    chunk_text = {c.anchor: c.text for c in corpus_chunks(_QUIZ)}
+
+    lost_items = [i for i in document.items if i.source_anchor in lost]
+    assert lost_items
+    for item in lost_items:
+        assert item.review.parse_origin is not NativeParseOrigin.LLM_PARSED
+        assert item.review.reasons
+    shown = _words(" ".join(line for i in lost_items for line in i.plain_text_lines()))
+    for anchor, text in lost.items():
+        assert _words(chunk_text[anchor]) in shown, f"{anchor} lost its source text"
+    others = [i for i in document.items if i.source_anchor not in lost]
+    assert others
+    assert all(i.review.parse_origin is NativeParseOrigin.LLM_PARSED for i in others)
+    assert any(
+        e.code == StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR.value
+        for e in outcome.result.events
+    )
+    assert outcome.update.pending == ()
+
+
+@pytest.mark.parametrize("exam", recorded_exams())
+async def test_questions_one_context_governs_share_one_parent_whatever_their_kinds(exam: str):
+    _, outcome = await _convert(exam)
+    update = outcome.update
+    assert not [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"]
+    for context in _manifest(exam).contexts:
+        governed = [q for q in context.governs if update.item_ids.get(q)]
+        parents = {update.parent_ids.get(q) for q in governed}
+        if len(governed) >= 2:
+            assert len(parents) == 1 and None not in parents, context.anchor
