@@ -118,6 +118,10 @@ Planned order; each task is scaffolded and contracted before work starts.
    body; one gap_fill/free_text definition; Exam.net imports the result.
 9. `TASK-SKRIPT-39-05-11` (done 2026-10-15): the labeling feasibility report
    scores its converter baseline from the committed v14 batch recordings.
+10. `TASK-SKRIPT-39-05-13` (done 2026-10-16): the DOCX build prompt is a
+   shared core plus one section per item kind; a chunk the grouping lists as
+   a question's facit is its answer key unless the item holds it; batches hold
+   16 question families (307/316 items match gold vs 298/316 at 1).
 
 ## Verification
 

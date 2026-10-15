@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-16'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-16'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed the task on 2026-10-16 ("close task") without an independent review. Merged 5d878505 and pushed. Live corpus replay 307/316 items match gold at 16 families per batch (D6) vs 298/316 at 1, 0 facit leaks. Staging walk at 5d878505: Svenska 2 kursavslutande prov converted to 24 items, all review_complete, 36 points; QTI export 200; Exam.net import 5339992 showed no facit. Records in Skriptoteket session 01a141b5-f55d-747d-8515-1e07d2fc0d0f evidence/live-run-{2,3,4}/ and evidence/staging-walk/walk.md.'
 task_kind: story
 acceptance_criteria:
   - The DOCX build prompt is a shared core plus one section per item kind, sent only for the kinds in the batch, stated as general principles with positive phrasing and short constructed examples; a live run of every corpus exam resolves the six ST-SKRIPT-39-05 model-quality findings without new regressions, and a staging walk imports one converted exam into Exam.net.

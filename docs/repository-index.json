@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e4dc0f5fbffd69465b3a2227d0541718f5ae3bcda7662d38e7b39f294bc35e3c",
+  "source_set_digest": "380f349cc536c3e1bad2c8e3ae96c2b632639c34d7d9869ced386d75535077fa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5189,7 +5189,7 @@
       "type": "task",
       "title": "Item-type conversion prompts built from general principles",
       "path": "docs/backlog/tasks/task-skript-39-05-13-item-type-conversion-prompts-built-from-general-principles.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5200,7 +5200,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-16",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed the task on 2026-10-16 (\"close task\") without an independent review. Merged 5d878505 and pushed. Live corpus replay 307/316 items match gold at 16 families per batch (D6) vs 298/316 at 1, 0 facit leaks. Staging walk at 5d878505: Svenska 2 kursavslutande prov converted to 24 items, all review_complete, 36 points; QTI export 200; Exam.net import 5339992 showed no facit. Records in Skriptoteket session 01a141b5-f55d-747d-8515-1e07d2fc0d0f evidence/live-run-{2,3,4}/ and evidence/staging-walk/walk.md."
       }
     },
     {
