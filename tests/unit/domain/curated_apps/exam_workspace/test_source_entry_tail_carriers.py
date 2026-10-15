@@ -179,3 +179,105 @@ def test_literal_quoted_answer_label_after_a_sentence_stays_in_content():
     result = native_item(_produced(chunks), chunks=chunks, language="en")
     assert body_plain_text(result.choices[1].body) == "blue\n" + literal
     assert result.facit_text is None
+
+
+def test_answer_tail_after_a_quote_closed_before_the_entry_anchor():
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", 'A. red B. Say "blue" aloud.\nSvar: blue', marked=True),
+    )
+    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        'Say "blue" aloud.',
+    ]
+    assert result.facit_text is None
+
+
+def test_exact_choice_with_a_literal_label_still_excludes_the_source_tail():
+    wording = 'Explain "answer key:" in context.'
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk(
+            "body:0002",
+            "A. red B. " + wording + "\nFollow the safety note.\nSvar: blue",
+            marked=True,
+        ),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": wording, "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        wording + "\nFollow the safety note.",
+    ]
+    assert result.facit_text is None
+
+
+def test_rewritten_choice_with_a_label_still_excludes_the_source_tail():
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue\nUse cold water. Answer key: blue", marked=True),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": "azure Answer key: blue", "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        "blue\nUse cold water.",
+    ]
+    assert result.facit_text is None
+
+
+def test_mathematical_point_expression_survives_entry_reconstruction():
+    wording = "Calculate (2 p) times q."
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. " + wording, marked=True),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": wording, "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
+    assert all(
+        segment.marks == ("bold",)
+        for paragraph in result.choices[1].body
+        for segment in paragraph.segments
+    )
+
+
+def test_quoted_point_label_survives_entry_reconstruction():
+    wording = 'Explain the notation "(2 p)" in context.'
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. " + wording, marked=True),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": wording, "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
+    assert all(
+        segment.marks == ("bold",)
+        for paragraph in result.choices[1].body
+        for segment in paragraph.segments
+    )

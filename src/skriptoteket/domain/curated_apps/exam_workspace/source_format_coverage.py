@@ -10,7 +10,6 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
@@ -19,6 +18,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
 )
 
 _LABEL_SEPARATORS = ".:;-–—"
+
 _ORDINAL_FAMILIES = ("upper", "lower", "decimal", "roman_upper", "roman_lower")
 _ROMAN_NUMERALS = (
     (1000, "M"),
@@ -199,9 +199,11 @@ def complete_source_formatting(
             heading_chunk_paragraphs.update(
                 offset + paragraph.offset for paragraph in chunk.paragraphs
             )
-        for match in POINT_LABEL.finditer(chunk.text):
-            covered.update(range(offset + match.start(), offset + match.end()))
         offset += len(chunk.text)
+    # Classification uses complete source context, including quotations that
+    # cross paragraph/chunk boundaries, just like carrier exclusion/rebuild.
+    for start, end in body_source.point_spans:
+        covered.update(range(start, end))
     if body_source.label_span is not None:
         covered.update(range(*body_source.label_span))
     missing = [

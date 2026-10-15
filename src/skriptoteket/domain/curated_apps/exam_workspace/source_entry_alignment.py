@@ -6,14 +6,19 @@ global optimum and needs no search. Ambiguous allocations use ordered dynamic
 programming; at equal evidence and preference only the earliest ending slot
 can matter, because it leaves every later suffix available. This dominance
 rule removes redundant occurrence transitions without capping or discarding
-supported source text. Unlabelled exact occurrences use the same assignment.
+supported source text. Unlabelled exact copying first tries a streaming walk:
+when it copies every entry it certifies the global optimum without enumerating
+occurrences. Uncertified cases retain the complete joint assignment.
 """
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     NativeSourceEntry,
     entry_label_end,
@@ -44,12 +49,28 @@ def entry_unit_bounds(source: SourceFormatting, start: int) -> tuple[int, int]:
     )
 
 
+def entry_literal_mask(text: str) -> tuple[bool, ...]:
+    """Quoted text and point notation cannot supply a printed entry ordinal.
+
+    In particular, the ``p)`` in ``(2 p)`` is a unit or an operand, not the
+    sixteenth alphabetic entry. Both interpretations of point notation share
+    this property, independently of whether it is a score annotation.
+    """
+    mask = list(quoted_mask(text))
+    for match in POINT_LABEL.finditer(text):
+        mask[match.start() : match.end()] = [True] * (match.end() - match.start())
+    return tuple(mask)
+
+
 def entry_label_start(
     source: SourceFormatting, unit_start: int, anchor_start: int, ordinal: int
 ) -> int | None:
     """The closest structural ordinal label before the anchor, if one exists."""
     found: int | None = None
+    quotes = entry_literal_mask(source.text)
     for candidate in range(unit_start, anchor_start):
+        if quotes[candidate]:
+            continue
         if candidate > unit_start and not source.text[candidate - 1].isspace():
             continue
         if entry_label_end(source.text[candidate:anchor_start], ordinal) is not None:
@@ -62,7 +83,10 @@ def entry_unit_labels(
 ) -> tuple[tuple[int, int], ...]:
     """Every structural ordinal label in the unit, with the size it spans."""
     labels: list[tuple[int, int]] = []
+    quotes = entry_literal_mask(source.text)
     for candidate in range(unit_start, unit_end):
+        if quotes[candidate]:
+            continue
         if candidate > unit_start and not source.text[candidate - 1].isspace():
             continue
         size = entry_label_end(source.text[candidate:unit_end], ordinal)
@@ -130,6 +154,53 @@ def exact_candidates(
         )
         at = source.normalized.find(wanted, at + 1)
     return tuple(result)
+
+
+def exact_sequence(
+    sources: list[SourceFormatting],
+    texts: tuple[tuple[str, ...], ...],
+    blocked: tuple[tuple[int, int], ...],
+) -> dict[tuple[int, int], EntryCandidate] | None:
+    """Certify a complete unlabelled exact allocation without expanding occurrences.
+
+    The earliest ending next entry leaves the largest possible suffix. When
+    this walk copies every entry, it attains the global upper bound (all exact,
+    no label preferences). Otherwise the caller runs the complete joint solver;
+    failure here neither removes an alternative nor changes output policy.
+    """
+    folded = {text: _folded(text) for surface in texts for text in surface}
+    ordinals = [0] * len(texts)
+    result: dict[tuple[int, int], EntryCandidate] = {}
+    end = 0
+    while any(ordinal < len(surface) for ordinal, surface in zip(ordinals, texts, strict=True)):
+        options: list[EntryCandidate] = []
+        for index, surface in enumerate(texts):
+            ordinal = ordinals[index]
+            if ordinal >= len(surface):
+                continue
+            source = sources[index]
+            wanted = folded[surface[ordinal]]
+            at = (
+                source.normalized.find(wanted, bisect_left(source.positions, end)) if wanted else -1
+            )
+            while at >= 0:
+                start = source.positions[at]
+                stop = source.positions[at + len(wanted) - 1] + 1
+                unit_start, unit_end = entry_unit_bounds(source, start)
+                candidate = EntryCandidate(
+                    index, ordinal + 1, start, stop, unit_start, unit_end, None, 2
+                )
+                if not _blocked(candidate, blocked):
+                    options.append(candidate)
+                    break
+                at = source.normalized.find(wanted, at + 1)
+        if not options:
+            return None
+        candidate = min(options, key=lambda c: (c.end, c.start, c.surface_index))
+        result[candidate.surface_index, candidate.ordinal] = candidate
+        ordinals[candidate.surface_index] += 1
+        end = candidate.end
+    return result
 
 
 @dataclass(frozen=True)
@@ -210,6 +281,58 @@ def assign_candidates(
         last_ordinal[candidate.surface_index] = candidate.ordinal
     if len(anchored) == sum(entry_counts) and disjoint:
         return {(c.surface_index, c.ordinal): c for c in anchored}
+    # An earliest-ending full allocation is also optimal when every selected
+    # candidate attains its entry's independent score upper bound. This is a
+    # certificate, not a greedy approximation: if it fails we retain every
+    # alternative for the joint solver. Duplicate unlabelled wording is the
+    # common case where all occurrence ranks are equal.
+    remaining = {
+        key: sorted(options, key=lambda c: (c.end, c.start)) for key, options in by_entry.items()
+    }
+    ranks = {
+        key: max((c.label_start is not None, c.evidence, -c.preference) for c in options)
+        for key, options in remaining.items()
+    }
+    selected: dict[tuple[int, int], EntryCandidate] = {}
+    end = 0
+    ordinals = [1] * len(entry_counts)
+    while remaining:
+        next_candidates: list[EntryCandidate] = []
+        for index, count in enumerate(entry_counts):
+            while ordinals[index] <= count and (index, ordinals[index]) not in remaining:
+                ordinals[index] += 1
+            key = (index, ordinals[index])
+            if key not in remaining:
+                continue
+            rank = ranks[key]
+            next_candidate = next(
+                (
+                    c
+                    for c in remaining[key]
+                    if c.start >= end
+                    and (c.label_start is not None, c.evidence, -c.preference) == rank
+                ),
+                None,
+            )
+            if next_candidate is not None:
+                next_candidates.append(next_candidate)
+        if not next_candidates:
+            break
+        candidate = min(next_candidates, key=lambda c: (c.end, c.start, c.surface_index))
+        key = (candidate.surface_index, candidate.ordinal)
+        selected[key] = candidate
+        del remaining[key]
+        end = candidate.end
+    if not remaining:
+        return selected
+    return _search_candidates(entry_counts, by_entry)
+
+
+def _search_candidates(
+    entry_counts: tuple[int, ...],
+    by_entry: dict[tuple[int, int], list[EntryCandidate]],
+) -> dict[tuple[int, int], EntryCandidate]:
+    """Resolve allocations whose score optimum needs joint search."""
     surfaces = len(entry_counts)
     memo: dict[tuple[tuple[int, ...], int], tuple[_Score, tuple[EntryCandidate, ...]]] = {}
 

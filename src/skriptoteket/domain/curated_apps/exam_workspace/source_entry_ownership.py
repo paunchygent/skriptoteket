@@ -7,24 +7,20 @@ entry's characters, and reconstructing one entry may not mark another entry's
 wording as covered.
 
 The partition is computed once for all surfaces before any wording is
-projected. Printed labels establish disjoint source slots first, independently
-of exact or rewritten model wording. Remaining unlabelled exact occurrences
-are assigned jointly, and rewrite alignment excludes every established slot
-and exact anchor. A wholly rewritten labelled entry therefore keeps its own
-span, never a whole candidate paragraph or another entry's character evidence. An owner
-ends where the next owner's span starts, so the paragraphs between two owners
-belong to the earlier owner as continuation; the last owner reaches the source
-end or the next body or picture anchor. Without wording evidence or a unique
-structural label an entry owns nothing and keeps the model's text.
+projected. Printed labels establish disjoint source slots independently of
+model wording. The residual entries share one ordered token-interval allocation,
+including exact and rewritten neighbours. A complete earliest-ending exact walk
+certifies the ordinary copy path without expanding duplicate occurrences. If
+rewrites remain, whole-token edit evidence scores all residual source intervals
+before the joint allocator chooses disjoint owners. An owner ends where the next
+owner starts; intervening paragraphs belong to the earlier owner's continuation.
+The final owner stops at source end or the next body or picture anchor.
 """
 
 from __future__ import annotations
 
-import re
-from bisect import bisect_left
-from collections import Counter
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -34,22 +30,19 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment import (
     EntryCandidate,
     assign_candidates,
-    entry_label_start,
-    entry_unit_bounds,
-    entry_unit_labels,
     exact_candidates,
+    exact_sequence,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import labelled_slots
-from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
-    align_paragraph,
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import (
+    exact_token_score,
+    token_candidates,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
 )
-
-_WORD = re.compile(r"\w+")
 
 
 @dataclass(frozen=True)
@@ -122,21 +115,6 @@ def produced_entry_body(text: str) -> tuple[NativeParagraph, ...]:
 
 
 @dataclass(frozen=True)
-class _Evidence:
-    """What a probe found for one produced wording.
-
-    ``anchor_start``/``anchor_end`` are aligned wording evidence, ``(-1, -1)``
-    when alignment represented nothing. ``seed_start`` orders and labels the
-    owner; a structural seed starts at its unit and carries no wording anchor.
-    """
-
-    anchor_start: int
-    anchor_end: int
-    seed_start: int
-    structural: bool
-
-
-@dataclass(frozen=True)
 class _Planned:
     surface_index: int
     ordinal: int
@@ -148,83 +126,6 @@ class _Planned:
     unit_start: int
     unit_end: int
     reference_end: int
-
-
-def _word_overlap(text: str, candidate: str) -> int:
-    words = Counter(_WORD.findall(text.casefold()))
-    return sum((words & Counter(_WORD.findall(candidate.casefold()))).values())
-
-
-def _cursor_at(source: SourceFormatting, offset: int) -> int:
-    return bisect_left(source.positions, offset)
-
-
-def _alignment_evidence(source: SourceFormatting, text: str, ordinal: int) -> _Evidence | None:
-    """Aligned evidence for a wording with no exact occurrence left to claim.
-
-    Alignment against the best-scoring source paragraph anchors the characters
-    it represents; a lost alignment still anchors them for a rebuild. A tie is
-    settled by the entry's own ordinal label in the candidate's unit, then by
-    a plain paragraph; a zero-evidence alignment yields a structural seed at
-    its candidate unit, never a whole-paragraph wording anchor. A remaining
-    tie or a weak ambiguous rebuild leaves the model's wording.
-    """
-    position = (
-        source.positions[source.cursor]
-        if source.cursor < len(source.positions)
-        else len(source.text)
-    )
-    candidates = [
-        paragraph for paragraph in source.available_paragraphs if paragraph.end > position
-    ]
-    scored = [(_word_overlap(text, source.text[p.start : p.end]), p) for p in candidates]
-    if not scored:
-        return None
-    best = max(score for score, _ in scored)
-    winners = [paragraph for score, paragraph in scored if score == best]
-    if len(winners) != 1:
-        labelled = [
-            paragraph
-            for paragraph in winners
-            if entry_unit_labels(source, *entry_unit_bounds(source, paragraph.start), ordinal)
-        ]
-        if len(labelled) == 1:
-            winners = labelled
-        else:
-            plain = [paragraph for paragraph in winners if paragraph.heading is None]
-            winners = plain or winners
-        if len(winners) != 1:
-            if any(any(source.marks[p.start : p.end]) or p.heading is not None for p in winners):
-                raise FormattingTransferError("ambiguous source reconstruction")
-            return None
-    winner = winners[0]
-    unit_start, unit_end = entry_unit_bounds(source, winner.start)
-    positional = bool(entry_unit_labels(source, unit_start, unit_end, ordinal))
-    _projected, lost, represented = align_paragraph(
-        produced_entry_body(text)[0],
-        source.text[winner.start : winner.end],
-        source.marks[winner.start : winner.end],
-        winner.heading,
-        {},
-        source.ignored,
-    )
-    if lost and best < 2 and len(candidates) != 1 and not positional:
-        raise FormattingTransferError("ambiguous source reconstruction")
-    if represented:
-        start = min(represented) + winner.start
-        end = max(represented) + winner.start + 1
-        # Character equality can begin in the middle of a source word. It is
-        # evidence for that word, never an ownership edge through its letters.
-        while start > winner.start and (
-            source.text[start - 1].isalnum() or source.text[start - 1] == "_"
-        ):
-            start -= 1
-        while end < winner.end and (source.text[end].isalnum() or source.text[end] == "_"):
-            end += 1
-        source.cursor = _cursor_at(source, end)
-        return _Evidence(start, end, start, False)
-    source.cursor = _cursor_at(source, winner.end)
-    return _Evidence(-1, -1, winner.start, True)
 
 
 def _heading_chunk_paragraphs(chunks: tuple[DocxChunk, ...]) -> frozenset[int]:
@@ -311,8 +212,8 @@ def plan_entry_ownership(
     """Assign every entry surface's characters to exactly one entry.
 
     The caller's surfaces keep their projection state for the apply step.
-    Shared printed-label slots are allocated first, unlabelled exact anchors
-    second, and only the remaining source is available to rewrite alignment.
+    Shared printed-label slots are allocated first. Residual exact and rewritten
+    entries then compete in one allocation, never in independent alignments.
     """
     surface_list = tuple(surfaces)
     probes = [
@@ -358,67 +259,46 @@ def plan_entry_ownership(
         for s in surface_list
     ]
     candidates: list[EntryCandidate] = []
-    for index, surface in enumerate(surface_list):
-        for ordinal, text in enumerate(surface.texts, start=1):
-            if (index, ordinal) not in labelled:
-                candidates.extend(
-                    exact_candidates(probes[index], surface.sequence, index, ordinal, text)
-                )
+    pending = {
+        (index, ordinal): text
+        for index, surface in enumerate(surface_list)
+        for ordinal, text in enumerate(surface.texts, start=1)
+        if (index, ordinal) not in labelled
+    }
     entry_counts = tuple(len(surface.texts) for surface in surface_list)
-    exact = assign_candidates(
-        entry_counts,
-        candidates,
-        blocked=(*body_spans, *carriers, *reserved_slots),
+    blocked = (*body_spans, *carriers, *reserved_slots)
+    assigned = (
+        exact_sequence(probes, tuple(s.texts for s in surface_list), blocked)
+        if not labelled
+        else None
     )
-    # Every exact entry participates before any unmatched entry is aligned.
-    # Its wording cannot be incidental character evidence for another owner.
-    exact_ranges = tuple((candidate.start, candidate.end) for candidate in exact.values())
-    probes = [
-        SourceFormatting(
-            chunks,
-            ignored=s.source.ignored,
-            excluded=(*s.source.excluded, *reserved_slots, *exact_ranges),
-        )
-        for s in surface_list
-    ]
-    unowned: list[tuple[int, int]] = []
-    for index, surface in enumerate(surface_list):
-        probe = probes[index]
-        cursor = 0
-        for ordinal, text in enumerate(surface.texts, start=1):
-            if (index, ordinal) in labelled:
-                continue
-            candidate = exact.get((index, ordinal))
-            if candidate is not None:
-                planned.append(_planned_from_candidate(candidate, probe))
-                cursor = _cursor_at(probe, candidate.end)
-                continue
-            probe.cursor = cursor
-            evidence = _alignment_evidence(probe, text, ordinal)
-            cursor = probe.cursor
-            if evidence is None:
-                unowned.append((index, ordinal))
-                continue
-            if evidence.structural:
-                unowned.append((index, ordinal))
-                continue
-            unit_start, unit_end = entry_unit_bounds(probe, evidence.seed_start)
-            planned.append(
-                _Planned(
-                    surface_index=index,
-                    ordinal=ordinal,
-                    start=evidence.seed_start,
-                    anchor_start=evidence.anchor_start,
-                    anchor_end=evidence.anchor_end,
-                    exact=False,
-                    label_start=entry_label_start(
-                        probe, unit_start, evidence.anchor_start, ordinal
-                    ),
-                    unit_start=unit_start,
-                    unit_end=unit_end,
-                    reference_end=evidence.anchor_end,
+    if assigned is None:
+        for (index, ordinal), text in pending.items():
+            candidates.extend(
+                replace(c, evidence=exact_token_score(text))
+                for c in exact_candidates(
+                    probes[index], surface_list[index].sequence, index, ordinal, text
                 )
             )
+        assigned = assign_candidates(entry_counts, candidates, blocked=blocked)
+    else:
+        candidates.extend(assigned.values())
+    exact_spans = {(c.surface_index, c.ordinal, c.start, c.end) for c in candidates}
+    if len(assigned) < len(pending):
+        # Jointly score every residual interval, including exact neighbours.
+        # No entry is projected while another entry can still change its edge.
+        for (index, ordinal), text in pending.items():
+            candidates.extend(token_candidates(probes[index], index, ordinal, text, blocked))
+        assigned = assign_candidates(entry_counts, candidates, blocked=blocked)
+    unowned = [key for key in pending if key not in assigned]
+    for (index, ordinal), candidate in assigned.items():
+        plan = _planned_from_candidate(candidate, probes[index])
+        planned.append(
+            replace(
+                plan,
+                exact=(index, ordinal, candidate.start, candidate.end) in exact_spans,
+            )
+        )
     ordered = sorted(planned, key=lambda plan: (plan.start, plan.surface_index, plan.ordinal))
     seen_units: set[tuple[int, int]] = set()
     owners: list[EntryOwner] = []

@@ -16,15 +16,15 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    POINT_LABEL,
-    points_line,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import points_line
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeSegment,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import (
+    point_annotation_spans,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
     ANSWER_LABEL,
@@ -111,6 +111,7 @@ class SourceFormatting:
         self.marks = marks
         self.paragraphs = paragraphs
         self.excluded = excluded
+        self.point_spans = point_annotation_spans(self.text)
         self.available_paragraphs = [
             SourceParagraph(start, end, heading)
             for start, end, heading in paragraph_intervals(
@@ -430,9 +431,10 @@ class SourceFormatting:
     def _rebuilt_text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
         result: list[NativeTextSegment] = []
         cursor = start
-        for match in POINT_LABEL.finditer(self.text[start:end]):
-            result.extend(self.text_segments(cursor, start + match.start()))
-            cursor = start + match.end()
+        for span_start, span_end in self.point_spans:
+            if start <= span_start and span_end <= end:
+                result.extend(self.text_segments(cursor, span_start))
+                cursor = span_end
         result.extend(self.text_segments(cursor, end))
         return tuple(result)
 
@@ -451,7 +453,8 @@ class SourceFormatting:
         result: list[NativeParagraph] = []
         for paragraph in self.available_paragraphs:
             text = self.text[paragraph.start : paragraph.end]
-            if points_line(text):
+            annotated = any(paragraph.start <= pos < paragraph.end for pos, _ in self.point_spans)
+            if points_line(text) and annotated:
                 continue
             cursor = self._content_start(paragraph)
             segments: list[NativeSegment] = []

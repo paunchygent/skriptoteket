@@ -16,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment impo
     EntryCandidate,
     _label_preference,
     assign_candidates,
+    entry_literal_mask,
     entry_unit_bounds,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
@@ -50,9 +51,10 @@ def labelled_slots(
     labels: dict[int, list[tuple[int, int]]] = {}
     families: dict[tuple[int, int], tuple[str, ...]] = {}
     family_ordinals: dict[str, set[int]] = {}
+    quotes = entry_literal_mask(source.text)
     for token in _TOKEN.finditer(source.text):
         start = token.start()
-        if any(a <= start < b for a, b in blocked):
+        if quotes[start] or any(a <= start < b for a, b in blocked):
             continue
         for ordinal in sorted(ordinals.get(token.group("token"), ())):
             size = entry_label_end(token.group(), ordinal)
