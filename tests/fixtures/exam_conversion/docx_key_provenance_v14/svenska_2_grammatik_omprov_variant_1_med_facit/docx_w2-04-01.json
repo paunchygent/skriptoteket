@@ -23,7 +23,6 @@
               "kind": "text",
               "text": "Gör satsdelsanalys av meningarna.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -34,7 +33,6 @@
               "kind": "text",
               "text": "a) Eleverna lämnade inte sina mobiler i skåpet. Analys: Eleverna (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -43,14 +41,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") lämnade (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -59,14 +55,12 @@
               "accepted_values": [
                 "P"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") inte (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -75,14 +69,12 @@
               "accepted_values": [
                 "SA"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") sina mobiler (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -91,14 +83,12 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") i skåpet (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -107,14 +97,12 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ").",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -125,7 +113,6 @@
               "kind": "text",
               "text": "b) Läraren gav klassen tydliga instruktioner före provet. Analys: Läraren (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -134,14 +121,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") gav (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -150,14 +135,12 @@
               "accepted_values": [
                 "P"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") klassen (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -166,14 +149,12 @@
               "accepted_values": [
                 "IO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") tydliga instruktioner (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -182,14 +163,12 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") före provet (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -198,14 +177,12 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ").",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -216,7 +193,6 @@
               "kind": "text",
               "text": "c) Stämningen blev lugn efter genomgången. Analys: Stämningen (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -225,14 +201,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") blev (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -241,14 +215,12 @@
               "accepted_values": [
                 "P"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") lugn (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -257,14 +229,12 @@
               "accepted_values": [
                 "Pf"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ") efter genomgången (",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -273,14 +243,12 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ").",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

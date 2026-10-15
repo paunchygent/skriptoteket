@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Correct the spelling of the bold text.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -40,7 +39,6 @@
               "kind": "text",
               "text": "We have alot of homework tonight.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -51,7 +49,6 @@
               "kind": "text",
               "text": "Answer: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -59,9 +56,6 @@
               "text": null,
               "accepted_values": [
                 "a lot"
-              ],
-              "spelling_candidates": [
-                "a lots"
               ],
               "asset_id": null
             }

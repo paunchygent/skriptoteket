@@ -89,7 +89,6 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
                                 "kind": "text",
                                 "text": text,
                                 "accepted_values": [],
-                                "spelling_candidates": [],
                             }
                         ]
                     }
@@ -97,7 +96,8 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
                 "points": 1,
                 "choices": [],
             }
-        )
+        ),
+        language="sv",
     )
 
 

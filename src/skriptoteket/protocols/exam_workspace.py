@@ -18,6 +18,10 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
+    ExamWorkspaceMisspellingsRequest,
+    ExamWorkspaceMisspellingsResponse,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
@@ -26,6 +30,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.identity.models import User
+
+
+class GenerateExamWorkspaceMisspellingsHandlerProtocol(Protocol):
+    def handle(
+        self, *, request: ExamWorkspaceMisspellingsRequest
+    ) -> ExamWorkspaceMisspellingsResponse: ...
 
 
 class DocxExamChunkerProtocol(Protocol):

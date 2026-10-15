@@ -40,7 +40,6 @@
               "kind": "text",
               "text": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -51,7 +50,6 @@
               "kind": "text",
               "text": "a) Jag hörde att brandlarmet ringde klockan två. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -60,16 +58,12 @@
               "accepted_values": [
                 "att brandlarmet ringde klockan två"
               ],
-              "spelling_candidates": [
-                "att brandlarmet ringde klockan tva"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -78,16 +72,12 @@
               "accepted_values": [
                 "att-sats"
               ],
-              "spelling_candidates": [
-                "at-sats"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -96,7 +86,6 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -107,7 +96,6 @@
               "kind": "text",
               "text": "b) Problemet var att läraren stod vid tavlan. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -116,16 +104,12 @@
               "accepted_values": [
                 "att läraren stod vid tavlan"
               ],
-              "spelling_candidates": [
-                "att läraren stod vid tavla"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -134,16 +118,12 @@
               "accepted_values": [
                 "att-sats"
               ],
-              "spelling_candidates": [
-                "at-sats"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -152,7 +132,6 @@
               "accepted_values": [
                 "Pf"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -163,7 +142,6 @@
               "kind": "text",
               "text": "c) När regnet slutade gick klassen ut. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -172,25 +150,18 @@
               "accepted_values": [
                 "När regnet slutade"
               ],
-              "spelling_candidates": [
-                "När regnet slutad"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "tidsbisats"
-              ],
-              "spelling_candidates": [
                 "tidsbisats"
               ],
               "asset_id": null
@@ -199,7 +170,6 @@
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -208,7 +178,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -219,16 +188,12 @@
               "kind": "text",
               "text": "d) Eleverna viskade eftersom filmen hade börjat. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "eftersom filmen hade börjat"
-              ],
-              "spelling_candidates": [
                 "eftersom filmen hade börjat"
               ],
               "asset_id": null
@@ -237,16 +202,12 @@
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "orsaksbisats"
-              ],
-              "spelling_candidates": [
                 "orsaksbisats"
               ],
               "asset_id": null
@@ -255,7 +216,6 @@
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -264,7 +224,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -275,16 +234,12 @@
               "kind": "text",
               "text": "e) Om bussen kommer i tid hinner vi till lektionen. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "Om bussen kommer i tid"
-              ],
-              "spelling_candidates": [
                 "Om bussen kommer i tid"
               ],
               "asset_id": null
@@ -293,16 +248,12 @@
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "villkorsbisats"
-              ],
-              "spelling_candidates": [
                 "villkorsbisats"
               ],
               "asset_id": null
@@ -311,7 +262,6 @@
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -320,7 +270,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -331,16 +280,12 @@
               "kind": "text",
               "text": "f) Hon satte alarmet för att hon skulle vakna i tid. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "för att hon skulle vakna i tid"
-              ],
-              "spelling_candidates": [
                 "för att hon skulle vakna i tid"
               ],
               "asset_id": null
@@ -349,16 +294,12 @@
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "gap",
               "text": null,
               "accepted_values": [
-                "avsiktsbisats"
-              ],
-              "spelling_candidates": [
                 "avsiktsbisats"
               ],
               "asset_id": null
@@ -367,7 +308,6 @@
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -376,7 +316,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

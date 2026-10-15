@@ -51,7 +51,6 @@
               "kind": "text",
               "text": "Where did you download ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -60,16 +59,12 @@
               "accepted_values": [
                 "those"
               ],
-              "spelling_candidates": [
-                "thoes"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de där) films?",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -100,7 +95,6 @@
               "kind": "text",
               "text": "That was ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -111,17 +105,12 @@
                 "a piece of good news",
                 "some good news"
               ],
-              "spelling_candidates": [
-                "god news",
-                "good neus"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (en god nyhet).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -155,17 +144,12 @@
                 "The interesting thing",
                 "The interesting thing."
               ],
-              "spelling_candidates": [
-                "The interesing thing",
-                "The interestng thing"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Det intressanta) is that the number of users increases all the time.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -196,7 +180,6 @@
               "kind": "text",
               "text": "He has opened ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -207,17 +190,12 @@
                 "a restaurant of his own.",
                 "his own restaurant"
               ],
-              "spelling_candidates": [
-                "a restaurant of his owm",
-                "a restaurant of his onw"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (en egen restaurang) in New York.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -248,7 +226,6 @@
               "kind": "text",
               "text": "We had dinner at the ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -257,16 +234,12 @@
               "accepted_values": [
                 "Italian"
               ],
-              "spelling_candidates": [
-                "Itlaian"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (italienska) restaurant down the road.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -303,19 +276,12 @@
                 "The people who",
                 "The people who."
               ],
-              "spelling_candidates": [
-                "Thsoe who",
-                "Those wh o",
-                "The peopel who",
-                "The peopel who"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (De som) work on the top floors have bought parachutes.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -349,17 +315,12 @@
                 "The most important thing",
                 "The most important thing."
               ],
-              "spelling_candidates": [
-                "The most importnt thing",
-                "The most important thng"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Det viktigaste) is not to lose one’s temper.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -390,7 +351,6 @@
               "kind": "text",
               "text": "It was ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -399,16 +359,12 @@
               "accepted_values": [
                 "easier"
               ],
-              "spelling_candidates": [
-                "easer"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (lättare) to buy a new TV than repair the old one.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -439,7 +395,6 @@
               "kind": "text",
               "text": "She ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -448,16 +403,12 @@
               "accepted_values": [
                 "works"
               ],
-              "spelling_candidates": [
-                "wroks"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (arbetar) long hours every day.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -494,18 +445,12 @@
                 "The people who",
                 "The people who."
               ],
-              "spelling_candidates": [
-                "Thsoe who",
-                "Those wh o",
-                "The peopel who"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (De som) order immediately will get an extra bonus.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -536,7 +481,6 @@
               "kind": "text",
               "text": "She ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -549,21 +493,12 @@
                 "was just about to open",
                 "was just about to open."
               ],
-              "spelling_candidates": [
-                "was going to opne",
-                "was going to oepn",
-                "was about to opne",
-                "was about to oepn",
-                "was just about to opne",
-                "was just about to oepn"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skulle öppna) the door when she was attacked from behind.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -594,7 +529,6 @@
               "kind": "text",
               "text": "My sister is married ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -603,16 +537,12 @@
               "accepted_values": [
                 "to"
               ],
-              "spelling_candidates": [
-                "ot"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (med) a Frenchman.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -643,7 +573,6 @@
               "kind": "text",
               "text": "She ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -652,16 +581,12 @@
               "accepted_values": [
                 "chose"
               ],
-              "spelling_candidates": [
-                "chsoe"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (valde) the yellow cab.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -695,17 +620,12 @@
                 "The money is",
                 "The money is."
               ],
-              "spelling_candidates": [
-                "The mon ey is",
-                "The money si"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Pengarna är) not in my purse.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -736,7 +656,6 @@
               "kind": "text",
               "text": "It turned out to be ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -745,14 +664,12 @@
               "accepted_values": [
                 "a"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ett) UN decision that was accepted by all countries.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -783,7 +700,6 @@
               "kind": "text",
               "text": "She always ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -792,16 +708,12 @@
               "accepted_values": [
                 "lay"
               ],
-              "spelling_candidates": [
-                "l ay"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (låg) in bed till late in the morning.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

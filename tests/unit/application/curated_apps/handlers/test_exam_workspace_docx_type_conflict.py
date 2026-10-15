@@ -76,21 +76,18 @@ def _resend() -> dict[str, JsonValue]:
                         "kind": "text",
                         "text": "Write its or it’s. The school changed ",
                         "accepted_values": [],
-                        "spelling_candidates": [],
                         "asset_id": None,
                     },
                     {
                         "kind": "gap",
                         "text": None,
                         "accepted_values": ["its"],
-                        "spelling_candidates": [],
                         "asset_id": None,
                     },
                     {
                         "kind": "text",
                         "text": " lunch menu.",
                         "accepted_values": [],
-                        "spelling_candidates": [],
                         "asset_id": None,
                     },
                 ]

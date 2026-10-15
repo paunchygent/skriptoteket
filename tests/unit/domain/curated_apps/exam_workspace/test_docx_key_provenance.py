@@ -45,14 +45,6 @@ def _gap_item(
                             "kind": "gap",
                             "text": None,
                             "accepted_values": answers,
-                            "spelling_candidates": [
-                                "KATT",
-                                "kat",
-                                "kattn",
-                                "ktat",
-                                "hund",
-                                "kattnn",
-                            ],
                         }
                     ]
                 }
@@ -71,14 +63,20 @@ def _gap_item(
     ],
 )
 def test_key_source_maps_without_treating_invented_answers_as_teacher_keys(
-    source: str | None, facit: str | None, origin: NativeAnswerKeyOrigin
+    source: str | None, facit: str | None, origin: NativeAnswerKeyOrigin, monkeypatch
 ) -> None:
-    item = native_item(_gap_item(source, facit, answers=() if source is None else ("katt",)))
+    monkeypatch.setattr(
+        "skriptoteket.domain.curated_apps.exam_workspace.docx_ai_gap_values.produce_answer_misspellings",
+        lambda *_, **__: ("KATT", "kat", "kattn", "ktat", "hund", "kattnn"),
+    )
+    item = native_item(
+        _gap_item(source, facit, answers=() if source is None else ("katt",)), language="sv"
+    )
     assert item.answer_key.origin is origin
     assert item.facit_text == facit
-    assert item.gaps[0].automatic_values == (
-        ("kat", "kattn", "ktat") if source in {"copied", "interpreted"} else ()
-    )
+    # The producer supplies candidates for every keyed gap, invented keys included; the
+    # native contract keeps the bounded ones in producer order.
+    assert item.gaps[0].automatic_values == (("kat", "kattn", "ktat") if source is not None else ())
 
 
 @pytest.mark.parametrize(
@@ -127,7 +125,14 @@ def test_current_producer_schema_requires_new_fields_and_has_no_old_payload_read
     with pytest.raises(ValidationError):
         ProducedItem.model_validate(legacy)
     with pytest.raises(ValidationError):
-        ProducedSegment.model_validate({"kind": "gap", "text": None, "accepted_values": ["katt"]})
+        ProducedSegment.model_validate(
+            {
+                "kind": "gap",
+                "text": None,
+                "accepted_values": ["katt"],
+                "spelling_candidates": [],
+            }
+        )
     spec = docx_build_output_spec(anchors=("body:0001",), kinds=(NativeExamItemKind.GAP_FILL,))
     assert spec.schema_version == "docx_exam_build_v14"
     definitions = spec.json_schema["$defs"]
@@ -155,7 +160,6 @@ def test_choice_and_matching_keys_use_the_same_provenance_mapping(kind: str, sou
                         "kind": "text",
                         "text": "Välj.",
                         "accepted_values": [],
-                        "spelling_candidates": [],
                     }
                 ]
             }
@@ -169,7 +173,7 @@ def test_choice_and_matching_keys_use_the_same_provenance_mapping(kind: str, sou
         )
     else:
         payload["choices"] = [{"text": "Katt", "correct": True}, {"text": "Bil", "correct": False}]
-    item = native_item(ProducedItem.model_validate(payload))
+    item = native_item(ProducedItem.model_validate(payload), language="sv")
     assert (
         item.answer_key.origin.value
         == {
@@ -180,9 +184,11 @@ def test_choice_and_matching_keys_use_the_same_provenance_mapping(kind: str, sou
     )
 
 
-def test_non_gap_segments_cannot_carry_automatic_candidates() -> None:
-    with pytest.raises(ValidationError, match="text segments"):
-        ProducedSegment(kind="text", text="Läs", accepted_values=(), spelling_candidates=("Las",))
+def test_a_removed_spelling_candidate_field_is_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProducedSegment.model_validate(
+            {"kind": "text", "text": "Läs", "accepted_values": [], "spelling_candidates": []}
+        )
 
 
 def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
@@ -198,15 +204,11 @@ def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
         choices=(),
         body=(
             ProducedParagraph(
-                segments=(
-                    ProducedSegment(
-                        kind="text", text="Resonera.", accepted_values=(), spelling_candidates=()
-                    ),
-                )
+                segments=(ProducedSegment(kind="text", text="Resonera.", accepted_values=()),)
             ),
         ),
     )
-    native = native_item(item)
+    native = native_item(item, language="sv")
     assert native.facit_text == item.facit_text
     assert native.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
     # R14: a guide without per-criterion points is one estimated criterion at 1 point

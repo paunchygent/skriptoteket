@@ -42,6 +42,7 @@ import type {
   NativeExamCriterion,
   NativeExamDocument,
   NativeExamItem,
+  NativeExamItemKind,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
@@ -52,9 +53,7 @@ import {
   withChoiceText,
   withCorrectChoices,
   withCriteria,
-  withGapValues,
   withGapAsText,
-  withoutAutomaticValue,
   withoutInterpretedKey,
   withMatchEntryText,
   withMatchPairs,
@@ -63,7 +62,9 @@ import {
   withRestoredSuggestion,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
@@ -88,26 +89,6 @@ function refusedPlaceholderChange(error: unknown): error is ApiError {
     error.details !== null &&
     "item_ids" in error.details
   );
-}
-
-/**
- * Merge a fetched saved-document list into the entries already known locally.
- * A local entry wins when the response lacks its lineage (for example an
- * import that finished while the list request was in flight) or when it holds
- * a newer version; the response supplies everything else.
- */
-export function mergeSavedDocuments(
-  local: ExamWorkspaceDocumentSummary[],
-  fetched: ExamWorkspaceDocumentSummary[],
-): ExamWorkspaceDocumentSummary[] {
-  const localByLineage = new Map(local.map((entry) => [entry.lineage_id, entry]));
-  const fetchedLineages = new Set(fetched.map((entry) => entry.lineage_id));
-  const localOnly = local.filter((entry) => !fetchedLineages.has(entry.lineage_id));
-  const merged = fetched.map((entry) => {
-    const known = localByLineage.get(entry.lineage_id);
-    return known && known.version > entry.version ? known : entry;
-  });
-  return [...localOnly, ...merged];
 }
 
 /**
@@ -239,6 +220,7 @@ export function useExamWorkspaceDocument() {
       const response = await getExamWorkspaceDocument(lineageId);
       selectedItemId.value = null;
       applyResponse(response);
+      keying.invalidateCopy();
       conflictNotice.value = null;
       return true;
     } catch {
@@ -254,6 +236,7 @@ export function useExamWorkspaceDocument() {
     try {
       const response = await getExamWorkspaceDocument(lineageId);
       applyResponse(response);
+      keying.invalidateCopy();
       return true;
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
@@ -276,6 +259,8 @@ export function useExamWorkspaceDocument() {
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
     const payloadMark = arrivals.payloadMark();
     const openedArrivals = arrivals.beginSave();
+    const keyingMark = keying.payloadMark();
+    const openedKeying = keying.beginSave();
     operationBusy.value = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
@@ -285,6 +270,8 @@ export function useExamWorkspaceDocument() {
       applyResponse(response);
       // The response holds the payload; arrivals that landed after it was read run again on it.
       arrivals.replayAfterResponse(payloadMark);
+      // The response holds the payload; spellings merged in after it was read run again on it.
+      keying.replayAfterResponse(keyingMark);
       conflictNotice.value = null;
       toast.success(SAVE_SUCCESS_COPY);
       return true;
@@ -316,6 +303,7 @@ export function useExamWorkspaceDocument() {
       return false;
     } finally {
       arrivals.endSave(openedArrivals);
+      keying.endSave(openedKeying);
       operationBusy.value = false;
     }
   }
@@ -329,6 +317,7 @@ export function useExamWorkspaceDocument() {
     try {
       const response = await getExamWorkspaceDocument(currentSummary.lineage_id);
       applyResponse(response);
+      keying.invalidateCopy();
       conflictNotice.value = null;
       toast.info(RELOAD_SUCCESS_COPY);
     } catch {
@@ -342,7 +331,7 @@ export function useExamWorkspaceDocument() {
     selectedItemId.value = itemId;
   }
 
-  const { retryItem } = useExamWorkspaceItemRetry({
+  const { retryItem: requestItemRetry } = useExamWorkspaceItemRetry({
     isBusy: () => isBusy.value,
     openExam,
     operationBusy,
@@ -351,14 +340,24 @@ export function useExamWorkspaceDocument() {
     workspaceDocument,
   });
 
+  /** Retry one question, and drop in-flight keying replies for the item it replaced. */
+  async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
+    const before = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
+    await requestItemRetry(itemId, kind);
+    const after = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
+    if (after !== before) {
+      keying.invalidateItem(itemId);
+    }
+  }
+
   /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
-  ): void {
+  ): boolean {
     const current = workspaceDocument.value;
     if (!current || isBusy.value || convertingItemIds.value.has(itemId)) {
-      return;
+      return false;
     }
     let changed = false;
     const items = current.items.map((item) => {
@@ -369,10 +368,15 @@ export function useExamWorkspaceDocument() {
       return patch(item);
     });
     if (!changed) {
-      return;
+      return false;
     }
     workspaceDocument.value = { ...current, items };
+    return true;
   }
+
+  // Every gap keying edit and its asynchronous misspelling reply.
+  const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument });
+  const { removeItemAutomaticValue, updateItemGapValues } = keying;
 
   function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
     patchItem(itemId, (item) => withCriteria(item, criteria));
@@ -411,16 +415,8 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withMatchPairs(item, pairs));
   }
 
-  function updateItemGapValues(itemId: string, gapId: string, acceptedValues: string[]): void {
-    patchItem(itemId, (item) => withGapValues(item, gapId, acceptedValues));
-  }
-
   function undoItemInterpretation(itemId: string): void {
     patchItem(itemId, withoutInterpretedKey);
-  }
-
-  function removeItemAutomaticValue(itemId: string, gapId: string, value: string): void {
-    patchItem(itemId, (item) => withoutAutomaticValue(item, gapId, value));
   }
 
   function showItemGapAsText(itemId: string, gapId: string): void {

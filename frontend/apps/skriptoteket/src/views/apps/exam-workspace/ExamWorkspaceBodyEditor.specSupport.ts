@@ -34,8 +34,8 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     ],
     choices: [],
     gaps: [
-      { accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" },
-      { accepted_values: [], automatic_values: [], gap_id: "gap_002" },
+      { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
+      { accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
     ],
     item_id: "item_001",
     kind: "gap_fill",

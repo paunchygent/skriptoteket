@@ -44,6 +44,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_u
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings import (
+    GenerateExamWorkspaceMisspellingsHandler,
+)
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
@@ -77,6 +80,7 @@ from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
+    GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -98,6 +102,10 @@ from skriptoteket.protocols.vault import (
 
 class ExamWorkspaceProvider(Provider):
     """Provide exam workspace conversion, persistence, and handlers."""
+
+    @provide(scope=Scope.APP)
+    def misspellings(self) -> GenerateExamWorkspaceMisspellingsHandlerProtocol:
+        return GenerateExamWorkspaceMisspellingsHandler()
 
     @provide(scope=Scope.APP)
     def docx_chunker(self) -> DocxExamChunkerProtocol:

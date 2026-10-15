@@ -28,7 +28,6 @@
               "kind": "text",
               "text": "Morfem",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -39,7 +38,6 @@
               "kind": "text",
               "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -50,7 +48,6 @@
               "kind": "text",
               "text": "a) I ordet lekfullheten är lek ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -59,14 +56,12 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": "\nb) I ordet lekfullheten är -full och -het ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -75,14 +70,12 @@
               "accepted_values": [
                 "A"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": "\nc) I ordet lekfullheten är -en ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -91,7 +84,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -125,7 +117,6 @@
               "kind": "text",
               "text": "Fraser",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -136,7 +127,6 @@
               "kind": "text",
               "text": "Använd NF = nominalfras, PF = prepositionsfras och VF = verbfras.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -147,7 +137,6 @@
               "kind": "text",
               "text": "a) Frasen tre korta svar är en ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -156,14 +145,12 @@
               "accepted_values": [
                 "NF"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": "\nb) Frasen på skolgården är en ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -172,14 +159,12 @@
               "accepted_values": [
                 "PF"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": "\nc) Frasen kan vila är en ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -188,7 +173,6 @@
               "accepted_values": [
                 "VF"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -222,7 +206,6 @@
               "kind": "text",
               "text": "Satsdelar",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -233,7 +216,6 @@
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -244,7 +226,6 @@
               "kind": "text",
               "text": "Noah ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -253,14 +234,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " skrev ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -269,14 +248,12 @@
               "accepted_values": [
                 "P"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " brevet ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -285,14 +262,12 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " tydligt ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -301,14 +276,12 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ".",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -342,7 +315,6 @@
               "kind": "text",
               "text": "Satsdelar",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -353,7 +325,6 @@
               "kind": "text",
               "text": "Använd S, P, DO, IO, Pf, Adv och SA.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -364,7 +335,6 @@
               "kind": "text",
               "text": "Alva ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -373,14 +343,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " är ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -389,14 +357,12 @@
               "accepted_values": [
                 "P"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " inte ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -405,14 +371,12 @@
               "accepted_values": [
                 "SA"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " färdig ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -421,14 +385,12 @@
               "accepted_values": [
                 "Pf"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ".",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -461,7 +423,6 @@
               "kind": "text",
               "text": "Huvudsats, bisats och BIFF",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -472,7 +433,6 @@
               "kind": "text",
               "text": "a) De väntar inte. är en ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -481,14 +441,12 @@
               "accepted_values": [
                 "huvudsats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": "\nb) I bisatsen att de inte väntar står satsadverbialet ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -497,14 +455,12 @@
               "accepted_values": [
                 "före"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " det finita verbet.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

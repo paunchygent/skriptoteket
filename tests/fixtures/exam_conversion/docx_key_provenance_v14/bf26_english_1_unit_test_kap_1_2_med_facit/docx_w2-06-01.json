@@ -21,7 +21,6 @@
               "kind": "text",
               "text": "Write most or the most.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -32,7 +31,6 @@
               "kind": "text",
               "text": "Of these three questions, this is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -41,16 +39,12 @@
               "accepted_values": [
                 "the most"
               ],
-              "spelling_candidates": [
-                "the mos"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " difficult one.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

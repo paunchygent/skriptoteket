@@ -21,7 +21,6 @@
               "kind": "text",
               "text": "The bikes belong to three boys. Complete the sentence with a form of boy.\nThese are the ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -31,14 +30,12 @@
                 "boys’",
                 "boys'"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " bikes.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

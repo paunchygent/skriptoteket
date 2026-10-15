@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Hon hade aldrig gått dit om de inte hade bett henne. ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -44,11 +43,6 @@
                 "She’d never have gone there if they hadn’t asked her.",
                 "She never would have gone there if they hadn’t asked her",
                 "She never would have gone there if they hadn’t asked her."
-              ],
-              "spelling_candidates": [
-                "She would never have gone there if they had’nt asked her",
-                "She would never have gone there if they hadn’t askeed her",
-                "She would never have gone there if they hadn’t asked he"
               ],
               "asset_id": null
             }

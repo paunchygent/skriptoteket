@@ -24,7 +24,6 @@
               "kind": "text",
               "text": "Satsstruktur",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -35,7 +34,6 @@
               "kind": "text",
               "text": "Förklara BIFF-regeln med en mening.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

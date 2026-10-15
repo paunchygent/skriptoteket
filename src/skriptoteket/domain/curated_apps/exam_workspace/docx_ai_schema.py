@@ -100,14 +100,9 @@ def docx_build_output_spec(
                 "accepted_values": (
                     segment_fields["accepted_values"] if accepted is None else accepted
                 ),
-                "spelling_candidates": (
-                    segment_fields["spelling_candidates"]
-                    if kind == "gap"
-                    else {**_object(segment_fields["spelling_candidates"]), "maxItems": 0}
-                ),
                 "asset_id": asset if asset is not None else {"type": "null"},
             },
-            "required": ["kind", "text", "accepted_values", "spelling_candidates", "asset_id"],
+            "required": ["kind", "text", "accepted_values", "asset_id"],
             "additionalProperties": False,
         }
 

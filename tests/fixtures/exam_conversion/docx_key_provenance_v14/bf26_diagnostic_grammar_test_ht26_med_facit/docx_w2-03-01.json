@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Robert sade att han efter två månader hade glömt allt han hade lärt sig. ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -44,9 +43,6 @@
                 "Robert said that after two months, he had forgotten everything he had learned.",
                 "Robert said that he had forgotten everything he had learned after two months",
                 "Robert said that he had forgotten everything he had learned after two months."
-              ],
-              "spelling_candidates": [
-                "Robert said that after two months he had forgot everything he had learned"
               ],
               "asset_id": null
             }

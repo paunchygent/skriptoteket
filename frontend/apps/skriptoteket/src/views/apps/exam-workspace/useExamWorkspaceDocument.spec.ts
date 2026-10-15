@@ -11,7 +11,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
-import { mergeSavedDocuments } from "./useExamWorkspaceDocument";
+import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import {
   buildResponse,
   currentItem,

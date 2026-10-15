@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import Language
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
@@ -33,6 +34,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 
 _RECORDINGS = Path("tests/fixtures/exam_conversion/docx_key_provenance_v14")
 ENGLISH_EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
+
+
+def recorded_exam_language(exam: str) -> Language:
+    """The corpus exam's own language, which conversion infers from its document text."""
+    if "english" in exam:
+        return "en"
+    return "sv"
 
 
 def recorded_converted_items(exam: str) -> tuple[ProducedItem, ...]:
@@ -56,8 +64,9 @@ def recorded_converted_items(exam: str) -> tuple[ProducedItem, ...]:
 
 def recorded_items(exam: str = ENGLISH_EXAM) -> tuple[NativeExamItem, ...]:
     """Every converted item of the exam, numbered in source order."""
+    language = recorded_exam_language(exam)
     return tuple(
-        native_item(produced).model_copy(
+        native_item(produced, language=language).model_copy(
             update={"item_id": f"item_{number:03d}", "sequence": number}
         )
         for number, produced in enumerate(recorded_converted_items(exam), start=1)

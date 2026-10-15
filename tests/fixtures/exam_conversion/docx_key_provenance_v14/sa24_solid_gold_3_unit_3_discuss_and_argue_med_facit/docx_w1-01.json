@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Susan Berry isn’t a friend really. She’s just ___ of mine.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -74,7 +73,6 @@
               "kind": "text",
               "text": "Our new washing-machine cost over £400. Fortunately, there wasn’t ___ for delivery.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -119,7 +117,6 @@
               "kind": "text",
               "text": "Their victory over Real Madrid in the European Cup means that Bayern Munich are now ___ of a place in the final.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -164,7 +161,6 @@
               "kind": "text",
               "text": "Gerald couldn’t remember a thing after the accident. He was obviously suffering from ___.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -209,7 +205,6 @@
               "kind": "text",
               "text": "The children were very poor and most of them were dressed in ___.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -254,7 +249,6 @@
               "kind": "text",
               "text": "The situation is dangerous and the UN is ___ caution.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -299,7 +293,6 @@
               "kind": "text",
               "text": "It’s almost impossible to avoid any ___ damage during heavy bombing raids.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -344,7 +337,6 @@
               "kind": "text",
               "text": "The new drug is undergoing clinical ___.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

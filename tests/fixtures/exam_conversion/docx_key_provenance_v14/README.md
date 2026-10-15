@@ -5,7 +5,11 @@ Recorded on Hemma staging on 2026-10-14 from revision `c270419e` with
 `LLM_DOCX_BATCH_FAMILIES=16`. The runner used the staging web container's provider
 configuration and inherited API key. No credentials are stored here.
 
-`docx_*.json` are unmodified structured provider replies keyed by request ID;
+`docx_*.json` retain the recorded provider content keyed by request ID, with
+structural migrations to the current v14 contract: task 39-09-04 replaced
+Fritext marking guides with criteria, and task 39-09-06 removed model spelling
+candidates. Automatic misspellings now come from the committed deterministic
+producer at replay time; they are not new model observations.
 `decisions_N.json` are unmodified Decisions replies in request order. Directory
 versioning identifies the strict `docx_exam_build_v14` producer contract, not a
 promise that every producer reply passes admission or matches gold.

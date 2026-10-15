@@ -24,7 +24,6 @@
               "kind": "text",
               "text": "Skriv huvudordet i varje nominalfras.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -35,7 +34,6 @@
               "kind": "text",
               "text": "a) de två gamla cyklarna från källaren Huvudord: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -43,9 +41,6 @@
               "text": null,
               "accepted_values": [
                 "cyklarna"
-              ],
-              "spelling_candidates": [
-                "cyklaran"
               ],
               "asset_id": null
             }
@@ -57,7 +52,6 @@
               "kind": "text",
               "text": "b) min yngre brors röda jacka i hallen Huvudord: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -65,9 +59,6 @@
               "text": null,
               "accepted_values": [
                 "jacka"
-              ],
-              "spelling_candidates": [
-                "jakca"
               ],
               "asset_id": null
             }
@@ -79,7 +70,6 @@
               "kind": "text",
               "text": "c) alla pennorna på det stora bordet Huvudord: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -87,9 +77,6 @@
               "text": null,
               "accepted_values": [
                 "pennorna"
-              ],
-              "spelling_candidates": [
-                "penorna"
               ],
               "asset_id": null
             }
@@ -101,7 +88,6 @@
               "kind": "text",
               "text": "d) den breda stigen genom parken Huvudord: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -109,9 +95,6 @@
               "text": null,
               "accepted_values": [
                 "stigen"
-              ],
-              "spelling_candidates": [
-                "stign"
               ],
               "asset_id": null
             }

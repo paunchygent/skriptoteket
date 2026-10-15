@@ -37,7 +37,6 @@
               "kind": "text",
               "text": "She was given an injection to ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -47,16 +46,12 @@
                 "lessen",
                 "lesen"
               ],
-              "spelling_candidates": [
-                "lessan"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (l…) the pain. (minska)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -87,7 +82,6 @@
               "kind": "text",
               "text": "His earnings are said to amount to £300 000 ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -97,16 +91,12 @@
                 "per annum",
                 "per anum"
               ],
-              "spelling_candidates": [
-                "per annam"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (p…). (årligen /2 words/)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -137,7 +127,6 @@
               "kind": "text",
               "text": "Several people were injured in ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -146,16 +135,12 @@
               "accepted_values": [
                 "skirmishes"
               ],
-              "spelling_candidates": [
-                "skirmishis"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (s…) during the night. (mindre sammandrabbningar)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -186,7 +171,6 @@
               "kind": "text",
               "text": "She’s being ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -195,16 +179,12 @@
               "accepted_values": [
                 "touted"
               ],
-              "spelling_candidates": [
-                "touted"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (t…) as the next leader of the party. (framhållen vitt och brett)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -235,7 +215,6 @@
               "kind": "text",
               "text": "Cycling is a totally ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -244,16 +223,12 @@
               "accepted_values": [
                 "sustainable"
               ],
-              "spelling_candidates": [
-                "sustainible"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (s…) form of transport. (hållbar)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -284,7 +259,6 @@
               "kind": "text",
               "text": "“Harold has been absent from class six times this term, ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -294,16 +268,12 @@
                 "according",
                 "acording"
               ],
-              "spelling_candidates": [
-                "acording"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (a…), to our records,” said the head teacher to his parents. (enligt)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -334,7 +304,6 @@
               "kind": "text",
               "text": "Charles has ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -343,16 +312,12 @@
               "accepted_values": [
                 "embarked"
               ],
-              "spelling_candidates": [
-                "embarkked"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (e…) on a new career as a teacher. (gett sig in i)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -383,7 +348,6 @@
               "kind": "text",
               "text": "Of all the essential minerals in the human body, ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -392,16 +356,12 @@
               "accepted_values": [
                 "calcium"
               ],
-              "spelling_candidates": [
-                "calcuim"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (c…) is the most abundant. It helps the body form bones and teeth.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -434,16 +394,12 @@
               "accepted_values": [
                 "Indigestion"
               ],
-              "spelling_candidates": [
-                "Indigestion"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (I…) is pain caused by difficulty in digesting food.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -477,16 +433,12 @@
                 "Malnutrition",
                 "mallnutrition"
               ],
-              "spelling_candidates": [
-                "malnutriton"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (M…) is a poor condition of health caused by a lack of food or a lack of the right type of food.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -517,7 +469,6 @@
               "kind": "text",
               "text": "The common usage of the word ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -526,16 +477,12 @@
               "accepted_values": [
                 "diet"
               ],
-              "spelling_candidates": [
-                "diett"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (d…) is a limited variety or amount of food that you eat for medical reasons or because you want to lose weight.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -566,7 +513,6 @@
               "kind": "text",
               "text": "A ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -576,16 +522,12 @@
                 "calorie",
                 "callorie"
               ],
-              "spelling_candidates": [
-                "calorei"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (c…) is a unit of measurement for energy. We use this term to define the amount of energy in the food we eat. They are found in fats, carbohydrates, proteins and alcohol.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -619,16 +561,12 @@
                 "Fibre",
                 "fiber"
               ],
-              "spelling_candidates": [
-                "Fibbre"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (F…) is the indigestible part of plants. It helps to keep your gut healthy and prevent constipation.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -659,7 +597,6 @@
               "kind": "text",
               "text": "A ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -668,16 +605,12 @@
               "accepted_values": [
                 "balanced"
               ],
-              "spelling_candidates": [
-                "balanaced"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (b…) ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -686,16 +619,12 @@
               "accepted_values": [
                 "diet"
               ],
-              "spelling_candidates": [
-                "diett"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (d…) is enough, but not too much, of the right kinds of food.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -728,16 +657,12 @@
               "accepted_values": [
                 "Carbohydrates"
               ],
-              "spelling_candidates": [
-                "Carbohydraets"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (C…) are one of several substances such as sugar or starch, which provide the body with energy, or foods containing these substances, such as bread, potatoes, pasta and rice.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -771,16 +696,12 @@
                 "Additives",
                 "aditives"
               ],
-              "spelling_candidates": [
-                "Additves"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (A…) are substances added to food, to preserve or enhance flavours or appearance.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

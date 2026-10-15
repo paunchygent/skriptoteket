@@ -52,7 +52,7 @@ def _state(*texts: str) -> DocxBuildState:
 
 
 def _text(text: str) -> dict[str, JsonValue]:
-    return {"kind": "text", "text": text, "accepted_values": [], "spelling_candidates": []}
+    return {"kind": "text", "text": text, "accepted_values": []}
 
 
 def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
@@ -213,7 +213,6 @@ def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
                     "kind": "gap",
                     "text": None,
                     "accepted_values": ["play"],
-                    "spelling_candidates": [],
                 },
                 _text(" (spelar) at the festival."),
             ]

@@ -23,16 +23,12 @@
               "accepted_values": [
                 "most"
               ],
-              "spelling_candidates": [
-                "mots"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " students in our class take the bus to school.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

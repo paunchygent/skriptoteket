@@ -266,7 +266,6 @@ def retry_reply(
                                 "kind": "text",
                                 "text": text,
                                 "accepted_values": [],
-                                "spelling_candidates": [],
                                 "asset_id": None,
                             }
                         ]

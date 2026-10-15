@@ -40,7 +40,6 @@
               "kind": "text",
               "text": "Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -51,7 +50,6 @@
               "kind": "text",
               "text": "a) Jag vet att lektionen börjar klockan tio. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -60,14 +58,12 @@
               "accepted_values": [
                 "att lektionen börjar klockan tio"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -76,14 +72,12 @@
               "accepted_values": [
                 "att-sats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -92,7 +86,6 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -103,7 +96,6 @@
               "kind": "text",
               "text": "b) Problemet var att eleven satt längst fram. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -112,14 +104,12 @@
               "accepted_values": [
                 "att eleven satt längst fram"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -128,14 +118,12 @@
               "accepted_values": [
                 "att-sats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -144,7 +132,6 @@
               "accepted_values": [
                 "Pf"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -155,7 +142,6 @@
               "kind": "text",
               "text": "c) När genomgången var slut började eleverna skriva. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -164,14 +150,12 @@
               "accepted_values": [
                 "När genomgången var slut"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -180,14 +164,12 @@
               "accepted_values": [
                 "tidsbisats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -196,7 +178,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -207,7 +188,6 @@
               "kind": "text",
               "text": "d) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -216,14 +196,12 @@
               "accepted_values": [
                 "eftersom läraren ville förklara uppgiften igen"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -232,14 +210,12 @@
               "accepted_values": [
                 "orsaksbisats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -248,7 +224,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -259,7 +234,6 @@
               "kind": "text",
               "text": "e) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -268,14 +242,12 @@
               "accepted_values": [
                 "Om alla lämnar in i tid"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -284,14 +256,12 @@
               "accepted_values": [
                 "villkorsbisats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -300,7 +270,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -311,7 +280,6 @@
               "kind": "text",
               "text": "f) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -320,14 +288,12 @@
               "accepted_values": [
                 "för att gruppen skulle hinna klart"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Typ: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -336,14 +302,12 @@
               "accepted_values": [
                 "avsiktsbisats"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -352,7 +316,6 @@
               "accepted_values": [
                 "Adv"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

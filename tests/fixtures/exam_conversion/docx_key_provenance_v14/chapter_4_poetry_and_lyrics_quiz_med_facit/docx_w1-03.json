@@ -37,7 +37,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -48,7 +47,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. She will always ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -57,16 +55,12 @@
               "accepted_values": [
                 "cherish"
               ],
-              "spelling_candidates": [
-                "cherich"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " the letters her grandmother wrote her, and she keeps them in a wooden box.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -99,7 +93,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -110,7 +103,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The caravan needed three weeks to ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -119,16 +111,12 @@
               "accepted_values": [
                 "traverse"
               ],
-              "spelling_candidates": [
-                "traverce"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " the desert from east to west.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -161,7 +149,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -172,7 +159,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The coach warned the team not to use their strength to ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -181,16 +167,12 @@
               "accepted_values": [
                 "humiliate"
               ],
-              "spelling_candidates": [
-                "humilliate"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " other players by mocking them.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -223,7 +205,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -236,16 +217,12 @@
               "accepted_values": [
                 "out of the blue"
               ],
-              "spelling_candidates": [
-                "out of the bleu"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ", the chorus changes key without warning, and everyone looks up in surprise.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -278,7 +255,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -289,7 +265,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. Each ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -298,16 +273,12 @@
               "accepted_values": [
                 "line"
               ],
-              "spelling_candidates": [
-                "lin"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " in the first stanza has eight syllables.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -340,7 +311,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -351,7 +321,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The words the poet uses, the ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -360,16 +329,12 @@
               "accepted_values": [
                 "diction"
               ],
-              "spelling_candidates": [
-                "dictio"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ", are all common and concrete.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -402,7 +367,6 @@
               "kind": "text",
               "text": "Part 3,",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -413,7 +377,6 @@
               "kind": "text",
               "text": "alliteration | cherish | diction | humiliate | line | out of the blue | stanza | theme | traverse. Use the best word or phrase. Two words are extra. The phrase “silent snow settles softly,” which repeats the starting s sound for emphasis, is an example of ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -422,16 +385,12 @@
               "accepted_values": [
                 "alliteration"
               ],
-              "spelling_candidates": [
-                "alliteratoin"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ".",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

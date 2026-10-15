@@ -25,6 +25,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  requestExamWorkspaceAnswerMisspellings: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
@@ -74,6 +75,8 @@ beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
+  apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
 });
 
 describe("parents in useExamWorkspaceDocument", () => {

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
     filter_answer_spelling_candidates,
+    normalize_answer,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchPair,
@@ -36,6 +37,7 @@ class NativeGap(BaseModel):
 
     gap_id: str = Field(pattern=GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
+    excluded_automatic_values: tuple[str, ...] = ()
     automatic_values: tuple[str, ...] = ()
 
     @field_validator("accepted_values")
@@ -59,7 +61,11 @@ class NativeGap(BaseModel):
         automatic values that depended on it in the same save.
         """
         accepted = info.data.get("accepted_values") or ()
-        return filter_answer_spelling_candidates(accepted, values)
+        excluded = {
+            normalize_answer(value) for value in info.data.get("excluded_automatic_values", ())
+        }
+        candidates = tuple(value for value in values if normalize_answer(value) not in excluded)
+        return filter_answer_spelling_candidates(accepted, candidates)
 
 
 class NativeAnswerKey(BaseModel):

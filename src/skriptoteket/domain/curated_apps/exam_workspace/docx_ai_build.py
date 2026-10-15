@@ -5,15 +5,13 @@ from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from uuid import UUID
 
-from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
-    filter_answer_spelling_candidates,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_gap_values import native_gap
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxImage,
@@ -36,6 +34,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     printed_points,
     title_without_answer_key,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
+    Language,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
@@ -80,7 +81,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
 
 _BLANK = NativeTextSegment(text="____")
 
-
 # No shared context governs two or more questions: every instruction is placed by its run.
 NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 
@@ -93,10 +93,9 @@ def _missing_picture_reason(missing: DocxMissingImage) -> str:
 
 
 def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
-    """One named Swedish review reason per picture the chunker could not turn into an image.
+    """One named Swedish review reason per unresolved picture, deduplicated by reference.
 
-    The same picture referenced twice is one reason. An empty result means no chunk in
-    ``chunks`` carries a picture the conversion could not show.
+    An empty result means no chunk carries a picture the conversion could not show.
     """
     reasons: dict[str, str] = {}
     for chunk in chunks:
@@ -160,7 +159,9 @@ def _free_text_criteria(
     return native, stated, False
 
 
-def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> NativeExamItem:
+def native_item(
+    produced: ProducedItem, *, chunks: Iterable[DocxChunk] = (), language: Language
+) -> NativeExamItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
 
     An asset segment becomes a native picture reference only when its id belongs to one of
@@ -187,6 +188,13 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
     )
     gaps: list[NativeGap] = []
     body: list[NativeParagraph] = []
+    gold_answers = tuple(
+        value
+        for paragraph in produced.body
+        for segment in paragraph.segments
+        if segment.kind == "gap"
+        for value in segment.accepted_values
+    )
     for paragraph in produced.body:
         segments: list[NativeSegment] = []
         for segment in paragraph.segments:
@@ -200,18 +208,12 @@ def native_item(produced: ProducedItem, *, chunks: Iterable[DocxChunk] = ()) -> 
                 segments.append(_BLANK)
             elif segment.kind == "gap":
                 gap_id = f"gap_{len(gaps) + 1:03d}"
-                automatic = (
-                    filter_answer_spelling_candidates(
-                        segment.accepted_values, segment.spelling_candidates
-                    )
-                    if produced.key_source in {"copied", "interpreted"}
-                    else ()
-                )
                 gaps.append(
-                    NativeGap(
+                    native_gap(
+                        segment,
                         gap_id=gap_id,
-                        accepted_values=segment.accepted_values,
-                        automatic_values=automatic,
+                        language=language,
+                        item_gold_answers=gold_answers,
                     )
                 )
                 segments.append(NativeGapSegment(gap_id=gap_id))

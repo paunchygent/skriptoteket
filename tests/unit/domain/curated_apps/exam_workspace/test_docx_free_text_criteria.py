@@ -42,11 +42,7 @@ def _produced(
         facit_text=None,
         body=(
             ProducedParagraph(
-                segments=(
-                    ProducedSegment(
-                        kind="text", text="Resonera.", accepted_values=(), spelling_candidates=()
-                    ),
-                )
+                segments=(ProducedSegment(kind="text", text="Resonera.", accepted_values=()),)
             ),
         ),
         points=points,
@@ -66,7 +62,8 @@ def test_stated_criteria_keep_their_points_and_the_item_points_are_their_sum() -
                 ProducedCriterion(text="Ett exempel.", points=2),
                 ProducedCriterion(text="En term.", points=1),
             ),
-        )
+        ),
+        language="sv",
     )
 
     assert item.criteria == (
@@ -85,7 +82,8 @@ def test_stated_criteria_without_printed_points_take_their_sum() -> None:
                 ProducedCriterion(text="Ett exempel.", points=2),
                 ProducedCriterion(text="En term.", points=1),
             ),
-        )
+        ),
+        language="sv",
     )
 
     assert item.points == 3
@@ -93,7 +91,9 @@ def test_stated_criteria_without_printed_points_take_their_sum() -> None:
 
 
 def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_points() -> None:
-    item = native_item(_produced(points=4, criteria=(ProducedCriterion(text="Bedöm helheten."),)))
+    item = native_item(
+        _produced(points=4, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
+    )
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=4),)
     assert item.points == 4
@@ -102,7 +102,7 @@ def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_poi
 
 def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None:
     item = native_item(
-        _produced(points=None, criteria=(ProducedCriterion(text="Bedöm helheten."),))
+        _produced(points=None, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
     )
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=1),)
@@ -111,7 +111,7 @@ def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None
 
 
 def test_free_text_without_criteria_keeps_its_printed_points() -> None:
-    item = native_item(_produced(points=8))
+    item = native_item(_produced(points=8), language="sv")
 
     assert item.criteria == ()
     assert item.points == 8
@@ -120,7 +120,10 @@ def test_free_text_without_criteria_keeps_its_printed_points() -> None:
 
 def test_fractional_item_points_route_to_review() -> None:
     with pytest.raises(ValueError, match="points are not whole"):
-        native_item(_produced(points=2.5, criteria=(ProducedCriterion(text="Bedöm helheten."),)))
+        native_item(
+            _produced(points=2.5, criteria=(ProducedCriterion(text="Bedöm helheten."),)),
+            language="sv",
+        )
 
     with pytest.raises(ValueError, match="criteria sum does not match"):
         native_item(
@@ -130,13 +133,14 @@ def test_fractional_item_points_route_to_review() -> None:
                     ProducedCriterion(text="Ett exempel.", points=2),
                     ProducedCriterion(text="En term.", points=1),
                 ),
-            )
+            ),
+            language="sv",
         )
 
 
 def test_fractional_free_text_points_without_criteria_route_to_review() -> None:
     with pytest.raises(ValueError, match="points are not whole"):
-        native_item(_produced(points=2.5))
+        native_item(_produced(points=2.5), language="sv")
 
 
 def test_fractional_criterion_points_route_to_review() -> None:
@@ -148,7 +152,8 @@ def test_fractional_criterion_points_route_to_review() -> None:
                     ProducedCriterion(text="Ett exempel.", points=2.5),
                     ProducedCriterion(text="En term.", points=0.5),
                 ),
-            )
+            ),
+            language="sv",
         )
 
 
@@ -161,14 +166,16 @@ def test_a_criteria_sum_that_differs_from_the_printed_points_routes_to_review() 
                     ProducedCriterion(text="Ett exempel.", points=2),
                     ProducedCriterion(text="En term.", points=1),
                 ),
-            )
+            ),
+            language="sv",
         )
 
 
 def test_criteria_below_one_point_route_to_review() -> None:
     with pytest.raises(ValueError, match="criterion points are not whole"):
         native_item(
-            _produced(points=1, criteria=(ProducedCriterion(text="Ett exempel.", points=0),))
+            _produced(points=1, criteria=(ProducedCriterion(text="Ett exempel.", points=0),)),
+            language="sv",
         )
 
 

@@ -76,7 +76,6 @@ def _failed_item(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
                     "kind": "text",
                     "text": "De väntar inte. är en huvudsats.",
                     "accepted_values": [],
-                    "spelling_candidates": [],
                     "asset_id": None,
                 }
             ]

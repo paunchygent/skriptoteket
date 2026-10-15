@@ -23,7 +23,6 @@
               "kind": "text",
               "text": "Analysera en komplex mening.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -34,7 +33,6 @@
               "kind": "text",
               "text": "Mening: Att flera elever blev sjuka förklarar varför redovisningen sköts upp.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -45,7 +43,6 @@
               "kind": "text",
               "text": "a) Skriv bisatserna. Bisats 1: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -54,16 +51,12 @@
               "accepted_values": [
                 "Att flera elever blev sjuka"
               ],
-              "spelling_candidates": [
-                "At flera elever blev sjuka"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Bisats 2: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -71,9 +64,6 @@
               "text": null,
               "accepted_values": [
                 "varför redovisningen sköts upp"
-              ],
-              "spelling_candidates": [
-                "varför redovisningen sköt upp"
               ],
               "asset_id": null
             }
@@ -85,7 +75,6 @@
               "kind": "text",
               "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -94,14 +83,12 @@
               "accepted_values": [
                 "S"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " Bisats 2 satsdel: ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -110,7 +97,6 @@
               "accepted_values": [
                 "DO"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

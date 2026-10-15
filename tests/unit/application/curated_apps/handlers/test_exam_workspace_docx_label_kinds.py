@@ -120,7 +120,6 @@ def _paragraph(text: str) -> dict[str, JsonValue]:
                 "kind": "text",
                 "text": text,
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": None,
             }
         ]

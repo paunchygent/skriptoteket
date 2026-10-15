@@ -52,7 +52,6 @@
               "kind": "text",
               "text": "A ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -61,16 +60,12 @@
               "accepted_values": [
                 "nutrient"
               ],
-              "spelling_candidates": [
-                "nutreint"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (n…) is the part of a food that is used by our bodies, such as protein, fat, carbohydrates, vitamins, and minerals.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -101,7 +96,6 @@
               "kind": "text",
               "text": "My aunt is a great believer in Chinese ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -110,16 +104,12 @@
               "accepted_values": [
                 "herbal"
               ],
-              "spelling_candidates": [
-                "herbal"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " medicines.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -150,7 +140,6 @@
               "kind": "text",
               "text": "Many celebrities become ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -159,16 +148,12 @@
               "accepted_values": [
                 "hooked"
               ],
-              "spelling_candidates": [
-                "hookde"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " on cocaine and other drugs.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -199,7 +184,6 @@
               "kind": "text",
               "text": "The operation was only ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -209,16 +193,12 @@
                 "partially",
                 "partialy"
               ],
-              "spelling_candidates": [
-                "partiallyy"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " successful.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -249,7 +229,6 @@
               "kind": "text",
               "text": "Business is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -258,16 +237,12 @@
               "accepted_values": [
                 "booming"
               ],
-              "spelling_candidates": [
-                "boomingg"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " at the moment. Our profits are up 25% on last year.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -298,7 +273,6 @@
               "kind": "text",
               "text": "Textbook writing can be an intellectually and socially ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -307,16 +281,12 @@
               "accepted_values": [
                 "rewarding"
               ],
-              "spelling_candidates": [
-                "rewardng"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " activity.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -347,7 +317,6 @@
               "kind": "text",
               "text": "When buying health products, you should only ever buy ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -356,16 +325,12 @@
               "accepted_values": [
                 "reputable"
               ],
-              "spelling_candidates": [
-                "reputabel"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " brands.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -396,7 +361,6 @@
               "kind": "text",
               "text": "Hepatitis is a potentially ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -405,16 +369,12 @@
               "accepted_values": [
                 "fatal"
               ],
-              "spelling_candidates": [
-                "fatla"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " disease.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -445,7 +405,6 @@
               "kind": "text",
               "text": "Separated from his mother when he was just an ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -454,16 +413,12 @@
               "accepted_values": [
                 "infant"
               ],
-              "spelling_candidates": [
-                "ifnant"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ", the boy was brought up in a children’s home.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -494,7 +449,6 @@
               "kind": "text",
               "text": "After some ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -503,16 +457,12 @@
               "accepted_values": [
                 "consideration"
               ],
-              "spelling_candidates": [
-                "consideraton"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ", we’ve decided to sell our house in London and move to Scotland.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -543,7 +493,6 @@
               "kind": "text",
               "text": "Many people have fled to Europe to escape war and ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -552,16 +501,12 @@
               "accepted_values": [
                 "persecution"
               ],
-              "spelling_candidates": [
-                "persectuion"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " in their own country.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -592,7 +537,6 @@
               "kind": "text",
               "text": "“You can’t sit on the ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -601,16 +545,12 @@
               "accepted_values": [
                 "fence"
               ],
-              "spelling_candidates": [
-                "fnece"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " any longer – you have to decide whose side you’re on!”",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -641,7 +581,6 @@
               "kind": "text",
               "text": "Her words left a ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -650,16 +589,12 @@
               "accepted_values": [
                 "lasting"
               ],
-              "spelling_candidates": [
-                "lastign"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " impression on me. I will never forget them.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -690,7 +625,6 @@
               "kind": "text",
               "text": "My grandfather died of a ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -699,16 +633,12 @@
               "accepted_values": [
                 "stroke"
               ],
-              "spelling_candidates": [
-                "storke"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " at the age of ninety-three.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -739,7 +669,6 @@
               "kind": "text",
               "text": "Protein is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -748,16 +677,12 @@
               "accepted_values": [
                 "essential"
               ],
-              "spelling_candidates": [
-                "essentail"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " for healthy body tissues.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -788,7 +713,6 @@
               "kind": "text",
               "text": "Under her teacher’s ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -797,16 +721,12 @@
               "accepted_values": [
                 "guidance"
               ],
-              "spelling_candidates": [
-                "guidnace"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ", Ludmilla has developed into an accomplished pianist.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

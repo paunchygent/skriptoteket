@@ -59,7 +59,6 @@ def _texts(item: dict[str, JsonValue]) -> list[JsonValue]:
                         "kind": "text",
                         "text": segment["text"],
                         "accepted_values": [],
-                        "spelling_candidates": [],
                         "asset_id": None,
                     }
                 )

@@ -106,7 +106,7 @@ export function buildDocument(): NativeExamDocument {
           ],
         },
       ],
-      gaps: [{ accepted_values: ["100"], automatic_values: [], gap_id: "gap_001" }],
+      gaps: [{ accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" }],
       kind: "gap_fill",
       review: {
         confidence: 0.5,

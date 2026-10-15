@@ -71,7 +71,6 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         "kind": "asset",
         "text": None,
         "accepted_values": [],
-        "spelling_candidates": [],
         "asset_id": image.asset_id,
     }
     segments: list[dict[str, object]] = (
@@ -82,7 +81,6 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "kind": "text",
                 "text": "Beskriv:  ",
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": None,
             },
             asset,
@@ -90,7 +88,6 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "kind": "text",
                 "text": "bilden.",
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": None,
             },
         ]
@@ -101,7 +98,6 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "kind": "gap",
                 "text": None,
                 "accepted_values": ["symbol"],
-                "spelling_candidates": [],
                 "asset_id": None,
             }
         )
@@ -121,7 +117,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
             "criteria": [],
         }
     )
-    converted = native_item(produced, chunks=(chunk,))
+    converted = native_item(produced, chunks=(chunk,), language="sv")
     assert converted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert converted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert isinstance(converted.body[0].segments[0 if picture_only else 1], NativeAssetSegment)

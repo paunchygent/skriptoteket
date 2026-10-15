@@ -44,7 +44,6 @@
               "kind": "text",
               "text": "There will be no admittance for ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -54,18 +53,12 @@
                 "those who",
                 "people who"
               ],
-              "spelling_candidates": [
-                "thoes who",
-                "those whi",
-                "thoes whi"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (dem som) arrive late.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -96,7 +89,6 @@
               "kind": "text",
               "text": "They accused him ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -105,16 +97,12 @@
               "accepted_values": [
                 "of"
               ],
-              "spelling_candidates": [
-                "fo"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (för) the robbery.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -145,7 +133,6 @@
               "kind": "text",
               "text": "He aimed ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -154,16 +141,12 @@
               "accepted_values": [
                 "at"
               ],
-              "spelling_candidates": [
-                "ta"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (mot) the front of the car and fired.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -194,7 +177,6 @@
               "kind": "text",
               "text": "They can only blame ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -203,17 +185,12 @@
               "accepted_values": [
                 "themselves"
               ],
-              "spelling_candidates": [
-                "themselvs",
-                "themselves"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (sig själva).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -244,7 +221,6 @@
               "kind": "text",
               "text": "They suggested that he ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -254,18 +230,12 @@
                 "should sell",
                 "sell"
               ],
-              "spelling_candidates": [
-                "shoud sell",
-                "should sel",
-                "shoul sell"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skulle sälja) the house before prices started to drop.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -296,7 +266,6 @@
               "kind": "text",
               "text": "His grandmother is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -305,18 +274,12 @@
               "accepted_values": [
                 "seriously"
               ],
-              "spelling_candidates": [
-                "seriosly",
-                "seriuosly",
-                "seriouslyy"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (allvarligt) ill.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -347,7 +310,6 @@
               "kind": "text",
               "text": "This is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -356,16 +318,12 @@
               "accepted_values": [
                 "an"
               ],
-              "spelling_candidates": [
-                "na"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (en) interesting solution.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -396,7 +354,6 @@
               "kind": "text",
               "text": "This pack of meat smells ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -405,16 +362,12 @@
               "accepted_values": [
                 "bad"
               ],
-              "spelling_candidates": [
-                "abd"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (dåligt).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -445,7 +398,6 @@
               "kind": "text",
               "text": "This show is for ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -455,18 +407,12 @@
                 "those who",
                 "people who"
               ],
-              "spelling_candidates": [
-                "thoes who",
-                "those whi",
-                "thoes whi"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (dem som) want irreverent stand-up comedy.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -497,7 +443,6 @@
               "kind": "text",
               "text": "To learn more about ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -506,18 +451,12 @@
               "accepted_values": [
                 "nature"
               ],
-              "spelling_candidates": [
-                "natre",
-                "naturee",
-                "na ture"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (naturen) has always been one of my great interests.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -548,7 +487,6 @@
               "kind": "text",
               "text": "Trains ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -558,18 +496,12 @@
                 "leave",
                 "depart"
               ],
-              "spelling_candidates": [
-                "levae",
-                "leav",
-                "departt"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (avgår) for the airport every half hour.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -600,7 +532,6 @@
               "kind": "text",
               "text": "We are going to stay in our ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -610,16 +541,12 @@
                 "friends’",
                 "friends'"
               ],
-              "spelling_candidates": [
-                "friend’s"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (vänners) house in Wales.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -650,7 +577,6 @@
               "kind": "text",
               "text": "I have brought ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -660,18 +586,12 @@
                 "my own food",
                 "food of my own"
               ],
-              "spelling_candidates": [
-                "my own foood",
-                "my own fod",
-                "my own foood"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (egen mat) today.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -702,7 +622,6 @@
               "kind": "text",
               "text": "We arrived ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -711,16 +630,12 @@
               "accepted_values": [
                 "in"
               ],
-              "spelling_candidates": [
-                "ni"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (till) South Africa on the first of June.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -751,7 +666,6 @@
               "kind": "text",
               "text": "What are you going to do after ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -760,18 +674,12 @@
               "accepted_values": [
                 "school"
               ],
-              "spelling_candidates": [
-                "schol",
-                "scool",
-                "schools"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skolan)?",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -802,7 +710,6 @@
               "kind": "text",
               "text": "It ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -816,18 +723,12 @@
                 "'s been raining",
                 "'s rained"
               ],
-              "spelling_candidates": [
-                "has been raing",
-                "has been rainnig",
-                "has rainedd"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (har regnat) for weeks now. The flooding along the valley will continue.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

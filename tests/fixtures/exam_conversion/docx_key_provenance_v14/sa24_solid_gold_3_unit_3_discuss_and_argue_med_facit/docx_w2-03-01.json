@@ -21,7 +21,6 @@
               "kind": "text",
               "text": "The ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -30,18 +29,12 @@
               "accepted_values": [
                 "overwhelming"
               ],
-              "spelling_candidates": [
-                "overwelming",
-                "overwhelmingg",
-                "overwhelmng"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (o…) majority of those present were in favour of the plan. (överväldigande)",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

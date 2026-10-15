@@ -36,7 +36,6 @@
               "kind": "text",
               "text": "I’m sure this is my ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -46,16 +45,12 @@
                 "boyfriend’s",
                 "boyfriend's"
               ],
-              "spelling_candidates": [
-                "boyfriends"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (pojkväns) umbrella.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -86,7 +81,6 @@
               "kind": "text",
               "text": "They ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -95,16 +89,12 @@
               "accepted_values": [
                 "lost"
               ],
-              "spelling_candidates": [
-                "loost"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (förlorade) the match by 1–0.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -135,7 +125,6 @@
               "kind": "text",
               "text": "Soon ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -145,16 +134,12 @@
                 "Protestants",
                 "the Protestants"
               ],
-              "spelling_candidates": [
-                "Protestant"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (protestanterna) will be a minority in Northern Ireland.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -185,7 +170,6 @@
               "kind": "text",
               "text": "If you ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -199,16 +183,12 @@
                 "win",
                 "ever win"
               ],
-              "spelling_candidates": [
-                "shoud win"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skulle vinna) a million pounds, please let me know!",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -241,16 +221,12 @@
               "accepted_values": [
                 "Ten years ago"
               ],
-              "spelling_candidates": [
-                "Ten year ago"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (För tio år sedan) he wrote his first book.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -286,16 +262,12 @@
                 "The town’s",
                 "The town's"
               ],
-              "spelling_candidates": [
-                "The citys"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Stadens) finances are in good order.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -326,7 +298,6 @@
               "kind": "text",
               "text": "It ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -335,16 +306,12 @@
               "accepted_values": [
                 "rains"
               ],
-              "spelling_candidates": [
-                "rains"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (regnar) a lot in Seattle.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -377,16 +344,12 @@
               "accepted_values": [
                 "Most"
               ],
-              "spelling_candidates": [
-                "Mots"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (De flesta) immigrants tend to live together in the same neighbourhoods.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -417,7 +380,6 @@
               "kind": "text",
               "text": "It is just ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -429,16 +391,12 @@
                 "a 10-minute",
                 "a 10 minute"
               ],
-              "spelling_candidates": [
-                "a ten-minuet"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (en tio minuters) boat trip.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -469,7 +427,6 @@
               "kind": "text",
               "text": "It was ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -478,16 +435,12 @@
               "accepted_values": [
                 "an"
               ],
-              "spelling_candidates": [
-                "a"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (en) honour to carry the flag in the parade.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -520,16 +473,12 @@
               "accepted_values": [
                 "Most"
               ],
-              "spelling_candidates": [
-                "Mots"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (De flesta) visitors stay in the exhibition for only half an hour.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -560,7 +509,6 @@
               "kind": "text",
               "text": "We really should give more money to ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -569,16 +517,12 @@
               "accepted_values": [
                 "the poor"
               ],
-              "spelling_candidates": [
-                "the por"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de fattiga).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -609,7 +553,6 @@
               "kind": "text",
               "text": "John Grisham ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -618,16 +561,12 @@
               "accepted_values": [
                 "writes"
               ],
-              "spelling_candidates": [
-                "writse"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skriver) one novel a year.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -658,7 +597,6 @@
               "kind": "text",
               "text": "Many people blame ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -667,16 +605,12 @@
               "accepted_values": [
                 "society"
               ],
-              "spelling_candidates": [
-                "socitey"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (samhället) when something goes wrong.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -710,16 +644,12 @@
                 "The five-year-old",
                 "The five year old"
               ],
-              "spelling_candidates": [
-                "The five-yearold"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Den fem år gamla) boy got lost in the deep forest.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -750,7 +680,6 @@
               "kind": "text",
               "text": "More sun and light would be good for ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -759,16 +688,12 @@
               "accepted_values": [
                 "most of us"
               ],
-              "spelling_candidates": [
-                "most of as"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de flesta av oss).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

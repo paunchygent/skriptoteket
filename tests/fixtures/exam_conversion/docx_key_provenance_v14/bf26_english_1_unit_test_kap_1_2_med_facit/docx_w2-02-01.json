@@ -21,7 +21,6 @@
               "kind": "text",
               "text": "Cars are ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -30,18 +29,12 @@
               "accepted_values": [
                 "constantly"
               ],
-              "spelling_candidates": [
-                "constanty",
-                "constanly",
-                "constantlyy"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ständigt) passing our house, even late at night.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

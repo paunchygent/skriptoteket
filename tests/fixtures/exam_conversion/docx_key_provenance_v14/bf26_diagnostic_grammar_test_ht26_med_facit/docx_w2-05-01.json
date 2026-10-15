@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Det slutade med att alla betalade fem dollar var. ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -45,7 +44,6 @@
                 "In the end, everybody paid five dollars each",
                 "In the end, everybody paid five dollars each."
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

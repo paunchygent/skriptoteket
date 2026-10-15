@@ -18,6 +18,7 @@ function gapWithAutomaticValues(): NativeExamGap {
   return {
     accepted_values: ["hundra"],
     automatic_values: ["hundraa", "hundar"],
+    excluded_automatic_values: [],
     gap_id: "gap_001",
   };
 }
@@ -70,6 +71,7 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
     const wrapper = mountPopover({
       accepted_values: ["100"],
       automatic_values: [],
+      excluded_automatic_values: [],
       gap_id: "gap_001",
     });
 

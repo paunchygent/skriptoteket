@@ -31,7 +31,6 @@
               "kind": "text",
               "text": "Select the word or phrase for each definition.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -42,7 +41,6 @@
               "kind": "text",
               "text": "Write the letter of the matching option.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

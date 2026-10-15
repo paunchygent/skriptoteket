@@ -268,7 +268,7 @@ async def test_each_batch_schema_names_only_its_own_anchors_and_kinds_without_re
             if "anyOf" in segment_schema
             else [segment_schema]
         )
-        assert all("spelling_candidates" in _list(shape["required"]) for shape in shapes)
+        assert all("spelling_candidates" not in _list(shape["required"]) for shape in shapes)
         lists = [
             _object(_object(schema["properties"])["answer_key_anchors"]),
             _object(_object(_object(defs["ProducedItem"])["properties"])["source_anchors"]),

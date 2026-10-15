@@ -30,12 +30,7 @@ class ProducedSegment(_Produced):
     accepted_values: tuple[str, ...] = Field(
         description="For a gap: correct answer forms from the teacher's facit, including "
         "inline facit, or proposed answers when the item's key_source is invented. "
-        "Empty for text and asset. Misspellings belong in spelling_candidates only."
-    )
-    spelling_candidates: tuple[str, ...] = Field(
-        description="For a gap answered from the facit: likely misspellings of its accepted "
-        "answers, at most three per answer. Empty for invented keys, text and assets. "
-        "Keep them separate from accepted_values; code filters their edit distance."
+        "Empty for text and asset."
     )
     asset_id: str | None = Field(
         default=None,
@@ -47,22 +42,12 @@ class ProducedSegment(_Produced):
     @model_validator(mode="after")
     def _kind_fields(self) -> "ProducedSegment":
         if self.kind == "text":
-            if (
-                not self.text
-                or self.accepted_values
-                or self.spelling_candidates
-                or self.asset_id is not None
-            ):
+            if not self.text or self.accepted_values or self.asset_id is not None:
                 raise ValueError("text segments carry non-empty text only")
         elif self.kind == "gap":
             if self.text is not None or self.asset_id is not None:
                 raise ValueError("gap segments carry no text or asset")
-        elif (
-            self.text is not None
-            or self.accepted_values
-            or self.spelling_candidates
-            or not self.asset_id
-        ):
+        elif self.text is not None or self.accepted_values or not self.asset_id:
             raise ValueError("asset segments carry one asset id only")
         return self
 

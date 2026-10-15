@@ -19,6 +19,7 @@ import {
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   requestExamWorkspaceAnswerKeySuggestions,
+  requestExamWorkspaceAnswerMisspellings,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
@@ -34,6 +35,8 @@ const apiPostMock = vi.mocked(apiPost);
 const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
+const ANSWER_MISSPELLINGS_PATH =
+  "/api/v1/apps/documents.conversion_hub/exam-workspace/answer-misspellings";
 
 function buildDocument(revision: number): NativeExamDocument {
   return {
@@ -195,5 +198,21 @@ describe("examWorkspace transport", () => {
     expect(apiGetMock).toHaveBeenCalledWith(
       `${DOCUMENTS_ROOT}/lineage-1/answer-key-suggestions/job-1`,
     );
+  });
+
+  it("requests misspellings for the newly added answers with the item's gold answers", async () => {
+    const response = { automatic_values: ["Götebprg"] };
+    apiPostMock.mockResolvedValueOnce(response);
+    const request = {
+      accepted_values: ["Göteborg"],
+      other_gold_answers: ["Stockholm", "Göteborg"],
+      document_text: "Hon heter Stockholm och Oslo.",
+    };
+
+    const result = await requestExamWorkspaceAnswerMisspellings(request);
+
+    expect(apiPostMock).toHaveBeenCalledTimes(1);
+    expect(apiPostMock).toHaveBeenCalledWith(ANSWER_MISSPELLINGS_PATH, request);
+    expect(result).toBe(response);
   });
 });

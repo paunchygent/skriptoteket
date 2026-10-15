@@ -64,7 +64,6 @@ def _content(points: JsonValue, criteria: list[JsonValue]) -> dict[str, JsonValu
                                 "kind": "text",
                                 "text": "Resonera.",
                                 "accepted_values": [],
-                                "spelling_candidates": [],
                                 "asset_id": None,
                             }
                         ]

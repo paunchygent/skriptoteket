@@ -44,7 +44,6 @@
               "kind": "text",
               "text": "I ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -58,19 +57,12 @@
                 "’d waited",
                 "'d waited"
               ],
-              "spelling_candidates": [
-                "had been waitng",
-                "had been waIting",
-                "had waited",
-                "had ben waiting"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (hade väntat) for the train for two hours, when they announced that there would be no trains that day.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -101,7 +93,6 @@
               "kind": "text",
               "text": "I ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -112,17 +103,12 @@
                 "’d buy",
                 "'d buy"
               ],
-              "spelling_candidates": [
-                "woud buy",
-                "would by"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skulle köpa) that computer if I were you.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -153,7 +139,6 @@
               "kind": "text",
               "text": "I bought ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -162,17 +147,12 @@
               "accepted_values": [
                 "this furniture"
               ],
-              "spelling_candidates": [
-                "this furnitue",
-                "this furnituer"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de här möblerna) in the sale.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -205,17 +185,12 @@
               "accepted_values": [
                 "Politics is"
               ],
-              "spelling_candidates": [
-                "Politics are",
-                "Politcs is"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Politik är) important.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -246,7 +221,6 @@
               "kind": "text",
               "text": "We have ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -255,17 +229,12 @@
               "accepted_values": [
                 "planned"
               ],
-              "spelling_candidates": [
-                "planed",
-                "plannned"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (planerat) to go on a trip to the Bahamas this winter.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -296,7 +265,6 @@
               "kind": "text",
               "text": "I bought ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -305,17 +273,12 @@
               "accepted_values": [
                 "these"
               ],
-              "spelling_candidates": [
-                "thes",
-                "thees"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de här) shoes really cheaply.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -346,7 +309,6 @@
               "kind": "text",
               "text": "She was not used ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -355,17 +317,12 @@
               "accepted_values": [
                 "to working"
               ],
-              "spelling_candidates": [
-                "to workng",
-                "to workin"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (vid att arbeta) so late.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -396,7 +353,6 @@
               "kind": "text",
               "text": "I don’t want the red jumper. I prefer ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -405,17 +361,12 @@
               "accepted_values": [
                 "the blue one"
               ],
-              "spelling_candidates": [
-                "the blue on",
-                "the bluse one"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (den blåa).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -448,17 +399,12 @@
               "accepted_values": [
                 "Those are"
               ],
-              "spelling_candidates": [
-                "Thsoe are",
-                "Those is"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Det där är) the only sweaters we have in your size.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -491,17 +437,12 @@
               "accepted_values": [
                 "History"
               ],
-              "spelling_candidates": [
-                "Histroy",
-                "Hstory"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (Historien) often repeats itself.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -532,7 +473,6 @@
               "kind": "text",
               "text": "I was very suspicious ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -542,17 +482,12 @@
                 "of",
                 "about"
               ],
-              "spelling_candidates": [
-                "off",
-                "abotu"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (mot) his behaviour.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -583,7 +518,6 @@
               "kind": "text",
               "text": "He speaks English very ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -592,17 +526,12 @@
               "accepted_values": [
                 "badly"
               ],
-              "spelling_candidates": [
-                "baldy",
-                "badlly"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (dåligt).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -633,7 +562,6 @@
               "kind": "text",
               "text": "I would like ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -644,18 +572,12 @@
                 "a piece of advice",
                 "a bit of advice"
               ],
-              "spelling_candidates": [
-                "some advcie",
-                "a piece of advcie",
-                "a bit of advcie"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ett råd).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -686,7 +608,6 @@
               "kind": "text",
               "text": "Both ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -695,17 +616,12 @@
               "accepted_values": [
                 "the young and the old"
               ],
-              "spelling_candidates": [
-                "the young and the od",
-                "the young and the ol"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (de unga och de gamla) feel that they have too little influence.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -736,7 +652,6 @@
               "kind": "text",
               "text": "I’m so tired. I ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -750,18 +665,12 @@
                 "’ve worked",
                 "'ve worked"
               ],
-              "spelling_candidates": [
-                "have been workng",
-                "have been workin",
-                "have workd"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (har arbetat) hard all day.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -792,7 +701,6 @@
               "kind": "text",
               "text": "She is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -801,17 +709,12 @@
               "accepted_values": [
                 "the only one"
               ],
-              "spelling_candidates": [
-                "the only on",
-                "the onyl one"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (den enda) who can help us in this situation.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

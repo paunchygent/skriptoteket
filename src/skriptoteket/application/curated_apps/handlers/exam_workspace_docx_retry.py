@@ -49,6 +49,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
     QuestionFamily,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
+    infer_exam_document_language,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
@@ -67,6 +70,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source im
     source_asset_ids,
     source_missing_picture_reasons,
     source_review_item,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_text import (
+    native_exam_document_text,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -254,6 +260,7 @@ class RetryExamWorkspaceItemHandler:
             allowed_kinds=frozenset({kind}),
             batch=batch.batch_id,
             questions=(family.question_anchors,),
+            document_language=infer_exam_document_language(native_exam_document_text(saved)),
         )
         outcome = await convert_batch(
             state=state,

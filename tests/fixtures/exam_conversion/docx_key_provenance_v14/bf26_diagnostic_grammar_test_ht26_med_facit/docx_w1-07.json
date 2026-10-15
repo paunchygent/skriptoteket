@@ -30,7 +30,6 @@
               "kind": "text",
               "text": "They hadn’t met since ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -39,18 +38,12 @@
               "accepted_values": [
                 "Christmas"
               ],
-              "spelling_candidates": [
-                "Christams",
-                "Chrismas",
-                "Christmass"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (jul).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -81,7 +74,6 @@
               "kind": "text",
               "text": "You ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -91,18 +83,12 @@
                 "should be",
                 "ought to be"
               ],
-              "spelling_candidates": [
-                "shoudl be",
-                "should bee",
-                "ought too be"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " more careful about your health.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

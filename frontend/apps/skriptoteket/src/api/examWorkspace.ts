@@ -54,6 +54,8 @@ export type NativeAnswerKeySuggestion = Schemas["NativeAnswerKeySuggestion"];
 export type ExamWorkspaceAnswerKeySuggestionItem =
   Schemas["ExamWorkspaceAnswerKeySuggestionItem"];
 export type ExamWorkspaceItemRetryResponse = Schemas["ExamWorkspaceItemRetryResponse"];
+export type ExamWorkspaceMisspellingsRequest = Schemas["ExamWorkspaceMisspellingsRequest"];
+export type ExamWorkspaceMisspellingsResponse = Schemas["ExamWorkspaceMisspellingsResponse"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceExportBlockerReason =
@@ -198,5 +200,21 @@ export async function retryExamWorkspaceItem(
   return await apiPost<ExamWorkspaceItemRetryResponse>(
     `${documentPath(lineageId)}/items/retry`,
     body,
+  );
+}
+
+/**
+ * Ask the deterministic producer for the automatic misspellings of newly
+ * keyed accepted answers. The request carries only the values this edit
+ * added, every accepted answer the question now holds (so the producer never
+ * proposes one gold answer as another's misspelling), and the document's text
+ * for its language.
+ */
+export async function requestExamWorkspaceAnswerMisspellings(
+  request: ExamWorkspaceMisspellingsRequest,
+): Promise<ExamWorkspaceMisspellingsResponse> {
+  return await apiPost<ExamWorkspaceMisspellingsResponse>(
+    `${ROOT}/answer-misspellings`,
+    request,
   );
 }

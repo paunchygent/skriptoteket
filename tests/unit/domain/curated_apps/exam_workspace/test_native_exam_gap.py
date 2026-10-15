@@ -29,6 +29,21 @@ class TestAutomaticValues:
 
         assert gap.automatic_values == ("mobiltelefone", "mobiltelefons", "mobiltelefonx")
 
+    def test_excluded_values_stay_removed_after_serialization_and_rekeying(self) -> None:
+        gap = NativeGap(
+            gap_id="gap_001",
+            accepted_values=("Stockholm",),
+            automatic_values=("Stockholn", "Stokholm"),
+            excluded_automatic_values=("stockholn",),
+        )
+        assert gap.automatic_values == ("Stokholm",)
+        payload = gap.model_dump(mode="json")
+        payload["accepted_values"] = ["Stockholm", "stockholms"]
+        payload["automatic_values"] = ["Stockholn", "Stokholm"]
+        reopened = NativeGap.model_validate(payload)
+        assert reopened.automatic_values == ("Stokholm",)
+        assert reopened.excluded_automatic_values == ("stockholn",)
+
     def test_automatic_values_without_an_accepted_value_are_dropped(self) -> None:
         gap = NativeGap(gap_id="gap_001", automatic_values=("NE",))
 

@@ -23,10 +23,15 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
+    ExamWorkspaceMisspellingsRequest,
+    ExamWorkspaceMisspellingsResponse,
+)
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
+    GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
@@ -42,6 +47,20 @@ from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
+
+
+@router.post(
+    "/exam-workspace/answer-misspellings",
+    response_model=ExamWorkspaceMisspellingsResponse,
+)
+def generate_exam_workspace_misspellings(
+    request: ExamWorkspaceMisspellingsRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[GenerateExamWorkspaceMisspellingsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceMisspellingsResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return handler.handle(request=request)
 
 
 @router.get(

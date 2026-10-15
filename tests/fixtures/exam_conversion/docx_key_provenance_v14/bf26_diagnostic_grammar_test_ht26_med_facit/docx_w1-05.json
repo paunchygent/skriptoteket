@@ -37,7 +37,6 @@
               "kind": "text",
               "text": "It was an ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -46,16 +45,12 @@
               "accepted_values": [
                 "unusually"
               ],
-              "spelling_candidates": [
-                "usualy"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ovanligt) bad storm.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -87,7 +82,6 @@
               "kind": "text",
               "text": "She gave him ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -96,14 +90,12 @@
               "accepted_values": [
                 "a"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ett) youthful smile.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -135,7 +127,6 @@
               "kind": "text",
               "text": "She moved around ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -145,16 +136,12 @@
                 "carefully",
                 "cautiously"
               ],
-              "spelling_candidates": [
-                "carefuly"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (försiktigt) in order not to disturb anyone.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -186,7 +173,6 @@
               "kind": "text",
               "text": "The kids threw snowballs ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -195,14 +181,12 @@
               "accepted_values": [
                 "at"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (på) the passers-by.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -234,7 +218,6 @@
               "kind": "text",
               "text": "We live in ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -244,16 +227,12 @@
                 "a house of our own",
                 "our own house"
               ],
-              "spelling_candidates": [
-                "a house of own"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": ".",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -285,7 +264,6 @@
               "kind": "text",
               "text": "She thought she ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -297,16 +275,12 @@
                 "’d be",
                 "'d be"
               ],
-              "spelling_candidates": [
-                "was going to bee"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (skulle bli) late for her own wedding.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -338,7 +312,6 @@
               "kind": "text",
               "text": "Every evening, the children ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -347,16 +320,12 @@
               "accepted_values": [
                 "wait"
               ],
-              "spelling_candidates": [
-                "waait"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (väntar) for their mother to come home.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -388,7 +357,6 @@
               "kind": "text",
               "text": "We must get more ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -397,16 +365,12 @@
               "accepted_values": [
                 "women"
               ],
-              "spelling_candidates": [
-                "wmoen"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (kvinnor) into politics.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -438,7 +402,6 @@
               "kind": "text",
               "text": "She took the ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -447,16 +410,12 @@
               "accepted_values": [
                 "thinnest"
               ],
-              "spelling_candidates": [
-                "thinnset"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (tunnaste) book she could find.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -488,7 +447,6 @@
               "kind": "text",
               "text": "The majority of visitors to this museum are ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -498,17 +456,12 @@
                 "Americans",
                 "American"
               ],
-              "spelling_candidates": [
-                "Americns",
-                "Americn"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (amerikaner).",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -542,16 +495,12 @@
               "accepted_values": [
                 "Most of us"
               ],
-              "spelling_candidates": [
-                "Most of u"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " left the party at midnight.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -583,7 +532,6 @@
               "kind": "text",
               "text": "The elephant is ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -592,14 +540,12 @@
               "accepted_values": [
                 "an"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (ett) animal with large flapping ears and a trunk.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -631,7 +577,6 @@
               "kind": "text",
               "text": "The train ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -640,16 +585,12 @@
               "accepted_values": [
                 "stopped"
               ],
-              "spelling_candidates": [
-                "stoped"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (stannade) in the middle of nowhere.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -681,7 +622,6 @@
               "kind": "text",
               "text": "There are more ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -690,16 +630,12 @@
               "accepted_values": [
                 "sheep"
               ],
-              "spelling_candidates": [
-                "shepe"
-              ],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (får) than people in Wales.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -731,7 +667,6 @@
               "kind": "text",
               "text": "We think there is no reason ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -740,14 +675,12 @@
               "accepted_values": [
                 "for"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (till) such an exaggerated reaction.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -779,7 +712,6 @@
               "kind": "text",
               "text": "There has been an increase ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -788,14 +720,12 @@
               "accepted_values": [
                 "in"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
               "kind": "text",
               "text": " (av) crimes committed by young people.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

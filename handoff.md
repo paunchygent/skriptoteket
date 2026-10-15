@@ -55,6 +55,9 @@
   `../Skriptoteket-task-skript-39-09-03`). Tasks 4 (Fritext criteria,
   in review), 5 (Kort svar) and 6 (structured misspelling producer, R15-R17)
   `in_progress` in their own worktrees; task 7 export checklist follows.
+  Task 6 owner Pi `bff77816`: producer/data/DOCX/keying implemented.
+  Next: independent review, then parent-owned staging/Exam.net walk.
+  Evidence: session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-06/implementation-report-2.md`.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
@@ -111,20 +114,9 @@
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
-- 2026-09-05 reconciliation (docs/planning only, no code): the user-approved
-  native editable exam workspace is recorded in
-  [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
-  (terms E8-E12) plus `proposed`
-  [ADR-SKRIPT-0091](docs/decisions/adr-skript-0091-native-editable-exam-workspace-narrows-the-adr-0090-authoring-ui-non-decision.md),
-  [ST-SKRIPT-39-04](docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md),
-  and
-  [TASK-SKRIPT-39-04-01](docs/backlog/tasks/task-skript-39-04-01-docx-walking-skeleton-import-native-edit-and-create-save-and-reopen-export.md).
-  Direction: DOCX upload first, digital PDF second, OCR deferred;
-  deterministic extraction plus LLM parse/enrich/repair behind teacher
-  review; versioned native documents with assets and editing state in Mina
-  filer; PDF/DOCX/QTI are on-demand exports only. Cleanup first (02-03 done):
-  03-03 and 03-04 are done; DOCX implementation waits for ADR-0091/story
-  review. Verbose prior history archived to
+- Historical 2026-09-05 workspace planning, not current readiness:
+  EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091 and ST-SKRIPT-39-04 hold the
+  durable direction. Prior planning history is archived in
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 - [TASK-SKRIPT-39-03-03](docs/backlog/tasks/task-skript-39-03-03-retire-the-sir-convert-exam-specific-integration.md)

@@ -16,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     ENGLISH_EXAM,
     recorded_converted_items,
+    recorded_exam_language,
 )
 
 
@@ -30,7 +31,7 @@ def recorded_matching_items(
             continue
         if not keyed:
             produced = produced.model_copy(update={"match_pairs": ()})
-        item = native_item(produced)
+        item = native_item(produced, language=recorded_exam_language(exam))
         sequence = len(items) + 1
         items.append(
             NativeExamItem.model_validate(

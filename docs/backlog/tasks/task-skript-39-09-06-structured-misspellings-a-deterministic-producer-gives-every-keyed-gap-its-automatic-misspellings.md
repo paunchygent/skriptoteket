@@ -35,6 +35,12 @@ teacher-created and converted gaps alike.
   with a vendored Swedish and English QWERTY neighbour map. Each candidate
   passes the existing A10 filter (`answer_spelling.py`); the first 3 survivors
   per accepted value are kept. The same input always yields the same output.
+  Infer one language from the complete exam text using stopword counts and
+  å/ä/ö as a Swedish signal, with Swedish winning ties; pass it explicitly
+  to the producer. Never mix languages for a value. Exclude valid words of
+  that language, including inflected forms, from every tier using the committed
+  dictionary-and-inflection lexicons. User decision 2026-10-15: no compound
+  check; a real compound absent from those lexicons is not filtered.
 - **Data.** The attested maps are built once by a committed build script,
   pre-filtered to the A10 distance bound, and committed as static data with
   their source attribution; the REP tables and keyboard maps are committed
@@ -82,8 +88,13 @@ per process; a lookup for one value stays within a few milliseconds.
 
 ## Stop Conditions
 
-- DaLAJ alignment yields too few Swedish pairs to rank above REP reversal;
-  report the yield before shipping Swedish attested data.
+- The DaLAJ 1.0 alignment gate was reached and reported. The user resolved
+  it with the Swedish-source research: DaLAJ-GED-Superlim 2.0 O-labelled
+  pairs yielded 1,377 A10 pairs covering 1,007 words before inflected-word
+  filtering. Use O and mixed-O as the primary Swedish attested source,
+  with the researched Wikipedia lists as supplements; preserve attribution.
+  Evidence: retained session `01a13c92-d70e-765f-ae36-b6583539e201`,
+  `evidence/research/swedish-misspelling-sources.md`.
 
 ## Decided Contract Terms
 

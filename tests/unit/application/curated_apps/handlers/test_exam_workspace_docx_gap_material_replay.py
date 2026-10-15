@@ -79,7 +79,6 @@ def _make_material_a_gap(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
             assert isinstance(segment, dict)
             if segment["kind"] == "gap":
                 segment["accepted_values"] = [_MATERIAL]
-                segment["spelling_candidates"] = []
                 return content
     raise AssertionError("the recorded q20 item places no gap")
 

@@ -101,12 +101,6 @@ Rules:
   inline facit. Keep it even when it needs interpretation or supplies only a marking guide.
   Without an item-specific facit entry it is null. Never substitute your proposed key for
   this teacher text. Copied and interpreted keys require facit_text; invented keys have none.
-- For each facit-derived gap, propose likely misspellings in spelling_candidates in this
-  same response, at most three per accepted answer. They are extra spelling mistakes, not
-  synonyms or new correct answers: at most one edit for answers of up to six characters,
-  two for longer answers, including adjacent transposition. Keep accepted_values as the
-  correct answer forms only. Text and asset segments, and invented keys, have empty
-  spelling_candidates. Do not make separate calls for misspellings.
 - A question paragraph can carry its facit inline. Inline facit is set apart as an answer:
   by formatting, usually italics, or after an answer label, as in an answer line
   "Label: value"; a bracketed cue in the question's own plain text is no facit. Italic text

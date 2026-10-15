@@ -78,7 +78,6 @@
               "kind": "text",
               "text": "Dela upp orden i morfem.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -89,7 +88,6 @@
               "kind": "text",
               "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -100,7 +98,6 @@
               "kind": "text",
               "text": "a) snö + boll + ar + na + s",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -109,7 +106,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -118,7 +114,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -127,7 +122,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -136,7 +130,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -145,7 +138,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -156,7 +148,6 @@
               "kind": "text",
               "text": "b) skriv + bar + het + en",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -165,7 +156,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -174,7 +164,6 @@
               "accepted_values": [
                 "A"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -183,7 +172,6 @@
               "accepted_values": [
                 "A"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -192,7 +180,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -203,7 +190,6 @@
               "kind": "text",
               "text": "c) fot + boll + foge-s + spel + are + na + s",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -212,7 +198,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -221,7 +206,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -230,7 +214,6 @@
               "accepted_values": [
                 "R"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -239,7 +222,6 @@
               "accepted_values": [
                 "A"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -248,7 +230,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -257,7 +238,6 @@
               "accepted_values": [
                 "B"
               ],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -293,7 +273,6 @@
               "kind": "text",
               "text": "Skriv huvudordet i varje nominalfras.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -304,7 +283,6 @@
               "kind": "text",
               "text": "a) de tre nya eleverna från Göteborg Huvudord:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -312,9 +290,6 @@
               "text": null,
               "accepted_values": [
                 "eleverna"
-              ],
-              "spelling_candidates": [
-                "elevernae"
               ],
               "asset_id": null
             }
@@ -326,7 +301,6 @@
               "kind": "text",
               "text": "b) min äldre systers trasiga mobiltelefon på köksbordet Huvudord:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -334,9 +308,6 @@
               "text": null,
               "accepted_values": [
                 "mobiltelefon"
-              ],
-              "spelling_candidates": [
-                "mobiltelefo"
               ],
               "asset_id": null
             }
@@ -348,7 +319,6 @@
               "kind": "text",
               "text": "c) alla böckerna i den nedersta hyllan Huvudord:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -356,9 +326,6 @@
               "text": null,
               "accepted_values": [
                 "böckerna"
-              ],
-              "spelling_candidates": [
-                "böckernae"
               ],
               "asset_id": null
             }
@@ -370,7 +337,6 @@
               "kind": "text",
               "text": "d) den lilla vägen genom skogen Huvudord:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -378,9 +344,6 @@
               "text": null,
               "accepted_values": [
                 "vägen"
-              ],
-              "spelling_candidates": [
-                "vägena"
               ],
               "asset_id": null
             }
@@ -417,7 +380,6 @@
               "kind": "text",
               "text": "Skriv satsdelen för den markerade delen.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -428,7 +390,6 @@
               "kind": "text",
               "text": "a) Bussen stannade vid skolan. Markerad del: vid skolan Satsdel:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -436,9 +397,6 @@
               "text": null,
               "accepted_values": [
                 "adverbial"
-              ],
-              "spelling_candidates": [
-                "adverbia"
               ],
               "asset_id": null
             }
@@ -450,7 +408,6 @@
               "kind": "text",
               "text": "b) Rektorn gav eleverna tydliga instruktioner. Markerad del: eleverna Satsdel:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -458,9 +415,6 @@
               "text": null,
               "accepted_values": [
                 "indirekt objekt"
-              ],
-              "spelling_candidates": [
-                "indirekt obekt"
               ],
               "asset_id": null
             }
@@ -472,7 +426,6 @@
               "kind": "text",
               "text": "c) Filmen blev spännande. Markerad del: spännande Satsdel:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -480,9 +433,6 @@
               "text": null,
               "accepted_values": [
                 "predikativ/predikatsfyllnad"
-              ],
-              "spelling_candidates": [
-                "predikativ/predikatsfylland"
               ],
               "asset_id": null
             }
@@ -494,7 +444,6 @@
               "kind": "text",
               "text": "d) Vi lämnade rapporten på expeditionen. Markerad del: rapporten Satsdel:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -502,9 +451,6 @@
               "text": null,
               "accepted_values": [
                 "direkt objekt"
-              ],
-              "spelling_candidates": [
-                "direkt obekt"
               ],
               "asset_id": null
             }

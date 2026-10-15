@@ -281,7 +281,9 @@ def _admit_item(
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
         item = native_item(
-            with_printed_points(with_accepted_forms(produced, context), own), chunks=own
+            with_printed_points(with_accepted_forms(produced, context), own),
+            chunks=own,
+            language=state.language,
         )
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())

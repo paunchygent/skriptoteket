@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Om vi hade tränat mer hade vi kanske vunnit matchen. ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -44,10 +43,6 @@
                 "If we had practised more, we might have won the match.",
                 "If we’d trained more, we might have won the match",
                 "If we’d trained more, we might have won the match."
-              ],
-              "spelling_candidates": [
-                "If we had trainned more, we might have won the match",
-                "If we had trained more, we might of won the match"
               ],
               "asset_id": null
             }

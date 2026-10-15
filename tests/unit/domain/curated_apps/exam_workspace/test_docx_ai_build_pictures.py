@@ -126,18 +126,17 @@ def test_native_item_maps_the_model_carrier_to_the_source_picture() -> None:
     chunk = _chunk("body:0001", "Se bilden", (image,))
     produced = _produced(
         [
-            {"kind": "text", "text": "Se bilden", "accepted_values": [], "spelling_candidates": []},
+            {"kind": "text", "text": "Se bilden", "accepted_values": []},
             {
                 "kind": "asset",
                 "text": None,
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": image.asset_id,
             },
         ]
     )
 
-    item = native_item(produced, chunks=(chunk,))
+    item = native_item(produced, chunks=(chunk,), language="sv")
 
     (paragraph,) = item.body
     assert paragraph.segments == (
@@ -154,14 +153,13 @@ def test_native_item_rejects_a_picture_the_source_does_not_carry() -> None:
                 "kind": "asset",
                 "text": None,
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": asset_id_for(b"invented"),
             }
         ]
     )
 
     with pytest.raises(ValueError):
-        native_item(produced, chunks=())
+        native_item(produced, chunks=(), language="sv")
 
 
 def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
@@ -172,17 +170,16 @@ def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
     source_chunk = _chunk("body:0002", "Facit", (source_image,))
     produced = _produced(
         [
-            {"kind": "text", "text": "Fråga", "accepted_values": [], "spelling_candidates": []},
+            {"kind": "text", "text": "Fråga", "accepted_values": []},
             {
                 "kind": "asset",
                 "text": None,
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": body_image.asset_id,
             },
         ]
     )
-    item = native_item(produced, chunks=(chunk,)).model_copy(
+    item = native_item(produced, chunks=(chunk,), language="sv").model_copy(
         update={
             "retry_source": NativeExamRetrySource(
                 chunks=(
@@ -228,17 +225,16 @@ def test_manifest_drops_a_picture_no_item_references() -> None:
     chunk = _chunk("body:0001", "Fråga", (used, unused))
     produced = _produced(
         [
-            {"kind": "text", "text": "Fråga", "accepted_values": [], "spelling_candidates": []},
+            {"kind": "text", "text": "Fråga", "accepted_values": []},
             {
                 "kind": "asset",
                 "text": None,
                 "accepted_values": [],
-                "spelling_candidates": [],
                 "asset_id": used.asset_id,
             },
         ]
     )
-    item = native_item(produced, chunks=(chunk,))
+    item = native_item(produced, chunks=(chunk,), language="sv")
 
     assets, payloads = asset_manifest((item,), (chunk,))
 
@@ -258,13 +254,12 @@ def test_native_item_refuses_a_question_whose_source_picture_is_missing() -> Non
                 "kind": "text",
                 "text": "Se bilden",
                 "accepted_values": [],
-                "spelling_candidates": [],
             }
         ]
     )
 
     with pytest.raises(ValueError) as raised:
-        native_item(produced, chunks=(chunk,))
+        native_item(produced, chunks=(chunk,), language="sv")
 
     assert "unresolved source pictures" in str(raised.value)
     assert "/word/media/figur.emf" in str(raised.value)

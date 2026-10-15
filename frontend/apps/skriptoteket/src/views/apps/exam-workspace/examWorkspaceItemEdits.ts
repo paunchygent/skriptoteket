@@ -124,6 +124,68 @@ export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[
   };
 }
 
+/** The key value under the server's spelling policy: collapsed whitespace and folded case. */
+function normalizedAnswer(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("sv-SE");
+}
+
+/** Every accepted answer the question holds, in gap order and without duplicates. */
+export function itemAcceptedAnswers(item: NativeExamItem): string[] {
+  const seen = new Set<string>();
+  const answers: string[] = [];
+  for (const gap of item.gaps) {
+    for (const value of gap.accepted_values) {
+      if (!seen.has(value)) {
+        seen.add(value);
+        answers.push(value);
+      }
+    }
+  }
+  return answers;
+}
+
+/**
+ * Append produced misspellings to one gap's automatic values, keeping the
+ * existing ones: a value the question already accepts as a gold answer, one
+ * the gap already carries, and one the teacher suppressed are all dropped
+ * under the server's spelling policy (collapsed whitespace, folded case), and
+ * the rest keep the producer's order and their display form.
+ */
+export function withAutomaticValues(
+  item: NativeExamItem,
+  gapId: string,
+  values: string[],
+): NativeExamItem {
+  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
+  if (!gap || values.length === 0) {
+    return item;
+  }
+  const known = new Set([
+    ...itemAcceptedAnswers(item).map(normalizedAnswer),
+    ...gap.automatic_values.map(normalizedAnswer),
+    ...gap.excluded_automatic_values.map(normalizedAnswer),
+  ]);
+  const added: string[] = [];
+  for (const value of values) {
+    const normalized = normalizedAnswer(value);
+    if (normalized.length > 0 && !known.has(normalized)) {
+      known.add(normalized);
+      added.push(value);
+    }
+  }
+  if (added.length === 0) {
+    return item;
+  }
+  return {
+    ...item,
+    gaps: item.gaps.map((candidate) =>
+      candidate.gap_id === gapId
+        ? { ...candidate, automatic_values: [...candidate.automatic_values, ...added] }
+        : candidate,
+    ),
+  };
+}
+
 export function withGapValues(
   item: NativeExamItem,
   gapId: string,
@@ -148,7 +210,10 @@ export function withGapValues(
   };
 }
 
-/** Remove the conversion interpretation without losing the teacher's source facit. */
+/**
+ * Remove the conversion interpretation without losing the teacher's source
+ * facit. A spelling the teacher suppressed stays suppressed.
+ */
 export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
   if (item.answer_key.origin !== "ai_interpreted") {
     return item;
@@ -160,21 +225,40 @@ export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
   };
 }
 
-/** Remove only the selected automatic answer, preserving the key's provenance. */
+/**
+ * Remove only the selected automatic answer, preserving the key's
+ * provenance, and suppress it so no later reply or regeneration adds it back.
+ */
 export function withoutAutomaticValue(
   item: NativeExamItem,
   gapId: string,
   value: string,
 ): NativeExamItem {
   const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
-  if (!gap || !gap.automatic_values.includes(value)) {
+  const normalized = normalizedAnswer(value);
+  if (
+    !gap ||
+    normalized.length === 0 ||
+    !gap.automatic_values.some((entry) => normalizedAnswer(entry) === normalized)
+  ) {
     return item;
   }
+  const suppressed = gap.excluded_automatic_values.some(
+    (entry) => normalizedAnswer(entry) === normalized,
+  );
   return {
     ...item,
     gaps: item.gaps.map((candidate) =>
       candidate.gap_id === gapId
-        ? { ...candidate, automatic_values: candidate.automatic_values.filter((entry) => entry !== value) }
+        ? {
+            ...candidate,
+            automatic_values: candidate.automatic_values.filter(
+              (entry) => normalizedAnswer(entry) !== normalized,
+            ),
+            excluded_automatic_values: suppressed
+              ? candidate.excluded_automatic_values
+              : [...candidate.excluded_automatic_values, value],
+          }
         : candidate,
     ),
   };

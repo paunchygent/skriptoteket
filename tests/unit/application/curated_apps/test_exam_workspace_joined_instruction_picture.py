@@ -76,7 +76,6 @@ def _text(text: str) -> dict[str, object]:
         "kind": "text",
         "text": text,
         "accepted_values": [],
-        "spelling_candidates": [],
         "asset_id": None,
     }
 
@@ -86,7 +85,6 @@ def _asset(asset_id: str) -> dict[str, object]:
         "kind": "asset",
         "text": None,
         "accepted_values": [],
-        "spelling_candidates": [],
         "asset_id": asset_id,
     }
 
@@ -105,7 +103,8 @@ def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
                 "points": 1,
                 "choices": [],
             }
-        )
+        ),
+        language="sv",
     )
 
 
@@ -133,6 +132,7 @@ def _joined_item(paragraphs: _PARAGRAPHS) -> NativeExamItem:
             }
         ),
         chunks=_joined_chunks(),
+        language="sv",
     )
 
 

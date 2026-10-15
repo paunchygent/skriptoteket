@@ -98,7 +98,6 @@ def _produced(
                         kind="text",
                         text=line,
                         accepted_values=(),
-                        spelling_candidates=(),
                     ),
                 )
             )
@@ -113,7 +112,7 @@ def _produced(
 
 
 def _valid() -> NativeExamItem:
-    return native_item(_produced())
+    return native_item(_produced(), language="sv")
 
 
 def _with(item: NativeExamItem, **update: object) -> NativeExamItem:
@@ -186,7 +185,7 @@ def test_native_item_maps_each_produced_pair_to_the_ids_of_its_entries():
 
 
 def test_native_item_without_a_facit_leaves_the_matching_item_unkeyed_and_blocks_export():
-    item = native_item(_produced(pairs=()))
+    item = native_item(_produced(pairs=()), language="sv")
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
     assert item.answer_key.match_pairs == ()
@@ -226,7 +225,7 @@ def test_produced_pairs_that_use_one_right_entry_twice_fail_the_native_contract(
     twice = ((first.left, first.right), (second.left, first.right), (third.left, third.right))
 
     with pytest.raises(ValidationError, match="pairs each right entry at most once"):
-        native_item(_produced(pairs=twice))
+        native_item(_produced(pairs=twice), language="sv")
 
 
 def test_right_entry_used_twice_is_rejected_even_with_a_distractor_to_spare():
@@ -409,7 +408,9 @@ def test_qti_export_of_the_valid_item_is_an_automatic_matching_interaction_with_
 
 
 def test_qti_export_of_an_unkeyed_matching_item_carries_no_pairs():
-    (qti,) = native_exam_to_examnet_qti_items(_document(native_item(_produced(pairs=()))))
+    (qti,) = native_exam_to_examnet_qti_items(
+        _document(native_item(_produced(pairs=()), language="sv"))
+    )
 
     assert qti.interaction_type is ExamNetQtiInteractionType.MATCHING
     assert qti.match_pairs == ()

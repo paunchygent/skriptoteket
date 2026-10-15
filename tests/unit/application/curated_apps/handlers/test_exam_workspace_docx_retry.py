@@ -76,6 +76,43 @@ async def test_retry_returns_one_replacement_that_keeps_identity_and_stored_sour
     assert [chunk["anchor"] for chunk in payload["context_chunks"]] == []
 
 
+async def test_retry_uses_the_whole_saved_exam_for_language_not_only_its_question(
+    env: Env, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from skriptoteket.application.curated_apps.handlers import (
+        exam_workspace_docx_build_state as state_module,
+    )
+    from skriptoteket.application.curated_apps.handlers import (
+        exam_workspace_docx_retry as retry_module,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import Language
+
+    seen: list[str] = []
+
+    def infer(text: str) -> Language:
+        seen.append(text)
+        return "en"
+
+    def no_item_only_inference(text: str) -> Language:
+        raise AssertionError("retry must use its explicit whole-document language")
+
+    monkeypatch.setattr(retry_module, "infer_exam_document_language", infer)
+    monkeypatch.setattr(state_module, "infer_exam_document_language", no_item_only_inference)
+    document = make_document(
+        lineage_id=uuid4(),
+        items=(
+            make_item("item_001", 1, anchor="body:0001", source=make_source()),
+            make_item("item_002", 2, anchor="body:0002", text="The rest of the English exam."),
+        ),
+    )
+    await env.seed(document)
+    env.exchange.reply = make_retry_reply()
+    await env.retry(document)
+    assert len(seen) == 1
+    assert "Omprov" in seen[0]
+    assert "The rest of the English exam." in seen[0]
+
+
 async def test_a_disabled_ai_returns_a_source_review_item_without_a_call() -> None:
     env = Env(enabled=False)
     lineage_id = uuid4()

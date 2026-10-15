@@ -173,7 +173,6 @@ def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dic
                     "kind": "text",
                     "text": text[3:],
                     "accepted_values": [],
-                    "spelling_candidates": [],
                 }
             ]
         }
@@ -185,7 +184,6 @@ def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dic
                     "kind": "asset",
                     "text": None,
                     "accepted_values": [],
-                    "spelling_candidates": [],
                     "asset_id": asset_id,
                 }
             ]

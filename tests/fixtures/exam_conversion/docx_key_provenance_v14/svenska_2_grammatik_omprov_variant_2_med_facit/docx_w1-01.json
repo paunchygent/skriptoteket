@@ -70,7 +70,6 @@
               "kind": "text",
               "text": "Jämför texternas språkliga drag.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -81,7 +80,6 @@
               "kind": "text",
               "text": "Beskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys.",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -92,7 +90,6 @@
               "kind": "text",
               "text": "Du kan till exempel jämföra:",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -103,7 +100,6 @@
               "kind": "text",
               "text": "nominaliseringar",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -114,7 +110,6 @@
               "kind": "text",
               "text": "konkreta och abstrakta uttryck",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -125,7 +120,6 @@
               "kind": "text",
               "text": "aktörer och perspektiv",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -136,7 +130,6 @@
               "kind": "text",
               "text": "nominalfraser",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -147,7 +140,6 @@
               "kind": "text",
               "text": "verb och handlingar",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]
@@ -158,7 +150,6 @@
               "kind": "text",
               "text": "formell och informell stil",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             }
           ]

@@ -2,7 +2,7 @@
 
 import copy
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from uuid import UUID
 
 import structlog
@@ -26,6 +26,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
+    Language,
+    infer_exam_document_language,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -71,6 +75,8 @@ class DocxBuildState:
     batch: str | None = None
     questions: tuple[tuple[str, ...], ...] = ()
     governing: frozenset[str] = frozenset()
+    document_language: InitVar[Language | None] = None
+    language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
@@ -89,11 +95,16 @@ class DocxBuildState:
     input_complete: bool = True
     output_complete: bool = True
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, document_language: Language | None) -> None:
         # Chunks are fixed for the state's lifetime, so the anchor index is built once.
         self.chunk_by_anchor = {chunk.anchor: chunk for chunk in self.chunks}
         self.known_anchors = frozenset(self.chunk_by_anchor)
         self.question_by_anchor = {a: own for own in self.questions for a in own}
+        self.language = (
+            document_language
+            if document_language is not None
+            else infer_exam_document_language("\n".join(chunk.text for chunk in self.chunks))
+        )
 
     @property
     def owned(self) -> frozenset[str]:

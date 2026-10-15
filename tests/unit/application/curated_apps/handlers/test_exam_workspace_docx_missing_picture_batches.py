@@ -134,7 +134,6 @@ def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
                         "kind": "text",
                         "text": text[3:],
                         "accepted_values": [],
-                        "spelling_candidates": [],
                     }
                 ]
             }

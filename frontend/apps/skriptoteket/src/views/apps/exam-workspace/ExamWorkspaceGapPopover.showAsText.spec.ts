@@ -17,7 +17,7 @@ import type { NativeExamGap } from "../../../api/examWorkspace";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 
 function buildGap(overrides: Partial<NativeExamGap> = {}): NativeExamGap {
-  return { accepted_values: ["100"], automatic_values: [], gap_id: "gap_001", ...overrides };
+  return { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001", ...overrides };
 }
 
 function mountPopover(gap: NativeExamGap, gapCount = 2) {

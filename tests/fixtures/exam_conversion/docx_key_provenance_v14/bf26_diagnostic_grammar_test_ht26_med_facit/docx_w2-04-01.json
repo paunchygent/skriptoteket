@@ -29,7 +29,6 @@
               "kind": "text",
               "text": "Cathy hade till sin stora förvåning gått ut utan skor. ",
               "accepted_values": [],
-              "spelling_candidates": [],
               "asset_id": null
             },
             {
@@ -44,10 +43,6 @@
                 "Cathy had, to her great surprise, gone out without shoes.",
                 "To her great surprise, Cathy had gone out without any shoes",
                 "To her great surprise, Cathy had gone out without any shoes."
-              ],
-              "spelling_candidates": [
-                "To her great surprize, Cathy had gone out without shoes",
-                "To her great surprise, Cathy had gone out without shoe"
               ],
               "asset_id": null
             }

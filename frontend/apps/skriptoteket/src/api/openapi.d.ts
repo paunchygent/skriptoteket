@@ -1437,6 +1437,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/answer-misspellings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Exam Workspace Misspellings */
+        post: operations["generate_exam_workspace_misspellings_api_v1_apps_documents_conversion_hub_exam_workspace_answer_misspellings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/conversion-jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -5173,6 +5190,20 @@ export interface components {
              */
             lineage_id: string;
         };
+        /** ExamWorkspaceMisspellingsRequest */
+        ExamWorkspaceMisspellingsRequest: {
+            /** Accepted Values */
+            accepted_values: string[];
+            /** Document Text */
+            document_text: string;
+            /** Other Gold Answers */
+            other_gold_answers: string[];
+        };
+        /** ExamWorkspaceMisspellingsResponse */
+        ExamWorkspaceMisspellingsResponse: {
+            /** Automatic Values */
+            automatic_values: string[];
+        };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
             /** App Id */
@@ -6443,6 +6474,11 @@ export interface components {
              * @default []
              */
             automatic_values: string[];
+            /**
+             * Excluded Automatic Values
+             * @default []
+             */
+            excluded_automatic_values: string[];
             /** Gap Id */
             gap_id: string;
         };
@@ -6458,6 +6494,11 @@ export interface components {
              * @default []
              */
             automatic_values: string[];
+            /**
+             * Excluded Automatic Values
+             * @default []
+             */
+            excluded_automatic_values: string[];
             /** Gap Id */
             gap_id: string;
         };
@@ -12332,6 +12373,39 @@ export interface operations {
                     "application/json": {
                         [key: string]: components["schemas"]["JsonValue"];
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_exam_workspace_misspellings_api_v1_apps_documents_conversion_hub_exam_workspace_answer_misspellings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceMisspellingsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceMisspellingsResponse"];
                 };
             };
             /** @description Validation Error */

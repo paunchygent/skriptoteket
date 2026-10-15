@@ -80,14 +80,12 @@ def test_gap_batch_schema_admits_only_the_text_and_gap_segment_shapes() -> None:
             "kind": "text",
             "text": "Cellen har",
             "accepted_values": [],
-            "spelling_candidates": [],
             "asset_id": None,
         },
         {
             "kind": "gap",
             "text": None,
             "accepted_values": ["en kärna"],
-            "spelling_candidates": [],
             "asset_id": None,
         },
     ]
@@ -96,21 +94,18 @@ def test_gap_batch_schema_admits_only_the_text_and_gap_segment_shapes() -> None:
             "kind": "text",
             "text": None,
             "accepted_values": [],
-            "spelling_candidates": [],
             "asset_id": None,
         },
         {
             "kind": "text",
             "text": "",
             "accepted_values": [],
-            "spelling_candidates": [],
             "asset_id": None,
         },
         {
             "kind": "gap",
             "text": "en kärna",
             "accepted_values": [],
-            "spelling_candidates": [],
             "asset_id": None,
         },
     ]
@@ -130,6 +125,4 @@ def test_schema_has_no_item_title() -> None:
 @pytest.mark.parametrize("text", ["", None])
 def test_produced_text_segment_rejects_empty_or_null_text(text: str | None) -> None:
     with pytest.raises(ValidationError):
-        ProducedSegment.model_validate(
-            {"kind": "text", "text": text, "accepted_values": [], "spelling_candidates": []}
-        )
+        ProducedSegment.model_validate({"kind": "text", "text": text, "accepted_values": []})
