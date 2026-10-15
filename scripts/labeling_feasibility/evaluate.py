@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from typing import Any
 
-from scripts.exam_conversion_eval.gold import GoldExam
+from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
+from scripts.labeling_feasibility.converted import ConvertedExam, ConvertedItem
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
@@ -307,15 +308,15 @@ def facit_placement_scores(
 
 
 def converter_baseline(
-    reference: Reference, gold: GoldExam, recording: dict[str, Any]
+    reference: Reference, gold: GoldExam, recording: ConvertedExam
 ) -> dict[str, Any]:
     """Score today's whole-exam converter output (kind, points, keyed content) on the same items."""
     owner = reference.owner_of()
-    by_item: dict[int, dict[str, Any]] = {}
-    for converted in recording["items"]:
-        votes = Counter(owner[a] for a in converted["source_anchors"] if a in owner)
+    by_item: dict[int, ConvertedItem] = {}
+    for converted_item in recording["items"]:
+        votes = Counter(owner[a] for a in converted_item["source_anchors"] if a in owner)
         if votes:
-            by_item.setdefault(votes.most_common(1)[0][0], converted)
+            by_item.setdefault(votes.most_common(1)[0][0], converted_item)
     kind = points = keyed = keyed_n = 0
     confusion: Counter[str] = Counter()
     for item in reference.items:
@@ -324,11 +325,12 @@ def converter_baseline(
         predicted = converted["kind"] if converted else "missing"
         confusion[f"{item.kind}->{predicted}"] += 1
         kind += int(predicted == item.kind)
-        if converted and item.points is not None and converted.get("points") is not None:
-            points += int(float(converted["points"]) == float(item.points))
+        converted_points = converted.get("points") if converted is not None else None
+        if item.points is not None and converted_points is not None:
+            points += int(float(converted_points) == float(item.points))
         if source.kind in {"single_choice", "multiple_response", "gap_fill"}:
             keyed_n += 1
-            keyed += int(bool(converted) and _keyed_equal(source, converted))
+            keyed += int(converted is not None and _keyed_equal(source, converted))
     n = len(reference.items)
     return {
         "items": n,
@@ -343,7 +345,7 @@ def _norm(value: str) -> str:
     return " ".join(tokens(value))
 
 
-def _keyed_equal(source: Any, converted: dict[str, Any]) -> bool:
+def _keyed_equal(source: GoldItem, converted: ConvertedItem) -> bool:
     if source.kind in {"single_choice", "multiple_response"}:
         got = {
             _norm(choice["text"])

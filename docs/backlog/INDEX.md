@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=40 | story=331 | task=0 | review=137
-- open | epic=19 | story=67 | task=0
+- total | epic=40 | story=332 | task=0 | review=137
+- open | epic=19 | story=68 | task=0
 
 ## Lookup
 
@@ -313,6 +313,7 @@
 - story | ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md)
 - story | ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md)
 - story | ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md)
+- story | ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md)
 - story | ST-SKRIPT-08-04 | [Catalog help (browse + run)](stories/st-skript-08-04-catalog-help-browse-run.md)
 - story | ST-SKRIPT-08-05 | [Tool results + downloads help](stories/st-skript-08-05-tool-results-downloads-help.md)
 - story | ST-SKRIPT-08-06 | [Contributor help (Mina verktyg + Föreslå skript)](stories/st-skript-08-06-contributor-help-mina-verktyg-f-resl-skript.md)
@@ -523,8 +524,8 @@
 ### active
 
 - EPIC-SKRIPT-02 | [Identity and access control (RBAC)](epics/epic-skript-02-identity-and-access-control-rbac.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1 | tasks=none
-- EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=9, proposed=1 | tasks=none
+- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1, proposed=1 | tasks=none
+- EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=10 | tasks=none
 - EPIC-SKRIPT-09 | [Security hardening for production deployment](epics/epic-skript-09-security-hardening-for-production-deployment.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-11 | [Full Vue/Vite SPA migration](epics/epic-skript-11-full-vue-vite-spa-migration.md) | stories=active=1, ready=1 | tasks=none
 - EPIC-SKRIPT-14 | [Admin tool authoring (draft-first workflow)](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | stories=active=1, ready=7 | tasks=none
@@ -569,6 +570,7 @@
 - ST-SKRIPT-08-17 | [Tabby edit suggestions + prompt A/B evaluation](stories/st-skript-08-17-tabby-edit-suggestions-prompt-a-b-evaluation.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-08-27 | [Research: editor chat virtual file context retention + tokenizer budgets](stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-08-35 | [Help completion: route coverage, behavior hardening, and copy signoff](stories/st-skript-08-35-help-completion-route-coverage-behavior-hardening-and-copy-signoff.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-08-36 | [Klassrumskartan tutorial clips in Hjälp with a first-use dialog](stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-09-05 | [Content-Security-Policy for Vue/Vite SPA](stories/st-skript-09-05-content-security-policy-for-vue-vite-spa.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-09-08 | [Hemma edge observability and reserved-host lockdown](stories/st-skript-09-08-hemma-edge-observability-and-reserved-host-lockdown.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-11-25 | [SPA route-load performance and network-isolation audit](stories/st-skript-11-25-spa-route-load-performance-and-network-isolation-audit.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
@@ -607,7 +609,7 @@
 
 ### proposed
 
-- ST-SKRIPT-08-36 | [Klassrumskartan tutorial clips in Hjälp with a first-use dialog](stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md) | epic=[EPIC-SKRIPT-08](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0

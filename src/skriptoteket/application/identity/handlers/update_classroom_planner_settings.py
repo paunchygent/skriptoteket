@@ -63,6 +63,10 @@ class UpdateClassroomPlannerSettingsHandler(UpdateClassroomPlannerSettingsHandle
                 update["classroom_planner_grouping_seating_distance_enabled"] = (
                     command.grouping_seating_distance_enabled
                 )
+            if command.tutorial_seen_sections is not None:
+                update["classroom_planner_tutorial_seen_sections"] = list(
+                    command.tutorial_seen_sections
+                )
 
             saved_profile = await self._profiles.update(profile=profile.model_copy(update=update))
 

@@ -10,6 +10,7 @@ Relationships:
     - Mounts the shared application router and observability endpoints.
 """
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -35,6 +36,20 @@ from skriptoteket.web.routes.observability import router as observability_router
 from skriptoteket.web.startup_checks import ensure_database_revision_is_current
 
 logger = structlog.get_logger(__name__)
+
+
+class OptionalDirectoryStaticFiles(StaticFiles):
+    """Static files from a directory that may not exist yet.
+
+    Starlette's first-request config check raises when the directory is
+    missing; this mount answers 404 instead, so the published media directory
+    can appear after the app has started.
+    """
+
+    async def check_config(self) -> None:
+        if self.directory is not None and not os.path.isdir(self.directory):
+            return
+        await super().check_config()
 
 
 def _build_lifespan(*, settings: Settings):
@@ -95,6 +110,12 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(CorrelationMiddleware)
 
+    # The media mount must precede `/static` so its prefix wins.
+    app.mount(
+        "/static/media",
+        OptionalDirectoryStaticFiles(directory=str(settings.MEDIA_ROOT), check_dir=False),
+        name="media",
+    )
     static_dir = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 

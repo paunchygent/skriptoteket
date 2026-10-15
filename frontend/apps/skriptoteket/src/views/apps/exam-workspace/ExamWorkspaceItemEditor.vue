@@ -18,7 +18,8 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
  *   - Delegates the question text and gap answers to
- *     `ExamWorkspaceBodyEditor`.
+ *     `ExamWorkspaceBodyEditor` and the Kategorisera grid to
+ *     `ExamWorkspaceKategoriseraGrid`.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the save rules from `examWorkspaceItemSaveRules`.
  *   - Tells the teacher when the question is a child of a parent, which

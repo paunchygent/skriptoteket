@@ -116,6 +116,8 @@ Planned order; each task is scaffolded and contracted before work starts.
 8. `TASK-SKRIPT-39-05-08` (done 2026-10-14): imported questions carry no
    title; printed group headings open the group instruction or the question
    body; one gap_fill/free_text definition; Exam.net imports the result.
+9. `TASK-SKRIPT-39-05-11` (done 2026-10-15): the labeling feasibility report
+   scores its converter baseline from the committed v14 batch recordings.
 
 ## Verification
 

@@ -12,10 +12,11 @@ from typing import Any
 
 import httpx
 
-from scripts.labeling_feasibility import methods, postconv, report
+from scripts.labeling_feasibility import grouping, methods, postconv, report
 from scripts.labeling_feasibility.api import OpenAIClient
-from scripts.labeling_feasibility.methods import Grouping, MethodResult
+from scripts.labeling_feasibility.method_models import Grouping
 from scripts.labeling_feasibility.render import png_data_url, render_docx_pages
+from scripts.labeling_feasibility.requests import MethodResult
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
@@ -197,8 +198,8 @@ async def _label_exam(
         await _label_exam_b2(client, chunks, exam_dir, label)
         return
     first = await asyncio.gather(
-        methods.grouping_a(client, f"{label}/grouping_a", chunks),
-        methods.grouping_b(client, f"{label}/grouping_b", chunks),
+        grouping.grouping_a(client, f"{label}/grouping_a", chunks),
+        grouping.grouping_b(client, f"{label}/grouping_b", chunks),
     )
     result_a, result_b = first
     _save(exam_dir / "grouping_a.json", result_a, _grouping_json(result_a.output))
@@ -213,7 +214,7 @@ async def _label_exam_b2(
     client: OpenAIClient, chunks: tuple[DocxChunk, ...], exam_dir: Path, label: str
 ) -> None:
     """Variant added after the B results: Grouping B with each chunk quoted in its question."""
-    result = await methods.grouping_b(client, f"{label}/grouping_b2", chunks, quote_chunks=True)
+    result = await grouping.grouping_b(client, f"{label}/grouping_b2", chunks, quote_chunks=True)
     _save(exam_dir / "grouping_b2.json", result, _grouping_json(result.output))
     kind = await methods.kind(client, f"{label}/kind_b2", result.output["grouping"], chunks)
     _save(exam_dir / "kind_b2.json", kind, kind.output)
@@ -311,14 +312,8 @@ async def _main(args: argparse.Namespace) -> None:
             await _run(client, args)
 
 
-_CONVERTER_RECORDINGS = Path(
-    "/Users/olofs_mba/Documents/Repos/Skriptoteket/.orchestration/context/sessions/"
-    "01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-03/final-live-run-b/recordings"
-)
-
-
 def _evaluate(args: argparse.Namespace) -> None:
-    built = report.build_report(args.evidence_dir, args.converter_recordings)
+    built = report.build_report(args.evidence_dir)
     _write(args.evidence_dir / "report.json", built)
     report.write_markdown(built, args.evidence_dir / "report.md")
     print((args.evidence_dir / "report.md").read_text()[:6000])
@@ -336,7 +331,6 @@ def main() -> None:
     parser.add_argument("--corpus", type=Path, default=_CORPUS)
     parser.add_argument("--exams", nargs="*", default=[])
     parser.add_argument("--methods", nargs="*", default=[])
-    parser.add_argument("--converter-recordings", type=Path, default=_CONVERTER_RECORDINGS)
     args = parser.parse_args()
     if args.command == "evaluate":
         _evaluate(args)

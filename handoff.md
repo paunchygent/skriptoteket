@@ -1,17 +1,32 @@
 ## Current
 
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+  Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
+  parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
+  (walking skeleton) merged to main `ef92afd8`, pushed in `03ba322d`; backend
+  review approved `8576afb7`, frontend approved `3c95199d` (records under
+  `evidence/reviews/ST-SKRIPT-08-36/`). staging rebuilt on `03ba322d`, healthy;
+  draft Klass clip (synthetic timing, badge) published to
+  `/home/paunchygent/apps/skriptoteket-media/dev/klassrumskartan/`; HTTP checks in
+  `evidence/dev-stack-03ba322d/`. Next: a Mac-side session runs the staging
+  walk (guest + proof user, `staging-walk` skill, origin via
+  `hemma-shared-tunnel`); Hemma sessions have no browser. Then task closure. User gates:
+  talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), render approval before
+  publish, ElevenLabs draft spend, prod media mount deploy. Guide step 3 wording
+  (paste does not parse Skola24 text) still needs correction.
+
+- [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
+  `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
+  (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
+
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
   is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
 
   - TASK-SKRIPT-39-05-01/-02/-03 `done` 2026-10-11 (walk `1db37835`, retained
-    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -05 and
-    -06 `done` 2026-10-14.
-  - [TASK-SKRIPT-39-05-09](docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md)
-    `done` 2026-10-14 (review approved 659973e5, merged eafb1487; staging walk
-    and Exam.net import exam 5331367 in retained
-    `01a13798-9df1-75fa-a4c5-bd755b4bfd85` `evidence/walk/TASK-SKRIPT-39-05-09/`).
+    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -04, -05,
+    -06 and -09 `done` (closure evidence in long-term memory 2026-10-15).
   - [TASK-SKRIPT-39-05-10](docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md)
     `done` 2026-10-14 (reviews approved e4a5e2eb and 42050a03, merged
     426d7551; staging walk at c270419e and Exam.net import exam 5332346 in
@@ -21,9 +36,13 @@
     poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
     that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
     next: route them under story item 3.
-  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `done` (user closure 2026-10-12, staging walk `63de8094`, retained
-    `evidence/staging-walk/walk-63de8094.md`).
+  - [TASK-SKRIPT-39-05-11](docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md)
+    `done` 2026-10-15: `labeling_feasibility evaluate` scores the v14 batch
+    recordings (`PYTHONPATH=src`); review aae91639; retained
+    `01a13f02-cbaf-71c0-bb3b-f16fc81c7017` `evidence/`.
+  - [TASK-SKRIPT-39-05-12](docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
+    `done` 2026-10-15: merged b8e43394, staging walk saved a matching edit;
+    retained `01a13f01-f1dc-7614-beb6-76a946b50b74` `evidence/walk/`.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
@@ -31,10 +50,10 @@
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
-  5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Next: task 3
-  Kategorisera backend: branch `codex/task-skript-39-09-03`, Pi `377f15ac`.
-  Proof/blockers: session `01a13c92` `evidence/impl/TASK-SKRIPT-39-09-03/`.
-  Next parent: UI, review, configured gold eval and staging/Exam.net import.
+  5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
+  `in_progress` (TASK-SKRIPT-39-09-03, worktree
+  `../Skriptoteket-task-skript-39-09-03`). Task 4 Fritext criteria and task 5
+  Kort svar `in_progress` in their own worktrees.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
@@ -115,22 +134,10 @@
   Skriptoteket answer-key env keys (Luna/GLM) stay.
 
 - [TASK-SKRIPT-39-02-03](docs/backlog/tasks/task-skript-39-02-03-repair-partial-digiexam-answer-key-enrichment-and-prove-the-real-integrated-vertical.md)
-  is `done` (Pi closeout rereview approved `e877170d`): the item-local admission repair is already on `main` via
-  `52ccc0a2` (real-DXE plan `ELIGIBLE` for 5 supported items, asset-bearing
-  item-003 kept for manual review); the real-DXE fixture is byte-identical to
-  its source (`ab39bbee`). Two unit tests pin D1. D5 was amended 2026-09-30
-  by user decision to a real-browser click-through on Hemma's rootless Docker
-  staging (`skriptoteket-dev`) after merge to `main`; staging now enables the
-  answer-key lane from its untracked `.env` with the production provider keys.
-  The D5 walk passed on 2026-09-30 at `e3ae9527`: questions 1, 2, 4, 5, 6 got
-  provider proposals, asset-bearing question 3 stayed for manual review until
-  a teacher key was saved, and the Exam.net PDF and QTI zip became
-  downloadable; the enrichment and conversion jobs `succeeded`. The real-DXE
-  PostgreSQL integration test passes (`1 passed`); three vacuous replay cases
-  in `ExamConverterAuthenticatedFilesActionSlice.spec.ts` were removed (D3).
-  Evidence: Skriptoteket session
-  `01a0f227-63b9-7435-8013-5f556eaf4905`. It is a required predecessor for
-  the DOCX skeleton.
+  `done` (rereview approved `e877170d`, main `52ccc0a2`; D5 browser walk on
+  staging passed 2026-09-30 at `e3ae9527`; evidence session
+  `01a0f227-63b9-7435-8013-5f556eaf4905`). Required predecessor for the DOCX
+  skeleton.
 
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
   stays canceled (`d48233e9`); Exam.net acceptance stays user-owned and
@@ -155,21 +162,11 @@
 
 ## Recent
 
-- TASK-SKRIPT-39-04-09 `done` 2026-10-13 (ruthless-reviewer approved
-  `d09bd286`, user closure): merged main `c018ae9e`, deployed to staging;
-  all seven walk steps passed, incl. resume after reload, older job ignored
-  after save, import blocked while unsaved, `docx_import` log label, q10
-  Fungi/Bacteria (retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`).
+- TASK-SKRIPT-39-04-09 `done` 2026-10-13: review `d09bd286`, main `c018ae9e`, walk retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`.
 
-- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (user closure; user waived review
-  of final repair `ace0cc39`, earlier rounds `changes_requested`): merged
-  main `838baea9`; T7 staging walk passed: suggestion on unsaved edits ->
-  `machine_proposed` key -> reviewed -> saved -> kept on reopen (retained
-  `01a133f5…/evidence/staging-walk-838baea9/README.md`).
+- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (review of final repair `ace0cc39` waived by user): main `838baea9`, walk retained `01a133f5…/evidence/staging-walk-838baea9/README.md`.
 
-- TASK-SKRIPT-39-05-07 `done` 2026-10-13 (user closure): export blocks only on
-  missing values; review approved `58dabe3f`; staging walk on ebc2a9c7 passed
-  (retained `01a13274…/evidence/staging-walk-ebc2a9c7/`).
+- TASK-SKRIPT-39-05-07 `done` 2026-10-13: review `58dabe3f`, walk on ebc2a9c7 retained `01a13274…/evidence/staging-walk-ebc2a9c7/`.
 
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
@@ -182,11 +179,10 @@
 
 ## Facts
 
+- Session Date: 2026-10-15
+- Last Refreshed: 2026-10-15
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
-- The 2026-09-30 slices add TASK-SKRIPT-39-02-03 unit tests and a test-support
-  module, amend its D5 gate, add the staging answer-key lane configuration, and
-  remove three vacuous frontend replay tests; they change no production code.
 - Full typecheck on 2026-10-10 reports 12 errors in untouched files: three
   `src/skriptoteket/script_bank/scripts/` demos and
   `tests/unit/web/test_observability_routes.py`. TASK-SKRIPT-39-05-02's
@@ -196,3 +192,4 @@
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
   extraction queue); digital-PDF slice detail follows ST-39-04 review.
 - Next: eval triage, item-type and parent/child authoring planning.
+- Tutorial media: web serves `MEDIA_ROOT` read-only at `/static/media` (404 while absent); dev bind `/home/paunchygent/apps/skriptoteket-media/dev`, prod bind inert until `hemma-deploy`.
