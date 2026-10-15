@@ -84,19 +84,19 @@ def test_image_packages_include_manifest_hrefs_and_resolved_item_images(tmp_path
         with zipfile.ZipFile(sample_dir / "qti-package.zip") as archive:
             names = set(archive.namelist())
             assert "imsmanifest.xml" in names
-            image_names = {name for name in names if name.startswith("resources/")}
-            assert image_names == {"resources/item_001-image_001.png"}
+            image_names = {name for name in names if name.startswith("items/images/")}
+            assert image_names == {"items/images/item_001-image_001.png"}
+            assert not any(name.startswith("resources/") for name in names)
             manifest = archive.read("imsmanifest.xml").decode("utf-8")
             item_xml = archive.read("items/item_001.xml").decode("utf-8")
 
-        assert '<file href="resources/item_001-image_001.png"' in manifest
-        assert 'src="../resources/item_001-image_001.png"' in item_xml
-        assert 'src="resources/item_001-image_001.png"' not in item_xml
+        assert '<file href="items/images/item_001-image_001.png"' in manifest
+        assert 'src="images/item_001-image_001.png"' in item_xml
+        assert "resources/" not in manifest
+        assert "resources/" not in item_xml
         item = ElementTree.fromstring(item_xml)
         prompt_images = item.findall(f".//{{{QTI_NAMESPACE}}}qti-prompt/{{{QTI_NAMESPACE}}}img")
-        assert [image.attrib["src"] for image in prompt_images] == [
-            "../resources/item_001-image_001.png"
-        ]
+        assert [image.attrib["src"] for image in prompt_images] == ["images/item_001-image_001.png"]
         assert item_body_paragraphs(item) == []
         report = read_report(sample_dir / "qti-validation-report.json")
         assert json_string(report, "package_sha256") == _sha256(sample_dir / "qti-package.zip")

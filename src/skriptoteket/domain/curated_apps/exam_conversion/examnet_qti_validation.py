@@ -350,8 +350,10 @@ def _match_correct_template_errors(name: str, root: ElementTree.Element) -> tupl
     )
     if not has_choice_or_match:
         return ()
+    if root.find(f".//{{{QTI_NAMESPACE}}}qti-mapping") is None:
+        return ()
     return tuple(
-        f"{name} must not use the match_correct qti-response-processing template."
+        f"{name} must not combine the match_correct template with a qti-mapping."
         for processing in root.findall(f"{{{QTI_NAMESPACE}}}qti-response-processing")
         if processing.attrib.get("template") == MATCH_CORRECT_TEMPLATE
     )
@@ -415,11 +417,8 @@ def _validate_item_image_references(
                 errors.append(f"{name} contains an image without src.")
                 continue
             resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), image_src))
-            if resolved.startswith("items/resources/"):
-                errors.append(
-                    f"{name} image src {image_src} uses the refuted package-root style; "
-                    "item XML must reference ../resources/."
-                )
+            if not resolved.startswith("items/images/"):
+                errors.append(f"{name} image src {image_src} must resolve under items/images/.")
             elif resolved not in names:
                 errors.append(f"{name} image src {image_src} does not resolve inside package.")
     return tuple(errors)

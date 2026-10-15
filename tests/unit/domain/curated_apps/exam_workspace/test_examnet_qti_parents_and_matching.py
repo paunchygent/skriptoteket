@@ -420,11 +420,12 @@ def test_images_of_parent_children_stay_with_their_own_child():
     archive, status = _package(items_out)
 
     assert status == "passed"
-    images = sorted(n for n in archive.namelist() if n.startswith("resources/"))
+    images = sorted(n for n in archive.namelist() if n.startswith("items/images/"))
     assert len(images) == 2
+    image_srcs = tuple(name.removeprefix("items/") for name in images)
     sources = [
         [img.attrib["src"] for img in prompt.iter(_tag("img"))]
-        for prompt in _root(parent, tuple(f"../{name}" for name in images)).iter(_tag("qti-prompt"))
+        for prompt in _root(parent, image_srcs).iter(_tag("qti-prompt"))
     ]
-    assert sources == [[f"../{images[0]}"], [f"../{images[1]}"]]
+    assert sources == [[image_srcs[0]], [image_srcs[1]]]
     assert archive.read(images[0]) != archive.read(images[1])
