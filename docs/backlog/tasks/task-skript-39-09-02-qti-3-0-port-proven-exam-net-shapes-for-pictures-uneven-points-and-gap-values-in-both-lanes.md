@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol, high) approved 83d522c6 with no findings (merged 6807d20c). Staging walk at 6807d20c: DigiExam conversion with a picture imported into Exam.net as 5333308 (picture shown, all-or-nothing 4p, equal 1p and 3p rows, gaps 0.66 x3); workspace export with a 2p three-pair grid subquestion imported as 5333310 (ALL_CORRECT 1p, Q16 flag case). Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-02/ and evidence/walk/TASK-SKRIPT-39-09-02/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
 - Exam.net imports a staging workspace export and a DigiExam conversion with every
@@ -37,9 +41,11 @@ Exam.net imports with pictures shown and with every key and point as below.
   decimals.
 - **All-or-nothing (Q16).** When that value is not exact to 2 decimals, the
   question has a correct response, no mapping and MAXSCORE equal to its
-  points. Standalone it uses the match_correct template. As a
-  shared-instruction child, the parent's response processing scores it
-  all-or-nothing in valid QTI 3.0 and still sums the mapped children.
+  points. Custom response processing gives the points when the response
+  matches the correct response, standalone and as a shared-instruction child
+  (the match_correct template would give 1 point). The parent's processing
+  starts SCORE at 0, adds each answered mapped child, then the all-or-nothing
+  children, in valid QTI 3.0.
   Validation allows match_correct on choice and match items without a
   mapping, and rejects match_correct together with a mapping.
 - **Gap values (Q17).** Every gap of one Lucktext has the same mapped value:

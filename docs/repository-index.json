@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bcb62cd6b4ef20bb25ceeb724a4d9c7a8247f35f2981993bbd4f5fce1f92b0f3",
+  "source_set_digest": "833eba670e6caa1e6aa9fb71fffc14f963c2a73dfa50ff6ec013267ad8cfe5b5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5060,7 +5060,7 @@
       "type": "task",
       "title": "QTI 3.0 port: proven Exam.net shapes for pictures, uneven points and gap values in both lanes",
       "path": "docs/backlog/tasks/task-skript-39-09-02-qti-3-0-port-proven-exam-net-shapes-for-pictures-uneven-points-and-gap-values-in-both-lanes.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5071,7 +5071,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol, high) approved 83d522c6 with no findings (merged 6807d20c). Staging walk at 6807d20c: DigiExam conversion with a picture imported into Exam.net as 5333308 (picture shown, all-or-nothing 4p, equal 1p and 3p rows, gaps 0.66 x3); workspace export with a 2p three-pair grid subquestion imported as 5333310 (ALL_CORRECT 1p, Q16 flag case). Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-02/ and evidence/walk/TASK-SKRIPT-39-09-02/staging-walk.md."
       }
     },
     {
