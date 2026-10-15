@@ -15,6 +15,7 @@ import {
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
+  getExamWorkspaceExportChecklist,
   getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
@@ -163,12 +164,24 @@ describe("examWorkspace transport", () => {
     };
     apiFetchBlobResponseMock.mockResolvedValueOnce(blobResponse);
 
-    const result = await downloadExamWorkspaceExport("lineage-1", "qti");
+    const result = await downloadExamWorkspaceExport("lineage-1", "qti", 2);
 
     expect(apiFetchBlobResponseMock).toHaveBeenCalledWith(
-      `${DOCUMENTS_ROOT}/lineage-1/exports/qti`,
+      `${DOCUMENTS_ROOT}/lineage-1/exports/qti?expected_revision=2`,
     );
     expect(result).toBe(blobResponse);
+  });
+
+  it("requests only the checklist for the exported revision", async () => {
+    const response = { entries: [] };
+    apiGetMock.mockResolvedValueOnce(response);
+
+    const result = await getExamWorkspaceExportChecklist("lineage-1", 2);
+
+    expect(apiGetMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/export-checklist?expected_revision=2`,
+    );
+    expect(result).toBe(response);
   });
 
   it("requests suggestions with the editor document and reads status per job", async () => {

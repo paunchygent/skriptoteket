@@ -91,6 +91,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
         actor=actor,
         lineage_id=lineage_id,
         target=ExamWorkspaceExportTarget.DOCX,
+        expected_revision=fixture.document.revision,
     )
 
     assert result.filename == "diagramprov.docx"

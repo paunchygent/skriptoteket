@@ -146,9 +146,10 @@ export async function saveExamWorkspaceDocument(
 export async function downloadExamWorkspaceExport(
   lineageId: string,
   target: ExamWorkspaceExportTarget,
+  expectedRevision: number,
 ): Promise<ApiBlobResponse> {
   return await apiFetchBlobResponse(
-    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}`,
+    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
   );
 }
 
@@ -159,9 +160,10 @@ export async function downloadExamWorkspaceExport(
  */
 export async function getExamWorkspaceExportChecklist(
   lineageId: string,
+  expectedRevision: number,
 ): Promise<ExamWorkspaceExportChecklistResponse> {
   return await apiGet<ExamWorkspaceExportChecklistResponse>(
-    `${documentPath(lineageId)}/export-checklist`,
+    `${documentPath(lineageId)}/export-checklist?expected_revision=${expectedRevision}`,
   );
 }
 

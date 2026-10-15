@@ -77,7 +77,6 @@ const emit = defineEmits<{
     <div
       v-if="exportChecklist.length > 0"
       class="grid gap-2 border border-navy/20 bg-canvas px-3 py-2"
-      data-test="exam-workspace-export-checklist"
     >
       <h3 class="text-xs font-semibold leading-tight text-navy/80">
         Det här tappar Exam.net vid import
@@ -87,8 +86,6 @@ const emit = defineEmits<{
           v-for="(entry, index) in exportChecklist"
           :key="index"
           class="grid gap-0.5"
-          data-test="exam-workspace-export-checklist-entry"
-          :data-test-kind="entry.kind"
         >
           <p class="text-sm font-medium leading-snug text-navy">
             {{ examWorkspaceQuestionLabel(Number(entry.question_number)) }}:
@@ -99,7 +96,6 @@ const emit = defineEmits<{
               v-for="(criterion, criterionIndex) in entry.criteria"
               :key="criterionIndex"
               class="text-xs leading-snug text-navy/70"
-              data-test="exam-workspace-export-checklist-criterion"
             >
               {{ criterion.text }} ({{ criterion.points }} p)
             </p>
@@ -107,14 +103,12 @@ const emit = defineEmits<{
           <p
             v-else-if="entry.kind === 'all_or_nothing'"
             class="text-xs leading-snug text-navy/70"
-            data-test="exam-workspace-export-checklist-points"
           >
             Exam.net ger 1 poäng. Sätt {{ entry.points }} poäng.
           </p>
           <p
             v-else
             class="text-xs leading-snug text-navy/70"
-            data-test="exam-workspace-export-checklist-gap-points"
           >
             Frågan ger {{ entry.points }} poäng. Varje lucka får {{ entry.gap_points }} poäng.
           </p>

@@ -12800,7 +12800,9 @@ export interface operations {
     };
     export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get: {
         parameters: {
-            query?: never;
+            query: {
+                expected_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;
@@ -12831,7 +12833,9 @@ export interface operations {
     };
     export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get: {
         parameters: {
-            query?: never;
+            query: {
+                expected_revision: number;
+            };
             header?: never;
             path: {
                 lineage_id: string;

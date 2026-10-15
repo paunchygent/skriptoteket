@@ -137,18 +137,26 @@ export function useExamWorkspaceExports(
    * drops the response once any clear or export start has moved past it, so
    * a slow response cannot reappear over a changed document.
    */
-  async function loadExportChecklist(lineageId: string, requestId: number): Promise<void> {
+  async function loadExportChecklist(
+    lineageId: string,
+    expectedRevision: number,
+    requestId: number,
+  ): Promise<void> {
     try {
-      const response = await getExamWorkspaceExportChecklist(lineageId);
+      const response = await getExamWorkspaceExportChecklist(lineageId, expectedRevision);
       if (!isCurrentChecklistRequest(requestId, lineageId)) {
         return;
       }
       exportChecklist.value = response.entries;
-    } catch {
+    } catch (error) {
       if (!isCurrentChecklistRequest(requestId, lineageId)) {
         return;
       }
-      toast.warning("QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.");
+      toast.warning(
+        isApiError(error) && error.status === 409
+          ? "Det sparade provet har ändrats. Exportera igen för att se listan för rätt version."
+          : "QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.",
+      );
     }
   }
 
@@ -161,7 +169,11 @@ export function useExamWorkspaceExports(
     clearExportChecklist();
     const requestId = checklistRequestId;
     try {
-      const response = await downloadExamWorkspaceExport(currentSummary.lineage_id, target);
+      const response = await downloadExamWorkspaceExport(
+        currentSummary.lineage_id,
+        target,
+        currentSummary.version,
+      );
       triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
       clearExportFeedback();
       toast.success(EXPORT_CREATED_MESSAGES[target]);
@@ -181,7 +193,7 @@ export function useExamWorkspaceExports(
       exportingTarget.value = null;
     }
     if (target === "qti") {
-      await loadExportChecklist(currentSummary.lineage_id, requestId);
+      await loadExportChecklist(currentSummary.lineage_id, currentSummary.version, requestId);
     }
   }
 

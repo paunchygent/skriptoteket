@@ -11,8 +11,8 @@
  *   `blockers` shows Swedish per-item copy in the item table; a new saved
  *   version clears it. Unsaved edits disable exports because files are built
  *   from the saved version. A successful QTI export also lists what Exam.net
- *   loses on import; edits, saves and new exports clear that list, and a
- *   stale response never replaces the current one.
+ *   loses on import for the exported revision; edits, saves and new exports
+ *   clear that list, and a stale response never replaces the current one.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -30,6 +30,7 @@ import {
   mountExamWorkspace,
   saveDocument,
   selectItemRow,
+  type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -131,7 +132,7 @@ describe("ExamWorkspaceView export slice", () => {
       await wrapper.find(`[data-test="exam-workspace-export-${target}"]`).trigger("click");
       await flushPromises();
 
-      expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", target);
+      expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", target, 1);
       expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(blob, filename);
       expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
     },
@@ -277,6 +278,14 @@ describe("ExamWorkspaceView export slice", () => {
   });
 });
 
+/**
+ * The rendered loss entry that names `questionText`, found through its
+ * listitem role. `undefined` when the checklist shows no such loss.
+ */
+function findLossEntry(wrapper: ViewWrapper, questionText: string) {
+  return wrapper.findAll("li").find((entry) => entry.text().includes(questionText));
+}
+
 describe("ExamWorkspaceView export checklist", () => {
   beforeEach(() => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
@@ -294,18 +303,15 @@ describe("ExamWorkspaceView export checklist", () => {
     await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1");
-    const panel = wrapper.find('[data-test="exam-workspace-export-checklist"]');
-    expect(panel.exists()).toBe(true);
-    expect(panel.findAll('[data-test="exam-workspace-export-checklist-entry"]')).toHaveLength(3);
-    const criteria = panel.find('[data-test-kind="free_text_criteria"]');
-    expect(criteria.text()).toContain("Fråga 2: Förklara fotosyntesen.");
-    expect(criteria.text()).toContain("Tar upp koldioxid (1 p)");
-    expect(criteria.text()).toContain("Beskriver sockerbildningen (2 p)");
-    expect(panel.find('[data-test-kind="all_or_nothing"]').text()).toContain("Sätt 2 poäng.");
-    expect(panel.find('[data-test-kind="rounded_gaps"]').text()).toContain(
-      "Frågan ger 4 poäng. Varje lucka får 1.33 poäng.",
-    );
+    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    const criteriaEntry = findLossEntry(wrapper, "Förklara fotosyntesen.");
+    expect(criteriaEntry?.text()).toContain("Fråga 2: Förklara fotosyntesen.");
+    expect(criteriaEntry?.text()).toContain("Tar upp koldioxid (1 p)");
+    expect(criteriaEntry?.text()).toContain("Beskriver sockerbildningen (2 p)");
+    expect(findLossEntry(wrapper, "Vatten kokar vid ...")?.text()).toContain("2 poäng");
+    const roundedGapsEntry = findLossEntry(wrapper, "Fyll i luckorna.");
+    expect(roundedGapsEntry?.text()).toContain("4 poäng");
+    expect(roundedGapsEntry?.text()).toMatch(/1[.,]33\s*poäng/);
   });
 
   it("hides the checklist when the export loses nothing", async () => {
@@ -315,8 +321,9 @@ describe("ExamWorkspaceView export checklist", () => {
     await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
     await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1");
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
+    expect(useToastStore().warning).not.toHaveBeenCalled();
   });
 
   it("requests no checklist for a PDF or DOCX export", async () => {
@@ -337,13 +344,13 @@ describe("ExamWorkspaceView export checklist", () => {
     await importFixtureDocument(wrapper);
     await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
     await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(true);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
     await flushPromises();
 
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
 
   it("clears the checklist when another export starts", async () => {
@@ -352,17 +359,17 @@ describe("ExamWorkspaceView export checklist", () => {
     await importFixtureDocument(wrapper);
     await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
     await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(true);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
     const pdfDownload = deferred<{ blob: Blob; contentType: string; filename: string | null }>();
     apiMocks.downloadExamWorkspaceExport.mockReturnValueOnce(pdfDownload.promise);
     await wrapper.find('[data-test="exam-workspace-export-pdf"]').trigger("click");
     await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
 
     pdfDownload.resolve({ blob: new Blob(["pdf"]), contentType: "application/pdf", filename: null });
     await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
 
   it("keeps the fresh checklist when a stale response arrives late", async () => {
@@ -391,19 +398,18 @@ describe("ExamWorkspaceView export checklist", () => {
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValueOnce(freshChecklist);
     await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
     await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').text()).toContain(
-      "Ny fråga efter sparning.",
-    );
+    expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
 
     staleChecklist.resolve(LOST_CHECKLIST);
     await flushPromises();
 
-    const panelText = wrapper.find('[data-test="exam-workspace-export-checklist"]').text();
-    expect(panelText).toContain("Ny fråga efter sparning.");
-    expect(panelText).not.toContain("Förklara fotosyntesen.");
+    expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
+    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(1, "lineage-1", 1);
+    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(2, "lineage-1", 2);
   });
 
-  it("warns that the checklist is unavailable without claiming the export failed", async () => {
+  it("warns without claiming the export failed when the checklist request fails", async () => {
     apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
@@ -417,12 +423,31 @@ describe("ExamWorkspaceView export checklist", () => {
       expect.any(Blob),
       "prov-qti.zip",
     );
-    expect(useToastStore().success).toHaveBeenCalledWith("QTI-paketet är skapat.");
-    expect(useToastStore().warning).toHaveBeenCalledWith(
-      "QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.",
-    );
+    expect(useToastStore().warning).toHaveBeenCalledTimes(1);
+    expect(useToastStore().failure).not.toHaveBeenCalled();
     expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
+  });
+
+  it("warns without claiming the export failed when the saved head changed", async () => {
+    apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
+      new ApiError({ code: "CONFLICT", message: "head changed", status: 409 }),
+    );
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
+    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
+      expect.any(Blob),
+      "prov-qti.zip",
+    );
+    expect(useToastStore().warning).toHaveBeenCalledTimes(1);
+    expect(useToastStore().failure).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
+    expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
 
   it("ignores a stale checklist failure", async () => {

@@ -94,8 +94,11 @@ class ExportExamWorkspaceDocumentHandler:
         actor: User,
         lineage_id: UUID,
         target: ExamWorkspaceExportTarget,
+        expected_revision: int,
     ) -> ExamWorkspaceExportFile:
-        head, container = await self._load_head(actor=actor, lineage_id=lineage_id)
+        head, container = await self._load_head(
+            actor=actor, lineage_id=lineage_id, expected_revision=expected_revision
+        )
         document = container.document
         self._raise_for_blockers(document)
 
@@ -146,16 +149,13 @@ class ExportExamWorkspaceDocumentHandler:
         )
 
     async def checklist(
-        self, *, actor: User, lineage_id: UUID
+        self, *, actor: User, lineage_id: UUID, expected_revision: int
     ) -> ExamWorkspaceExportChecklistResponse:
-        """List what Exam.net loses on import for the head document's QTI package (Q15).
+        """List losses only while the exported revision is still the saved head."""
 
-        The same load and the same S4 gate as the QTI export decide which document
-        is checked, so the panel can only ever describe a package that could be
-        exported.
-        """
-
-        _head, container = await self._load_head(actor=actor, lineage_id=lineage_id)
+        _head, container = await self._load_head(
+            actor=actor, lineage_id=lineage_id, expected_revision=expected_revision
+        )
         document = container.document
         self._raise_for_blockers(document)
         entries = native_exam_export_checklist(document, assets_by_id=container.assets_by_id)
@@ -173,7 +173,7 @@ class ExportExamWorkspaceDocumentHandler:
             )
 
     async def _load_head(
-        self, *, actor: User, lineage_id: UUID
+        self, *, actor: User, lineage_id: UUID, expected_revision: int
     ) -> tuple[VaultFile, ExamWorkspaceContainerContent]:
         head = await self._vault_files.get_document_head(
             user_id=actor.id, document_lineage_id=lineage_id
@@ -181,7 +181,17 @@ class ExportExamWorkspaceDocumentHandler:
         if head is None:
             raise _document_not_found(lineage_id)
         content = await self._store.load_version(actor=actor, vault_file=head)
-        return head, self._codec.parse(content=content)
+        container = self._codec.parse(content=content)
+        if container.document.revision != expected_revision:
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message="Det sparade provet har ändrats. Exportera den aktuella versionen igen.",
+                details={
+                    "expected_revision": expected_revision,
+                    "current_revision": container.document.revision,
+                },
+            )
+        return head, container
 
 
 def _checklist_entry(entry: ExamNetExportChecklistEntry) -> ExamWorkspaceExportChecklistEntry:

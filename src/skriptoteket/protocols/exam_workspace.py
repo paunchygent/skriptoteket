@@ -137,6 +137,7 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
         actor: User,
         lineage_id: UUID,
         target: ExamWorkspaceExportTarget,
+        expected_revision: int,
     ) -> ExamWorkspaceExportFile: ...
 
     async def checklist(
@@ -144,6 +145,7 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
         *,
         actor: User,
         lineage_id: UUID,
+        expected_revision: int,
     ) -> ExamWorkspaceExportChecklistResponse: ...
 
 

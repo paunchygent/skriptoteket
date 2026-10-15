@@ -31,7 +31,7 @@ class CapturingChecklistHandler:
 
     def __init__(self, response: ExamWorkspaceExportChecklistResponse) -> None:
         self.response = response
-        self.checklist_calls: list[tuple[UUID, UUID]] = []
+        self.checklist_calls: list[tuple[UUID, UUID, int]] = []
         self.export_calls: list[tuple[UUID, UUID, ExamWorkspaceExportTarget]] = []
 
     async def handle(
@@ -40,14 +40,15 @@ class CapturingChecklistHandler:
         actor: User,
         lineage_id: UUID,
         target: ExamWorkspaceExportTarget,
+        expected_revision: int,
     ) -> ExamWorkspaceExportFile:
         self.export_calls.append((actor.id, lineage_id, target))
         raise AssertionError("the checklist route must not run an export")
 
     async def checklist(
-        self, *, actor: User, lineage_id: UUID
+        self, *, actor: User, lineage_id: UUID, expected_revision: int
     ) -> ExamWorkspaceExportChecklistResponse:
-        self.checklist_calls.append((actor.id, lineage_id))
+        self.checklist_calls.append((actor.id, lineage_id, expected_revision))
         return self.response
 
 
@@ -70,13 +71,14 @@ async def test_route_delegates_the_head_document_checklist() -> None:
 
     response = await api.export_exam_workspace_document_checklist(
         lineage_id=lineage_id,
+        expected_revision=2,
         registry=FakeRegistry(),
         handler=handler,
         user=user,
     )
 
     assert response.entries == (entry,)
-    assert handler.checklist_calls == [(user.id, lineage_id)]
+    assert handler.checklist_calls == [(user.id, lineage_id, 2)]
     assert handler.export_calls == []
 
 
@@ -87,6 +89,7 @@ async def test_route_json_carries_the_required_kind_discriminator() -> None:
 
     response = await api.export_exam_workspace_document_checklist(
         lineage_id=uuid4(),
+        expected_revision=2,
         registry=FakeRegistry(),
         handler=handler,
         user=make_user(),
@@ -116,6 +119,7 @@ async def test_route_checks_app_access_before_the_checklist() -> None:
     with pytest.raises(DomainError):
         await api.export_exam_workspace_document_checklist(
             lineage_id=uuid4(),
+            expected_revision=2,
             registry=MissingAppRegistry(),
             handler=handler,
             user=make_user(),
