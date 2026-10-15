@@ -66,7 +66,7 @@ require_env "SECRET_KEY"
 
 sir_convert_base_url="${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}"
 if [[ "${sir_convert_base_url}" == "https://convert.hule.education" ]]; then
-    echo "SIR_CONVERT_A_LOT_V2_BASE_URL must target the hule-network Sir Convert service; convert.hule.education is a reserved public edge." >&2
+    echo "SIR_CONVERT_A_LOT_V2_BASE_URL must target the hule-network Sir Convert service; convert.hule.education is retired. Use the private backend http://sir_convert_a_lot_prod:8085." >&2
     exit 1
 fi
 export SIR_CONVERT_A_LOT_V2_BASE_URL="${sir_convert_base_url}"

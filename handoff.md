@@ -1,5 +1,13 @@
 ## Current
 
+- [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
+  `in_progress`; owner Claude parent. `fix/retire-convert-references` at
+  `d97caf5b` merged to main after the original reviewer approved the F1/F2
+  repair (`evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md` in
+  retained `01a13f9f-d6dd-7067-b581-efc395226538`). Next: closeout after the
+  Hemma hold, with the staging env check. No SSH, deployment or live proof yet.
+  Namecheap CNAME deletion stays with the user.
+
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
   parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
@@ -143,25 +151,18 @@
   skeleton.
 
 - [TASK-SKRIPT-39-01-03](docs/backlog/tasks/task-skript-39-01-03-degrade-unknown-digiexam-question-types-to-reviewable-free-text.md)
-  stays canceled (`d48233e9`); Exam.net acceptance stays user-owned and
-  proven import acceptance is not reopened. Live-proven anchors: Sir
-  `TASK-SIRCON-REP-0029`, Skript `TASK-SKRIPT-39-01-01` byte parity
-  (`f36a4ae3…`).
+  stays canceled; Exam.net acceptance stays user-owned. Dated parity proof is
+  retained in the 2026-09-05 archive above.
 
 - [ST-SKRIPT-39-02](docs/backlog/stories/st-skript-39-02-port-the-remote-answer-key-completion-line-with-a-daily-token-lease.md)
-  is `done` and independently `VERIFIED` (record
-  `.orchestration/context/sessions/01a04d62-…/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md`).
+  is `done` and independently `VERIFIED`; exact proof is in the archive above.
 
 - [EPIC-SKRIPT-39](docs/backlog/epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
   and [ADR-SKRIPT-0090](docs/decisions/adr-skript-0090-skriptoteket-owned-exam-conversion-boundary-with-sir-convert-generic-extraction.md)
-  stay approved; ADR-0091 (`proposed`) narrows only the authoring-UI
-  non-decision. Story 4 is the scaffolded DOCX workspace; story 5 adds
-  DOCX breadth, story 6 digital-PDF intake, and story 7 QTI import.
-  Stories 5-7 await their own detailed contracts.
+  stay approved; ADR-0091 (`proposed`) narrows the authoring-UI non-decision.
+  Active story/task pointers above hold the current DOCX and QTI state.
 
-- REP lane: 0032 and 0026 verified/done; 0030/0031 canceled; ST-38-01 and
-  EPIC-SKRIPT-38 done; REP-0006/0003/0004/0005 done. Detail in the archived
-  entry above.
+- Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
 
@@ -183,10 +184,8 @@
 - Last Refreshed: 2026-10-15
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
-- Full typecheck on 2026-10-10 reports 12 errors in untouched files: three
-  `src/skriptoteket/script_bank/scripts/` demos and
-  `tests/unit/web/test_observability_routes.py`. TASK-SKRIPT-39-05-02's
-  changed-file type proof passes; retained capture `0098` in its session.
+- Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;
+  TASK-SKRIPT-REP-0040 retained capture `0004-pdm-run-typecheck`.
 - Open product questions (undecided, not silently resolved): native doc
   format internals (new versioned doc type vs file-plus-sidecar state);
   deferred scanned-PDF behavior (hard-fail with guidance vs generic
