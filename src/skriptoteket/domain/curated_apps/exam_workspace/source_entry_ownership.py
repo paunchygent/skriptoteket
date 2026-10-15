@@ -7,11 +7,11 @@ entry's characters, and reconstructing one entry may not mark another entry's
 wording as covered.
 
 The partition is computed once for all surfaces before any wording is
-projected. Exact occurrences of every produced wording are enumerated across
-all surfaces and assigned to distinct entries by the joint sequence alignment in
-``source_entry_alignment``; a surface that repeats a word keeps its own
-occurrence, and a wholly rewritten entry falls back to the structural ordinal
-label that opens its own span, never to the whole candidate paragraph. An owner
+projected. Printed labels establish disjoint source slots first, independently
+of exact or rewritten model wording. Remaining unlabelled exact occurrences
+are assigned jointly, and rewrite alignment excludes every established slot
+and exact anchor. A wholly rewritten labelled entry therefore keeps its own
+span, never a whole candidate paragraph or another entry's character evidence. An owner
 ends where the next owner's span starts, so the paragraphs between two owners
 belong to the earlier owner as continuation; the last owner reaches the source
 end or the next body or picture anchor. Without wording evidence or a unique
@@ -39,9 +39,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment impo
     entry_unit_labels,
     exact_candidates,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import labelled_slots
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
     align_paragraph,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
@@ -211,6 +213,14 @@ def _alignment_evidence(source: SourceFormatting, text: str, ordinal: int) -> _E
     if represented:
         start = min(represented) + winner.start
         end = max(represented) + winner.start + 1
+        # Character equality can begin in the middle of a source word. It is
+        # evidence for that word, never an ownership edge through its letters.
+        while start > winner.start and (
+            source.text[start - 1].isalnum() or source.text[start - 1] == "_"
+        ):
+            start -= 1
+        while end < winner.end and (source.text[end].isalnum() or source.text[end] == "_"):
+            end += 1
         source.cursor = _cursor_at(source, end)
         return _Evidence(start, end, start, False)
     source.cursor = _cursor_at(source, winner.end)
@@ -272,11 +282,16 @@ def _planned_end(
     return base
 
 
-def _planned_from_candidate(candidate: EntryCandidate) -> _Planned:
+def _planned_from_candidate(candidate: EntryCandidate, source: SourceFormatting) -> _Planned:
+    start = candidate.start
+    while start > candidate.unit_start and (
+        source.text[start - 1].isalnum() or source.text[start - 1] == "_"
+    ):
+        start -= 1
     return _Planned(
         surface_index=candidate.surface_index,
         ordinal=candidate.ordinal,
-        start=candidate.start,
+        start=start,
         anchor_start=candidate.start,
         anchor_end=candidate.end,
         exact=True,
@@ -284,43 +299,6 @@ def _planned_from_candidate(candidate: EntryCandidate) -> _Planned:
         unit_start=candidate.unit_start,
         unit_end=candidate.unit_end,
         reference_end=candidate.end,
-    )
-
-
-def _structural_plan(
-    surface_index: int,
-    probe: SourceFormatting,
-    ordinal: int,
-    seed_start: int,
-    reserved: list[tuple[int, int]],
-) -> _Planned | None:
-    """The unique unclaimed ordinal label of a wholly rewritten entry's unit.
-
-    A shared unit has several entries, but an actual label that no anchored
-    entry already owns is positional evidence: it fixes where this entry's
-    span begins. Two matching labels leave the entry unowned instead of
-    guessing.
-    """
-    unit_start, unit_end = entry_unit_bounds(probe, seed_start)
-    labels = [
-        (candidate, size)
-        for candidate, size in entry_unit_labels(probe, unit_start, unit_end, ordinal)
-        if not any(start <= candidate < end for start, end in reserved)
-    ]
-    if len(labels) != 1:
-        return None
-    label_start, label_size = labels[0]
-    return _Planned(
-        surface_index=surface_index,
-        ordinal=ordinal,
-        start=label_start,
-        anchor_start=-1,
-        anchor_end=-1,
-        exact=False,
-        label_start=label_start,
-        unit_start=unit_start,
-        unit_end=unit_end,
-        reference_end=label_start + label_size,
     )
 
 
@@ -332,10 +310,9 @@ def plan_entry_ownership(
 ) -> EntryOwnership:
     """Assign every entry surface's characters to exactly one entry.
 
-    The per-surface probes are read-only copies: the caller's surfaces keep
-    their projection state for the later apply step. Exact occurrences are
-    enumerated across all surfaces and assigned to distinct entries by the
-    joint alignment before any wording is projected.
+    The caller's surfaces keep their projection state for the apply step.
+    Shared printed-label slots are allocated first, unlabelled exact anchors
+    second, and only the remaining source is available to rewrite alignment.
     """
     surface_list = tuple(surfaces)
     probes = [
@@ -343,25 +320,77 @@ def plan_entry_ownership(
         for surface in surface_list
     ]
     body_spans = _body_spans(chunks, body_texts)
+    carriers = tuple(span for surface in surface_list for span in surface.source.excluded)
+    labelled = (
+        labelled_slots(
+            probes[0],
+            tuple(s.sequence for s in surface_list),
+            tuple(s.texts for s in surface_list),
+            (*body_spans, *carriers),
+        )
+        if probes
+        else {}
+    )
+    planned: list[_Planned] = []
+    for (index, ordinal), (slot, anchor) in labelled.items():
+        size = entry_label_end(probes[index].text[slot.start : slot.end], ordinal) or 0
+        planned.append(
+            _Planned(
+                surface_index=index,
+                ordinal=ordinal,
+                start=slot.start,
+                anchor_start=anchor[0] if anchor else -1,
+                anchor_end=anchor[1] if anchor else -1,
+                exact=anchor is not None,
+                label_start=slot.start,
+                unit_start=slot.unit_start,
+                unit_end=slot.unit_end,
+                reference_end=anchor[1] if anchor else slot.start + size,
+            )
+        )
+    reserved_slots = tuple((slot.start, slot.end) for slot, _ in labelled.values())
+    probes = [
+        SourceFormatting(
+            chunks,
+            ignored=s.source.ignored,
+            excluded=(*s.source.excluded, *reserved_slots),
+        )
+        for s in surface_list
+    ]
     candidates: list[EntryCandidate] = []
     for index, surface in enumerate(surface_list):
         for ordinal, text in enumerate(surface.texts, start=1):
-            candidates.extend(
-                exact_candidates(probes[index], surface.sequence, index, ordinal, text)
-            )
+            if (index, ordinal) not in labelled:
+                candidates.extend(
+                    exact_candidates(probes[index], surface.sequence, index, ordinal, text)
+                )
     entry_counts = tuple(len(surface.texts) for surface in surface_list)
-    carriers = tuple(span for surface in surface_list for span in surface.source.excluded)
-    exact = assign_candidates(entry_counts, candidates, blocked=(*body_spans, *carriers))
-    planned: list[_Planned] = []
-    structural: list[tuple[int, int, int]] = []
+    exact = assign_candidates(
+        entry_counts,
+        candidates,
+        blocked=(*body_spans, *carriers, *reserved_slots),
+    )
+    # Every exact entry participates before any unmatched entry is aligned.
+    # Its wording cannot be incidental character evidence for another owner.
+    exact_ranges = tuple((candidate.start, candidate.end) for candidate in exact.values())
+    probes = [
+        SourceFormatting(
+            chunks,
+            ignored=s.source.ignored,
+            excluded=(*s.source.excluded, *reserved_slots, *exact_ranges),
+        )
+        for s in surface_list
+    ]
     unowned: list[tuple[int, int]] = []
     for index, surface in enumerate(surface_list):
         probe = probes[index]
         cursor = 0
         for ordinal, text in enumerate(surface.texts, start=1):
+            if (index, ordinal) in labelled:
+                continue
             candidate = exact.get((index, ordinal))
             if candidate is not None:
-                planned.append(_planned_from_candidate(candidate))
+                planned.append(_planned_from_candidate(candidate, probe))
                 cursor = _cursor_at(probe, candidate.end)
                 continue
             probe.cursor = cursor
@@ -371,7 +400,7 @@ def plan_entry_ownership(
                 unowned.append((index, ordinal))
                 continue
             if evidence.structural:
-                structural.append((index, ordinal, evidence.seed_start))
+                unowned.append((index, ordinal))
                 continue
             unit_start, unit_end = entry_unit_bounds(probe, evidence.seed_start)
             planned.append(
@@ -390,16 +419,6 @@ def plan_entry_ownership(
                     reference_end=evidence.anchor_end,
                 )
             )
-    reserved = [
-        (plan.label_start if plan.label_start is not None else plan.start, plan.anchor_end)
-        for plan in planned
-    ]
-    for index, ordinal, seed_start in structural:
-        structural_plan = _structural_plan(index, probes[index], ordinal, seed_start, reserved)
-        if structural_plan is None:
-            unowned.append((index, ordinal))
-            continue
-        planned.append(structural_plan)
     ordered = sorted(planned, key=lambda plan: (plan.start, plan.surface_index, plan.ordinal))
     seen_units: set[tuple[int, int]] = set()
     owners: list[EntryOwner] = []

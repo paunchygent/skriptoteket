@@ -110,7 +110,7 @@ def _project_entry(
     ):
         source.covered.update(range(owner.anchor_start, owner.anchor_end))
         source.entry_spans.append((owner.anchor_start, owner.anchor_end))
-        body = source.fragments(owner.anchor_start, owner.anchor_end)
+        body = tuple(source.fragments(owner.anchor_start, owner.anchor_end))
         return entry.model_copy(update={"body": body}), span
     paragraph = _single_paragraph(source, start, owner.end)
     if paragraph is not None:
@@ -196,7 +196,7 @@ def _rebuild_entry(entry: Entry, source: SourceFormatting, span: _OwnedSpan) -> 
     end = span.end
     while end > span.content_start and source.text[end - 1].isspace():
         end -= 1
-    body = source.fragments(span.content_start, end)
+    body = tuple(source.fragments(span.content_start, end))
     span.emitted = True
     if not body:
         return entry

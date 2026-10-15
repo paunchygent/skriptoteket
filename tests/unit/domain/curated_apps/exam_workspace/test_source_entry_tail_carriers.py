@@ -113,3 +113,69 @@ def test_literal_answer_label_in_an_omitted_ordinary_continuation_is_rebuilt():
     )
     result = native_item(_produced(chunks), chunks=chunks, language="en")
     assert body_plain_text(result.choices[1].body) == "blue\n" + literal
+
+
+@pytest.mark.parametrize("last_wording", ["blue", "blue Use warm water.", "azure"])
+@pytest.mark.parametrize(
+    "continuation", ["\nFollow the safety note.\n", " Follow the safety note "]
+)
+def test_omitted_continuation_before_answer_tail_keeps_visible_text(last_wording, continuation):
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue" + continuation + "Svar: blue", marked=True),
+    )
+    produced = _produced(
+        chunks,
+        choices=[
+            {"text": "red", "correct": False},
+            {"text": last_wording, "correct": False},
+        ],
+    )
+    result = native_item(produced, chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        "blue" + continuation.rstrip(),
+    ]
+    assert all(
+        segment.marks == ("bold",)
+        for paragraph in result.choices[1].body
+        for segment in paragraph.segments
+    )
+    assert result.facit_text is None
+
+
+def test_numbered_continuation_before_answer_label_keeps_visible_text():
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue\nUse cold water. Answer key: blue", marked=True),
+    )
+    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        "blue\nUse cold water.",
+    ]
+    assert result.facit_text is None
+
+
+def test_bound_facit_excludes_the_tail_after_an_omitted_continuation():
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue\nFollow the safety note.\nSvar: blue", marked=True),
+    )
+    result = native_item(_produced(chunks, facit_text="blue"), chunks=chunks, language="en")
+    assert [body_plain_text(choice.body) for choice in result.choices] == [
+        "red",
+        "blue\nFollow the safety note.",
+    ]
+    assert result.facit_text == "blue"
+
+
+def test_literal_quoted_answer_label_after_a_sentence_stays_in_content():
+    literal = 'Read the note. The phrase "answer key:" is literal.'
+    chunks = (
+        _chunk("body:0001", "Choose an answer."),
+        _chunk("body:0002", "A. red B. blue\n" + literal, marked=True),
+    )
+    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    assert body_plain_text(result.choices[1].body) == "blue\n" + literal
+    assert result.facit_text is None

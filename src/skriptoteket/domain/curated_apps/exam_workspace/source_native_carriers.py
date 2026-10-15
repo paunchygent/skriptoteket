@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import ANSWER_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
 
 if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
@@ -44,30 +45,57 @@ def entry_answer_spans(
 ) -> tuple[tuple[int, int], ...]:
     """Identify answer tails beyond an entry's aligned wording, without deriving a key.
 
-    Reuse the existing inline-answer recogniser. The source label must follow
-    the entry's wording with only a structural separator between them. A label
-    inside the entry's aligned wording, or inside an ordinary continuation
-    sentence, remains entry content. A literal label supplied as part of the
-    entry is also retained, as in the existing character-alignment rule.
+    Reuse the existing inline-answer recogniser on the complete source owner,
+    not just the separator immediately after model-aligned text. Continuation
+    words and their punctuation do not change label recognition. Quoted literal
+    labels and labels supplied as part of the model entry remain visible, as
+    in the existing character-alignment rule. No answer value is recovered.
     """
     texts = {surface.sequence: surface.texts for surface in surfaces}
     spans: list[tuple[int, int]] = []
     for owner in ownership.owners:
-        if owner.anchor_end < 0:
+        if owner.start < 0:
             continue
         wording = texts[owner.sequence][owner.ordinal - 1]
         if ANSWER_LABEL.search(wording):
             continue
-        label = ANSWER_LABEL.search(text, owner.anchor_end, owner.end)
-        if label is None:
-            continue
-        separator = text[owner.anchor_end : label.start()]
-        if re.fullmatch(r"[\s,;()–—-]*", separator) is None:
-            continue
-        start = label.start()
-        opening = separator.rfind("(")
-        if opening >= 0:
-            start = owner.anchor_end + opening
-        line_end = text.find("\n", label.end(), owner.end)
-        spans.append((start, line_end if line_end >= 0 else owner.end))
+        # Structural ownership survives a rewrite even when no wording anchor
+        # does. Recognition is source-owned, not contingent on model equality.
+        content_start = owner.start + (
+            entry_label_end(text[owner.start : owner.end], owner.ordinal) or 0
+        )
+        anchor_end = max(content_start, owner.anchor_end)
+        for label in ANSWER_LABEL.finditer(text, anchor_end, owner.end):
+            separator = text[anchor_end : label.start()]
+            start = _answer_tail_start(anchor_end, label.start(), separator)
+            if start is None:
+                continue
+            line_end = text.find("\n", label.end(), owner.end)
+            spans.append((start, line_end if line_end >= 0 else owner.end))
+            break
     return tuple(spans)
+
+
+_STRUCTURAL_SEPARATOR = re.compile(r"[\s,;()–—-]*\Z")
+
+
+def _answer_tail_start(anchor_end: int, label_start: int, separator: str) -> int | None:
+    """The excluded tail's first character, or None when the label is prose.
+
+    The tail starts at the label, or at an opening parenthesis that wraps only
+    punctuation around it. A parenthetical wrapper containing prose keeps that
+    prose visible. Quote context distinguishes a literal label from the shared
+    recogniser's answer marker; a continuation needs no particular punctuation.
+    """
+    opening = separator.rfind("(")
+    if opening >= 0 and _STRUCTURAL_SEPARATOR.fullmatch(separator[opening:]):
+        return anchor_end + opening
+    quote: str | None = None
+    pairs = {'"': '"', "'": "'", "“": "”", "‘": "’", "`": "`"}
+    for index, char in enumerate(separator):
+        if quote is not None:
+            if char == quote:
+                quote = None
+        elif char in pairs and not (char == "'" and index and separator[index - 1].isalnum()):
+            quote = pairs[char]
+    return None if quote is not None else label_start

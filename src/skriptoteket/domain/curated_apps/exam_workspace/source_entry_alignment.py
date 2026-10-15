@@ -1,15 +1,12 @@
-"""Assign every produced wording's exact source occurrences to distinct entries.
+"""Assign source slots jointly without enumerating occurrence combinations.
 
-Two entry surfaces may repeat a word (``1. red A. red``); each entry must keep
-its own occurrence, and an early common word in the question prompt must not
-steal a later labelled entry's slot. Occurrences are enumerated exhaustively and
-then assigned by a memoized sequence alignment over the state ``(next ordinal
-per surface, source end)``: a transition may assign the next entry of any
-surface to any candidate starting at or after the source end, or leave that
-entry unassigned for the later rewrite alignment. The search maximises assigned
-entries, then actual ordinal-label support, then the soft side-family
-preference, so every surface keeps its ordinal order and the earliest
-source-order path wins a tie. No occurrence is capped or dropped.
+Printed-label slots are assigned before wording projection. If the entries'
+individually best slots form a disjoint ordered allocation, their union is the
+global optimum and needs no search. Ambiguous allocations use ordered dynamic
+programming; at equal evidence and preference only the earliest ending slot
+can matter, because it leaves every later suffix available. This dominance
+rule removes redundant occurrence transitions without capping or discarding
+supported source text. Unlabelled exact occurrences use the same assignment.
 """
 
 from __future__ import annotations
@@ -37,6 +34,7 @@ class EntryCandidate:
     unit_end: int
     label_start: int | None
     preference: int
+    evidence: int = 0
 
 
 def entry_unit_bounds(source: SourceFormatting, start: int) -> tuple[int, int]:
@@ -141,18 +139,21 @@ class _Score:
     assigned: int
     labelled: int
     preferred: int
+    evidence: int = 0
 
     def plus(self, candidate: EntryCandidate) -> "_Score":
         return _Score(
             assigned=self.assigned + 1,
             labelled=self.labelled + (1 if candidate.label_start is not None else 0),
             preferred=self.preferred - candidate.preference,
+            evidence=self.evidence + candidate.evidence,
         )
 
     def better_than(self, other: "_Score") -> bool:
-        return (self.assigned, self.labelled, self.preferred) > (
+        return (self.assigned, self.labelled, self.evidence, self.preferred) > (
             other.assigned,
             other.labelled,
+            other.evidence,
             other.preferred,
         )
 
@@ -167,20 +168,48 @@ def assign_candidates(
     *,
     blocked: tuple[tuple[int, int], ...] = (),
 ) -> dict[tuple[int, int], EntryCandidate]:
-    """Give each occurrence to one entry: a memoized joint sequence alignment.
+    """Allocate ordered disjoint slots, using an optimum fast path or dominance DP.
 
-    ``entry_counts`` is the number of entries per surface in surface order. The
-    search state is the next unassigned ordinal per surface plus the source end
-    of the last assignment; a transition either assigns one entry's next
-    occurrence at or after that end (advancing its surface and the end) or
-    leaves the entry unassigned for the rewrite alignment. Body-owned spans are
-    excluded before the search, so only proven native body or picture spans
-    keep an occurrence from an entry.
+    Scores prefer assignment count, printed labels, wording evidence and then
+    label-family conventions. Body/carrier-owned spans are excluded first.
+    The ambiguous path advances a surface ordinal or skips it; equivalent
+    later occurrences never need separate transitions or stored result paths.
     """
+    if not candidates:
+        return {}
     by_entry: dict[tuple[int, int], list[EntryCandidate]] = {}
     for candidate in candidates:
         if not _blocked(candidate, blocked):
             by_entry.setdefault((candidate.surface_index, candidate.ordinal), []).append(candidate)
+    # If every entry's individually best slot is unique and the slots are
+    # disjoint and ordered, their union is already the global optimum. Printed
+    # labels make this the ordinary path, including arbitrarily many duplicates.
+    anchored: list[EntryCandidate] = []
+    for index, count in enumerate(entry_counts):
+        for ordinal in range(1, count + 1):
+            options = by_entry.get((index, ordinal), [])
+            if not options:
+                continue
+            rank = max((c.label_start is not None, c.evidence, -c.preference) for c in options)
+            best = [
+                c for c in options if (c.label_start is not None, c.evidence, -c.preference) == rank
+            ]
+            if len(best) == 1:
+                anchored.append(best[0])
+    ordered = sorted(anchored, key=lambda c: (c.start, c.surface_index, c.ordinal))
+    last_ordinal: dict[int, int] = {}
+    disjoint = True
+    end = 0
+    for candidate in ordered:
+        if candidate.start < end or candidate.ordinal <= last_ordinal.get(
+            candidate.surface_index, 0
+        ):
+            disjoint = False
+            break
+        end = candidate.end
+        last_ordinal[candidate.surface_index] = candidate.ordinal
+    if len(anchored) == sum(entry_counts) and disjoint:
+        return {(c.surface_index, c.ordinal): c for c in anchored}
     surfaces = len(entry_counts)
     memo: dict[tuple[tuple[int, ...], int], tuple[_Score, tuple[EntryCandidate, ...]]] = {}
 
@@ -197,11 +226,18 @@ def assign_candidates(
             ordinal = ordinals[index]
             if ordinal > entry_counts[index]:
                 continue
-            transitions.extend(
-                (index, candidate)
-                for candidate in by_entry.get((index, ordinal), ())
-                if candidate.start >= source_end
-            )
+            # At equal evidence/preference the earliest ending occurrence
+            # dominates every later one: it leaves every suffix available.
+            # Keep one transition per score class, not every occurrence.
+            earliest: dict[tuple[int, int, bool], EntryCandidate] = {}
+            for candidate in by_entry.get((index, ordinal), ()):
+                if candidate.start < source_end:
+                    continue
+                rank = (candidate.preference, candidate.evidence, candidate.label_start is not None)
+                prior = earliest.get(rank)
+                if prior is None or (candidate.end, candidate.start) < (prior.end, prior.start):
+                    earliest[rank] = candidate
+            transitions.extend((index, candidate) for candidate in earliest.values())
         transitions.sort(key=lambda item: (item[1].start, item[0], item[1].ordinal))
         for index, candidate in transitions:
             next_ordinals = ordinals[:index] + (ordinals[index] + 1,) + ordinals[index + 1 :]
