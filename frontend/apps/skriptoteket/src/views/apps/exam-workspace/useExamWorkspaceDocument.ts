@@ -48,6 +48,7 @@ import { useToast } from "../../../composables/useToast";
 import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
 import {
   newTeacherItem,
+  type TeacherItemKind,
   reviewed,
   withChoiceText,
   withCorrectChoices,
@@ -421,13 +422,13 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  function addItem(): void {
+  function addItem(kind: TeacherItemKind): void {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) {
       return;
     }
     const itemId = nextItemId(current.items.map((item) => item.item_id));
-    const newItem = newTeacherItem(itemId, current.items.length + 1);
+    const newItem = newTeacherItem(itemId, current.items.length + 1, kind);
     workspaceDocument.value = { ...current, items: [...current.items, newItem] };
     selectedItemId.value = itemId;
   }

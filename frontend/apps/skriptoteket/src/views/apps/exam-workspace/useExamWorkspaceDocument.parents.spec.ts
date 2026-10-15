@@ -88,7 +88,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
     state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", text: "Edited." }]);
     state.markItemReviewed("item_002");
-    state.addItem();
+    state.addItem("free_text");
 
     await expect(state.saveDocument()).resolves.toBe(true);
 
