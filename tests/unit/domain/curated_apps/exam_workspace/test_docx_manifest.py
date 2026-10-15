@@ -228,3 +228,18 @@ def test_question_source_has_section_heading_and_instruction_but_no_metadata() -
     source = question_source(manifest, labeler_chunks, "q1")
     assert source.split("\n") == [marked[_b(n)] for n in (8, 9, 10, 11, 12, 13)]
     assert marked[_b(4)] not in source
+
+
+def test_an_own_chunk_the_question_also_lists_as_its_key_keeps_both_marks(
+    chunks: tuple[DocxChunk, ...],
+) -> None:
+    # Live Diagnostic 2026-10-16: the grouping listed each facit line among the question's own
+    # chunks and as its key; admission decides by whether the converted item holds it.
+    manifest = manifest_from_output(
+        _raw([_question("q1", Q1, keys=[_b(10), _b(11)]), _question("q2", Q2, keys=[_b(10)])]),
+        chunks,
+    )
+    assert manifest.questions[0].anchors == tuple(Q1)
+    assert manifest.questions[0].key_anchors == (_b(10), _b(11))
+    assert manifest.questions[1].key_anchors == ()
+    assert manifest.duplicate_anchors == (_b(10),)

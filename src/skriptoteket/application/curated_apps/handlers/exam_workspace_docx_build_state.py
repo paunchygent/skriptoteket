@@ -75,6 +75,7 @@ class DocxBuildState:
     batch: str | None = None
     questions: tuple[tuple[str, ...], ...] = ()
     governing: frozenset[str] = frozenset()
+    grouped_keys: frozenset[str] = frozenset()
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)

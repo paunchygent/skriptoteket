@@ -39,7 +39,7 @@ def _chunk(anchor: str, text: str) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text)
 
 
-def _state(*texts: str) -> DocxBuildState:
+def _state(*texts: str, grouped_keys: frozenset[str] = frozenset()) -> DocxBuildState:
     chunks = tuple(_chunk(f"body:{n:04d}", text) for n, text in enumerate(texts, start=1))
     return DocxBuildState(
         job_id=uuid4(),
@@ -48,6 +48,7 @@ def _state(*texts: str) -> DocxBuildState:
         source_sha256="0" * 64,
         chunks=chunks,
         questions=(tuple(c.anchor for c in chunks),),
+        grouped_keys=grouped_keys,
     )
 
 
@@ -104,9 +105,14 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     assert state.pending == ()
 
 
-def test_an_own_facit_line_the_reply_copies_whole_as_facit_is_its_answer_key():
-    # Live SA24 2026-10-16: grouping listed each facit line among its question's own chunks.
-    state = _state("11. ______ (s…t) – A drug that keeps you awake.", _FACIT)
+def test_an_own_facit_line_the_grouping_and_the_reply_list_as_a_key_is_its_answer_key():
+    # Live SA24 and Diagnostic 85 2026-10-16: the grouping listed each facit line both among
+    # its question's own chunks and as its key; the reply's facit_text rewords the line.
+    state = _state(
+        "11. ______ (s…t) – A drug that keeps you awake.",
+        _FACIT,
+        grouped_keys=frozenset({"body:0002"}),
+    )
     gap: JsonValue = {"kind": "gap", "text": None, "accepted_values": ["stimulant"]}
     body: JsonValue = [{"segments": [gap, _text(" (s…t) – A drug that keeps you awake.")]}]
 
@@ -118,7 +124,7 @@ def test_an_own_facit_line_the_reply_copies_whole_as_facit_is_its_answer_key():
                     ["body:0001"],
                     kind="gap_fill",
                     key_source="copied",
-                    facit_text=f" {_FACIT}\n",
+                    facit_text="syfte, urval och frågor",
                     body=body,
                     printed_label="11",
                 )

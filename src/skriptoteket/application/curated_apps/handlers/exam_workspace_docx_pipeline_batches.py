@@ -107,6 +107,7 @@ def batch_state(run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildStat
         keep_conflicts=any(qid in run.resent for qid in batch.question_ids),
         questions=tuple(f.question_anchors for f in run.families),
         governing=frozenset(governed_anchors(run.contexts, run.families)),
+        grouped_keys=frozenset(a for anchors in run.key_anchors.values() for a in anchors),
     )
 
 

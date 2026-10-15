@@ -88,7 +88,9 @@ The facit and the key
   When you cannot tell which marked phrases the student writes, return outcome review with a
   review_reason that names them.
 - Facit words are answers: they go into the item's key (accepted_values, correct choices,
-  match_pairs or criteria), and student-visible text holds the question.
+  match_pairs or criteria), and student-visible text holds the question. A label that
+  introduces the teacher's answer, such as "Svar:", "Facit:" or "Correct answer:", belongs
+  to the facit with its answer.
 - key_source is copied when the key copies the facit's answer words, including a facit letter
   mapped to its option and listed alternatives split apart; interpreted when you extract
   answers from a facit sentence or build pairs from prose; invented when you solve an objective

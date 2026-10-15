@@ -130,27 +130,12 @@ def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tu
     )
 
 
-def _squashed(text: str) -> str:
-    return " ".join(text.split())
-
-
 def _admit_keys(
-    raw: JsonValue,
-    state: DocxBuildState,
-    seen: set[str],
-    item_held: frozenset[str],
-    facit_texts: tuple[str, ...],
+    raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
 ) -> None:
     listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
     for anchor in _free(listed, state, seen):
-        # An own chunk of a question an item holds stays question text, unless no item lists
-        # it and the reply copies it whole as an item's facit: then it is a facit line.
-        chunk = state.chunk_by_anchor[anchor]
-        copies = {_squashed(chunk.text), _squashed(chunk.marked_text)}
-        if item_held.intersection(state.question_by_anchor.get(anchor, ())) and (
-            anchor in item_held
-            or not any(copy in facit for copy in copies for facit in facit_texts)
-        ):
+        if item_held.intersection(state.question_by_anchor.get(anchor, ())):
             continue
         state.key_anchors.add(anchor)
         seen.add(anchor)
@@ -238,6 +223,11 @@ def _with_left_out(
         for c in state.pending
         if c.anchor in own and c.anchor not in item_held and c.anchor not in seen
     )
+    # A left-out chunk the grouping lists as the question's facit is its answer key.
+    keys = {a for a in left_out if a in state.grouped_keys}
+    state.key_anchors.update(keys)
+    seen.update(keys)
+    left_out = tuple(a for a in left_out if a not in keys)
     if not left_out:
         return admitted
     seen.update(left_out)
@@ -317,7 +307,7 @@ def _admit_item(
         context = definition_context(state.chunks, anchors, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
-        shown -= state.key_anchors - set(anchors)
+        shown -= (state.key_anchors | state.grouped_keys) - set(anchors)
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
         item = native_item(
             with_printed_points(with_accepted_forms(produced, context), own),
@@ -350,12 +340,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     raw_items = content.get("items")
     items = raw_items if isinstance(raw_items, list) else []
     item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
-    facit_texts = tuple(
-        _squashed(facit)
-        for raw in items
-        if isinstance(raw, dict) and isinstance(facit := raw.get("facit_text"), str)
-    )
-    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held, facit_texts)
+    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
         _admit_metadata(content["title"], "title", state, seen, item_held)
     raw_instructions = content.get("instructions")
