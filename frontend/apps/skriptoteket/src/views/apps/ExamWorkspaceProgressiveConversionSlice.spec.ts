@@ -15,6 +15,7 @@ import {
   editPoints,
   expectEditable,
   FIRST,
+  forceClick,
   forceInput,
   installProgressiveConversionLifecycle,
   mountTracked,
@@ -78,7 +79,7 @@ describe("Exam workspace progressive conversion", () => {
     const view = await uploadFirstBatch();
     await selectItemRow(view, "item_002");
     await forceInput(view, "exam-workspace-item-points-input", "7");
-    await forceInput(view, "exam-workspace-marking-guide-input", "Lärarens bedömningsstöd");
+    await forceClick(view, "exam-workspace-criterion-add");
 
     expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
     expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBe("");
