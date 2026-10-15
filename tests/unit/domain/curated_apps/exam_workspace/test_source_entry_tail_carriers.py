@@ -219,7 +219,7 @@ def test_exact_choice_with_a_literal_label_still_excludes_the_source_tail():
     assert result.facit_text is None
 
 
-def test_rewritten_choice_with_a_label_still_excludes_the_source_tail():
+def test_rewritten_choice_keeps_the_answer_label_the_model_emitted():
     chunks = (
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "A. red B. blue\nUse cold water. Answer key: blue", marked=True),
@@ -234,8 +234,9 @@ def test_rewritten_choice_with_a_label_still_excludes_the_source_tail():
     result = native_item(produced, chunks=chunks, language="en")
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
-        "blue\nUse cold water.",
+        "blue\nUse cold water. Answer key: blue",
     ]
+    assert "Answer key: blue" in body_plain_text(result.choices[1].body)
     assert result.facit_text is None
 
 

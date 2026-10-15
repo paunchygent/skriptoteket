@@ -1,6 +1,25 @@
 """Coordinate-preserving source partitions for native editing surfaces."""
 
-from collections.abc import Iterable
+import re
+from collections.abc import Iterable, Iterator
+
+
+def normalized_source_index(text: str) -> tuple[str, list[int]]:
+    """Fold whitespace while retaining each normalized character's source offset."""
+    chars: list[str] = []
+    positions: list[int] = []
+    for offset, char in enumerate(text):
+        if char.isspace():
+            if chars and chars[-1] != " ":
+                chars.append(" ")
+                positions.append(offset)
+        else:
+            chars.append(char)
+            positions.append(offset)
+    if chars and chars[-1] == " ":
+        chars.pop()
+        positions.pop()
+    return "".join(chars), positions
 
 
 def visible_intervals(
@@ -45,6 +64,21 @@ def paragraph_intervals(
             index += 1
         cursor = index
     return result
+
+
+def entry_unit_intervals(
+    text: str, paragraphs: Iterable[tuple[int, int, int | None]]
+) -> Iterator[tuple[int, int, int | None]]:
+    """Index existing paragraph/line/table-cell boundaries in one source sweep."""
+    for left, right, heading in paragraphs:
+        start = left
+        for separator in re.finditer(r"\n| \| ", text[left:right]):
+            end = left + separator.start()
+            if start < end:
+                yield start, end, heading
+            start = left + separator.end()
+        if start < right:
+            yield start, right, heading
 
 
 def question_label_span(

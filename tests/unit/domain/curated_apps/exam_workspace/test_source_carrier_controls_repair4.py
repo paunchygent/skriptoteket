@@ -234,13 +234,13 @@ def test_body_rebuild_keeps_short_mathematical_content():
     assert body_plain_text(result) == "Choose an answer.\n(2 p) times q."
 
 
-def test_body_rebuild_still_skips_a_real_points_line():
+def test_source_only_rebuild_keeps_points_without_a_native_field():
     chunks = (
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "Total: 38 poäng", marked=True),
     )
     result = SourceFormatting(chunks).rebuild_body({})
-    assert body_plain_text(result) == "Choose an answer."
+    assert body_plain_text(result) == "Choose an answer.\nTotal: 38 poäng"
 
 
 def test_leading_mathematical_point_expression_in_a_continuation_survives():

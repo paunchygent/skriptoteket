@@ -1,110 +1,121 @@
-"""Separate item-level points and source answer tails from visible entry content."""
+"""Classify only recovered source spans; produced visible text has authority."""
 
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from difflib import SequenceMatcher
 
-from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import (
-    point_annotation_spans,
-    quoted_mask,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import ANSWER_LABEL
-from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
 
-if TYPE_CHECKING:
-    from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
-        EntryOwnership,
-        EntrySurface,
+
+def emitted_positions(source: str, emitted: str, offset: int = 0) -> frozenset[int]:
+    """Source provenance of copied model text, without interpreting its content.
+
+    Character alignment accounts for copied source words even when the model
+    inserts letters or punctuation inside a word. A whole source word must be
+    represented: isolated coincidental letters inside an omitted answer are not
+    evidence that the model emitted that answer. No carrier grammar participates
+    in this alignment.
+    """
+    matcher = SequenceMatcher(None, source, emitted, autojunk=False)
+    represented = {
+        position
+        for block in matcher.get_matching_blocks()
+        for position in range(block.a, block.a + block.size)
+    }
+    for word in re.finditer(r"\w+", source):
+        positions = range(word.start(), word.end())
+        if not all(position in represented for position in positions):
+            represented.difference_update(positions)
+    return frozenset(offset + position for position in represented)
+
+
+def _recovered(text: str, start: int, end: int, emitted: frozenset[int]) -> bool:
+    """A label is recovered only if the model did not emit its complete wording."""
+    return not all(
+        position in emitted for position in range(start, end) if not text[position].isspace()
     )
 
 
-def native_carrier_spans(text: str, facit_text: str | None) -> tuple[tuple[int, int], ...]:
-    """Locate printed points and the actual native facit's verbatim source span.
-
-    An identical answer word inside an option is not the teacher's facit span:
-    its existing answer label must identify it too.
-    """
-    spans = list(point_annotation_spans(text))
-    if facit_text:
-        value = facit_text.strip()
-        prefix = ANSWER_LABEL.match(value)
-        if prefix:
-            value = value[prefix.end() :].strip()
-        if value:
-            mask = quoted_mask(text)
-            pattern = re.compile(r"\s*" + r"\s+".join(re.escape(word) for word in value.split()))
-            for label in ANSWER_LABEL.finditer(text):
-                if mask[label.start()]:
-                    continue
-                matched = pattern.match(text, label.end())
-                if matched is None:
-                    continue
-                if value[-1].isalnum() and text[matched.end() : matched.end() + 1].isalnum():
-                    continue
-                spans.append((label.start(), matched.end()))
-    return tuple(sorted(spans))
-
-
-def entry_answer_spans(
-    text: str, ownership: EntryOwnership, surfaces: tuple[EntrySurface, ...]
+def native_carrier_spans(
+    text: str,
+    *,
+    points: int | float | None = None,
+    emitted: frozenset[int] = frozenset(),
+    regions: tuple[tuple[int, int], ...] = (),
+    body_regions: tuple[tuple[int, int], ...] = (),
 ) -> tuple[tuple[int, int], ...]:
-    """Identify answer tails beyond an entry's aligned wording, without deriving a key.
+    """Classify omitted metadata inside complete source owners.
 
-    The owner's complete quote context decides whether a label is the teacher's
-    marker or the entry's own quoted wording, independent of where the model's
-    wording anchored or which literal label that wording repeats. Every label
-    that starts a line is a marker, so nested aliases leave with their first
-    label and later marker lines leave too, while visible continuation lines
-    between them stay. When the source's last marker sits mid-line after the
-    wording or a continuation, only that marker's line tail leaves. No answer
-    value is recovered.
+    A recovered answer label owns the rest of its region, including subsequent
+    lines and paragraphs. A recovered score belongs to the native points field
+    only when its numeric value agrees. Emitted text is subtracted from every
+    exclusion, so neither grammar can remove any model-emitted character.
+    Answer values are never recovered into a native facit field.
     """
     mask = quoted_mask(text)
     spans: list[tuple[int, int]] = []
-    for owner in ownership.owners:
-        if owner.start < 0 or owner.end <= owner.start:
-            continue
-        owned = text[owner.start : owner.end]
-        content_start = entry_label_end(owned, owner.ordinal) or 0
-        labels = [
-            label
-            for label in ANSWER_LABEL.finditer(owned, content_start)
-            if not mask[owner.start + label.start()]
-        ]
-        tails: list[tuple[int, int]] = []
-        for label in labels:
-            line_start = owned.rfind("\n", 0, label.start()) + 1
-            if owned[line_start : label.start()].strip():
+    for start, end in regions:
+        for label in ANSWER_LABEL.finditer(text, start, end):
+            if mask[label.start()] or not _recovered(text, label.start(), label.end(), emitted):
                 continue
-            tails.append((label.start(), _tail_line_end(owned, label.end())))
-        if labels:
-            last = labels[-1]
-            if not any(start <= last.start() < end for start, end in tails):
-                tails.append((last.start(), _tail_line_end(owned, last.end())))
-        for start, end in tails:
-            start = _answer_tail_start(content_start, start, owned[content_start:start])
-            spans.append((owner.start + start, owner.start + end))
-    return tuple(spans)
-
-
-def _tail_line_end(text: str, label_end: int) -> int:
-    """The tail line's end, so later visible continuation lines stay."""
-    line_end = text.find("\n", label_end)
-    return len(text) if line_end < 0 else line_end
-
-
-_STRUCTURAL_SEPARATOR = re.compile(r"[\s,;()–—-]*\Z")
-
-
-def _answer_tail_start(content_start: int, label_start: int, separator: str) -> int:
-    """The excluded tail's first character, relative to the owned span.
-
-    The tail starts at the label, or at an opening parenthesis that wraps only
-    punctuation around it. A parenthetical wrapper containing prose keeps that
-    prose visible.
-    """
-    opening = separator.rfind("(")
-    if opening >= 0 and _STRUCTURAL_SEPARATOR.fullmatch(separator[opening:]):
-        return content_start + opening
-    return label_start
+            left = label.start()
+            # A wrapper around recovered metadata is recovered too.
+            opening = text.rfind("(", start, left)
+            if opening >= start and not text[opening + 1 : left].strip():
+                left = opening
+            spans.append((left, end))
+            break
+    for start, end in (*regions, *body_regions):
+        if points is None:
+            continue
+        # A score is a complete recovered unit, not a substring of recovered
+        # mathematical or prose content. Split gaps only at source block/clause
+        # boundaries; emitted provenance itself also delimits recovered units.
+        boundaries = {start, end}
+        boundaries.update(edge for span in spans for edge in span if start < edge < end)
+        boundaries.update(p for p in range(start + 1, end) if (p in emitted) != (p - 1 in emitted))
+        boundaries.update(
+            m.end() for m in re.compile(r"[.!?;\n](?:\s|$)").finditer(text, start, end)
+        )
+        edges = sorted(boundaries)
+        units = tuple(zip(edges, edges[1:]))
+        for match in POINT_LABEL.finditer(text, start, end):
+            unit = next(
+                (
+                    (left, right)
+                    for left, right in units
+                    if left <= match.start() and match.end() <= right
+                ),
+                None,
+            )
+            if unit is None:
+                continue
+            left, right = unit
+            residual = text[left : match.start()] + text[match.end() : right]
+            if residual.strip(" \t\r\n.!?;:"):
+                continue
+            value = re.search(r"\d+(?:[.,]\d+)?", match.group())
+            if (
+                value is None
+                or float(value.group().replace(",", ".")) != points
+                or mask[match.start()]
+                or not _recovered(text, match.start(), match.end(), emitted)
+            ):
+                continue
+            spans.append((match.start(), match.end()))
+    # Subtract provenance rather than relying on the label's shape, position,
+    # quotation or punctuation to protect the content the model emitted.
+    recovered: list[tuple[int, int]] = []
+    for start, end in sorted(spans):
+        left = start
+        for position in range(start, end):
+            if position in emitted:
+                if left < position:
+                    recovered.append((left, position))
+                left = position + 1
+        if left < end:
+            recovered.append((left, end))
+    return tuple(recovered)

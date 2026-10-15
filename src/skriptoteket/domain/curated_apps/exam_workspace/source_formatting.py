@@ -16,15 +16,11 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import points_line
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeSegment,
     NativeTextSegment,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import (
-    point_annotation_spans,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
     ANSWER_LABEL,
@@ -32,6 +28,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment imp
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_gap_alignment import gap_spans
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import (
+    entry_unit_intervals,
+    normalized_source_index,
     overlaps,
     paragraph_intervals,
     question_label_span,
@@ -43,23 +41,6 @@ FORMATTING_REASON = "Formateringen kunde inte föras över"
 
 class FormattingTransferError(ValueError):
     """No source-backed rendering can preserve the model's response structure."""
-
-
-def _normalized(text: str) -> tuple[str, list[int]]:
-    chars: list[str] = []
-    positions: list[int] = []
-    for offset, char in enumerate(text):
-        if char.isspace():
-            if chars and chars[-1] != " ":
-                chars.append(" ")
-                positions.append(offset)
-        else:
-            chars.append(char)
-            positions.append(offset)
-    if chars and chars[-1] == " ":
-        chars.pop()
-        positions.pop()
-    return "".join(chars), positions
 
 
 @dataclass(frozen=True)
@@ -110,8 +91,14 @@ class SourceFormatting:
         self.text = "".join(parts)
         self.marks = marks
         self.paragraphs = paragraphs
+        self.entry_units = [
+            SourceParagraph(*unit)
+            for unit in entry_unit_intervals(
+                self.text, ((p.start, p.end, p.heading) for p in paragraphs)
+            )
+        ]
+        self._entry_unit_ends = [unit.end for unit in self.entry_units]
         self.excluded = excluded
-        self.point_spans = point_annotation_spans(self.text)
         self.available_paragraphs = [
             SourceParagraph(start, end, heading)
             for start, end, heading in paragraph_intervals(
@@ -119,7 +106,7 @@ class SourceFormatting:
             )
         ]
         self._paragraph_ends = [p.end for p in paragraphs]
-        self.normalized, self.positions = _normalized(self.text)
+        self.normalized, self.positions = normalized_source_index(self.text)
         self.cursor = 0
         self.ignored = ignored
         self.label_span = question_label_span(
@@ -135,6 +122,21 @@ class SourceFormatting:
         self.output_anchors: list[int] = []
         self._entry_span: tuple[int, int] = (-1, -1)
 
+    def entry_unit_at(self, offset: int) -> SourceParagraph | None:
+        """Locate an indexed paragraph/line/table-cell envelope in logarithmic time."""
+        index = bisect_right(self._entry_unit_ends, offset)
+        if index >= len(self.entry_units):
+            return None
+        unit = self.entry_units[index]
+        return unit if unit.start <= offset < unit.end else None
+
+    def paragraphs_in(self, start: int, end: int) -> Iterable[SourceParagraph]:
+        """Visit only overlapping paragraphs, without copying the remaining index."""
+        index = bisect_right(self._paragraph_ends, start)
+        while index < len(self.paragraphs) and self.paragraphs[index].start < end:
+            yield self.paragraphs[index]
+            index += 1
+
     def paragraph_at(self, offset: int) -> SourceParagraph | None:
         """The source paragraph holding ``offset``, or None inside a separator."""
         index = bisect_right(self._paragraph_ends, offset)
@@ -144,7 +146,7 @@ class SourceFormatting:
         return paragraph if paragraph.start <= offset < paragraph.end else None
 
     def span(self, text: str) -> tuple[int, int]:
-        wanted, _ = _normalized(text)
+        wanted, _ = normalized_source_index(text)
         if not wanted:
             raise FormattingTransferError("empty text span")
         found = self.normalized.find(wanted, self.cursor)
@@ -184,9 +186,7 @@ class SourceFormatting:
     def fragments(self, start: int, end: int) -> list[NativeParagraph]:
         result: list[NativeParagraph] = []
         previous_end: int | None = None
-        for paragraph in self.paragraphs[bisect_right(self._paragraph_ends, start) :]:
-            if paragraph.start >= end:
-                break
+        for paragraph in self.paragraphs_in(start, end):
             left, right = max(start, paragraph.start), min(end, paragraph.end)
             if left < right:
                 self.projected.add(paragraph.start)
@@ -249,7 +249,7 @@ class SourceFormatting:
                     result.extend(self._rebuild(paragraph, answers or {}))
             self.entry_spans.append(self._entry_span)
             left, right = self._entry_span
-            origins = [p.start for p in self.paragraphs if p.start < right and p.end > left]
+            origins = [p.start for p in self.paragraphs_in(left, right)]
             for index, output in enumerate(result[output_before:]):
                 anchor = origins[min(index, len(origins) - 1)] if origins else -1
                 pictures = []
@@ -308,7 +308,7 @@ class SourceFormatting:
         shown = remaining[leading:]
         lengths = []
         for answer in answers:
-            value, _ = _normalized(answer)
+            value, _ = normalized_source_index(answer)
             if (
                 value
                 and shown.startswith(value)
@@ -429,14 +429,11 @@ class SourceFormatting:
         return [NativeParagraph(heading_level=source.heading, segments=tuple(segments))]
 
     def _rebuilt_text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
-        result: list[NativeTextSegment] = []
-        cursor = start
-        for span_start, span_end in self.point_spans:
-            if start <= span_start and span_end <= end:
-                result.extend(self.text_segments(cursor, span_start))
-                cursor = span_end
-        result.extend(self.text_segments(cursor, end))
-        return tuple(result)
+        return tuple(
+            segment
+            for left, right in visible_intervals(start, end, self.excluded)
+            for segment in self.text_segments(left, right)
+        )
 
     def _content_start(self, paragraph: SourceParagraph) -> int:
         """Skip the printed label a native field already carries, as rebuild_body does."""
@@ -452,10 +449,6 @@ class SourceFormatting:
         placements = self._gap_placements(SourceParagraph(0, len(self.text), None), gaps, answers)
         result: list[NativeParagraph] = []
         for paragraph in self.available_paragraphs:
-            text = self.text[paragraph.start : paragraph.end]
-            annotated = any(paragraph.start <= pos < paragraph.end for pos, _ in self.point_spans)
-            if points_line(text) and annotated:
-                continue
             cursor = self._content_start(paragraph)
             segments: list[NativeSegment] = []
             for start, end, gap in placements:

@@ -326,5 +326,11 @@ def test_labelled_matching_families_keep_mixed_exact_and_rewritten_entries(label
     first, second, third, fourth = labels
     source = f"{first}red {second}warm {third}blue {fourth}cold"
     result = _convert(source, left=left, right=right)
-    _assert_source_entries(result.match_left, ("red", "blue"))
+    # F3 keeps model insertions when every marked source character survives.
+    # 'reddish' contains all of 'red'; 'bluish' does not contain the source 'e'.
+    assert _bodies(result.match_left) == ["reddish" if left[0] == "reddish" else "red", "blue"]
+    assert _segments(result.match_left) == [
+        [("red", _BOLD), ("dish", ())] if left[0] == "reddish" else [("red", _BOLD)],
+        [("blue", _BOLD)],
+    ]
     _assert_source_entries(result.match_right, ("warm", "cold"))

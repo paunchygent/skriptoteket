@@ -1,46 +1,66 @@
-"""Index printed entry slots before matching any produced wording.
+"""Printed ordinal occurrences as optional zero-cost alignment prefixes.
 
-Labels identify source owners independently of model rewrites. All surfaces
-share the same slot edges; wording evidence can score a slot, never move its
-edge into another entry's words. Numeric/alphabetic side conventions are soft
-preferences: actual wording evidence outranks them.
+A label is never reserved source: the alignment consumes it only when an entry
+starts there, so a quoted or literal ordinal stays ordinary content and the
+same label cannot be claimed twice. Numeric/alphabetic side conventions remain
+soft preferences; actual wording evidence outranks them.
 """
 
 from __future__ import annotations
 
 import re
 from bisect import bisect_left
+from dataclasses import dataclass
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment import (
-    EntryCandidate,
-    _label_preference,
-    assign_candidates,
-    entry_literal_mask,
-    entry_unit_bounds,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import SourceToken
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     _ORDINAL_FAMILIES,
     _ordinal_token,
     entry_label_end,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
 _TOKEN = re.compile(r"(?<!\S)[([{]?(?P<token>[A-Za-z0-9]+)[)\]}.:;\-–—]+\s*")
 
 
-def labelled_slots(
-    source: SourceFormatting,
+@dataclass(frozen=True)
+class LabelOption:
+    """One printed ordinal an entry may adopt as a zero-cost anchor prefix."""
+
+    ordinal: int
+    start: int
+    first_token: int
+    token_count: int
+
+
+def entry_literal_mask(text: str) -> tuple[bool, ...]:
+    """Quoted text and point notation cannot supply a printed entry ordinal.
+
+    In particular, the ``p)`` in ``(2 p)`` is a unit or an operand, not the
+    sixteenth alphabetic entry. Shared quote context decides which delimiters
+    open a literal phrase, so ordinary quoted content stays content.
+    """
+    mask = list(quoted_mask(text))
+    for match in POINT_LABEL.finditer(text):
+        mask[match.start() : match.end()] = [True] * (match.end() - match.start())
+    return tuple(mask)
+
+
+def label_options(
+    text: str,
     sequences: tuple[str, ...],
     texts: tuple[tuple[str, ...], ...],
-    blocked: tuple[tuple[int, int], ...],
-) -> dict[tuple[int, int], tuple[EntryCandidate, tuple[int, int] | None]]:
-    """Assign disjoint labelled slots jointly, including wholly rewritten entries.
+    tokens: tuple[SourceToken, ...],
+    *,
+    blocked: tuple[tuple[int, int], ...] = (),
+) -> dict[tuple[int, int], tuple[LabelOption, ...]]:
+    """Every printed ordinal occurrence each entry may start from.
 
-    The index visits token boundaries once. Each recognised ordinal shares one
-    source slot with every surface; the ordered assignment resolves family and
-    duplicate-label ambiguity. Common repeated wording is looked up only inside
-    its slot, never expanded into the entry-by-occurrence cross product.
+    The index visits token boundaries once. An ambiguous spelling such as
+    ``I.`` offers its ordinal to every matching family, and wording evidence
+    decides which entry adopts it. A label whose first source token is blocked
+    or literal is never an anchor.
     """
     ordinals: dict[str, set[int]] = {}
     for ordinal in range(1, max(map(len, texts), default=0) + 1):
@@ -48,73 +68,33 @@ def labelled_slots(
             token_text = _ordinal_token(family, ordinal)
             if token_text is not None:
                 ordinals.setdefault(token_text, set()).add(ordinal)
-    labels: dict[int, list[tuple[int, int]]] = {}
-    families: dict[tuple[int, int], tuple[str, ...]] = {}
-    family_ordinals: dict[str, set[int]] = {}
-    quotes = entry_literal_mask(source.text)
-    for token in _TOKEN.finditer(source.text):
-        start = token.start()
-        if quotes[start] or any(a <= start < b for a, b in blocked):
+    mask = entry_literal_mask(text)
+    starts = [token.start for token in tokens]
+    return_result: dict[tuple[int, int], list[LabelOption]] = {}
+    for match in _TOKEN.finditer(text):
+        start = match.start()
+        if mask[start] or any(a <= start < b for a, b in blocked):
             continue
-        for ordinal in sorted(ordinals.get(token.group("token"), ())):
-            size = entry_label_end(token.group(), ordinal)
-            if size is not None:
-                labels.setdefault(start, []).append((ordinal, size))
-                matches = tuple(
-                    family
-                    for family in _ORDINAL_FAMILIES
-                    if _ordinal_token(family, ordinal) == token.group("token")
-                )
-                families[start, ordinal] = matches
-                for family in matches:
-                    family_ordinals.setdefault(family, set()).add(ordinal)
-    starts = sorted(labels)
-    support = {family: len(values) for family, values in family_ordinals.items()}
-    maximum = max(support.values(), default=0)
-    candidates: list[EntryCandidate] = []
-    anchors: dict[tuple[int, int, int], tuple[int, int] | None] = {}
-    folded = {
-        text: SourceFormatting((DocxChunk("fold", "paragraph", text, text),)).normalized
-        for surface in texts
-        for text in surface
-    }
-    for position, start in enumerate(starts):
-        end = starts[position + 1] if position + 1 < len(starts) else len(source.text)
-        # A body or carrier between entries stops the visible slot as well.
-        end = min((a for a, _ in blocked if start < a < end), default=end)
-        unit_start, unit_end = entry_unit_bounds(source, start)
-        for ordinal, size in labels[start]:
-            for index, (sequence, surface) in enumerate(zip(sequences, texts, strict=True)):
+        for ordinal in sorted(ordinals.get(match.group("token"), ())):
+            size = entry_label_end(match.group(), ordinal)
+            if size is None:
+                continue
+            label_end = start + size
+            while label_end > start and text[label_end - 1].isspace():
+                label_end -= 1
+            first_token = bisect_left(starts, start)
+            token_count = bisect_left(starts, label_end) - first_token
+            if token_count <= 0:
+                continue
+            for index, surface in enumerate(texts):
                 if ordinal > len(surface):
                     continue
-                wanted = folded[surface[ordinal - 1]]
-                lo = bisect_left(source.positions, start + size)
-                hi = bisect_left(source.positions, end)
-                at = source.normalized.find(wanted, lo, hi) if wanted else -1
-                anchor = (
-                    None
-                    if at < 0
-                    else (
-                        source.positions[at],
-                        source.positions[at + len(wanted) - 1] + 1,
+                return_result.setdefault((index, ordinal), []).append(
+                    LabelOption(
+                        ordinal=ordinal,
+                        start=start,
+                        first_token=first_token,
+                        token_count=token_count,
                     )
                 )
-                candidate = EntryCandidate(
-                    surface_index=index,
-                    ordinal=ordinal,
-                    start=start,
-                    end=end,
-                    unit_start=unit_start,
-                    unit_end=unit_end,
-                    label_start=start,
-                    preference=(
-                        _label_preference(sequence, source, start) * (maximum + 1)
-                        + maximum
-                        - max(support[f] for f in families[start, ordinal])
-                    ),
-                    evidence=int(anchor is not None),
-                )
-                candidates.append(candidate)
-                anchors[index, ordinal, start] = anchor
-    assigned = assign_candidates(tuple(map(len, texts)), candidates)
-    return {key: (candidate, anchors[*key, candidate.start]) for key, candidate in assigned.items()}
+    return {key: tuple(options) for key, options in return_result.items()}

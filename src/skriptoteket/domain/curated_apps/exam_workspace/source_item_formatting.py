@@ -15,12 +15,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership impo
     EntrySurface,
     plan_entry_ownership,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import visible_intervals
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_entries import (
     apply_entry_ownership,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 from skriptoteket.domain.curated_apps.exam_workspace.source_native_carriers import (
-    entry_answer_spans,
+    emitted_positions,
     native_carrier_spans,
 )
 
@@ -45,9 +47,8 @@ class ItemSourceFormatting:
 def item_source_formatting(
     produced: ProducedItem, chunks: tuple[DocxChunk, ...]
 ) -> ItemSourceFormatting:
-    carrier_spans = native_carrier_spans(
-        "\n".join(chunk.text for chunk in chunks), produced.facit_text
-    )
+    text = "\n".join(chunk.text for chunk in chunks)
+    carrier_spans: tuple[tuple[int, int], ...] = ()
     surfaces = tuple(
         EntrySurface(sequence, texts, SourceFormatting(chunks, excluded=carrier_spans))
         for sequence, texts in (
@@ -66,16 +67,55 @@ def item_source_formatting(
             if segment.kind == "text" and segment.text
         ),
     )
-    carrier_spans = tuple(
-        sorted(
-            (
-                *carrier_spans,
-                *entry_answer_spans(surfaces[0].source.text, ownership, surfaces),
+    wordings = {surface.sequence: surface.texts for surface in surfaces}
+    emitted = frozenset().union(
+        *(
+            emitted_positions(
+                text[owner.start : owner.end],
+                wordings[owner.sequence][owner.ordinal - 1],
+                owner.start,
             )
+            for owner in ownership.owners
+            if owner.start >= 0
         )
     )
+    body_wording = "\n".join(
+        "".join(
+            segment.text
+            for segment in paragraph.segments
+            if segment.kind == "text" and segment.text
+        )
+        for paragraph in produced.body
+    )
+    emitted |= emitted_positions(text, body_wording)
+    regions = tuple(
+        (
+            owner.start
+            + (
+                entry_label_end(text[owner.start : owner.end], owner.ordinal) or 0
+                if owner.label_start is not None
+                else 0
+            ),
+            owner.end,
+        )
+        for owner in ownership.owners
+        if owner.start >= 0
+    )
+    body_regions = tuple(visible_intervals(0, len(text), ownership.exclusion_ranges()))
+    carrier_spans = native_carrier_spans(
+        text,
+        points=produced.points,
+        emitted=emitted,
+        regions=regions,
+        body_regions=body_regions,
+    )
+    surfaces = tuple(
+        EntrySurface(
+            surface.sequence, surface.texts, SourceFormatting(chunks, excluded=carrier_spans)
+        )
+        for surface in surfaces
+    )
     for surface in surfaces:
-        surface.source.excluded = carrier_spans
         for start, end in carrier_spans:
             surface.source.covered.update(range(start, end))
     body = SourceFormatting(

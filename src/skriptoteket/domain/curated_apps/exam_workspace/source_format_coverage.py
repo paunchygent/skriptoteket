@@ -14,7 +14,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
-    SourceParagraph,
 )
 
 _LABEL_SEPARATORS = ".:;-–—"
@@ -120,31 +119,13 @@ def _is_ordinal_label(prefix: str, ordinal: int) -> bool:
     return entry_label_end(prefix, ordinal) == len(prefix)
 
 
-def _entry_boundary(text: str, paragraph: SourceParagraph, start: int) -> int:
-    """The line or table cell start the entry's label may begin at."""
-    boundary = paragraph.start
-    line = text.rfind("\n", paragraph.start, start)
-    if line >= 0:
-        boundary = max(boundary, line + 1)
-    cell = text.rfind(" | ", paragraph.start, start)
-    if cell >= 0:
-        boundary = max(boundary, cell + 3)
-    return boundary
-
-
 def entry_source_extent(source: SourceFormatting, entry: NativeSourceEntry) -> tuple[int, int]:
     """An aligned entry's source paragraph, physical line or table cell envelope."""
-    paragraph = source.paragraph_at(entry.start)
-    last = source.paragraph_at(entry.end - 1)
-    if paragraph is None or last is None:
+    first = source.entry_unit_at(entry.start)
+    last = source.entry_unit_at(entry.end - 1)
+    if first is None or last is None:
         return entry.start, entry.end
-    start = _entry_boundary(source.text, paragraph, entry.start)
-    end = last.end
-    for separator in ("\n", " | "):
-        following = source.text.find(separator, entry.end, end)
-        if following >= 0:
-            end = min(end, following)
-    return start, end
+    return first.start, last.end
 
 
 def _entry_label_characters(
@@ -159,10 +140,10 @@ def _entry_label_characters(
     for entry in entries:
         if entry.start < 0 or entry.end <= entry.start:
             continue
-        paragraph = source.paragraph_at(entry.start)
-        if paragraph is None:
+        unit = source.entry_unit_at(entry.start)
+        if unit is None:
             continue
-        boundary = _entry_boundary(source.text, paragraph, entry.start)
+        boundary = unit.start
         if boundary >= entry.start:
             continue
         if _is_ordinal_label(source.text[boundary : entry.start], entry.ordinal):
@@ -200,10 +181,6 @@ def complete_source_formatting(
                 offset + paragraph.offset for paragraph in chunk.paragraphs
             )
         offset += len(chunk.text)
-    # Classification uses complete source context, including quotations that
-    # cross paragraph/chunk boundaries, just like carrier exclusion/rebuild.
-    for start, end in body_source.point_spans:
-        covered.update(range(start, end))
     if body_source.label_span is not None:
         covered.update(range(*body_source.label_span))
     missing = [

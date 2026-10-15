@@ -6,21 +6,20 @@ entries' spans must tile it, never overlap: a left entry may not include a right
 entry's characters, and reconstructing one entry may not mark another entry's
 wording as covered.
 
-The partition is computed once for all surfaces before any wording is
-projected. Printed labels establish disjoint source slots independently of
-model wording. The residual entries share one ordered token-interval allocation,
-including exact and rewritten neighbours. A complete earliest-ending exact walk
-certifies the ordinary copy path without expanding duplicate occurrences. If
-rewrites remain, whole-token edit evidence scores all residual source intervals
-before the joint allocator chooses disjoint owners. An owner ends where the next
-owner starts; intervening paragraphs belong to the earlier owner's continuation.
-The final owner stops at source end or the next body or picture anchor.
+One ordered token alignment assigns every entry a disjoint source interval for
+all surfaces at once. This module turns those intervals into complete owners:
+printed labels stay the entry's own anchor, an unlabelled first entry claims its
+unit's prefix, and the unmatched gap between two owners is split at its best
+sentence or clause boundary so a next entry's omitted verb stays with that
+entry. Owners therefore tile the source instead of extending a predecessor to a
+later entry's evidence.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -28,20 +27,22 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment import (
-    EntryCandidate,
-    assign_candidates,
-    exact_candidates,
-    exact_sequence,
+    align_entries,
+    entry_unit_bounds,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import labelled_slots
-from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import (
-    exact_token_score,
-    token_candidates,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import entry_label_end
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import label_options
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import source_tokens
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
+)
+
+_SENTENCE_END = re.compile(r"[.!?…]+[\"'»”’)\]]*")
+_LINE_BREAK = re.compile(r"\n")
+_CLAUSE_END = re.compile(r"[,;:](?=\s|\Z)")
+_CONJUNCTION_START = re.compile(
+    r"(?<!\w)(?:and|but|or|nor|yet|so|men|och|eller|samt|utan|för|så|därför|dock)(?!\w)",
+    re.IGNORECASE,
 )
 
 
@@ -63,7 +64,7 @@ class EntryOwner:
     owner or the next body block. ``anchor_start``/``anchor_end`` are the
     characters its wording aligned to, or ``(-1, -1)`` when alignment gave no
     evidence. ``label_start`` is the entry's own structural ordinal label when
-    one was found before the anchor or at its unit's start.
+    one was adopted.
     """
 
     sequence: str
@@ -162,45 +163,68 @@ def _body_spans(
     return tuple(sorted(spans))
 
 
-def _planned_end(
-    plan: _Planned,
-    following: _Planned | None,
-    source_end: int,
+def _last_sentence_break(text: str, gap_start: int, gap_end: int) -> int | None:
+    """The last completed sentence or physical line inside the unmatched gap."""
+    found: int | None = None
+    for match in _SENTENCE_END.finditer(text, gap_start, gap_end):
+        end = match.end()
+        if end < len(text) and not text[end].isspace() and end != gap_end:
+            continue
+        found = end
+    for match in _LINE_BREAK.finditer(text, gap_start, gap_end):
+        end = match.end()
+        found = end if found is None else max(found, end)
+    return found
+
+
+def _last_clause_break(text: str, gap_start: int, gap_end: int) -> int | None:
+    """The last clause boundary: punctuation end or a leading conjunction."""
+    found: int | None = None
+    for match in _CLAUSE_END.finditer(text, gap_start, gap_end):
+        found = match.end() if found is None else max(found, match.end())
+    for match in _CONJUNCTION_START.finditer(text, gap_start, gap_end):
+        found = match.start() if found is None else max(found, match.start())
+    return found
+
+
+def _split_gap(
+    text: str,
+    gap_start: int,
+    gap_end: int,
+    following_label_start: int | None,
     body_spans: tuple[tuple[int, int], ...],
 ) -> int:
-    """Where the next owner, the question body or the source stops this one."""
-    unit = (plan.unit_start, plan.unit_end)
-    if following is None:
-        base = source_end
-    elif (following.unit_start, following.unit_end) != unit:
-        # Paragraphs between two units are the earlier owner's continuation.
-        base = following.unit_start
+    """Split an unmatched gap so the next entry keeps its own omitted prefix.
+
+    A printed label is a hard boundary. Otherwise the latest completed sentence
+    or line inside the gap wins, then the latest clause boundary, and a gap with
+    neither belongs to the following entry, never to the predecessor's wording:
+    the next entry's omitted verb must not be reconstructed as the previous
+    entry's tail.
+    """
+    if gap_end <= gap_start:
+        return gap_start
+    if following_label_start is not None and gap_start <= following_label_start <= gap_end:
+        boundary = following_label_start
     else:
-        base = following.label_start if following.label_start is not None else following.start
+        found = _last_sentence_break(text, gap_start, gap_end)
+        if found is None:
+            found = _last_clause_break(text, gap_start, gap_end)
+        boundary = gap_start if found is None else found
     for span_start, _span_end in body_spans:
-        if span_start > plan.reference_end:
+        if gap_start < span_start < boundary:
+            boundary = span_start
+    return max(gap_start, min(boundary, gap_end))
+
+
+def _stop_before_body(
+    base: int, reference_end: int, body_spans: tuple[tuple[int, int], ...]
+) -> int:
+    """An owner never extends past the question body that follows its wording."""
+    for span_start, _span_end in body_spans:
+        if span_start > reference_end:
             return min(base, span_start)
     return base
-
-
-def _planned_from_candidate(candidate: EntryCandidate, source: SourceFormatting) -> _Planned:
-    start = candidate.start
-    while start > candidate.unit_start and (
-        source.text[start - 1].isalnum() or source.text[start - 1] == "_"
-    ):
-        start -= 1
-    return _Planned(
-        surface_index=candidate.surface_index,
-        ordinal=candidate.ordinal,
-        start=start,
-        anchor_start=candidate.start,
-        anchor_end=candidate.end,
-        exact=True,
-        label_start=candidate.label_start,
-        unit_start=candidate.unit_start,
-        unit_end=candidate.unit_end,
-        reference_end=candidate.end,
-    )
 
 
 def plan_entry_ownership(
@@ -211,9 +235,10 @@ def plan_entry_ownership(
 ) -> EntryOwnership:
     """Assign every entry surface's characters to exactly one entry.
 
-    The caller's surfaces keep their projection state for the apply step.
-    Shared printed-label slots are allocated first. Residual exact and rewritten
-    entries then compete in one allocation, never in independent alignments.
+    The caller's surfaces keep their projection state for the apply step. One
+    ordered token alignment assigns every surface's entries disjoint intervals;
+    the owner sweep then extends each interval to complete sentence or clause
+    content without crossing the next owner.
     """
     surface_list = tuple(surfaces)
     probes = [
@@ -221,107 +246,82 @@ def plan_entry_ownership(
         for surface in surface_list
     ]
     body_spans = _body_spans(chunks, body_texts)
-    carriers = tuple(span for surface in surface_list for span in surface.source.excluded)
-    labelled = (
-        labelled_slots(
-            probes[0],
-            tuple(s.sequence for s in surface_list),
-            tuple(s.texts for s in surface_list),
-            (*body_spans, *carriers),
-        )
-        if probes
-        else {}
-    )
+    text = probes[0].text if probes else ""
+    sequences = tuple(surface.sequence for surface in surface_list)
+    texts = tuple(surface.texts for surface in surface_list)
+    labels = label_options(text, sequences, texts, source_tokens(text), blocked=body_spans)
+    anchors = align_entries(text, sequences, texts, labels=labels, blocked=body_spans)
     planned: list[_Planned] = []
-    for (index, ordinal), (slot, anchor) in labelled.items():
-        size = entry_label_end(probes[index].text[slot.start : slot.end], ordinal) or 0
-        planned.append(
-            _Planned(
-                surface_index=index,
-                ordinal=ordinal,
-                start=slot.start,
-                anchor_start=anchor[0] if anchor else -1,
-                anchor_end=anchor[1] if anchor else -1,
-                exact=anchor is not None,
-                label_start=slot.start,
-                unit_start=slot.unit_start,
-                unit_end=slot.unit_end,
-                reference_end=anchor[1] if anchor else slot.start + size,
-            )
-        )
-    reserved_slots = tuple((slot.start, slot.end) for slot, _ in labelled.values())
-    probes = [
-        SourceFormatting(
-            chunks,
-            ignored=s.source.ignored,
-            excluded=(*s.source.excluded, *reserved_slots),
-        )
-        for s in surface_list
-    ]
-    candidates: list[EntryCandidate] = []
-    pending = {
-        (index, ordinal): text
-        for index, surface in enumerate(surface_list)
-        for ordinal, text in enumerate(surface.texts, start=1)
-        if (index, ordinal) not in labelled
-    }
-    entry_counts = tuple(len(surface.texts) for surface in surface_list)
-    blocked = (*body_spans, *carriers, *reserved_slots)
-    assigned = (
-        exact_sequence(probes, tuple(s.texts for s in surface_list), blocked)
-        if not labelled
-        else None
-    )
-    if assigned is None:
-        for (index, ordinal), text in pending.items():
-            candidates.extend(
-                replace(c, evidence=exact_token_score(text))
-                for c in exact_candidates(
-                    probes[index], surface_list[index].sequence, index, ordinal, text
+    unowned: list[tuple[int, int]] = []
+    for index, surface in enumerate(surface_list):
+        for ordinal in range(1, len(surface.texts) + 1):
+            anchor = anchors.get((index, ordinal))
+            if anchor is None:
+                unowned.append((index, ordinal))
+                continue
+            unit_start, unit_end = entry_unit_bounds(probes[index], anchor.start)
+            planned.append(
+                _Planned(
+                    surface_index=index,
+                    ordinal=ordinal,
+                    start=anchor.start,
+                    anchor_start=anchor.anchor_start,
+                    anchor_end=anchor.anchor_end,
+                    exact=anchor.exact,
+                    label_start=anchor.label_start,
+                    unit_start=unit_start,
+                    unit_end=unit_end,
+                    reference_end=anchor.anchor_end if anchor.anchor_end >= 0 else anchor.end,
                 )
             )
-        assigned = assign_candidates(entry_counts, candidates, blocked=blocked)
-    else:
-        candidates.extend(assigned.values())
-    exact_spans = {(c.surface_index, c.ordinal, c.start, c.end) for c in candidates}
-    if len(assigned) < len(pending):
-        # Jointly score every residual interval, including exact neighbours.
-        # No entry is projected while another entry can still change its edge.
-        for (index, ordinal), text in pending.items():
-            candidates.extend(token_candidates(probes[index], index, ordinal, text, blocked))
-        assigned = assign_candidates(entry_counts, candidates, blocked=blocked)
-    unowned = [key for key in pending if key not in assigned]
-    for (index, ordinal), candidate in assigned.items():
-        plan = _planned_from_candidate(candidate, probes[index])
-        planned.append(
-            replace(
-                plan,
-                exact=(index, ordinal, candidate.start, candidate.end) in exact_spans,
-            )
-        )
     ordered = sorted(planned, key=lambda plan: (plan.start, plan.surface_index, plan.ordinal))
     seen_units: set[tuple[int, int]] = set()
     owners: list[EntryOwner] = []
+    previous_end = 0
     for position, plan in enumerate(ordered):
         unit = (plan.unit_start, plan.unit_end)
         first_in_unit = unit not in seen_units
         seen_units.add(unit)
         following = ordered[position + 1] if position + 1 < len(ordered) else None
-        start = plan.label_start if plan.label_start is not None else plan.start
-        if plan.label_start is None and first_in_unit:
-            # An unlabelled entry prefix is excluded from the body before it
-            # projects, so only a proven body span inside the unit precedes it.
+        if plan.label_start is not None:
+            start = plan.label_start
+        elif first_in_unit:
             start = plan.unit_start
-            for body_start, body_end in body_spans:
-                if body_start < plan.anchor_start and body_end > start:
-                    start = min(body_end, plan.anchor_start)
-        end = _planned_end(plan, following, len(probes[plan.surface_index].text), body_spans)
+            for span_start, span_end in body_spans:
+                if span_start < plan.start and span_end > start:
+                    start = min(span_end, plan.start)
+        else:
+            start = previous_end
+            for span_start, span_end in body_spans:
+                if previous_end <= span_start and span_end <= plan.start:
+                    start = max(start, span_end)
+        start = max(0, start, previous_end)
+        if plan.label_start is None and first_in_unit:
+            start = min(start, plan.start)
+        if following is None:
+            end = _stop_before_body(len(text), plan.reference_end, body_spans)
+        elif following.label_start is not None:
+            end = _stop_before_body(following.label_start, plan.reference_end, body_spans)
+        elif (
+            following.unit_start,
+            following.unit_end,
+        ) != unit and following.unit_start >= plan.reference_end:
+            end = _stop_before_body(following.unit_start, plan.reference_end, body_spans)
+        else:
+            end = _split_gap(
+                text,
+                plan.reference_end,
+                max(following.start, plan.reference_end),
+                following.label_start,
+                body_spans,
+            )
+        end = max(end, start, plan.reference_end)
         owners.append(
             EntryOwner(
-                sequence=surface_list[plan.surface_index].sequence,
+                sequence=sequences[plan.surface_index],
                 ordinal=plan.ordinal,
                 start=start,
-                end=max(start, end),
+                end=end,
                 anchor_start=plan.anchor_start,
                 anchor_end=plan.anchor_end,
                 exact=plan.exact,
@@ -330,10 +330,11 @@ def plan_entry_ownership(
                 unit_start=plan.unit_start,
             )
         )
+        previous_end = end
     for index, ordinal in unowned:
         owners.append(
             EntryOwner(
-                sequence=surface_list[index].sequence,
+                sequence=sequences[index],
                 ordinal=ordinal,
                 start=-1,
                 end=-1,

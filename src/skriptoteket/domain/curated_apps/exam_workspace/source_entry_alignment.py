@@ -1,45 +1,51 @@
-"""Assign source slots jointly without enumerating occurrence combinations.
+"""One monotone token alignment for every native entry surface.
 
-Printed-label slots are assigned before wording projection. If the entries'
-individually best slots form a disjoint ordered allocation, their union is the
-global optimum and needs no search. Ambiguous allocations use ordered dynamic
-programming; at equal evidence and preference only the earliest ending slot
-can matter, because it leaves every later suffix available. This dominance
-rule removes redundant occurrence transitions without capping or discarding
-supported source text. Unlabelled exact copying first tries a streaming walk:
-when it copies every entry it certifies the global optimum without enumerating
-occurrences. Uncertified cases retain the complete joint assignment.
+A single shortest-path search walks the source token index. A state is the
+current source token, one next-entry ordinal per surface, and the active
+entry's wording cursor. Matching and adopting a printed label are free; while
+substituting, inserting, deleting, leaving a source token unowned and leaving
+an entry unassigned are positive costs. An exact copy is therefore reached
+first, and a rewrite stays on the same path instead of a second algorithm.
+Completing an active entry consumes its contiguous token interval and exposes
+the next ordinal of that surface.
+
+The search never enumerates occurrences, certificate walks or ordinal/source
+end products: one memoised best state and predecessor per reached state, with
+the deepest progress expanded first. A state is only merged with an equally
+reached one, and the completion rule reads the state itself, so dominance never
+depends on how the active interval began.
 """
 
 from __future__ import annotations
 
-from bisect import bisect_left
 from dataclasses import dataclass
+from heapq import heappop, heappush
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
-from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import LabelOption
+from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import (
+    SourceToken,
+    source_tokens,
+    wording_tokens,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     NativeSourceEntry,
-    entry_label_end,
     entry_source_extent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
+# Lexicographic path cost: unassigned entries, edit distance, then label-family
+# preference. Every increment is non-negative, so the first completed state the
+# search pops is the best one.
+_Cost = tuple[int, int, int]
+_ZERO: _Cost = (0, 0, 0)
+_SKIP_ENTRY: _Cost = (1, 0, 0)
+_SUBSTITUTE: _Cost = (0, 5, 0)
+_DELETE: _Cost = (0, 4, 0)
+_INSERT: _Cost = (0, 3, 0)
+_UNOWNED: _Cost = (0, 2, 0)
 
-@dataclass(frozen=True)
-class EntryCandidate:
-    """One exact occurrence of one produced wording, with its structural evidence."""
-
-    surface_index: int
-    ordinal: int
-    start: int
-    end: int
-    unit_start: int
-    unit_end: int
-    label_start: int | None
-    preference: int
-    evidence: int = 0
+_Active = tuple[int, bool, int, bool]
+_Key = tuple[int, tuple[int, ...], _Active | None]
 
 
 def entry_unit_bounds(source: SourceFormatting, start: int) -> tuple[int, int]:
@@ -49,66 +55,14 @@ def entry_unit_bounds(source: SourceFormatting, start: int) -> tuple[int, int]:
     )
 
 
-def entry_literal_mask(text: str) -> tuple[bool, ...]:
-    """Quoted text and point notation cannot supply a printed entry ordinal.
-
-    In particular, the ``p)`` in ``(2 p)`` is a unit or an operand, not the
-    sixteenth alphabetic entry. Both interpretations of point notation share
-    this property, independently of whether it is a score annotation.
-    """
-    mask = list(quoted_mask(text))
-    for match in POINT_LABEL.finditer(text):
-        mask[match.start() : match.end()] = [True] * (match.end() - match.start())
-    return tuple(mask)
-
-
-def entry_label_start(
-    source: SourceFormatting, unit_start: int, anchor_start: int, ordinal: int
-) -> int | None:
-    """The closest structural ordinal label before the anchor, if one exists."""
-    found: int | None = None
-    quotes = entry_literal_mask(source.text)
-    for candidate in range(unit_start, anchor_start):
-        if quotes[candidate]:
-            continue
-        if candidate > unit_start and not source.text[candidate - 1].isspace():
-            continue
-        if entry_label_end(source.text[candidate:anchor_start], ordinal) is not None:
-            found = candidate
-    return found
-
-
-def entry_unit_labels(
-    source: SourceFormatting, unit_start: int, unit_end: int, ordinal: int
-) -> tuple[tuple[int, int], ...]:
-    """Every structural ordinal label in the unit, with the size it spans."""
-    labels: list[tuple[int, int]] = []
-    quotes = entry_literal_mask(source.text)
-    for candidate in range(unit_start, unit_end):
-        if quotes[candidate]:
-            continue
-        if candidate > unit_start and not source.text[candidate - 1].isspace():
-            continue
-        size = entry_label_end(source.text[candidate:unit_end], ordinal)
-        if size is not None:
-            labels.append((candidate, size))
-    return tuple(labels)
-
-
-def _folded(text: str) -> str:
-    return SourceFormatting((DocxChunk("fold", "paragraph", text, text),)).normalized
-
-
-def _label_preference(sequence: str, source: SourceFormatting, label_start: int | None) -> int:
+def _label_preference(sequence: str, text: str, label_start: int) -> int:
     """A soft label-family preference; source order still assigns other layouts."""
-    if label_start is None:
-        return 2
     at = label_start
-    while at < len(source.text) and source.text[at].isspace():
+    while at < len(text) and text[at].isspace():
         at += 1
-    if at < len(source.text) and source.text[at] in "([{":
+    if at < len(text) and text[at] in "([{":
         at += 1
-    token = source.text[at] if at < len(source.text) else ""
+    token = text[at] if at < len(text) else ""
     if sequence == "match_left":
         return 0 if token.isdigit() else 1
     if sequence == "match_right":
@@ -116,267 +70,259 @@ def _label_preference(sequence: str, source: SourceFormatting, label_start: int 
     return 0
 
 
-def exact_candidates(
-    source: SourceFormatting,
-    sequence: str,
-    surface_index: int,
-    ordinal: int,
+@dataclass(frozen=True, slots=True)
+class EntryAnchor:
+    """One entry's complete aligned source content inside the shared partition.
+
+    ``start``/``end`` are the consumed token interval's character span, with a
+    printed label included when the entry adopted one. ``anchor_start`` and
+    ``anchor_end`` locate the wording evidence inside that span, or ``(-1, -1)``
+    when the wording was rewritten away from any verbatim occurrence.
+    """
+
+    surface_index: int
+    ordinal: int
+    start: int
+    end: int
+    anchor_start: int
+    anchor_end: int
+    label_start: int | None
+    exact: bool
+
+
+def _add(cost: _Cost, addition: _Cost) -> _Cost:
+    return (cost[0] + addition[0], cost[1] + addition[1], cost[2] + addition[2])
+
+
+def _available(token: SourceToken, blocked: tuple[tuple[int, int], ...]) -> bool:
+    return not any(token.start < end and start < token.end for start, end in blocked)
+
+
+def align_entries(
     text: str,
-) -> tuple[EntryCandidate, ...]:
-    """Every occurrence of the wording in source order, never capped."""
-    wanted = _folded(text)
-    if not wanted:
-        return ()
-    result: list[EntryCandidate] = []
-    at = source.normalized.find(wanted)
-    while at >= 0:
-        start = source.positions[at]
-        end = source.positions[at + len(wanted) - 1] + 1
-        if text[0].isspace():
-            while start > 0 and source.text[start - 1].isspace():
-                start -= 1
-        if text[-1].isspace():
-            while end < len(source.text) and source.text[end].isspace():
-                end += 1
-        unit_start, unit_end = entry_unit_bounds(source, start)
-        label_start = entry_label_start(source, unit_start, start, ordinal)
-        result.append(
-            EntryCandidate(
-                surface_index=surface_index,
-                ordinal=ordinal,
-                start=start,
-                end=end,
-                unit_start=unit_start,
-                unit_end=unit_end,
-                label_start=label_start,
-                preference=_label_preference(sequence, source, label_start),
-            )
-        )
-        at = source.normalized.find(wanted, at + 1)
-    return tuple(result)
-
-
-def exact_sequence(
-    sources: list[SourceFormatting],
+    sequences: tuple[str, ...],
     texts: tuple[tuple[str, ...], ...],
-    blocked: tuple[tuple[int, int], ...],
-) -> dict[tuple[int, int], EntryCandidate] | None:
-    """Certify a complete unlabelled exact allocation without expanding occurrences.
-
-    The earliest ending next entry leaves the largest possible suffix. When
-    this walk copies every entry, it attains the global upper bound (all exact,
-    no label preferences). Otherwise the caller runs the complete joint solver;
-    failure here neither removes an alternative nor changes output policy.
-    """
-    folded = {text: _folded(text) for surface in texts for text in surface}
-    ordinals = [0] * len(texts)
-    result: dict[tuple[int, int], EntryCandidate] = {}
-    end = 0
-    while any(ordinal < len(surface) for ordinal, surface in zip(ordinals, texts, strict=True)):
-        options: list[EntryCandidate] = []
-        for index, surface in enumerate(texts):
-            ordinal = ordinals[index]
-            if ordinal >= len(surface):
-                continue
-            source = sources[index]
-            wanted = folded[surface[ordinal]]
-            at = (
-                source.normalized.find(wanted, bisect_left(source.positions, end)) if wanted else -1
-            )
-            while at >= 0:
-                start = source.positions[at]
-                stop = source.positions[at + len(wanted) - 1] + 1
-                unit_start, unit_end = entry_unit_bounds(source, start)
-                candidate = EntryCandidate(
-                    index, ordinal + 1, start, stop, unit_start, unit_end, None, 2
-                )
-                if not _blocked(candidate, blocked):
-                    options.append(candidate)
-                    break
-                at = source.normalized.find(wanted, at + 1)
-        if not options:
-            return None
-        candidate = min(options, key=lambda c: (c.end, c.start, c.surface_index))
-        result[candidate.surface_index, candidate.ordinal] = candidate
-        ordinals[candidate.surface_index] += 1
-        end = candidate.end
-    return result
-
-
-@dataclass(frozen=True)
-class _Score:
-    """Assigned entries, then labelled occurrences, then preferred label families."""
-
-    assigned: int
-    labelled: int
-    preferred: int
-    evidence: int = 0
-
-    def plus(self, candidate: EntryCandidate) -> "_Score":
-        return _Score(
-            assigned=self.assigned + 1,
-            labelled=self.labelled + (1 if candidate.label_start is not None else 0),
-            preferred=self.preferred - candidate.preference,
-            evidence=self.evidence + candidate.evidence,
-        )
-
-    def better_than(self, other: "_Score") -> bool:
-        return (self.assigned, self.labelled, self.evidence, self.preferred) > (
-            other.assigned,
-            other.labelled,
-            other.evidence,
-            other.preferred,
-        )
-
-
-def _blocked(candidate: EntryCandidate, blocked: tuple[tuple[int, int], ...]) -> bool:
-    return any(candidate.start < end and start < candidate.end for start, end in blocked)
-
-
-def assign_candidates(
-    entry_counts: tuple[int, ...],
-    candidates: list[EntryCandidate],
     *,
+    labels: dict[tuple[int, int], tuple[LabelOption, ...]] | None = None,
     blocked: tuple[tuple[int, int], ...] = (),
-) -> dict[tuple[int, int], EntryCandidate]:
-    """Allocate ordered disjoint slots, using an optimum fast path or dominance DP.
+) -> dict[tuple[int, int], EntryAnchor]:
+    """Allocate every entry a disjoint ordered source interval in one search.
 
-    Scores prefer assignment count, printed labels, wording evidence and then
-    label-family conventions. Body/carrier-owned spans are excluded first.
-    The ambiguous path advances a surface ordinal or skips it; equivalent
-    later occurrences never need separate transitions or stored result paths.
+    State keys are ``(token index, progress per surface, active)``. The active
+    part is ``None``, or ``(surface index, label adopted, wording cursor,
+    consumed a source token)``. Two paths reaching one state keep only the
+    cheaper cost, because no remaining transition depends on how the active
+    interval began.
     """
-    if not candidates:
-        return {}
-    by_entry: dict[tuple[int, int], list[EntryCandidate]] = {}
-    for candidate in candidates:
-        if not _blocked(candidate, blocked):
-            by_entry.setdefault((candidate.surface_index, candidate.ordinal), []).append(candidate)
-    # If every entry's individually best slot is unique and the slots are
-    # disjoint and ordered, their union is already the global optimum. Printed
-    # labels make this the ordinary path, including arbitrarily many duplicates.
-    anchored: list[EntryCandidate] = []
-    for index, count in enumerate(entry_counts):
-        for ordinal in range(1, count + 1):
-            options = by_entry.get((index, ordinal), [])
-            if not options:
-                continue
-            rank = max((c.label_start is not None, c.evidence, -c.preference) for c in options)
-            best = [
-                c for c in options if (c.label_start is not None, c.evidence, -c.preference) == rank
-            ]
-            if len(best) == 1:
-                anchored.append(best[0])
-    ordered = sorted(anchored, key=lambda c: (c.start, c.surface_index, c.ordinal))
-    last_ordinal: dict[int, int] = {}
-    disjoint = True
-    end = 0
-    for candidate in ordered:
-        if candidate.start < end or candidate.ordinal <= last_ordinal.get(
-            candidate.surface_index, 0
-        ):
-            disjoint = False
-            break
-        end = candidate.end
-        last_ordinal[candidate.surface_index] = candidate.ordinal
-    if len(anchored) == sum(entry_counts) and disjoint:
-        return {(c.surface_index, c.ordinal): c for c in anchored}
-    # An earliest-ending full allocation is also optimal when every selected
-    # candidate attains its entry's independent score upper bound. This is a
-    # certificate, not a greedy approximation: if it fails we retain every
-    # alternative for the joint solver. Duplicate unlabelled wording is the
-    # common case where all occurrence ranks are equal.
-    remaining = {
-        key: sorted(options, key=lambda c: (c.end, c.start)) for key, options in by_entry.items()
-    }
-    ranks = {
-        key: max((c.label_start is not None, c.evidence, -c.preference) for c in options)
-        for key, options in remaining.items()
-    }
-    selected: dict[tuple[int, int], EntryCandidate] = {}
-    end = 0
-    ordinals = [1] * len(entry_counts)
-    while remaining:
-        next_candidates: list[EntryCandidate] = []
-        for index, count in enumerate(entry_counts):
-            while ordinals[index] <= count and (index, ordinals[index]) not in remaining:
-                ordinals[index] += 1
-            key = (index, ordinals[index])
-            if key not in remaining:
-                continue
-            rank = ranks[key]
-            next_candidate = next(
-                (
-                    c
-                    for c in remaining[key]
-                    if c.start >= end
-                    and (c.label_start is not None, c.evidence, -c.preference) == rank
-                ),
-                None,
+    tokens = source_tokens(text)
+    available = tuple(_available(token, blocked) for token in tokens)
+    wordings = tuple(tuple(wording_tokens(value) for value in surface) for surface in texts)
+    counts = tuple(len(surface) for surface in texts)
+    surfaces = len(texts)
+    by_token: dict[int, list[tuple[int, int, LabelOption]]] = {}
+    preference_floor: list[list[int]] = []
+    options_by_entry = labels or {}
+    for (index, ordinal), options in options_by_entry.items():
+        for option in options:
+            by_token.setdefault(option.first_token, []).append((index, ordinal, option))
+    for index in range(surfaces):
+        floor = [0] * (counts[index] + 1)
+        for ordinal in range(counts[index], 0, -1):
+            values = options_by_entry.get((index, ordinal))
+            lowest = (
+                min(_label_preference(sequences[index], text, option.start) for option in values)
+                if values
+                else 2
             )
-            if next_candidate is not None:
-                next_candidates.append(next_candidate)
-        if not next_candidates:
+            floor[ordinal - 1] = floor[ordinal] + lowest
+        preference_floor.append(floor)
+    available_suffix = [0] * (len(tokens) + 1)
+    for index in range(len(tokens) - 1, -1, -1):
+        available_suffix[index] = available_suffix[index + 1] + (1 if available[index] else 0)
+    start_key: _Key = (0, (0,) * surfaces, None)
+    best: dict[_Key, _Cost] = {start_key: _ZERO}
+    previous: dict[_Key, _Key] = {}
+    active_origin: dict[_Key, tuple[int, int | None, int]] = {start_key: (0, None, 0)}
+    counter = 0
+
+    def estimate(key: _Key, cost: _Cost) -> tuple:
+        """Admissible remaining-cost bound so the deepest zero-cost path wins.
+
+        Pending entries still pay their lowest possible label preference, and a
+        pending entry that cannot even claim an available source token must be
+        skipped. Both are lower bounds on every completion of this state.
+        """
+        token_index, progress, active = key
+        pending = 0
+        preference = 0
+        for index in range(surfaces):
+            used = progress[index]
+            if active is not None and active[0] == index:
+                used += 1
+            pending += counts[index] - used
+            preference += preference_floor[index][used]
+        skipped = max(0, pending - available_suffix[token_index])
+        # Unavoidably skipped entries pay no label preference. Subtract their
+        # largest possible preference so this stays a lower bound even when
+        # the model produced more entries than there are source tokens.
+        bound = (
+            cost[0] + skipped,
+            cost[1],
+            cost[2] + max(0, preference - 2 * skipped),
+        )
+        return (bound, -sum(progress), -token_index, 0, key, cost)
+
+    heap: list[tuple] = [estimate(start_key, _ZERO)]
+
+    def relax(
+        key: _Key,
+        cost: _Cost,
+        target: _Key,
+        addition: _Cost,
+        origin: tuple[int, int | None, int] | None = None,
+    ) -> None:
+        nonlocal counter
+        target_cost = _add(cost, addition)
+        seen = best.get(target)
+        if seen is not None and seen <= target_cost:
+            return
+        best[target] = target_cost
+        previous[target] = key
+        if origin is not None:
+            active_origin[target] = origin
+        elif target[2] is not None:
+            active_origin[target] = active_origin[key]
+        counter += 1
+        bound, neg_depth, neg_token, _, _, _linked = estimate(target, target_cost)
+        heappush(heap, (bound, neg_depth, neg_token, counter, target, target_cost))
+
+    goal: _Key | None = None
+    while heap:
+        _bound, _neg_depth, _neg_token, _serial, key, cost = heappop(heap)
+        if best.get(key) != cost:
+            continue
+        token_index, progress, active = key
+        if active is None and progress == counts and token_index == len(tokens):
+            goal = key
             break
-        candidate = min(next_candidates, key=lambda c: (c.end, c.start, c.surface_index))
-        key = (candidate.surface_index, candidate.ordinal)
-        selected[key] = candidate
-        del remaining[key]
-        end = candidate.end
-    if not remaining:
-        return selected
-    return _search_candidates(entry_counts, by_entry)
-
-
-def _search_candidates(
-    entry_counts: tuple[int, ...],
-    by_entry: dict[tuple[int, int], list[EntryCandidate]],
-) -> dict[tuple[int, int], EntryCandidate]:
-    """Resolve allocations whose score optimum needs joint search."""
-    surfaces = len(entry_counts)
-    memo: dict[tuple[tuple[int, ...], int], tuple[_Score, tuple[EntryCandidate, ...]]] = {}
-
-    def solve(ordinals: tuple[int, ...], source_end: int):
-        if all(ordinals[index] > entry_counts[index] for index in range(surfaces)):
-            return _Score(0, 0, 0), ()
-        key = (ordinals, source_end)
-        if key in memo:
-            return memo[key]
-        best_score: _Score | None = None
-        best_path: tuple[EntryCandidate, ...] = ()
-        transitions: list[tuple[int, EntryCandidate]] = []
-        for index in range(surfaces):
-            ordinal = ordinals[index]
-            if ordinal > entry_counts[index]:
-                continue
-            # At equal evidence/preference the earliest ending occurrence
-            # dominates every later one: it leaves every suffix available.
-            # Keep one transition per score class, not every occurrence.
-            earliest: dict[tuple[int, int, bool], EntryCandidate] = {}
-            for candidate in by_entry.get((index, ordinal), ()):
-                if candidate.start < source_end:
+        if active is None:
+            if token_index < len(tokens):
+                relax(
+                    key,
+                    cost,
+                    (token_index + 1, progress, None),
+                    _ZERO if not available[token_index] else _UNOWNED,
+                )
+            for index in range(surfaces):
+                ordinal = progress[index] + 1
+                if ordinal > counts[index]:
                     continue
-                rank = (candidate.preference, candidate.evidence, candidate.label_start is not None)
-                prior = earliest.get(rank)
-                if prior is None or (candidate.end, candidate.start) < (prior.end, prior.start):
-                    earliest[rank] = candidate
-            transitions.extend((index, candidate) for candidate in earliest.values())
-        transitions.sort(key=lambda item: (item[1].start, item[0], item[1].ordinal))
-        for index, candidate in transitions:
-            next_ordinals = ordinals[:index] + (ordinals[index] + 1,) + ordinals[index + 1 :]
-            sub_score, sub_path = solve(next_ordinals, candidate.end)
-            score = sub_score.plus(candidate)
-            if best_score is None or score.better_than(best_score):
-                best_score, best_path = score, (candidate, *sub_path)
-        for index in range(surfaces):
-            if ordinals[index] > entry_counts[index]:
-                continue
-            next_ordinals = ordinals[:index] + (ordinals[index] + 1,) + ordinals[index + 1 :]
-            sub_score, sub_path = solve(next_ordinals, source_end)
-            if best_score is None or sub_score.better_than(best_score):
-                best_score, best_path = sub_score, sub_path
-        memo[key] = (best_score if best_score is not None else _Score(0, 0, 0), best_path)
-        return memo[key]
+                if not wordings[index][ordinal - 1]:
+                    continue
+                if token_index < len(tokens) and available[token_index]:
+                    relax(
+                        key,
+                        cost,
+                        (token_index, progress, (index, False, 0, False)),
+                        (0, 0, 2),
+                        (token_index, None, 0),
+                    )
+                for owner_index, owner_ordinal, option in by_token.get(token_index, ()):
+                    if owner_index != index or owner_ordinal != ordinal:
+                        continue
+                    stop = token_index + option.token_count
+                    if stop > len(tokens) or not all(available[token_index:stop]):
+                        continue
+                    relax(
+                        key,
+                        cost,
+                        (stop, progress, (index, True, 0, False)),
+                        (0, 0, _label_preference(sequences[index], text, option.start)),
+                        (token_index, option.start, option.token_count),
+                    )
+            for index in range(surfaces):
+                ordinal = progress[index] + 1
+                if ordinal > counts[index]:
+                    continue
+                updated = progress[:index] + (ordinal,) + progress[index + 1 :]
+                relax(key, cost, (token_index, updated, None), _SKIP_ENTRY)
+            continue
+        index, has_label, cursor, consumed = active
+        ordinal = progress[index] + 1
+        wanted = wordings[index][ordinal - 1]
+        length = len(wanted)
+        if token_index < len(tokens) and available[token_index]:
+            if cursor < length and tokens[token_index].folded == wanted[cursor]:
+                relax(
+                    key,
+                    cost,
+                    (token_index + 1, progress, (index, has_label, cursor + 1, True)),
+                    _ZERO,
+                )
+            if cursor < length:
+                relax(
+                    key,
+                    cost,
+                    (token_index + 1, progress, (index, has_label, cursor + 1, True)),
+                    _SUBSTITUTE,
+                )
+            relax(
+                key,
+                cost,
+                (token_index + 1, progress, (index, has_label, cursor, True)),
+                _INSERT,
+            )
+        if cursor < length:
+            relax(
+                key,
+                cost,
+                (token_index, progress, (index, has_label, cursor + 1, consumed)),
+                _DELETE,
+            )
+        if cursor == length and consumed:
+            updated = progress[:index] + (ordinal,) + progress[index + 1 :]
+            relax(key, cost, (token_index, updated, None), _ZERO)
 
-    _score, path = solve(tuple(1 for _ in range(surfaces)), 0)
-    return {(candidate.surface_index, candidate.ordinal): candidate for candidate in path}
+    if goal is None:
+        return {}
+    chain: list[_Key] = []
+    key = goal
+    while key != start_key:
+        key = previous[key]
+        chain.append(key)
+    chain.reverse()
+    result: dict[tuple[int, int], EntryAnchor] = {}
+    for origin in chain:
+        active = origin[2]
+        if active is None:
+            continue
+        token_index, progress, _active = origin
+        index, _has_label, cursor, _consumed = active
+        ordinal = progress[index] + 1
+        wanted = wordings[index][ordinal - 1]
+        if cursor != len(wanted):
+            continue
+        start_token, label_char, label_count = active_origin[origin]
+        region = tokens[start_token + label_count : token_index]
+        if region:
+            source_span = text[region[0].start : region[-1].end]
+            exact = " ".join(source_span.split()) == " ".join(texts[index][ordinal - 1].split())
+        else:
+            exact = False
+        if label_char is not None:
+            anchor = (region[0].start, region[-1].end) if exact else (-1, -1)
+            start = label_char
+        else:
+            anchor = (tokens[start_token].start, tokens[token_index - 1].end)
+            start = tokens[start_token].start
+        result[index, ordinal] = EntryAnchor(
+            surface_index=index,
+            ordinal=ordinal,
+            start=start,
+            end=tokens[token_index - 1].end,
+            anchor_start=anchor[0],
+            anchor_end=anchor[1],
+            label_start=label_char,
+            exact=exact,
+        )
+    return result

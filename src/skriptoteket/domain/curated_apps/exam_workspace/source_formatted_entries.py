@@ -30,6 +30,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment imp
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     entry_label_end,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import overlaps
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
     SourceParagraph,
@@ -95,8 +96,6 @@ def _project_entry(
         source.entry_spans.append((-1, -1))
         return entry, None
     start = owner.start
-    if owner.first_in_unit:
-        start = _extend_left(start, owner.unit_start, body_covered)
     stop = owner.anchor_start if owner.anchor_start >= 0 else start
     start = _skip_covered(source, start, stop, body_covered)
     content_start = _content_start(source, owner, start)
@@ -114,19 +113,30 @@ def _project_entry(
         return entry.model_copy(update={"body": body}), span
     paragraph = _single_paragraph(source, start, owner.end)
     if paragraph is not None:
+        # Recovered metadata and the native ordinal are not visible source
+        # content. They cannot force a rebuild that replaces model insertions.
+        alignment_start = content_start
+        source_text = "".join(
+            "\uffff" if overlaps(index, index + 1, source.excluded) else source.text[index]
+            for index in range(alignment_start, owner.end)
+        )
+        source_marks = [
+            () if overlaps(index, index + 1, source.excluded) else source.marks[index]
+            for index in range(alignment_start, owner.end)
+        ]
         aligned, lost, represented = align_paragraph(
             produced_entry_body(text)[0],
-            source.text[start : owner.end],
-            source.marks[start : owner.end],
+            source_text,
+            source_marks,
             paragraph.heading,
             {},
             source.ignored,
         )
         if not lost:
-            source.covered.update(start + index for index in represented)
+            source.covered.update(alignment_start + index for index in represented)
             source.projected.add(paragraph.start)
             source.entry_spans.append(
-                (start + min(represented), start + max(represented) + 1)
+                (alignment_start + min(represented), alignment_start + max(represented) + 1)
                 if represented
                 else (-1, -1)
             )
@@ -135,13 +145,6 @@ def _project_entry(
             return entry.model_copy(update={"body": (aligned,)}), span
     source.entry_spans.append((owner.anchor_start, owner.anchor_end))
     return _rebuild_entry(entry, source, span), span
-
-
-def _extend_left(start: int, lower: int, blocked: frozenset[int]) -> int:
-    """Claim an unlabelled unit prefix, stopping at the question body's own text."""
-    while start > lower and (start - 1) not in blocked:
-        start -= 1
-    return start
 
 
 def _skip_covered(source: SourceFormatting, start: int, stop: int, covered: frozenset[int]) -> int:
@@ -157,16 +160,11 @@ def _content_start(source: SourceFormatting, owner: EntryOwner, start: int) -> i
     if owner.label_start is not None:
         length = entry_label_end(source.text[owner.label_start : owner.end], owner.ordinal) or 0
         return max(owner.label_start + length, start)
-    length = entry_label_end(source.text[start : owner.end], owner.ordinal) or 0
-    return start + length
+    return start
 
 
 def _single_paragraph(source: SourceFormatting, start: int, end: int) -> SourceParagraph | None:
-    paragraphs = [
-        paragraph
-        for paragraph in source.paragraphs
-        if paragraph.start < end and paragraph.end > start
-    ]
+    paragraphs = list(source.paragraphs_in(start, end))
     return paragraphs[0] if len(paragraphs) == 1 else None
 
 
@@ -181,9 +179,7 @@ def _needs_rebuild(
     for index in range(span.content_start, span.end):
         if source.marks[index] and not source.text[index].isspace() and index not in covered:
             return True
-    for paragraph in source.paragraphs:
-        if paragraph.start >= span.end or paragraph.end <= span.start:
-            continue
+    for paragraph in source.paragraphs_in(span.start, span.end):
         if paragraph.heading is None or paragraph.start in ownership.heading_chunk_paragraphs:
             continue
         if paragraph.start not in projected_paragraphs:
@@ -193,10 +189,12 @@ def _needs_rebuild(
 
 def _rebuild_entry(entry: Entry, source: SourceFormatting, span: _OwnedSpan) -> Entry:
     """Recover the owned span's source wording with its marks and heading levels."""
-    end = span.end
-    while end > span.content_start and source.text[end - 1].isspace():
+    start, end = span.content_start, span.end
+    while start < end and source.text[start].isspace():
+        start += 1
+    while end > start and source.text[end - 1].isspace():
         end -= 1
-    body = tuple(source.fragments(span.content_start, end))
+    body = tuple(source.fragments(start, end))
     span.emitted = True
     if not body:
         return entry

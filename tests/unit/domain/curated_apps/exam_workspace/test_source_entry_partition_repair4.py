@@ -1,11 +1,7 @@
 """Unlabelled source ownership uses whole tokens and one disjoint assignment."""
 
-from unittest.mock import patch
-
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace import source_entry_alignment as alignment
-from skriptoteket.domain.curated_apps.exam_workspace import source_entry_ownership as ownership
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.domain.curated_apps.exam_workspace.test_source_entry_partition_repair3 import (
     _convert,
@@ -51,20 +47,10 @@ def test_point_expression_variable_is_not_the_sixteenth_ordinal():
 
 
 @pytest.mark.parametrize("count", [8, 16, 24, 32, 40])
-def test_unlabelled_duplicate_exact_allocation_is_certified_without_search(count):
-    # A full earliest-ending allocation attains the per-entry score upper bound.
-    # It therefore needs no occurrence/ordinal/skip-state search.
-    with (
-        patch.object(alignment, "_search_candidates", wraps=alignment._search_candidates) as search,
-        patch.object(
-            ownership, "exact_candidates", wraps=ownership.exact_candidates
-        ) as occurrences,
-    ):
-        result = _convert(
-            " ".join(["same"] * (2 * count)), left=["same"] * count, right=["same"] * count
-        )
+def test_unlabelled_duplicate_exact_allocation_preserves_every_entry(count):
+    result = _convert(
+        " ".join(["same"] * (2 * count)), left=["same"] * count, right=["same"] * count
+    )
     assert [body_plain_text(e.body) for e in (*result.match_left, *result.match_right)] == [
         "same"
     ] * (2 * count)
-    assert search.call_count == 0
-    assert occurrences.call_count == 0

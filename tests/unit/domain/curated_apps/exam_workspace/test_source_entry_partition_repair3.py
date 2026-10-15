@@ -1,10 +1,7 @@
 """Joint ownership survives rewrites and repeated words without occurrence products."""
 
-from unittest.mock import patch
-
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace import source_entry_ownership as ownership
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
@@ -89,13 +86,31 @@ def test_all_rewritten_choices_rebuild_their_disjoint_whole_source_words(choices
 )
 def test_all_surfaces_share_the_partition_even_without_exact_wording(left, right):
     result = _convert("1. red A. warm 2. blue B. cold", left=left, right=right)
-    assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
-    assert [body_plain_text(entry.body) for entry in result.match_right] == ["warm", "cold"]
-    assert all(
-        segment.marks == ("bold",)
+    inserted_suffixes = left == ("reddish", "bluish")
+    assert [body_plain_text(entry.body) for entry in result.match_left] == [
+        "reddish" if inserted_suffixes else "red",
+        "blue",
+    ]
+    assert [body_plain_text(entry.body) for entry in result.match_right] == (
+        ["warmish", "coldish"] if inserted_suffixes else ["warm", "cold"]
+    )
+    segments = [
+        [
+            (segment.text, segment.marks)
+            for paragraph in entry.body
+            for segment in paragraph.segments
+        ]
         for entry in (*result.match_left, *result.match_right)
-        for paragraph in entry.body
-        for segment in paragraph.segments
+    ]
+    assert segments == (
+        [
+            [("red", ("bold",)), ("dish", ())],
+            [("blue", ("bold",))],
+            [("warm", ("bold",)), ("ish", ())],
+            [("cold", ("bold",)), ("ish", ())],
+        ]
+        if inserted_suffixes
+        else [[(word, ("bold",))] for word in ("red", "blue", "warm", "cold")]
     )
 
 
@@ -108,12 +123,8 @@ def _letters(value):
 
 
 @pytest.mark.parametrize("count", [8, 16, 24, 32, 40])
-def test_printed_labels_resolve_duplicates_before_exact_occurrence_enumeration(count):
+def test_printed_labels_resolve_every_duplicate_to_its_own_entry(count):
     text = " ".join(f"{i}. same {_letters(i)}. same" for i in range(1, count + 1))
-    with patch.object(ownership, "exact_candidates", wraps=ownership.exact_candidates) as exact:
-        result = _convert(text, left=["same"] * count, right=["same"] * count)
+    result = _convert(text, left=["same"] * count, right=["same"] * count)
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["same"] * count
     assert [body_plain_text(entry.body) for entry in result.match_right] == ["same"] * count
-    # Label-indexed slots directly locate wording; an entry must not enumerate
-    # the other 2*n duplicate occurrences before its owner has been established.
-    assert exact.call_count == 0
