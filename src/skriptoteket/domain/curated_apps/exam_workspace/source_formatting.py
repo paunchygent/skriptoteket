@@ -97,6 +97,20 @@ class SourceFormatting:
         self.ignored = ignored
         self.path = "exact"
         self.covered: set[int] = set()
+        # Paragraph starts this projection consumed, and one source anchor per
+        # body() input paragraph in input order; (-1, -1) means the paragraph
+        # kept the model's wording without a unique source paragraph.
+        self.projected: set[int] = set()
+        self.entry_spans: list[tuple[int, int]] = []
+        self._entry_span: tuple[int, int] = (-1, -1)
+
+    def paragraph_at(self, offset: int) -> SourceParagraph | None:
+        """The source paragraph holding ``offset``, or None inside a separator."""
+        index = bisect_right(self._paragraph_ends, offset)
+        if index >= len(self.paragraphs):
+            return None
+        paragraph = self.paragraphs[index]
+        return paragraph if paragraph.start <= offset < paragraph.end else None
 
     def span(self, text: str) -> tuple[int, int]:
         wanted, _ = _normalized(text)
@@ -114,6 +128,8 @@ class SourceFormatting:
             while end < len(self.text) and self.text[end].isspace():
                 end += 1
         self.covered.update(range(start, end))
+        if self._entry_span == (-1, -1):
+            self._entry_span = (start, end)
         return start, end
 
     def text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
@@ -136,6 +152,7 @@ class SourceFormatting:
                 break
             left, right = max(start, paragraph.start), min(end, paragraph.end)
             if left < right:
+                self.projected.add(paragraph.start)
                 separator = self.text[previous_end:left] if previous_end is not None else ""
                 segments = self.text_segments(left, right)
                 if (
@@ -170,11 +187,14 @@ class SourceFormatting:
         for paragraph in body:
             checkpoint = self.cursor
             coverage_before = self.covered.copy()
+            projected_before = self.projected.copy()
+            self._entry_span = (-1, -1)
             try:
                 result.extend(self._paragraph(paragraph, answers or {}))
             except FormattingTransferError:
                 self.cursor = checkpoint
                 self.covered = coverage_before
+                self.projected = projected_before
                 aligned = self._aligned(paragraph, answers or {})
                 if aligned is not None:
                     if self.path == "exact":
@@ -183,6 +203,7 @@ class SourceFormatting:
                 else:
                     self.path = "rebuilt"
                     result.extend(self._rebuild(paragraph, answers or {}))
+            self.entry_spans.append(self._entry_span)
         return tuple(result)
 
     def _paragraph(
@@ -266,11 +287,10 @@ class SourceFormatting:
         best = max((score for score, _ in scored), default=0)
         winners = [p for score, p in scored if score == best]
         if len(winners) != 1:
-            # With no source marks there is nothing to lose. Keep the model's
-            # wording rather than manufacturing source/facit text for students.
-            if not any(
-                self.marks[p.start : p.end] and any(self.marks[p.start : p.end]) for p in candidates
-            ):
+            self._entry_span = (-1, -1)
+            # A source heading is formatting too: keep the model's wording only
+            # when no tied winner carries marks or a heading level to lose.
+            if not any(any(self.marks[p.start : p.end]) or p.heading is not None for p in winners):
                 return paragraph
             return None
         source = winners[0]
@@ -284,6 +304,8 @@ class SourceFormatting:
         )
         if lost:
             return None
+        self.projected.add(source.start)
+        self._entry_span = (source.start, source.end)
         self.covered.update(source.start + index for index in represented)
         while self.cursor < len(self.positions) and self.positions[self.cursor] < source.end:
             self.cursor += 1
@@ -324,6 +346,8 @@ class SourceFormatting:
         if len(winners) != 1 or (best < 2 and len(candidates) != 1):
             raise FormattingTransferError("ambiguous source reconstruction")
         source = winners[0]
+        self.projected.add(source.start)
+        self._entry_span = (source.start, source.end)
         if re.search(
             r"\b(?:svar|facit|answer key)\s*:", self.text[source.start : source.end], re.IGNORECASE
         ):
@@ -331,7 +355,7 @@ class SourceFormatting:
         gaps = [s for s in paragraph.segments if s.kind == "gap"]
         placements = self._gap_placements(source, gaps, answers)
         segments: list[NativeSegment] = []
-        cursor = source.start
+        cursor = self._content_start(source)
         for left, right, gap in placements:
             segments.extend(self._rebuilt_text_segments(cursor, left))
             segments.append(gap)
@@ -353,6 +377,19 @@ class SourceFormatting:
         result.extend(self.text_segments(cursor, end))
         return tuple(result)
 
+    def _content_start(self, paragraph: SourceParagraph) -> int:
+        """Skip the printed label a native field already carries, as rebuild_body does."""
+        text = self.text[paragraph.start : paragraph.end]
+        cursor = paragraph.start
+        for label in self.ignored:
+            if label and text.startswith(label):
+                cursor += len(label)
+                while cursor < paragraph.end and (
+                    self.text[cursor].isspace() or self.text[cursor] in ".):-"
+                ):
+                    cursor += 1
+        return cursor
+
     def rebuild_body(self, answers: dict[str, tuple[str, ...]]) -> tuple[NativeParagraph, ...]:
         """Recover omitted marked material only when the whole body is source-safe."""
         if re.search(r"\b(?:svar|facit|answer key)\s*:", self.text, re.IGNORECASE):
@@ -364,14 +401,7 @@ class SourceFormatting:
             text = self.text[paragraph.start : paragraph.end]
             if points_line(text):
                 continue
-            cursor = paragraph.start
-            for label in self.ignored:
-                if label and text.startswith(label):
-                    cursor += len(label)
-                    while cursor < paragraph.end and (
-                        self.text[cursor].isspace() or self.text[cursor] in ".):-"
-                    ):
-                        cursor += 1
+            cursor = self._content_start(paragraph)
             segments: list[NativeSegment] = []
             for start, end, gap in placements:
                 if paragraph.start <= start and end <= paragraph.end:
@@ -382,6 +412,7 @@ class SourceFormatting:
                     raise FormattingTransferError("gap crosses source paragraph boundary")
             segments.extend(self._rebuilt_text_segments(cursor, paragraph.end))
             if segments:
+                self.projected.add(paragraph.start)
                 result.append(
                     NativeParagraph(heading_level=paragraph.heading, segments=tuple(segments))
                 )

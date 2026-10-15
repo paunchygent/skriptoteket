@@ -24,6 +24,9 @@
  *     their sum and read-only.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the save rules from `examWorkspaceItemSaveRules`.
+ *   - Provides the shared rich-text target registry: the one formatting
+ *     toolbar and every rich surface (question, choice, Kategorisera entry)
+ *     edit the selection the teacher is looking at, never a stale one.
  *   - Tells the teacher when the question is a child of a parent, which
  *     it cannot move, remove or retype here.
  */
@@ -49,6 +52,7 @@ import {
 } from "./examWorkspaceItemSaveRules";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceParentChild } from "./examWorkspaceParents";
+import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import { examWorkspaceAiKeyLabel, examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 const props = defineProps<{
@@ -63,6 +67,8 @@ const props = defineProps<{
   showNavigation: boolean;
   total: number;
 }>();
+
+provideRichTextTargetRegistry();
 
 const emit = defineEmits<{
   markReviewed: [itemId: string];

@@ -80,12 +80,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     source_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+    NativeSourceEntry,
     complete_source_formatting,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_entries import restore_entries
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructions import (
     instruction_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+    FormattingTransferError,
     SourceFormatting,
     formatted_text,
 )
@@ -185,9 +188,16 @@ def native_item(
         if segments:
             body.append(NativeParagraph(heading_level=None, segments=tuple(segments)))
     body_source = SourceFormatting(chunk_list, ignored=(produced.printed_label or "",))
-    formatted_body = body_source.body(
-        body, answers={gap.gap_id: gap.accepted_values for gap in gaps}
-    )
+    answers = {gap.gap_id: gap.accepted_values for gap in gaps}
+    can_rebuild_body = not (choices or produced.match_left or produced.match_right or known_assets)
+    try:
+        formatted_body = body_source.body(body, answers=answers)
+    except FormattingTransferError:
+        if not can_rebuild_body:
+            raise
+        # Identified text-only source can recover the whole body when no individual
+        # paragraph wins alignment. Only a genuinely failed source rebuild escapes.
+        formatted_body = body_source.rebuild_body(answers)
     left_source, right_source = SourceFormatting(chunk_list), SourceFormatting(chunk_list)
     match_left = tuple(
         NativeMatchLeft(left_id=f"left_{index:03d}", body=formatted_text(text, left_source))
@@ -238,17 +248,31 @@ def native_item(
     criteria: tuple[NativeExamCriterion, ...] = ()
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         criteria, points, points_estimated = free_text_criteria(produced)
+    sources = (body_source, choice_source, left_source, right_source)
+    covered = set().union(*(source.covered for source in sources))
+    choices = restore_entries(choices, choice_source, covered)
+    match_left = restore_entries(match_left, left_source, covered)
+    match_right = restore_entries(match_right, right_source, covered)
     formatted_body = complete_source_formatting(
         chunk_list,
-        (body_source, choice_source, left_source, right_source),
+        sources,
         body_source,
         formatted_body,
         printed_label=produced.printed_label,
-        answers={gap.gap_id: gap.accepted_values for gap in gaps},
-        can_rebuild_body=not (choices or match_left or match_right or known_assets),
+        answers=answers,
+        can_rebuild_body=can_rebuild_body,
+        entries=(
+            NativeSourceEntry(sequence, ordinal, start, end)
+            for sequence, source in (
+                ("choices", choice_source),
+                ("match_left", left_source),
+                ("match_right", right_source),
+            )
+            for ordinal, (start, end) in enumerate(source.entry_spans, start=1)
+        ),
     )
     if formatting_observer is not None:
-        paths = {source.path for source in (body_source, choice_source, left_source, right_source)}
+        paths = {source.path for source in sources}
         formatting_observer(
             "rebuilt" if "rebuilt" in paths else "aligned" if "aligned" in paths else "exact"
         )

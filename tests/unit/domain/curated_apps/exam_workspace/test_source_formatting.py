@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_plain_text,
     source_paragraphs,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+    complete_source_formatting,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
@@ -151,10 +154,6 @@ def test_inserted_characters_never_inherit_source_marks():
 
 
 def test_wholly_omitted_marked_paragraph_is_rebuilt_not_silently_lost():
-    from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
-        complete_source_formatting,
-    )
-
     chunks = (_source(("Läs frågan.", ())), _source(("Viktig fras", ("italic",))))
     source = SourceFormatting(chunks)
     body = formatted_text("Läs frågan.", source)
@@ -198,3 +197,200 @@ def test_source_review_preserves_all_marks_and_heading():
     body = source_paragraphs((source,))
     assert body[0].heading_level == 3
     assert [s.marks for s in body[0].segments] == [("superscript",), ("subscript",), ("underline",)]
+
+
+def test_rebuilt_paragraph_drops_the_printed_label_native_field_already_carries():
+    text = "1. Identify the important concept."
+    chunk = _source((text, ("bold",)))
+    source = SourceFormatting((chunk,), ignored=("1",))
+    body = formatted_text("Describe the important concept.", source)
+    result = complete_source_formatting(
+        (chunk,), (source,), source, body, printed_label="1", answers={}, can_rebuild_body=True
+    )
+    assert body_plain_text(result) == "Identify the important concept."
+    assert result[0].segments[0].marks == ("bold",)
+
+
+def test_omitted_size_heading_paragraph_is_rebuilt_with_its_level():
+    heading = _source(("Läs det här avsnittet noga.", ()), heading=2)
+    question = _source(("Svara på frågan.", ()))
+    source = SourceFormatting((heading, question))
+    body = formatted_text("Svara på frågan.", source)
+    result = complete_source_formatting(
+        (heading, question),
+        (source,),
+        source,
+        body,
+        printed_label=None,
+        answers={},
+        can_rebuild_body=True,
+    )
+    assert body_plain_text(result) == "Läs det här avsnittet noga.\nSvara på frågan."
+    assert [paragraph.heading_level for paragraph in result] == [2, None]
+    assert source.path == "rebuilt"
+
+
+def test_rewritten_unmarked_heading_keeps_model_wording_and_source_level():
+    heading = _source(("Viktig rubrik", ()), heading=2)
+    source = SourceFormatting((heading,))
+    result = formatted_text("Ny rubrik", source)
+    assert body_plain_text(result) == "Ny rubrik"
+    assert result[0].heading_level == 2
+    assert source.path == "aligned"
+
+
+def test_omitted_table_heading_paragraph_is_rebuilt_with_its_level():
+    text = "Rubrikcell | Svarstext"
+    table = DocxChunk(
+        "table1",
+        "table",
+        text,
+        text,
+        runs=(),
+        paragraphs=(
+            DocxSourceParagraph(0, "Rubrikcell", 2),
+            DocxSourceParagraph(13, "Svarstext", None),
+        ),
+    )
+    source = SourceFormatting((table,))
+    body = formatted_text("Svarstext", source)
+    result = complete_source_formatting(
+        (table,), (source,), source, body, printed_label=None, answers={}, can_rebuild_body=True
+    )
+    assert [paragraph.heading_level for paragraph in result] == [2, None]
+    assert body_plain_text(result) == "Rubrikcell\nSvarstext"
+    assert source.path == "rebuilt"
+
+
+def test_omitted_marked_word_before_free_text_body_is_rebuilt_from_source():
+    safety = _source(("Safety.", ("bold",)), (" Do not mix acids.", ()))
+    source = SourceFormatting((safety,))
+    body = formatted_text("Do not mix acids.", source)
+    result = complete_source_formatting(
+        (safety,), (source,), source, body, printed_label=None, answers={}, can_rebuild_body=True
+    )
+    assert body_plain_text(result) == "Safety. Do not mix acids."
+    assert result[0].segments[0].text == "Safety."
+    assert result[0].segments[0].marks == ("bold",)
+    assert source.path == "rebuilt"
+
+
+def test_marked_choice_labels_are_exempt_through_their_native_ordinals():
+    from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+        NativeSourceEntry,
+    )
+
+    text = "Which city?\na) Paris\nb) Lyon"
+    chunk = DocxChunk(
+        "body:0001",
+        "paragraph",
+        text,
+        text,
+        runs=(
+            DocxSourceRun(12, "a) ", ("bold",)),
+            DocxSourceRun(15, "Paris", ()),
+            DocxSourceRun(21, "b) ", ("bold",)),
+            DocxSourceRun(24, "Lyon", ()),
+        ),
+        paragraphs=(DocxSourceParagraph(0, text, None),),
+    )
+    body_source = SourceFormatting((chunk,))
+    choice_source = SourceFormatting((chunk,))
+    body = formatted_text("Which city?", body_source)
+    choices = (formatted_text("Paris", choice_source), formatted_text("Lyon", choice_source))
+    assert choice_source.entry_spans == [(15, 20), (24, 28)]
+    entries = (
+        NativeSourceEntry("choices", 1, 15, 20),
+        NativeSourceEntry("choices", 2, 24, 28),
+    )
+    result = complete_source_formatting(
+        (chunk,),
+        (body_source, choice_source),
+        body_source,
+        body,
+        printed_label=None,
+        answers={},
+        can_rebuild_body=False,
+        entries=entries,
+    )
+    assert body_plain_text(result) == "Which city?"
+    assert body_plain_text(choices[0]) == "Paris"
+    assert body_plain_text(choices[1]) == "Lyon"
+    assert body_source.path == "exact" and choice_source.path == "exact"
+
+
+def test_ordinal_labels_extend_beyond_z_and_the_roman_numeral_cap():
+    from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+        NativeSourceEntry,
+    )
+
+    text = "Which city?\nAA) Paris\nMM) Lyon"
+    chunk = DocxChunk(
+        "body:0001",
+        "paragraph",
+        text,
+        text,
+        runs=(
+            DocxSourceRun(12, "AA) ", ("bold",)),
+            DocxSourceRun(16, "Paris", ()),
+            DocxSourceRun(22, "MM) ", ("bold",)),
+            DocxSourceRun(26, "Lyon", ()),
+        ),
+        paragraphs=(DocxSourceParagraph(0, text, None),),
+    )
+    body_source = SourceFormatting((chunk,))
+    choice_source = SourceFormatting((chunk,))
+    body = formatted_text("Which city?", body_source)
+    formatted_text("Paris", choice_source)
+    formatted_text("Lyon", choice_source)
+    entries = (
+        NativeSourceEntry("choices", 27, 16, 21),
+        NativeSourceEntry("choices", 2000, 26, 30),
+    )
+    result = complete_source_formatting(
+        (chunk,),
+        (body_source, choice_source),
+        body_source,
+        body,
+        printed_label=None,
+        answers={},
+        can_rebuild_body=False,
+        entries=entries,
+    )
+    assert body_plain_text(result) == "Which city?"
+
+
+def test_heading_projected_by_an_entry_surface_is_already_accounted():
+    from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+        NativeSourceEntry,
+    )
+
+    text = "Fråga? | a) Rubrik"
+    table = DocxChunk(
+        "table1",
+        "table",
+        text,
+        text,
+        runs=(DocxSourceRun(9, "a) ", ("bold",)), DocxSourceRun(12, "Rubrik", ())),
+        paragraphs=(
+            DocxSourceParagraph(0, "Fråga?", None),
+            DocxSourceParagraph(9, "a) Rubrik", 2),
+        ),
+    )
+    body_source = SourceFormatting((table,))
+    choice_source = SourceFormatting((table,))
+    body = formatted_text("Fråga?", body_source)
+    formatted_text("Rubrik", choice_source)
+    entries = (NativeSourceEntry("choices", 1, 12, 18),)
+    result = complete_source_formatting(
+        (table,),
+        (body_source, choice_source),
+        body_source,
+        body,
+        printed_label=None,
+        answers={},
+        can_rebuild_body=False,
+        entries=entries,
+    )
+    assert body_plain_text(result) == "Fråga?"
+    assert choice_source.projected == {9}

@@ -108,18 +108,12 @@ def _append_marked_line(
     ordered_marks = _ordered_marks(marks)
     if not ordered_marks:
         return _append_run_text(parent, tail_target, text)
-    outer: ElementTree.Element | None = None
-    inner: ElementTree.Element | None = None
-    for mark in ordered_marks:
-        element = ElementTree.SubElement(
-            parent if outer is None else outer,
-            qti_tag(MARK_ELEMENT_NAMES[mark]),
-        )
-        if outer is None:
-            outer = element
-        inner = element
-    if inner is None:
-        return tail_target
+    # Each successive wrapper nests inside the previous one; the innermost holds text
+    # and the outermost stays the tail target for the paragraph's next run.
+    outer = ElementTree.SubElement(parent, qti_tag(MARK_ELEMENT_NAMES[ordered_marks[0]]))
+    inner = outer
+    for mark in ordered_marks[1:]:
+        inner = ElementTree.SubElement(inner, qti_tag(MARK_ELEMENT_NAMES[mark]))
     inner.text = (inner.text or "") + text
     return outer
 

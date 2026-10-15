@@ -23,9 +23,12 @@
  *     back; `examWorkspaceBodyMarks` toggles a mark; `examWorkspaceBodyCaret`
  *     guards edits that would touch an atom; `examWorkspaceBodySelection`
  *     keeps the caret across a mark rebuild.
+ *   - `useExamWorkspaceRichTextTarget` registers this paragraph as the
+ *     item editor's one active toolbar target while it owns the selection,
+ *     and drops its saved range when another rich surface takes over.
  */
 
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import type {
   NativeExamBodyParagraph,
@@ -39,7 +42,7 @@ import {
   selectionRanges,
   type TouchedAtomKind,
 } from "./examWorkspaceBodyCaret";
-import { marksForOffsets, withToggledMark } from "./examWorkspaceBodyMarks";
+import { withToggledMark } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import {
   applyAssetState,
@@ -54,11 +57,8 @@ import {
   segmentsFromParts,
   segmentsKey,
 } from "./examWorkspaceBodySegments";
-import {
-  rangeFromOffsets,
-  selectionOffsets,
-  type ParagraphSelection,
-} from "./examWorkspaceBodySelection";
+import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
+import { useExamWorkspaceRichTextTarget } from "./useExamWorkspaceRichTextTarget";
 
 const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
 const DELETE_NEXT_TO_GAP_COPY =
@@ -128,13 +128,19 @@ const emit = defineEmits<{
   activateGap: [chip: HTMLElement];
   status: [message: string | null];
   focusParagraph: [];
-  selectionMarks: [marks: BodyMark[]];
+  toggleHeading: [level: RichTextHeadingLevel | null];
 }>();
 
 const elementRef = ref<HTMLElement | null>(null);
 const composing = ref(false);
 const renderedKey = ref<string | undefined>(undefined);
-let savedOffsets: ParagraphSelection | null = null;
+
+const selection = useExamWorkspaceRichTextTarget({
+  element: elementRef,
+  headingLevel: () => props.paragraph.heading_level ?? null,
+  toggleMark: (mark) => toggleMark(mark),
+  toggleHeading: (level) => toggleHeading(level),
+});
 
 const PARAGRAPH_CLASS =
   "min-h-14 whitespace-pre-wrap [overflow-wrap:anywhere] border bg-canvas px-4 py-3 leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40";
@@ -189,12 +195,7 @@ function refreshAssets(): void {
 }
 
 onMounted(() => {
-  document.addEventListener("selectionchange", rememberSelection);
   renderNow();
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("selectionchange", rememberSelection);
 });
 
 watch(
@@ -212,56 +213,20 @@ watch(
 watch(() => props.gaps, refreshChips, { deep: true, flush: "post" });
 watch(() => props.assetUrls, refreshAssets, { deep: true, flush: "post" });
 
-function rememberSelection(): void {
-  const element = elementRef.value;
-  if (!element) {
-    return;
-  }
-  const offsets = selectionOffsets(element);
-  if (!offsets) {
-    return;
-  }
-  savedOffsets = offsets;
-  emit(
-    "selectionMarks",
-    marksForOffsets(partsFromParagraphElement(element), offsets.start, offsets.end),
-  );
-}
-
-function restoreSelection(offsets: ParagraphSelection): void {
-  const element = elementRef.value;
-  if (!element) {
-    return;
-  }
-  const range = rangeFromOffsets(element, offsets);
-  if (!range) {
-    return;
-  }
-  element.focus({ preventScroll: true });
-  const selection = window.getSelection();
-  selection?.removeAllRanges();
-  selection?.addRange(range);
-  savedOffsets = offsets;
-  emit(
-    "selectionMarks",
-    marksForOffsets(partsFromParagraphElement(element), offsets.start, offsets.end),
-  );
-}
-
 /** Add or remove one mark on the selected range, keeping the selection in place. */
 function toggleMark(mark: BodyMark): void {
   const element = elementRef.value;
   if (!element || props.disabled) {
     return;
   }
-  const offsets = selectionOffsets(element) ?? savedOffsets;
+  const offsets = selection.resolveOffsets();
   if (!offsets) {
     return;
   }
   const parts = partsFromParagraphElement(element);
   const next = withToggledMark(parts, offsets.start, offsets.end, mark);
   if (!next) {
-    emit("selectionMarks", marksForOffsets(parts, offsets.start, offsets.end));
+    selection.publishMarks(offsets);
     return;
   }
   renderParagraphParts(element, next, props.gaps, props.assetUrls, props.interactiveGaps);
@@ -270,10 +235,20 @@ function toggleMark(mark: BodyMark): void {
   renderedKey.value = segmentsKey(segments);
   emit("status", null);
   emit("updateSegments", segments);
-  restoreSelection(offsets);
+  selection.restoreSelection(offsets);
+}
+
+/** Set or clear this paragraph's heading level; the owner stores the native value. */
+function toggleHeading(level: RichTextHeadingLevel): void {
+  if (props.disabled) {
+    return;
+  }
+  const current = props.paragraph.heading_level ?? null;
+  emit("toggleHeading", current === level ? null : level);
 }
 
 function focus(): void {
+  selection.activate();
   elementRef.value?.focus();
 }
 
@@ -438,16 +413,17 @@ function handleKeydown(event: KeyboardEvent): void {
 }
 
 function handleFocus(): void {
+  selection.activate();
   emit("focusParagraph");
-  rememberSelection();
+  selection.rememberSelection();
 }
 
 function handleKeyup(): void {
-  rememberSelection();
+  selection.rememberSelection();
 }
 
 function handleMouseup(): void {
-  rememberSelection();
+  selection.rememberSelection();
 }
 </script>
 

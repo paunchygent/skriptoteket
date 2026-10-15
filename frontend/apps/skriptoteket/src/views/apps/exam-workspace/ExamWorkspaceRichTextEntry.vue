@@ -8,7 +8,9 @@
  *   the compact input surface a choice and a Kategorisera cell need. The
  *   entry never offers gaps or pictures of its own; if a stored body somehow
  *   carries one, it still renders as a fixed atom, so an edit can never drop
- *   it silently. Ctrl/Cmd+B, I and U toggle marks while the teacher edits.
+ *   it silently. Ctrl/Cmd+B, I and U toggle marks while the teacher edits,
+ *   and the item editor's shared toolbar can call this entry's paragraphs
+ *   when one of them owns the selection, including the heading glyphs.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceChoiceField` for each choice and by
@@ -19,6 +21,7 @@
 
 import type { NativeExamBodyParagraph, NativeExamBodySegment } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
+import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
 
 const props = withDefaults(
   defineProps<{
@@ -47,6 +50,15 @@ function handleSegments(paragraphIndex: number, segments: NativeExamBodySegment[
     ),
   );
 }
+
+function handleHeading(paragraphIndex: number, headingLevel: RichTextHeadingLevel | null): void {
+  emit(
+    "updateBody",
+    props.body.map((paragraph, index) =>
+      index === paragraphIndex ? { ...paragraph, heading_level: headingLevel } : paragraph,
+    ),
+  );
+}
 </script>
 
 <template>
@@ -66,6 +78,7 @@ function handleSegments(paragraphIndex: number, segments: NativeExamBodySegment[
       :aria-describedby="describedBy"
       variant="input"
       @update-segments="(segments) => handleSegments(paragraphIndex, segments)"
+      @toggle-heading="(level) => handleHeading(paragraphIndex, level)"
       @focus-paragraph="emit('focusEntry')"
     />
   </div>

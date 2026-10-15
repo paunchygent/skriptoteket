@@ -75,11 +75,11 @@
   `81a6f064` repairs both; report: session `01a13c92`,
   `evidence/impl/TASK-SKRIPT-39-09-07/repair-report.md`.
   Next: independent rereview, parent-owned polish and staging/Exam.net walk.
-  Task 8 `in_progress`, owner Pi `7ae80f4d`, branch `codex/task-skript-39-09-08`:
-  required native marks/headings and rich entries, deterministic source transfer,
-  editor and XHTML implemented; report in session `01a13c92`,
-  `evidence/impl/TASK-SKRIPT-39-09-08/implementation-report.md`.
-  Next: independent review, parent-owned polish and staging/Exam.net import.
+  Task 8 `in_progress`, repair owner Pi `c308a11a`, branch `codex/task-skript-39-09-08`:
+  R1–R5/O1/O2 repaired; 99 backend / 40 frontend tests pass; replay unchanged
+  (304 exact, 7 aligned, 2 admitted rebuilt, 0 formatting Granska). Report:
+  session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-08/repair-report.md`.
+  Next: independent rereview, then parent-owned polish and staging/Exam.net import.
   No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion

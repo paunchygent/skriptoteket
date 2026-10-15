@@ -97,7 +97,10 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     assert admitted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
-    assert state.events == []
+    assert [(e.code, e.item, e.anchors) for e in state.events if e.stage == "formatting"] == [
+        ("exact", 0, ("body:0001",))
+    ]
+    assert [e for e in state.events if e.stage != "formatting"] == []
     assert state.pending == ()
 
 
@@ -158,7 +161,12 @@ def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
     ((admitted, _),) = state.accepted
     assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert admitted.review.reasons == (LEFT_OUT_REASON, lead)
-    assert [(e.code, e.anchors) for e in state.events] == [("own_chunks_left_out", ("body:0001",))]
+    assert [(e.code, e.item, e.anchors) for e in state.events if e.stage == "formatting"] == [
+        ("exact", 0, ("body:0002",))
+    ]
+    assert [(e.code, e.anchors) for e in state.events if e.stage != "formatting"] == [
+        ("own_chunks_left_out", ("body:0001",))
+    ]
 
 
 @pytest.mark.parametrize(

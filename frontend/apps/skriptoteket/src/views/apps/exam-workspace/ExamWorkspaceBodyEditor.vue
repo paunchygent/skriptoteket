@@ -6,8 +6,9 @@
  *   Let the teacher edit each paragraph of a question as one continuous
  *   rich text: the five kept marks, a heading level, every gap shown as an
  *   inline chip and every image as a fixed atom. The toolbar toggles the
- *   marks and heading level of the paragraph that holds the selection, and
- *   Ctrl/Cmd+B, I and U toggle marks from the keyboard. Activating a gap
+ *   marks and heading level of the one active rich surface — this fieldset's
+ *   own paragraph or a choice option / Kategorisera entry — and Ctrl/Cmd+B,
+ *   I and U toggle marks from the keyboard. Activating a gap
  *   chip opens a small popover where the teacher edits that gap's accepted
  *   answers, removes an automatic answer the conversion added, or replaces
  *   the whole gap with its first accepted answer as plain text ("Visa som
@@ -24,6 +25,9 @@
  *   - `ExamWorkspaceBodyParagraph` owns one paragraph's DOM and marks,
  *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
  *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
+ *   - `examWorkspaceRichTextTarget` is the shared active target the toolbar
+ *     reads and calls, so a glyph action always edits the surface that owns
+ *     the selection, never a stale one.
  */
 
 import { computed, ref, watch } from "vue";
@@ -39,6 +43,7 @@ import { gapNumberIn } from "./examWorkspaceBodySegments";
 import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
+import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 type HeadingLevel = 1 | 2 | 3;
 type ParagraphInstance = InstanceType<typeof ExamWorkspaceBodyParagraph>;
@@ -71,8 +76,8 @@ type OpenGap = {
 const editorRoot = ref<HTMLElement | null>(null);
 const statusMessage = ref<string | null>(null);
 const openGap = ref<OpenGap | null>(null);
-const activeParagraphIndex = ref<number | null>(null);
-const paragraphMarks = ref<BodyMark[]>([]);
+const richTextTargets = useRichTextTargetRegistry();
+const activeRichTextTarget = richTextTargets.active;
 let openChip: HTMLElement | null = null;
 
 const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
@@ -84,10 +89,10 @@ const openGapModel = computed(() =>
 const openGapNumber = computed(() =>
   openGap.value === null ? 0 : gapNumberIn(props.item.gaps, openGap.value.gapId),
 );
-const activeHeading = computed<HeadingLevel | null>(() => {
-  const index = activeParagraphIndex.value;
-  return index === null ? null : (props.item.body[index]?.heading_level ?? null);
-});
+const activeMarks = computed(() => activeRichTextTarget.value?.marks.value ?? []);
+const activeHeading = computed<HeadingLevel | null>(
+  () => activeRichTextTarget.value?.headingLevel() ?? null,
+);
 
 /** Imperative paragraph refs; deliberately not reactive, so a toolbar click reaches the live component. */
 const paragraphRefs: (ParagraphInstance | null)[] = [];
@@ -100,27 +105,12 @@ function setParagraphRef(
     element instanceof Element ? null : (element as unknown as ParagraphInstance | null);
 }
 
-function handleSelectionMarks(paragraphIndex: number, marks: BodyMark[]): void {
-  if (activeParagraphIndex.value === null || activeParagraphIndex.value === paragraphIndex) {
-    activeParagraphIndex.value = paragraphIndex;
-    paragraphMarks.value = marks;
-  }
-}
-
 function handleToggleMark(mark: BodyMark): void {
-  const index = activeParagraphIndex.value;
-  if (index !== null) {
-    paragraphRefs[index]?.toggleMark(mark);
-  }
+  activeRichTextTarget.value?.toggleMark(mark);
 }
 
 function handleToggleHeading(level: HeadingLevel): void {
-  const index = activeParagraphIndex.value;
-  if (index === null || props.disabled) {
-    return;
-  }
-  const current = props.item.body[index]?.heading_level ?? null;
-  emit("updateParagraphHeading", props.item.item_id, index, current === level ? null : level);
+  activeRichTextTarget.value?.toggleHeading(level);
 }
 
 function openPopover(paragraphIndex: number, chip: HTMLElement): void {
@@ -206,7 +196,7 @@ watch(
       Frågetext
     </legend>
     <ExamWorkspaceMarkToolbar
-      :active-marks="paragraphMarks"
+      :active-marks="activeMarks"
       :active-heading="activeHeading"
       :disabled="disabled"
       show-headings
@@ -229,8 +219,7 @@ watch(
         :label="`Frågetext, stycke ${paragraphIndex + 1}`"
         :test-id="`exam-workspace-body-paragraph-${paragraphIndex}`"
         @activate-gap="(chip) => openPopover(paragraphIndex, chip)"
-        @focus-paragraph="activeParagraphIndex = paragraphIndex"
-        @selection-marks="(marks) => handleSelectionMarks(paragraphIndex, marks)"
+        @toggle-heading="(level) => emit('updateParagraphHeading', item.item_id, paragraphIndex, level)"
         @status="statusMessage = $event"
         @update-segments="(segments) => emit('updateParagraphSegments', item.item_id, paragraphIndex, segments)"
       />

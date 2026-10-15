@@ -167,6 +167,70 @@ class TestPromptFormatting:
         assert emphasis is not None
         assert emphasis.text == "både"
 
+    def test_three_marks_nest_around_the_run_and_the_following_run_follows(self) -> None:
+        item = _free_text_item(
+            sequence=1,
+            body=(
+                _paragraph(
+                    _text("tre", "bold", "italic", "underline"),
+                    _text(" efter"),
+                ),
+            ),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document(item))
+
+        _, root = _serialize(qti_item)
+
+        prompt = root.find(f".//{_tag('qti-prompt')}")
+        assert prompt is not None
+        assert [child.tag for child in prompt] == [_tag("strong")]
+        strong = prompt.find(_tag("strong"))
+        assert strong is not None
+        assert [child.tag for child in strong] == [_tag("em")]
+        emphasis = strong.find(_tag("em"))
+        assert emphasis is not None
+        assert [child.tag for child in emphasis] == [_tag("u")]
+        underline = emphasis.find(_tag("u"))
+        assert underline is not None
+        assert underline.text == "tre"
+        assert list(underline) == []
+        assert strong.tail is not None
+        assert strong.tail.strip() == "efter"
+
+    def test_four_marks_nest_around_the_run_and_keep_the_following_marked_run_in_order(
+        self,
+    ) -> None:
+        item = _free_text_item(
+            sequence=1,
+            body=(
+                _paragraph(
+                    _text("fyra", "bold", "italic", "underline", "superscript"),
+                    _text(" efter", "subscript"),
+                ),
+            ),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document(item))
+
+        _, root = _serialize(qti_item)
+
+        prompt = root.find(f".//{_tag('qti-prompt')}")
+        assert prompt is not None
+        strong, subscript = list(prompt)
+        assert strong.tag == _tag("strong")
+        assert subscript.tag == _tag("sub")
+        assert subscript.text == " efter"
+        assert [child.tag for child in strong] == [_tag("em")]
+        emphasis = strong.find(_tag("em"))
+        assert emphasis is not None
+        assert [child.tag for child in emphasis] == [_tag("u")]
+        underline = emphasis.find(_tag("u"))
+        assert underline is not None
+        assert [child.tag for child in underline] == [_tag("sup")]
+        superscript = underline.find(_tag("sup"))
+        assert superscript is not None
+        assert superscript.text == "fyra"
+        assert list(superscript) == []
+
     def test_gap_fill_marks_render_and_the_gap_itself_carries_no_markup(self) -> None:
         item = NativeExamItem(
             item_id="item_001",

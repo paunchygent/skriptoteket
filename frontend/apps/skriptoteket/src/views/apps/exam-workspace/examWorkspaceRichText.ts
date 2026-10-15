@@ -4,9 +4,11 @@
  * Domain purpose:
  *   Read the plain text of one paragraph or one rich body, decide whether a
  *   stored body carries any text at all, and build the plain one-paragraph
- *   body a teacher-created question starts with. Marks never change the text
- *   a teacher reads or the misspelling route sends, so every plain-text
- *   consumer reads through here instead of walking segments itself.
+ *   body a teacher-created question starts with. Adjacent text runs
+ *   concatenate as stored (a split word or formula stays one word) and an
+ *   atom separates the text around it. Marks never change the text a teacher
+ *   reads or the misspelling route sends, so every plain-text consumer reads
+ *   through here instead of walking segments itself.
  *
  * Relationships:
  *   - Used by `examWorkspaceDocumentText` (language inference),
@@ -16,11 +18,11 @@
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 
-/** One paragraph's plain text with collapsed whitespace; gaps and pictures contribute nothing. */
+/** One paragraph's plain text with collapsed whitespace; gaps and pictures contribute one separator. */
 export function paragraphText(paragraph: NativeExamBodyParagraph): string {
   return paragraph.segments
-    .map((segment) => (segment.kind === "text" ? segment.text : ""))
-    .join(" ")
+    .map((segment) => (segment.kind === "text" ? segment.text : " "))
+    .join("")
     .replace(/\s+/g, " ")
     .trim();
 }
