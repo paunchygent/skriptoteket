@@ -79,8 +79,9 @@ Exam.net converts on import.
 1. Walking skeleton: the workspace on Hemma staging exports one single-choice
    question as a QTI 3.0 package; the agent imports it into Exam.net in its
    own tab and reads back type, key and points.
-2. Port: every existing type and both lanes write QTI 3.0; the 2.1 writer and
-   golden files are deleted and the golden files regenerated.
+2. Port: every existing type and both lanes write the proven QTI 3.0 shapes
+   (pictures under `items/images/`, equal mapping values, all-or-nothing and
+   rounded gap values per Q16 and Q17), and the golden files are regenerated.
 3. Kategorisera grid: the teacher-facing name, many-to-many keys with at least
    one correct column per row, one teacher-set value per correct tick (default
    1), grid-only export, and DOCX conversion of category-sorting questions with
@@ -88,8 +89,8 @@ Exam.net converts on import.
 4. Fritext criteria: the criteria list replaces the marking-guide text in the
    model, conversion and editor, and exports as 1-point rows.
 5. Kort svar: "Ny uppgift" creates a one-gap Lucktext after the question text.
-6. Export checklist: the export panel lists each Fritext question with its
-   criterion text after a QTI export.
+6. Export checklist: after a QTI export the export panel lists each Fritext
+   question with its criterion text and each question Q16 or Q17 flags.
 
 ## Verification
 
@@ -121,4 +122,6 @@ Exam.net converts on import.
 | Q12 | Fritext rubric criteria are a list of criteria with text and whole points that replaces the marking-guide text; the item's points are their sum; conversion fills the list (user decision 2026-10-15).                                                |
 | Q13 | Fritext exports one 1-point rule row per criterion point, so an N-point criterion becomes N rows; a Fritext without criteria exports one row worth its points (user decision 2026-10-15).                                                             |
 | Q14 | 'Ny uppgift' offers a short answer that creates a Lucktext with one gap after the question text, with accepted answers and automatic misspellings (user decision 2026-10-15).                                                                         |
-| Q15 | After a QTI export the export panel lists only what Exam.net loses on import: each Fritext question with its criterion text to paste into the row labels or Svarsalternativ; there is no checklist file (user decisions 2026-10-15).                  |
+| Q15 | After a QTI export the export panel lists only what Exam.net loses on import: each Fritext question with its criterion text to paste into the row labels or Svarsalternativ, each shared-instruction subquestion scored all-or-nothing with 2 or more points, and each Lucktext with rounded gap values; there is no checklist file (user decisions 2026-10-15). |
+| Q16 | Choice, multiple-response and matching questions whose points do not divide evenly over their correct answers export all-or-nothing: one rule worth the points standalone; Exam.net gives a shared-instruction subquestion 1 point, which Q15 flags (user decisions 2026-10-15, probe r19). |
+| Q17 | A Lucktext whose points do not divide evenly over its gaps gives every gap the same value, the points divided by the gaps rounded down to 2 decimals, flagged by Q15 (user decision 2026-10-15, probe r19).                                           |
