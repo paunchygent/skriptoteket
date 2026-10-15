@@ -61,21 +61,6 @@
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
 
-- [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
-  `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
-  (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
-  5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
-  `in_progress`: grid points fix `07bede41` approved and merged (`2ebed4cb`);
-  live DOCX eval found a many-to-many grid rejected at admission (key-source
-  rule); diagnosis waits for the Hemma storage hold. Task 4 `done` (a3525650;
-  Exam.net 5337577); task 5 `done` (5c8c540f, fix 4b54bceb; Exam.net 5337942).
-  Tasks 6, 7 and 8 `done` (8: merge 0262f054, divider e72f27f3; review waived by
-  user; staging walk and Exam.net import 5339805 show all marks and h1-h3).
-  Story ST-SKRIPT-39-09 `done`; task 9 (section titles open their own questions)
-  `done` b0b090cc, Exam.net import 5339836; follow-up 26c56a03: styled points
-  headings open their sections, 9 stale DOCX handler tests repaired.
-  No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
-
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
 
@@ -164,6 +149,11 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
+  `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;
+  last proofs Exam.net 5339805 (formatting) and 5339836 (section headings);
+  follow-up 26c56a03.
 
 - 2026-10-13 `done`: TASK-SKRIPT-39-04-09 (main `c018ae9e`), 39-04-07 (`838baea9`),
   39-05-07 (`ebc2a9c7`); walk records are cited in each task's closeout.
