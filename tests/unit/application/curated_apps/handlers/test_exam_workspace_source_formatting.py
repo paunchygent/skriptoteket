@@ -10,6 +10,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ad
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeTextSegment
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
     parse_native_exam_document,
@@ -48,7 +49,7 @@ async def test_svenska_2_question_17_keeps_the_three_analysed_phrases_in_italics
         segment.text
         for paragraph in item.body
         for segment in paragraph.segments
-        if segment.kind == "text" and "italic" in segment.marks
+        if isinstance(segment, NativeTextSegment) and "italic" in segment.marks
     )
     for phrase in ("tre korta svar", "på skolgården", "kan vila"):
         assert phrase in italic
@@ -60,16 +61,31 @@ async def test_svenska_2_question_17_keeps_the_three_analysed_phrases_in_italics
 async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
     exam = "svenska_2_kursavslutande_prov_med_facit"
     reply = recording(exam, "docx_w1-02")
-    raw = next(item for item in reply["items"] if item.get("printed_label") == "Fråga 17")
+    items = reply["items"]
+    assert isinstance(items, list)
+    raw = next(
+        item for item in items if isinstance(item, dict) and item.get("printed_label") == "Fråga 17"
+    )
     raw["key_source"] = None
-    for paragraph in raw["body"]:
-        for segment in paragraph["segments"]:
+    body = raw["body"]
+    assert isinstance(body, list)
+    for paragraph in body:
+        assert isinstance(paragraph, dict)
+        segments = paragraph["segments"]
+        assert isinstance(segments, list)
+        for segment in segments:
+            assert isinstance(segment, dict)
             if segment["kind"] == "text":
+                text = segment["text"]
+                assert isinstance(text, str)
                 for phrase in ("tre korta svar", "på skolgården", "kan vila"):
-                    segment["text"] = segment["text"].replace(phrase, "ersatt fras")
+                    text = text.replace(phrase, "ersatt fras")
+                segment["text"] = text
             elif segment["kind"] == "gap":
                 segment["accepted_values"] = []
-    chunks = tuple(c for c in corpus_chunks(exam) if c.anchor in raw["source_anchors"])
+    anchors = raw["source_anchors"]
+    assert isinstance(anchors, list)
+    chunks = tuple(c for c in corpus_chunks(exam) if c.anchor in anchors)
     state = DocxBuildState(
         job_id=uuid4(),
         document_id=uuid4(),
@@ -86,7 +102,7 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
         "italic" in segment.marks
         for p in item.body
         for segment in p.segments
-        if segment.kind == "text"
+        if isinstance(segment, NativeTextSegment)
     )
 
 

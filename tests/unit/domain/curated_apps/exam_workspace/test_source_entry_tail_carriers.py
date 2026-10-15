@@ -9,9 +9,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeSegment,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
 
 
 def _chunk(anchor, text, *, marked=False):
@@ -102,7 +111,9 @@ def test_ordinary_literal_answer_label_inside_entry_content_survives():
     )
     result = native_item(produced, chunks=chunks, language="en")
     assert body_plain_text(result.choices[1].body) == literal
-    assert all(segment.marks == ("bold",) for segment in result.choices[1].body[0].segments)
+    assert all(
+        _as_text(segment).marks == ("bold",) for segment in result.choices[1].body[0].segments
+    )
 
 
 def test_literal_answer_label_in_an_omitted_ordinary_continuation_is_rebuilt():
@@ -137,7 +148,7 @@ def test_omitted_continuation_before_answer_tail_keeps_visible_text(last_wording
         "blue" + continuation.rstrip(),
     ]
     assert all(
-        segment.marks == ("bold",)
+        _as_text(segment).marks == ("bold",)
         for paragraph in result.choices[1].body
         for segment in paragraph.segments
     )
@@ -256,7 +267,7 @@ def test_mathematical_point_expression_survives_entry_reconstruction():
     result = native_item(produced, chunks=chunks, language="en")
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert all(
-        segment.marks == ("bold",)
+        _as_text(segment).marks == ("bold",)
         for paragraph in result.choices[1].body
         for segment in paragraph.segments
     )
@@ -278,7 +289,7 @@ def test_quoted_point_label_survives_entry_reconstruction():
     result = native_item(produced, chunks=chunks, language="en")
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert all(
-        segment.marks == ("bold",)
+        _as_text(segment).marks == ("bold",)
         for paragraph in result.choices[1].body
         for segment in paragraph.segments
     )

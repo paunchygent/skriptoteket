@@ -35,7 +35,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeSegment,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -46,6 +50,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructio
 )
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
+
 
 _BOLD: tuple[str, ...] = ("bold",)
 _ITALIC: tuple[str, ...] = ("italic",)
@@ -107,7 +117,7 @@ def _rendered(
     paragraphs: tuple[NativeParagraph, ...],
 ) -> list[list[tuple[str, tuple[str, ...]]]]:
     return [
-        [(segment.text, segment.marks) for segment in paragraph.segments]
+        [(_as_text(segment).text, _as_text(segment).marks) for segment in paragraph.segments]
         for paragraph in paragraphs
     ]
 

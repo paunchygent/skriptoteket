@@ -88,10 +88,9 @@ def _convert_runs(runs, *, choices=(), left=(), right=()):
     result = native_item(item, chunks=chunks, language="en")
     assert body_plain_text(result.body) == prompt
     assert result.facit_text is None
-    assert all(
-        isinstance(entry.body, tuple)
-        for entry in (*result.choices, *result.match_left, *result.match_right)
-    )
+    assert all(isinstance(entry.body, tuple) for entry in result.choices)
+    assert all(isinstance(entry.body, tuple) for entry in result.match_left)
+    assert all(isinstance(entry.body, tuple) for entry in result.match_right)
     return result
 
 
