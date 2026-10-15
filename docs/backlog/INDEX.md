@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=40 | story=331 | task=0 | review=137
-- open | epic=19 | story=67 | task=0
+- total | epic=40 | story=332 | task=0 | review=137
+- open | epic=19 | story=68 | task=0
 
 ## Lookup
 
@@ -313,6 +313,7 @@
 - story | ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md)
 - story | ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md)
 - story | ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md)
+- story | ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md)
 - story | ST-SKRIPT-08-04 | [Catalog help (browse + run)](stories/st-skript-08-04-catalog-help-browse-run.md)
 - story | ST-SKRIPT-08-05 | [Tool results + downloads help](stories/st-skript-08-05-tool-results-downloads-help.md)
 - story | ST-SKRIPT-08-06 | [Contributor help (Mina verktyg + Föreslå skript)](stories/st-skript-08-06-contributor-help-mina-verktyg-f-resl-skript.md)
@@ -523,7 +524,7 @@
 ### active
 
 - EPIC-SKRIPT-02 | [Identity and access control (RBAC)](epics/epic-skript-02-identity-and-access-control-rbac.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1 | tasks=none
+- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1, proposed=1 | tasks=none
 - EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=10 | tasks=none
 - EPIC-SKRIPT-09 | [Security hardening for production deployment](epics/epic-skript-09-security-hardening-for-production-deployment.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-11 | [Full Vue/Vite SPA migration](epics/epic-skript-11-full-vue-vite-spa-migration.md) | stories=active=1, ready=1 | tasks=none
@@ -608,6 +609,7 @@
 
 ### proposed
 
+- ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0

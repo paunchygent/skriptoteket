@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "39776ab75e7d94db4b31760ecd9c71df40e6b2337c69f05eeb2c0fc82fbd7fb9",
+  "source_set_digest": "c84c31cd93545032b3d8f915ea31129beb138bde64ec2fd98fd8a9811a3b8c7d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -745,6 +745,27 @@
       "readiness_review": {
         "record": "inline",
         "status": "not_started"
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-06-17",
+      "type": "story",
+      "title": "Migration idempotency harness supports merge revisions",
+      "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
       },
       "closeout_review": {
         "record": "inline",
@@ -2468,6 +2489,25 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-17-01",
+      "type": "task",
+      "title": "Resolve merge-revision parents in the migration idempotency support",
+      "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
