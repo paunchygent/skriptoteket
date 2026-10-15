@@ -26,20 +26,20 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
       ],
       origin: "source_provided",
     },
-    body: [{ segments: [{ kind: "text", text: "Match each definition with the right word." }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Match each definition with the right word." }] }],
     choices: [],
     gaps: [],
     item_id: "item_001",
     kind: "matching",
     match_left: [
-      { left_id: "left_001", text: "absence from school without permission" },
-      { left_id: "left_002", text: "being kept in a prison or jail" },
-      { left_id: "left_003", text: "a feeling that someone deserves no respect" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "absence from school without permission" }] }], left_id: "left_001" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "being kept in a prison or jail" }] }], left_id: "left_002" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "a feeling that someone deserves no respect" }] }], left_id: "left_003" },
     ],
     match_right: [
-      { right_id: "right_001", text: "incarceration" },
-      { right_id: "right_002", text: "truancy" },
-      { right_id: "right_003", text: "disdain" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "incarceration" }] }], right_id: "right_001" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "truancy" }] }], right_id: "right_002" },
+      { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "disdain" }] }], right_id: "right_003" },
     ],
     points: 3,
     points_estimated: false,
@@ -83,7 +83,7 @@ export function buildMatchingItemWithDistractor(
 ): NativeExamItem {
   const base = buildMatchingItem();
   return buildMatchingItem({
-    match_right: [...base.match_right, { right_id: "right_004", text: "ferocious" }],
+    match_right: [...base.match_right, { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "ferocious" }] }], right_id: "right_004" }],
     ...overrides,
   });
 }

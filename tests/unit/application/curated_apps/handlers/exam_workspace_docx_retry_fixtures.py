@@ -53,6 +53,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
+    NativeExamRetryParagraph,
+    NativeExamRetryRun,
     NativeExamRetrySource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
@@ -180,12 +182,19 @@ def source(
                 kind="paragraph",
                 text=text,
                 marked_text=text,
+                runs=(NativeExamRetryRun(offset=0, text=text, marks=("italic",)),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text=text, heading_level=2),),
                 images=images,
             ),
         ),
         key_chunks=tuple(
             NativeExamRetryChunk(
-                anchor=key_anchor, kind="paragraph", text="facit", marked_text="facit"
+                anchor=key_anchor,
+                kind="paragraph",
+                text="facit",
+                marked_text="facit",
+                runs=(NativeExamRetryRun(offset=0, text="facit", marks=()),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text="facit", heading_level=None),),
             )
             for key_anchor in key_anchors
         ),
@@ -207,7 +216,9 @@ def item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=text),)),),
+        body=(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,

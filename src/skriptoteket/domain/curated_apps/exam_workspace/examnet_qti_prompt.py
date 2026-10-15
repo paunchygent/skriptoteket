@@ -6,6 +6,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiImageResource,
     ExamNetQtiPromptGap,
     ExamNetQtiPromptImage,
+    ExamNetQtiPromptParagraph,
     ExamNetQtiPromptSegment,
     ExamNetQtiPromptText,
 )
@@ -27,23 +28,44 @@ def prompt_paragraphs(
     *,
     gap_ids: tuple[str, ...] = (),
     image_offset: int = 0,
-) -> tuple[tuple[ExamNetQtiPromptSegment, ...], ...]:
-    """Bind rich placements to the same ordered images and gaps as declarations."""
+) -> tuple[ExamNetQtiPromptParagraph, ...]:
+    """Bind rich placements, marks and heading levels to the declarations' own carriers."""
     gap_indexes = {gap_id: index for index, gap_id in enumerate(gap_ids)}
     image_index = image_offset
-    paragraphs: list[tuple[ExamNetQtiPromptSegment, ...]] = []
+    paragraphs: list[ExamNetQtiPromptParagraph] = []
     for paragraph in body:
         segments: list[ExamNetQtiPromptSegment] = []
         for segment in paragraph.segments:
             if isinstance(segment, NativeTextSegment):
-                segments.append(ExamNetQtiPromptText(segment.text))
+                segments.append(ExamNetQtiPromptText(segment.text, segment.marks))
             elif isinstance(segment, NativeAssetSegment):
                 segments.append(ExamNetQtiPromptImage(image_index))
                 image_index += 1
             else:
                 segments.append(ExamNetQtiPromptGap(gap_indexes[segment.gap_id]))
-        paragraphs.append(tuple(segments))
+        paragraphs.append(
+            ExamNetQtiPromptParagraph(
+                segments=tuple(segments),
+                heading_level=paragraph.heading_level,
+            )
+        )
     return tuple(paragraphs)
+
+
+def body_carries_formatting(body: tuple[NativeParagraph, ...]) -> bool:
+    """True when any text run carries a mark or any paragraph declares a heading level.
+
+    The native exporter uses this to choose the rich rendering path, so formatting
+    is never dropped for an item that has no picture or gap carrier to trigger it.
+    """
+
+    for paragraph in body:
+        if paragraph.heading_level is not None:
+            return True
+        for segment in paragraph.segments:
+            if isinstance(segment, NativeTextSegment) and segment.marks:
+                return True
+    return False
 
 
 def image_resources(

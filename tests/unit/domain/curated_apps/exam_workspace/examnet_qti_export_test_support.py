@@ -44,4 +44,6 @@ def document_of(
 
 
 def text_body(text: str) -> tuple[NativeParagraph, ...]:
-    return (NativeParagraph(segments=(NativeTextSegment(text=text),)),)
+    return (
+        NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+    )

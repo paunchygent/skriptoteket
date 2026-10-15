@@ -44,9 +44,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     item_numbers,
     parent_over,
@@ -93,12 +95,22 @@ def _matching_qti_items(document: NativeExamDocument) -> list[ExamNetQtiItem]:
     ]
 
 
+def _entry_text(element: ElementTree.Element) -> str:
+    """One choice or match entry's text, one line per rendered paragraph."""
+    lines = [
+        "".join(child.itertext()).strip()
+        for child in element
+        if child.tag.rsplit("}", 1)[-1] in {"p", "h1", "h2", "h3"}
+    ]
+    return "\n".join(line for line in lines if line) or (element.text or "").strip()
+
+
 def _lists(root: ElementTree.Element) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
     (interaction,) = root.iter(_tag("qti-match-interaction"))
     left, right = interaction.findall(_tag("qti-simple-match-set"))
     return (
-        [(c.attrib["identifier"], c.text or "") for c in left],
-        [(c.attrib["identifier"], c.text or "") for c in right],
+        [(c.attrib["identifier"], _entry_text(c)) for c in left],
+        [(c.attrib["identifier"], _entry_text(c)) for c in right],
     )
 
 
@@ -189,8 +201,12 @@ def test_matching_lists_export_in_native_order_and_index_pairing_does_not_reveal
         (interaction,) = root.iter(_tag("qti-match-interaction"))
         left_set, right_set = interaction.findall(_tag("qti-simple-match-set"))
 
-        assert [text for _, text in left] == [entry.text for entry in item.match_left]
-        assert [text for _, text in right] == [entry.text for entry in item.match_right]
+        assert [text for _, text in left] == [
+            body_plain_text(entry.body) for entry in item.match_left
+        ]
+        assert [text for _, text in right] == [
+            body_plain_text(entry.body) for entry in item.match_right
+        ]
         assert set(zip((i for i, _ in left), (i for i, _ in right), strict=True)) != _correct_pairs(
             root
         )
@@ -207,7 +223,7 @@ def test_matching_lists_export_in_native_order_and_index_pairing_does_not_reveal
 def test_unpaired_right_entry_is_listed_in_its_place_and_is_not_part_of_the_key():
     items = recorded_items()
     target = next(item for item in items if item.kind is NativeExamItemKind.MATCHING)
-    distractor = NativeMatchRight(right_id="right_099", text="An entry nobody pairs")
+    distractor = NativeMatchRight(right_id="right_099", body=plain_body("An entry nobody pairs"))
     widened = NativeExamItem.model_validate(
         {
             **dict(target),
@@ -397,7 +413,9 @@ def test_parent_of_recorded_matching_children_keeps_each_item_lists_in_native_or
     for number, interaction in zip(numbers, interactions, strict=True):
         item = native[f"item_{number:03d}"]
         right = interaction.findall(_tag("qti-simple-match-set"))[1]
-        assert [c.text for c in right] == [e.text for e in item.match_right]
+        assert [_entry_text(c) for c in right] == [
+            body_plain_text(e.body) for e in item.match_right
+        ]
         assert _correct_pairs(root, f"item_{number:03d}_RESPONSE") == {
             (pair.left_id, pair.right_id) for pair in item.answer_key.match_pairs
         }
@@ -433,7 +451,9 @@ def test_images_of_parent_children_stay_with_their_own_child():
                     "sequence": sequence,
                     "body": (
                         *item.body,
-                        NativeParagraph(segments=(NativeAssetSegment(asset_id=asset_id),)),
+                        NativeParagraph(
+                            heading_level=None, segments=(NativeAssetSegment(asset_id=asset_id),)
+                        ),
                     ),
                 }
             )

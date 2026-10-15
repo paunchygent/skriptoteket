@@ -207,7 +207,7 @@ def test_a_sentence_facit_is_accepted_with_and_without_its_closing_stop():
 async def test_admitted_gaps_accept_both_halves_of_the_definition_in_their_context(exam: str):
     replay = build_replay(exam)
     outcome = await replay.pipeline.convert(job=replay.job())
-    assert not outcome.result.events
+    assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
 
     document = outcome.result.document
     for anchor in (_DEFINED_ITEM, _ABBREVIATED_ITEM):

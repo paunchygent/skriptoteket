@@ -20,6 +20,8 @@ def test_a_retry_image_offset_beyond_the_text_is_rejected():
             kind="drawing",
             text="ab",
             marked_text="ab",
+            runs=(),
+            paragraphs=(),
             images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=3, marked_offset=0),),
         )
     with pytest.raises(ValidationError):
@@ -28,5 +30,14 @@ def test_a_retry_image_offset_beyond_the_text_is_rejected():
             kind="drawing",
             text="ab",
             marked_text="ab",
+            runs=(),
+            paragraphs=(),
             images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=3),),
+        )
+
+
+def test_a_retry_chunk_requires_its_runs_and_paragraphs():
+    with pytest.raises(ValidationError):
+        NativeExamRetryChunk.model_validate(
+            {"anchor": "body:0001", "kind": "paragraph", "text": "ab", "marked_text": "ab"}
         )

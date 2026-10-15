@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import { plainBody } from "./examWorkspaceRichText";
 import {
   buildMatchingItem,
   buildMatchingItemWithDistractor,
@@ -55,8 +56,7 @@ describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
       "absence from school without permission: truancy",
     );
     expect(
-      wrapper.get<HTMLInputElement>('[data-test="exam-workspace-match-right-text-right_003"]').element
-        .value,
+      wrapper.get('[data-test="exam-workspace-match-right-text-right_003"]').text(),
     ).toBe("disdain");
     expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-match-hint"]').exists()).toBe(false);
@@ -147,13 +147,19 @@ describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
 
   it("emits the side and id of an edited entry text", async () => {
     const wrapper = mountEditor(buildMatchingItem());
+    const left = wrapper.get('[data-test="exam-workspace-match-left-text-left_001"]')
+      .element as HTMLElement;
+    const right = wrapper.get('[data-test="exam-workspace-match-right-text-right_001"]')
+      .element as HTMLElement;
 
-    await wrapper.get('[data-test="exam-workspace-match-left-text-left_001"]').setValue("skipping class");
-    await wrapper.get('[data-test="exam-workspace-match-right-text-right_001"]').setValue("jail time");
+    left.textContent = "skipping class";
+    right.textContent = "jail time";
+    await wrapper.get('[data-test="exam-workspace-match-left-text-left_001"]').trigger("input");
+    await wrapper.get('[data-test="exam-workspace-match-right-text-right_001"]').trigger("input");
 
-    expect(wrapper.emitted("updateMatchEntryText")).toEqual([
-      ["item_001", "left", "left_001", "skipping class"],
-      ["item_001", "right", "right_001", "jail time"],
+    expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
+      ["item_001", "left", "left_001", plainBody("skipping class")],
+      ["item_001", "right", "right_001", plainBody("jail time")],
     ]);
   });
 
@@ -162,7 +168,7 @@ describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
     const wrapper = mountEditor({
       ...item,
       match_left: item.match_left.map((entry) =>
-        entry.left_id === "left_003" ? { ...entry, text: "" } : entry,
+        entry.left_id === "left_003" ? { ...entry, body: plainBody("") } : entry,
       ),
     });
 

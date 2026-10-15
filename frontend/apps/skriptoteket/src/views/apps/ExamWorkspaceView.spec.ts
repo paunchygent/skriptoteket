@@ -60,7 +60,7 @@ function buildDocument(): NativeExamDocument {
         printed_label: null,
         retry_source: null,
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-        body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
         gaps: [],
         match_left: [],

@@ -33,19 +33,17 @@ function itemId(sequence: number): string {
 function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem {
   const gaps: NativeExamItem["gaps"] = [];
   const body = recorded.body.map((paragraph) => ({
+    heading_level: null,
     segments: (paragraph.segments as RecordedSegment[]).map((segment) => {
       if (segment.kind !== "gap") {
-        return { kind: "text" as const, text: segment.text ?? "" };
+        return { kind: "text" as const, marks: [], text: segment.text ?? "" };
       }
       const gapId = `gap_${String(gaps.length + 1).padStart(3, "0")}`;
       gaps.push({ accepted_values: segment.accepted_values, automatic_values: [], excluded_automatic_values: [], gap_id: gapId });
       return { gap_id: gapId, kind: "gap" as const };
     }),
   }));
-  const choices = recorded.choices.map((choice, index) => ({
-    choice_id: `choice_${String.fromCharCode(97 + index)}`,
-    text: choice.text,
-  }));
+  const choices = recorded.choices.map((choice, index) => ({ choice_id: `choice_${String.fromCharCode(97 + index)}`, body: [{ heading_level: null, segments: [{ kind: "text" as const, marks: [], text: choice.text, }] }] }));
   return {
     ai_suggestion: null,
     facit_text: null,
@@ -82,9 +80,8 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
 
 export function buildRecordedParentInstruction(): NativeExamBodyParagraph[] {
   return [
-    {
-      segments: [
-        { kind: "text", text: recording.instructions[SHARED_INSTRUCTION_INDEX]!.text },
+    { heading_level: null, segments: [
+        { kind: "text", marks: [], text: recording.instructions[SHARED_INSTRUCTION_INDEX]!.text },
       ],
     },
   ];

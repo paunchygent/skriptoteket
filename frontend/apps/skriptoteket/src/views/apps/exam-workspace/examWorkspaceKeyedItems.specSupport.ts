@@ -14,6 +14,7 @@ import type {
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
+import { plainBody } from "./examWorkspaceRichText";
 
 export type GapValues = Array<[string, string[]]>;
 type Origin = NativeExamItem["answer_key"]["origin"];
@@ -66,8 +67,8 @@ export function choiceItem(
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: key, match_pairs: [], origin },
-    body: [{ segments: [{ kind: "text", text: "Vilka är verb?" }] }],
-    choices: choiceIds.map((choice_id) => ({ choice_id, text: choice_id })),
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilka är verb?" }] }],
+    choices: choiceIds.map((choice_id) => ({ choice_id, body: plainBody(choice_id) })),
     gaps: [],
     item_id: "item_001",
     kind,
@@ -87,9 +88,9 @@ export function gapItem(
   key: GapValues,
   previous: NativeAnswerKeySuggestion | null,
 ): NativeExamItem {
-  const segments: NativeExamBodySegment[] = [{ kind: "text", text: "Hon heter " }];
+  const segments: NativeExamBodySegment[] = [{ kind: "text", marks: [], text: "Hon heter " }];
   for (const [gap_id] of key) {
-    segments.push({ gap_id, kind: "gap" }, { kind: "text", text: " och " });
+    segments.push({ gap_id, kind: "gap" }, { kind: "text", marks: [], text: " och " });
   }
   return {
     ai_suggestion: previous,
@@ -98,7 +99,7 @@ export function gapItem(
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin },
-    body: [{ segments }],
+    body: [{ heading_level: null, segments }],
     choices: [],
     gaps: key.map(([gap_id, accepted_values]) => ({ accepted_values, automatic_values: [], excluded_automatic_values: [], gap_id })),
     item_id: "item_001",

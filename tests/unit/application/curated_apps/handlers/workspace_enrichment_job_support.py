@@ -97,6 +97,7 @@ from tests.unit.application.curated_apps.handlers.test_document_converter_artifa
     InMemoryVaultFileRepository,
     InMemoryVaultStorage,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 NOW = datetime(2026, 10, 13, 12, 0, 0, tzinfo=UTC)
 
@@ -141,13 +142,16 @@ def unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
                 kind=NativeExamItemKind.SINGLE_CHOICE,
                 body=(
                     NativeParagraph(
-                        segments=(NativeTextSegment(text="Välj den grekiska bokstaven."),)
+                        heading_level=None,
+                        segments=(
+                            NativeTextSegment(text="Välj den grekiska bokstaven.", marks=()),
+                        ),
                     ),
                 ),
                 points=2,
                 choices=(
-                    NativeChoice(choice_id="choice_001", text="Alfa"),
-                    NativeChoice(choice_id="choice_002", text="Beta"),
+                    NativeChoice(choice_id="choice_001", body=plain_body("Alfa")),
+                    NativeChoice(choice_id="choice_002", body=plain_body("Beta")),
                 ),
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
                 review=NativeItemReview(

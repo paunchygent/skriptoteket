@@ -134,7 +134,7 @@ def exam_language_labels(document: NativeExamDocument) -> ExamLanguageLabels:
         lines.extend(body_text_lines(parent.instruction))
     for item in document.items:
         lines.extend(item.plain_text_lines())
-        lines.extend(choice.text for choice in item.choices)
+        lines.extend(line for choice in item.choices for line in body_text_lines(choice.body))
     words = [word.casefold() for line in lines for word in _WORD.findall(line)]
     counts = [sum(word in language.function_words for word in words) for language in _LANGUAGES]
     best = max(counts)

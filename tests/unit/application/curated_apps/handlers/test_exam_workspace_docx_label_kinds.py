@@ -40,6 +40,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -203,9 +204,12 @@ async def test_choices_carry_no_ordering_letter_in_the_document_or_the_qti_expor
         if item.kind not in _CHOICE_KINDS:
             continue
         exported = [choice.text for choice in qti[item.item_id].choices]
-        assert exported == [_squash(choice.text) for choice in item.choices]
+        assert exported == [_squash(body_plain_text(choice.body)) for choice in item.choices]
         for choice in item.choices:
-            assert not _CHOICE_ENUMERATION.match(choice.text), (item.item_id, choice.text[:30])
+            assert not _CHOICE_ENUMERATION.match(body_plain_text(choice.body)), (
+                item.item_id,
+                body_plain_text(choice.body)[:30],
+            )
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
@@ -218,7 +222,7 @@ async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(e
             continue
         for index, choice in enumerate(item.choices):
             letter = chr(ord("A") + index)
-            assert f"{letter}) {choice.text}" in paragraphs
+            assert f"{letter}) {body_plain_text(choice.body)}" in paragraphs
 
 
 async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():

@@ -66,7 +66,11 @@ def _document(body: str, *, criteria: tuple[NativeExamCriterion, ...]) -> Native
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
-                body=(NativeParagraph(segments=(NativeTextSegment(text=body),)),),
+                body=(
+                    NativeParagraph(
+                        heading_level=None, segments=(NativeTextSegment(text=body, marks=()),)
+                    ),
+                ),
                 points=3,
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 criteria=criteria,

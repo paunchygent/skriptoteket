@@ -33,19 +33,18 @@ import { computed, ref, useId, watch } from "vue";
 import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarning } from "../../../components/icons";
 
 import type {
+  NativeExamBodyParagraph,
   NativeExamBodySegment,
   NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import ExamWorkspaceChoiceField from "./ExamWorkspaceChoiceField.vue";
 import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import {
-  EMPTY_CHOICE_TEXT_GUIDANCE,
-  hasEmptyChoiceText,
   hasNonPositivePoints,
-  isEmptyChoiceText,
   NON_POSITIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
@@ -73,15 +72,15 @@ const emit = defineEmits<{
   next: [];
   previous: [];
   toggleDetails: [];
-  updateChoiceText: [itemId: string, choiceId: string, text: string];
+  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[]];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateMatchEntryText: [
+  updateMatchEntryBody: [
     itemId: string,
     side: "left" | "right",
     entryId: string,
-    text: string,
+    body: NativeExamBodyParagraph[],
   ];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
@@ -89,12 +88,16 @@ const emit = defineEmits<{
     paragraphIndex: number,
     segments: NativeExamBodySegment[],
   ];
+  updateParagraphHeading: [
+    itemId: string,
+    paragraphIndex: number,
+    headingLevel: NativeExamBodyParagraph["heading_level"],
+  ];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const pointsHintId = useId();
-const choiceHintId = useId();
 
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
 
@@ -108,15 +111,6 @@ const typeUncertain = computed(
 
 const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
 const hasCriteria = computed(() => props.item.criteria.length > 0);
-
-function choiceTextClass(choiceId: string, text: string): string {
-  if (isEmptyChoiceText(text)) {
-    return "border-warning";
-  }
-  return isCorrectChoice(choiceId)
-    ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
-    : "border-navy/35";
-}
 
 const isGrid = computed(() => props.item.kind === "matching");
 
@@ -151,37 +145,6 @@ function handlePointsInput(event: Event): void {
   }
   const parsed = Number(raw);
   emit("updatePoints", props.item.item_id, Number.isFinite(parsed) ? parsed : null);
-}
-
-function handleChoiceTextInput(choiceId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateChoiceText", props.item.item_id, choiceId, input.value);
-}
-
-function isCorrectChoice(choiceId: string): boolean {
-  return props.item.answer_key.correct_choice_ids.includes(choiceId);
-}
-
-function handleSingleCorrectChoice(choiceId: string): void {
-  emit("updateCorrectChoices", props.item.item_id, [choiceId]);
-}
-
-function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  const selected = new Set(props.item.answer_key.correct_choice_ids);
-  if (input.checked) {
-    selected.add(choiceId);
-  } else {
-    selected.delete(choiceId);
-  }
-  const orderedChoiceIds = props.item.choices
-    .map((choice) => choice.choice_id)
-    .filter((candidateChoiceId) => selected.has(candidateChoiceId));
-  emit("updateCorrectChoices", props.item.item_id, orderedChoiceIds);
-}
-
-function choiceLetter(index: number): string {
-  return String.fromCharCode(65 + index);
 }
 
 </script>
@@ -399,6 +362,7 @@ function choiceLetter(index: number): string {
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
+      @update-paragraph-heading="(itemId, index, headingLevel) => emit('updateParagraphHeading', itemId, index, headingLevel)"
     />
 
     <ExamWorkspaceCriteriaField
@@ -408,72 +372,21 @@ function choiceLetter(index: number): string {
       @update="(criteria) => emit('updateCriteria', item.item_id, criteria)"
     />
 
-    <fieldset
-      v-if="item.kind === 'single_choice' || item.kind === 'multiple_response'"
-      class="grid gap-2"
-    >
-      <legend class="mb-2 text-xs font-semibold text-navy/80">
-        Svarsalternativ – markera {{ item.kind === 'single_choice' ? 'det rätta svaret' : 'alla rätta svar' }}
-      </legend>
-      <div
-        v-for="(choice, choiceIndex) in item.choices"
-        :key="choice.choice_id"
-        class="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2"
-      >
-        <input
-          v-if="item.kind === 'single_choice'"
-          type="radio"
-          class="h-5 w-5"
-          :name="`exam-workspace-correct-${item.item_id}`"
-          :checked="isCorrectChoice(choice.choice_id)"
-          :disabled="disabled"
-          :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
-          :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
-          @change="handleSingleCorrectChoice(choice.choice_id)"
-        >
-        <input
-          v-else
-          type="checkbox"
-          class="h-5 w-5"
-          :checked="isCorrectChoice(choice.choice_id)"
-          :disabled="disabled"
-          :aria-label="`Rätt svar: alternativ ${choiceLetter(choiceIndex)}`"
-          :data-test="`exam-workspace-choice-correct-${choice.choice_id}`"
-          @change="handleMultipleCorrectChoice(choice.choice_id, $event)"
-        >
-        <span
-          class="w-5 text-center text-sm font-semibold text-navy/70"
-          aria-hidden="true"
-        >{{ choiceLetter(choiceIndex) }}</span>
-        <input
-          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="choiceTextClass(choice.choice_id, choice.text)"
-          type="text"
-          :value="choice.text"
-          :disabled="disabled"
-          :aria-invalid="isEmptyChoiceText(choice.text) ? 'true' : undefined"
-          :aria-describedby="isEmptyChoiceText(choice.text) ? choiceHintId : undefined"
-          :aria-label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
-          :data-test="`exam-workspace-choice-text-${choice.choice_id}`"
-          @input="handleChoiceTextInput(choice.choice_id, $event)"
-        >
-      </div>
-      <p
-        v-if="hasEmptyChoiceText(item)"
-        :id="choiceHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-        data-test="exam-workspace-choice-text-hint"
-      >
-        {{ EMPTY_CHOICE_TEXT_GUIDANCE }}
-      </p>
-    </fieldset>
+    <ExamWorkspaceChoiceField
+      :disabled="disabled"
+      :item="item"
+      @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
+      @update-correct-choices="
+        (correctChoiceIds) => emit('updateCorrectChoices', item.item_id, correctChoiceIds)
+      "
+    />
 
     <ExamWorkspaceKategoriseraGrid
       v-if="item.kind === 'matching'"
       :disabled="disabled"
       :item="item"
-      @update-entry-text="
-        (side, entryId, text) => emit('updateMatchEntryText', item.item_id, side, entryId, text)
+      @update-entry-body="
+        (side, entryId, body) => emit('updateMatchEntryBody', item.item_id, side, entryId, body)
       "
       @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
     />

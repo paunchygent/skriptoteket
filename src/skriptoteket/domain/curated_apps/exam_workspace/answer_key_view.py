@@ -207,14 +207,22 @@ def answer_key_item_view(
         kind=kind,
         instruction=body_plain_text(parent.instruction) if parent else "",
         stem_text="\n".join(item.plain_text_lines()),
-        choices=tuple((choice_int_id(choice.choice_id), choice.text) for choice in item.choices),
+        choices=tuple(
+            (choice_int_id(choice.choice_id), body_plain_text(choice.body))
+            for choice in item.choices
+        ),
         gap_count=len(gap_ids),
         gap_ids=gap_ids,
         cloze_text=(
             _numbered_cloze_text(item, gap_ids) if kind is AnswerKeyViewKind.GAP_FILL else ""
         ),
-        match_left=tuple((match_int_id(entry.left_id), entry.text) for entry in item.match_left),
-        match_right=tuple((match_int_id(entry.right_id), entry.text) for entry in item.match_right),
+        match_left=tuple(
+            (match_int_id(entry.left_id), body_plain_text(entry.body)) for entry in item.match_left
+        ),
+        match_right=tuple(
+            (match_int_id(entry.right_id), body_plain_text(entry.body))
+            for entry in item.match_right
+        ),
     )
 
 

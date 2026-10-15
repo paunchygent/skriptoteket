@@ -35,7 +35,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
       match_pairs: [],
       origin: "not_applicable",
     },
-    body: [{ segments: [{ kind: "text", text }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text }] }],
     choices: [],
     gaps: [],
     item_id: itemId,
@@ -57,7 +57,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
 }
 
 function paragraph(text: string): NativeExamBodyParagraph {
-  return { segments: [{ kind: "text", text }] };
+  return { heading_level: null, segments: [{ kind: "text", marks: [], text }] };
 }
 
 function buildDocument(
@@ -440,10 +440,10 @@ describe("mergeConversionRevision", () => {
     const document = mergeConversionRevision({ base, baseUnits, head, headUnits, local });
 
     expect(document.items.map((item) => [item.item_id, item.points, item.body[0]?.segments[0]])).toEqual([
-      ["item_001", 7, { kind: "text", text: "Fråga ett" }],
-      ["item_002", 2, { kind: "text", text: "Fråga två" }],
-      ["item_003", 9, { kind: "text", text: "Lärarens fråga" }],
-      ["item_004", 2, { kind: "text", text: "Andra flikens fråga" }],
+      ["item_001", 7, { kind: "text", marks: [], text: "Fråga ett" }],
+      ["item_002", 2, { kind: "text", marks: [], text: "Fråga två" }],
+      ["item_003", 9, { kind: "text", marks: [], text: "Lärarens fråga" }],
+      ["item_004", 2, { kind: "text", marks: [], text: "Andra flikens fråga" }],
     ]);
     expect(document.revision).toBe(3);
   });

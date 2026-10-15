@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_projection import projected_chunk
 
 Placed = tuple[int, tuple[str, ...], NativeExamItem]
 
@@ -295,9 +296,7 @@ def _shown_heading(chunk: DocxChunk, item: NativeExamItem | None) -> DocxChunk:
         return sum(origin < offset for origin in origins)
 
     return replace(
-        chunk,
-        text=text,
-        marked_text=text,
+        projected_chunk(chunk, text, origins),
         images=tuple(
             replace(
                 image, offset=shown_offset(image.offset), marked_offset=shown_offset(image.offset)

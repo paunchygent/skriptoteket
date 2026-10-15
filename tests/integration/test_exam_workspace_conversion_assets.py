@@ -66,10 +66,11 @@ def _picture_batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> Conve
         update={
             "body": (
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Fråga ett"),
+                        NativeTextSegment(text="Fråga ett", marks=()),
                         NativeAssetSegment(asset_id=_PICTURE_ID),
-                    )
+                    ),
                 ),
             )
         }

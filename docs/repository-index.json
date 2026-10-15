@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "34a8ac63910d8507f5c4b7402bae03635c773bb0a43338aeebf49ae53f367d44",
+  "source_set_digest": "5a1523b7a07d0bcfe215a7af0a204df5b050174b3198ca8d5cdd9532d9d88550",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5331,7 +5331,7 @@
       "type": "task",
       "title": "Source formatting: conversion keeps bold, italic, underline, sub/superscript and heading levels deterministically through editor and QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-08-source-formatting-conversion-keeps-bold-italic-underline-sub-superscript-and-heading-levels-deterministically-through-editor-and-qti-export.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [

@@ -101,11 +101,11 @@ describe("conversion answer-key transitions", () => {
       source.answer_key.origin = origin;
       const result = withGapAsText(source, "gap_001");
       expect(result.body[0]?.segments).toEqual([
-        { kind: "text", text: "Hon heter " },
-        { kind: "text", text: "Stockholm" },
-        { kind: "text", text: " och " },
+        { kind: "text", marks: [], text: "Hon heter " },
+        { kind: "text", marks: [], text: "Stockholm" },
+        { kind: "text", marks: [], text: " och " },
         { kind: "gap", gap_id: "gap_002" },
-        { kind: "text", text: " och " },
+        { kind: "text", marks: [], text: " och " },
       ]);
       expect(result.gaps).toEqual([source.gaps[1]]);
       expect(result.points).toBe(source.points);

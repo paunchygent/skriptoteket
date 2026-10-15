@@ -8,6 +8,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
     filter_answer_spelling_candidates,
     normalize_answer,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    validate_text_only_body,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchPair,
 )
@@ -22,10 +26,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 
 
 class NativeChoice(BaseModel):
+    """One visible choice: rich paragraphs that carry the source runs' marks and headings."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     choice_id: str = Field(pattern=CHOICE_ID_PATTERN)
-    text: str = Field(min_length=1)
+    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+
+    @field_validator("body")
+    @classmethod
+    def _text_only_body(cls, body: tuple[NativeParagraph, ...]) -> tuple[NativeParagraph, ...]:
+        validate_text_only_body(body, surface="choice")
+        return body
 
 
 class NativeGap(BaseModel):

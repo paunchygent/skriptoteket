@@ -1,7 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
 import hashlib
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
@@ -25,9 +25,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
     unclaimed_governing,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import (
-    heading_wording,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
@@ -80,11 +77,20 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
-    body_plain_text,
     source_paragraphs,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
+    complete_source_formatting,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructions import (
+    instruction_paragraphs,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+    SourceFormatting,
+    formatted_text,
+)
 
-_BLANK = NativeTextSegment(text="____")
+_BLANK = NativeTextSegment(text="____", marks=())
 
 # No shared context governs two or more questions: every instruction is placed by its run.
 NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
@@ -110,7 +116,11 @@ def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
 
 
 def native_item(
-    produced: ProducedItem, *, chunks: Iterable[DocxChunk] = (), language: Language
+    produced: ProducedItem,
+    *,
+    chunks: Iterable[DocxChunk] = (),
+    language: Language,
+    formatting_observer: Callable[[str], None] | None = None,
 ) -> NativeExamItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
 
@@ -127,8 +137,11 @@ def native_item(
     if unresolved:
         raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
     known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
+    choice_source = SourceFormatting(chunk_list)
     choices = tuple(
-        NativeChoice(choice_id=f"choice_{index:03d}", text=choice.text)
+        NativeChoice(
+            choice_id=f"choice_{index:03d}", body=formatted_text(choice.text, choice_source)
+        )
         for index, choice in enumerate(produced.choices, start=1)
     )
     correct = tuple(
@@ -168,19 +181,28 @@ def native_item(
                 )
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
-                segments.append(NativeTextSegment(text=segment.text))
+                segments.append(NativeTextSegment(text=segment.text, marks=()))
         if segments:
-            body.append(NativeParagraph(segments=tuple(segments)))
+            body.append(NativeParagraph(heading_level=None, segments=tuple(segments)))
+    body_source = SourceFormatting(chunk_list, ignored=(produced.printed_label or "",))
+    formatted_body = body_source.body(
+        body, answers={gap.gap_id: gap.accepted_values for gap in gaps}
+    )
+    left_source, right_source = SourceFormatting(chunk_list), SourceFormatting(chunk_list)
     match_left = tuple(
-        NativeMatchLeft(left_id=f"left_{index:03d}", text=text)
+        NativeMatchLeft(left_id=f"left_{index:03d}", body=formatted_text(text, left_source))
         for index, text in enumerate(produced.match_left, start=1)
     )
     match_right = tuple(
-        NativeMatchRight(right_id=f"right_{index:03d}", text=text)
+        NativeMatchRight(right_id=f"right_{index:03d}", body=formatted_text(text, right_source))
         for index, text in enumerate(produced.match_right, start=1)
     )
-    left_ids = {entry.text: entry.left_id for entry in match_left}
-    right_ids = {entry.text: entry.right_id for entry in match_right}
+    left_ids = {
+        text: entry.left_id for text, entry in zip(produced.match_left, match_left, strict=True)
+    }
+    right_ids = {
+        text: entry.right_id for text, entry in zip(produced.match_right, match_right, strict=True)
+    }
     pairs = tuple(
         NativeMatchPair(left_id=left_ids[pair.left], right_id=right_ids[pair.right])
         for pair in produced.match_pairs
@@ -216,13 +238,27 @@ def native_item(
     criteria: tuple[NativeExamCriterion, ...] = ()
     if produced.kind is NativeExamItemKind.FREE_TEXT:
         criteria, points, points_estimated = free_text_criteria(produced)
+    formatted_body = complete_source_formatting(
+        chunk_list,
+        (body_source, choice_source, left_source, right_source),
+        body_source,
+        formatted_body,
+        printed_label=produced.printed_label,
+        answers={gap.gap_id: gap.accepted_values for gap in gaps},
+        can_rebuild_body=not (choices or match_left or match_right or known_assets),
+    )
+    if formatting_observer is not None:
+        paths = {source.path for source in (body_source, choice_source, left_source, right_source)}
+        formatting_observer(
+            "rebuilt" if "rebuilt" in paths else "aligned" if "aligned" in paths else "exact"
+        )
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=produced.kind,
         printed_label=produced.printed_label,
         facit_text=produced.facit_text,
-        body=tuple(body),
+        body=formatted_body,
         points=points,
         points_estimated=points_estimated,
         tick_points=tick_points,
@@ -251,7 +287,12 @@ def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExam
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         points=printed_points(chunks),
-        body=body or (NativeParagraph(segments=(NativeTextSegment(text="Tomt källstycke."),)),),
+        body=body
+        or (
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Tomt källstycke.", marks=()),)
+            ),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
@@ -337,43 +378,6 @@ def asset_manifest(
     return assets, MappingProxyType(payloads)
 
 
-def _instruction_paragraphs(
-    instruction: ProducedMetadata, by_anchor: Mapping[str, DocxChunk]
-) -> tuple[NativeParagraph, ...]:
-    """The document-global instruction's admitted wording, pictures at their source place.
-
-    The converter copies each instruction from its source chunk, sometimes without a
-    printed points label a heading carries; a source whose wording equals the admitted
-    wording either way keeps every picture at its exact source place. A wording the
-    converter changed leaves its pictures without a truthful place, so it is refused
-    instead of dropping them or moving them silently.
-    """
-    sources = tuple(by_anchor[a] for a in instruction.source_anchors if a in by_anchor)
-    raw = source_paragraphs(sources)
-    if body_plain_text(raw) == instruction.text:
-        return raw
-    normalized = source_paragraphs(
-        DocxChunk(
-            chunk.anchor,
-            chunk.kind,
-            heading_wording(chunk, None),
-            chunk.marked_text,
-        )
-        if chunk.kind == "heading"
-        else chunk
-        for chunk in sources
-    )
-    if body_plain_text(normalized) == instruction.text:
-        # The source's pictured wording is canonical: removing a printed heading
-        # prefix would invalidate the pixel-relative offsets. Keep it verbatim.
-        return raw if any(chunk.images or chunk.missing_images for chunk in sources) else normalized
-    if body_asset_ids(raw):
-        raise ValueError(
-            f"instruction pictures have no faithful place: {instruction.source_anchors}"
-        )
-    return (NativeParagraph(segments=(NativeTextSegment(text=instruction.text),)),)
-
-
 def assemble_build_result(
     *,
     document_id: UUID,
@@ -426,7 +430,7 @@ def assemble_build_result(
         paragraph
         for index, instruction in enumerate(instructions)
         if index not in placed.landed
-        for paragraph in _instruction_paragraphs(instruction, by_anchor)
+        for paragraph in instruction_paragraphs(instruction, by_anchor)
     )
     shared_bodies = (
         *(parent.instruction for parent in placed.parents),

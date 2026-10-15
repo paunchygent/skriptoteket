@@ -28,6 +28,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiPromptText,
     ExamNetQtiTextEntryGap,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_rich_text import (
+    append_marked_text,
+    paragraph_element,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import qti_tag
 
 __all__ = [
@@ -44,30 +48,11 @@ _GAP_MARKER_PATTERN = re.compile(r"(?:\[_+\]|_{3,})")
 def _append_prompt_text(
     parent: ElementTree.Element,
     tail_target: ElementTree.Element | None,
-    text: str,
+    segment: ExamNetQtiPromptText,
 ) -> ElementTree.Element | None:
-    """Append one text run after ``tail_target``, rendering its line breaks as ``br`` elements."""
+    """Append one text run, rendering its marks and line breaks as elements."""
 
-    lines = text.split("\n")
-    tail_target = _append_run_text(parent, tail_target, lines[0])
-    for line in lines[1:]:
-        tail_target = ElementTree.SubElement(parent, qti_tag("br"))
-        tail_target = _append_run_text(parent, tail_target, line)
-    return tail_target
-
-
-def _append_run_text(
-    parent: ElementTree.Element,
-    tail_target: ElementTree.Element | None,
-    text: str,
-) -> ElementTree.Element | None:
-    if not text:
-        return tail_target
-    if tail_target is None:
-        parent.text = (parent.text or "") + text
-    else:
-        tail_target.tail = (tail_target.tail or "") + text
-    return tail_target
+    return append_marked_text(parent, tail_target, segment.text, segment.marks)
 
 
 def _append_prompt_image(
@@ -145,9 +130,9 @@ def append_shared_instruction_body(
 ) -> None:
     """Place the parent stem once, before child interactions, using its own carriers."""
     if item.prompt_paragraphs:
-        for segments in item.prompt_paragraphs:
-            paragraph = ElementTree.SubElement(item_body, qti_tag("p"))
-            _append_prompt_segments(paragraph, item, segments, image_paths)
+        for paragraph in item.prompt_paragraphs:
+            element = paragraph_element(item_body, paragraph.heading_level)
+            _append_prompt_segments(element, item, paragraph.segments, image_paths)
     else:
         for line in normalized_prompt_lines(item.instruction_lines):
             ElementTree.SubElement(item_body, qti_tag("p")).text = line
@@ -158,14 +143,15 @@ def _append_prompt_paragraphs(
     item: ExamNetQtiItem,
     image_paths: tuple[str, ...],
 ) -> None:
-    """Render rich paragraphs: one stays directly in ``prompt``, several get ``p`` children."""
+    """Render rich paragraphs: one plain stays directly in ``prompt``, others get children."""
 
-    if len(item.prompt_paragraphs) == 1:
-        _append_prompt_segments(prompt, item, item.prompt_paragraphs[0], image_paths)
+    paragraphs = item.prompt_paragraphs
+    if len(paragraphs) == 1 and paragraphs[0].heading_level is None:
+        _append_prompt_segments(prompt, item, paragraphs[0].segments, image_paths)
         return
-    for segments in item.prompt_paragraphs:
-        paragraph = ElementTree.SubElement(prompt, qti_tag("p"))
-        _append_prompt_segments(paragraph, item, segments, image_paths)
+    for paragraph in paragraphs:
+        element = paragraph_element(prompt, paragraph.heading_level)
+        _append_prompt_segments(element, item, paragraph.segments, image_paths)
 
 
 def _append_prompt_segments(
@@ -180,7 +166,7 @@ def _append_prompt_segments(
     tail_target: ElementTree.Element | None = None
     for segment in segments:
         if isinstance(segment, ExamNetQtiPromptText):
-            tail_target = _append_prompt_text(parent, tail_target, segment.text)
+            tail_target = _append_prompt_text(parent, tail_target, segment)
         elif isinstance(segment, ExamNetQtiPromptImage):
             tail_target = _append_prompt_image(parent, item, image_paths, segment.image_index)
         elif isinstance(segment, ExamNetQtiPromptGap):
@@ -241,9 +227,9 @@ def append_inline_gap_fill_paragraphs(
     """Render rich item-body paragraphs and return the gap indexes they place."""
 
     placed_gap_indexes: set[int] = set()
-    for segments in item.prompt_paragraphs:
-        paragraph = ElementTree.SubElement(parent, qti_tag("p"))
-        for gap_index in _append_prompt_segments(paragraph, item, segments, image_paths):
+    for paragraph in item.prompt_paragraphs:
+        element = paragraph_element(parent, paragraph.heading_level)
+        for gap_index in _append_prompt_segments(element, item, paragraph.segments, image_paths):
             if gap_index in placed_gap_indexes:
                 raise ValueError(
                     f"Item {item.item_id} places gap index {gap_index} more than once."

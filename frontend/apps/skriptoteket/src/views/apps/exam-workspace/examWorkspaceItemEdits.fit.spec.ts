@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
 import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
+import { plainBody } from "./examWorkspaceRichText";
 import {
   UNREVIEWED,
   choiceItem,
@@ -46,8 +47,8 @@ function keylessMatchingItem(
   return buildMatchingItem({
     ai_suggestion: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
-    match_left: leftIds.map((left_id) => ({ left_id, text: left_id })),
-    match_right: rightIds.map((right_id) => ({ right_id, text: right_id })),
+    match_left: leftIds.map((left_id) => ({ left_id, body: plainBody(left_id) })),
+    match_right: rightIds.map((right_id) => ({ right_id, body: plainBody(right_id) })),
     points: null,
     review: UNREVIEWED,
   });

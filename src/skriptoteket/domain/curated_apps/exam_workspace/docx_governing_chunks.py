@@ -90,7 +90,30 @@ def _paragraph_without(
         rest = _removed(joined, chunk_text)
         if rest is None:
             return None
-        return (NativeParagraph(segments=(NativeTextSegment(text=rest),)),) if rest else ()
+        if not rest:
+            return ()
+        kept_text: list[NativeSegment] = []
+        cursor = 0
+        # Removal can leave disjoint whole lines. Slice the original runs rather
+        # than flattening their marks into a new unformatted text segment.
+        for line in rest.splitlines(keepends=True):
+            start = joined.find(line, cursor)
+            if start < 0:
+                return None
+            end = start + len(line)
+            offset = 0
+            for segment in segments:
+                if isinstance(segment, NativeTextSegment):
+                    left, right = max(start, offset), min(end, offset + len(segment.text))
+                    if left < right:
+                        kept_text.append(
+                            segment.model_copy(
+                                update={"text": segment.text[left - offset : right - offset]}
+                            )
+                        )
+                    offset += len(segment.text)
+            cursor = end
+        return (paragraph.model_copy(update={"segments": tuple(kept_text)}),)
     for at in (0, len(segments) - 1):
         segment = segments[at]
         if not isinstance(segment, NativeTextSegment):
@@ -100,10 +123,10 @@ def _paragraph_without(
             continue
         kept: list[NativeSegment] = list(segments)
         if rest.strip():
-            kept[at] = NativeTextSegment(text=rest)
+            kept[at] = segment.model_copy(update={"text": rest})
         else:
             del kept[at]
-        return (NativeParagraph(segments=tuple(kept)),)
+        return (paragraph.model_copy(update={"segments": tuple(kept)}),)
     return None
 
 

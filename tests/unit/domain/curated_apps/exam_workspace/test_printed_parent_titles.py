@@ -66,7 +66,7 @@ async def _build(exam: str) -> _Build:
     if exam not in _BUILDS:
         replay = build_replay(exam)
         outcome = await replay.pipeline.convert(job=replay.job())
-        assert not outcome.result.events, exam
+        assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
         _BUILDS[exam] = _Build(outcome.result.document)
     return _BUILDS[exam]
 
@@ -148,7 +148,9 @@ async def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(st
             update={
                 "body": (
                     *item.body,
-                    NativeParagraph(segments=(NativeAssetSegment(asset_id=_ASSET.asset_id),)),
+                    NativeParagraph(
+                        heading_level=None, segments=(NativeAssetSegment(asset_id=_ASSET.asset_id),)
+                    ),
                 )
             }
         )

@@ -6,12 +6,12 @@
  *   save, so the teacher sees them at the question and a save is refused
  *   with Swedish copy naming the questions instead of a generic failure.
  *   Mirrors these `NativeExamItem` field rules exactly: points must be
- *   greater than zero (`_positive_finite_points`), and choice text must not
- *   be empty (`NativeChoice.text`, `min_length=1`, not stripped), and so must
- *   matching entry text. A free-text item's criteria must have non-empty
- *   text and whole points of at least 1, only free-text items carry them,
- *   and a non-empty list's points are exactly the item's points. A partial
- *   gap key or an incomplete matching key
+ *   greater than zero (`_positive_finite_points`), a choice's rich body must
+ *   not be empty (`NativeChoice.body`, text segments with `min_length=1`),
+ *   and so must a matching entry's. A free-text item's criteria must have
+ *   non-empty text and whole points of at least 1, only free-text items
+ *   carry them, and a non-empty list's points are exactly the item's points.
+ *   A partial gap key or an incomplete matching key
  *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
  *
  * Relationships:
@@ -29,6 +29,7 @@ import {
   partialGapKeyCopy,
   questionSubject,
 } from "./examWorkspaceAnswerKeyRules";
+import { isEmptyBody } from "./examWorkspaceRichText";
 
 export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
@@ -44,16 +45,16 @@ export function hasNonPositivePoints(item: NativeExamItem): boolean {
   return typeof item.points === "number" && item.points <= 0;
 }
 
-export function isEmptyChoiceText(text: string): boolean {
-  return text.length === 0;
+export function isEmptyChoiceBody(choice: NativeExamItem["choices"][number]): boolean {
+  return isEmptyBody(choice.body);
 }
 
 export function hasEmptyChoiceText(item: NativeExamItem): boolean {
-  return item.choices.some((choice) => isEmptyChoiceText(choice.text));
+  return item.choices.some(isEmptyChoiceBody);
 }
 
 export function hasEmptyMatchText(item: NativeExamItem): boolean {
-  return [...item.match_left, ...item.match_right].some((entry) => isEmptyChoiceText(entry.text));
+  return [...item.match_left, ...item.match_right].some((entry) => isEmptyBody(entry.body));
 }
 
 /** The exact sum the model requires of a non-empty criteria list. */

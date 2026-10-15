@@ -53,7 +53,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_ass
 
 _DOCUMENT_ID = UUID("00000000-0000-4000-8000-000000000039")
 _STEM_TEXT = "Del 2: Satsdelar"
-_NEW_INSTRUCTION = (NativeParagraph(segments=(NativeTextSegment(text="Ny instruktion."),)),)
+_NEW_INSTRUCTION = (
+    NativeParagraph(
+        heading_level=None, segments=(NativeTextSegment(text="Ny instruktion.", marks=()),)
+    ),
+)
 
 
 def _asset(name: str, payload: bytes = b"shared-diagram") -> NativeExamAsset:
@@ -70,7 +74,9 @@ def _free_text(item_id: str, sequence: int, text: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=text),)),),
+        body=(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+        ),
         points=1,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
@@ -83,10 +89,11 @@ def _free_text(item_id: str, sequence: int, text: str) -> NativeExamItem:
 def _stem(asset_id: str) -> tuple[NativeParagraph, ...]:
     return (
         NativeParagraph(
+            heading_level=None,
             segments=(
-                NativeTextSegment(text=_STEM_TEXT),
+                NativeTextSegment(text=_STEM_TEXT, marks=()),
                 NativeAssetSegment(asset_id=asset_id),
-            )
+            ),
         ),
     )
 
@@ -172,7 +179,12 @@ def test_edited_shared_instructions_keep_their_picture_against_a_new_proposal() 
     # conversion's new proposal must not replace it — or its picture.
     progress = ConversionProgress(
         instructions_digest=_instructions_digest(
-            (NativeParagraph(segments=(NativeTextSegment(text="Tidigare instruktion."),)),)
+            (
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(NativeTextSegment(text="Tidigare instruktion.", marks=()),),
+                ),
+            )
         )
     )
 

@@ -17,16 +17,19 @@
  * Relationships:
  *   - Used by `ExamWorkspaceBodyEditor`, which renders `data-label` through
  *     a `::before` rule and passes the asset URL map through.
- *   - Reads shapes from `api/examWorkspace.ts`.
+ *   - Reads shapes from `api/examWorkspace.ts`; the five text marks and
+ *     their DOM wrappers live in `examWorkspaceBodyMarks`.
  */
 
 import type { NativeExamBodySegment, NativeExamGap } from "../../../api/examWorkspace";
+import { canonicalMarks, createMarkedText, marksFromDom, sameMarks } from "./examWorkspaceBodyMarks";
+import type { BodyMark } from "./examWorkspaceBodyMarks";
 
 export type NativeExamAtomSegment = Exclude<NativeExamBodySegment, { kind: "text" }>;
 
-export type BodyPart =
-  | { kind: "text"; text: string }
-  | { kind: "atom"; segment: NativeExamAtomSegment };
+export type BodyTextPart = { kind: "text"; text: string; marks: BodyMark[] };
+
+export type BodyPart = BodyTextPart | { kind: "atom"; segment: NativeExamAtomSegment };
 
 /** Data attribute that marks a gap or asset atom element inside the editor. */
 export const ATOM_ATTRIBUTE = "data-atom";
@@ -75,9 +78,10 @@ const ASSET_CLASSES = [
 const ASSET_IMAGE_CLASSES = ["block", "h-auto", "max-w-full"];
 
 /**
- * Build model segments from editor parts: adjacent text merges into one
- * segment, empty text disappears, and atoms keep their identity. Text is
- * never trimmed, because spacing around gaps is part of the question.
+ * Build model segments from editor parts: adjacent text with the same marks
+ * merges into one segment, empty text disappears, and atoms keep their
+ * identity. Text is never trimmed, because spacing around gaps is part of
+ * the question.
  */
 export function segmentsFromParts(parts: BodyPart[]): NativeExamBodySegment[] {
   const segments: NativeExamBodySegment[] = [];
@@ -89,11 +93,16 @@ export function segmentsFromParts(parts: BodyPart[]): NativeExamBodySegment[] {
     if (part.text.length === 0) {
       continue;
     }
+    const marks = canonicalMarks(part.marks);
     const previous = segments[segments.length - 1];
-    if (previous && previous.kind === "text") {
-      segments[segments.length - 1] = { kind: "text", text: previous.text + part.text };
+    if (previous && previous.kind === "text" && sameMarks(previous.marks, marks)) {
+      segments[segments.length - 1] = {
+        kind: "text",
+        text: previous.text + part.text,
+        marks: previous.marks,
+      };
     } else {
-      segments.push({ kind: "text", text: part.text });
+      segments.push({ kind: "text", text: part.text, marks });
     }
   }
   return segments;
@@ -155,10 +164,14 @@ function atomSegmentFromElement(element: Element): NativeExamAtomSegment | null 
   return null;
 }
 
-function collectParts(node: Node, parts: BodyPart[]): void {
+function collectParts(root: HTMLElement, node: Node, parts: BodyPart[]): void {
   node.childNodes.forEach((child, index) => {
     if (child.nodeType === Node.TEXT_NODE) {
-      parts.push({ kind: "text", text: child.textContent ?? "" });
+      parts.push({
+        kind: "text",
+        text: child.textContent ?? "",
+        marks: marksFromDom(root, child),
+      });
       return;
     }
     if (child.nodeType !== Node.ELEMENT_NODE) {
@@ -176,27 +189,29 @@ function collectParts(node: Node, parts: BodyPart[]): void {
       const isTrailing =
         element.hasAttribute(TRAILING_BREAK_ATTRIBUTE) || index === node.childNodes.length - 1;
       if (!isTrailing) {
-        parts.push({ kind: "text", text: "\n" });
+        parts.push({ kind: "text", text: "\n", marks: marksFromDom(root, element) });
       }
       return;
     }
     if ((element.tagName === "DIV" || element.tagName === "P") && parts.length > 0) {
       // A browser-inserted block starts a new line.
-      parts.push({ kind: "text", text: "\n" });
+      parts.push({ kind: "text", text: "\n", marks: marksFromDom(root, element) });
     }
-    collectParts(element, parts);
+    collectParts(root, element, parts);
   });
 }
 
 /**
- * Read an editor paragraph element in document order. Text nodes become
- * text, atom elements become their segment (any atom content is ignored), inner
- * `<br>` elements become line breaks, and the trailing `<br>` sentinel is
- * ignored.
+ * Read an editor paragraph element in document order. Text nodes become text
+ * with the marks of their ancestors, atom elements become their segment (any
+ * atom content is ignored), inner `<br>` elements become line breaks, and the
+ * trailing `<br>` sentinel is ignored.
  */
 export function partsFromParagraphElement(element: Element): BodyPart[] {
   const parts: BodyPart[] = [];
-  collectParts(element, parts);
+  if (element instanceof HTMLElement) {
+    collectParts(element, element, parts);
+  }
   return parts;
 }
 
@@ -237,16 +252,19 @@ export function createAtomElement(
   segment: NativeExamAtomSegment,
   gaps: NativeExamGap[],
   assetUrls?: Record<string, string>,
+  gapInteractive = true,
 ): HTMLElement {
   const element = document.createElement("span");
   element.setAttribute("contenteditable", "false");
   if (segment.kind === "gap") {
     element.setAttribute(ATOM_ATTRIBUTE, "gap");
     element.setAttribute("data-gap-id", segment.gap_id);
-    element.setAttribute("role", "button");
-    element.setAttribute("tabindex", "0");
-    element.setAttribute("aria-haspopup", "dialog");
-    element.setAttribute("aria-expanded", "false");
+    if (gapInteractive) {
+      element.setAttribute("role", "button");
+      element.setAttribute("tabindex", "0");
+      element.setAttribute("aria-haspopup", "dialog");
+      element.setAttribute("aria-expanded", "false");
+    }
     element.classList.add(...CHIP_BASE_CLASSES);
     applyChipState(element, gaps);
   } else {
@@ -299,19 +317,41 @@ function createAssetImage(url: string): HTMLImageElement {
   return image;
 }
 
+/** Replace a paragraph element's content with the DOM for its ordered parts. */
+export function renderParagraphParts(
+  element: HTMLElement,
+  parts: BodyPart[],
+  gaps: NativeExamGap[],
+  assetUrls?: Record<string, string>,
+  gapInteractive = true,
+): void {
+  const nodes: Node[] = parts.map((part) =>
+    part.kind === "text"
+      ? createMarkedText(part.text, part.marks)
+      : createAtomElement(part.segment, gaps, assetUrls, gapInteractive),
+  );
+  element.replaceChildren(...nodes, createTrailingBreak());
+}
+
 /** Replace a paragraph element's content with the DOM for its segments. */
 export function renderParagraphElement(
   element: HTMLElement,
   segments: NativeExamBodySegment[],
   gaps: NativeExamGap[],
   assetUrls?: Record<string, string>,
+  gapInteractive = true,
 ): void {
-  const nodes: Node[] = segments.map((segment) =>
-    segment.kind === "text"
-      ? document.createTextNode(segment.text)
-      : createAtomElement(segment, gaps, assetUrls),
+  renderParagraphParts(
+    element,
+    segments.map((segment) =>
+      segment.kind === "text"
+        ? { kind: "text" as const, text: segment.text, marks: segment.marks }
+        : { kind: "atom" as const, segment },
+    ),
+    gaps,
+    assetUrls,
+    gapInteractive,
   );
-  element.replaceChildren(...nodes, createTrailingBreak());
 }
 
 function createTrailingBreak(): HTMLElement {

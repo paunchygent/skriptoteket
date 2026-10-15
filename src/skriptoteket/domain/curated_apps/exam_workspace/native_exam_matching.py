@@ -1,7 +1,11 @@
 """Matching-kind answer-key invariants for native exam items."""
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    validate_text_only_body,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     MATCH_LEFT_ID_PATTERN,
     MATCH_RIGHT_ID_PATTERN,
@@ -9,21 +13,33 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 
 
 class NativeMatchLeft(BaseModel):
-    """One entry of the list the student matches from."""
+    """One entry of the list the student matches from, with its source formatting."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     left_id: str = Field(pattern=MATCH_LEFT_ID_PATTERN)
-    text: str = Field(min_length=1)
+    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+
+    @field_validator("body")
+    @classmethod
+    def _text_only_body(cls, body: tuple[NativeParagraph, ...]) -> tuple[NativeParagraph, ...]:
+        validate_text_only_body(body, surface="match entry")
+        return body
 
 
 class NativeMatchRight(BaseModel):
-    """One entry of the list the student matches to."""
+    """One entry of the list the student matches to, with its source formatting."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     right_id: str = Field(pattern=MATCH_RIGHT_ID_PATTERN)
-    text: str = Field(min_length=1)
+    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+
+    @field_validator("body")
+    @classmethod
+    def _text_only_body(cls, body: tuple[NativeParagraph, ...]) -> tuple[NativeParagraph, ...]:
+        validate_text_only_body(body, surface="match entry")
+        return body
 
 
 class NativeMatchPair(BaseModel):

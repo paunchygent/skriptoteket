@@ -6181,12 +6181,25 @@ export interface components {
              */
             kind: "asset";
         };
-        /** NativeChoice */
-        NativeChoice: {
+        /**
+         * NativeChoice
+         * @description One visible choice: rich paragraphs that carry the source runs' marks and headings.
+         */
+        "NativeChoice-Input": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
             /** Choice Id */
             choice_id: string;
-            /** Text */
-            text: string;
+        };
+        /**
+         * NativeChoice
+         * @description One visible choice: rich paragraphs that carry the source runs' marks and headings.
+         */
+        "NativeChoice-Output": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /** Choice Id */
+            choice_id: string;
         };
         /** NativeExamAsset */
         NativeExamAsset: {
@@ -6312,7 +6325,7 @@ export interface components {
              * Choices
              * @default []
              */
-            choices: components["schemas"]["NativeChoice"][];
+            choices: components["schemas"]["NativeChoice-Input"][];
             /**
              * Criteria
              * @default []
@@ -6332,12 +6345,12 @@ export interface components {
              * Match Left
              * @default []
              */
-            match_left: components["schemas"]["NativeMatchLeft"][];
+            match_left: components["schemas"]["NativeMatchLeft-Input"][];
             /**
              * Match Right
              * @default []
              */
-            match_right: components["schemas"]["NativeMatchRight"][];
+            match_right: components["schemas"]["NativeMatchRight-Input"][];
             /** Points */
             points?: number | null;
             /**
@@ -6366,7 +6379,7 @@ export interface components {
              * Choices
              * @default []
              */
-            choices: components["schemas"]["NativeChoice"][];
+            choices: components["schemas"]["NativeChoice-Output"][];
             /**
              * Criteria
              * @default []
@@ -6386,12 +6399,12 @@ export interface components {
              * Match Left
              * @default []
              */
-            match_left: components["schemas"]["NativeMatchLeft"][];
+            match_left: components["schemas"]["NativeMatchLeft-Output"][];
             /**
              * Match Right
              * @default []
              */
-            match_right: components["schemas"]["NativeMatchRight"][];
+            match_right: components["schemas"]["NativeMatchRight-Output"][];
             /** Points */
             points: number | null;
             /**
@@ -6455,9 +6468,11 @@ export interface components {
          * @description One original source chunk kept for a question's retry (TASK-SKRIPT-39-05-09 D1).
          *
          *     ``text`` is the plain wording people see and ``marked_text`` the model's wording with
-         *     its italics marked, both exactly as the conversion read them. ``images`` name the
-         *     pictures the chunk carries, at their places, so a retry rebuilds each image from the
-         *     container's saved payload instead of storing the bytes a second time.
+         *     its italics marked, both exactly as the conversion read them. ``runs`` and
+         *     ``paragraphs`` store the chunk's source formatting with offsets into ``text``, so a
+         *     retry copies the marks and heading levels the DOCX reader recorded. ``images`` name
+         *     the pictures the chunk carries, at their places, so a retry rebuilds each image from
+         *     the container's saved payload instead of storing the bytes a second time.
          */
         NativeExamRetryChunk: {
             /** Anchor */
@@ -6476,6 +6491,10 @@ export interface components {
              * @default []
              */
             missing_images: components["schemas"]["NativeExamRetryMissingImage"][];
+            /** Paragraphs */
+            paragraphs: components["schemas"]["NativeExamRetryParagraph"][];
+            /** Runs */
+            runs: components["schemas"]["NativeExamRetryRun"][];
             /** Text */
             text: string;
         };
@@ -6508,6 +6527,37 @@ export interface components {
             offset: number;
             /** Reference */
             reference: string;
+        };
+        /**
+         * NativeExamRetryParagraph
+         * @description One source paragraph's text and heading level inside a stored chunk's plain text.
+         *
+         *     ``offset`` counts the characters before the paragraph inside the chunk's ``text``,
+         *     and ``heading_level`` is 1-3 for a source heading or a whole paragraph set clearly
+         *     larger than the body text, else None.
+         */
+        NativeExamRetryParagraph: {
+            /** Heading Level */
+            heading_level: number | null;
+            /** Offset */
+            offset: number;
+            /** Text */
+            text: string;
+        };
+        /**
+         * NativeExamRetryRun
+         * @description One source run's text and kept marks inside a stored chunk's plain text.
+         *
+         *     ``offset`` counts the characters before the run inside the chunk's ``text``, so a
+         *     retry rebuilds the exact source span the deterministic formatting copy reads.
+         */
+        NativeExamRetryRun: {
+            /** Marks */
+            marks: string[];
+            /** Offset */
+            offset: number;
+            /** Text */
+            text: string;
         };
         /**
          * NativeExamRetrySource
@@ -6638,13 +6688,23 @@ export interface components {
         NativeItemReviewState: "review_required" | "review_complete";
         /**
          * NativeMatchLeft
-         * @description One entry of the list the student matches from.
+         * @description One entry of the list the student matches from, with its source formatting.
          */
-        NativeMatchLeft: {
+        "NativeMatchLeft-Input": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
             /** Left Id */
             left_id: string;
-            /** Text */
-            text: string;
+        };
+        /**
+         * NativeMatchLeft
+         * @description One entry of the list the student matches from, with its source formatting.
+         */
+        "NativeMatchLeft-Output": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /** Left Id */
+            left_id: string;
         };
         /**
          * NativeMatchPair
@@ -6658,16 +6718,28 @@ export interface components {
         };
         /**
          * NativeMatchRight
-         * @description One entry of the list the student matches to.
+         * @description One entry of the list the student matches to, with its source formatting.
          */
-        NativeMatchRight: {
+        "NativeMatchRight-Input": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
             /** Right Id */
             right_id: string;
-            /** Text */
-            text: string;
+        };
+        /**
+         * NativeMatchRight
+         * @description One entry of the list the student matches to, with its source formatting.
+         */
+        "NativeMatchRight-Output": {
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /** Right Id */
+            right_id: string;
         };
         /** NativeParagraph */
         NativeParagraph: {
+            /** Heading Level */
+            heading_level: (1 | 2 | 3) | null;
             /** Segments */
             segments: (components["schemas"]["NativeTextSegment"] | components["schemas"]["NativeGapSegment"] | components["schemas"]["NativeAssetSegment"])[];
         };
@@ -6683,6 +6755,8 @@ export interface components {
              * @enum {string}
              */
             kind: "text";
+            /** Marks */
+            marks: ("bold" | "italic" | "underline" | "superscript" | "subscript")[];
             /** Text */
             text: string;
         };

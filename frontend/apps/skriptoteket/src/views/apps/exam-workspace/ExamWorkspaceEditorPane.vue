@@ -27,6 +27,7 @@
 import { computed } from "vue";
 
 import type {
+  NativeExamBodyParagraph,
   NativeExamBodySegment,
   NativeExamCriterion,
   NativeExamItem,
@@ -72,21 +73,26 @@ const emit = defineEmits<{
   select: [itemId: string];
   step: [offset: number];
   "update:detailsOpen": [open: boolean];
-  updateChoiceText: [itemId: string, choiceId: string, text: string];
+  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[]];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateMatchEntryText: [
+  updateMatchEntryBody: [
     itemId: string,
     side: "left" | "right",
     entryId: string,
-    text: string,
+    body: NativeExamBodyParagraph[],
   ];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
     paragraphIndex: number,
     segments: NativeExamBodySegment[],
+  ];
+  updateParagraphHeading: [
+    itemId: string,
+    paragraphIndex: number,
+    headingLevel: NativeExamBodyParagraph["heading_level"],
   ];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
@@ -166,8 +172,8 @@ const redigeraGridClass = computed(() => {
             @next="emit('step', 1)"
             @previous="emit('step', -1)"
             @toggle-details="emit('update:detailsOpen', !detailsOpen)"
-            @update-choice-text="
-              (itemId, choiceId, text) => emit('updateChoiceText', itemId, choiceId, text)
+            @update-choice-body="
+              (itemId, choiceId, body) => emit('updateChoiceBody', itemId, choiceId, body)
             "
             @update-correct-choices="
               (itemId, correctChoiceIds) => emit('updateCorrectChoices', itemId, correctChoiceIds)
@@ -177,14 +183,18 @@ const redigeraGridClass = computed(() => {
                 emit('updateGapValues', itemId, gapId, acceptedValues)
             "
             @update-criteria="(itemId, criteria) => emit('updateCriteria', itemId, criteria)"
-            @update-match-entry-text="
-              (itemId, side, entryId, text) =>
-                emit('updateMatchEntryText', itemId, side, entryId, text)
+            @update-match-entry-body="
+              (itemId, side, entryId, body) =>
+                emit('updateMatchEntryBody', itemId, side, entryId, body)
             "
             @update-match-pairs="(itemId, pairs) => emit('updateMatchPairs', itemId, pairs)"
             @update-paragraph-segments="
               (itemId, paragraphIndex, segments) =>
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)
+            "
+            @update-paragraph-heading="
+              (itemId, paragraphIndex, headingLevel) =>
+                emit('updateParagraphHeading', itemId, paragraphIndex, headingLevel)
             "
             @update-points="(itemId, points) => emit('updatePoints', itemId, points)"
             @update-tick-points="(itemId, tickPoints) => emit('updateTickPoints', itemId, tickPoints)"

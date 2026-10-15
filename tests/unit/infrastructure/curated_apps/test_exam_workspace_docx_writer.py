@@ -53,6 +53,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     parent_over,
     recorded_document,
@@ -118,10 +119,11 @@ def shared_picture_document() -> SharedPictureDocument:
             kind=NativeExamItemKind.FREE_TEXT,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Fråga 1."),
+                        NativeTextSegment(text="Fråga 1.", marks=()),
                         NativeAssetSegment(asset_id=global_id),
-                    )
+                    ),
                 ),
             ),
             points=1,
@@ -133,7 +135,11 @@ def shared_picture_document() -> SharedPictureDocument:
             item_id="item_002",
             sequence=2,
             kind=NativeExamItemKind.FREE_TEXT,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Fråga 2."),)),),
+            body=(
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Fråga 2.", marks=()),)
+                ),
+            ),
             points=1,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=_review_complete(),
@@ -145,11 +151,12 @@ def shared_picture_document() -> SharedPictureDocument:
         title="Diagramprov",
         instructions=(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text=_SHARED_GLOBAL_BEFORE),
+                    NativeTextSegment(text=_SHARED_GLOBAL_BEFORE, marks=()),
                     NativeAssetSegment(asset_id=global_id),
-                    NativeTextSegment(text=_SHARED_GLOBAL_AFTER),
-                )
+                    NativeTextSegment(text=_SHARED_GLOBAL_AFTER, marks=()),
+                ),
             ),
         ),
         items=items,
@@ -158,11 +165,12 @@ def shared_picture_document() -> SharedPictureDocument:
                 parent_id="parent_001",
                 instruction=(
                     NativeParagraph(
+                        heading_level=None,
                         segments=(
-                            NativeTextSegment(text=_SHARED_PARENT_BEFORE),
+                            NativeTextSegment(text=_SHARED_PARENT_BEFORE, marks=()),
                             NativeAssetSegment(asset_id=parent_id),
-                            NativeTextSegment(text=_SHARED_PARENT_AFTER),
-                        )
+                            NativeTextSegment(text=_SHARED_PARENT_AFTER, marks=()),
+                        ),
                     ),
                 ),
                 item_ids=tuple(item.item_id for item in items),
@@ -213,7 +221,7 @@ def _all_kinds_document() -> NativeExamDocument:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Resonera om bisatser."),)),),
+            body=plain_body("Resonera om bisatser."),
             points=4,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=_review_complete(),
@@ -222,11 +230,11 @@ def _all_kinds_document() -> NativeExamDocument:
             item_id="item_002",
             sequence=2,
             kind=NativeExamItemKind.SINGLE_CHOICE,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Välj rätt alternativ."),)),),
+            body=plain_body("Välj rätt alternativ."),
             points=1,
             choices=(
-                NativeChoice(choice_id="choice_001", text="Nominalfras"),
-                NativeChoice(choice_id="choice_002", text="Verbfras"),
+                NativeChoice(choice_id="choice_001", body=plain_body("Nominalfras")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Verbfras")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
@@ -238,12 +246,12 @@ def _all_kinds_document() -> NativeExamDocument:
             item_id="item_003",
             sequence=3,
             kind=NativeExamItemKind.MULTIPLE_RESPONSE,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Markera alla fraser."),)),),
+            body=plain_body("Markera alla fraser."),
             points=2,
             choices=(
-                NativeChoice(choice_id="choice_001", text="Prepositionsfras"),
-                NativeChoice(choice_id="choice_002", text="Adjektivfras"),
-                NativeChoice(choice_id="choice_003", text="Subjunktion"),
+                NativeChoice(choice_id="choice_001", body=plain_body("Prepositionsfras")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Adjektivfras")),
+                NativeChoice(choice_id="choice_003", body=plain_body("Subjunktion")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -257,10 +265,11 @@ def _all_kinds_document() -> NativeExamDocument:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="a) Frastyp: "),
+                        NativeTextSegment(text="a) Frastyp: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             points=2.5,
@@ -274,8 +283,12 @@ def _all_kinds_document() -> NativeExamDocument:
         revision=1,
         title="Grammatikprov",
         instructions=(
-            NativeParagraph(segments=(NativeTextSegment(text="Svenska 2"),)),
-            NativeParagraph(segments=(NativeTextSegment(text="Total: 9,5 poäng"),)),
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Svenska 2", marks=()),)
+            ),
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Total: 9,5 poäng", marks=()),)
+            ),
         ),
         items=items,
         origin=NativeExamDocumentOrigin(kind="created"),

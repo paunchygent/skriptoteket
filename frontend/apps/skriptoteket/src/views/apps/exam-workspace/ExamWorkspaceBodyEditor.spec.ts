@@ -56,15 +56,15 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     expect(itemId).toBe("item_001");
     expect(paragraphIndex).toBe(0);
     expect(segments).toEqual([
-      { kind: "text", text: "Vatten\nkokar vid " },
+      { kind: "text", marks: [], text: "Vatten\nkokar vid " },
       { gap_id: "gap_001", kind: "gap" },
-      { kind: "text", text: " grader och fryser vid " },
+      { kind: "text", marks: [], text: " grader och fryser vid " },
       { gap_id: "gap_002", kind: "gap" },
-      { kind: "text", text: " grader." },
+      { kind: "text", marks: [], text: " grader." },
     ]);
 
     await wrapper.setProps({
-      item: { ...item, body: [{ segments: segments as never }, item.body[1]!] },
+      item: { ...item, body: [{ heading_level: null, segments: segments as never }, item.body[1]!] },
     });
     expect(paragraph(wrapper, 0).firstChild).toBe(firstText);
     wrapper.unmount();
@@ -98,7 +98,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
   });
 
   it("refuses an emptied paragraph and restores it when focus leaves", async () => {
-    const item = buildGapItem({ body: [{ segments: [{ kind: "text", text: "Hej" }] }] });
+    const item = buildGapItem({ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Hej" }] }] });
     const wrapper = mountEditor(item);
     const element = paragraph(wrapper, 0);
     (element.firstChild as Text).data = "";
@@ -249,7 +249,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
 
     expect(event.defaultPrevented).toBe(true);
     const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", text: "Vatten\n kokar vid " });
+    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten\n kokar vid " });
     wrapper.unmount();
   });
 
@@ -263,7 +263,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
 
     element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true }));
     const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", text: "Vatten kokar vid å" });
+    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten kokar vid å" });
     wrapper.unmount();
   });
 
@@ -295,7 +295,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     element.dispatchEvent(paste);
     expect(paste.defaultPrevented).toBe(true);
     const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", text: "Vatten x\ny kokar vid " });
+    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten x\ny kokar vid " });
 
     const chipRange = document.createRange();
     chipRange.selectNode(element.querySelector('[data-gap-id="gap_001"]')!);
@@ -314,7 +314,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     await wrapper.setProps({
       item: buildGapItem({
         item_id: "item_002",
-        body: [{ segments: [{ kind: "text", text: "Annan fråga" }] }],
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga" }] }],
         gaps: [],
       }),
     });

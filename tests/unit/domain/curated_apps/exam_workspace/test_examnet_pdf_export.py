@@ -31,9 +31,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeItemReviewState,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     parent_over,
     recorded_document,
@@ -125,7 +127,7 @@ def _grid(html: str) -> ET.Element:
 
 def _with_distractor(item: NativeExamItem) -> NativeExamItem:
     extra = NativeMatchRight(
-        right_id=f"right_{len(item.match_right) + 1:03d}", text="Spare <entry>"
+        right_id=f"right_{len(item.match_right) + 1:03d}", body=plain_body("Spare <entry>")
     )
     return NativeExamItem.model_validate({**dict(item), "match_right": (*item.match_right, extra)})
 
@@ -145,14 +147,16 @@ class TestMatchingItems:
             section = sections[item.sequence - 1]
             printed, key = section.split('<div class="answer-key">')
             for entry in item.match_left:
-                assert escape(entry.text) in printed
-            positions = [printed.index(escape(entry.text)) for entry in item.match_right]
+                assert escape(body_plain_text(entry.body)) in printed
+            positions = [
+                printed.index(escape(body_plain_text(entry.body))) for entry in item.match_right
+            ]
             assert positions == sorted(positions)
             student_grid = _grid(printed)
             key_grid = _grid(key)
             correct = {(pair.left_id, pair.right_id) for pair in item.answer_key.match_pairs}
             assert [node.text for node in student_grid.findall("./thead/tr/th")] == [
-                entry.text for entry in item.match_right
+                body_plain_text(entry.body) for entry in item.match_right
             ]
             for row_index, left in enumerate(item.match_left):
                 student_cells = student_grid.findall("./tbody/tr")[row_index].findall("td/span")

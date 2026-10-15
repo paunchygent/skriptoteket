@@ -51,7 +51,9 @@ def _item(text: str) -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=text),)),),
+        body=(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
@@ -118,8 +120,12 @@ def test_heading_already_in_the_body_is_not_repeated() -> None:
     item = item.model_copy(
         update={
             "body": (
-                NativeParagraph(segments=(NativeTextSegment(text="Facts"),)),
-                NativeParagraph(segments=(NativeTextSegment(text="Frågetext"),)),
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Facts", marks=()),)
+                ),
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Frågetext", marks=()),)
+                ),
             )
         }
     )

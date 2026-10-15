@@ -28,7 +28,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [{ segments: [{ kind: "text", text: "Beskriv fotosyntesen." }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv fotosyntesen." }] }],
     choices: [],
     gaps: [],
     item_id: "item_001",
@@ -73,14 +73,13 @@ describe("examWorkspaceRows", () => {
   it("flattens body segments into an excerpt with gap chips", () => {
     const item = buildItem({
       body: [
-        {
-          segments: [
-            { kind: "text", text: "Vatten kokar vid" },
+        { heading_level: null, segments: [
+            { kind: "text", marks: [], text: "Vatten kokar vid" },
             { gap_id: "gap_001", kind: "gap" },
-            { kind: "text", text: "grader." },
+            { kind: "text", marks: [], text: "grader." },
           ],
         },
-        { segments: [{ kind: "text", text: "Motivera ditt svar." }] },
+        { heading_level: null, segments: [{ kind: "text", marks: [], text: "Motivera ditt svar." }] },
       ],
       kind: "gap_fill",
       match_left: [],
@@ -95,7 +94,7 @@ describe("examWorkspaceRows", () => {
   it("truncates long excerpts with an ellipsis", () => {
     const longText = "ord ".repeat(80).trim();
     const item = buildItem({
-      body: [{ segments: [{ kind: "text", text: longText }] }],
+      body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: longText }] }],
     });
 
     const excerpt = examWorkspacePromptExcerpt(item);
@@ -148,7 +147,7 @@ describe("examWorkspaceRows", () => {
 
   it("titles every row with its question number, whatever the question text says", () => {
     const item = buildItem({
-      body: [{ segments: [{ kind: "text", text: "Fråga 4. Beskriv fotosyntesen" }] }],
+      body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Fråga 4. Beskriv fotosyntesen" }] }],
       sequence: 4,
     });
     expect(toExamWorkspaceItemRow(item).title).toBe("Fråga 4");

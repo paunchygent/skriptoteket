@@ -94,6 +94,9 @@ Exam.net converts on import.
    automatic misspellings, replacing the model's spelling candidates.
 7. Export checklist: after a QTI export the export panel lists each Fritext
    question with its criterion text and each question Q16 or Q17 flags.
+8. Source formatting: TASK-SKRIPT-39-09-08 deterministically copies bold,
+   italic, underline, superscript, subscript and heading levels from DOCX
+   through the rich native document, teacher editor and Exam.net QTI export.
 
 ## Verification
 

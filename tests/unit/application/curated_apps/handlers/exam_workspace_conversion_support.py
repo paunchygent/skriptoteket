@@ -36,7 +36,9 @@ PLACEHOLDER_REASON = "Frågan konverteras fortfarande."
 
 
 def body(text: str) -> tuple[NativeParagraph, ...]:
-    return (NativeParagraph(segments=(NativeTextSegment(text=text),)),)
+    return (
+        NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+    )
 
 
 def placeholder(anchor: str, text: str) -> NativeExamItem:
@@ -63,8 +65,8 @@ def choice(anchor: str, text: str) -> NativeExamItem:
         body=body(text),
         points=1,
         choices=(
-            NativeChoice(choice_id="choice_001", text="Ja"),
-            NativeChoice(choice_id="choice_002", text="Nej"),
+            NativeChoice(choice_id="choice_001", body=body("Ja")),
+            NativeChoice(choice_id="choice_002", body=body("Nej")),
         ),
         answer_key=NativeAnswerKey(
             origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED, correct_choice_ids=("choice_001",)

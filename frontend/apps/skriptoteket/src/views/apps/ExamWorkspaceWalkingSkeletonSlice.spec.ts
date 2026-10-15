@@ -72,13 +72,12 @@ function buildTwoGapResponse(
               answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
               kind: "gap_fill",
               body: [
-                {
-                  segments: [
-                    { kind: "text", text: "Vatten kokar vid" },
+                { heading_level: null, segments: [
+                    { kind: "text", marks: [], text: "Vatten kokar vid" },
                     { gap_id: "gap_001", kind: "gap" },
-                    { kind: "text", text: "grader och fryser vid" },
+                    { kind: "text", marks: [], text: "grader och fryser vid" },
                     { gap_id: "gap_002", kind: "gap" },
-                    { kind: "text", text: "grader." },
+                    { kind: "text", marks: [], text: "grader." },
                   ],
                 },
               ],
@@ -188,8 +187,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(added.kind).toBe("gap_fill");
     expect(added.answer_key.origin).toBe("absent");
     expect(added.body).toEqual([
-      { segments: [{ kind: "text", text: "Ny fråga" }] },
-      { segments: [{ kind: "gap", gap_id: "gap_001" }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Ny fråga" }] },
+      { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] },
     ]);
     expect(added.gaps).toEqual([
       { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [] },

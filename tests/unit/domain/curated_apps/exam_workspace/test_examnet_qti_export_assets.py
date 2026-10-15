@@ -43,10 +43,11 @@ class TestAssetMapping:
             kind=NativeExamItemKind.FREE_TEXT,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Se bilden."),
+                        NativeTextSegment(text="Se bilden.", marks=()),
                         NativeAssetSegment(asset_id=ASSET_ID),
-                    )
+                    ),
                 ),
             ),
             points=2,

@@ -56,6 +56,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+    FORMATTING_REASON,
+    FormattingTransferError,
+)
 from skriptoteket.domain.errors import DomainError
 
 CONFLICT_WITHOUT_KIND_REASON = (
@@ -99,6 +103,15 @@ def _built(
     """The item ``build`` makes, or its source review item when the item cannot be built."""
     try:
         return build(), anchors
+    except FormattingTransferError as error:
+        state.record(
+            "admission",
+            "formatting_transfer_failed",
+            item=index,
+            anchors=anchors,
+            detail=str(error),
+        )
+        return state.printed(anchors, FORMATTING_REASON, seen)
     except ValidationError as error:
         return _source_review(
             index, anchors, state, seen, "native_contract_invalid", validation_detail(error)
@@ -294,6 +307,9 @@ def _admit_item(
             with_printed_points(with_accepted_forms(produced, context), own),
             chunks=own,
             language=state.language,
+            formatting_observer=lambda path: state.record_formatting(
+                path, item=index, anchors=anchors
+            ),
         )
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())

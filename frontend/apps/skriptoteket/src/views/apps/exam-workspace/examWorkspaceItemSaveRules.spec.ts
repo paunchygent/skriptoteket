@@ -19,6 +19,7 @@ import {
   INVALID_CRITERION_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import { plainBody } from "./examWorkspaceRichText";
 import {
   buildMatchingItem,
   buildMatchingItemWithDistractor,
@@ -36,10 +37,10 @@ function buildChoiceItem(
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
-    body: [{ segments: [{ kind: "text", text: "Vilket ämne är en gas?" }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", text: "Syre" },
-      { choice_id: "choice_b", text: "Järn" },
+      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: `item_00${sequence}`,
@@ -62,9 +63,9 @@ function buildChoiceItem(
 }
 
 const EMPTY_CHOICES = [
-  { choice_id: "choice_a", text: "Syre" },
-  { choice_id: "choice_b", text: "" },
-];
+  { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+  { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+] satisfies NativeExamItem["choices"];
 
 describe("examWorkspaceSaveRefusalCopy", () => {
   it("is null when every item can be saved, including missing points", () => {
@@ -145,7 +146,7 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
     const emptyLeft = {
       ...item,
       match_left: item.match_left.map((entry) =>
-        entry.left_id === "left_002" ? { ...entry, text: "" } : entry,
+        entry.left_id === "left_002" ? { ...entry, body: plainBody("") } : entry,
       ),
     };
 

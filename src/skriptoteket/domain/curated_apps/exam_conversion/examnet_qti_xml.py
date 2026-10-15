@@ -20,10 +20,14 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiMatchEntry,
     ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
     append_interaction_prompt,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_rich_text import (
+    append_textual_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     MAP_RESPONSE_TEMPLATE,
@@ -356,6 +360,9 @@ def _append_simple_choice(parent: ElementTree.Element, choice: ExamNetQtiChoice)
         qti_tag("qti-simple-choice"),
         {"identifier": choice.identifier},
     )
+    if choice.body:
+        append_textual_paragraphs(choice_element, choice.body)
+        return
     choice_element.text = choice.text
 
 
@@ -384,17 +391,20 @@ def _append_match_interaction(
     left_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
     right_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
     for entry in item.match_left:
-        _append_associable_choice(left_set, entry.identifier, entry.text, match_max=column_count)
+        _append_associable_choice(left_set, entry, match_max=column_count)
     for entry in item.match_right:
-        _append_associable_choice(right_set, entry.identifier, entry.text, match_max=row_count)
+        _append_associable_choice(right_set, entry, match_max=row_count)
 
 
 def _append_associable_choice(
-    parent: ElementTree.Element, identifier: str, text: str, *, match_max: int
+    parent: ElementTree.Element, entry: ExamNetQtiMatchEntry, *, match_max: int
 ) -> None:
     choice = ElementTree.SubElement(
         parent,
         qti_tag("qti-simple-associable-choice"),
-        {"identifier": identifier, "match-max": str(match_max)},
+        {"identifier": entry.identifier, "match-max": str(match_max)},
     )
-    choice.text = text
+    if entry.body:
+        append_textual_paragraphs(choice, entry.body)
+        return
+    choice.text = entry.text

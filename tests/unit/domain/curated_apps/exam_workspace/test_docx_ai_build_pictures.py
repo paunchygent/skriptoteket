@@ -100,9 +100,9 @@ def test_review_source_item_splits_text_around_each_picture_place() -> None:
 
     (paragraph,) = item.body
     assert paragraph.segments == (
-        NativeTextSegment(text="AB"),
+        NativeTextSegment(text="AB", marks=()),
         NativeAssetSegment(asset_id=image.asset_id),
-        NativeTextSegment(text="CDEF"),
+        NativeTextSegment(text="CDEF", marks=()),
     )
 
 
@@ -114,10 +114,10 @@ def test_review_source_item_keeps_a_repeated_picture_twice() -> None:
 
     (paragraph,) = item.body
     assert paragraph.segments == (
-        NativeTextSegment(text="A"),
+        NativeTextSegment(text="A", marks=()),
         NativeAssetSegment(asset_id=image.asset_id),
         NativeAssetSegment(asset_id=image.asset_id),
-        NativeTextSegment(text="BCD"),
+        NativeTextSegment(text="BCD", marks=()),
     )
 
 
@@ -140,7 +140,7 @@ def test_native_item_maps_the_model_carrier_to_the_source_picture() -> None:
 
     (paragraph,) = item.body
     assert paragraph.segments == (
-        NativeTextSegment(text="Se bilden"),
+        NativeTextSegment(text="Se bilden", marks=()),
         NativeAssetSegment(asset_id=image.asset_id),
     )
     assert item.body_asset_ids() == (image.asset_id,)
@@ -195,6 +195,8 @@ def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
                                 marked_offset=0,
                             ),
                         ),
+                        runs=(),
+                        paragraphs=(),
                     ),
                 ),
                 label_kind=NativeExamItemKind.FREE_TEXT,
@@ -278,9 +280,9 @@ def test_review_source_item_names_a_missing_picture_beside_its_reason() -> None:
     )
     (paragraph,) = item.body
     assert paragraph.segments == (
-        NativeTextSegment(text="AA"),
-        NativeTextSegment(text="[Bild saknas: /word/media/figur.wmf (image/x-wmf)]"),
-        NativeTextSegment(text="BB"),
+        NativeTextSegment(text="AA", marks=()),
+        NativeTextSegment(text="[Bild saknas: /word/media/figur.wmf (image/x-wmf)]", marks=()),
+        NativeTextSegment(text="BB", marks=()),
     )
 
 

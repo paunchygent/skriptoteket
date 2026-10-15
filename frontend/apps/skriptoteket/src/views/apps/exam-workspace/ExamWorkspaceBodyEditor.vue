@@ -4,75 +4,46 @@
  *
  * Domain purpose:
  *   Let the teacher edit each paragraph of a question as one continuous
- *   text, with every gap shown as an inline chip and every image as a fixed
- *   atom that renders the actual picture once its asset URL is known and the
- *   "Bild" placeholder until then. Activating a gap chip opens a small
- *   popover where the teacher edits that gap's accepted answers, removes an
- *   automatic answer the conversion added, or replaces the whole gap with
- *   its first accepted answer as plain text ("Visa som text"). Closing that
- *   popover focuses the paragraph, because the removed chip cannot. Gaps and
- *   images are the Exam.net contract, so typing, pasting, cutting, dragging,
- *   dropping or undo can never remove, add or reorder them. While `disabled`
- *   is set, nothing can be edited, an open popover closes without
- *   committing, and no gap change is forwarded.
+ *   rich text: the five kept marks, a heading level, every gap shown as an
+ *   inline chip and every image as a fixed atom. The toolbar toggles the
+ *   marks and heading level of the paragraph that holds the selection, and
+ *   Ctrl/Cmd+B, I and U toggle marks from the keyboard. Activating a gap
+ *   chip opens a small popover where the teacher edits that gap's accepted
+ *   answers, removes an automatic answer the conversion added, or replaces
+ *   the whole gap with its first accepted answer as plain text ("Visa som
+ *   text"). Gaps and images are the Exam.net contract, so typing, pasting,
+ *   cutting, dragging, dropping or undo can never remove, add or reorder
+ *   them. While `disabled` is set, nothing can be edited, an open popover
+ *   closes without committing, and no gap change is forwarded.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state
- *     (`updateItemParagraphSegments`, `updateItemGapValues`).
- *   - Paragraph DOM is built imperatively from the model so the caret stays
- *     put while the teacher types; `examWorkspaceBodySegments` converts
- *     between that DOM and model segments, and `examWorkspaceBodyCaret`
- *     guards edits that would touch an atom.
- *   - `ExamWorkspaceGapPopover` edits one gap's accepted answers.
+ *     (`updateItemParagraphSegments`, `updateItemParagraphHeading`,
+ *     `updateItemGapValues`).
+ *   - `ExamWorkspaceBodyParagraph` owns one paragraph's DOM and marks,
+ *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
+ *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
-import type { NativeExamItem, NativeExamBodySegment } from "../../../api/examWorkspace";
+import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
-import {
-  insertPlainText,
-  liveRangesFor,
-  rangesTouchAtom,
-  type TouchedAtomKind,
-  selectionRanges,
-} from "./examWorkspaceBodyCaret";
-import {
-  applyAssetState,
-  applyChipState,
-  ATOM_ATTRIBUTE,
-  ensureTrailingBreak,
-  gapNumberIn,
-  partsFromParagraphElement,
-  refreshAtomIndexes,
-  renderParagraphElement,
-  sameAtomSequence,
-  segmentsFromParts,
-  segmentsKey,
-} from "./examWorkspaceBodySegments";
+import type { BodyMark } from "./examWorkspaceBodyMarks";
+import { gapNumberIn } from "./examWorkspaceBodySegments";
+import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
+import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 
-const ATOM_GUARD_COPY = "Luckor och bilder kan inte tas bort i texten.";
-const DELETE_NEXT_TO_GAP_COPY =
-  "Luckan tas inte bort med Backsteg eller Delete. Öppna luckan för att ändra svaret.";
-const DELETE_NEXT_TO_IMAGE_COPY = "Bilden kan inte tas bort i texten.";
-const EMPTY_PARAGRAPH_COPY = "Stycket måste innehålla text.";
+type HeadingLevel = 1 | 2 | 3;
+type ParagraphInstance = InstanceType<typeof ExamWorkspaceBodyParagraph>;
+
 const POPOVER_WIDTH_PX = 448;
-
-function atomGuardCopy(inputType: string, atom: TouchedAtomKind): string {
-  if (inputType !== "deleteContentBackward" && inputType !== "deleteContentForward") {
-    return ATOM_GUARD_COPY;
-  }
-  if (atom === "gap") {
-    return DELETE_NEXT_TO_GAP_COPY;
-  }
-  return atom === "asset" ? DELETE_NEXT_TO_IMAGE_COPY : ATOM_GUARD_COPY;
-}
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -83,6 +54,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
+  updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: HeadingLevel | null];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
@@ -96,10 +68,12 @@ type OpenGap = {
   left: number;
 };
 
-const editableMode = detectEditableMode();
 const editorRoot = ref<HTMLElement | null>(null);
 const statusMessage = ref<string | null>(null);
 const openGap = ref<OpenGap | null>(null);
+const activeParagraphIndex = ref<number | null>(null);
+const paragraphMarks = ref<BodyMark[]>([]);
+let openChip: HTMLElement | null = null;
 
 const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
 const openGapModel = computed(() =>
@@ -110,234 +84,43 @@ const openGapModel = computed(() =>
 const openGapNumber = computed(() =>
   openGap.value === null ? 0 : gapNumberIn(props.item.gaps, openGap.value.gapId),
 );
+const activeHeading = computed<HeadingLevel | null>(() => {
+  const index = activeParagraphIndex.value;
+  return index === null ? null : (props.item.body[index]?.heading_level ?? null);
+});
 
-// Imperative paragraph state; deliberately not reactive.
-const paragraphElements: (HTMLElement | null)[] = [];
-const renderedKeys: (string | undefined)[] = [];
-let renderedItemId: string | null = null;
-let openChip: HTMLElement | null = null;
-let composingIndex: number | null = null;
+/** Imperative paragraph refs; deliberately not reactive, so a toolbar click reaches the live component. */
+const paragraphRefs: (ParagraphInstance | null)[] = [];
 
-function detectEditableMode(): "plaintext-only" | "true" {
-  if (typeof document === "undefined") {
-    return "true";
-  }
-  try {
-    const probe = document.createElement("div");
-    probe.contentEditable = "plaintext-only";
-    return probe.contentEditable === "plaintext-only" ? "plaintext-only" : "true";
-  } catch {
-    return "true";
-  }
-}
-
-function setParagraphElement(
+function setParagraphRef(
   paragraphIndex: number,
   element: Element | ComponentPublicInstance | null,
 ): void {
-  paragraphElements[paragraphIndex] = element instanceof HTMLElement ? element : null;
+  paragraphRefs[paragraphIndex] =
+    element instanceof Element ? null : (element as unknown as ParagraphInstance | null);
 }
 
-function renderParagraph(paragraphIndex: number): void {
-  const element = paragraphElements[paragraphIndex];
-  const paragraph = props.item.body[paragraphIndex];
-  if (!element || !paragraph) {
+function handleSelectionMarks(paragraphIndex: number, marks: BodyMark[]): void {
+  if (activeParagraphIndex.value === null || activeParagraphIndex.value === paragraphIndex) {
+    activeParagraphIndex.value = paragraphIndex;
+    paragraphMarks.value = marks;
+  }
+}
+
+function handleToggleMark(mark: BodyMark): void {
+  const index = activeParagraphIndex.value;
+  if (index !== null) {
+    paragraphRefs[index]?.toggleMark(mark);
+  }
+}
+
+function handleToggleHeading(level: HeadingLevel): void {
+  const index = activeParagraphIndex.value;
+  if (index === null || props.disabled) {
     return;
   }
-  renderParagraphElement(element, paragraph.segments, props.item.gaps, props.assetUrls);
-  refreshAtomIndexes(element, paragraphIndex, paragraph.segments);
-  renderedKeys[paragraphIndex] = segmentsKey(paragraph.segments);
-}
-
-function syncParagraphs(): void {
-  const itemChanged = renderedItemId !== props.item.item_id;
-  renderedItemId = props.item.item_id;
-  if (itemChanged) {
-    closePopover(false);
-    statusMessage.value = null;
-    composingIndex = null;
-  }
-  renderedKeys.length = props.item.body.length;
-  props.item.body.forEach((paragraph, paragraphIndex) => {
-    if (paragraphIndex === composingIndex) {
-      // Rebuilding under an active IME composition would break it.
-      return;
-    }
-    if (itemChanged || renderedKeys[paragraphIndex] !== segmentsKey(paragraph.segments)) {
-      renderParagraph(paragraphIndex);
-    }
-  });
-}
-
-function refreshChips(): void {
-  editorRoot.value
-    ?.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}="gap"]`)
-    .forEach((chip) => applyChipState(chip, props.item.gaps));
-}
-
-/** Update live image atoms in place so an arriving or changed URL never rebuilds the paragraph. */
-function refreshAssets(): void {
-  editorRoot.value
-    ?.querySelectorAll<HTMLElement>(`[${ATOM_ATTRIBUTE}="asset"]`)
-    .forEach((atom) => {
-      const assetId = atom.getAttribute("data-asset-id");
-      if (assetId) {
-        applyAssetState(atom, assetId, props.assetUrls);
-      }
-    });
-}
-
-onMounted(syncParagraphs);
-watch(() => [props.item.item_id, props.item.body] as const, syncParagraphs, { flush: "post" });
-watch(() => props.item.gaps, refreshChips, { deep: true, flush: "post" });
-watch(() => props.assetUrls, refreshAssets, { deep: true, flush: "post" });
-watch(
-  () => props.disabled,
-  (disabled) => {
-    if (disabled) {
-      closePopover(false);
-    }
-  },
-);
-
-function handleParagraphInput(paragraphIndex: number, event?: Event): void {
-  if (paragraphIndex === composingIndex || (event instanceof InputEvent && event.isComposing)) {
-    // Serialized on `compositionend`.
-    return;
-  }
-  const element = paragraphElements[paragraphIndex];
-  const paragraph = props.item.body[paragraphIndex];
-  if (!element || !paragraph) {
-    return;
-  }
-  const segments = segmentsFromParts(partsFromParagraphElement(element));
-  if (!sameAtomSequence(segments, paragraph.segments)) {
-    renderParagraph(paragraphIndex);
-    statusMessage.value = ATOM_GUARD_COPY;
-    return;
-  }
-  if (segments.length === 0) {
-    statusMessage.value = EMPTY_PARAGRAPH_COPY;
-    return;
-  }
-  statusMessage.value = null;
-  ensureTrailingBreak(element);
-  refreshAtomIndexes(element, paragraphIndex, segments);
-  const key = segmentsKey(segments);
-  if (key === renderedKeys[paragraphIndex]) {
-    return;
-  }
-  renderedKeys[paragraphIndex] = key;
-  emit("updateParagraphSegments", props.item.item_id, paragraphIndex, segments);
-}
-
-function handleCompositionStart(paragraphIndex: number): void {
-  composingIndex = paragraphIndex;
-}
-
-function handleCompositionEnd(paragraphIndex: number): void {
-  composingIndex = null;
-  handleParagraphInput(paragraphIndex);
-}
-
-function handleParagraphFocusOut(paragraphIndex: number): void {
-  const element = paragraphElements[paragraphIndex];
-  if (!element || paragraphIndex === composingIndex) {
-    return;
-  }
-  // An emptied paragraph was never emitted; restore the saved text.
-  if (segmentsFromParts(partsFromParagraphElement(element)).length === 0) {
-    renderParagraph(paragraphIndex);
-    statusMessage.value = null;
-  }
-}
-
-function insertTextAtCaret(paragraphIndex: number, text: string): void {
-  const element = paragraphElements[paragraphIndex];
-  if (element && insertPlainText(element, text)) {
-    handleParagraphInput(paragraphIndex);
-  }
-}
-
-function handleBeforeInput(paragraphIndex: number, event: InputEvent): void {
-  const element = paragraphElements[paragraphIndex];
-  if (!element) {
-    return;
-  }
-  if (props.disabled) {
-    event.preventDefault();
-    return;
-  }
-  const inputType = event.inputType;
-  if (inputType.startsWith("history")) {
-    // Undo/redo pass through; the atom-sequence check in `input` restores any atom.
-    return;
-  }
-  const touchedAtom = rangesTouchAtom(element, liveRangesFor(event), inputType);
-  if (touchedAtom !== null) {
-    event.preventDefault();
-    statusMessage.value = atomGuardCopy(inputType, touchedAtom);
-    return;
-  }
-  if (inputType === "insertParagraph" || inputType === "insertLineBreak") {
-    event.preventDefault();
-    insertTextAtCaret(paragraphIndex, "\n");
-  }
-}
-
-function handlePaste(paragraphIndex: number, event: ClipboardEvent): void {
-  event.preventDefault();
-  const element = paragraphElements[paragraphIndex];
-  if (!element || props.disabled) {
-    return;
-  }
-  if (rangesTouchAtom(element, selectionRanges(), null) !== null) {
-    statusMessage.value = ATOM_GUARD_COPY;
-    return;
-  }
-  const text = event.clipboardData?.getData("text/plain") ?? "";
-  if (text.length > 0) {
-    insertTextAtCaret(paragraphIndex, text.replace(/\r\n?/g, "\n"));
-  }
-}
-
-function chipFromEvent(event: Event): HTMLElement | null {
-  const target = event.target;
-  if (!(target instanceof Element)) {
-    return null;
-  }
-  return target.closest<HTMLElement>(`[${ATOM_ATTRIBUTE}="gap"]`);
-}
-
-function handleDragStart(event: DragEvent): void {
-  const target = event.target;
-  if (target instanceof Element && target.closest(`[${ATOM_ATTRIBUTE}]`)) {
-    event.preventDefault();
-  }
-}
-
-/** Refuse drops so dragged HTML, chips or images never enter a paragraph. */
-function handleDragOver(event: DragEvent): void {
-  event.preventDefault();
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = "none";
-  }
-}
-
-function handleParagraphClick(paragraphIndex: number, event: MouseEvent): void {
-  const chip = chipFromEvent(event);
-  if (chip) {
-    event.preventDefault();
-    openPopover(paragraphIndex, chip);
-  }
-}
-
-function handleParagraphKeydown(paragraphIndex: number, event: KeyboardEvent): void {
-  const chip = chipFromEvent(event);
-  if (chip && (event.key === "Enter" || event.key === " ")) {
-    event.preventDefault();
-    openPopover(paragraphIndex, chip);
-  }
+  const current = props.item.body[index]?.heading_level ?? null;
+  emit("updateParagraphHeading", props.item.item_id, index, current === level ? null : level);
 }
 
 function openPopover(paragraphIndex: number, chip: HTMLElement): void {
@@ -400,9 +183,18 @@ function handleGapAsText(itemId: string, gapId: string): void {
   closePopover(false);
   emit("showGapAsText", itemId, gapId);
   if (paragraphIndex !== null) {
-    paragraphElements[paragraphIndex]?.focus();
+    paragraphRefs[paragraphIndex]?.focus();
   }
 }
+
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled) {
+      closePopover(false);
+    }
+  },
+);
 </script>
 
 <template>
@@ -413,34 +205,34 @@ function handleGapAsText(itemId: string, gapId: string): void {
     <legend class="px-1 text-xs font-semibold text-navy/80">
       Frågetext
     </legend>
+    <ExamWorkspaceMarkToolbar
+      :active-marks="paragraphMarks"
+      :active-heading="activeHeading"
+      :disabled="disabled"
+      show-headings
+      @toggle-mark="handleToggleMark"
+      @toggle-heading="handleToggleHeading"
+    />
     <div
       ref="editorRoot"
       class="relative grid gap-4"
     >
-      <div
+      <ExamWorkspaceBodyParagraph
         v-for="(paragraph, paragraphIndex) in item.body"
-        :key="paragraphIndex"
-        :ref="(element) => setParagraphElement(paragraphIndex, element)"
-        class="min-h-14 whitespace-pre-wrap [overflow-wrap:anywhere] border border-navy/35 bg-canvas px-4 py-3 text-base leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
-        role="textbox"
-        aria-multiline="true"
-        :aria-label="`Frågetext, stycke ${paragraphIndex + 1}`"
-        :aria-disabled="disabled ? 'true' : undefined"
-        :contenteditable="disabled ? 'false' : editableMode"
-        :data-test="`exam-workspace-body-paragraph-${paragraphIndex}`"
-        spellcheck="true"
-        lang="sv"
-        @beforeinput="handleBeforeInput(paragraphIndex, $event as InputEvent)"
-        @input="handleParagraphInput(paragraphIndex, $event)"
-        @compositionstart="handleCompositionStart(paragraphIndex)"
-        @compositionend="handleCompositionEnd(paragraphIndex)"
-        @paste="handlePaste(paragraphIndex, $event)"
-        @click="handleParagraphClick(paragraphIndex, $event)"
-        @keydown="handleParagraphKeydown(paragraphIndex, $event)"
-        @dragstart="handleDragStart"
-        @dragover="handleDragOver"
-        @drop.prevent
-        @focusout="handleParagraphFocusOut(paragraphIndex)"
+        :key="`${item.item_id}:${paragraphIndex}`"
+        :ref="(element) => setParagraphRef(paragraphIndex, element)"
+        :paragraph="paragraph"
+        :paragraph-index="paragraphIndex"
+        :gaps="item.gaps"
+        :asset-urls="assetUrls"
+        :disabled="disabled"
+        :label="`Frågetext, stycke ${paragraphIndex + 1}`"
+        :test-id="`exam-workspace-body-paragraph-${paragraphIndex}`"
+        @activate-gap="(chip) => openPopover(paragraphIndex, chip)"
+        @focus-paragraph="activeParagraphIndex = paragraphIndex"
+        @selection-marks="(marks) => handleSelectionMarks(paragraphIndex, marks)"
+        @status="statusMessage = $event"
+        @update-segments="(segments) => emit('updateParagraphSegments', item.item_id, paragraphIndex, segments)"
       />
 
       <ExamWorkspaceGapPopover

@@ -10,19 +10,11 @@
  * Relationships:
  *   - Used by `useExamWorkspaceGapKeying`, which sends it with each keying
  *     request.
- *   - Reads shapes from `api/examWorkspace.ts`.
+ *   - Reads its paragraph flattening from `examWorkspaceRichText`.
  */
 
 import type { NativeExamBodyParagraph, NativeExamDocument } from "../../../api/examWorkspace";
-
-/** One paragraph's plain text: text segments in order, gaps and pictures named by nothing. */
-function paragraphText(paragraph: NativeExamBodyParagraph): string {
-  return paragraph.segments
-    .map((segment) => (segment.kind === "text" ? segment.text : ""))
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { paragraphText } from "./examWorkspaceRichText";
 
 function paragraphsText(paragraphs: NativeExamBodyParagraph[]): string[] {
   return paragraphs.map(paragraphText).filter((text) => text.length > 0);
@@ -42,9 +34,9 @@ export function examWorkspaceDocumentText(document: NativeExamDocument): string 
       }
     }
     lines.push(...paragraphsText(item.body));
-    lines.push(...item.choices.map((choice) => choice.text.trim()));
-    lines.push(...item.match_left.map((entry) => entry.text.trim()));
-    lines.push(...item.match_right.map((entry) => entry.text.trim()));
+    lines.push(...item.choices.flatMap((choice) => paragraphsText(choice.body)));
+    lines.push(...item.match_left.flatMap((entry) => paragraphsText(entry.body)));
+    lines.push(...item.match_right.flatMap((entry) => paragraphsText(entry.body)));
   }
   return lines.filter((line) => line.length > 0).join("\n");
 }

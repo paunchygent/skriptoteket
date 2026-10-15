@@ -273,7 +273,7 @@ def test_an_unavailable_render_leaves_review_state_and_blocks_export() -> None:
     )
     (paragraph,) = item.body
     assert paragraph.segments == (
-        NativeTextSegment(text="[Bild saknas: /word/media/figur.emf (image/x-emf)]"),
+        NativeTextSegment(text="[Bild saknas: /word/media/figur.emf (image/x-emf)]", marks=()),
     )
     blockers = native_export_blockers(
         NativeExamDocument(

@@ -29,10 +29,10 @@ function choiceItem(
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: correctChoiceIds, match_pairs: [], origin },
-    body: [{ segments: [{ kind: "text", text: "Vilket är huvudordet?" }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket är huvudordet?" }] }],
     choices: [
-      { choice_id: "choice_001", text: "vägen" },
-      { choice_id: "choice_002", text: "eleverna" },
+      { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "vägen" }] }] },
+      { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "eleverna" }] }] },
     ],
     gaps: [],
     item_id: "item_001",

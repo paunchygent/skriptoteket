@@ -138,7 +138,10 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                         parent_id="parent_001",
                         instruction=(
                             NativeParagraph(
-                                segments=(NativeTextSegment(text="Gemensam instruktion."),)
+                                heading_level=None,
+                                segments=(
+                                    NativeTextSegment(text="Gemensam instruktion.", marks=()),
+                                ),
                             ),
                         ),
                         item_ids=(document.items[0].item_id,),

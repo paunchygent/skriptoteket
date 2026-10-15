@@ -41,7 +41,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 
 
 def _text(text: str) -> NativeParagraph:
-    return NativeParagraph(segments=(NativeTextSegment(text=text),))
+    return NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
 
 
 def _local(node: ElementTree.Element) -> str:
@@ -55,7 +55,7 @@ def test_standalone_gap_stays_in_its_paragraph_beside_literal_answer_lines() -> 
         kind=NativeExamItemKind.GAP_FILL,
         body=(
             _text("Vilken stad är Sveriges huvudstad? ______"),
-            NativeParagraph(segments=(NativeGapSegment(gap_id="gap_001"),)),
+            NativeParagraph(heading_level=None, segments=(NativeGapSegment(gap_id="gap_001"),)),
         ),
         points=1,
         gaps=(NativeGap(gap_id="gap_001", accepted_values=("Stockholm",)),),

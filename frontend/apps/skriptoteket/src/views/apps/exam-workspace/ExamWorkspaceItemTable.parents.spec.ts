@@ -54,11 +54,10 @@ function documentWithDiagram() {
       {
         ...document.parents[0]!,
         instruction: [
-          {
-            segments: [
-              { kind: "text" as const, text: "Betrakta diagrammet." },
+          { heading_level: null, segments: [
+              { kind: "text" as const, marks: [], text: "Betrakta diagrammet." },
               { asset_id: DIAGRAM_ASSET_ID, kind: "asset" as const },
-              { kind: "text" as const, text: "Svara sedan." },
+              { kind: "text" as const, marks: [], text: "Svara sedan." },
             ],
           },
         ],
@@ -145,9 +144,13 @@ describe("ExamWorkspaceItemTable with a parent", () => {
     expect(images[0]!.attributes("data-asset-id")).toBe(DIAGRAM_ASSET_ID);
 
     const paragraph = wrapper.get('[data-test="exam-workspace-shared-instruction-paragraph"]');
-    const rendered = Array.from(paragraph.element.children).map((element) =>
-      element.tagName === "IMG" ? element.getAttribute("src") : element.textContent,
-    );
+    const rendered = Array.from(paragraph.element.childNodes)
+      .map((node) =>
+        node instanceof HTMLElement && node.tagName === "IMG"
+          ? node.getAttribute("src")
+          : node.textContent,
+      )
+      .filter((value) => value !== null && value !== "");
     expect(rendered).toEqual(["Betrakta diagrammet.", DIAGRAM_URL, "Svara sedan."]);
   });
 

@@ -58,13 +58,14 @@ class TestGapFillMapping:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Beta: "),
+                        NativeTextSegment(text="Beta: ", marks=()),
                         NativeGapSegment(gap_id="gap_002"),
                         NativeAssetSegment(asset_id=ASSET_ID),
-                        NativeTextSegment(text="Alpha: "),
+                        NativeTextSegment(text="Alpha: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             points=2,
@@ -127,16 +128,18 @@ class TestGapFillMapping:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="a) Först: "),
+                        NativeTextSegment(text="a) Först: ", marks=()),
                         NativeGapSegment(gap_id="gap_002"),
-                    )
+                    ),
                 ),
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="b) Sedan: "),
+                        NativeTextSegment(text="b) Sedan: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             points=2,
@@ -166,10 +169,11 @@ class TestGapFillMapping:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Ange frastyp: "),
+                        NativeTextSegment(text="Ange frastyp: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             points=2,
@@ -194,10 +198,11 @@ class TestGapFillMapping:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Ange frastyp: "),
+                        NativeTextSegment(text="Ange frastyp: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             gaps=(

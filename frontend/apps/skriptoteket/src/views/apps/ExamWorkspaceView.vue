@@ -90,15 +90,16 @@ const {
   selectedItem,
   selectedItemId,
   summary,
-  updateItemChoiceText,
+  updateItemChoiceBody,
   updateItemCorrectChoices,
   updateItemGapValues,
   undoItemInterpretation,
   removeItemAutomaticValue,
   showItemGapAsText,
   updateItemCriteria,
-  updateItemMatchEntryText,
+  updateItemMatchEntryBody,
   updateItemMatchPairs,
+  updateItemParagraphHeading,
   updateItemParagraphSegments,
   updateItemPoints,
   updateItemTickPoints,
@@ -414,16 +415,17 @@ async function handleSave(): Promise<void> {
             @retry="retryItem"
             @select="selectItem"
             @step="stepItem"
-            @update-choice-text="updateItemChoiceText"
+            @update-choice-body="updateItemChoiceBody"
             @update-correct-choices="updateItemCorrectChoices"
             @update-gap-values="updateItemGapValues"
             @undo-interpretation="undoItemInterpretation"
             @remove-automatic-value="removeItemAutomaticValue"
             @show-gap-as-text="showItemGapAsText"
             @update-criteria="updateItemCriteria"
-            @update-match-entry-text="updateItemMatchEntryText"
+            @update-match-entry-body="updateItemMatchEntryBody"
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
+            @update-paragraph-heading="updateItemParagraphHeading"
             @update-points="updateItemPoints"
             @update-tick-points="updateItemTickPoints"
           />

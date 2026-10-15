@@ -59,6 +59,7 @@ from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_suppo
     review_complete,
     text_body,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 
 def _free_text_item(
@@ -91,7 +92,7 @@ def _multiple_response_item(
     correct: int = 3,
 ) -> NativeExamItem:
     choices = tuple(
-        NativeChoice(choice_id=f"choice_{index:03d}", text=f"Alternativ {index}")
+        NativeChoice(choice_id=f"choice_{index:03d}", body=plain_body(f"Alternativ {index}"))
         for index in range(1, 5)
     )
     return NativeExamItem(
@@ -122,10 +123,11 @@ def _gap_fill_item(
         kind=NativeExamItemKind.GAP_FILL,
         body=tuple(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text=f"Lucka {index}: "),
+                    NativeTextSegment(text=f"Lucka {index}: ", marks=()),
                     NativeGapSegment(gap_id=f"gap_{index:03d}"),
-                )
+                ),
             )
             for index in range(1, gaps + 1)
         ),

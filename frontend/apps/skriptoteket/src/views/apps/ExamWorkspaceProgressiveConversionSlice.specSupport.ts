@@ -35,7 +35,7 @@ type UnitState = ExamWorkspaceConversionUnit["state"];
 export function placeholder(sequence: number): NativeExamItem {
   return {
     ...buildFreeTextItem(sequence),
-    body: [{ segments: [{ kind: "text", text: `Källtext ${sequence}` }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: `Källtext ${sequence }` }] }],
     review: {
       confidence: 0,
       parse_origin: "llm_parsed",

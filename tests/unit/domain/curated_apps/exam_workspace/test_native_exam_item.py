@@ -26,6 +26,7 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
     make_paragraph,
     make_review,
     make_single_choice_item,
+    plain_body,
 )
 
 
@@ -42,7 +43,7 @@ class TestItemInvariants:
                 kind=NativeExamItemKind.SINGLE_CHOICE,
                 body=(make_paragraph("Fråga"),),
                 points=1,
-                choices=(NativeChoice(choice_id="choice_001", text="a"),),
+                choices=(NativeChoice(choice_id="choice_001", body=plain_body("a")),),
                 answer_key=NativeAnswerKey(
                     origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
                     correct_choice_ids=("choice_001",),
@@ -92,7 +93,11 @@ class TestItemInvariants:
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
-                body=(NativeParagraph(segments=(NativeGapSegment(gap_id="gap_001"),)),),
+                body=(
+                    NativeParagraph(
+                        heading_level=None, segments=(NativeGapSegment(gap_id="gap_001"),)
+                    ),
+                ),
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 review=make_review(),
             )
@@ -151,8 +156,8 @@ class TestItemInvariants:
                 body=(make_paragraph("Fråga"),),
                 points=2,
                 choices=(
-                    NativeChoice(choice_id="choice_001", text="a"),
-                    NativeChoice(choice_id="choice_002", text="b"),
+                    NativeChoice(choice_id="choice_001", body=plain_body("a")),
+                    NativeChoice(choice_id="choice_002", body=plain_body("b")),
                 ),
                 criteria=(NativeExamCriterion(text="Kriterium", points=2),),
                 answer_key=NativeAnswerKey(

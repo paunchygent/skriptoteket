@@ -13,7 +13,6 @@ from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.xmlchemy import BaseOxmlElement
 from docx.table import Table, _Cell
-from docx.text.hyperlink import Hyperlink
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 from PIL import Image
@@ -22,10 +21,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxImage,
     DocxMissingImage,
+    DocxSourceParagraph,
+    DocxSourceRun,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_picture import (  # noqa: E501
     picture_from_relationship,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
+    document_body_points,
+    paragraph_run_spans,
+    source_paragraph,
+    source_run,
 )
 
 # Drawn content: pictures, text boxes and embedded objects. Its words, if any, are not in
@@ -102,33 +109,41 @@ def _run_images(
 
 
 def _paragraph_render(
-    paragraph: Paragraph, document: DocxDocument
-) -> tuple[str, str, tuple[tuple[int, int, DocxImage | DocxMissingImage], ...]]:
-    """A paragraph's plain text, its marked text, and each picture's place in both.
+    paragraph: Paragraph, document: DocxDocument, *, body_points: float
+) -> tuple[
+    str,
+    str,
+    tuple[tuple[int, int, DocxImage | DocxMissingImage], ...],
+    tuple[DocxSourceParagraph, ...],
+    tuple[DocxSourceRun, ...],
+]:
+    """A paragraph's plain text, marked text, picture places and source formatting.
 
     ``plain`` matches ``Paragraph.text`` (runs and hyperlink runs, tabs and line breaks);
     ``marked`` wraps italic stretches in ``<i>...</i>`` exactly as the model sees them.
-    Positions are the characters before the picture in each rendering.
+    Picture and source-record offsets are relative to the paragraph's own text.
     """
     plain_parts: list[str] = []
     stretches: list[tuple[bool, str, list[tuple[int, DocxImage | DocxMissingImage, int]]]] = []
+    source_runs: list[DocxSourceRun] = []
     plain_length = 0
-    for content in paragraph.iter_inner_content():
-        runs = content.runs if isinstance(content, Hyperlink) else (content,)
-        for run in runs:
-            run_images = _run_images(run, document)
-            italic = bool(run.italic)
-            if not stretches or stretches[-1][0] != italic:
-                stretches.append((italic, "", []))
-            state, stretch_text, stretch_images = stretches[-1]
-            base = len(stretch_text)
-            stretch_images.extend(
-                (base + offset, image, plain_length + offset) for offset, image in run_images
-            )
-            stretches[-1] = (state, stretch_text + run.text, stretch_images)
-            # ``Paragraph.text`` joins every run and hyperlink, so plain offsets count both.
-            plain_parts.append(run.text)
-            plain_length += len(run.text)
+    for run, run_offset, text in paragraph_run_spans(paragraph):
+        run_images = _run_images(run, document)
+        italic = bool(run.italic)
+        if not stretches or stretches[-1][0] != italic:
+            stretches.append((italic, "", []))
+        state, stretch_text, stretch_images = stretches[-1]
+        base = len(stretch_text)
+        stretch_images.extend(
+            (base + image_offset, image, plain_length + image_offset)
+            for image_offset, image in run_images
+        )
+        stretches[-1] = (state, stretch_text + text, stretch_images)
+        # ``Paragraph.text`` joins every run and hyperlink, so plain offsets count both.
+        plain_parts.append(text)
+        if text:
+            source_runs.append(source_run(run, paragraph, document, offset=run_offset))
+        plain_length += len(text)
     marked_parts: list[str] = []
     positions: list[tuple[int, int, DocxImage | DocxMissingImage]] = []
     marked_length = 0
@@ -148,20 +163,34 @@ def _paragraph_render(
             )
         marked_parts.append(marked)
         marked_length += len(marked)
-    return "".join(plain_parts), "".join(marked_parts), tuple(positions)
+    return (
+        "".join(plain_parts),
+        "".join(marked_parts),
+        tuple(positions),
+        (source_paragraph(paragraph, document, body_points=body_points),),
+        tuple(source_runs),
+    )
 
 
 def _table_render(
-    table: Table, document: DocxDocument
-) -> tuple[str, str, tuple[tuple[int, int, DocxImage | DocxMissingImage], ...]]:
-    """A table's plain text, its marked text, and picture places, in one walk.
+    table: Table, document: DocxDocument, *, body_points: float
+) -> tuple[
+    str,
+    str,
+    tuple[tuple[int, int, DocxImage | DocxMissingImage], ...],
+    tuple[DocxSourceParagraph, ...],
+    tuple[DocxSourceRun, ...],
+]:
+    """A table's plain text, marked text, picture places and source formatting.
 
     Cells join with `` | `` and rows with a newline, exactly like the text projection;
-    every picture keeps its place in that joined text.
+    every picture, paragraph and run keeps its place in that joined text.
     """
     plain_parts: list[str] = []
     marked_parts: list[str] = []
     positions: list[tuple[int, int, DocxImage | DocxMissingImage]] = []
+    paragraphs: list[DocxSourceParagraph] = []
+    runs: list[DocxSourceRun] = []
     plain_length = 0
     marked_length = 0
     has_text = False
@@ -170,6 +199,8 @@ def _table_render(
         plain: str,
         marked: str,
         images: tuple[tuple[int, int, DocxImage | DocxMissingImage], ...],
+        source_paragraphs: tuple[DocxSourceParagraph, ...] = (),
+        source_runs: tuple[DocxSourceRun, ...] = (),
         *,
         counts: bool = False,
     ) -> None:
@@ -178,6 +209,10 @@ def _table_render(
             (plain_length + plain_offset, marked_length + marked_offset, image)
             for plain_offset, marked_offset, image in images
         )
+        paragraphs.extend(
+            replace(source, offset=plain_length + source.offset) for source in source_paragraphs
+        )
+        runs.extend(replace(source, offset=plain_length + source.offset) for source in source_runs)
         plain_parts.append(plain)
         marked_parts.append(marked)
         plain_length += len(plain)
@@ -196,12 +231,18 @@ def _table_render(
                 if block_index:
                     add("\n", "\n", ())
                 if isinstance(block, Paragraph):
-                    add(*_paragraph_render(block, document), counts=True)
+                    add(*_paragraph_render(block, document, body_points=body_points), counts=True)
                 else:
-                    add(*_table_render(block, document), counts=True)
+                    add(*_table_render(block, document, body_points=body_points), counts=True)
     if not has_text:
-        return "", "", tuple((0, 0, image) for _, _, image in positions)
-    return "".join(plain_parts), "".join(marked_parts), tuple(positions)
+        return "", "", tuple((0, 0, image) for _, _, image in positions), (), ()
+    return (
+        "".join(plain_parts),
+        "".join(marked_parts),
+        tuple(positions),
+        tuple(paragraphs),
+        tuple(runs),
+    )
 
 
 def _rendered_picture(
@@ -279,11 +320,14 @@ class PythonDocxExamChunker:
         chunks: list[DocxChunk] = []
         try:
             document = Document(io.BytesIO(content))
+            body_points = document_body_points(document)
             for ordinal, element in enumerate(document.element.body, start=1):
                 anchor = f"body:{ordinal:04d}"
                 if isinstance(element, CT_P):
                     paragraph = Paragraph(element, document)
-                    text, marked_text, positions = _paragraph_render(paragraph, document)
+                    text, marked_text, positions, paragraphs, runs = _paragraph_render(
+                        paragraph, document, body_points=body_points
+                    )
                     style_name = paragraph.style.name if paragraph.style is not None else ""
                     kind = "heading" if style_name.startswith(("Heading", "Title")) else "paragraph"
                     if not text.strip() and drawn(element):
@@ -291,7 +335,9 @@ class PythonDocxExamChunker:
                     block: CT_P | CT_Tbl = element
                 elif isinstance(element, CT_Tbl):
                     table = Table(element, document)
-                    text, marked_text, positions = _table_render(table, document)
+                    text, marked_text, positions, paragraphs, runs = _table_render(
+                        table, document, body_points=body_points
+                    )
                     kind = "table"
                     block = element
                 else:
@@ -308,6 +354,8 @@ class PythonDocxExamChunker:
                             marked_text=marked_text,
                             images=images,
                             missing_images=missing,
+                            runs=runs,
+                            paragraphs=paragraphs,
                         )
                     )
         except (

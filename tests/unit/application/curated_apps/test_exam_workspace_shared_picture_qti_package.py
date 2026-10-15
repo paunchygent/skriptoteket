@@ -60,11 +60,12 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
     asset_id = f"asset_{digest[:16]}"
     stem = (
         NativeParagraph(
+            heading_level=None,
             segments=(
-                NativeTextSegment(text="Betrakta: "),
+                NativeTextSegment(text="Betrakta: ", marks=()),
                 NativeAssetSegment(asset_id=asset_id),
-                NativeTextSegment(text=" diagrammet."),
-            )
+                NativeTextSegment(text=" diagrammet.", marks=()),
+            ),
         ),
     )
     items = tuple(
@@ -74,10 +75,11 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
             kind=NativeExamItemKind.FREE_TEXT,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text=f"Fråga {index}: "),
+                        NativeTextSegment(text=f"Fråga {index}: ", marks=()),
                         NativeAssetSegment(asset_id=asset_id),
-                    )
+                    ),
                 ),
             ),
             points=1,

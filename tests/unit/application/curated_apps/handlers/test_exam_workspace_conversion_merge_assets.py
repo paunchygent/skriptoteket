@@ -56,10 +56,10 @@ def _asset(
 def _item(
     *, body_asset_ids: tuple[str, ...] = (), retry_asset_ids: tuple[str, ...] = ()
 ) -> NativeExamItem:
-    segments: list[NativeSegment] = [NativeTextSegment(text=_BODY)]
+    segments: list[NativeSegment] = [NativeTextSegment(text=_BODY, marks=())]
     segments.extend(NativeAssetSegment(asset_id=asset_id) for asset_id in body_asset_ids)
     item = choice("p1", _BODY).model_copy(
-        update={"body": (NativeParagraph(segments=tuple(segments)),)}
+        update={"body": (NativeParagraph(heading_level=None, segments=tuple(segments)),)}
     )
     if not retry_asset_ids:
         return item
@@ -72,6 +72,8 @@ def _item(
                         kind="paragraph",
                         text=_BODY,
                         marked_text=_BODY,
+                        runs=(),
+                        paragraphs=(),
                         images=tuple(
                             NativeExamRetryImage(asset_id=asset_id, offset=0, marked_offset=0)
                             for asset_id in retry_asset_ids

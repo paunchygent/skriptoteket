@@ -8,17 +8,21 @@
       "segments": [
         {
           "kind": "text",
-          "text": "Svenska 2"
+          "text": "Svenska 2",
+          "marks": []
         }
-      ]
+      ],
+      "heading_level": null
     },
     {
       "segments": [
         {
           "kind": "text",
-          "text": "Total: 38 poäng"
+          "text": "Total: 38 poäng",
+          "marks": []
         }
-      ]
+      ],
+      "heading_level": null
     }
   ],
   "items": [
@@ -31,53 +35,63 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Del 1: Morfem och fraser, 12 poäng"
+              "text": "Del 1: Morfem och fraser, 12 poäng",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng."
+              "text": "Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "a) snöbollarnas Svar: "
+              "text": "a) snöbollarnas Svar: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) skrivbarheten Svar: "
+              "text": "b) skrivbarheten Svar: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) fotbollsspelarnas Svar: "
+              "text": "c) fotbollsspelarnas Svar: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 6,
@@ -123,57 +137,67 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Skriv NF, PF eller VF."
+              "text": "Skriv NF, PF eller VF.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "a) De trötta eleverna Frastyp: "
+              "text": "a) De trötta eleverna Frastyp: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) hade väntat Frastyp: "
+              "text": "b) hade väntat Frastyp: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) på bussen Frastyp: "
+              "text": "c) på bussen Frastyp: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "d) efter skolan Frastyp: "
+              "text": "d) efter skolan Frastyp: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_004"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 2,
@@ -225,49 +249,57 @@
           "segments": [
             {
               "kind": "text",
-              "text": "a) de tre nya eleverna från Göteborg Huvudord: "
+              "text": "a) de tre nya eleverna från Göteborg Huvudord: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) min äldre systers trasiga mobiltelefon på köksbordet Huvudord: "
+              "text": "b) min äldre systers trasiga mobiltelefon på köksbordet Huvudord: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) alla böckerna i den nedersta hyllan Huvudord: "
+              "text": "c) alla böckerna i den nedersta hyllan Huvudord: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "d) den lilla vägen genom skogen Huvudord: "
+              "text": "d) den lilla vägen genom skogen Huvudord: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_004"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 4,
@@ -319,65 +351,77 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Del 2: Satsdelar, 8 poäng"
+              "text": "Del 2: Satsdelar, 8 poäng",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial."
+              "text": "Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "a) Bussen stannade vid skolan. Markerad del: "
+              "text": "a) Bussen stannade vid skolan. Markerad del: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) Rektorn gav eleverna tydliga instruktioner. Markerad del: "
+              "text": "b) Rektorn gav eleverna tydliga instruktioner. Markerad del: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) Filmen blev spännande. Markerad del: "
+              "text": "c) Filmen blev spännande. Markerad del: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "d) Vi lämnade rapporten på expeditionen. Markerad del: "
+              "text": "d) Vi lämnade rapporten på expeditionen. Markerad del: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_004"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 2,
@@ -429,37 +473,43 @@
           "segments": [
             {
               "kind": "text",
-              "text": "a) Eleverna lämnade inte sina mobiler i skåpet. Analys: "
+              "text": "a) Eleverna lämnade inte sina mobiler i skåpet. Analys: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) Läraren gav klassen tydliga instruktioner före provet. Analys: "
+              "text": "b) Läraren gav klassen tydliga instruktioner före provet. Analys: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) Stämningen blev lugn efter genomgången. Analys: "
+              "text": "c) Stämningen blev lugn efter genomgången. Analys: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 6,
@@ -505,89 +555,105 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Del 3: Bisatser och komplex meningsbyggnad, 10 poäng"
+              "text": "Del 3: Bisatser och komplex meningsbyggnad, 10 poäng",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats."
+              "text": "Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "a) Jag vet att lektionen börjar klockan tio. Bisats: "
+              "text": "a) Jag vet att lektionen börjar klockan tio. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) Problemet var att eleven satt längst fram. Bisats: "
+              "text": "b) Problemet var att eleven satt längst fram. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "c) När genomgången var slut började eleverna skriva. Bisats: "
+              "text": "c) När genomgången var slut började eleverna skriva. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_003"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "d) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: "
+              "text": "d) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_004"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "e) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: "
+              "text": "e) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_005"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "f) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: "
+              "text": "f) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_006"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 6,
@@ -651,33 +717,39 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Mening: Att flera elever blev sjuka förklarar varför redovisningen sköts upp."
+              "text": "Mening: Att flera elever blev sjuka förklarar varför redovisningen sköts upp.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "a) Skriv bisatserna. Bisats 1: "
+              "text": "a) Skriv bisatserna. Bisats 1: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_001"
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: "
+              "text": "b) Ange vilken satsdel varje bisats är. Bisats 1 satsdel: ",
+              "marks": []
             },
             {
               "kind": "gap",
               "gap_id": "gap_002"
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 4,
@@ -717,113 +789,141 @@
           "segments": [
             {
               "kind": "text",
-              "text": "Del 4: Textanalys, 8 poäng"
+              "text": "Del 4: Textanalys, 8 poäng",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Läs de två texterna. De beskriver samma händelse men är skrivna i olika stil."
+              "text": "Läs de två texterna. De beskriver samma händelse men är skrivna i olika stil.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Text A"
+              "text": "Text A",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Igår när vi skulle äta lunch märkte vi att det låg svinmycket vatten på golvet i bamba. Någon (tror det var Anna) sa att en diskmaskin hade börjat läcka. Karin och Pelle i köket stängde typ halva matsalen, så kön blev jättelång och vi fick vänta jättelänge innan vi kom fram och kunde äta."
+              "text": "Igår när vi skulle äta lunch märkte vi att det låg svinmycket vatten på golvet i bamba. Någon (tror det var Anna) sa att en diskmaskin hade börjat läcka. Karin och Pelle i köket stängde typ halva matsalen, så kön blev jättelång och vi fick vänta jättelänge innan vi kom fram och kunde äta.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Text B"
+              "text": "Text B",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "En vattenläcka i anslutning till matsalens diskutrustning orsakade begränsad tillgång till serveringsytan under lunchen. Avspärrningen medförde längre väntetider för eleverna eftersom arbetet med läckan krävde en tillfällig reducering av kökskapaciteten vid lunchserveringen."
+              "text": "En vattenläcka i anslutning till matsalens diskutrustning orsakade begränsad tillgång till serveringsytan under lunchen. Avspärrningen medförde längre väntetider för eleverna eftersom arbetet med läckan krävde en tillfällig reducering av kökskapaciteten vid lunchserveringen.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Beskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys."
+              "text": "Beskriv minst tre tydliga skillnader mellan Text A och Text B. Använd grammatiska begrepp där det passar och ge exempel från texterna. En bra analys bygger på tydliga exempel och sammanfogar de identifierade dragen i en kortfattad, tydlig och lättläst analys.",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "Du kan till exempel jämföra:"
+              "text": "Du kan till exempel jämföra:",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "nominaliseringar"
+              "text": "nominaliseringar",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "konkreta och abstrakta uttryck"
+              "text": "konkreta och abstrakta uttryck",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "aktörer och perspektiv"
+              "text": "aktörer och perspektiv",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "nominalfraser"
+              "text": "nominalfraser",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "verb och handlingar"
+              "text": "verb och handlingar",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         },
         {
           "segments": [
             {
               "kind": "text",
-              "text": "formell och informell stil"
+              "text": "formell och informell stil",
+              "marks": []
             }
-          ]
+          ],
+          "heading_level": null
         }
       ],
       "points": 8,
