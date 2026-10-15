@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f246f76c1530494996aea24740ce14a240b3a0b8e23e052970589ef96ce71709",
+  "source_set_digest": "0328ea6f95a0946a0e76d6367e04e378f3b1beaba0efec7b383de989d3005ebb",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5127,6 +5127,44 @@
       "type": "task",
       "title": "Kategorisera grid: many-to-many keys, uniform tick value, grid-only export and DOCX category sorting",
       "path": "docs/backlog/tasks/task-skript-39-09-03-kategorisera-grid-many-to-many-keys-uniform-tick-value-grid-only-export-and-docx-category-sorting.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-04",
+      "type": "task",
+      "title": "Fritext criteria: a criteria list replaces the marking guide and exports as 1-point rows",
+      "path": "docs/backlog/tasks/task-skript-39-09-04-fritext-criteria-a-criteria-list-replaces-the-marking-guide-and-exports-as-1-point-rows.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-05",
+      "type": "task",
+      "title": "Kort svar: Ny fråga creates a one-gap Lucktext after the question text",
+      "path": "docs/backlog/tasks/task-skript-39-09-05-kort-svar-ny-fråga-creates-a-one-gap-lucktext-after-the-question-text.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
