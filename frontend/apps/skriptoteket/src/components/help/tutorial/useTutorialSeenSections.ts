@@ -6,38 +6,31 @@
  *   Guests keep the list in this browser; signed-in users keep it on their
  *   profile through the classroom-planner settings endpoint.
  *
- * Signed-in persistence:
- *   - The endpoint replaces the stored list with the list a request carries,
- *     so this host sends one write at a time. A dismissal made while a write
- *     is in flight queues one more write, which carries the full union of the
- *     confirmed and pending sections when it starts.
- *   - A section is confirmed only when an acknowledged response's profile list
- *     includes it. Until then it is pending: the dialog stays closed for this
- *     page load, but the auth profile only ever holds acknowledged server
- *     state.
- *   - A failed write shows a toast, keeps its sections pending and sends them
- *     again with the next write. `persistence` reports the outcome.
+ * Signed-in persistence lives in `stores/tutorialSeenSections.ts`: one write
+ * chain per app load, so a gate that unmounts while its write is in flight
+ * cannot race a gate mounted later. `persistence` reports the outcome.
  *
  * Relationships:
  *   - guest storage follows `views/apps/classroomPlannerSmartPreferences.ts`
  *   - signed-in state reads the auth store profile loaded by app continuation
- *     and writes through `api/classroomPlannerSettings.ts`
+ *     through `stores/tutorialSeenSections.ts`
  *   - read by `useTutorialFirstUse.ts`
  */
 
 import { computed, ref, type ComputedRef } from "vue";
 
-import { updateClassroomPlannerSettings } from "../../../api/classroomPlannerSettings";
 import type { TutorialSection } from "../../../api/tutorialClips";
 import { useProfile } from "../../../composables/useProfile";
-import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
-import { TUTORIAL_COPY } from "./tutorialCopy";
+import {
+  unionOf,
+  useTutorialSeenSectionsStore,
+  type TutorialSeenPersistence,
+} from "../../../stores/tutorialSeenSections";
 
 export type TutorialHostMode = "authenticated" | "public";
 
-/** Whether every dismissed section is stored, is still being stored, or failed to store. */
-export type TutorialSeenPersistence = "confirmed" | "pending" | "failed";
+export type { TutorialSeenPersistence };
 
 export const GUEST_TUTORIAL_SEEN_SECTIONS_STORAGE_KEY =
   "skriptoteket:classroom-planner:tutorial-seen-sections:v1";
@@ -57,18 +50,6 @@ function parseSeenSections(value: unknown): string[] {
     return [];
   }
   return value.filter((entry): entry is string => typeof entry === "string");
-}
-
-function unionOf(...lists: ReadonlyArray<readonly string[]>): string[] {
-  const merged: string[] = [];
-  for (const list of lists) {
-    for (const section of list) {
-      if (!merged.includes(section)) {
-        merged.push(section);
-      }
-    }
-  }
-  return merged;
 }
 
 function readGuestSeenSections(): string[] {
@@ -114,7 +95,7 @@ function useGuestSeenSections(): TutorialSeenSections {
 
 function useAuthenticatedSeenSections(): TutorialSeenSections {
   const auth = useAuthStore();
-  const toast = useToast();
+  const store = useTutorialSeenSectionsStore();
 
   if (auth.profile === null) {
     // The planner route normally has the profile from app continuation; load it
@@ -124,72 +105,12 @@ function useAuthenticatedSeenSections(): TutorialSeenSections {
       .catch(() => undefined);
   }
 
-  const profileSeen = computed<readonly string[]>(
-    () => auth.profile?.classroom_planner_tutorial_seen_sections ?? [],
-  );
-  // Sections this host's acknowledged writes returned. Another profile write,
-  // such as a Smart preference save, can replace `auth.profile` with a response
-  // read before this host's write committed; these stay confirmed regardless.
-  const acknowledged = ref<string[]>([]);
-  const pending = ref<string[]>([]);
-  const lastWriteFailed = ref(false);
-  let writing = false;
-  let writeQueued = false;
-
-  function isConfirmed(section: string): boolean {
-    return profileSeen.value.includes(section) || acknowledged.value.includes(section);
-  }
-
-  async function drainWrites(): Promise<void> {
-    writing = true;
-    try {
-      while (writeQueued) {
-        writeQueued = false;
-        lastWriteFailed.value = false;
-        const sections = unionOf(profileSeen.value, acknowledged.value, pending.value);
-        try {
-          const response = await updateClassroomPlannerSettings({
-            tutorial_seen_sections: sections,
-          });
-          auth.user = response.user;
-          auth.profile = response.profile;
-          const stored = response.profile.classroom_planner_tutorial_seen_sections ?? [];
-          acknowledged.value = unionOf(acknowledged.value, stored);
-          pending.value = pending.value.filter((section) => !stored.includes(section));
-        } catch {
-          lastWriteFailed.value = true;
-          toast.failure(TUTORIAL_COPY.seenSaveFailed);
-        }
-      }
-    } finally {
-      writing = false;
-    }
-  }
-
-  function queueWrite(): void {
-    writeQueued = true;
-    if (!writing) {
-      void drainWrites();
-    }
-  }
-
   return {
-    ready: computed(() => auth.profile !== null),
-    isSeen: (section) => isConfirmed(section) || pending.value.includes(section),
-    markSeen: (section) => {
-      if (isConfirmed(section) || pending.value.includes(section)) {
-        return;
-      }
-      pending.value = [...pending.value, section];
-      queueWrite();
-    },
-    persistence: computed(() => {
-      if (pending.value.length === 0) {
-        return "confirmed";
-      }
-      return lastWriteFailed.value ? "failed" : "pending";
-    }),
-    pendingSections: computed(() => pending.value),
+    ready: computed(() => store.ready),
+    isSeen: (section) => store.isSeen(section),
+    markSeen: (section) => store.markSeen(section),
+    persistence: computed(() => store.persistence),
+    pendingSections: computed(() => store.pending),
   };
 }
 

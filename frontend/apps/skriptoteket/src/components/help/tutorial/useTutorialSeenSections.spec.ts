@@ -192,6 +192,49 @@ describe("useTutorialSeenSections for signed-in users", () => {
     expect(profileSeen()).toEqual(["planner_overview", "planner_rules"]);
   });
 
+  it("keeps one write chain across gate remounts so a later gate cannot race an earlier write", async () => {
+    // The planner mounts one gate per section: the Overview gate unmounts with
+    // its PATCH still in flight, then the Rules gate mounts and dismisses.
+    const server = { seen: [] as string[] };
+    const outstanding: Array<{ body: SeenBody; done: Deferred<unknown> }> = [];
+    apiMocks.apiPatch.mockImplementation((_path: string, body: SeenBody) => {
+      const done = deferred<unknown>();
+      outstanding.push({ body, done });
+      return done.promise;
+    });
+    const auth = useAuthStore();
+    auth.profile = signedInProfile([]) as typeof auth.profile;
+
+    const overviewGate = useTutorialSeenSections("authenticated");
+    overviewGate.markSeen("planner_overview");
+    const rulesGate = useTutorialSeenSections("authenticated");
+    rulesGate.markSeen("planner_rules");
+
+    // Only the Overview write may be in flight; the Rules dismissal is queued
+    // behind it instead of starting a second, concurrent replacement.
+    expect(apiMocks.apiPatch).toHaveBeenCalledTimes(1);
+    expect(rulesGate.isSeen("planner_rules")).toBe(true);
+    expect(rulesGate.persistence.value).toBe("pending");
+
+    while (outstanding.length > 0) {
+      for (const call of outstanding.splice(0).reverse()) {
+        server.seen = [...call.body.tutorial_seen_sections];
+        call.done.resolve(profileResponse(server.seen));
+        await flush();
+      }
+      await flush();
+    }
+
+    expect([...server.seen].sort()).toEqual(["planner_overview", "planner_rules"]);
+    expect(apiMocks.apiPatch).toHaveBeenCalledTimes(2);
+    expect(apiMocks.apiPatch).toHaveBeenNthCalledWith(2, SETTINGS_PATH, {
+      tutorial_seen_sections: ["planner_overview", "planner_rules"],
+    });
+    expect(rulesGate.persistence.value).toBe("confirmed");
+    expect(overviewGate.isSeen("planner_rules")).toBe(true);
+    expect(profileSeen()).toEqual(["planner_overview", "planner_rules"]);
+  });
+
   it("keeps a section pending until an acknowledged profile list includes it", async () => {
     const auth = useAuthStore();
     auth.profile = signedInProfile([]) as typeof auth.profile;
