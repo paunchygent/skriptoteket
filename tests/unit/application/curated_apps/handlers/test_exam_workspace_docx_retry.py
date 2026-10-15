@@ -58,7 +58,7 @@ async def test_retry_returns_one_replacement_that_keeps_identity_and_stored_sour
         items=(make_item("item_001", 1, anchor="body:0001", source=make_source()),),
     )
     await env.seed(document)
-    env.exchange.reply = make_retry_reply(text="Ny frågetext.")
+    env.exchange.reply = make_retry_reply(text="Förklara vattnets kretslopp kortfattat.")
 
     response = await env.retry(document)
 
@@ -69,7 +69,7 @@ async def test_retry_returns_one_replacement_that_keeps_identity_and_stored_sour
     assert item.source_anchor == "body:0001"
     assert item.retry_source == document.items[0].retry_source
     assert item.kind is NativeExamItemKind.FREE_TEXT
-    assert item.plain_text_lines() == ("Ny frågetext.",)
+    assert item.plain_text_lines() == ("Förklara vattnets kretslopp kortfattat.",)
     assert len(env.exchange.requests) == 1
     payload = json.loads(env.exchange.requests[0].user_payload)
     assert [chunk["anchor"] for chunk in payload["chunks"]] == ["body:0001"]
@@ -203,7 +203,7 @@ async def test_a_stale_suggestion_is_dropped_by_the_replacement(env: Env) -> Non
         ),
     )
     await env.seed(document)
-    env.exchange.reply = make_retry_reply(text="Ny frågetext.")
+    env.exchange.reply = make_retry_reply(text="Förklara vattnets kretslopp kortfattat.")
 
     response = await env.retry(document)
 

@@ -198,7 +198,9 @@ def instruction_runs(
                     origin=origin,
                     sources=sources,
                     later=tuple(folded(c.text) for c in own if positions[c.anchor] > at[-1]),
-                    opens=not any(positions[c.anchor] < at[0] for c in own),
+                    # The item's own heading counts: an instruction printed after it
+                    # never opens the body ahead of the heading's line.
+                    opens=not any(positions[c.anchor] < at[0] for c in item_sources[owner]),
                 )
             )
         else:
@@ -258,7 +260,6 @@ def with_heading_runs(
             or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
             or at == 0
             or chunk.anchor in title_anchors
-            or (points_line(chunk.text) and not chunk.images and not chunk.missing_images)
         ):
             continue
         if chunk.anchor in owner:
