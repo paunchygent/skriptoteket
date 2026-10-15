@@ -72,7 +72,8 @@
   Tasks 6, 7 and 8 `done` (8: merge 0262f054, divider e72f27f3; review waived by
   user; staging walk and Exam.net import 5339805 show all marks and h1-h3).
   Story ST-SKRIPT-39-09 `done`; task 9 (section titles open their own questions)
-  `done` b0b090cc, Exam.net import 5339836.
+  `done` b0b090cc, Exam.net import 5339836; follow-up 26c56a03: styled points
+  headings open their sections, 9 stale DOCX handler tests repaired.
   No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
