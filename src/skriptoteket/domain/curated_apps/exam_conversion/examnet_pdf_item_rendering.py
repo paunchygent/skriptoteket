@@ -1,7 +1,7 @@
 """Exam.net PDF item rendering helpers shared by the item strategies.
 
 Purpose:
-    Build the item section shell, option, gap, marking-guide and match HTML, and the
+    Build the item section shell, option, gap, criteria and match HTML, and the
     answer-key warnings, that every Exam.net PDF item strategy composes.
 
 Relationships:
@@ -112,11 +112,16 @@ def gap_answer_key_html(
     return f'<div class="answer-key"><p>{escape(labels.multiple_answer_key_label)}:</p>{rows}</div>'
 
 
-def marking_guide_html(item: PdfExamItemSemantics, labels: ExamNetPdfItemLabelPolicy) -> str:
-    if not item.marking_guide:
+def criteria_html(item: PdfExamItemSemantics, labels: ExamNetPdfItemLabelPolicy) -> str:
+    if not item.criteria:
         return ""
-    guide = escape(item.marking_guide).replace("\n", "<br>")
-    return f'<p class="answer-key">{escape(labels.marking_guide_label)}: {guide}</p>'
+    rows = "".join(
+        f"<li>{escape(criterion.text).replace(chr(10), '<br>')} ({criterion.points} p)</li>"
+        for criterion in item.criteria
+    )
+    return (
+        f'<div class="answer-key"><p>{escape(labels.marking_guide_label)}:</p><ul>{rows}</ul></div>'
+    )
 
 
 def _gap_values_by_gap_id(item: PdfExamItemSemantics) -> dict[str, tuple[str, ...]]:

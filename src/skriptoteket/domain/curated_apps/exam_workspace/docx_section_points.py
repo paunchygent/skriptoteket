@@ -130,7 +130,10 @@ def split_section_totals(
         printing = {
             i
             for i in members
-            if any(
+            # Criteria already determine this item's points (Q12/R14), even when
+            # the prompt prints none. A section estimate must not overwrite their sum.
+            if accepted[i][0].criteria
+            or any(
                 POINT_LABEL.search(chunk.text) for chunk in spans[i] if chunk.anchor not in closing
             )
         }

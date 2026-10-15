@@ -31,6 +31,7 @@ import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarnin
 
 import type {
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
@@ -39,7 +40,6 @@ import {
   isIncompleteMatchingItem,
 } from "./examWorkspaceAnswerKeyRules";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
-import ExamWorkspaceMarkingGuideField from "./ExamWorkspaceMarkingGuideField.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
   EMPTY_MATCH_TEXT_GUIDANCE,
@@ -76,6 +76,7 @@ const emit = defineEmits<{
   toggleDetails: [];
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateMatchEntryText: [
     itemId: string,
@@ -83,7 +84,6 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
-  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -374,13 +374,6 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
-    />
-
-    <ExamWorkspaceMarkingGuideField
-      v-if="item.kind === 'free_text'"
-      :disabled="disabled"
-      :guide="item.marking_guide ?? null"
-      @update="(guide) => emit('updateMarkingGuide', item.item_id, guide)"
     />
 
     <fieldset

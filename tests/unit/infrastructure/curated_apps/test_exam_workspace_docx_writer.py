@@ -23,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeAssetSegment,
     NativeChoice,
     NativeExamAsset,
+    NativeExamCriterion,
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
@@ -112,7 +113,7 @@ def shared_picture_document() -> SharedPictureDocument:
                 ),
             ),
             points=1,
-            marking_guide=_SHARED_MARKING_GUIDE,
+            criteria=(NativeExamCriterion(text=_SHARED_MARKING_GUIDE, points=1),),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=_review_complete(),
         ),
@@ -442,7 +443,8 @@ class TestSharedInstructionPictures:
             if paragraph.style is not None and paragraph.style.name == "Heading 2"
         ]
         assert labels.answer_key in heading_names
-        assert labels.keyed(labels.marking_guide, _SHARED_MARKING_GUIDE) in texts
+        assert f"{labels.marking_guide}:" in texts
+        assert f"• {_SHARED_MARKING_GUIDE} (1 p)" in texts
 
     def test_item_body_picture_keeps_plain_text_rendering(self) -> None:
         fixture = shared_picture_document()

@@ -81,7 +81,7 @@ def _produced(segments: list[dict[str, object]]) -> ProducedItem:
             "match_left": [],
             "match_right": [],
             "match_pairs": [],
-            "marking_guide": None,
+            "criteria": [],
         }
     )
 

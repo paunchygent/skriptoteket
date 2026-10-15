@@ -106,7 +106,7 @@ def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
                 body.append(_PICTURE)
         body.extend(_tokens(run))
     texts = [
-        item.marking_guide,
+        *(criterion.text for criterion in item.criteria),
         *(value for gap in item.gaps for value in gap.accepted_values),
         *(choice.text for choice in item.choices),
         *(entry.text for entry in item.match_left),

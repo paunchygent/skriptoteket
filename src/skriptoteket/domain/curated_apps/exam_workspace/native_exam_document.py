@@ -212,6 +212,29 @@ class NativeExamDocumentOrigin(BaseModel):
         return self
 
 
+class NativeExamCriterion(BaseModel):
+    """One Fritext rubric criterion: its text and its whole points (Q12)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    text: str = Field(min_length=1)
+    points: int = Field(ge=1)
+
+    @field_validator("points", mode="before")
+    @classmethod
+    def _whole_points_not_bool(cls, points: object) -> object:
+        if isinstance(points, bool):
+            raise ValueError("criterion points must be a whole number")
+        return points
+
+    @field_validator("text")
+    @classmethod
+    def _non_empty_text(cls, text: str) -> str:
+        if not text.strip():
+            raise ValueError("criterion text must be non-empty")
+        return text
+
+
 class NativeExamItem(BaseModel):
     model_config = ConfigDict(
         frozen=True,
@@ -226,14 +249,17 @@ class NativeExamItem(BaseModel):
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
-    points_estimated: bool = False  # points split from a printed section total (D6)
+    # Points no source stated per question: a printed section total split over its
+    # questions (D6), or a prose marking guide's single-criterion estimate (R14).
+    points_estimated: bool = False
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
     ai_suggestion: NativeAnswerKeySuggestion | None = None
-    marking_guide: str | None = None  # rättningsmall: only free_text carries one (D31)
+    # Rubric criteria: only free_text carries any (Q12); their points are the item's.
+    criteria: tuple[NativeExamCriterion, ...] = ()
     review: NativeItemReview
     source_anchor: str | None = None
     # The question's original conversion source, when a DOCX conversion built it; it is
@@ -289,8 +315,7 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
-        if self.marking_guide and self.kind is not NativeExamItemKind.FREE_TEXT:
-            raise ValueError("only free_text items carry a marking guide")
+        self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
         self._suggestion_invariants()
@@ -406,6 +431,23 @@ class NativeExamItem(BaseModel):
             return
         if sorted(placed) != sorted(gap_ids):
             raise ValueError("gap_fill body must place every declared gap exactly once")
+
+    def _criteria_invariants(self) -> None:
+        """Fritext-only rubric criteria whose points are exactly the item's points (Q12).
+
+        The list replaces the marking-guide text: every other kind carries none,
+        and a non-empty list can never disagree with the item's own points.
+        """
+
+        if self.kind is not NativeExamItemKind.FREE_TEXT:
+            if self.criteria:
+                raise ValueError("only free_text items carry criteria")
+            return
+        if not self.criteria:
+            return
+        criteria_points = sum(criterion.points for criterion in self.criteria)
+        if self.points != criteria_points:
+            raise ValueError("free_text criteria points must equal the item's points")
 
     def body_asset_ids(self) -> tuple[str, ...]:
         found: list[str] = []

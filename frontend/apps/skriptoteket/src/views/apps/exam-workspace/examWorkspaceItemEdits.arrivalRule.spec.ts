@@ -123,7 +123,7 @@ function choiceItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [...correctChoiceIds], match_pairs: [], origin },

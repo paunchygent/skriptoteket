@@ -114,7 +114,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
             "body": [{"segments": segments}],
             "points": 1,
             "choices": [],
-            "marking_guide": None,
+            "criteria": [],
         }
     )
     converted = native_item(produced, chunks=(chunk,))

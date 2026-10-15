@@ -267,7 +267,7 @@ def retry_reply(
                 "match_left": [],
                 "match_right": [],
                 "match_pairs": [],
-                "marking_guide": None,
+                "criteria": [],
             }
         ],
     }

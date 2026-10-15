@@ -273,7 +273,11 @@ def _base_qti_item(
 def _free_text_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:
     if item.points is None or item.points <= 0:
         return replace(base_item, evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED)
-    return replace(base_item, free_text_criterion_points=item.points)
+    # The response mapping's row value: a criteria list flattens to one 1-point
+    # rule row per criterion point (Q13); without it the item stays one row worth
+    # its points. Criterion text is never written to the package.
+    criterion_points = 1 if item.criteria else item.points
+    return replace(base_item, free_text_criterion_points=criterion_points)
 
 
 def _choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:

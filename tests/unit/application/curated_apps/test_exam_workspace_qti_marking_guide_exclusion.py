@@ -1,4 +1,4 @@
-"""D4: the teacher-only marking guide never enters the student QTI package."""
+"""D4: teacher-only criterion text never enters the student QTI package."""
 
 import hashlib
 import zipfile
@@ -12,6 +12,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeAnswerKey,
     NativeAnswerKeyOrigin,
     NativeExamAsset,
+    NativeExamCriterion,
     NativeExamDocument,
     NativeExamDocumentOrigin,
     NativeExamItem,
@@ -30,8 +31,13 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 )
 
 
-def test_teacher_marking_guide_is_absent_from_every_qti_package_member() -> None:
-    guide = "PRIVATE_SCORER_GUIDE_39_05_09: answer is photosynthesis <rubricBlock>"
+def test_teacher_criteria_text_is_absent_from_every_qti_package_member() -> None:
+    first = "PRIVATE_SCORER_GUIDE_39_05_09: answer is photosynthesis <rubricBlock>"
+    second = "PRIVATE_SCORER_GUIDE_39_05_09_TWO: two points for the full process"
+    criteria = (
+        NativeExamCriterion(text=first, points=2),
+        NativeExamCriterion(text=second, points=1),
+    )
     document = NativeExamDocument(
         document_id=uuid4(),
         revision=1,
@@ -44,7 +50,7 @@ def test_teacher_marking_guide_is_absent_from_every_qti_package_member() -> None
                 kind=NativeExamItemKind.FREE_TEXT,
                 body=(NativeParagraph(segments=(NativeTextSegment(text="Förklara processen."),)),),
                 points=3,
-                marking_guide=guide,
+                criteria=criteria,
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 review=NativeItemReview(
                     state=NativeItemReviewState.REVIEW_COMPLETE,
@@ -60,6 +66,8 @@ def test_teacher_marking_guide_is_absent_from_every_qti_package_member() -> None
         members = [archive.read(name) for name in archive.namelist()]
     assert members
     assert any("Förklara processen.".encode() in member for member in members)
+    for criterion in criteria:
+        assert all(criterion.text.encode() not in member for member in members)
     assert all(b"PRIVATE_SCORER_GUIDE_39_05_09" not in member for member in members)
     assert all(b"photosynthesis" not in member for member in members)
     assert all(b"rubricBlock" not in member for member in members)

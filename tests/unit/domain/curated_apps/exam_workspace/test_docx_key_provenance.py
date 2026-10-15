@@ -8,6 +8,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
+    ProducedCriterion,
     ProducedItem,
     ProducedParagraph,
     ProducedSegment,
@@ -15,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeAnswerKeyOrigin,
+    NativeExamCriterion,
     NativeExamItemKind,
 )
 
@@ -189,7 +191,7 @@ def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
         kind=NativeExamItemKind.FREE_TEXT,
         key_source=None,
         facit_text="Bedöm resonemanget.",
-        marking_guide="Bedöm resonemanget.",
+        criteria=(ProducedCriterion(text="Bedöm resonemanget."),),
         points=None,
         choices=(),
         body=(
@@ -205,3 +207,8 @@ def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
     native = native_item(item)
     assert native.facit_text == item.facit_text
     assert native.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
+    # R14: a guide without per-criterion points is one estimated criterion at 1 point
+    # when the question prints none.
+    assert native.criteria == (NativeExamCriterion(text="Bedöm resonemanget.", points=1),)
+    assert native.points == 1
+    assert native.points_estimated is True

@@ -87,6 +87,28 @@ class ProducedMatchPair(_Produced):
     )
 
 
+class ProducedCriterion(_Produced):
+    """One grading criterion the answer key states for a free_text question (Q12)."""
+
+    text: str = Field(
+        min_length=1,
+        description="One criterion's wording, copied from the answer key without its points "
+        "or facit label; never student-visible text.",
+    )
+    points: int | float | None = Field(
+        default=None,
+        description="For a criterion the answer key states points for: its whole points, at "
+        "least 1, copied from the key; never computed or split. Null when the key states no "
+        "per-criterion points, which only one criterion holding the whole guide may be.",
+    )
+
+    @model_validator(mode="after")
+    def _text_has_wording(self) -> "ProducedCriterion":
+        if not self.text.strip():
+            raise ValueError("a criterion's text must contain the answer key's wording")
+        return self
+
+
 class ProducedItem(_Produced):
     """One exam question as the model builds it from its source chunks."""
 
@@ -130,7 +152,11 @@ class ProducedItem(_Produced):
         description="The teacher's original facit wording for this question, copied "
         "verbatim, including inline answers. Null only when this question has no facit entry."
     )
-    points: int | None = Field(description="Points printed in the source, else null.")
+    points: int | float | None = Field(
+        description="Points printed in the source, else null. A fractional printed point stays "
+        "as printed; conversion sends a free_text item whose points cannot be whole criteria "
+        "to needs review."
+    )
     choices: tuple[ProducedChoice, ...] = Field(
         description="Options in source order for single_choice and multiple_response; "
         "empty otherwise."
@@ -151,11 +177,12 @@ class ProducedItem(_Produced):
         "entry; a match_right entry no pair uses stays in match_right. A proposed key "
         "without a facit entry uses key_source invented. Empty for other kinds.",
     )
-    marking_guide: str | None = Field(
-        default=None,
-        description="For free_text: the teacher's marking guide for the question (sample "
-        "answer, grading criteria or points guidance) copied from the facit wording; null "
-        "when the facit gives none and for other kinds.",
+    criteria: tuple[ProducedCriterion, ...] = Field(
+        default=(),
+        description="For free_text: the grading criteria the answer key states, in order, each "
+        "with the points the key states for it. Exactly one criterion with points null when "
+        "the key gives a guide without per-criterion points, holding the whole guide; empty "
+        "when the facit gives no guidance and for every other kind.",
     )
 
     @model_validator(mode="after")
@@ -179,6 +206,10 @@ class ProducedItem(_Produced):
         for pair in self.match_pairs:
             if pair.left not in self.match_left or pair.right not in self.match_right:
                 raise ValueError("each match pair copies one match_left and one match_right entry")
+        if self.criteria and self.kind is not NativeExamItemKind.FREE_TEXT:
+            raise ValueError("only free_text items carry criteria")
+        if any(criterion.points is None for criterion in self.criteria) and len(self.criteria) != 1:
+            raise ValueError("a guide without per-criterion points is one criterion")
         return self
 
 

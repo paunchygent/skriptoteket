@@ -78,6 +78,14 @@ class PdfExamAnswerKeySemantics:
 
 
 @dataclass(frozen=True)
+class PdfExamCriterionSemantics:
+    """One free-text criterion and its whole point value."""
+
+    text: str
+    points: int
+
+
+@dataclass(frozen=True)
 class PdfExamItemSemantics:
     """One source-neutral PDF exam item after source adapter normalization."""
 
@@ -92,4 +100,4 @@ class PdfExamItemSemantics:
     match_left: tuple[PdfExamMatchEntrySemantics, ...] = ()
     match_right: tuple[PdfExamMatchEntrySemantics, ...] = ()
     answer_key: PdfExamAnswerKeySemantics = PdfExamAnswerKeySemantics(available=False)
-    marking_guide: str | None = None
+    criteria: tuple[PdfExamCriterionSemantics, ...] = ()

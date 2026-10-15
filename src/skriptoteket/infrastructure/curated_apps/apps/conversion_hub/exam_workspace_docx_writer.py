@@ -162,9 +162,12 @@ def _choice_letter(index: int) -> str:
 
 def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str, ...]:
     if item.kind is NativeExamItemKind.FREE_TEXT:
-        if not item.marking_guide:
+        if not item.criteria:
             return ()
-        return (labels.keyed(labels.marking_guide, item.marking_guide),)
+        return (
+            f"{labels.marking_guide}:",
+            *(f"• {criterion.text} ({criterion.points} p)" for criterion in item.criteria),
+        )
     if item.kind in _CHOICE_KINDS and item.answer_key.correct_choice_ids:
         text_by_choice_id = {choice.choice_id: choice.text for choice in item.choices}
         correct_texts = tuple(

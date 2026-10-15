@@ -144,7 +144,7 @@ def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
         "match_left": [],
         "match_right": [],
         "match_pairs": [],
-        "marking_guide": "",
+        "criteria": [],
     }
 
 
