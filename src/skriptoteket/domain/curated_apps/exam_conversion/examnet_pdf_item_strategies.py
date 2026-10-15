@@ -30,7 +30,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_rendering
     criteria_html,
     gap_answer_key_html,
     item_shell,
-    match_letter,
     missing_answer_key,
     missing_gap_key_labels,
     option_texts_by_id,
@@ -208,7 +207,7 @@ class GapOpenClozeExamNetPdfItemStrategy:
 
 @dataclass(frozen=True)
 class MatchingExamNetPdfItemStrategy:
-    """Render keyed matching items: both lists as the student sees them, pairs in the key."""
+    """Render category grids with blank student cells and a separately marked key."""
 
     def render(
         self,
@@ -229,32 +228,22 @@ class MatchingExamNetPdfItemStrategy:
                 for pair in pairs
             )
             or {pair.left_id for pair in pairs} != set(left_text_by_id)
-            or len(pairs) != len(left_text_by_id)
+            or len({(pair.left_id, pair.right_id) for pair in pairs}) != len(pairs)
         ):
             return ExamNetPdfItemStrategyResult(
                 item=None,
-                warnings=(answer_key_mismatch(item, "pairs do not key every left entry once"),),
+                warnings=(
+                    answer_key_mismatch(item, "pairs must key every row without duplicates"),
+                ),
             )
 
         labels = context.label_policy
-        left_html = "".join(
-            f"<p>{index}. {escape(entry.text)}</p>"
-            for index, entry in enumerate(item.match_left, start=1)
-        )
-        right_html = "".join(
-            f"<p>{match_letter(index)}) {escape(entry.text)}</p>"
-            for index, entry in enumerate(item.match_right)
-        )
-        key_rows = "".join(
-            f"<p>{escape(left_text_by_id[pair.left_id])} – "
-            f"{escape(right_text_by_id[pair.right_id])}</p>"
-            for pair in pairs
-        )
+        correct_pairs = frozenset((pair.left_id, pair.right_id) for pair in pairs)
         body_html = (
-            f'<div class="match-left">{left_html}</div>'
-            f'<div class="match-right">{right_html}</div>'
-            f'<div class="answer-key"><p>{escape(labels.match_key_label)}:</p>'
-            f"{key_rows}</div>"
+            _matching_table(item, correct_pairs=frozenset())
+            + f'<div class="answer-key"><p>{escape(labels.match_key_label)}:</p>'
+            + _matching_table(item, correct_pairs=correct_pairs)
+            + "</div>"
         )
         return ExamNetPdfItemStrategyResult(
             item=DigiExamExamNetPdfItemRender(
@@ -268,6 +257,29 @@ class MatchingExamNetPdfItemStrategy:
                 )
             )
         )
+
+
+def _matching_table(
+    item: PdfExamItemSemantics, *, correct_pairs: frozenset[tuple[str, str]]
+) -> str:
+    """Keep source row/column order, including categories unused by the key."""
+    headings = "".join(f'<th scope="col">{escape(entry.text)}</th>' for entry in item.match_right)
+    rows: list[str] = []
+    for left in item.match_left:
+        cells = "".join(
+            '<td><span class="tick-box">'
+            + ("X" if (left.entry_id, right.entry_id) in correct_pairs else "")
+            + "</span></td>"
+            for right in item.match_right
+        )
+        rows.append(f'<tr><th scope="row">{escape(left.text)}</th>{cells}</tr>')
+    return (
+        '<table class="matching-grid"><thead><tr><td></td>'
+        + headings
+        + "</tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
 
 
 @dataclass(frozen=True)

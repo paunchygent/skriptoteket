@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import matching_score
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -11,6 +12,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+    NativeExamItemKind,
 )
 
 AcceptedItem = tuple[NativeExamItem, tuple[str, ...]]
@@ -26,6 +28,9 @@ class SectionPoints:
 
     accepted: tuple[AcceptedItem, ...]
     absorbed: frozenset[str]
+    # Source questions whose allocated share cannot yield a positive tick value.
+    # The application uses its ordinary source-review fallback for these anchors.
+    review_anchors: tuple[tuple[str, ...], ...] = ()
 
 
 def _number(label: str) -> int | None:
@@ -111,6 +116,7 @@ def split_section_totals(
     sections = sorted((positions[first], total) for first, total in starting.items())
     updated = list(accepted)
     absorbed: set[str] = set()
+    review_anchors: list[tuple[str, ...]] = []
     for index, (start, total) in enumerate(sections):
         end = sections[index + 1][0] if index + 1 < len(sections) else len(chunks)
         members = sorted(
@@ -147,6 +153,24 @@ def split_section_totals(
             item, anchors = accepted[i]
             guess = share + 1 if rank < extra else share
             if guess > 0:
-                item = item.model_copy(update={"points": guess, "points_estimated": True})
+                if item.kind is NativeExamItemKind.MATCHING:
+                    # An unkeyed grid has no ticks from which to derive a positive total.
+                    if item.answer_key.match_pairs:
+                        try:
+                            tick_points, points, _ = matching_score(
+                                guess, len(item.answer_key.match_pairs)
+                            )
+                        except ValueError:
+                            review_anchors.append(anchors)
+                            continue
+                        item = item.model_copy(
+                            update={
+                                "tick_points": tick_points,
+                                "points": points,
+                                "points_estimated": True,
+                            }
+                        )
+                else:
+                    item = item.model_copy(update={"points": guess, "points_estimated": True})
             updated[i] = (item, anchors)
-    return SectionPoints(tuple(updated), frozenset(absorbed))
+    return SectionPoints(tuple(updated), frozenset(absorbed), tuple(review_anchors))

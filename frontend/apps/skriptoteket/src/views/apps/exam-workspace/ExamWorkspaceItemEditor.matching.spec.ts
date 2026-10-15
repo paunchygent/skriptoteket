@@ -1,13 +1,15 @@
 /**
- * Exam workspace item editor, matching fieldset.
+ * Exam workspace item editor, Kategorisera grid.
  *
  * Expected behavior:
- *   A matching item shows numbered left rows with a text input and a select
- *   of lettered right entries; choosing an answer emits the full pair list in
- *   left order, clearing the last choice emits an empty list, an entry text
- *   edit emits its side and id, an incomplete key shows the inline guidance, a right entry in no pair keeps
- *   the key complete,
- *   and an empty entry text shows the entry hint.
+ *   A matching item shows the Kategorisera grid: a row per left entry, a
+ *   column per right entry, and a checkbox per cell with the key ticked.
+ *   Ticking or unticking a cell emits the full tick list in row and column
+ *   order, so a row may hold several ticks and a column several rows (Q9).
+ *   The tick value is editable, the points are read-only (Q10), and an
+ *   invalid tick value is marked without being emitted. An incomplete key,
+ *   meaning a keyed row without a tick, shows the inline guidance; an unused
+ *   column keeps the key complete; an empty entry text shows the entry hint.
  */
 
 import { mount } from "@vue/test-utils";
@@ -35,22 +37,23 @@ function mountEditor(item: NativeExamItem) {
   });
 }
 
-describe("ExamWorkspaceItemEditor matching fieldset", () => {
-  it("renders both lists with the key preselected and the Swedish labels", () => {
+function tick(leftId: string, rightId: string): string {
+  return `[data-test="exam-workspace-match-tick-${leftId}-${rightId}"]`;
+}
+
+describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
+  it("renders the grid with the key ticked and the Kategorisera labels", () => {
     const wrapper = mountEditor(buildMatchingItem());
 
-    expect(wrapper.text()).toContain("Matchning – välj rätt svar för varje rad");
+    expect(wrapper.get('[data-test="exam-workspace-kategorisera-grid"]').text()).toContain(
+      "Kategorisera",
+    );
     expect(wrapper.text()).toContain("Fråga 1");
-    expect(wrapper.text()).toContain("Matchning");
-    const select = wrapper.get<HTMLSelectElement>('[data-test="exam-workspace-match-pair-left_001"]');
-    expect(select.attributes("aria-label")).toBe("Rätt svar för rad 1");
-    expect(select.element.value).toBe("right_002");
-    expect(select.findAll("option").map((option) => option.text())).toEqual([
-      "Inget svar valt",
-      "A – incarceration",
-      "B – truancy",
-      "C – disdain",
-    ]);
+    expect(wrapper.get<HTMLInputElement>(tick("left_001", "right_002")).element.checked).toBe(true);
+    expect(wrapper.get<HTMLInputElement>(tick("left_001", "right_001")).element.checked).toBe(false);
+    expect(wrapper.get(tick("left_001", "right_002")).attributes("aria-label")).toBe(
+      "absence from school without permission: truancy",
+    );
     expect(
       wrapper.get<HTMLInputElement>('[data-test="exam-workspace-match-right-text-right_003"]').element
         .value,
@@ -59,16 +62,17 @@ describe("ExamWorkspaceItemEditor matching fieldset", () => {
     expect(wrapper.find('[data-test="exam-workspace-match-hint"]').exists()).toBe(false);
   });
 
-  it("emits the full pair list in left order when one answer changes", async () => {
+  it("emits a second tick in a row, keeping row and column order", async () => {
     const wrapper = mountEditor(buildMatchingItem());
 
-    await wrapper.get('[data-test="exam-workspace-match-pair-left_002"]').setValue("right_003");
+    await wrapper.get(tick("left_002", "right_003")).setValue(true);
 
     expect(wrapper.emitted("updateMatchPairs")).toEqual([
       [
         "item_001",
         [
           { left_id: "left_001", right_id: "right_002" },
+          { left_id: "left_002", right_id: "right_001" },
           { left_id: "left_002", right_id: "right_003" },
           { left_id: "left_003", right_id: "right_003" },
         ],
@@ -76,20 +80,31 @@ describe("ExamWorkspaceItemEditor matching fieldset", () => {
     ]);
   });
 
-  it("emits an empty pair list when the only choice is cleared", async () => {
+  it("emits an empty tick list when the only tick is cleared", async () => {
     const wrapper = mountEditor(buildMatchingItemWithPairs([[2, 1]]));
 
-    await wrapper.get('[data-test="exam-workspace-match-pair-left_002"]').setValue("");
+    await wrapper.get(tick("left_002", "right_001")).setValue(false);
 
     expect(wrapper.emitted("updateMatchPairs")).toEqual([["item_001", []]]);
   });
 
-  it("shows the key guidance while a keyed item is incomplete", () => {
+  it("accepts one column serving several rows", () => {
     const wrapper = mountEditor(
       buildMatchingItemWithPairs([
         [1, 2],
         [2, 2],
-        [3, 3],
+        [3, 2],
+      ]),
+    );
+
+    expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
+  });
+
+  it("shows the key guidance while a keyed row has no tick", () => {
+    const wrapper = mountEditor(
+      buildMatchingItemWithPairs([
+        [1, 2],
+        [2, 1],
       ]),
     );
 
@@ -98,34 +113,36 @@ describe("ExamWorkspaceItemEditor matching fieldset", () => {
     );
   });
 
-  it("offers an unpaired right entry as a choice without flagging the key", () => {
+  it("keeps the key complete beside an unused column", () => {
     const wrapper = mountEditor(buildMatchingItemWithDistractor());
 
     expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
-    expect(
-      wrapper
-        .get('[data-test="exam-workspace-match-pair-left_001"]')
-        .findAll("option")
-        .map((option) => option.text()),
-    ).toContain("D – ferocious");
+    expect(wrapper.find(tick("left_001", "right_004")).exists()).toBe(true);
   });
 
-  it("flags two left entries that choose the same right entry beside a distractor", () => {
-    const wrapper = mountEditor(
-      buildMatchingItemWithDistractor({
-        answer_key: {
-          correct_choice_ids: [],
-          match_pairs: [
-            { left_id: "left_001", right_id: "right_004" },
-            { left_id: "left_002", right_id: "right_004" },
-            { left_id: "left_003", right_id: "right_003" },
-          ],
-          origin: "teacher_authored",
-        },
-      }),
-    );
+  it("shows read-only points and emits a valid tick value", async () => {
+    const wrapper = mountEditor(buildMatchingItem());
+    const points = wrapper.get<HTMLInputElement>('[data-test="exam-workspace-item-points-input"]');
+    const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
 
-    expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(true);
+    expect(points.attributes("readonly")).toBeDefined();
+    expect(points.element.value).toBe("3");
+    await tickPoints.setValue("0.5");
+
+    expect(wrapper.emitted("updateTickPoints")).toEqual([["item_001", "0.5"]]);
+    expect(tickPoints.attributes("aria-invalid")).toBeUndefined();
+  });
+
+  it("marks a tick value with three decimals or zero and emits nothing", async () => {
+    const wrapper = mountEditor(buildMatchingItem());
+    const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
+
+    await tickPoints.setValue("0.125");
+    expect(tickPoints.attributes("aria-invalid")).toBe("true");
+    await tickPoints.setValue("0");
+
+    expect(tickPoints.attributes("aria-invalid")).toBe("true");
+    expect(wrapper.emitted("updateTickPoints")).toBeUndefined();
   });
 
   it("emits the side and id of an edited entry text", async () => {
@@ -150,7 +167,7 @@ describe("ExamWorkspaceItemEditor matching fieldset", () => {
     });
 
     expect(wrapper.get('[data-test="exam-workspace-match-hint"]').text()).toBe(
-      "En rad eller ett svar i matchningen saknar text.",
+      "En rad eller en kategori saknar text.",
     );
     expect(
       wrapper.get('[data-test="exam-workspace-match-left-text-left_003"]').attributes("aria-invalid"),

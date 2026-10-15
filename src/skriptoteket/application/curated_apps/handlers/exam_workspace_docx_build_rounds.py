@@ -171,14 +171,18 @@ Rules:
   line's anchor and the total as its points.
 - kind: single_choice has exactly one correct option, multiple_response one or more,
   gap_fill splits the source sentence into text segments around each gap with one gap
-  segment per gap, matching pairs entries of two lists, free_text has no choices and no gaps.
-- A question that asks the student to pair each entry of one list with an entry of another
-  list (a table or two lists, answered by writing a letter or number next to each entry) is
-  matching. match_left holds the entries the student pairs from and match_right every entry
-  the student chooses among, also entries no pair uses, each copied without its number or
-  letter. match_pairs holds the pairs the facit gives: each match_left entry in exactly one
-  pair, copying that entry and the match_right entry the facit's letter or number points to;
-  a match_right entry no pair names stays in the list. Without a facit, a proposed set of
+  segment per gap, matching sorts the entries of one list into the categories of another
+  list, free_text has no choices and no gaps.
+- A question that asks the student to pair or sort the entries of one list into the
+  categories of another list (a table or two lists, answered by writing a letter or number
+  next to each entry, or by ticking category cells) is matching. match_left holds the
+  entries the student sorts, in the order the source lists them, and match_right every
+  category the student chooses among, also categories no entry uses, each copied without
+  its number or letter. match_pairs holds every tick the facit's answer key gives, several
+  for one match_left entry when the key says so: copy that entry and the match_right entry
+  the facit's letter or number points to. Every match_left entry has at least one pair; a
+  match_right entry may serve several entries or none; the same pair never appears twice.
+  A match_right entry no pair names stays in the list. Without a facit, a proposed set of
   pairs follows the invented key rule. The body holds the question's
   instructions without the lists.
   A matching item has no gaps and no choices; an empty answer cell is no blank.

@@ -45,6 +45,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }
@@ -55,7 +56,7 @@ describe("examWorkspaceRows", () => {
     expect(examWorkspaceTypeLabel("single_choice")).toBe("Flerval: ett val");
     expect(examWorkspaceTypeLabel("multiple_response")).toBe("Flerval: flera val");
     expect(examWorkspaceTypeLabel("gap_fill")).toBe("Lucktext");
-    expect(examWorkspaceTypeLabel("matching")).toBe("Matchning");
+    expect(examWorkspaceTypeLabel("matching")).toBe("Kategorisera");
   });
 
   it("maps review states to Swedish status labels", () => {

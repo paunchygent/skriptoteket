@@ -6229,6 +6229,8 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
+            /** Tick Points */
+            tick_points?: number | string | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
@@ -6281,6 +6283,8 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor: string | null;
+            /** Tick Points */
+            tick_points: string | null;
         };
         /**
          * NativeExamItemKind

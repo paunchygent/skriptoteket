@@ -1,6 +1,6 @@
 ## Current
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
   parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
   (walking skeleton) `in_progress`: staging baseline `03ba322d`; earlier reviews
@@ -13,7 +13,7 @@
   `in_progress` (retained `01a13f60-f5d1-7cee-9c93-2d226dad61de`): F2 repaired
   on `fix/planner-hjalp-1024` `0a91a86a`, ruthless review approved 2026-10-15,
   merged to main; next: staging deploy and signed-in walks at 375/900/1024/1280+ px.
-  [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
+  [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hj%C3%A4lp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
   duplicates 08-36-02 and closes with it.
   User gates: talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), ElevenLabs
   draft spend, render approval, prod media deploy. Guide step 3 wording (paste
@@ -55,12 +55,12 @@
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
-  `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`). Task 4 `done` (a3525650; Exam.net
-  5337577). Task 5 `done` (5c8c540f, walk fix 4b54bceb; Exam.net 5337942).
-  Task 6 (structured misspelling producer, R15-R17) `in_progress` in its
-  worktree; task 7 export checklist follows. No broad test suites in parallel
-  (user rule 2026-10-15).
+  `in_progress`: F1 repair `d8c2efd1`, owner Pi `e94bd82a`; next: rereview
+  and live proof. Retained `01a13c92` report:
+  `evidence/impl/TASK-SKRIPT-39-09-03/merge-repair-report.md`.
+  Task 4 `done` (a3525650; Exam.net 5337577); task 5 `done` (5c8c540f,
+  fix 4b54bceb; Exam.net 5337942). Task 6 `in_progress` (R15-R17);
+  task 7 follows. No broad test suites in parallel (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).

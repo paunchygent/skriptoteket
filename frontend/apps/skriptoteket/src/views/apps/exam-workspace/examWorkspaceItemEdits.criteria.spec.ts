@@ -38,6 +38,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }

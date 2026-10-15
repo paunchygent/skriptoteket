@@ -66,6 +66,7 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }
@@ -126,12 +127,26 @@ describe("isIncompleteMatchingItem", () => {
     ).toBe(true);
   });
 
-  it("rejects a keyed item that uses one right entry twice", () => {
+  it("accepts one column serving several rows and a row with two ticks", () => {
     expect(
       isIncompleteMatchingItem(
         buildMatchingItemWithPairs([
           [1, 2],
           [2, 2],
+          [2, 3],
+          [3, 3],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a repeated tick", () => {
+    expect(
+      isIncompleteMatchingItem(
+        buildMatchingItemWithPairs([
+          [1, 2],
+          [1, 2],
+          [2, 1],
           [3, 3],
         ]),
       ),
@@ -142,7 +157,7 @@ describe("isIncompleteMatchingItem", () => {
     expect(isIncompleteMatchingItem(buildMatchingItemWithDistractor())).toBe(false);
   });
 
-  it("rejects two left entries choosing the same right entry beside a distractor", () => {
+  it("accepts two rows ticking the same column beside an unused column", () => {
     expect(
       isIncompleteMatchingItem(
         buildMatchingItemWithDistractor({
@@ -157,7 +172,7 @@ describe("isIncompleteMatchingItem", () => {
           },
         }),
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("rejects a distractor item that leaves a left entry unpaired", () => {
@@ -204,7 +219,7 @@ describe("isIncompleteMatchingItem", () => {
 
   it("names the question and carries the guidance", () => {
     expect(incompleteMatchKeyCopy([buildMatchingItem({ sequence: 4 })])).toBe(
-      `Fråga 4 har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
+      `Fråga 4 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
   });
 });

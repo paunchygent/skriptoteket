@@ -15,7 +15,7 @@ def validate_answer_key_suggestion(suggestion: NativeAnswerKeySuggestion | None)
     and it stays stored so the fingerprint can report it out of date.
     Only the suggestion's own shape is invariant here: exactly one
     payload family carries the proposed key (choice ids, match pairs
-    or gap accepted values) and no entry is named twice within it.
+    or gap accepted values), with no duplicate choice, row-column pair or gap.
     Producer validation against the requested question and the current
     answer key's constraints live in their own checks, so a stored
     historical suggestion never becomes a valid active key by storage.
@@ -32,12 +32,9 @@ def validate_answer_key_suggestion(suggestion: NativeAnswerKeySuggestion | None)
         raise ValueError("a kept suggestion proposes exactly one kind of key")
     if len(set(suggestion.correct_choice_ids)) != len(suggestion.correct_choice_ids):
         raise ValueError("suggested choice ids must be unique")
-    paired_left = [pair.left_id for pair in suggestion.match_pairs]
-    if len(set(paired_left)) != len(paired_left):
-        raise ValueError("a suggestion pairs each left entry at most once")
-    paired_right = [pair.right_id for pair in suggestion.match_pairs]
-    if len(set(paired_right)) != len(paired_right):
-        raise ValueError("a suggestion pairs each right entry at most once")
+    cells = {(pair.left_id, pair.right_id) for pair in suggestion.match_pairs}
+    if len(cells) != len(suggestion.match_pairs):
+        raise ValueError("a suggestion pairs a left and right entry at most once")
     suggested_gap_ids = [entry.gap_id for entry in suggestion.gap_accepted_values]
     if len(set(suggested_gap_ids)) != len(suggested_gap_ids):
         raise ValueError("a suggestion names each gap at most once")

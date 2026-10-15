@@ -101,6 +101,7 @@ const {
   updateItemMatchPairs,
   updateItemParagraphSegments,
   updateItemPoints,
+  updateItemTickPoints,
   workspaceDocument,
 } = useExamWorkspaceDocument();
 
@@ -423,6 +424,7 @@ async function handleSave(): Promise<void> {
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
             @update-points="updateItemPoints"
+            @update-tick-points="updateItemTickPoints"
           />
         </div>
       </div>

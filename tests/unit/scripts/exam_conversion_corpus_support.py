@@ -21,6 +21,9 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 GOLD = CORPUS / "gold"
 STEMS = tuple(sorted(path.stem for path in GOLD.glob("*.json")))
+# The agent-authored grid exam has no live recording; tests that replay use the recorded set.
+AUTHORED_STEM = "svenska_2_kategorisera_ordklasser_med_facit"
+RECORDED_STEMS = tuple(sorted(path.name for path in RECORDINGS.iterdir() if path.is_dir()))
 
 
 def gold_exam(stem: str) -> GoldExam:

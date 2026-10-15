@@ -11,6 +11,7 @@ from scripts.exam_conversion_eval.compare import (
 )
 from scripts.exam_conversion_eval.gold import GoldExam, GoldGap, GoldItem, GoldParent
 from tests.unit.scripts.exam_conversion_corpus_support import (
+    AUTHORED_STEM,
     STEMS,
     gold_exam,
     mutated_items,
@@ -355,3 +356,23 @@ def test_a_question_converted_out_of_order_is_judged_against_its_own_gold():
     first, second = exam.items[0], exam.items[1]
     comparison = compare_exam(exam, (second, first, *exam.items[2:]))
     assert comparison.passed
+
+
+def test_category_grid_pairs_compare_as_sets_not_as_a_sequence():
+    exam = gold_exam(AUTHORED_STEM)
+    index = question_index(exam, "Fråga 1")
+    item = exam.questions[index]
+    assert [pair.left for pair in item.pairs].count("vila") == 2
+    reversed_pairs = tuple(reversed(item.pairs))
+    comparison = compare_exam(exam, mutated_items(exam, index, pairs=reversed_pairs))
+    assert comparison.items[index].passed, "pair order must not count"
+
+
+def test_category_grid_a_tick_moved_to_the_unused_category_fails_scoring():
+    exam = gold_exam(AUTHORED_STEM)
+    index = question_index(exam, "Fråga 1")
+    item = exam.questions[index]
+    first, second, *rest = item.pairs
+    moved = second.model_copy(update={"right": "Adjektiv"})
+    comparison = compare_exam(exam, mutated_items(exam, index, pairs=(first, moved, *rest)))
+    assert _failed(comparison, index) == {"scoring"}

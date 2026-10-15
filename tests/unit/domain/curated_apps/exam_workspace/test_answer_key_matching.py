@@ -115,6 +115,22 @@ def test_well_formed_proposal_is_kept_as_a_matching_suggestion() -> None:
     assert kept.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
 
 
+def test_proposal_accepts_a_many_to_many_key() -> None:
+    item = recorded_matching_items()[0]
+
+    proposal = proposal_from_model_content(
+        view=_view(item), content=_content((1, 1), (1, 2), (2, 1), (3, 3))
+    )
+
+    assert proposal is not None
+    assert proposal.match_pairs == (
+        ("left_001", "right_001"),
+        ("left_001", "right_002"),
+        ("left_002", "right_001"),
+        ("left_003", "right_003"),
+    )
+
+
 def test_proposal_may_leave_a_distractor_right_entry_unused() -> None:
     item = recorded_matching_items()[0]
     other_right = recorded_matching_items()[1].match_right[0].text
@@ -140,8 +156,8 @@ def test_proposal_may_leave_a_distractor_right_entry_unused() -> None:
     ("label", "content"),
     [
         ("left entry unpaired", _content((1, 1), (2, 2))),
-        ("left entry paired twice", _content((1, 1), (1, 2), (3, 3))),
-        ("right entry used twice", _content((1, 1), (2, 1), (3, 3))),
+        ("left entry twice leaves another unpaired", _content((1, 1), (1, 2), (3, 3))),
+        ("one pair repeated", _content((1, 1), (1, 1), (2, 2), (3, 3))),
         ("unknown left id", _content((1, 1), (2, 2), (9, 3))),
         ("unknown right id", _content((1, 1), (2, 2), (3, 9))),
         ("no pairs", _content()),

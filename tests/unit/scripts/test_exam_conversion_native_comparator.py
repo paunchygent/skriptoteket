@@ -1,5 +1,6 @@
 """The five-principle comparator judged on native documents replayed from recordings."""
 
+from collections import Counter
 from dataclasses import dataclass
 from uuid import uuid4
 
@@ -9,6 +10,7 @@ from scripts.exam_conversion_eval.compare import (
     ExamComparison,
     compare_native_exam,
 )
+from scripts.exam_conversion_eval.compare_questions import Question, gold_questions
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -41,7 +43,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.scripts.exam_conversion_corpus_support import (
-    STEMS,
+    AUTHORED_STEM,
+    RECORDED_STEMS,
     gold_exam,
     question_index,
     replayed,
@@ -91,7 +94,7 @@ def _facit_leak_hits() -> list[_LeakHit]:
     """Per open gold question that keeps a facit, the first converted free-text item where
     appending that facit makes the comparator report leakage on that question."""
     hits: list[_LeakHit] = []
-    for stem in STEMS:
+    for stem in RECORDED_STEMS:
         recorded, _ = replayed(stem)
         baseline = _compare(stem)
         free_text = [
@@ -118,7 +121,11 @@ def _facit_leak_hits() -> list[_LeakHit]:
 def test_the_teachers_facit_appended_to_an_open_native_question_leaks():
     hits = _facit_leak_hits()
     # Only exams with an open question whose gold keeps a teacher's facit can leak it.
-    with_facit = {stem for stem in STEMS if any(_facit(q) for q in gold_exam(stem).questions)}
+    with_facit = {
+        stem
+        for stem in RECORDED_STEMS
+        if any(_facit(question) for question in gold_exam(stem).questions)
+    }
     assert with_facit
     assert {hit.stem for hit in hits} >= with_facit
     for hit in hits:
@@ -157,7 +164,7 @@ def test_a_review_item_built_from_source_never_leaks_but_a_converted_one_under_r
 def _clean_parents() -> list[tuple[str, NativeExamDocument, NativeExamParent, ExamComparison]]:
     """Recorded parents whose children all meet every principle."""
     found = []
-    for stem in STEMS:
+    for stem in RECORDED_STEMS:
         recorded, _ = replayed(stem)
         baseline = _compare(stem)
         position = {item.item_id: i for i, item in enumerate(recorded.items)}
@@ -311,31 +318,35 @@ def _review() -> NativeItemReview:
     )
 
 
-def _table_cells(item: GoldItem) -> tuple[list[str], list[str]]:
-    rows = [line.split(" | ") for line in item.prompt.split("\n") if " | " in line]
-    return [row[0].split(". ", 1)[1] for row in rows], [row[1].split(". ", 1)[1] for row in rows]
+def _matching_view(item: GoldItem) -> Question:
+    """The gold question as the comparator reads it, its table split into instruction, left and
+    right lists."""
+    return gold_questions((item,))[0].view
 
 
-def _native_matching(item: GoldItem, rights: list[str]) -> NativeExamItem:
-    lefts, _ = _table_cells(item)
-    left = tuple(NativeMatchLeft(left_id=f"left_{i:03d}", text=t) for i, t in enumerate(lefts, 1))
-    right = tuple(
-        NativeMatchRight(right_id=f"right_{i:03d}", text=t) for i, t in enumerate(rights, 1)
+def _native_matching(item: GoldItem, rights: list[str] | None = None) -> NativeExamItem:
+    view = _matching_view(item)
+    left = tuple(
+        NativeMatchLeft(left_id=f"left_{i:03d}", text=text)
+        for i, text in enumerate(view.match_left, 1)
     )
+    right = tuple(
+        NativeMatchRight(right_id=f"right_{i:03d}", text=text)
+        for i, text in enumerate(view.match_right if rights is None else rights, 1)
+    )
+    left_ids = {entry.text: entry.left_id for entry in left}
     right_ids = {entry.text: entry.right_id for entry in right}
     pairs = tuple(
-        NativeMatchPair(left_id=entry.left_id, right_id=right_ids[pair.right])
-        for entry, pair in zip(left, item.pairs, strict=True)
+        NativeMatchPair(left_id=left_ids[pair.left], right_id=right_ids[pair.right])
+        for pair in item.pairs
     )
-    instructions = [line for line in item.prompt.split("\n") if " | " not in line]
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.MATCHING,
-        body=tuple(
-            NativeParagraph(segments=(NativeTextSegment(text=line),)) for line in instructions
-        ),
+        body=tuple(NativeParagraph(segments=(NativeTextSegment(text=line),)) for line in view.body),
         points=item.points,
+        tick_points=1,
         match_left=left,
         match_right=right,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED, match_pairs=pairs),
@@ -357,8 +368,8 @@ def _document(item: NativeExamItem, *, validate: bool = True) -> NativeExamDocum
 def _matching_case() -> tuple[GoldExam, GoldItem, NativeExamItem, list[str]]:
     exam = gold_exam(_ENGLISH)
     item = exam.questions[question_index(exam, "Vocabulary Matching, Question 1")]
-    _, rights = _table_cells(item)
-    return _single(exam, item), item, _native_matching(item, rights), rights
+    rights = list(_matching_view(item).match_right)
+    return _single(exam, item), item, _native_matching(item), rights
 
 
 def test_native_matching_with_lists_in_table_order_passes_and_a_wrong_pair_fails():
@@ -414,3 +425,46 @@ def test_native_matching_with_an_extra_distractor_entry_passes():
     extended = native.model_copy(update={"match_right": (*native.match_right, distractor)})
     document = _document(extended).model_copy(update={"title": single.title})
     assert compare_native_exam(single, document).passed
+
+
+def _grid_case() -> tuple[GoldExam, GoldItem, NativeExamItem]:
+    """The authored category-sorting exam's first grid, whose vila row keys two categories."""
+    exam = gold_exam(AUTHORED_STEM)
+    item = exam.questions[0]
+    return _single(exam, item), item, _native_matching(item)
+
+
+def test_native_category_grid_with_several_pairs_per_row_passes():
+    single, item, native = _grid_case()
+    keyed = Counter(pair.left for pair in item.pairs)
+    assert max(keyed.values()) == 2, "the authored grid has a row with two correct categories"
+    assert any(
+        entry.text not in {pair.right for pair in item.pairs} for entry in native.match_right
+    ), "the authored grid has an unused category"
+    document = _document(native).model_copy(update={"title": single.title})
+    assert compare_native_exam(single, document).passed
+
+
+def test_native_category_grid_reordered_pairs_pass_because_pairs_are_a_set():
+    single, _, native = _grid_case()
+    reordered = native.model_copy(
+        update={
+            "answer_key": native.answer_key.model_copy(
+                update={"match_pairs": tuple(reversed(native.answer_key.match_pairs))}
+            )
+        }
+    )
+    document = _document(reordered).model_copy(update={"title": single.title})
+    assert compare_native_exam(single, document).passed
+
+
+def test_native_category_grid_moved_tick_to_the_unused_category_fails_scoring():
+    single, _, native = _grid_case()
+    pairs = native.answer_key.match_pairs
+    assert pairs[0].left_id == pairs[1].left_id
+    moved = pairs[1].model_copy(update={"right_id": native.match_right[-1].right_id})
+    key = native.answer_key.model_copy(update={"match_pairs": (pairs[0], moved, *pairs[2:])})
+    document = _document(native.model_copy(update={"answer_key": key})).model_copy(
+        update={"title": single.title}
+    )
+    assert _failed(compare_native_exam(single, document), 0) == {"scoring"}

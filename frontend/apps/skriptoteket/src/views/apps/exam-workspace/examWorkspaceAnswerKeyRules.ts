@@ -3,9 +3,9 @@
  *
  * Domain purpose:
  *   Decide whether a gap item carries a partial answer key (keyed, but with
- *   empty accepted values in some gaps) or a matching item carries an
- *   incomplete pair list (keyed, but not every left entry in exactly one
- *   pair, or a right entry in more than one pair), and build the Swedish guidance copy the teacher sees
+ *   empty accepted values in some gaps) or a Kategorisera grid carries an
+ *   incomplete tick list (keyed, but a row without a tick, a repeated tick or
+ *   a tick naming an unknown entry), and build the Swedish guidance copy the teacher sees
  *   inline and when a save is refused. Also decide whether an item's key
  *   breaks any rule the server applies to a saved key, which decides
  *   whether an AI suggestion fits its question.
@@ -25,7 +25,7 @@ export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
 
 export const INCOMPLETE_MATCH_KEY_GUIDANCE =
-  "Välj ett svar för varje rad. Ett svar får användas högst en gång; svar som inte hör till någon rad får stå kvar. Eller lämna alla rader utan svar om frågan ska sakna facit.";
+  "Kryssa minst en kategori för varje rad, eller lämna alla rader utan kryss om frågan ska sakna facit.";
 
 function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
@@ -40,14 +40,10 @@ export function isPartiallyKeyedGapItem(item: NativeExamItem): boolean {
   );
 }
 
-function countOf(id: string, pairIds: string[]): number {
-  return pairIds.filter((pairId) => pairId === id).length;
-}
-
 /**
- * A keyed matching item needs every left entry in exactly one pair and each
- * right entry in at most one pair (unpaired right entries are distractors),
- * and no pair naming an unknown entry; the server refuses anything else.
+ * A keyed Kategorisera grid needs at least one tick in every row, no repeated
+ * tick and no tick naming an unknown entry (Q9); a column may hold several
+ * ticks or none. The server refuses anything else.
  */
 export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
   if (item.kind !== "matching" || !hasKeyedOrigin(item)) {
@@ -56,15 +52,14 @@ export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
   const leftIds = item.match_left.map((left) => left.left_id);
   const rightIds = item.match_right.map((right) => right.right_id);
   const pairs = item.answer_key.match_pairs;
-  const pairLeftIds = pairs.map((pair) => pair.left_id);
-  const pairRightIds = pairs.map((pair) => pair.right_id);
-  const namesOnlyKnownEntries =
-    pairLeftIds.every((id) => leftIds.includes(id)) &&
-    pairRightIds.every((id) => rightIds.includes(id));
+  const pairKeys = pairs.map((pair) => `${pair.left_id} ${pair.right_id}`);
+  const namesOnlyKnownEntries = pairs.every(
+    (pair) => leftIds.includes(pair.left_id) && rightIds.includes(pair.right_id),
+  );
   return !(
     namesOnlyKnownEntries &&
-    leftIds.every((id) => countOf(id, pairLeftIds) === 1) &&
-    rightIds.every((id) => countOf(id, pairRightIds) <= 1)
+    new Set(pairKeys).size === pairKeys.length &&
+    leftIds.every((id) => pairs.some((pair) => pair.left_id === id))
   );
 }
 
@@ -134,5 +129,5 @@ export function partialGapKeyCopy(items: NativeExamItem[]): string {
 }
 
 export function incompleteMatchKeyCopy(items: NativeExamItem[]): string {
-  return `${questionSubject(items)} har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`;
+  return `${questionSubject(items)} har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`;
 }

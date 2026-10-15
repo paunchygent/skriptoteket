@@ -52,6 +52,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     criteria: [],
     printed_label: null,
     retry_source: null,
+    tick_points: null,
     answer_key: {
       correct_choice_ids: recorded.choices.flatMap((choice, index) =>
         choice.correct ? [`choice_${String.fromCharCode(97 + index)}`] : [],

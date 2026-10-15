@@ -113,6 +113,31 @@ export function withMatchEntryText(
       };
 }
 
+/**
+ * A Kategorisera grid's points are its tick value times its ticks (Q10); an
+ * unkeyed grid has no points. Both values carry at most 2 decimals, so the
+ * product is rounded to 2 decimals to drop floating-point noise.
+ */
+function gridPoints(tickPoints: string | null, tickCount: number): number | null {
+  if (tickPoints === null || tickCount === 0) {
+    return null;
+  }
+  return Math.round(Number(tickPoints) * tickCount * 100) / 100;
+}
+
+/**
+ * Re-derive a grid's points after its key changed by any route other than a
+ * tick edit: undoing an interpretation or writing a suggestion. Non-grid items
+ * and an unchanged total pass through; a changed total is no longer an estimate.
+ */
+function withGridPoints(item: NativeExamItem): NativeExamItem {
+  if (item.kind !== "matching") {
+    return item;
+  }
+  const points = gridPoints(item.tick_points, item.answer_key.match_pairs.length);
+  return points === item.points ? item : { ...item, points, points_estimated: false };
+}
+
 export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[]): NativeExamItem {
   return {
     ...item,
@@ -121,6 +146,18 @@ export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[
       match_pairs: pairs,
       origin: teacherKeyOrigin(pairs.length > 0),
     },
+    points: gridPoints(item.tick_points, pairs.length),
+    points_estimated: false,
+  };
+}
+
+/** Set the grid's value per correct tick; its points follow from the ticks. */
+export function withTickPoints(item: NativeExamItem, tickPoints: string): NativeExamItem {
+  return {
+    ...item,
+    tick_points: tickPoints,
+    points: gridPoints(tickPoints, item.answer_key.match_pairs.length),
+    points_estimated: false,
   };
 }
 
@@ -153,11 +190,11 @@ export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
   if (item.answer_key.origin !== "ai_interpreted") {
     return item;
   }
-  return {
+  return withGridPoints({
     ...item,
     answer_key: { ...item.answer_key, origin: "absent", correct_choice_ids: [], match_pairs: [] },
     gaps: item.gaps.map((gap) => ({ ...gap, accepted_values: [], automatic_values: [] })),
-  };
+  });
 }
 
 /** Remove only the selected automatic answer, preserving the key's provenance. */
@@ -258,7 +295,7 @@ function withSuggestionAsKey(
     const suggested = suggestion.gap_accepted_values.find((entry) => entry.gap_id === gap.gap_id);
     return suggested ? { ...gap, accepted_values: [...suggested.accepted_values] } : gap;
   });
-  return {
+  return withGridPoints({
     ...item,
     ai_suggestion: suggestion,
     answer_key: {
@@ -268,7 +305,7 @@ function withSuggestionAsKey(
     },
     gaps,
     review: { ...item.review, state: "review_required" },
-  };
+  });
 }
 
 /**
@@ -390,5 +427,6 @@ export function newTeacherItem(
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
   };
 }

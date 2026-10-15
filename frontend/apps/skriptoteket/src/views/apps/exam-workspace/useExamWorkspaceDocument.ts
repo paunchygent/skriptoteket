@@ -59,11 +59,13 @@ import {
   withoutInterpretedKey,
   withMatchEntryText,
   withMatchPairs,
+  withTickPoints,
   withParagraphSegments,
   withPoints,
   withRestoredSuggestion,
 } from "./examWorkspaceItemEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -89,26 +91,6 @@ function refusedPlaceholderChange(error: unknown): error is ApiError {
     error.details !== null &&
     "item_ids" in error.details
   );
-}
-
-/**
- * Merge a fetched saved-document list into the entries already known locally.
- * A local entry wins when the response lacks its lineage (for example an
- * import that finished while the list request was in flight) or when it holds
- * a newer version; the response supplies everything else.
- */
-export function mergeSavedDocuments(
-  local: ExamWorkspaceDocumentSummary[],
-  fetched: ExamWorkspaceDocumentSummary[],
-): ExamWorkspaceDocumentSummary[] {
-  const localByLineage = new Map(local.map((entry) => [entry.lineage_id, entry]));
-  const fetchedLineages = new Set(fetched.map((entry) => entry.lineage_id));
-  const localOnly = local.filter((entry) => !fetchedLineages.has(entry.lineage_id));
-  const merged = fetched.map((entry) => {
-    const known = localByLineage.get(entry.lineage_id);
-    return known && known.version > entry.version ? known : entry;
-  });
-  return [...localOnly, ...merged];
 }
 
 /**
@@ -412,6 +394,10 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withMatchPairs(item, pairs));
   }
 
+  function updateItemTickPoints(itemId: string, tickPoints: string): void {
+    patchItem(itemId, (item) => withTickPoints(item, tickPoints));
+  }
+
   function updateItemGapValues(itemId: string, gapId: string, acceptedValues: string[]): void {
     patchItem(itemId, (item) => withGapValues(item, gapId, acceptedValues));
   }
@@ -489,6 +475,7 @@ export function useExamWorkspaceDocument() {
     updateItemCriteria,
     updateItemMatchEntryText,
     updateItemMatchPairs,
+    updateItemTickPoints,
     updateItemPoints,
     workspaceDocument,
   };
