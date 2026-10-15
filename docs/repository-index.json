@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e9d3b93735a8cacc02d284d785e5fee84a7b626049158e4d67a7440094837684",
+  "source_set_digest": "9efa8d759b6ba5f8c7b05017901decb1483941420031ef4703350c7b5a5b88ff",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5294,6 +5294,25 @@
       "title": "Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings",
       "path": "docs/backlog/tasks/task-skript-39-09-06-structured-misspellings-a-deterministic-producer-gives-every-keyed-gap-its-automatic-misspellings.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-07",
+      "type": "task",
+      "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
+      "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
