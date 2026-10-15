@@ -16,9 +16,9 @@ GAP_FILL_DEFINITION = (
     "line: each listed sentence is one accepted string for that line's slot. In a source "
     "with answers, a blank may be printed already filled with its answer, marked by "
     "formatting such as italics, bold or colour, or set apart by position: that place is "
-    "a slot keyed by those words. When the key prints a sentence with a label after each "
-    "of its units, or a word split into parts joined with + and a label after each part, "
-    "each label is one slot after its unit or part, keyed by that label."
+    "a slot keyed by those words. When the key prints an answer after each piece of the "
+    "printed text it is about, such as a label after each word, clause or part of a word, "
+    "each answer is one slot after its piece, keyed by that answer."
 )
 
 FREE_TEXT_DEFINITION = (

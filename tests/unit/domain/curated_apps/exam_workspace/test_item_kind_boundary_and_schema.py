@@ -9,8 +9,8 @@ import pytest
 from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 from pydantic import ValidationError
 
-from skriptoteket.application.curated_apps.handlers import (
-    exam_workspace_docx_build_rounds as rounds,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_prompt import (
+    docx_build_prompt,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedSegment
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
@@ -43,11 +43,27 @@ def test_labeler_texts_are_generated_from_the_one_definition() -> None:
     assert FREE_TEXT_DEFINITION in CLASSIFICATION_INSTRUCTION
 
 
-def test_converter_prompt_carries_the_same_definition() -> None:
-    assert converter_kind_rule() in rounds._PROMPT
-    assert _ALTERNATIVE_SENTENCES in rounds._PROMPT
-    assert "item title" not in rounds._PROMPT
-    assert "never empty and never null" in rounds._PROMPT
+@pytest.mark.parametrize("kind", list(NativeExamItemKind))
+def test_every_converter_prompt_carries_the_same_definition(kind: NativeExamItemKind) -> None:
+    prompt = docx_build_prompt(frozenset({kind}))
+    assert converter_kind_rule() in prompt
+    assert _ALTERNATIVE_SENTENCES in prompt
+    assert "item title" not in prompt
+
+
+def test_a_batch_prompt_carries_only_the_sections_of_its_kinds() -> None:
+    gap_fill = docx_build_prompt(frozenset({NativeExamItemKind.GAP_FILL}))
+    choice = docx_build_prompt(frozenset({NativeExamItemKind.SINGLE_CHOICE}))
+    both = docx_build_prompt(
+        frozenset({NativeExamItemKind.GAP_FILL, NativeExamItemKind.MULTIPLE_RESPONSE})
+    )
+
+    assert "Where each gap goes" in gap_fill and "Where each gap goes" not in choice
+    assert "correct marks each option" in choice and "correct marks each option" not in gap_fill
+    assert "Where each gap goes" in both and "correct marks each option" in both
+    assert "match_left holds" not in both
+    # The core names every kind so a batch can report a kind it was not given.
+    assert "outcome type_conflict" in gap_fill and "matching:" in gap_fill
 
 
 def _object(value: object) -> dict[str, object]:
