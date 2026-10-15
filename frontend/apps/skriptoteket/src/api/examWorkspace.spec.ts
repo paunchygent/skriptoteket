@@ -43,7 +43,9 @@ function buildDocument(revision: number): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
+    instructions: [
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Besvara alla frågor." }] },
+    ],
     items: [
       {
         ai_suggestion: null,
@@ -52,7 +54,7 @@ function buildDocument(revision: number): NativeExamDocument {
         printed_label: null,
         retry_source: null,
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-        body: [{ segments: [{ kind: "text", text: "Beskriv vattnets kretslopp." }] }],
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv vattnets kretslopp." }] }],
         choices: [],
         gaps: [],
         match_left: [],

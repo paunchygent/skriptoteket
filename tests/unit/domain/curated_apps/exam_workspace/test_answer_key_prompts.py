@@ -64,6 +64,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 pytestmark = pytest.mark.unit
 
@@ -104,11 +105,16 @@ def _native_choice_item() -> NativeExamItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        body=(NativeParagraph(segments=(NativeTextSegment(text="Choose the Greek letter."),)),),
+        body=(
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text="Choose the Greek letter.", marks=()),),
+            ),
+        ),
         points=2,
         choices=(
-            NativeChoice(choice_id="choice_001", text="Alpha"),
-            NativeChoice(choice_id="choice_002", text="Beta"),
+            NativeChoice(choice_id="choice_001", body=plain_body("Alpha")),
+            NativeChoice(choice_id="choice_002", body=plain_body("Beta")),
         ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
         review=_review(),
@@ -122,11 +128,12 @@ def _native_gap_item() -> NativeExamItem:
         kind=NativeExamItemKind.GAP_FILL,
         body=(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text="The capital of Sweden is "),
+                    NativeTextSegment(text="The capital of Sweden is ", marks=()),
                     NativeGapSegment(gap_id="gap_001"),
-                    NativeTextSegment(text="."),
-                )
+                    NativeTextSegment(text=".", marks=()),
+                ),
             ),
         ),
         points=2,
@@ -255,12 +262,13 @@ def _native_two_pair_gap_item() -> NativeExamItem:
         kind=NativeExamItemKind.GAP_FILL,
         body=(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text="Kingdom of mushrooms: "),
+                    NativeTextSegment(text="Kingdom of mushrooms: ", marks=()),
                     NativeGapSegment(gap_id="gap_001"),
-                    NativeTextSegment(text="    Domain of bacteria: "),
+                    NativeTextSegment(text="    Domain of bacteria: ", marks=()),
                     NativeGapSegment(gap_id="gap_002"),
-                )
+                ),
             ),
         ),
         points=2,

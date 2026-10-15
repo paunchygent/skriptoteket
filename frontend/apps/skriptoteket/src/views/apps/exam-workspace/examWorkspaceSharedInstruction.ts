@@ -17,6 +17,7 @@
  */
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
+import type { BodyMark } from "./examWorkspaceBodyMarks";
 
 /**
  * Visible marker for a response gap. The document contract rejects gaps in
@@ -26,10 +27,15 @@ import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 export const SHARED_INSTRUCTION_GAP_TEXT = "[___]";
 
 export type ExamWorkspaceSharedPart =
-  | { kind: "text"; text: string }
+  | { kind: "text"; text: string; marks: BodyMark[] }
   | { kind: "asset"; assetId: string; url: string | null };
 
-export type ExamWorkspaceSharedParagraph = { parts: ExamWorkspaceSharedPart[] };
+export type ExamWorkspaceSharedHeadingLevel = 1 | 2 | 3 | null;
+
+export type ExamWorkspaceSharedParagraph = {
+  headingLevel: ExamWorkspaceSharedHeadingLevel;
+  parts: ExamWorkspaceSharedPart[];
+};
 
 /**
  * Resolve one shared paragraph's segments in order into renderer parts.
@@ -44,7 +50,7 @@ export function examWorkspaceSharedParts(
 ): ExamWorkspaceSharedPart[] {
   return paragraph.segments.map((segment) => {
     if (segment.kind === "text") {
-      return { kind: "text", text: segment.text };
+      return { kind: "text", text: segment.text, marks: segment.marks };
     }
     if (segment.kind === "asset") {
       return {
@@ -53,7 +59,7 @@ export function examWorkspaceSharedParts(
         url: assetUrls[segment.asset_id] ?? null,
       };
     }
-    return { kind: "text", text: SHARED_INSTRUCTION_GAP_TEXT };
+    return { kind: "text", text: SHARED_INSTRUCTION_GAP_TEXT, marks: [] };
   });
 }
 
@@ -63,6 +69,7 @@ export function examWorkspaceSharedParagraphs(
   assetUrls: Record<string, string> = {},
 ): ExamWorkspaceSharedParagraph[] {
   return paragraphs.map((paragraph) => ({
+    headingLevel: paragraph.heading_level,
     parts: examWorkspaceSharedParts(paragraph, assetUrls),
   }));
 }

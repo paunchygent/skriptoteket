@@ -69,6 +69,7 @@ from tests.unit.application.curated_apps.handlers.enrichment_routing_test_suppor
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryVaultFileRepository,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 _ACTIVE = (ExamAnswerKeyEnrichmentJobStatus.QUEUED, ExamAnswerKeyEnrichmentJobStatus.RUNNING)
 
@@ -141,11 +142,13 @@ def suggestion_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=stem),)),),
+        body=(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=stem, marks=()),)),
+        ),
         points=1,
         choices=(
-            NativeChoice(choice_id="choice_001", text="vägen"),
-            NativeChoice(choice_id="choice_002", text="eleverna"),
+            NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+            NativeChoice(choice_id="choice_002", body=plain_body("eleverna")),
         ),
         answer_key=NativeAnswerKey(
             origin=origin,

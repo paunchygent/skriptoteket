@@ -41,7 +41,7 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [
-      { segments: [{ kind: "text", text: `Fråga ${sequence}: beskriv med egna ord.` }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: `Fråga ${sequence }: beskriv med egna ord.` }] },
     ],
     choices: [],
     gaps: [],
@@ -70,9 +70,9 @@ export function buildDocument(): NativeExamDocument {
       ...buildFreeTextItem(2),
       answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "source_provided" },
       choices: [
-        { choice_id: "choice_a", text: "Avdunstning" },
-        { choice_id: "choice_b", text: "Kondensation" },
-        { choice_id: "choice_c", text: "Nederbörd" },
+        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Avdunstning" }] }] },
+        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kondensation" }] }] },
+        { choice_id: "choice_c", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Nederbörd" }] }] },
       ],
       kind: "single_choice",
     },
@@ -84,9 +84,9 @@ export function buildDocument(): NativeExamDocument {
         origin: "machine_proposed",
       },
       choices: [
-        { choice_id: "choice_a", text: "Syre" },
-        { choice_id: "choice_b", text: "Kväve" },
-        { choice_id: "choice_c", text: "Argon" },
+        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kväve" }] }] },
+        { choice_id: "choice_c", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Argon" }] }] },
       ],
       kind: "multiple_response",
       review: {
@@ -99,11 +99,10 @@ export function buildDocument(): NativeExamDocument {
     {
       ...buildFreeTextItem(4),
       body: [
-        {
-          segments: [
-            { kind: "text", text: "Vatten kokar vid" },
+        { heading_level: null, segments: [
+            { kind: "text", marks: [], text: "Vatten kokar vid" },
             { gap_id: "gap_001", kind: "gap" },
-            { kind: "text", text: "grader." },
+            { kind: "text", marks: [], text: "grader." },
           ],
         },
       ],
@@ -125,7 +124,7 @@ export function buildDocument(): NativeExamDocument {
   return {
     assets: [],
     document_id: "doc-1",
-    instructions: [{ segments: [{ kind: "text", text: "Besvara alla frågor." }] }],
+    instructions: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Besvara alla frågor." }] }],
     items,
     origin: {
       extractor_version: "docx-extractor-1",

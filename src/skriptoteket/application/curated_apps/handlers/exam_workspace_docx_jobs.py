@@ -133,7 +133,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                 job_id=str(job.id),
                 items=len(result.document.items),
                 review_items=sum(bool(item.review.reasons) for item in result.document.items),
-                failure_events=len(result.events),
+                failure_events=sum(event.stage != "formatting" for event in result.events),
                 input_tokens=result.input_tokens,
                 output_tokens=result.output_tokens,
                 timings={t.stage: round(t.finished_seconds, 2) for t in result.timings},

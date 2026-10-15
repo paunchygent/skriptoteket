@@ -11,6 +11,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
+import { bodyText, plainBody } from "./examWorkspaceRichText";
 import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import {
   buildResponse,
@@ -74,16 +75,16 @@ describe("matching edits in useExamWorkspaceDocument", () => {
   it("changes only the named entry text on its own side", async () => {
     const state = await openMatchingDocument();
 
-    state.updateItemMatchEntryText("item_001", "left", "left_002", "being locked up");
-    state.updateItemMatchEntryText("item_001", "right", "right_003", "contempt");
+    state.updateItemMatchEntryBody("item_001", "left", "left_002", plainBody("being locked up"));
+    state.updateItemMatchEntryBody("item_001", "right", "right_003", plainBody("contempt"));
 
     const item = currentItem(state);
-    expect(item.match_left.map((entry) => entry.text)).toEqual([
+    expect(item.match_left.map((entry) => bodyText(entry.body))).toEqual([
       "absence from school without permission",
       "being locked up",
       "a feeling that someone deserves no respect",
     ]);
-    expect(item.match_right.map((entry) => entry.text)).toEqual([
+    expect(item.match_right.map((entry) => bodyText(entry.body))).toEqual([
       "incarceration",
       "truancy",
       "contempt",
@@ -131,7 +132,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
   it("refuses to save an empty entry text", async () => {
     const state = await openMatchingDocument();
 
-    state.updateItemMatchEntryText("item_001", "right", "right_001", "");
+    state.updateItemMatchEntryBody("item_001", "right", "right_001", plainBody(""));
 
     await expect(state.saveDocument()).resolves.toBe(false);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();

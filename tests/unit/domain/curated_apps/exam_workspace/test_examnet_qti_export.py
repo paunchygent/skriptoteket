@@ -35,6 +35,7 @@ from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_suppo
     review_complete,
     text_body,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 
 class TestFreeTextMapping:
@@ -134,8 +135,8 @@ class TestChoiceMapping:
             body=text_body("Välj rätt alternativ."),
             points=2,
             choices=(
-                NativeChoice(choice_id="choice_001", text="  Alternativ   ett "),
-                NativeChoice(choice_id="choice_002", text="Alternativ två"),
+                NativeChoice(choice_id="choice_001", body=plain_body("  Alternativ   ett ")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Alternativ två")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
@@ -163,9 +164,9 @@ class TestChoiceMapping:
             body=text_body("Markera alla rätta alternativ."),
             points=3,
             choices=(
-                NativeChoice(choice_id="choice_001", text="Ett"),
-                NativeChoice(choice_id="choice_002", text="Två"),
-                NativeChoice(choice_id="choice_003", text="Tre"),
+                NativeChoice(choice_id="choice_001", body=plain_body("Ett")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Två")),
+                NativeChoice(choice_id="choice_003", body=plain_body("Tre")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -186,8 +187,8 @@ class TestChoiceMapping:
             body=text_body("Välj."),
             points=1,
             choices=(
-                NativeChoice(choice_id="choice_001", text="Ett"),
-                NativeChoice(choice_id="choice_002", text="Två"),
+                NativeChoice(choice_id="choice_001", body=plain_body("Ett")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Två")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.AI_INTERPRETED,
@@ -207,8 +208,8 @@ class TestChoiceMapping:
             body=text_body("Välj."),
             points=1,
             choices=(
-                NativeChoice(choice_id="choice_001", text="Ett"),
-                NativeChoice(choice_id="choice_002", text="Två"),
+                NativeChoice(choice_id="choice_001", body=plain_body("Ett")),
+                NativeChoice(choice_id="choice_002", body=plain_body("Två")),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
             review=review_complete(),

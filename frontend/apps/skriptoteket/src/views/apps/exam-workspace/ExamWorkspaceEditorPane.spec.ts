@@ -20,9 +20,8 @@ const PROTECTED_URL =
 
 function sharedInstruction(): NativeExamBodyParagraph[] {
   return [
-    {
-      segments: [
-        { kind: "text", text: "Betrakta diagrammet." },
+    { heading_level: null, segments: [
+        { kind: "text", marks: [], text: "Betrakta diagrammet." },
         { asset_id: ASSET_ID, kind: "asset" },
       ],
     },

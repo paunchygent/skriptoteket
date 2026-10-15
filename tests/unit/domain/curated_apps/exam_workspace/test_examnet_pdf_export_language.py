@@ -141,9 +141,12 @@ def test_swedish_matching_item_prints_documented_markers() -> None:
             "sequence": 1,
             "body": (
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Para ihop varje uttryck med det som är rätt."),
-                    )
+                        NativeTextSegment(
+                            text="Para ihop varje uttryck med det som är rätt.", marks=()
+                        ),
+                    ),
                 ),
             ),
         }
@@ -165,7 +168,9 @@ def _with_image(document: NativeExamDocument) -> NativeExamDocument:
         update={
             "body": (
                 *first.body,
-                NativeParagraph(segments=(NativeAssetSegment(asset_id=_ASSET_ID),)),
+                NativeParagraph(
+                    heading_level=None, segments=(NativeAssetSegment(asset_id=_ASSET_ID),)
+                ),
             )
         }
     )

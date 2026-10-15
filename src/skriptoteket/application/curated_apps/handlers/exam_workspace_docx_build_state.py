@@ -226,6 +226,16 @@ class DocxBuildState:
         self.events.append(event)
         logger.warning("DOCX build failure observed", job_id=str(self.job_id), **event.as_json())
 
+    def record_formatting(self, path: str, *, item: int, anchors: tuple[str, ...]) -> None:
+        """Retain one successful transfer path without reporting a build failure."""
+        event = DocxBuildEvent(
+            stage="formatting", code=path, batch=self.batch, item=item, anchors=anchors
+        )
+        self.events.append(event)
+        logger.info(
+            "DOCX source formatting transferred", job_id=str(self.job_id), **event.as_json()
+        )
+
     def fail_chunks(self, anchors: tuple[str, ...] | set[str], reason: str) -> None:
         owned = self.owned
         for anchor in anchors:

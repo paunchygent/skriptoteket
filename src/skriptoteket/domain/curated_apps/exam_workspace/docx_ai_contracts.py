@@ -233,12 +233,20 @@ class DocxBuildEnvelope(_Produced):
 
 
 DocxBuildStage = Literal[
-    "provider", "admission", "fallback", "job", "grouping", "labeling", "batch", "assembly"
+    "provider",
+    "admission",
+    "fallback",
+    "job",
+    "grouping",
+    "labeling",
+    "batch",
+    "assembly",
+    "formatting",
 ]
 
 
 class DocxBuildEvent(_Produced):
-    """One observed failure in a DOCX build, free of exam wording."""
+    """One observed build diagnostic or typography path, free of exam wording."""
 
     stage: DocxBuildStage
     code: str

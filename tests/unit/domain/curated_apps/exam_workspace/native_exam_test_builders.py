@@ -36,7 +36,12 @@ def make_review(
 
 
 def make_paragraph(text: str) -> NativeParagraph:
-    return NativeParagraph(segments=(NativeTextSegment(text=text),))
+    return NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
+
+
+def plain_body(text: str) -> tuple[NativeParagraph, ...]:
+    """One explicitly unformatted paragraph: a plain test source, never a formatted one."""
+    return (make_paragraph(text),)
 
 
 def make_free_text_item(*, sequence: int = 1, item_id: str = "item_001") -> NativeExamItem:
@@ -65,8 +70,8 @@ def make_single_choice_item(
         body=(make_paragraph("Vilket är huvudordet?"),),
         points=1,
         choices=(
-            NativeChoice(choice_id="choice_001", text="vägen"),
-            NativeChoice(choice_id="choice_002", text="eleverna"),
+            NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+            NativeChoice(choice_id="choice_002", body=plain_body("eleverna")),
         ),
         answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct),
         review=make_review(),
@@ -89,10 +94,11 @@ def make_gap_fill_item(
         facit_text=facit_text,
         body=(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text="Ange frastyp: "),
+                    NativeTextSegment(text="Ange frastyp: ", marks=()),
                     NativeGapSegment(gap_id="gap_001"),
-                )
+                ),
             ),
         ),
         points=2,

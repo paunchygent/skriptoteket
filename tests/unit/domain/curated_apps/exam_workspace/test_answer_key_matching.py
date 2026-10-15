@@ -34,10 +34,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     document_of,
     recorded_matching_items,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 pytestmark = pytest.mark.unit
 
@@ -81,8 +83,12 @@ def test_unkeyed_recorded_matching_items_are_selected_with_native_order_lists() 
     assert [view.item_id for view in views] == [item.item_id for item in items]
     for view, item in zip(views, items, strict=True):
         assert view.kind is AnswerKeyViewKind.MATCHING
-        assert [text for _id, text in view.match_left] == [e.text for e in item.match_left]
-        assert [text for _id, text in view.match_right] == [e.text for e in item.match_right]
+        assert [text for _id, text in view.match_left] == [
+            body_plain_text(e.body) for e in item.match_left
+        ]
+        assert [text for _id, text in view.match_right] == [
+            body_plain_text(e.body) for e in item.match_right
+        ]
         assert [i for i, _text in view.match_left] == [1, 2, 3]
         assert view.stem_text == "\n".join(item.plain_text_lines())
 
@@ -133,13 +139,13 @@ def test_proposal_accepts_a_many_to_many_key() -> None:
 
 def test_proposal_may_leave_a_distractor_right_entry_unused() -> None:
     item = recorded_matching_items()[0]
-    other_right = recorded_matching_items()[1].match_right[0].text
+    other_right = body_plain_text(recorded_matching_items()[1].match_right[0].body)
     widened = NativeExamItem.model_validate(
         {
             **dict(item),
             "match_right": (
                 *item.match_right,
-                NativeMatchRight(right_id="right_004", text=other_right),
+                NativeMatchRight(right_id="right_004", body=plain_body(other_right)),
             ),
         }
     )
@@ -185,8 +191,14 @@ def test_matching_request_carries_both_lists_and_a_strict_pairs_schema() -> None
     assert request.prompt_template_version == MATCHING_PROMPT_TEMPLATE_VERSION
     assert request.system_prompt == MATCHING_ANSWER_KEY_SYSTEM_PROMPT
     payload = json.loads(request.user_payload)
-    assert payload["left_entries"][0] == {"left_id": 1, "text": item.match_left[0].text}
-    assert payload["right_entries"][2] == {"right_id": 3, "text": item.match_right[2].text}
+    assert payload["left_entries"][0] == {
+        "left_id": 1,
+        "text": body_plain_text(item.match_left[0].body),
+    }
+    assert payload["right_entries"][2] == {
+        "right_id": 3,
+        "text": body_plain_text(item.match_right[2].body),
+    }
     schema = request.output_spec.json_schema
     assert schema["required"] == ["pairs"]
     assert schema["additionalProperties"] is False

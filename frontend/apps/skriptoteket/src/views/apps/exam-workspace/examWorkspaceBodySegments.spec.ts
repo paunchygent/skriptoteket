@@ -21,30 +21,30 @@ describe("segmentsFromParts", () => {
   it("merges adjacent text, drops empty text and keeps atoms in order", () => {
     expect(
       segmentsFromParts([
-        { kind: "text", text: "Huvudstaden " },
-        { kind: "text", text: "är " },
+        { kind: "text", marks: [], text: "Huvudstaden " },
+        { kind: "text", marks: [], text: "är " },
         { kind: "atom", segment: { kind: "gap", gap_id: "gap_001" } },
-        { kind: "text", text: "" },
+        { kind: "text", marks: [], text: "" },
         { kind: "atom", segment: { kind: "asset", asset_id: "asset_001" } },
-        { kind: "text", text: " " },
+        { kind: "text", marks: [], text: " " },
       ]),
     ).toEqual([
-      { kind: "text", text: "Huvudstaden är " },
+      { kind: "text", marks: [], text: "Huvudstaden är " },
       { kind: "gap", gap_id: "gap_001" },
       { kind: "asset", asset_id: "asset_001" },
-      { kind: "text", text: " " },
+      { kind: "text", marks: [], text: " " },
     ]);
   });
 
   it("returns no segments for an emptied paragraph", () => {
-    expect(segmentsFromParts([{ kind: "text", text: "" }])).toEqual([]);
+    expect(segmentsFromParts([{ kind: "text", marks: [], text: "" }])).toEqual([]);
   });
 });
 
 describe("atom sequence comparison", () => {
   it("identifies gaps and assets by id and order", () => {
     const original = [
-      { kind: "text" as const, text: "A " },
+      { kind: "text" as const, marks: [], text: "A " },
       { kind: "gap" as const, gap_id: "gap_001" },
       { kind: "gap" as const, gap_id: "gap_002" },
     ];
@@ -118,18 +118,18 @@ describe("partsFromParagraphElement", () => {
         ' och <span data-atom="asset" data-asset-id="asset_001">Bild</span>\nslut<br data-trailing-break="">',
     );
     expect(segmentsFromParts(partsFromParagraphElement(element))).toEqual([
-      { kind: "text", text: "Rad ett\nrad två " },
+      { kind: "text", marks: [], text: "Rad ett\nrad två " },
       { kind: "gap", gap_id: "gap_001" },
-      { kind: "text", text: " och " },
+      { kind: "text", marks: [], text: " och " },
       { kind: "asset", asset_id: "asset_001" },
-      { kind: "text", text: "\nslut" },
+      { kind: "text", marks: [], text: "\nslut" },
     ]);
   });
 
   it("treats a browser-inserted block as a new line", () => {
     const element = paragraphElement("Första<div>andra</div>");
     expect(segmentsFromParts(partsFromParagraphElement(element))).toEqual([
-      { kind: "text", text: "Första\nandra" },
+      { kind: "text", marks: [], text: "Första\nandra" },
     ]);
   });
 });

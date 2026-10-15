@@ -74,6 +74,8 @@ function retryableGapItem(): NativeExamItem {
           missing_images: [],
           kind: "question",
           marked_text: "Hon heter [___] och [___].",
+          paragraphs: [],
+          runs: [],
           text: "Hon heter [___] och [___].",
         },
       ],

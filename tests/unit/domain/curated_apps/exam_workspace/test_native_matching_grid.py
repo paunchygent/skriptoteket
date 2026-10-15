@@ -155,8 +155,8 @@ def test_pair_naming_an_undeclared_entry_is_rejected(undeclared: tuple[str, str]
 def test_pairs_on_a_single_choice_item_are_rejected() -> None:
     item = valid_item()
     choices = (
-        NativeChoice(choice_id="choice_001", text=item.match_right[0].text),
-        NativeChoice(choice_id="choice_002", text=item.match_right[1].text),
+        NativeChoice(choice_id="choice_001", body=item.match_right[0].body),
+        NativeChoice(choice_id="choice_002", body=item.match_right[1].body),
     )
     key = keyed_answer(("left_001", "right_001")).model_copy(
         update={"correct_choice_ids": ("choice_001",)}
@@ -200,8 +200,8 @@ def test_match_lists_on_a_non_matching_kind_are_rejected() -> None:
 def test_choices_on_a_matching_item_are_rejected() -> None:
     item = valid_item()
     choices = (
-        NativeChoice(choice_id="choice_001", text=item.match_right[0].text),
-        NativeChoice(choice_id="choice_002", text=item.match_right[1].text),
+        NativeChoice(choice_id="choice_001", body=item.match_right[0].body),
+        NativeChoice(choice_id="choice_002", body=item.match_right[1].body),
     )
 
     with pytest.raises(ValidationError, match="must not declare choices or gaps"):

@@ -26,12 +26,15 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiMatchEntry,
     ExamNetQtiMatchPair,
-    ExamNetQtiPromptSegment,
+    ExamNetQtiPromptParagraph,
     ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     ExamLanguageLabels,
     exam_language_labels,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
+    body_carries_formatting,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     image_resources as stem_image_resources,
@@ -58,6 +61,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_plain_text,
     body_text_lines,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -147,7 +151,7 @@ def _standalone_with_stem(
             (*stem, *item.body),
             gap_ids=_placed_gap_ids(item),
         )
-        if stem_resources or child.prompt_paragraphs
+        if stem_resources or child.prompt_paragraphs or body_carries_formatting(stem)
         else (),
         image_resources=(*stem_resources, *child.image_resources),
     )
@@ -194,7 +198,12 @@ def _parent_qti_item(
             prompt_paragraphs=body_prompt_paragraphs(
                 (*stem, *children[0].body), gap_ids=_placed_gap_ids(children[0])
             )
-            if stem_resources or first.image_resources
+            if (
+                stem_resources
+                or first.image_resources
+                or first.prompt_paragraphs
+                or body_carries_formatting(stem)
+            )
             else (),
             image_resources=(*stem_resources, *first.image_resources),
         )
@@ -208,7 +217,9 @@ def _parent_qti_item(
         title=_parent_title(children, labels),
         interaction_type=first.interaction_type,
         prompt_lines=body_text_lines(stem),
-        prompt_paragraphs=body_prompt_paragraphs(stem) if stem_resources else (),
+        prompt_paragraphs=body_prompt_paragraphs(stem)
+        if stem_resources or body_carries_formatting(stem)
+        else (),
         max_score=sum(scored) if scored else None,
         evaluation_mode=(
             ExamNetQtiEvaluationMode.MANUAL_UNKEYED
@@ -297,17 +308,22 @@ def _choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiI
         correct_ids = tuple(
             _safe_identifier(choice_id) for choice_id in item.answer_key.correct_choice_ids
         )
+    choices: list[ExamNetQtiChoice] = []
+    for choice in item.choices:
+        label = _plain_label(choice.body)
+        if not label:
+            continue
+        choices.append(
+            ExamNetQtiChoice(
+                identifier=_safe_identifier(choice.choice_id),
+                text=label,
+                body=body_prompt_paragraphs(choice.body),
+            )
+        )
     return replace(
         base_item,
         evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
-        choices=tuple(
-            ExamNetQtiChoice(
-                identifier=_safe_identifier(choice.choice_id),
-                text=" ".join(choice.text.split()),
-            )
-            for choice in item.choices
-            if choice.text.strip()
-        ),
+        choices=tuple(choices),
         correct_choice_identifiers=correct_ids,
     )
 
@@ -316,8 +332,8 @@ def _matching_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQt
     # As for choice items, `native_export_blockers` already blocks an unkeyed matching item.
     # Both visible lists keep the native order and every entry, an unpaired right entry
     # (a distractor) included; the pairs only feed the response and scoring data.
-    left = {entry.left_id: entry.text for entry in item.match_left}
-    right = {entry.right_id: entry.text for entry in item.match_right}
+    left = {entry.left_id: _plain_label(entry.body) for entry in item.match_left}
+    right = {entry.right_id: _plain_label(entry.body) for entry in item.match_right}
     pairs: tuple[ExamNetQtiMatchPair, ...] = ()
     if item.answer_key.origin is not NativeAnswerKeyOrigin.ABSENT:
         pairs = tuple(
@@ -334,11 +350,19 @@ def _matching_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQt
         evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
         match_pairs=pairs,
         match_left=tuple(
-            ExamNetQtiMatchEntry(_safe_identifier(entry.left_id), " ".join(entry.text.split()))
+            ExamNetQtiMatchEntry(
+                _safe_identifier(entry.left_id),
+                _plain_label(entry.body),
+                body_prompt_paragraphs(entry.body),
+            )
             for entry in item.match_left
         ),
         match_right=tuple(
-            ExamNetQtiMatchEntry(_safe_identifier(entry.right_id), " ".join(entry.text.split()))
+            ExamNetQtiMatchEntry(
+                _safe_identifier(entry.right_id),
+                _plain_label(entry.body),
+                body_prompt_paragraphs(entry.body),
+            )
             for entry in item.match_right
         ),
     )
@@ -380,15 +404,26 @@ def _placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
     )
 
 
-def _prompt_paragraphs(item: NativeExamItem) -> tuple[tuple[ExamNetQtiPromptSegment, ...], ...]:
-    """Keep positioned picture/gap carriers; positionless producers use prompt_lines.
+def _prompt_paragraphs(item: NativeExamItem) -> tuple[ExamNetQtiPromptParagraph, ...]:
+    """Keep positioned picture/gap carriers and every formatting carrier.
 
     Gap-fill bodies always keep their structured paragraphs, so each gap is placed
-    from its own segment and literal underscore runs in the text stay text.
+    from its own segment and literal underscore runs in the text stay text. Every
+    other kind uses prompt_lines until a picture, a mark or a heading level needs
+    the rich rendering path; formatting is never dropped.
     """
-    if item.kind is not NativeExamItemKind.GAP_FILL and not item.body_asset_ids():
+    if (
+        item.kind is not NativeExamItemKind.GAP_FILL
+        and not item.body_asset_ids()
+        and not body_carries_formatting(item.body)
+    ):
         return ()
     return body_prompt_paragraphs(item.body, gap_ids=_placed_gap_ids(item))
+
+
+def _plain_label(body: tuple[NativeParagraph, ...]) -> str:
+    """The whitespace-normalized plain text every non-rendering QTI reader sees."""
+    return " ".join(body_plain_text(body).split())
 
 
 def _image_resources(

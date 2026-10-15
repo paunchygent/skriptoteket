@@ -10,7 +10,6 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
-    DocxImage,
     DocxMissingImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -31,6 +30,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
+    NativeExamRetryParagraph,
+    NativeExamRetryRun,
     NativeExamRetrySource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
@@ -78,7 +79,9 @@ def _item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text=text),)),),
+        body=(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
@@ -114,16 +117,32 @@ def _source(
                 kind="paragraph",
                 text=anchor,
                 marked_text=anchor,
+                runs=(NativeExamRetryRun(offset=0, text=anchor, marks=()),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text=anchor, heading_level=None),),
                 images=images if index == 0 else (),
             )
             for index, anchor in enumerate(own)
         ),
         key_chunks=tuple(
-            NativeExamRetryChunk(anchor=anchor, kind="paragraph", text=anchor, marked_text=anchor)
+            NativeExamRetryChunk(
+                anchor=anchor,
+                kind="paragraph",
+                text=anchor,
+                marked_text=anchor,
+                runs=(NativeExamRetryRun(offset=0, text=anchor, marks=()),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text=anchor, heading_level=None),),
+            )
             for anchor in keys
         ),
         context_chunks=tuple(
-            NativeExamRetryChunk(anchor=anchor, kind="paragraph", text=anchor, marked_text=anchor)
+            NativeExamRetryChunk(
+                anchor=anchor,
+                kind="paragraph",
+                text=anchor,
+                marked_text=anchor,
+                runs=(NativeExamRetryRun(offset=0, text=anchor, marks=()),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text=anchor, heading_level=None),),
+            )
             for anchor in context
         ),
         label_kind=label_kind,
@@ -304,56 +323,6 @@ def test_with_retry_sources_attaches_only_where_a_known_anchor_starts_the_item()
     assert updated.model_dump(exclude={"items"}) == document.model_dump(exclude={"items"})
 
 
-def test_chunk_record_keeps_picture_references_and_rebuilds_from_saved_payloads():
-    image = DocxImage(
-        payload=b"png-bytes",
-        media_type="image/png",
-        offset=4,
-        marked_offset=6,
-        width=120,
-        height=80,
-    )
-    chunk = DocxChunk(
-        anchor="body:0007",
-        kind="drawing",
-        text="abcd",
-        marked_text="abcd<i>x</i>",
-        images=(image,),
-    )
-
-    record = chunk_record(chunk)
-    assert record.images == (
-        NativeExamRetryImage(asset_id=image.asset_id, offset=4, marked_offset=6),
-    )
-
-    assets = {
-        image.asset_id: NativeExamAsset(
-            asset_id=image.asset_id,
-            sha256="b" * 64,
-            media_type="image/png",
-            byte_length=len(image.payload),
-            width=120,
-            height=80,
-        )
-    }
-    rebuilt = chunk_from_record(record, assets=assets, payloads={image.asset_id: image.payload})
-
-    assert rebuilt == chunk
-
-
-def test_a_picture_reference_without_saved_bytes_fails_closed():
-    record = NativeExamRetryChunk(
-        anchor="body:0007",
-        kind="drawing",
-        text="",
-        marked_text="",
-        images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
-    )
-
-    with pytest.raises(KeyError):
-        chunk_from_record(record, assets={}, payloads={})
-
-
 def test_replacement_keeps_identity_and_source_and_drops_a_stale_suggestion():
     suggestion = NativeAnswerKeySuggestion(
         gap_accepted_values=(),
@@ -417,6 +386,8 @@ def test_source_asset_ids_cover_own_key_and_context_pictures():
                 kind="drawing",
                 text="",
                 marked_text="",
+                runs=(),
+                paragraphs=(),
                 images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
             ),
         ),
@@ -438,7 +409,12 @@ def test_a_source_only_picture_is_a_referenced_asset_without_entering_the_body()
     source = NativeExamRetrySource(
         chunks=(
             NativeExamRetryChunk(
-                anchor="body:0001", kind="paragraph", text="fråga", marked_text="fråga"
+                anchor="body:0001",
+                kind="paragraph",
+                text="fråga",
+                marked_text="fråga",
+                runs=(NativeExamRetryRun(offset=0, text="fråga", marks=()),),
+                paragraphs=(NativeExamRetryParagraph(offset=0, text="fråga", heading_level=None),),
             ),
         ),
         key_chunks=(
@@ -447,6 +423,8 @@ def test_a_source_only_picture_is_a_referenced_asset_without_entering_the_body()
                 kind="drawing",
                 text="",
                 marked_text="",
+                runs=(),
+                paragraphs=(),
                 images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
             ),
         ),

@@ -28,6 +28,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxImage,
     DocxMissingImage,
+    DocxSourceParagraph,
+    DocxSourceRun,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
@@ -40,6 +42,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records i
     NativeExamRetryChunk,
     NativeExamRetryImage,
     NativeExamRetryMissingImage,
+    NativeExamRetryParagraph,
+    NativeExamRetryRun,
     NativeExamRetrySource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
@@ -49,12 +53,25 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 
 
 def chunk_record(chunk: DocxChunk) -> NativeExamRetryChunk:
-    """One chunk as the stored retry source keeps it, pictures by reference only."""
+    """One chunk as the stored retry source keeps it, formatting runs, paragraphs and
+    pictures by reference only."""
     return NativeExamRetryChunk(
         anchor=chunk.anchor,
         kind=chunk.kind,
         text=chunk.text,
         marked_text=chunk.marked_text,
+        runs=tuple(
+            NativeExamRetryRun(offset=run.offset, text=run.text, marks=run.marks)
+            for run in chunk.runs
+        ),
+        paragraphs=tuple(
+            NativeExamRetryParagraph(
+                offset=paragraph.offset,
+                text=paragraph.text,
+                heading_level=paragraph.heading_level,
+            )
+            for paragraph in chunk.paragraphs
+        ),
         images=tuple(
             NativeExamRetryImage(
                 asset_id=image.asset_id,
@@ -98,7 +115,8 @@ def chunk_from_record(
     A picture's payload is never stored in the retry source: each reference rebuilds its
     image from the saved document manifest and container payload. A reference the saved
     document no longer carries raises instead of silently losing the picture; the retry
-    handler validates the whole source first.
+    handler validates the whole source first. The stored runs and paragraphs rebuild the
+    chunk's source formatting exactly as the DOCX reader recorded it.
     """
     images: list[DocxImage] = []
     for reference in record.images:
@@ -122,6 +140,17 @@ def chunk_from_record(
         marked_text=record.marked_text,
         images=tuple(images),
         missing_images=_missing_images(record),
+        runs=tuple(
+            DocxSourceRun(offset=run.offset, text=run.text, marks=run.marks) for run in record.runs
+        ),
+        paragraphs=tuple(
+            DocxSourceParagraph(
+                offset=paragraph.offset,
+                text=paragraph.text,
+                heading_level=paragraph.heading_level,
+            )
+            for paragraph in record.paragraphs
+        ),
     )
 
 

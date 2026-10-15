@@ -21,7 +21,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [{ segments: [{ kind: "text", text: "Förklara begreppet." }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
     item_id: "item_001",

@@ -61,7 +61,7 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
     const segments = segmentsFromParts(partsFromParagraphElement(paragraph(wrapper, 1)));
 
     expect(segments).toEqual([
-      { kind: "text", text: "Se " },
+      { kind: "text", marks: [], text: "Se " },
       { kind: "asset", asset_id: ASSET_ID },
     ]);
     expect(paragraph(wrapper, 1).textContent).not.toContain("Bild");
@@ -190,7 +190,7 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
     element.dispatchEvent(new Event("input", { bubbles: true }));
 
     expect(wrapper.emitted("updateParagraphSegments")).toEqual([
-      ["item_001", 1, [{ kind: "text", text: "Titta på " }, { kind: "asset", asset_id: ASSET_ID }]],
+      ["item_001", 1, [{ kind: "text", marks: [], text: "Titta på " }, { kind: "asset", asset_id: ASSET_ID }]],
     ]);
     wrapper.unmount();
   });

@@ -162,6 +162,8 @@ async def test_a_saved_missing_picture_stays_review_only_without_an_exchange(
         kind="drawing",
         text="",
         marked_text="",
+        runs=(),
+        paragraphs=(),
         missing_images=(
             NativeExamRetryMissingImage(
                 reference="/word/media/image3.emf",

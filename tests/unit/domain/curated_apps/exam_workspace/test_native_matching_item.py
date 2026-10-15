@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
@@ -70,8 +71,8 @@ def test_native_item_maps_each_produced_pair_to_the_ids_of_its_entries():
 
     assert [e.left_id for e in item.match_left] == ["left_001", "left_002", "left_003"]
     assert [e.right_id for e in item.match_right] == ["right_001", "right_002", "right_003"]
-    assert [e.text for e in item.match_left] == lefts
-    assert [e.text for e in item.match_right] == rights
+    assert [body_plain_text(e.body) for e in item.match_left] == lefts
+    assert [body_plain_text(e.body) for e in item.match_right] == rights
     expected = [
         (f"left_{lefts.index(p.left) + 1:03d}", f"right_{rights.index(p.right) + 1:03d}")
         for p in gold.pairs

@@ -85,9 +85,8 @@ describe("toExamWorkspaceItemRows with parents", () => {
       {
         ...document.parents[0]!,
         instruction: [
-          {
-            segments: [
-              { kind: "text" as const, text: "Betrakta diagrammet." },
+          { heading_level: null, segments: [
+              { kind: "text" as const, marks: [], text: "Betrakta diagrammet." },
               { asset_id: assetId, kind: "asset" as const },
             ],
           },
@@ -99,8 +98,9 @@ describe("toExamWorkspaceItemRows with parents", () => {
 
     expect(rows[0]!.parentBlock?.instruction).toEqual([
       {
+        headingLevel: null,
         parts: [
-          { kind: "text", text: "Betrakta diagrammet." },
+          { kind: "text", marks: [], text: "Betrakta diagrammet." },
           { assetId, kind: "asset", url: protectedUrl },
         ],
       },

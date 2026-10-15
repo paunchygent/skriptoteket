@@ -23,6 +23,7 @@ import {
   INVALID_CRITERION_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE, PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import { plainBody } from "./examWorkspaceRichText";
 import {
   buildMatchingItem,
   buildMatchingItemWithDistractor,
@@ -37,10 +38,10 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
-    body: [{ segments: [{ kind: "text", text: "Vilket ämne är en gas?" }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", text: "Syre" },
-      { choice_id: "choice_b", text: "Järn" },
+      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: "item_001",
@@ -103,11 +104,12 @@ describe("examWorkspaceItemReadiness", () => {
     "blocks a named missing picture in %s until the teacher marks it reviewed", (part) => {
       const source: NonNullable<NativeExamItem["retry_source"]> = {
         label_kind: "single_choice", key_chunks: [], context_chunks: [],
-        chunks: [{anchor: "body:0001", kind: "paragraph", text: "Question", marked_text: "Question", images: [], missing_images: []}],
+        chunks: [{anchor: "body:0001", kind: "paragraph", text: "Question", marked_text: "Question", images: [], missing_images: [], paragraphs: [], runs: []}],
       };
       source[part] = [{
         anchor: part === "chunks" ? "body:0001" : "body:0008", kind: "drawing",
         text: "", marked_text: "", images: [], missing_images: [{reference: "image3.emf", media_type: "image/x-emf", offset: 0, marked_offset: 0}],
+        paragraphs: [], runs: [],
       }];
       const item = buildChoiceItem({retry_source: source, review: {
         confidence: 0.95, parse_origin: "llm_parsed", reasons: ["Bild saknas: image3.emf"],
@@ -175,14 +177,14 @@ describe("examWorkspaceItemReadiness", () => {
   it("reports a choice without text, and accepts whitespace as the server does", () => {
     const empty = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", text: "Syre" },
-        { choice_id: "choice_b", text: "" },
+        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
     });
     const blank = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", text: "Syre" },
-        { choice_id: "choice_b", text: " " },
+        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: " " }] }] },
       ],
     });
 
@@ -213,8 +215,8 @@ describe("examWorkspaceReadinessByItemId", () => {
   it("maps the save-refused states to their Swedish copy", () => {
     const item = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", text: "Syre" },
-        { choice_id: "choice_b", text: "" },
+        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
       points: 0,
     });
@@ -276,7 +278,7 @@ describe("examWorkspaceItemReadiness for matching items", () => {
       examWorkspaceItemReadiness({
         ...item,
         match_right: item.match_right.map((entry) =>
-          entry.right_id === "right_003" ? { ...entry, text: "" } : entry,
+          entry.right_id === "right_003" ? { ...entry, body: plainBody("") } : entry,
         ),
       }),
     ).toEqual(["empty_match_text"]);

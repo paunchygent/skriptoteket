@@ -50,7 +50,10 @@ def _kind_boundary() -> tuple[int, int]:
 
 
 def _instruction_lines(*lines: str) -> tuple[NativeParagraph, ...]:
-    return tuple(NativeParagraph(segments=(NativeTextSegment(text=line),)) for line in lines)
+    return tuple(
+        NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=line, marks=()),))
+        for line in lines
+    )
 
 
 def _parent(parent_id: str, *numbers: int, instruction: tuple[str, ...] = ("Do these.",)):
@@ -152,7 +155,11 @@ def test_one_child_listed_twice_is_rejected():
         {"parent_id": "parent_1"},
         {"parent_id": "item_001"},
         {"instruction": ()},
-        {"instruction": (NativeParagraph(segments=(NativeGapSegment(gap_id="gap_001"),)),)},
+        {
+            "instruction": (
+                NativeParagraph(heading_level=None, segments=(NativeGapSegment(gap_id="gap_001"),)),
+            )
+        },
         {"item_ids": ()},
         {"unknown_field": "x"},
     ],
@@ -168,7 +175,11 @@ def test_one_child_listed_twice_is_rejected():
 def test_malformed_parent_fields_are_rejected(fields: dict):
     valid = {
         "parent_id": "parent_001",
-        "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Do these."),)),),
+        "instruction": (
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Do these.", marks=()),)
+            ),
+        ),
         "item_ids": ("item_001",),
     }
 

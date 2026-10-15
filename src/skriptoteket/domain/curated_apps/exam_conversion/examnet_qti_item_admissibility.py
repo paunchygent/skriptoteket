@@ -79,7 +79,7 @@ def _parent_errors(parent: ExamNetQtiItem) -> tuple[str, ...]:
         isinstance(segment, ExamNetQtiPromptImage)
         and 0 <= segment.image_index < len(parent.image_resources)
         for paragraph in parent.prompt_paragraphs
-        for segment in paragraph
+        for segment in paragraph.segments
     )
     if not any(line.strip() for line in parent.instruction_lines) and not positioned_picture:
         errors.append(f"Item {parent.item_id} has no instruction text.")
@@ -102,7 +102,7 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
         isinstance(segment, ExamNetQtiPromptImage)
         and 0 <= segment.image_index < len(item.image_resources)
         for paragraph in item.prompt_paragraphs
-        for segment in paragraph
+        for segment in paragraph.segments
     )
     if not any(line.strip() for line in item.prompt_lines) and not positioned_picture:
         errors.append(f"Item {item.item_id} has no prompt text.")

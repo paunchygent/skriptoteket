@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiPromptGap,
     ExamNetQtiPromptImage,
+    ExamNetQtiPromptParagraph,
     ExamNetQtiPromptText,
     ExamNetQtiTextEntryGap,
 )
@@ -76,11 +77,13 @@ def test_public_inline_renderers_render_without_item_serialization() -> None:
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
         prompt_paragraphs=(
-            (
-                ExamNetQtiPromptText("Före "),
-                ExamNetQtiPromptGap(0),
-                ExamNetQtiPromptImage(0),
-                ExamNetQtiPromptText(" efter."),
+            ExamNetQtiPromptParagraph(
+                segments=(
+                    ExamNetQtiPromptText("Före "),
+                    ExamNetQtiPromptGap(0),
+                    ExamNetQtiPromptImage(0),
+                    ExamNetQtiPromptText(" efter."),
+                )
             ),
         ),
         text_entry_gaps=(_gap(1, ("alfa",)),),
@@ -112,10 +115,12 @@ def test_rich_free_text_prompt_places_the_image_between_its_text_runs() -> None:
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
         prompt_paragraphs=(
-            (
-                ExamNetQtiPromptText("Beskriv: "),
-                ExamNetQtiPromptImage(0),
-                ExamNetQtiPromptText(" noggrant."),
+            ExamNetQtiPromptParagraph(
+                segments=(
+                    ExamNetQtiPromptText("Beskriv: "),
+                    ExamNetQtiPromptImage(0),
+                    ExamNetQtiPromptText(" noggrant."),
+                )
             ),
         ),
         image_resources=(_image(1, "Bild 1"),),
@@ -141,10 +146,12 @@ def test_rich_prompt_repeated_image_occurrences_use_their_own_resource_index() -
         prompt_lines=("Jämför bilderna.",),
         max_score=1,
         prompt_paragraphs=(
-            (
-                ExamNetQtiPromptImage(0),
-                ExamNetQtiPromptText(" möter "),
-                ExamNetQtiPromptImage(1),
+            ExamNetQtiPromptParagraph(
+                segments=(
+                    ExamNetQtiPromptImage(0),
+                    ExamNetQtiPromptText(" möter "),
+                    ExamNetQtiPromptImage(1),
+                )
             ),
         ),
         image_resources=(_image(1, "Bild 1"), _image(2, "Bild 2")),
@@ -170,14 +177,16 @@ def test_rich_gap_fill_body_keeps_gap_and_image_segment_order() -> None:
         max_score=2,
         text_entry_gaps=(_gap(1, ("alfa",)), _gap(2, ("beta",))),
         prompt_paragraphs=(
-            (
-                ExamNetQtiPromptText("Före "),
-                ExamNetQtiPromptGap(0),
-                ExamNetQtiPromptText(" och "),
-                ExamNetQtiPromptGap(1),
-                ExamNetQtiPromptText(" med "),
-                ExamNetQtiPromptImage(0),
-                ExamNetQtiPromptText(" efter."),
+            ExamNetQtiPromptParagraph(
+                segments=(
+                    ExamNetQtiPromptText("Före "),
+                    ExamNetQtiPromptGap(0),
+                    ExamNetQtiPromptText(" och "),
+                    ExamNetQtiPromptGap(1),
+                    ExamNetQtiPromptText(" med "),
+                    ExamNetQtiPromptImage(0),
+                    ExamNetQtiPromptText(" efter."),
+                )
             ),
         ),
         image_resources=(_image(1, "Bild 1"),),
@@ -218,7 +227,11 @@ def test_rich_gap_fill_body_appends_only_unplaced_gaps() -> None:
         prompt_lines=("Fyll i [___] och [___].",),
         max_score=2,
         text_entry_gaps=(_gap(1, ("alfa",)), _gap(2, ("beta",))),
-        prompt_paragraphs=((ExamNetQtiPromptText("Endast "), ExamNetQtiPromptGap(0)),),
+        prompt_paragraphs=(
+            ExamNetQtiPromptParagraph(
+                segments=(ExamNetQtiPromptText("Endast "), ExamNetQtiPromptGap(0))
+            ),
+        ),
     )
 
     root = _root(item)
@@ -243,10 +256,12 @@ def test_rich_gap_fill_child_uses_qualified_response_identifiers() -> None:
         max_score=1,
         text_entry_gaps=(_gap(1, ("alfa",)),),
         prompt_paragraphs=(
-            (
-                ExamNetQtiPromptText("Svara: "),
-                ExamNetQtiPromptGap(0),
-                ExamNetQtiPromptText(" här."),
+            ExamNetQtiPromptParagraph(
+                segments=(
+                    ExamNetQtiPromptText("Svara: "),
+                    ExamNetQtiPromptGap(0),
+                    ExamNetQtiPromptText(" här."),
+                )
             ),
         ),
     )
@@ -326,8 +341,10 @@ def test_rich_multiple_paragraphs_use_p_children_and_lf_breaks_use_br() -> None:
         prompt_lines=("Rad ett", "Rad två"),
         max_score=1,
         prompt_paragraphs=(
-            (ExamNetQtiPromptText("Rad ett\nRad två"),),
-            (ExamNetQtiPromptImage(0), ExamNetQtiPromptText(" efter bilden")),
+            ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Rad ett\nRad två"),)),
+            ExamNetQtiPromptParagraph(
+                segments=(ExamNetQtiPromptImage(0), ExamNetQtiPromptText(" efter bilden"))
+            ),
         ),
         image_resources=(_image(1, "Bild 1"),),
     )
@@ -358,7 +375,9 @@ def test_out_of_range_prompt_image_index_fails_closed(image_index: int) -> None:
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
-        prompt_paragraphs=((ExamNetQtiPromptImage(image_index),),),
+        prompt_paragraphs=(
+            ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptImage(image_index),)),
+        ),
         image_resources=(_image(1, "Bild 1"),),
     )
 
@@ -376,7 +395,7 @@ def test_out_of_range_prompt_gap_index_fails_closed(gap_index: int) -> None:
         prompt_lines=("Fyll i [___].",),
         max_score=1,
         text_entry_gaps=(_gap(1, ("alfa",)),),
-        prompt_paragraphs=((ExamNetQtiPromptGap(gap_index),),),
+        prompt_paragraphs=(ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptGap(gap_index),)),),
     )
 
     with pytest.raises(ValueError, match="gap index"):
@@ -393,8 +412,10 @@ def test_repeated_prompt_gap_index_fails_closed() -> None:
         max_score=1,
         text_entry_gaps=(_gap(1, ("alfa",)),),
         prompt_paragraphs=(
-            (ExamNetQtiPromptGap(0),),
-            (ExamNetQtiPromptText(" igen "), ExamNetQtiPromptGap(0)),
+            ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptGap(0),)),
+            ExamNetQtiPromptParagraph(
+                segments=(ExamNetQtiPromptText(" igen "), ExamNetQtiPromptGap(0))
+            ),
         ),
     )
 

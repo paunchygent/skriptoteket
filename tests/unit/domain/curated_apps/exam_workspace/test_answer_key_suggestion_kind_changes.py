@@ -43,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 pytestmark = pytest.mark.unit
 
@@ -69,15 +70,19 @@ class TestSuggestionStorageAcrossKindChanges:
             "item_id": "item_001",
             "sequence": 1,
             "kind": kind,
-            "body": (NativeParagraph(segments=(NativeTextSegment(text="Fråga?"),)),),
+            "body": (
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Fråga?", marks=()),)
+                ),
+            ),
             "points": 1,
             "review": _review(),
         }
         if kind in (NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE):
             base["choices"] = (
-                NativeChoice(choice_id="choice_001", text="ett"),
-                NativeChoice(choice_id="choice_002", text="två"),
-                NativeChoice(choice_id="choice_003", text="tre"),
+                NativeChoice(choice_id="choice_001", body=plain_body("ett")),
+                NativeChoice(choice_id="choice_002", body=plain_body("två")),
+                NativeChoice(choice_id="choice_003", body=plain_body("tre")),
             )
             base["answer_key"] = NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -86,21 +91,22 @@ class TestSuggestionStorageAcrossKindChanges:
         elif kind is NativeExamItemKind.GAP_FILL:
             base["body"] = (
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Hon heter "),
+                        NativeTextSegment(text="Hon heter ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                        NativeTextSegment(text="."),
-                    )
+                        NativeTextSegment(text=".", marks=()),
+                    ),
                 ),
             )
             base["gaps"] = (NativeGap(gap_id="gap_001", accepted_values=("Anna",)),)
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         elif kind is NativeExamItemKind.MATCHING:
             base["tick_points"] = Decimal("1")
-            base["match_left"] = (NativeMatchLeft(left_id="left_001", text="hund"),)
+            base["match_left"] = (NativeMatchLeft(left_id="left_001", body=plain_body("hund")),)
             base["match_right"] = (
-                NativeMatchRight(right_id="right_001", text="dog"),
-                NativeMatchRight(right_id="right_002", text="cat"),
+                NativeMatchRight(right_id="right_001", body=plain_body("dog")),
+                NativeMatchRight(right_id="right_002", body=plain_body("cat")),
             )
             base["answer_key"] = NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -201,12 +207,16 @@ class TestSuggestionStorageAcrossKindChanges:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
+            body=(
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Para ihop.", marks=()),)
+                ),
+            ),
             tick_points=Decimal("1"),
-            match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
+            match_left=(NativeMatchLeft(left_id="left_001", body=plain_body("hund")),),
             match_right=(
-                NativeMatchRight(right_id="right_001", text="dog"),
-                NativeMatchRight(right_id="right_002", text="cat"),
+                NativeMatchRight(right_id="right_001", body=plain_body("dog")),
+                NativeMatchRight(right_id="right_002", body=plain_body("cat")),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
             review=_review(),

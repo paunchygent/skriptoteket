@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 pytestmark = pytest.mark.unit
 
@@ -142,7 +143,7 @@ def test_one_row_may_tick_two_categories_and_a_category_may_stay_unused():
         ("left_001", "right_002"),
         ("left_002", "right_001"),
     ]
-    assert [e.text for e in item.match_right] == ["Djur", "Fordon", "Frukt"]
+    assert [body_plain_text(e.body) for e in item.match_right] == ["Djur", "Fordon", "Frukt"]
     assert _number(item.tick_points) == 1.33
     assert _number(item.points) == pytest.approx(3.99)
     assert item.points_estimated is True

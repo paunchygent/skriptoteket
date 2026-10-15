@@ -105,10 +105,11 @@ class TestExportGate:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Fyll i: "),
+                        NativeTextSegment(text="Fyll i: ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                    )
+                    ),
                 ),
             ),
             points=2,
@@ -144,7 +145,11 @@ class TestExportGate:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
-            body=(NativeParagraph(segments=(NativeTextSegment(text=" "),)),),
+            body=(
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text=" ", marks=()),)
+                ),
+            ),
             points=2,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=NativeItemReview(

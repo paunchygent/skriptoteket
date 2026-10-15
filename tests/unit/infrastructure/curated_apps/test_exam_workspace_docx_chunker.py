@@ -2,6 +2,7 @@
 
 import io
 import zipfile
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,11 @@ def _bytes(document: DocxDocument) -> bytes:
     return stream.getvalue()
 
 
+def _text_projection(chunks: tuple[DocxChunk, ...]) -> tuple[DocxChunk, ...]:
+    """The chunks as the text projection: text, marked text and pictures, no formatting."""
+    return tuple(replace(chunk, runs=(), paragraphs=()) for chunk in chunks)
+
+
 def test_quiz_preserves_all_paragraphs_and_soft_break_options() -> None:
     content = _QUIZ.read_bytes()
     chunks = PythonDocxExamChunker().chunk(content=content)
@@ -33,11 +39,11 @@ def test_quiz_preserves_all_paragraphs_and_soft_break_options() -> None:
     assert tuple(chunk.text for chunk in chunks) == tuple(
         paragraph.text for paragraph in Document(io.BytesIO(content)).paragraphs
     )
-    assert chunks[4] == DocxChunk(
-        anchor="body:0007",
-        kind="paragraph",
-        text="A. deep\nB. strange\nC. dignified\nD. thrifty",
-        marked_text="A. deep\nB. strange\nC. dignified\nD. thrifty",
+    assert (chunks[4].anchor, chunks[4].kind, chunks[4].text, chunks[4].marked_text) == (
+        "body:0007",
+        "paragraph",
+        "A. deep\nB. strange\nC. dignified\nD. thrifty",
+        "A. deep\nB. strange\nC. dignified\nD. thrifty",
     )
     assert chunks[5].text == "Correct answer: A. deep"
     assert chunks[5].marked_text == "Correct answer: <i>A. deep</i>"
@@ -59,9 +65,9 @@ def test_body_order_anchors_and_whitespace_survive_tables_and_empty_paragraphs()
     second_table.cell(0, 0).text = "Second table"
     content = _bytes(document)
 
-    chunks = PythonDocxExamChunker().chunk(content=content)
+    first = PythonDocxExamChunker().chunk(content=content)
 
-    assert chunks == (
+    assert _text_projection(first) == (
         DocxChunk("body:0001", "heading", "  A heading  ", "  A heading  "),
         DocxChunk("body:0003", "paragraph", "  First\nsecond\tline  ", "  First\nsecond\tline  "),
         DocxChunk(
@@ -73,7 +79,7 @@ def test_body_order_anchors_and_whitespace_survive_tables_and_empty_paragraphs()
         DocxChunk("body:0005", "paragraph", "After the table", "After the table"),
         DocxChunk("body:0006", "table", "Second table", "Second table"),
     )
-    assert PythonDocxExamChunker().chunk(content=content) == chunks
+    assert PythonDocxExamChunker().chunk(content=content) == first
 
 
 def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
@@ -85,7 +91,7 @@ def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
     nested.cell(0, 0).text = "Nested\nlines"
     cell.paragraphs[-1].text = "After"
 
-    assert PythonDocxExamChunker().chunk(content=_bytes(document)) == (
+    assert _text_projection(PythonDocxExamChunker().chunk(content=_bytes(document))) == (
         DocxChunk(
             "body:0001", "table", "Before\nNested\nlines\nAfter", "Before\nNested\nlines\nAfter"
         ),

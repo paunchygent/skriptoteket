@@ -34,6 +34,9 @@ from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_suppo
     review_complete,
     text_body,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    plain_body,
+)
 
 
 class TestMatchingGridMapping:
@@ -46,13 +49,13 @@ class TestMatchingGridMapping:
             points=points,
             tick_points=tick_points,
             match_left=(
-                NativeMatchLeft(left_id="left_001", text="Rött"),
-                NativeMatchLeft(left_id="left_002", text="Päron"),
+                NativeMatchLeft(left_id="left_001", body=plain_body("Rött")),
+                NativeMatchLeft(left_id="left_002", body=plain_body("Päron")),
             ),
             match_right=(
-                NativeMatchRight(right_id="right_001", text="Färg"),
-                NativeMatchRight(right_id="right_002", text="Frukt"),
-                NativeMatchRight(right_id="right_003", text="Obrukad"),
+                NativeMatchRight(right_id="right_001", body=plain_body("Färg")),
+                NativeMatchRight(right_id="right_002", body=plain_body("Frukt")),
+                NativeMatchRight(right_id="right_003", body=plain_body("Obrukad")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,

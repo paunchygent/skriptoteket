@@ -37,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 _GOLD_DIR = Path("tests/fixtures/exam_conversion/docx_corpus/gold")
 _GOLD_STEM = "bf26_english_1_unit_test_kap_1_2_med_facit"
@@ -62,7 +63,7 @@ def _review() -> NativeItemReview:
 
 
 def _paragraph(text: str) -> NativeParagraph:
-    return NativeParagraph(segments=(NativeTextSegment(text=text),))
+    return NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
 
 
 def gold_item() -> GoldItem:
@@ -135,7 +136,7 @@ def keyed_answer(*pairs: tuple[str, str]) -> NativeAnswerKey:
 def with_distractor(item: NativeExamItem) -> NativeExamItem:
     extra = NativeMatchRight(
         right_id=f"right_{len(item.match_right) + 1:03d}",
-        text=DISTRACTOR_TEXT,
+        body=plain_body(DISTRACTOR_TEXT),
     )
     return with_update(item, match_right=(*item.match_right, extra))
 
@@ -173,12 +174,12 @@ def matching_item(
         points=points,
         tick_points=tick_points,
         match_left=(
-            NativeMatchLeft(left_id="left_001", text="hund"),
-            NativeMatchLeft(left_id="left_002", text="katt"),
-            NativeMatchLeft(left_id="left_003", text="fågel"),
+            NativeMatchLeft(left_id="left_001", body=plain_body("hund")),
+            NativeMatchLeft(left_id="left_002", body=plain_body("katt")),
+            NativeMatchLeft(left_id="left_003", body=plain_body("fågel")),
         ),
         match_right=tuple(
-            NativeMatchRight(right_id=right_id, text=_MATCH_RIGHT_TEXT[right_id])
+            NativeMatchRight(right_id=right_id, body=plain_body(_MATCH_RIGHT_TEXT[right_id]))
             for right_id in match_right
         ),
         answer_key=NativeAnswerKey(

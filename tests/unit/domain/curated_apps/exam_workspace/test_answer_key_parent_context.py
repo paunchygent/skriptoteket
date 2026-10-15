@@ -113,11 +113,17 @@ def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -
             ]
         elif view.kind is AnswerKeyViewKind.MATCHING:
             assert payload["left_entries"] == [
-                {"left_id": int(entry.left_id.removeprefix("left_")), "text": entry.text}
+                {
+                    "left_id": int(entry.left_id.removeprefix("left_")),
+                    "text": body_plain_text(entry.body),
+                }
                 for entry in child.match_left
             ]
             assert payload["right_entries"] == [
-                {"right_id": int(entry.right_id.removeprefix("right_")), "text": entry.text}
+                {
+                    "right_id": int(entry.right_id.removeprefix("right_")),
+                    "text": body_plain_text(entry.body),
+                }
                 for entry in child.match_right
             ]
         else:
@@ -125,7 +131,7 @@ def test_cleared_corpus_items_keep_parent_context_and_response_data(stem: str) -
                 {
                     "choice_value": str(int(choice.choice_id.removeprefix("choice_"))),
                     "alternative_id": int(choice.choice_id.removeprefix("choice_")),
-                    "text": choice.text,
+                    "text": body_plain_text(choice.body),
                 }
                 for choice in child.choices
             ]

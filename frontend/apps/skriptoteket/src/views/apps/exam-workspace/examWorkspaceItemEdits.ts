@@ -13,6 +13,7 @@
 
 import type {
   NativeExamAnswerKeyOrigin,
+  NativeExamBodyParagraph,
   NativeExamBodySegment,
   NativeExamCriterion,
   NativeExamItem,
@@ -49,7 +50,7 @@ export function withPoints(item: NativeExamItem, points: number | null): NativeE
   return { ...item, points, points_estimated: false };
 }
 
-/** Replace one paragraph's segments, as serialized by the inline body editor. */
+/** Replace one paragraph's rich text, keeping its heading level. */
 export function withParagraphSegments(
   item: NativeExamItem,
   paragraphIndex: number,
@@ -58,20 +59,35 @@ export function withParagraphSegments(
   return {
     ...item,
     body: item.body.map((paragraph, candidateParagraphIndex) =>
-      candidateParagraphIndex === paragraphIndex ? { segments } : paragraph,
+      candidateParagraphIndex === paragraphIndex ? { ...paragraph, segments } : paragraph,
     ),
   };
 }
 
-export function withChoiceText(
+/** Set one paragraph's heading level; null returns it to body text. */
+export function withParagraphHeading(
+  item: NativeExamItem,
+  paragraphIndex: number,
+  headingLevel: NativeExamBodyParagraph["heading_level"],
+): NativeExamItem {
+  return {
+    ...item,
+    body: item.body.map((paragraph, candidateParagraphIndex) =>
+      candidateParagraphIndex === paragraphIndex ? { ...paragraph, heading_level: headingLevel } : paragraph,
+    ),
+  };
+}
+
+/** Replace one choice's rich paragraphs. */
+export function withChoiceBody(
   item: NativeExamItem,
   choiceId: string,
-  text: string,
+  body: NativeExamBodyParagraph[],
 ): NativeExamItem {
   return {
     ...item,
     choices: item.choices.map((choice) =>
-      choice.choice_id === choiceId ? { ...choice, text } : choice,
+      choice.choice_id === choiceId ? { ...choice, body } : choice,
     ),
   };
 }
@@ -90,23 +106,24 @@ export function withCorrectChoices(
   };
 }
 
-export function withMatchEntryText(
+/** Replace one matching entry's rich paragraphs. */
+export function withMatchEntryBody(
   item: NativeExamItem,
   side: "left" | "right",
   entryId: string,
-  text: string,
+  body: NativeExamBodyParagraph[],
 ): NativeExamItem {
   return side === "left"
     ? {
         ...item,
         match_left: item.match_left.map((entry) =>
-          entry.left_id === entryId ? { ...entry, text } : entry,
+          entry.left_id === entryId ? { ...entry, body } : entry,
         ),
       }
     : {
         ...item,
         match_right: item.match_right.map((entry) =>
-          entry.right_id === entryId ? { ...entry, text } : entry,
+          entry.right_id === entryId ? { ...entry, body } : entry,
         ),
       };
 }
@@ -313,7 +330,7 @@ export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamIt
       ...paragraph,
       segments: paragraph.segments.map((segment) =>
         segment.kind === "gap" && segment.gap_id === gapId
-          ? { kind: "text" as const, text }
+          ? { kind: "text" as const, text, marks: [] }
           : segment,
       ),
     })),
@@ -343,7 +360,10 @@ export function newTeacherItem(
   sequence: number,
   kind: TeacherItemKind,
 ): NativeExamItem {
-  const question = { segments: [{ kind: "text" as const, text: "Ny fråga" }] };
+  const question: NativeExamBodyParagraph = {
+    heading_level: null,
+    segments: [{ kind: "text", text: "Ny fråga", marks: [] }],
+  };
   const shortAnswer = kind === "short_answer";
   return {
     ai_suggestion: null,
@@ -358,7 +378,7 @@ export function newTeacherItem(
       origin: shortAnswer ? "absent" : "not_applicable",
     },
     body: shortAnswer
-      ? [question, { segments: [{ kind: "gap", gap_id: "gap_001" }] }]
+      ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
       : [question],
     choices: [],
     gaps: shortAnswer

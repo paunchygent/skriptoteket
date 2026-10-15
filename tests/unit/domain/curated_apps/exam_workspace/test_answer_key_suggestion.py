@@ -55,6 +55,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 pytestmark = pytest.mark.unit
 
@@ -72,11 +73,16 @@ def _choice_item(**overrides: object) -> NativeExamItem:
         "item_id": "item_001",
         "sequence": 1,
         "kind": NativeExamItemKind.SINGLE_CHOICE,
-        "body": (NativeParagraph(segments=(NativeTextSegment(text="Vilket är huvudordet?"),)),),
+        "body": (
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text="Vilket är huvudordet?", marks=()),),
+            ),
+        ),
         "points": 1,
         "choices": (
-            NativeChoice(choice_id="choice_001", text="vägen"),
-            NativeChoice(choice_id="choice_002", text="eleverna"),
+            NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+            NativeChoice(choice_id="choice_002", body=plain_body("eleverna")),
         ),
         "answer_key": NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
         "review": _review(),
@@ -101,7 +107,8 @@ def _parent(instruction: tuple[str, ...]) -> NativeExamParent:
     return NativeExamParent(
         parent_id="parent_001",
         instruction=tuple(
-            NativeParagraph(segments=(NativeTextSegment(text=text),)) for text in instruction
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
+            for text in instruction
         ),
         item_ids=("item_001",),
     )
@@ -113,19 +120,24 @@ class TestFingerprint:
         base = answer_key_fingerprint(item, None)
 
         stem_changed = _choice_item(
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Vilket är subjektet?"),)),)
+            body=(
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(NativeTextSegment(text="Vilket är subjektet?", marks=()),),
+                ),
+            )
         )
         choice_text_changed = _choice_item(
             choices=(
-                NativeChoice(choice_id="choice_001", text="vägen"),
-                NativeChoice(choice_id="choice_002", text="lärarna"),
+                NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+                NativeChoice(choice_id="choice_002", body=plain_body("lärarna")),
             )
         )
         choice_added = _choice_item(
             choices=(
-                NativeChoice(choice_id="choice_001", text="vägen"),
-                NativeChoice(choice_id="choice_002", text="eleverna"),
-                NativeChoice(choice_id="choice_003", text="skolan"),
+                NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+                NativeChoice(choice_id="choice_002", body=plain_body("eleverna")),
+                NativeChoice(choice_id="choice_003", body=plain_body("skolan")),
             )
         )
         kind_changed = _choice_item(kind=NativeExamItemKind.MULTIPLE_RESPONSE)
@@ -150,11 +162,12 @@ class TestFingerprint:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Hon heter "),
+                        NativeTextSegment(text="Hon heter ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                        NativeTextSegment(text="."),
-                    )
+                        NativeTextSegment(text=".", marks=()),
+                    ),
                 ),
             ),
             points=1,
@@ -166,10 +179,11 @@ class TestFingerprint:
             update={
                 "body": (
                     NativeParagraph(
+                        heading_level=None,
                         segments=(
                             NativeGapSegment(gap_id="gap_001"),
-                            NativeTextSegment(text=" heter hon."),
-                        )
+                            NativeTextSegment(text=" heter hon.", marks=()),
+                        ),
                     ),
                 )
             }
@@ -180,12 +194,16 @@ class TestFingerprint:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
+            body=(
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Para ihop.", marks=()),)
+                ),
+            ),
             tick_points=Decimal("1"),
-            match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
+            match_left=(NativeMatchLeft(left_id="left_001", body=plain_body("hund")),),
             match_right=(
-                NativeMatchRight(right_id="right_001", text="dog"),
-                NativeMatchRight(right_id="right_002", text="cat"),
+                NativeMatchRight(right_id="right_001", body=plain_body("dog")),
+                NativeMatchRight(right_id="right_002", body=plain_body("cat")),
             ),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
             review=_review(),
@@ -193,8 +211,8 @@ class TestFingerprint:
         match_changed = match_item.model_copy(
             update={
                 "match_right": (
-                    NativeMatchRight(right_id="right_001", text="dog"),
-                    NativeMatchRight(right_id="right_002", text="bird"),
+                    NativeMatchRight(right_id="right_001", body=plain_body("dog")),
+                    NativeMatchRight(right_id="right_002", body=plain_body("bird")),
                 )
             }
         )
@@ -234,8 +252,8 @@ class TestOutdated:
 
         reworded = _choice_item(
             choices=(
-                NativeChoice(choice_id="choice_001", text="vägen"),
-                NativeChoice(choice_id="choice_002", text="lärarna"),
+                NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+                NativeChoice(choice_id="choice_002", body=plain_body("lärarna")),
             )
         ).model_copy(update={"ai_suggestion": suggestion})
         assert suggestion_is_outdated(reworded, None) is True
@@ -245,8 +263,8 @@ class TestSuggestionStorage:
     def test_historical_suggestion_with_a_removed_choice_is_kept(self) -> None:
         item = _choice_item(
             choices=(
-                NativeChoice(choice_id="choice_001", text="vägen"),
-                NativeChoice(choice_id="choice_003", text="skolan"),
+                NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+                NativeChoice(choice_id="choice_003", body=plain_body("skolan")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -265,13 +283,17 @@ class TestSuggestionStorage:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
-            body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
+            body=(
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Para ihop.", marks=()),)
+                ),
+            ),
             points=1,
             tick_points=Decimal("1"),
-            match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
+            match_left=(NativeMatchLeft(left_id="left_001", body=plain_body("hund")),),
             match_right=(
-                NativeMatchRight(right_id="right_001", text="dog"),
-                NativeMatchRight(right_id="right_002", text="cat"),
+                NativeMatchRight(right_id="right_001", body=plain_body("dog")),
+                NativeMatchRight(right_id="right_002", body=plain_body("cat")),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
@@ -297,11 +319,12 @@ class TestSuggestionStorage:
             kind=NativeExamItemKind.GAP_FILL,
             body=(
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Hon heter "),
+                        NativeTextSegment(text="Hon heter ", marks=()),
                         NativeGapSegment(gap_id="gap_001"),
-                        NativeTextSegment(text="."),
-                    )
+                        NativeTextSegment(text=".", marks=()),
+                    ),
                 ),
             ),
             points=1,

@@ -38,30 +38,17 @@ import {
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
-  NativeExamBodySegment,
-  NativeExamCriterion,
   NativeExamDocument,
   NativeExamItem,
   NativeExamItemKind,
-  NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
 import {
   newTeacherItem,
   type TeacherItemKind,
-  reviewed,
-  withChoiceText,
-  withCorrectChoices,
-  withCriteria,
-  withGapAsText,
-  withoutInterpretedKey,
-  withMatchEntryText,
-  withMatchPairs,
-  withTickPoints,
-  withParagraphSegments,
-  withPoints,
 } from "./examWorkspaceItemEdits";
+import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
@@ -380,58 +367,21 @@ export function useExamWorkspaceDocument() {
   const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument });
   const { removeItemAutomaticValue, updateItemGapValues } = keying;
 
-  function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
-    patchItem(itemId, (item) => withCriteria(item, criteria));
-  }
-
-  function updateItemPoints(itemId: string, points: number | null): void {
-    patchItem(itemId, (item) => withPoints(item, points));
-  }
-
-  function updateItemParagraphSegments(
-    itemId: string,
-    paragraphIndex: number,
-    segments: NativeExamBodySegment[],
-  ): void {
-    patchItem(itemId, (item) => withParagraphSegments(item, paragraphIndex, segments));
-  }
-
-  function updateItemChoiceText(itemId: string, choiceId: string, text: string): void {
-    patchItem(itemId, (item) => withChoiceText(item, choiceId, text));
-  }
-
-  function updateItemCorrectChoices(itemId: string, correctChoiceIds: string[]): void {
-    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds));
-  }
-
-  function updateItemMatchEntryText(
-    itemId: string,
-    side: "left" | "right",
-    entryId: string,
-    text: string,
-  ): void {
-    patchItem(itemId, (item) => withMatchEntryText(item, side, entryId, text));
-  }
-
-  function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {
-    patchItem(itemId, (item) => withMatchPairs(item, pairs));
-  }
-
-  function updateItemTickPoints(itemId: string, tickPoints: string): void {
-    patchItem(itemId, (item) => withTickPoints(item, tickPoints));
-  }
-
-  function undoItemInterpretation(itemId: string): void {
-    patchItem(itemId, withoutInterpretedKey);
-  }
-
-  function showItemGapAsText(itemId: string, gapId: string): void {
-    patchItem(itemId, (item) => withGapAsText(item, gapId));
-  }
-
-  function markItemReviewed(itemId: string): void {
-    patchItem(itemId, reviewed);
-  }
+  // Every teacher edit command, applied through the one patch path above.
+  const {
+    markItemReviewed,
+    showItemGapAsText,
+    undoItemInterpretation,
+    updateItemChoiceBody,
+    updateItemCorrectChoices,
+    updateItemCriteria,
+    updateItemMatchEntryBody,
+    updateItemMatchPairs,
+    updateItemParagraphHeading,
+    updateItemParagraphSegments,
+    updateItemPoints,
+    updateItemTickPoints,
+  } = useExamWorkspaceItemEdits(patchItem);
 
   function restoreItemSuggestion(itemId: string): void {
     patchItem(itemId, (item) => withRestoredSuggestion(item));
@@ -481,14 +431,15 @@ export function useExamWorkspaceDocument() {
     selectedItemId,
     summary,
     updateItemParagraphSegments,
-    updateItemChoiceText,
+    updateItemParagraphHeading,
+    updateItemChoiceBody,
     updateItemCorrectChoices,
     updateItemGapValues,
     undoItemInterpretation,
     removeItemAutomaticValue,
     showItemGapAsText,
     updateItemCriteria,
-    updateItemMatchEntryText,
+    updateItemMatchEntryBody,
     updateItemMatchPairs,
     updateItemTickPoints,
     updateItemPoints,

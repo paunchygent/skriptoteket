@@ -37,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 _ITEM_HEADING_STYLE = "Heading 3"
@@ -102,11 +103,11 @@ class ExamWorkspaceDocxWriter:
             output.add_paragraph(_points_line(item, labels))
             if item.kind in _CHOICE_KINDS:
                 for index, choice in enumerate(item.choices):
-                    output.add_paragraph(f"{_choice_letter(index)}) {choice.text}")
+                    output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(choice.body)}")
             for index, left in enumerate(item.match_left, start=1):
-                output.add_paragraph(f"{index}. {left.text}")
+                output.add_paragraph(f"{index}. {body_plain_text(left.body)}")
             for index, right in enumerate(item.match_right):
-                output.add_paragraph(f"{_choice_letter(index)}) {right.text}")
+                output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(right.body)}")
 
         keyed_items = tuple(item for item in document.items if _facit_lines(item, labels))
         if keyed_items:
@@ -175,7 +176,9 @@ def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str,
             *(f"• {criterion.text} ({criterion.points} p)" for criterion in item.criteria),
         )
     if item.kind in _CHOICE_KINDS and item.answer_key.correct_choice_ids:
-        text_by_choice_id = {choice.choice_id: choice.text for choice in item.choices}
+        text_by_choice_id = {
+            choice.choice_id: body_plain_text(choice.body) for choice in item.choices
+        }
         correct_texts = tuple(
             text_by_choice_id[choice_id] for choice_id in item.answer_key.correct_choice_ids
         )
@@ -186,8 +189,8 @@ def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str,
             for index, gap in enumerate(item.gaps, start=1)
         )
     if item.kind is NativeExamItemKind.MATCHING and item.answer_key.match_pairs:
-        left = {entry.left_id: entry.text for entry in item.match_left}
-        right = {entry.right_id: entry.text for entry in item.match_right}
+        left = {entry.left_id: body_plain_text(entry.body) for entry in item.match_left}
+        right = {entry.right_id: body_plain_text(entry.body) for entry in item.match_right}
         return tuple(
             labels.keyed(labels.pair, f"{left[pair.left_id]} – {right[pair.right_id]}")
             for pair in item.answer_key.match_pairs

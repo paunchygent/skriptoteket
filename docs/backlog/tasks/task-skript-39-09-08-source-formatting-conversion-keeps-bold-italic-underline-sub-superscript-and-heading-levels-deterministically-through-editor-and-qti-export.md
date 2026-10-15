@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -35,7 +35,13 @@ highlight are not kept.
 **Heading levels:** a paragraph styled Title or Heading 1-3 becomes heading
 level 1-3. A whole paragraph whose text is set clearly larger than the
 document's body size also becomes a heading level, by fixed size thresholds
-the implementation lead chooses and documents. Larger words inside a sentence
+the implementation lead chooses and documents. Body size is the most frequent
+resolved font size, weighted by non-whitespace character count in non-heading
+paragraphs (ties choose the smaller size); without a measurable body size, use
+the Normal style's size, then 11 pt. All non-whitespace runs in a paragraph must
+be at least 1.25 times that size for heading 3, 1.5 times for heading 2 or
+1.8 times for heading 1. Explicit Title and Heading 1-3 styles take precedence.
+Larger words inside a sentence
 keep only their marks, because Exam.net does not render inline font sizes
 (probe r20).
 
@@ -46,7 +52,24 @@ plain because students never see them.
 **Deterministic copy:** the DOCX reader records each run's marks and each
 paragraph's heading level with source offsets. After the model returns its
 segments, code matches every returned text segment to the source text and
-applies the source formatting to the matched span. An inline facit answer
+applies the source formatting to the matched span. Exact matching folds
+whitespace only and walks each visible surface's source cursor in order.
+When wording differs, character alignment copies marks only to equal source
+characters; inserted characters are unmarked. The model's wording stays when
+all marked source characters are represented by aligned text or gap answers.
+Unmarked wording changes never cause reconstruction or Granska. Printed
+question/option labels and point labels have their own native fields; source
+headings are also accounted for by deterministic instruction placement.
+
+This alignment rule is the parent's F3 clarification of 2026-10-15. For an
+inline `Svar:` expression, unmarked question wording before the label does
+not steal an identical word's alignment from the formatted expression after
+it. The complete ordered gap sequence must have one unique assignment;
+parentheses immediately wrapping inline answers belong to the gaps. Printed
+blanks outrank answer words repeated in instructions. A reconstructed
+paragraph needs a unique best source paragraph by shared word count (at least
+two shared words, unless it is the sole remaining paragraph). Reconstruction
+never exposes an inline facit label to students. An inline facit answer
 that becomes a gap carries no formatting. When a returned text cannot be
 matched, code rebuilds that text from the source runs with their formatting
 and keeps the model's gaps; if that also fails, the question goes to
@@ -101,8 +124,9 @@ DigiExam converter lane.
 A teacher uploads the Svenska 2 exam. Fråga 17 shows its three phrases in
 italics in the editor, the teacher makes one word bold with Ctrl/Cmd+B and
 saves, exports QTI, and the Exam.net import shows the italics, the bold word
-and the exam's headings. Matching and copying formatting is linear in the
-source text; no material performance concern.
+and the exam's headings. Source indexing and exact copying are linear;
+rewrite alignment is scoped to source paragraphs rather than the whole exam.
+The recorded corpus is the focused performance and fallback-frequency check.
 
 ## Validation
 

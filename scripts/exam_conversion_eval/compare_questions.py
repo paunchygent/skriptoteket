@@ -23,7 +23,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    body_plain_text,
+    body_text_lines,
+)
 
 from .compare_text import CELL_SEPARATOR, ENTRY_LABEL, words
 from .gold import GoldItem, GoldKind, GoldParent
@@ -143,8 +146,8 @@ def _native_view(item: NativeExamItem, label: str, instruction: tuple[str, ...])
         kind = "review"
     gap_by_id = {gap.gap_id: gap for gap in item.gaps}
     correct_ids = set(item.answer_key.correct_choice_ids)
-    left = {entry.left_id: entry.text for entry in item.match_left}
-    right = {entry.right_id: entry.text for entry in item.match_right}
+    left = {entry.left_id: body_plain_text(entry.body) for entry in item.match_left}
+    right = {entry.right_id: body_plain_text(entry.body) for entry in item.match_right}
     return Question(
         source_label=label,
         kind=kind,
@@ -152,9 +155,11 @@ def _native_view(item: NativeExamItem, label: str, instruction: tuple[str, ...])
         instruction=instruction,
         body=item.plain_text_lines(),
         converted=item.review.parse_origin is NativeParseOrigin.LLM_PARSED,
-        choices=tuple(choice.text for choice in item.choices),
+        choices=tuple(body_plain_text(choice.body) for choice in item.choices),
         correct_choices=tuple(
-            choice.text for choice in item.choices if choice.choice_id in correct_ids
+            body_plain_text(choice.body)
+            for choice in item.choices
+            if choice.choice_id in correct_ids
         ),
         gaps=tuple(
             gap_by_id[segment.gap_id].accepted_values

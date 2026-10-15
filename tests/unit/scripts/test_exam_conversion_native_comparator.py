@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 from tests.unit.scripts.exam_conversion_corpus_support import (
     AUTHORED_STEM,
     RECORDED_STEMS,
@@ -66,7 +67,9 @@ def _compare(stem: str, document: NativeExamDocument | None = None) -> ExamCompa
 
 
 def _text(item: NativeExamItem, text: str) -> NativeExamItem:
-    paragraph = NativeParagraph(segments=(NativeTextSegment(text=text),))
+    paragraph = NativeParagraph(
+        heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)
+    )
     return item.model_copy(update={"body": (*item.body, paragraph)})
 
 
@@ -214,7 +217,12 @@ def test_a_parent_instruction_moved_onto_every_child_passes():
             parent,
             parent.model_copy(
                 update={
-                    "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Svara."),)),)
+                    "instruction": (
+                        NativeParagraph(
+                            heading_level=None,
+                            segments=(NativeTextSegment(text="Svara.", marks=()),),
+                        ),
+                    )
                 }
             ),
         )
@@ -256,7 +264,12 @@ def test_dropping_the_parent_instruction_loses_instruction_words_only():
             parent,
             parent.model_copy(
                 update={
-                    "instruction": (NativeParagraph(segments=(NativeTextSegment(text="Svara."),)),)
+                    "instruction": (
+                        NativeParagraph(
+                            heading_level=None,
+                            segments=(NativeTextSegment(text="Svara.", marks=()),),
+                        ),
+                    )
                 }
             ),
         ),
@@ -280,7 +293,9 @@ def test_a_childs_answer_disclosed_in_its_parent_instruction_leaks():
         update={
             "instruction": (
                 *parent.instruction,
-                NativeParagraph(segments=(NativeTextSegment(text=answer),)),
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text=answer, marks=()),)
+                ),
             )
         }
     )
@@ -327,15 +342,15 @@ def _matching_view(item: GoldItem) -> Question:
 def _native_matching(item: GoldItem, rights: list[str] | None = None) -> NativeExamItem:
     view = _matching_view(item)
     left = tuple(
-        NativeMatchLeft(left_id=f"left_{i:03d}", text=text)
+        NativeMatchLeft(left_id=f"left_{i:03d}", body=plain_body(text))
         for i, text in enumerate(view.match_left, 1)
     )
     right = tuple(
-        NativeMatchRight(right_id=f"right_{i:03d}", text=text)
+        NativeMatchRight(right_id=f"right_{i:03d}", body=plain_body(text))
         for i, text in enumerate(view.match_right if rights is None else rights, 1)
     )
-    left_ids = {entry.text: entry.left_id for entry in left}
-    right_ids = {entry.text: entry.right_id for entry in right}
+    left_ids = {body_plain_text(entry.body): entry.left_id for entry in left}
+    right_ids = {body_plain_text(entry.body): entry.right_id for entry in right}
     pairs = tuple(
         NativeMatchPair(left_id=left_ids[pair.left], right_id=right_ids[pair.right])
         for pair in item.pairs
@@ -344,7 +359,10 @@ def _native_matching(item: GoldItem, rights: list[str] | None = None) -> NativeE
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.MATCHING,
-        body=tuple(NativeParagraph(segments=(NativeTextSegment(text=line),)) for line in view.body),
+        body=tuple(
+            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=line, marks=()),))
+            for line in view.body
+        ),
         points=item.points,
         tick_points=1,
         match_left=left,
@@ -421,7 +439,9 @@ def test_native_matching_with_a_lost_entry_fails_content(dropped: str):
 def test_native_matching_with_an_extra_distractor_entry_passes():
     single, item, _, rights = _matching_case()
     native = _native_matching(item, rights)
-    distractor = NativeMatchRight(right_id="right_099", text="an entry the source never lists")
+    distractor = NativeMatchRight(
+        right_id="right_099", body=plain_body("an entry the source never lists")
+    )
     extended = native.model_copy(update={"match_right": (*native.match_right, distractor)})
     document = _document(extended).model_copy(update={"title": single.title})
     assert compare_native_exam(single, document).passed
@@ -439,7 +459,8 @@ def test_native_category_grid_with_several_pairs_per_row_passes():
     keyed = Counter(pair.left for pair in item.pairs)
     assert max(keyed.values()) == 2, "the authored grid has a row with two correct categories"
     assert any(
-        entry.text not in {pair.right for pair in item.pairs} for entry in native.match_right
+        body_plain_text(entry.body) not in {pair.right for pair in item.pairs}
+        for entry in native.match_right
     ), "the authored grid has an unused category"
     document = _document(native).model_copy(update={"title": single.title})
     assert compare_native_exam(single, document).passed

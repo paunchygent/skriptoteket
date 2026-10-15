@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 LEFT_OUT_REASON = (
     "Delar av källtexten saknas i den konverterade frågan – kontrollera mot källan. "
@@ -112,9 +113,9 @@ def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
     texts = [
         *(criterion.text for criterion in item.criteria),
         *(value for gap in item.gaps for value in gap.accepted_values),
-        *(choice.text for choice in item.choices),
-        *(entry.text for entry in item.match_left),
-        *(entry.text for entry in item.match_right),
+        *(body_plain_text(choice.body) for choice in item.choices),
+        *(body_plain_text(entry.body) for entry in item.match_left),
+        *(body_plain_text(entry.body) for entry in item.match_right),
     ]
     return (tuple(body), *(_tokens(text) for text in texts))
 

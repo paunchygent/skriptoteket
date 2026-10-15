@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
 _GAP_MARKER = "[___]"
 
@@ -47,37 +48,95 @@ def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
     and where, and a picture-only chunk still becomes a non-empty paragraph. A text-less
     chunk without pictures becomes nothing.
     """
+    source = SourceFormatting((chunk,))
     placements: list[tuple[int, NativeSegment]] = [
         (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
     ]
     placements.extend(
-        (missing.offset, NativeTextSegment(text=_missing_picture_text(missing)))
+        (missing.offset, NativeTextSegment(text=_missing_picture_text(missing), marks=()))
         for missing in chunk.missing_images
     )
     if not placements:
         if not chunk.text:
             return None
-        return NativeParagraph(segments=(NativeTextSegment(text=chunk.text),))
+        return NativeParagraph(
+            heading_level=source.paragraphs[0].heading if source.paragraphs else None,
+            segments=source.text_segments(0, len(chunk.text)),
+        )
     placements.sort(key=lambda placement: placement[0])
     segments: list[NativeSegment] = []
     cursor = 0
     for offset, segment in placements:
         before = chunk.text[cursor:offset]
         if before:
-            segments.append(NativeTextSegment(text=before))
+            segments.extend(source.text_segments(cursor, offset))
         segments.append(segment)
         cursor = offset
     after = chunk.text[cursor:]
     if after:
-        segments.append(NativeTextSegment(text=after))
-    return NativeParagraph(segments=tuple(segments))
+        segments.extend(source.text_segments(cursor, len(chunk.text)))
+    return NativeParagraph(
+        heading_level=source.paragraphs[0].heading if source.paragraphs else None,
+        segments=tuple(segments),
+    )
 
 
 def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...]:
     """Every source chunk as one body, in the given order, contentless chunks skipped."""
-    return tuple(
-        paragraph for chunk in chunks if (paragraph := source_paragraph(chunk)) is not None
-    )
+    result: list[NativeParagraph] = []
+    for chunk in chunks:
+        if not chunk.paragraphs or len(chunk.paragraphs) == 1:
+            paragraph = source_paragraph(chunk)
+            if paragraph is not None:
+                result.append(paragraph)
+            continue
+        # Multi-paragraph chunks (for example table cells) retain their block levels.
+        source = SourceFormatting((chunk,))
+        placements: list[tuple[int, NativeSegment]] = [
+            (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
+        ]
+        placements.extend(
+            (image.offset, NativeTextSegment(text=_missing_picture_text(image), marks=()))
+            for image in chunk.missing_images
+        )
+        placements.sort(key=lambda entry: entry[0])
+        previous_end: int | None = None
+        for index, block in enumerate(chunk.paragraphs):
+            end = block.offset + len(block.text)
+            last = index == len(chunk.paragraphs) - 1
+            cursor = block.offset
+            segments: list[NativeSegment] = []
+            for offset, segment in placements:
+                if block.offset <= offset < end or (last and offset == end):
+                    segments.extend(source.text_segments(cursor, offset))
+                    segments.append(segment)
+                    cursor = offset
+            segments.extend(source.text_segments(cursor, end))
+            if segments:
+                separator = (
+                    chunk.text[previous_end : block.offset] if previous_end is not None else ""
+                )
+                if (
+                    result
+                    and previous_end is not None
+                    and separator == " | "
+                    and result[-1].heading_level == block.heading_level
+                ):
+                    result[-1] = result[-1].model_copy(
+                        update={
+                            "segments": (
+                                *result[-1].segments,
+                                *source.text_segments(previous_end, block.offset),
+                                *segments,
+                            )
+                        }
+                    )
+                else:
+                    result.append(
+                        NativeParagraph(heading_level=block.heading_level, segments=tuple(segments))
+                    )
+                previous_end = end
+    return tuple(result)
 
 
 def body_asset_ids(body: Iterable[NativeParagraph]) -> tuple[str, ...]:

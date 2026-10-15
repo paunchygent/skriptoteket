@@ -89,7 +89,7 @@ describe("parents in useExamWorkspaceDocument", () => {
 
     state.updateItemPoints("item_002", 2);
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
-    state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", text: "Edited." }]);
+    state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", marks: [], text: "Edited." }]);
     state.markItemReviewed("item_002");
     state.addItem("free_text");
 

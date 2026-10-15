@@ -187,7 +187,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
 
     await wrapper.setProps({
-      item: { ...item, body: [{ segments: segments as never }, item.body[1]!] },
+      item: { ...item, body: [{ heading_level: null, segments: segments as never }, item.body[1]!] },
     });
     expect(wrapper.get('[data-gap-id="gap_001"]').element).toBe(chip);
     expect([...records, ...observer.takeRecords()]).toEqual([]);
@@ -204,7 +204,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await wrapper.setProps({
       item: buildGapItem({
         answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-        body: [{ segments: [{ kind: "text", text: "Beskriv." }] }],
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv." }] }],
         gaps: [],
         kind: "free_text",
         match_left: [],

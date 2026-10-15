@@ -37,13 +37,12 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [
-      {
-        segments: [
-          { kind: "text", text: "Vatten kokar vid" },
+      { heading_level: null, segments: [
+          { kind: "text", marks: [], text: "Vatten kokar vid" },
           { gap_id: "gap_001", kind: "gap" },
-          { kind: "text", text: "grader och fryser vid" },
+          { kind: "text", marks: [], text: "grader och fryser vid" },
           { gap_id: "gap_002", kind: "gap" },
-          { kind: "text", text: "grader." },
+          { kind: "text", marks: [], text: "grader." },
         ],
       },
     ],

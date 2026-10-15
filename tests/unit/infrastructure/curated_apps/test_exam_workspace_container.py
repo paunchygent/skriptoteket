@@ -47,7 +47,12 @@ def _document() -> NativeExamDocument:
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
-                body=(NativeParagraph(segments=(NativeTextSegment(text="Resonera om stil."),)),),
+                body=(
+                    NativeParagraph(
+                        heading_level=None,
+                        segments=(NativeTextSegment(text="Resonera om stil.", marks=()),),
+                    ),
+                ),
                 points=4,
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
                 review=NativeItemReview(

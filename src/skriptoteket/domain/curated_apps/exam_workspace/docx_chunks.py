@@ -50,8 +50,47 @@ class DocxMissingImage:
 
 
 @dataclass(frozen=True)
+class DocxSourceRun:
+    """One source run's text and kept marks, at its place in the chunk's plain ``text``.
+
+    ``offset`` counts the characters before the run inside its chunk's ``text``, so a
+    run is the exact source span the deterministic copy applies its marks to. ``marks``
+    is a subset of ``bold``, ``italic``, ``underline``, ``superscript`` and
+    ``subscript`` in that fixed order, resolved from the run's direct font formatting,
+    its character-style and paragraph-style chains and the document defaults. A run
+    without text contributes no span and is not listed.
+    """
+
+    offset: int
+    text: str
+    marks: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class DocxSourceParagraph:
+    """One source paragraph or table cell paragraph, at its place in the chunk's ``text``.
+
+    ``offset`` counts the characters before the paragraph inside its chunk's ``text``
+    and ``text`` is the paragraph's own text, so the paragraphs of a chunk cover it in
+    order with the table cell and row separators between them. ``heading_level`` is 1-3
+    for a Title, a Heading 1-3 or a whole paragraph clearly larger than the body text,
+    else None.
+    """
+
+    offset: int
+    text: str
+    heading_level: int | None = None
+
+
+@dataclass(frozen=True)
 class DocxChunk:
-    """Plain source text for people; marked_text wraps italic runs in <i>...</i> for the model."""
+    """Plain source text for people; marked_text wraps italic runs in <i>...</i> for the model.
+
+    ``runs`` and ``paragraphs`` are the chunk's source formatting: every source run's
+    kept marks and every source paragraph's heading level, both with offsets into this
+    chunk's plain ``text``. ``marked_text`` and the picture offsets stay exactly as the
+    model and the native build already read them.
+    """
 
     anchor: str
     kind: str
@@ -59,3 +98,5 @@ class DocxChunk:
     marked_text: str
     images: tuple[DocxImage, ...] = ()
     missing_images: tuple[DocxMissingImage, ...] = ()
+    runs: tuple[DocxSourceRun, ...] = ()
+    paragraphs: tuple[DocxSourceParagraph, ...] = ()

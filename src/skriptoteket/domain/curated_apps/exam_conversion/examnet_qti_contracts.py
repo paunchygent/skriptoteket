@@ -32,6 +32,8 @@ EXAMNET_QTI_MANUAL_UNKEYED_PROFILE_ID: Literal["unkeyed_manual_qti_3_0_v1"] = (
 EXAMNET_QTI_PACKAGE_CONTENT_TYPE: Literal["application/zip"] = "application/zip"
 EXAMNET_QTI_REPORT_CONTENT_TYPE: Literal["application/json"] = "application/json"
 
+ExamNetQtiTextMark = Literal["bold", "italic", "underline", "superscript", "subscript"]
+
 
 class ExamNetQtiInteractionType(StrEnum):
     """QTI interactions currently governed for the Exam.net target profile."""
@@ -103,18 +105,29 @@ class ExamNetQtiManualFollowUpReason(StrEnum):
 
 @dataclass(frozen=True)
 class ExamNetQtiChoice:
-    """One visible choice in a QTI choice interaction."""
+    """One visible choice in a QTI choice interaction.
+
+    ``text`` is the plain label every non-rendering reader sees. ``body`` carries
+    the exact rich paragraphs (marks and heading levels) when the source has any;
+    an empty value keeps the one plain label the DigiExam lane constructs.
+    """
 
     identifier: str
     text: str
+    body: tuple[ExamNetQtiPromptParagraph, ...] = ()
 
 
 @dataclass(frozen=True)
 class ExamNetQtiMatchEntry:
-    """One visible entry of a QTI match interaction list, in the source's own order."""
+    """One visible entry of a QTI match interaction list, in the source's own order.
+
+    ``text`` is the plain label; an optional rich ``body`` renders with the same
+    marks and heading levels as a prompt paragraph.
+    """
 
     identifier: str
     text: str
+    body: tuple[ExamNetQtiPromptParagraph, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -159,9 +172,14 @@ class ExamNetQtiUnsupportedResource:
 
 @dataclass(frozen=True)
 class ExamNetQtiPromptText:
-    """One literal text run at its place inside a rich prompt paragraph."""
+    """One literal text run at its place inside a rich prompt paragraph.
+
+    ``marks`` renders as real ``strong``, ``em``, ``u``, ``sup`` and ``sub``
+    elements; an empty value is the plain DigiExam run.
+    """
 
     text: str
+    marks: tuple[ExamNetQtiTextMark, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -184,6 +202,14 @@ ExamNetQtiPromptSegment: TypeAlias = (
 
 
 @dataclass(frozen=True)
+class ExamNetQtiPromptParagraph:
+    """One rich paragraph: its placed segments and an optional ``h1``-``h3`` heading."""
+
+    segments: tuple[ExamNetQtiPromptSegment, ...]
+    heading_level: Literal[1, 2, 3] | None = None
+
+
+@dataclass(frozen=True)
 class ExamNetQtiItem:
     """One QTI item request in the Exam.net target profile.
 
@@ -194,8 +220,9 @@ class ExamNetQtiItem:
     in order, so package planning writes every image once under the parent.
 
     ``prompt_paragraphs`` carries the exact rich placement of text, images, and
-    gaps; its image and gap indexes address this item's own ``image_resources``
-    and ``text_entry_gaps`` in order. An empty value keeps the positionless
+    gaps, with each text run's marks and each paragraph's heading level; its image
+    and gap indexes address this item's own ``image_resources`` and
+    ``text_entry_gaps`` in order. An empty value keeps the positionless
     ``prompt_lines`` rendering with appended images.
     """
 
@@ -205,7 +232,7 @@ class ExamNetQtiItem:
     interaction_type: ExamNetQtiInteractionType
     prompt_lines: tuple[str, ...]
     max_score: int | float | None
-    prompt_paragraphs: tuple[tuple[ExamNetQtiPromptSegment, ...], ...] = ()
+    prompt_paragraphs: tuple[ExamNetQtiPromptParagraph, ...] = ()
     evaluation_mode: ExamNetQtiEvaluationMode = ExamNetQtiEvaluationMode.AUTOMATIC
     manual_representation: ExamNetQtiManualRepresentation = (
         ExamNetQtiManualRepresentation.NATIVE_INTERACTION

@@ -60,7 +60,12 @@ def test_teacher_criteria_text_is_absent_from_every_qti_package_member() -> None
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
-                body=(NativeParagraph(segments=(NativeTextSegment(text="Förklara processen."),)),),
+                body=(
+                    NativeParagraph(
+                        heading_level=None,
+                        segments=(NativeTextSegment(text="Förklara processen.", marks=()),),
+                    ),
+                ),
                 points=3,
                 criteria=criteria,
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -93,7 +98,12 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text="Förklara processen."),)),),
+        body=(
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text="Förklara processen.", marks=()),),
+            ),
+        ),
         points=3,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
@@ -107,6 +117,8 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
                     kind="paragraph",
                     text="Förklara processen.",
                     marked_text="Förklara processen.",
+                    runs=(),
+                    paragraphs=(),
                 ),
             ),
             key_chunks=(
@@ -116,6 +128,8 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
                     text="",
                     marked_text="",
                     images=(NativeExamRetryImage(asset_id=asset_id, offset=0, marked_offset=0),),
+                    runs=(),
+                    paragraphs=(),
                 ),
             ),
             label_kind=NativeExamItemKind.FREE_TEXT,

@@ -48,13 +48,44 @@ class NativeExamRetryMissingImage(BaseModel):
     marked_offset: int = Field(ge=0)
 
 
+class NativeExamRetryRun(BaseModel):
+    """One source run's text and kept marks inside a stored chunk's plain text.
+
+    ``offset`` counts the characters before the run inside the chunk's ``text``, so a
+    retry rebuilds the exact source span the deterministic formatting copy reads.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offset: int = Field(ge=0)
+    text: str
+    marks: tuple[str, ...]
+
+
+class NativeExamRetryParagraph(BaseModel):
+    """One source paragraph's text and heading level inside a stored chunk's plain text.
+
+    ``offset`` counts the characters before the paragraph inside the chunk's ``text``,
+    and ``heading_level`` is 1-3 for a source heading or a whole paragraph set clearly
+    larger than the body text, else None.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offset: int = Field(ge=0)
+    text: str
+    heading_level: int | None
+
+
 class NativeExamRetryChunk(BaseModel):
     """One original source chunk kept for a question's retry (TASK-SKRIPT-39-05-09 D1).
 
     ``text`` is the plain wording people see and ``marked_text`` the model's wording with
-    its italics marked, both exactly as the conversion read them. ``images`` name the
-    pictures the chunk carries, at their places, so a retry rebuilds each image from the
-    container's saved payload instead of storing the bytes a second time.
+    its italics marked, both exactly as the conversion read them. ``runs`` and
+    ``paragraphs`` store the chunk's source formatting with offsets into ``text``, so a
+    retry copies the marks and heading levels the DOCX reader recorded. ``images`` name
+    the pictures the chunk carries, at their places, so a retry rebuilds each image from
+    the container's saved payload instead of storing the bytes a second time.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -63,6 +94,8 @@ class NativeExamRetryChunk(BaseModel):
     kind: str = Field(min_length=1)
     text: str
     marked_text: str
+    runs: tuple[NativeExamRetryRun, ...]
+    paragraphs: tuple[NativeExamRetryParagraph, ...]
     images: tuple[NativeExamRetryImage, ...] = ()
     missing_images: tuple[NativeExamRetryMissingImage, ...] = ()
 

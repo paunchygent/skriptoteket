@@ -79,7 +79,9 @@ def test_an_english_item_is_not_labelled_in_swedish() -> None:
 
 
 def _numbers_only(item: NativeExamItem) -> NativeExamItem:
-    digits = NativeParagraph(segments=(NativeTextSegment(text="12 + 30 = 42"),))
+    digits = NativeParagraph(
+        heading_level=None, segments=(NativeTextSegment(text="12 + 30 = 42", marks=()),)
+    )
     return item.model_copy(update={"body": (digits,), "choices": ()})
 
 

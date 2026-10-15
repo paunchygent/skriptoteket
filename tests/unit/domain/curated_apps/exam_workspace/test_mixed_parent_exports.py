@@ -251,7 +251,11 @@ def test_a_parent_of_gap_fills_and_one_free_text_passes_package_validation():
     free_text = gap_fills[2].model_copy(
         update={
             "kind": NativeExamItemKind.FREE_TEXT,
-            "body": (NativeParagraph(segments=(NativeTextSegment(text="Explain why."),)),),
+            "body": (
+                NativeParagraph(
+                    heading_level=None, segments=(NativeTextSegment(text="Explain why.", marks=()),)
+                ),
+            ),
             "gaps": (),
             "answer_key": NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         }

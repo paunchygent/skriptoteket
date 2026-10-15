@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 pytestmark = pytest.mark.unit
 
@@ -75,11 +76,16 @@ def _choice_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.SINGLE_CHOICE,
-        body=(NativeParagraph(segments=(NativeTextSegment(text="Vilket är huvudordet?"),)),),
+        body=(
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text="Vilket är huvudordet?", marks=()),),
+            ),
+        ),
         points=1,
         choices=(
-            NativeChoice(choice_id="choice_001", text="vägen"),
-            NativeChoice(choice_id="choice_002", text="eleverna"),
+            NativeChoice(choice_id="choice_001", body=plain_body("vägen")),
+            NativeChoice(choice_id="choice_002", body=plain_body("eleverna")),
         ),
         answer_key=NativeAnswerKey(origin=origin, correct_choice_ids=correct),
         review=_review(),
@@ -93,13 +99,14 @@ def _gap_item(*, sequence: int, item_id: str) -> NativeExamItem:
         kind=NativeExamItemKind.GAP_FILL,
         body=(
             NativeParagraph(
+                heading_level=None,
                 segments=(
-                    NativeTextSegment(text="Hon heter "),
+                    NativeTextSegment(text="Hon heter ", marks=()),
                     NativeGapSegment(gap_id="gap_002"),
-                    NativeTextSegment(text=" och bor i "),
+                    NativeTextSegment(text=" och bor i ", marks=()),
                     NativeGapSegment(gap_id="gap_001"),
-                    NativeTextSegment(text="."),
-                )
+                    NativeTextSegment(text=".", marks=()),
+                ),
             ),
         ),
         points=2,
@@ -114,15 +121,19 @@ def _matching_item(*, sequence: int, item_id: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.MATCHING,
-        body=(NativeParagraph(segments=(NativeTextSegment(text="Kategorisera."),)),),
+        body=(
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Kategorisera.", marks=()),)
+            ),
+        ),
         tick_points=Decimal("1"),
         match_left=(
-            NativeMatchLeft(left_id="left_001", text="hund"),
-            NativeMatchLeft(left_id="left_002", text="katt"),
+            NativeMatchLeft(left_id="left_001", body=plain_body("hund")),
+            NativeMatchLeft(left_id="left_002", body=plain_body("katt")),
         ),
         match_right=(
-            NativeMatchRight(right_id="right_001", text="däggdjur"),
-            NativeMatchRight(right_id="right_002", text="fåglar"),
+            NativeMatchRight(right_id="right_001", body=plain_body("däggdjur")),
+            NativeMatchRight(right_id="right_002", body=plain_body("fåglar")),
         ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
         review=_review(),
@@ -134,7 +145,11 @@ def _free_text_item(*, sequence: int, item_id: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
-        body=(NativeParagraph(segments=(NativeTextSegment(text="Resonera."),)),),
+        body=(
+            NativeParagraph(
+                heading_level=None, segments=(NativeTextSegment(text="Resonera.", marks=()),)
+            ),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=_review(),
     )

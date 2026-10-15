@@ -78,6 +78,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
 
@@ -223,16 +224,18 @@ def _pdf_item_semantics(
             for criterion in item.criteria
         ),
         options=tuple(
-            PdfExamOptionSemantics(option_id=_choice_number(choice.choice_id), text=choice.text)
+            PdfExamOptionSemantics(
+                option_id=_choice_number(choice.choice_id), text=body_plain_text(choice.body)
+            )
             for choice in item.choices
         ),
         gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.gaps),
         match_left=tuple(
-            PdfExamMatchEntrySemantics(entry_id=entry.left_id, text=entry.text)
+            PdfExamMatchEntrySemantics(entry_id=entry.left_id, text=body_plain_text(entry.body))
             for entry in item.match_left
         ),
         match_right=tuple(
-            PdfExamMatchEntrySemantics(entry_id=entry.right_id, text=entry.text)
+            PdfExamMatchEntrySemantics(entry_id=entry.right_id, text=body_plain_text(entry.body))
             for entry in item.match_right
         ),
         answer_key=PdfExamAnswerKeySemantics(

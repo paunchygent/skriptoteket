@@ -106,11 +106,27 @@ describe("ExamWorkspaceView save rules", () => {
   });
 
   it("flags an empty choice text and refuses the save, naming every question", async () => {
-    const wrapper = await mountImported();
+    const { wrapper } = await mountExamWorkspace();
+    // The editor restores an emptied paragraph, so an empty choice is a state
+    // a stored document carries (a conversion or an arriving revision).
+    const response = buildResponse({ conversion: succeededConversion, version: 1 });
+    for (const [itemId, choiceId] of [
+      ["item_002", "choice_b"],
+      ["item_003", "choice_c"],
+    ] as const) {
+      const choice = response.document.items
+        .find((item) => item.item_id === itemId)!
+        .choices.find((entry) => entry.choice_id === choiceId)!;
+      choice.body = [
+        { heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] },
+      ];
+    }
+    apiMocks.getExamWorkspaceDocument.mockReset();
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
+    await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
     const choice = wrapper.get('[data-test="exam-workspace-choice-text-choice_b"]');
-    await choice.setValue("");
 
     expect(choice.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-choice-text-hint"]');
@@ -119,9 +135,10 @@ describe("ExamWorkspaceView save rules", () => {
     expect(
       wrapper.get('[data-test="exam-workspace-choice-text-choice_a"]').attributes("aria-invalid"),
     ).toBeUndefined();
+    // A teacher edit makes the copy dirty, so the save button sends the refused copy.
+    await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
 
     await selectItemRow(wrapper, "item_003");
-    await wrapper.get('[data-test="exam-workspace-choice-text-choice_c"]').setValue("");
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
@@ -162,7 +179,12 @@ describe("ExamWorkspaceView save rules", () => {
       "exam-workspace-choice-text-choice_a",
       "exam-workspace-choice-correct-choice_a",
     ]) {
-      expect(wrapper.get(`[data-test="${testId}"]`).attributes("disabled")).toBeDefined();
+      const control = wrapper.get(`[data-test="${testId}"]`);
+      if (testId === "exam-workspace-choice-text-choice_a") {
+        expect(control.attributes("contenteditable")).toBe("false");
+      } else {
+        expect(control.attributes("disabled")).toBeDefined();
+      }
     }
     expect(wrapper.findComponent(ExamWorkspaceBodyEditor).props("disabled")).toBe(true);
 

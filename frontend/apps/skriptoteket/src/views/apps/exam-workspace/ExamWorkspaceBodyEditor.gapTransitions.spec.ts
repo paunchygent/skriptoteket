@@ -16,12 +16,11 @@ import { buildGapItem, mountEditor, paragraph } from "./ExamWorkspaceBodyEditor.
 function itemWithAutomaticValue() {
   return buildGapItem({
     body: [
-      { segments: [{ kind: "text", text: "Inledning." }] },
-      {
-        segments: [
-          { kind: "text", text: "Svar: " },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Inledning." }] },
+      { heading_level: null, segments: [
+          { kind: "text", marks: [], text: "Svar: " },
           { gap_id: "gap_001", kind: "gap" },
-          { kind: "text", text: " grader." },
+          { kind: "text", marks: [], text: " grader." },
         ],
       },
     ],

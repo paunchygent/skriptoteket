@@ -55,7 +55,7 @@ describe("document conversion-key actions", () => {
       expect(examWorkspaceItemReadiness(currentItem(state))).toEqual(readiness);
       state.showItemGapAsText("item_001", "gap_002");
       expect(currentItem(state).gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
-      expect(currentItem(state).body[0]?.segments).toContainEqual({ kind: "text", text: "Oslo" });
+      expect(currentItem(state).body[0]?.segments).toContainEqual({ kind: "text", marks: [], text: "Oslo" });
       expect(currentItem(state).points).toBe(1);
       expect(currentItem(state).answer_key.origin).toBe(origin);
       expect(examWorkspaceItemReadiness(currentItem(state))).toEqual(readiness);

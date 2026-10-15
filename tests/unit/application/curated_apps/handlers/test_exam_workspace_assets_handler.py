@@ -72,10 +72,11 @@ def _document_with_asset() -> tuple[NativeExamDocument, bytes, str]:
         update={
             "body": (
                 NativeParagraph(
+                    heading_level=None,
                     segments=(
-                        NativeTextSegment(text="Fråga ett"),
+                        NativeTextSegment(text="Fråga ett", marks=()),
                         NativeAssetSegment(asset_id=asset_id),
-                    )
+                    ),
                 ),
             )
         }
