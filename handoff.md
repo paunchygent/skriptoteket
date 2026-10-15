@@ -1,19 +1,19 @@
 ## Current
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
-  Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
-  parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
-  (walking skeleton) merged to main `ef92afd8`, pushed in `03ba322d`; backend
-  review approved `8576afb7`, frontend approved `3c95199d` (records under
-  `evidence/reviews/ST-SKRIPT-08-36/`). staging rebuilt on `03ba322d`, healthy;
-  draft Klass clip (synthetic timing, badge) published to
-  `/home/paunchygent/apps/skriptoteket-media/dev/klassrumskartan/`; HTTP checks in
-  `evidence/dev-stack-03ba322d/`. Next: a Mac-side session runs the staging
-  walk (guest + proof user, `staging-walk` skill, origin via
-  `hemma-shared-tunnel`); Hemma sessions have no browser. Then task closure. User gates:
-  talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), render approval before
-  publish, ElevenLabs draft spend, prod media mount deploy. Guide step 3 wording
-  (paste does not parse Skola24 text) still needs correction.
+  Task 01 staging walk **FAILED**, user ruling 2026-10-15: signed-in Hjälp
+  unreachable at 1024 px; separate HuleEdu logout CORS repair is parent-owned.
+  Task 01 staging baseline `03ba322d`; earlier reviews `8576afb7`/`3c95199d`
+  remain historical evidence in retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`.
+  [TASK-SKRIPT-08-36-02](docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md)
+  `in_progress`; owner: Codex lead, `fix/planner-hjalp-1024`; retained
+  `01a13f60-f5d1-7cee-9c93-2d226dad61de`. Drawer actions repaired; focused
+  Vitest 16/16, `fe-type-check`, `fe-lint` and `fe-build` passed. Evidence:
+  `evidence/implementation/TASK-SKRIPT-08-36-02/result.md`. Next: parent review,
+  integration, staging deployment and signed-in walks at 375/900/1024/1280+ px.
+  User gates: talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), render
+  approval, ElevenLabs draft spend, prod media mount deploy. Guide step 3
+  wording (paste does not parse Skola24 text) still needs correction.
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`

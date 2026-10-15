@@ -52,6 +52,7 @@ Klassrumskartan teachers and guest demo users meet one narrated Swedish tutorial
 ## Tasks
 
 - [TASK-SKRIPT-08-36-01](../tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md): walking skeleton across media mount, manifest, dialog, thumbnails and seen-state on Hemma dev.
+- [TASK-SKRIPT-08-36-02](../tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md): repair signed-in Hjälp, focus-mode and logout access at compact shell widths after the failed 2026-10-15 staging walk.
 - Later tasks are derived after the skeleton proof: copy and thumbnail polish once real clips exist, and the production media deploy under its own authority.
 
 ## Verification

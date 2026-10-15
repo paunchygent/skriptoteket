@@ -14,6 +14,7 @@ import { storeToRefs } from "pinia";
 import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
+import { useHelp } from "../help/useHelp";
 import { useLayoutStore } from "../../stores/layout";
 
 const props = defineProps<{
@@ -36,6 +37,7 @@ const emit = defineEmits<{
 
 const layout = useLayoutStore();
 const { focusMode } = storeToRefs(layout);
+const { open: openHelp } = useHelp();
 const route = useRoute();
 const IMMERSIVE_CURATED_APP_IDS = new Set(["games.flunk_out_frenzy"]);
 
@@ -59,6 +61,7 @@ const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
 const prefersXlSidebarBreakpoint = computed(() => isClassroomPlannerRoute.value);
 
 const sidebarOpen = ref(false);
+const menuButtonRef = ref<HTMLButtonElement | null>(null);
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
@@ -74,6 +77,25 @@ function onLogout(): void {
 
 function toggleFocusMode(): void {
   layout.toggle();
+}
+
+/**
+ * Drawer help hands the Meny button to the shared help panel as its opener, so
+ * closing help returns focus to the drawer trigger while the drawer stays shut.
+ */
+function onDrawerHelp(): void {
+  closeSidebar();
+  openHelp(menuButtonRef.value);
+}
+
+/**
+ * Drawer focus mode closes the drawer and returns focus to the visible Meny
+ * button, because the drawer control is no longer reachable once it closes.
+ */
+function onDrawerToggleFocusMode(): void {
+  closeSidebar();
+  layout.toggle();
+  menuButtonRef.value?.focus({ preventScroll: true });
 }
 
 watch(
@@ -113,6 +135,7 @@ onBeforeUnmount(() => {
       <BrandLogo height="22px" />
     </RouterLink>
     <button
+      ref="menuButtonRef"
       type="button"
       class="hamburger"
       :class="{ 'is-open': sidebarOpen }"
@@ -149,7 +172,9 @@ onBeforeUnmount(() => {
     :logout-in-progress="logoutInProgress"
     :prefer-xl-desktop-breakpoint="prefersXlSidebarBreakpoint"
     @close="closeSidebar"
+    @help="onDrawerHelp"
     @logout="onLogout"
+    @toggle-focus-mode="onDrawerToggleFocusMode"
   />
 
   <!-- Main content wrapper with top user bar -->

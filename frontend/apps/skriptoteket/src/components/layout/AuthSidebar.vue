@@ -5,7 +5,10 @@
  * Relationships:
  * - renders the shared authenticated navigation as either a drawer or fixed
  *   rail with utility/platform links first while authenticated home owns app
- *   entry affordances and the top auth bar owns help access
+ *   entry affordances
+ * - carries Hjälp, focus mode and logout in its footer below the owning shell
+ *   cutoff, where the top bar hides its desktop actions; the top auth bar owns
+ *   those actions at and above the cutoff
  * - lets planner routes defer the desktop rail until a wider `xl` breakpoint
  * - stays coordinated with `AuthLayout` so header, backdrop, and content margin
  *   all switch at the same shell cutoff
@@ -31,15 +34,26 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
+  help: [];
   logout: [];
+  toggleFocusMode: [];
 }>();
 
 function onClose(): void {
   emit("close");
 }
 
+function onHelp(): void {
+  emit("help");
+}
+
 function onLogout(): void {
+  emit("close");
   emit("logout");
+}
+
+function onToggleFocusMode(): void {
+  emit("toggleFocusMode");
 }
 
 const standardLinks: readonly SidebarNavLink[] = [
@@ -128,19 +142,39 @@ const standardLinks: readonly SidebarNavLink[] = [
         </RouterLink>
       </nav>
 
-      <!-- Sidebar footer: user info + logout (mobile only) -->
-      <div class="sidebar-footer md:hidden">
+      <!-- Sidebar footer: user info and compact shell actions below the shell cutoff -->
+      <div class="sidebar-footer">
         <div class="sidebar-user-info">
           {{ props.user?.email }}
         </div>
-        <button
-          type="button"
-          class="sidebar-logout-btn"
-          :disabled="props.logoutInProgress"
-          @click="onLogout"
-        >
-          {{ props.logoutInProgress ? "Loggar ut…" : "Logga ut" }}
-        </button>
+        <div class="sidebar-footer-actions">
+          <button
+            type="button"
+            class="sidebar-action-btn"
+            aria-controls="help-panel"
+            aria-haspopup="dialog"
+            @click="onHelp"
+          >
+            Hjälp
+          </button>
+          <button
+            type="button"
+            class="sidebar-action-btn"
+            :class="{ 'is-active': props.isFocusMode }"
+            :aria-pressed="props.isFocusMode"
+            @click="onToggleFocusMode"
+          >
+            {{ props.isFocusMode ? "Avsluta fokusläge" : "Aktivera fokusläge" }}
+          </button>
+          <button
+            type="button"
+            class="sidebar-logout-btn"
+            :disabled="props.logoutInProgress"
+            @click="onLogout"
+          >
+            {{ props.logoutInProgress ? "Loggar ut…" : "Logga ut" }}
+          </button>
+        </div>
       </div>
     </div>
   </aside>
@@ -202,6 +236,7 @@ const standardLinks: readonly SidebarNavLink[] = [
   flex-direction: column;
   height: 100%;
   padding: var(--huleedu-space-6) var(--huleedu-space-4);
+  overflow-y: auto;
 }
 
 @media (min-width: 768px) {
@@ -296,11 +331,31 @@ const standardLinks: readonly SidebarNavLink[] = [
   }
 }
 
-/* Sidebar footer (mobile only) */
+/* Sidebar footer: shown only below the owning shell cutoff, where the top bar
+   hides its desktop actions. Ordinary shell hides it at 768px, planner at 1280px. */
 .sidebar-footer {
+  flex: 0 0 auto;
   margin-top: auto;
   padding-top: var(--huleedu-space-4);
   border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+}
+
+@media (min-width: 768px) {
+  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-footer {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-footer {
+    display: none;
+  }
+}
+
+.sidebar-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--huleedu-space-2);
 }
 
 .sidebar-user-info {
@@ -311,6 +366,7 @@ const standardLinks: readonly SidebarNavLink[] = [
   word-break: break-all;
 }
 
+.sidebar-action-btn,
 .sidebar-logout-btn {
   display: block;
   width: 100%;
@@ -328,6 +384,12 @@ const standardLinks: readonly SidebarNavLink[] = [
               color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
+.sidebar-action-btn.is-active {
+  border-color: var(--huleedu-action);
+  color: var(--huleedu-action);
+}
+
+.sidebar-action-btn:hover,
 .sidebar-logout-btn:hover {
   background-color: var(--huleedu-navy);
   color: var(--huleedu-canvas);
