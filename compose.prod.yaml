@@ -38,6 +38,7 @@ services:
       RUNNER_QUEUE_ENABLED: "true"
       ARTIFACTS_ROOT: /app/.artifacts
       VAULT_ROOT: /var/lib/skriptoteket/vault
+      MEDIA_ROOT: /var/lib/skriptoteket/media
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
@@ -121,6 +122,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts
       - vault_data:/var/lib/skriptoteket/vault
+      # Tutorial media; the HuleFilm publish step creates this directory.
+      - /home/paunchygent/apps/skriptoteket-media/prod:/var/lib/skriptoteket/media:ro
       - /home/paunchygent/models/skriptoteket/reagent_prep_chef/sds_pdfs:/var/lib/skriptoteket/reagent_prep_chef/sds_pdfs
       - ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR:-/home/paunchygent/apps/huledu/secrets/hemma-runtime/internal-identity}:/run/huleedu/internal-identity:ro
     networks:

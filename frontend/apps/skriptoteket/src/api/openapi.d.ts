@@ -9108,6 +9108,8 @@ export interface components {
             grouping_seating_distance_enabled?: boolean | null;
             /** Smart Enabled */
             smart_enabled?: boolean | null;
+            /** Tutorial Seen Sections */
+            tutorial_seen_sections?: string[] | null;
             /** Use History */
             use_history?: boolean | null;
         };
@@ -9284,6 +9286,8 @@ export interface components {
             classroom_planner_grouping_seating_distance_enabled?: boolean | null;
             /** Classroom Planner Smart Enabled */
             classroom_planner_smart_enabled?: boolean | null;
+            /** Classroom Planner Tutorial Seen Sections */
+            classroom_planner_tutorial_seen_sections?: string[] | null;
             /** Classroom Planner Use History */
             classroom_planner_use_history?: boolean | null;
             /**

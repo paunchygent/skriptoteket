@@ -122,6 +122,7 @@ class UpdateClassroomPlannerSettingsCommand(BaseModel):
     smart_enabled: bool | None = None
     use_history: bool | None = None
     grouping_seating_distance_enabled: bool | None = None
+    tutorial_seen_sections: list[str] | None = None
 
 
 class UpdateClassroomPlannerSettingsResult(BaseModel):

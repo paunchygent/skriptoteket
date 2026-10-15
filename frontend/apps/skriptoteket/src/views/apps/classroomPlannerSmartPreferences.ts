@@ -9,12 +9,12 @@
  * Relationships:
  *   - read by planner draft persistence, Smart run routing, and workspace
  *     toolbar controls
- *   - writes authenticated preferences through the profile API
+ *   - authenticated preferences are written by
+ *     `useClassroomPlannerSmartPreferenceLane.ts` through
+ *     `api/classroomPlannerSettings.ts`
  *   - stores public guest preferences in browser storage only
  */
 
-import { apiPatch } from "../../api/client";
-import type { components } from "../../api/openapi";
 import type { PlanDraft } from "./classroomPlannerTypes";
 
 export const SMART_DISABLED_NOTICE =
@@ -28,10 +28,6 @@ export type ClassroomPlannerSmartPreferenceKey =
 export type ClassroomPlannerSmartPreferencePatch = Partial<
   Record<ClassroomPlannerSmartPreferenceKey, boolean>
 >;
-
-type ProfileResponse = components["schemas"]["ProfileResponse"];
-type UpdateClassroomPlannerSettingsRequest =
-  components["schemas"]["UpdateClassroomPlannerSettingsRequest"];
 
 const FIRST_TIME_DRAFT_SMART_SETTINGS: Required<ClassroomPlannerSmartPreferencePatch> = {
   smart_enabled: true,
@@ -102,15 +98,6 @@ export function rememberGuestSmartPreference(
     [key]: enabled,
   };
   window.localStorage.setItem(GUEST_SMART_PREFERENCE_STORAGE_KEY, JSON.stringify(next));
-}
-
-export async function persistAuthenticatedClassroomPlannerSmartPreference(
-  patch: ClassroomPlannerSmartPreferencePatch,
-): Promise<ProfileResponse> {
-  return await apiPatch<ProfileResponse>(
-    "/api/v1/profile/classroom-planner-settings",
-    patch satisfies UpdateClassroomPlannerSettingsRequest,
-  );
 }
 
 export function isSmartEnabledByDefault(

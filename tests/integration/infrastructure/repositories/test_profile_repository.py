@@ -141,6 +141,44 @@ async def test_profile_update(db_session: AsyncSession, user_id: UUID, now: date
 
 
 @pytest.mark.integration
+async def test_profile_tutorial_seen_sections_round_trip(
+    db_session: AsyncSession, user_id: UUID, now: datetime
+) -> None:
+    repo = PostgreSQLProfileRepository(db_session)
+    profile = UserProfile(
+        user_id=user_id,
+        classroom_planner_tutorial_seen_sections=["planner_overview"],
+        created_at=now,
+        updated_at=now,
+    )
+    created = await repo.create(profile=profile)
+    assert created.classroom_planner_tutorial_seen_sections == ["planner_overview"]
+
+    updated = await repo.update(
+        profile=created.model_copy(
+            update={
+                "classroom_planner_tutorial_seen_sections": [
+                    "planner_rules",
+                    "planner_overview",
+                ]
+            }
+        )
+    )
+    assert updated.classroom_planner_tutorial_seen_sections == [
+        "planner_rules",
+        "planner_overview",
+    ]
+
+    db_session.expire_all()
+    fetched = await repo.get_by_user_id(user_id=user_id)
+    assert fetched is not None
+    assert fetched.classroom_planner_tutorial_seen_sections == [
+        "planner_rules",
+        "planner_overview",
+    ]
+
+
+@pytest.mark.integration
 async def test_profile_update_raises_not_found(db_session: AsyncSession, now: datetime) -> None:
     repo = PostgreSQLProfileRepository(db_session)
 

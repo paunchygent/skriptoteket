@@ -10,6 +10,7 @@ from typing import Any
 
 from scripts.exam_conversion_eval.gold import GoldExam
 from scripts.labeling_feasibility import evaluate, postconv
+from scripts.labeling_feasibility.converted import ConvertedExam, ConvertedItem
 from scripts.labeling_feasibility.projection import Reference, project
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
@@ -115,7 +116,16 @@ def evaluate_postconv(
     return results
 
 
-def build_report(evidence_dir: Path, converter_recordings: Path) -> dict[str, Any]:
+def load_converted_exam(exam: str) -> ConvertedExam:
+    """Join an exam's v14 batch items, including per-question retry replies."""
+    items: list[ConvertedItem] = []
+    for name in postconv.RECORDED_CONVERSIONS[exam]:
+        batch: ConvertedExam = json.loads((postconv.RECORDINGS / name).read_text())
+        items += batch["items"]
+    return {"items": items}
+
+
+def build_report(evidence_dir: Path) -> dict[str, Any]:
     exams: dict[str, Any] = {}
     projection_dir = evidence_dir / "gold_projection"
     projection_dir.mkdir(parents=True, exist_ok=True)
@@ -125,15 +135,12 @@ def build_report(evidence_dir: Path, converter_recordings: Path) -> dict[str, An
         (projection_dir / f"{docx.stem}.json").write_text(
             json.dumps(reference.to_json(), ensure_ascii=False, indent=2) + "\n"
         )
-        recording = converter_recordings / docx.stem / "round1.json"
         exams[docx.stem] = {
             "chunks": len(chunks),
             "gold_items": len(gold.questions),
             "converter_today": evaluate.converter_baseline(
-                reference, gold, json.loads(recording.read_text())
-            )
-            if recording.exists()
-            else None,
+                reference, gold, load_converted_exam(docx.stem)
+            ),
             "runs": {
                 run.name: evaluate_exam_run(run / docx.stem, gold, chunks, reference)
                 for run in run_dirs
@@ -146,10 +153,6 @@ def build_report(evidence_dir: Path, converter_recordings: Path) -> dict[str, An
             },
         }
     return {"exams": exams, "summary": summarize(exams)}
-
-
-def _metric(value: Any) -> float | None:
-    return float(value) if isinstance(value, (int, float)) else None
 
 
 def summarize(exams: dict[str, Any]) -> dict[str, Any]:
@@ -290,11 +293,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     lines.append("\n## Per exam (run medians are in report.json)\n")
     for exam, data in report["exams"].items():
         lines.append(f"\n### {exam} ({data['gold_items']} items, {data['chunks']} chunks)\n")
-        if data["converter_today"]:
-            c = data["converter_today"]
-            lines.append(
-                f"- Converter today (39-05-03 final run B): kind {c['kind_accuracy']}, points {c['points_accuracy']}, keyed {c['keyed_accuracy']}"
-            )
+        c = data["converter_today"]
+        lines.append(
+            f"- Converter today (v14 batch recordings): kind {c['kind_accuracy']}, points {c['points_accuracy']}, keyed {c['keyed_accuracy']}"
+        )
         for run, result in sorted(data["runs"].items()):
             parts = []
             for key in ("a", "b", "b2"):
