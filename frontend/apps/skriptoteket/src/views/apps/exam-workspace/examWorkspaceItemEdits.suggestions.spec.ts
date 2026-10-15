@@ -15,12 +15,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
-import {
-  reviewed,
-  withArrivingSuggestion,
-  withCorrectChoices,
-  withRestoredSuggestion,
-} from "./examWorkspaceItemEdits";
+import { reviewed, withCorrectChoices } from "./examWorkspaceItemEdits";
+import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 
 function choiceItem(
   origin: NativeExamItem["answer_key"]["origin"],

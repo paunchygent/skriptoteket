@@ -18,7 +18,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
-import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceItemEdits";
+import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import {
   UNREVIEWED,
   choiceItem,

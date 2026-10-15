@@ -31,7 +31,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { sameValue } from "./examWorkspaceConversionMerge";
-import { withArrivingSuggestion } from "./examWorkspaceItemEdits";
+import { withArrivingSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 type NumberedArrival = {

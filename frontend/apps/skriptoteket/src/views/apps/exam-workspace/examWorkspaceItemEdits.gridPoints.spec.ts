@@ -12,12 +12,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
-import {
-  withArrivingSuggestion,
-  withMatchPairs,
-  withoutInterpretedKey,
-  withRestoredSuggestion,
-} from "./examWorkspaceItemEdits";
+import { withMatchPairs, withoutInterpretedKey } from "./examWorkspaceItemEdits";
+import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 const FOUR_TICKS = [
