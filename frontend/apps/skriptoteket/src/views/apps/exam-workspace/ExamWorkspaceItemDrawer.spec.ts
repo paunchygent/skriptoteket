@@ -42,6 +42,7 @@ const ITEM: NativeExamItem = {
   },
   sequence: 1,
   source_anchor: null,
+  tick_points: null,
 };
 
 const RETRY_SOURCE: NonNullable<NativeExamItem["retry_source"]> = {
@@ -257,7 +258,7 @@ describe("ExamWorkspaceItemDrawer retry control", () => {
       ["single_choice", "Flerval: ett val"],
       ["multiple_response", "Flerval: flera val"],
       ["gap_fill", "Lucktext"],
-      ["matching", "Matchning"],
+      ["matching", "Kategorisera"],
     ]);
   });
 

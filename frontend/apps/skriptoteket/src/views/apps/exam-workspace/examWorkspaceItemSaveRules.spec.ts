@@ -56,6 +56,7 @@ function buildChoiceItem(
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }
@@ -120,21 +121,22 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
         ]),
       ]),
     ).toBe(
-      `Fråga 1 har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
+      `Fråga 1 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
   });
 
-  it("refuses a keyed item that uses a right entry twice", () => {
+  it("refuses a keyed item with a repeated tick", () => {
     expect(
       examWorkspaceSaveRefusalCopy([
         buildMatchingItemWithPairs([
           [1, 2],
-          [2, 2],
+          [1, 2],
+          [2, 1],
           [3, 3],
         ]),
       ]),
     ).toBe(
-      `Fråga 1 har en matchning där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
+      `Fråga 1 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
   });
 
@@ -148,7 +150,7 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
     };
 
     expect(examWorkspaceSaveRefusalCopy([emptyLeft])).toBe(
-      "Fråga 1 har rader eller svar i matchningen utan text. Skriv text i varje rad och varje svar.",
+      "Fråga 1 har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.",
     );
   });
 });

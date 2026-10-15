@@ -124,6 +124,7 @@ class TestApiOutputSchema:
 
         assert "automatic_values" in gap_schema.get("required", ())
         assert "facit_text" in item_schema.get("required", ())
+        assert "tick_points" in item_schema.get("required", ())
         assert "criteria" in item_schema.get("required", ())
 
     def test_input_schemas_keep_the_defaults_optional(self) -> None:
@@ -132,4 +133,5 @@ class TestApiOutputSchema:
 
         assert "automatic_values" not in gap_schema.get("required", ())
         assert "facit_text" not in item_schema.get("required", ())
+        assert "tick_points" not in item_schema.get("required", ())
         assert "criteria" not in item_schema.get("required", ())

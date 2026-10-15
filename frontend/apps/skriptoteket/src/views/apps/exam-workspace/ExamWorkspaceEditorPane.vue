@@ -38,6 +38,7 @@ import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
 import ExamWorkspaceItemTable from "./ExamWorkspaceItemTable.vue";
 import ExamWorkspaceQuestionList from "./ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
+import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
@@ -62,7 +63,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  add: [];
+  add: [kind: TeacherItemKind];
   markReviewed: [itemId: string];
   undoInterpretation: [itemId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
@@ -88,6 +89,7 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
+  updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const isPhone = computed(() => props.layout === "phone");
@@ -123,7 +125,7 @@ const redigeraGridClass = computed(() => {
       v-if="!isPhone"
       :count="itemCount"
       :disabled="disabled"
-      @add="emit('add')"
+      @add="emit('add', $event)"
     >
       <ExamWorkspaceSharedInstruction
         v-if="globalInstructions.length > 0"
@@ -185,6 +187,7 @@ const redigeraGridClass = computed(() => {
                 emit('updateParagraphSegments', itemId, paragraphIndex, segments)
             "
             @update-points="(itemId, points) => emit('updatePoints', itemId, points)"
+            @update-tick-points="(itemId, tickPoints) => emit('updateTickPoints', itemId, tickPoints)"
           />
           <p
             v-else

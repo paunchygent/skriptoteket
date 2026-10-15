@@ -62,8 +62,8 @@ const OTHER_PAIRS: Pairs = [
   ["left_002", "right_002"],
   ["left_003", "right_001"],
 ];
-const SAVED_POINTS = 3;
-const CHANGED_POINTS = 5;
+const SAVED_TICK_POINTS = "1";
+const CHANGED_TICK_POINTS = "2";
 const SAVED_PAIRS_REORDERED: Pairs = [SAVED_PAIRS[2], SAVED_PAIRS[0], SAVED_PAIRS[1]];
 
 function suggestion(pairs: Pairs): NativeAnswerKeySuggestion {
@@ -98,12 +98,15 @@ function sentDocument() {
   return apiMocks.saveExamWorkspaceDocument.mock.calls[0][1].document;
 }
 
-/** Edit the points, save, and land two arrivals while the save is in flight. */
+/**
+ * Edit the grid's tick value, save, and land two arrivals while the save is in
+ * flight. Each arrival keeps three ticks, so the points stay at the edited total.
+ */
 async function saveWhileArrivalsLand(first: Pairs, second: Pairs) {
   const state = await openFollowingMachineKey();
   const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
   apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
-  state.updateItemPoints("item_001", CHANGED_POINTS);
+  state.updateItemTickPoints("item_001", CHANGED_TICK_POINTS);
   const saving = state.saveDocument();
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(first) }]);
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(second) }]);
@@ -114,9 +117,9 @@ describe("teacher edits", () => {
   it("F3: an edit back to the saved value leaves the copy clean", async () => {
     const state = await openFollowingMachineKey();
 
-    state.updateItemPoints("item_001", CHANGED_POINTS);
+    state.updateItemTickPoints("item_001", CHANGED_TICK_POINTS);
     expect(state.isDirty.value).toBe(true);
-    state.updateItemPoints("item_001", SAVED_POINTS);
+    state.updateItemTickPoints("item_001", SAVED_TICK_POINTS);
 
     expect(state.isDirty.value).toBe(false);
   });
@@ -124,7 +127,7 @@ describe("teacher edits", () => {
   it("F4: an edit that changes nothing leaves the copy clean", async () => {
     const state = await openFollowingMachineKey();
 
-    state.updateItemPoints("item_001", SAVED_POINTS);
+    state.updateItemTickPoints("item_001", SAVED_TICK_POINTS);
 
     expect(state.isDirty.value).toBe(false);
   });
@@ -186,7 +189,7 @@ describe("arrivals replayed after a save's outcome", () => {
   it("F11: a failed save keeps the unsaved copy dirty", async () => {
     const state = await openFollowingMachineKey();
     apiMocks.saveExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
-    state.updateItemPoints("item_001", CHANGED_POINTS);
+    state.updateItemTickPoints("item_001", CHANGED_TICK_POINTS);
 
     expect(await state.saveDocument()).toBe(false);
 

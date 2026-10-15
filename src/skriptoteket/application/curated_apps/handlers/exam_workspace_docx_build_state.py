@@ -269,6 +269,14 @@ class DocxBuildState:
             self.instructions,
             frozenset(chunk.anchor for chunk in self.pending),
         )
+        accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        for item, anchors in points.accepted:
+            if anchors in points.review_anchors:
+                reason = "Poängen per kryss blir mindre än 0,01. Kontrollera kategoriseringen."
+                self.record("fallback", "invalid_tick_value", anchors=anchors)
+                accepted.append(self.printed(anchors, reason, self.claimed))
+            else:
+                accepted.append((item, anchors))
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
             if chunk.anchor in points.absorbed:
@@ -281,13 +289,12 @@ class DocxBuildState:
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
-        accepted = points.accepted
         result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=self.chunks,
-            accepted=accepted,
+            accepted=tuple(accepted),
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,

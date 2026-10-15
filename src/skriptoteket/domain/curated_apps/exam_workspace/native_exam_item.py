@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -54,6 +55,8 @@ class NativeExamItem(BaseModel):
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
+    # One uniform positive two-decimal tick value per grid; never default saved grids.
+    tick_points: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
@@ -123,6 +126,7 @@ class NativeExamItem(BaseModel):
         self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
+        self._tick_points_invariants()
         validate_answer_key_suggestion(self.ai_suggestion)
         self._body_gap_invariants(gap_ids)
         return self
@@ -169,6 +173,29 @@ class NativeExamItem(BaseModel):
             for gap in self.gaps:
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
+
+    def _tick_points_invariants(self) -> None:
+        """One uniform tick value per grid: points are exactly tick value × ticks (T2).
+
+        A matching item always carries ``tick_points`` and a stored document is never
+        defaulted, so an item saved under the old one-to-one rule fails validation. With
+        no key there are no ticks, so there are no derived points either: a positive
+        ``points`` can never equal a zero product.
+        """
+
+        if self.kind is not NativeExamItemKind.MATCHING:
+            if self.tick_points is not None:
+                raise ValueError("only matching items carry tick_points")
+            return
+        if self.tick_points is None:
+            raise ValueError("matching items need a tick_points value")
+        ticks = len(self.answer_key.match_pairs)
+        if self.points is None:
+            if ticks:
+                raise ValueError("matching points must equal tick_points times the number of pairs")
+            return
+        if Decimal(str(self.points)) != self.tick_points * ticks:
+            raise ValueError("matching points must equal tick_points times the number of pairs")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []

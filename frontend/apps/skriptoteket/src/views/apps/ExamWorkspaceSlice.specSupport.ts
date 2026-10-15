@@ -59,6 +59,7 @@ export function buildFreeTextItem(sequence: number): NativeExamItem {
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
   };
 }
 

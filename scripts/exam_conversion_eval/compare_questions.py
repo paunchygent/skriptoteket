@@ -68,8 +68,12 @@ def _is_table_row(line: str, lefts: set[str]) -> bool:
 def _read_table(item: GoldItem) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     """A matching prompt as its instruction lines and its two lists in source order.
 
-    The table starts at the first row; a row of two cells holds a left and a right entry, and
-    a single cell is a left entry when it is a gold pair's left text, otherwise a distractor.
+    The table starts at the first row. The first cell of a row is a left entry when it is a
+    gold pair's left text and every later cell of that row is a right entry, so one row may
+    name several of them; a row whose first cell is no left text is a category-sorting or
+    distractor header and all its cells are right entries. A single-cell row is a left entry
+    when it is a gold pair's left text, otherwise a right entry. Blank tick cells drop, as
+    the prompt convention keeps no blank matching cells.
     """
     lines = item.prompt.split("\n")
     lefts = {words(pair.left) for pair in item.pairs}
@@ -77,12 +81,18 @@ def _read_table(item: GoldItem) -> tuple[tuple[str, ...], tuple[str, ...], tuple
     left: list[str] = []
     right: list[str] = []
     for row in lines[start:]:
-        cells = [ENTRY_LABEL.sub("", cell) for cell in row.split(CELL_SEPARATOR)]
-        if len(cells) >= 2:
+        cells = [
+            text
+            for cell in row.split(CELL_SEPARATOR)
+            if (text := ENTRY_LABEL.sub("", cell).strip())
+        ]
+        if not cells:
+            continue
+        if words(cells[0]) in lefts:
             left.append(cells[0])
-            right.append(cells[1])
-        elif words(cells[0]) in lefts:
-            left.append(cells[0])
+            right.extend(cells[1:])
+        elif len(cells) >= 2:
+            right.extend(cells)
         else:
             right.append(cells[0])
     return tuple(lines[:start]), tuple(left), tuple(right)

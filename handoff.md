@@ -1,19 +1,23 @@
 ## Current
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
   parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
-  (walking skeleton) merged to main `ef92afd8`, pushed in `03ba322d`; backend
-  review approved `8576afb7`, frontend approved `3c95199d` (records under
-  `evidence/reviews/ST-SKRIPT-08-36/`). staging rebuilt on `03ba322d`, healthy;
-  draft Klass clip (synthetic timing, badge) published to
-  `/home/paunchygent/apps/skriptoteket-media/dev/klassrumskartan/`; HTTP checks in
-  `evidence/dev-stack-03ba322d/`. Next: a Mac-side session runs the staging
-  walk (guest + proof user, `staging-walk` skill, origin via
-  `hemma-shared-tunnel`); Hemma sessions have no browser. Then task closure. User gates:
-  talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), render approval before
-  publish, ElevenLabs draft spend, prod media mount deploy. Guide step 3 wording
-  (paste does not parse Skola24 text) still needs correction.
+  (walking skeleton) `in_progress`: staging baseline `03ba322d`; earlier reviews
+  `8576afb7`/`3c95199d`. The 2026-10-15 Mac browser walk was ruled FAILED by
+  the user on F1 (staging sign-out CORS, HuleEdu TASK-HULE-01-06-14, Mac Sol
+  lead) and F2 (no Hjälp at 1024–1279 px); evidence
+  `evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md`. The Mac
+  session repairs both and reruns the walk; closure waits for it.
+  [TASK-SKRIPT-08-36-02](docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md)
+  `in_progress` (retained `01a13f60-f5d1-7cee-9c93-2d226dad61de`): F2 repaired
+  on `fix/planner-hjalp-1024` `0a91a86a`, ruthless review approved 2026-10-15,
+  merged to main; next: staging deploy and signed-in walks at 375/900/1024/1280+ px.
+  [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hj%C3%A4lp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
+  duplicates 08-36-02 and closes with it.
+  User gates: talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), ElevenLabs
+  draft spend, render approval, prod media deploy. Guide step 3 wording (paste
+  does not parse Skola24 text) still needs correction.
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
@@ -51,13 +55,14 @@
   `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
-  `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`). Tasks 4 (Fritext criteria,
-  in review), 5 (Kort svar) and 6 (structured misspelling producer, R15-R17)
-  `in_progress` in their own worktrees; task 7 export checklist follows.
-  Task 6 owner Pi `bff77816`: producer/data/DOCX/keying implemented.
-  Next: independent review, then parent-owned staging/Exam.net walk.
-  Evidence: session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-06/implementation-report-2.md`.
+  `in_progress`: grid points fix `07bede41` approved and merged (`2ebed4cb`);
+  live DOCX eval found a many-to-many grid rejected at admission (key-source
+  rule); diagnosis waits for the Hemma storage hold. Task 4 `done` (a3525650;
+  Exam.net 5337577); task 5 `done` (5c8c540f, fix 4b54bceb; Exam.net 5337942).
+  Task 6 `in_progress` (R15-R17): `0ed61820` by Pi `bff77816`, main merged;
+  next: independent review, then staging/Exam.net walk. Evidence: session
+  `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-06/implementation-report-2.md`.
+  Task 7 follows. No broad test suites in parallel (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
@@ -155,11 +160,8 @@
 
 ## Recent
 
-- TASK-SKRIPT-39-04-09 `done` 2026-10-13: review `d09bd286`, main `c018ae9e`, walk retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`.
-
-- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (review of final repair `ace0cc39` waived by user): main `838baea9`, walk retained `01a133f5…/evidence/staging-walk-838baea9/README.md`.
-
-- TASK-SKRIPT-39-05-07 `done` 2026-10-13: review `58dabe3f`, walk on ebc2a9c7 retained `01a13274…/evidence/staging-walk-ebc2a9c7/`.
+- 2026-10-13 `done`: TASK-SKRIPT-39-04-09 (main `c018ae9e`), 39-04-07 (`838baea9`),
+  39-05-07 (`ebc2a9c7`); walk records are cited in each task's closeout.
 
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.

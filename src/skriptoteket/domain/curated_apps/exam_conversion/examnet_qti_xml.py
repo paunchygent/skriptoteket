@@ -357,28 +357,36 @@ def _append_match_interaction(
     image_paths: tuple[str, ...],
     response_id: str,
 ) -> None:
-    # Each visible list keeps its own order; the pairing lives only in the response data.
+    # Kategorisera grid (probe V51): rows are the first set, each row may match every
+    # column; columns the second set, each column may match every row; each visible list
+    # keeps its own order and the pairing lives only in the response data. The response
+    # mapping is the shared equal-share/all-or-nothing path; a native grid's points equal
+    # tick_points x pairs, so its exact share is exactly tick_points.
+    row_count = len(item.match_left)
+    column_count = len(item.match_right)
     interaction = ElementTree.SubElement(
         parent,
         qti_tag("qti-match-interaction"),
         {
             "response-identifier": response_id,
-            "max-associations": str(len(item.match_left)),
+            "max-associations": str(row_count * column_count),
         },
     )
     append_interaction_prompt(interaction, item, image_paths)
     left_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
     right_set = ElementTree.SubElement(interaction, qti_tag("qti-simple-match-set"))
     for entry in item.match_left:
-        _append_associable_choice(left_set, entry.identifier, entry.text)
+        _append_associable_choice(left_set, entry.identifier, entry.text, match_max=column_count)
     for entry in item.match_right:
-        _append_associable_choice(right_set, entry.identifier, entry.text)
+        _append_associable_choice(right_set, entry.identifier, entry.text, match_max=row_count)
 
 
-def _append_associable_choice(parent: ElementTree.Element, identifier: str, text: str) -> None:
+def _append_associable_choice(
+    parent: ElementTree.Element, identifier: str, text: str, *, match_max: int
+) -> None:
     choice = ElementTree.SubElement(
         parent,
         qti_tag("qti-simple-associable-choice"),
-        {"identifier": identifier, "match-max": "1"},
+        {"identifier": identifier, "match-max": str(match_max)},
     )
     choice.text = text

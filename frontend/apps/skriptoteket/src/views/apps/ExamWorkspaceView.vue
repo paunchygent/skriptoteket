@@ -32,6 +32,7 @@
 
 import { computed, onMounted, ref, watch } from "vue";
 
+import { IconPlus } from "../../components/icons";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
 import type { UiSegmentedToggleOption } from "../../components/ui";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
@@ -39,6 +40,7 @@ import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConvers
 import ExamWorkspaceConvertingNotice from "./exam-workspace/ExamWorkspaceConvertingNotice.vue";
 import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
 import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
+import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
@@ -99,6 +101,7 @@ const {
   updateItemMatchPairs,
   updateItemParagraphSegments,
   updateItemPoints,
+  updateItemTickPoints,
   workspaceDocument,
 } = useExamWorkspaceDocument();
 
@@ -230,8 +233,8 @@ function goToItem(itemId: string): void {
   detailsOpen.value = true;
 }
 
-function handleAddItem(): void {
-  addItem();
+function handleAddItem(kind: TeacherItemKind): void {
+  addItem(kind);
   questionSheetOpen.value = false;
 }
 
@@ -421,6 +424,7 @@ async function handleSave(): Promise<void> {
             @update-match-pairs="updateItemMatchPairs"
             @update-paragraph-segments="updateItemParagraphSegments"
             @update-points="updateItemPoints"
+            @update-tick-points="updateItemTickPoints"
           />
         </div>
       </div>
@@ -444,15 +448,36 @@ async function handleSave(): Promise<void> {
         :selected-item-id="selectedItemId"
         @select="selectAndClose"
       />
-      <div class="p-4">
+      <div class="grid grid-cols-2 gap-2 p-4">
         <button
           type="button"
           class="btn-ghost w-full justify-center shadow-none"
           :disabled="isBusy"
-          data-test="exam-workspace-phone-add-item"
-          @click="handleAddItem"
+          title="Ny fråga: fritext"
+          aria-label="Ny fråga: fritext"
+          data-test="exam-workspace-phone-add-free_text"
+          @click="handleAddItem('free_text')"
         >
-          Ny fråga
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
+          Fritext
+        </button>
+        <button
+          type="button"
+          class="btn-ghost w-full justify-center shadow-none"
+          :disabled="isBusy"
+          title="Ny fråga: kort svar"
+          aria-label="Ny fråga: kort svar"
+          data-test="exam-workspace-phone-add-short_answer"
+          @click="handleAddItem('short_answer')"
+        >
+          <IconPlus
+            :size="14"
+            class="h-3.5 w-3.5"
+          />
+          Kort svar
         </button>
       </div>
     </ExamWorkspaceSheet>

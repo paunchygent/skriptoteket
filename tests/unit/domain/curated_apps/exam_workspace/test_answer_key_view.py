@@ -1,11 +1,14 @@
 """Unit tests for the neutral answer-key item views (TASK-SKRIPT-39-04-01)."""
 
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemProposal,
+    AnswerKeyItemView,
     AnswerKeyViewKind,
     answer_key_item_views,
     proposal_from_model_content,
@@ -22,6 +25,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
+    NativeMatchLeft,
+    NativeMatchRight,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
@@ -97,6 +104,26 @@ def _gap_item(*, sequence: int, item_id: str) -> NativeExamItem:
         ),
         points=2,
         gaps=(NativeGap(gap_id="gap_001"), NativeGap(gap_id="gap_002")),
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
+        review=_review(),
+    )
+
+
+def _matching_item(*, sequence: int, item_id: str) -> NativeExamItem:
+    return NativeExamItem(
+        item_id=item_id,
+        sequence=sequence,
+        kind=NativeExamItemKind.MATCHING,
+        body=(NativeParagraph(segments=(NativeTextSegment(text="Kategorisera."),)),),
+        tick_points=Decimal("1"),
+        match_left=(
+            NativeMatchLeft(left_id="left_001", text="hund"),
+            NativeMatchLeft(left_id="left_002", text="katt"),
+        ),
+        match_right=(
+            NativeMatchRight(right_id="right_001", text="däggdjur"),
+            NativeMatchRight(right_id="right_002", text="fåglar"),
+        ),
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
         review=_review(),
     )
@@ -197,6 +224,50 @@ class TestProposalValidation:
         assert proposal_from_model_content(view=view, content={"1": "Maja"}) is None
         assert proposal_from_model_content(view=view, content={"1": " ", "2": "Lund"}) is None
         assert proposal_from_model_content(view=view, content={"1": "gap_001", "2": "x"}) is None
+
+
+class TestMatchingProposalValidation:
+    def _view(self) -> AnswerKeyItemView:
+        return answer_key_item_views(_document(_matching_item(sequence=1, item_id="item_001")))[0]
+
+    def test_many_to_many_decision_maps_back_to_native_ids(self) -> None:
+        view = self._view()
+        content: dict[str, JsonValue] = {
+            "pairs": [
+                {"left_id": 1, "right_id": 1},
+                {"left_id": 1, "right_id": 2},
+                {"left_id": 2, "right_id": 1},
+            ]
+        }
+
+        proposal = proposal_from_model_content(view=view, content=content)
+
+        assert proposal is not None
+        assert proposal.match_pairs == (
+            ("left_001", "right_001"),
+            ("left_001", "right_002"),
+            ("left_002", "right_001"),
+        )
+
+    @pytest.mark.parametrize(
+        "pairs",
+        [
+            [(1, 1), (1, 2)],
+            [(1, 1), (1, 1), (2, 2)],
+            [(1, 1), (2, 2), (9, 1)],
+            [(1, 1), (2, 2), (1, 9)],
+            [(1, 1)],
+        ],
+        ids=["uncovered_left", "repeated_pair", "unknown_left", "unknown_right", "no_left_two"],
+    )
+    def test_malformed_many_to_many_decisions_are_rejected(
+        self, pairs: list[tuple[int, int]]
+    ) -> None:
+        content: dict[str, JsonValue] = {
+            "pairs": [{"left_id": left, "right_id": right} for left, right in pairs]
+        }
+
+        assert proposal_from_model_content(view=self._view(), content=content) is None
 
 
 class TestSuggestionFromProposal:

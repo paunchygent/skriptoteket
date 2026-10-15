@@ -41,7 +41,7 @@ def validate_matching_pairs(
     right: tuple[NativeMatchRight, ...],
     correct_choice_ids: tuple[str, ...],
 ) -> None:
-    """Every left entry is paired once; unpaired right entries are distractors."""
+    """Every row is covered; repeated row and column participation is allowed."""
     if correct_choice_ids:
         raise ValueError("matching items key pairs, not choices")
     left_ids = {entry.left_id for entry in left}
@@ -50,7 +50,8 @@ def validate_matching_pairs(
     paired_right = [pair.right_id for pair in pairs]
     if set(paired_left) - left_ids or set(paired_right) - right_ids:
         raise ValueError("match pairs must refer to declared entries")
-    if sorted(paired_left) != sorted(left_ids):
-        raise ValueError("a keyed matching item pairs every left entry exactly once")
-    if len(set(paired_right)) != len(paired_right):
-        raise ValueError("a keyed matching item pairs each right entry at most once")
+    if set(paired_left) != left_ids:
+        raise ValueError("a keyed matching item pairs every left entry at least once")
+    cells = {(pair.left_id, pair.right_id) for pair in pairs}
+    if len(cells) != len(pairs):
+        raise ValueError("a keyed matching item pairs a left and right entry at most once")

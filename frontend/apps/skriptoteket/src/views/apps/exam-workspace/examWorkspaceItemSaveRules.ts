@@ -32,7 +32,7 @@ import {
 
 export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
-export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller ett svar i matchningen saknar text.";
+export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";
 export const INVALID_CRITERION_POINTS_GUIDANCE =
   "Poängen för ett kriterium måste vara ett heltal som är minst 1.";
@@ -116,7 +116,7 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
       items,
       hasEmptyMatchText,
       (refused) =>
-        `${questionSubject(refused)} har rader eller svar i matchningen utan text. Skriv text i varje rad och varje svar.`,
+        `${questionSubject(refused)} har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.`,
     ),
     refusal(
       items,

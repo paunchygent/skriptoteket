@@ -116,13 +116,12 @@ describe("matching edits in useExamWorkspaceDocument", () => {
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
-  it("refuses to save a keyed item that uses a right entry twice", async () => {
+  it("refuses to save a keyed grid with a row left without a tick", async () => {
     const state = await openMatchingDocument();
 
     state.updateItemMatchPairs("item_001", [
       { left_id: "left_001", right_id: "right_002" },
       { left_id: "left_002", right_id: "right_002" },
-      { left_id: "left_003", right_id: "right_003" },
     ]);
 
     await expect(state.saveDocument()).resolves.toBe(false);

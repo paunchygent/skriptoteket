@@ -5,12 +5,12 @@
  * Domain purpose:
  *   Edit one native exam item as the dominating Redigera surface:
  *   points, the question text with inline gaps, choices with the correct
- *   answer, and the mark-as-reviewed action; `ExamWorkspaceMatchingEditor`
- *   edits the matching lists and their answer key. Previous/next and the
- *   details drawer toggle sit in the editor header so moving between
- *   questions never needs the list. Points that are not greater than zero
- *   and an empty choice text are marked invalid at the field with a Swedish
- *   hint, because the save refuses them. While `disabled` (a save or load is
+ *   answer, the Kategorisera grid with its tick value, and
+ *   the mark-as-reviewed action. Previous/next and the details
+ *   drawer toggle sit in the editor header so moving between questions
+ *   never needs the list. Points that are not greater than zero and an
+ *   empty choice text are marked invalid at the field with a Swedish hint,
+ *   because the save refuses them. While `disabled` (a save or load is
  *   running, or the item is a placeholder whose batch still converts) every
  *   edit control is disabled; navigation and the details toggle stay
  *   available.
@@ -18,8 +18,8 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
  *   - Delegates the question text and gap answers to
- *     `ExamWorkspaceBodyEditor`, the matching lists to
- *     `ExamWorkspaceMatchingEditor` and the Fritext criteria to
+ *     `ExamWorkspaceBodyEditor`, the Kategorisera grid to
+ *     `ExamWorkspaceKategoriseraGrid` and the Fritext criteria to
  *     `ExamWorkspaceCriteriaField`; while criteria exist the points are
  *     their sum and read-only.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
@@ -28,7 +28,7 @@
  *     it cannot move, remove or retype here.
  */
 
-import { computed, useId } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
 import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarning } from "../../../components/icons";
 
@@ -40,7 +40,7 @@ import type {
 } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
-import ExamWorkspaceMatchingEditor from "./ExamWorkspaceMatchingEditor.vue";
+import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
   hasEmptyChoiceText,
@@ -90,6 +90,7 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
+  updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const pointsHintId = useId();
@@ -115,6 +116,30 @@ function choiceTextClass(choiceId: string, text: string): string {
   return isCorrectChoice(choiceId)
     ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
     : "border-navy/35";
+}
+
+const isGrid = computed(() => props.item.kind === "matching");
+
+/** A tick value is a positive number with at most 2 decimals (Q10). */
+const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
+
+const tickInvalid = ref(false);
+
+watch(
+  () => props.item.item_id,
+  () => {
+    tickInvalid.value = false;
+  },
+);
+
+/** Keep the last valid tick value in the document; mark the field while the typed value is invalid. */
+function handleTickPointsInput(event: Event): void {
+  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
+  const valid = TICK_POINTS_PATTERN.test(raw) && Number(raw) > 0;
+  tickInvalid.value = !valid;
+  if (valid) {
+    emit("updateTickPoints", props.item.item_id, String(Number(raw)));
+  }
 }
 
 function handlePointsInput(event: Event): void {
@@ -312,25 +337,50 @@ function choiceLetter(index: number): string {
     </div>
 
     <div class="grid gap-3">
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Poäng
-        <input
-          class="min-h-10 w-28 border px-3 text-sm font-normal text-navy"
-          :class="[pointsInvalid ? 'border-warning' : 'border-navy/35', hasCriteria ? 'bg-canvas' : 'bg-panel']"
-          type="number"
-          min="0"
-          step="any"
-          inputmode="decimal"
-          :value="item.points ?? ''"
-          :disabled="disabled"
-          :readonly="hasCriteria"
-          :title="hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
-          :aria-invalid="pointsInvalid ? 'true' : undefined"
-          :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
-          data-test="exam-workspace-item-points-input"
-          @input="handlePointsInput"
+      <div class="flex flex-wrap items-end gap-3">
+        <label
+          v-if="item.kind === 'matching'"
+          class="grid gap-1 text-xs font-semibold text-navy/80"
         >
-      </label>
+          Poäng per kryss
+          <input
+            class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
+            :class="tickInvalid ? 'border-warning' : 'border-navy/35'"
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            :value="item.tick_points ?? ''"
+            :disabled="disabled"
+            :aria-invalid="tickInvalid ? 'true' : undefined"
+            data-test="exam-workspace-item-tick-points-input"
+            @input="handleTickPointsInput"
+          >
+        </label>
+        <label class="grid gap-1 text-xs font-semibold text-navy/80">
+          Poäng
+          <!-- A grid's points are its tick value times its ticks (Q10), and a free-text item's points are its criteria sum, so they are read-only. -->
+          <input
+            class="min-h-10 w-28 border px-3 text-sm font-normal text-navy"
+            :class="[
+              pointsInvalid ? 'border-warning' : 'border-navy/35',
+              isGrid || hasCriteria ? 'bg-canvas' : 'bg-panel',
+            ]"
+            type="number"
+            min="0"
+            step="any"
+            inputmode="decimal"
+            :value="item.points ?? ''"
+            :disabled="disabled"
+            :readonly="isGrid || hasCriteria"
+            :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
+            :aria-invalid="pointsInvalid ? 'true' : undefined"
+            :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
+            data-test="exam-workspace-item-points-input"
+            @input="handlePointsInput"
+          >
+        </label>
+      </div>
       <p
         v-if="hasNonPositivePoints(item)"
         :id="pointsHintId"
@@ -418,12 +468,14 @@ function choiceLetter(index: number): string {
       </p>
     </fieldset>
 
-    <ExamWorkspaceMatchingEditor
+    <ExamWorkspaceKategoriseraGrid
       v-if="item.kind === 'matching'"
       :disabled="disabled"
       :item="item"
-      @update-match-entry-text="(itemId, side, entryId, text) => emit('updateMatchEntryText', itemId, side, entryId, text)"
-      @update-match-pairs="(itemId, pairs) => emit('updateMatchPairs', itemId, pairs)"
+      @update-entry-text="
+        (side, entryId, text) => emit('updateMatchEntryText', item.item_id, side, entryId, text)
+      "
+      @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
     />
   </section>
 </template>

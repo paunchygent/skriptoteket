@@ -147,7 +147,7 @@ def _standalone_with_stem(
             (*stem, *item.body),
             gap_ids=_placed_gap_ids(item),
         )
-        if stem_resources or child.image_resources
+        if stem_resources or child.prompt_paragraphs
         else (),
         image_resources=(*stem_resources, *child.image_resources),
     )
@@ -381,8 +381,12 @@ def _placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
 
 
 def _prompt_paragraphs(item: NativeExamItem) -> tuple[tuple[ExamNetQtiPromptSegment, ...], ...]:
-    """Keep positioned picture/gap carriers; positionless producers use prompt_lines."""
-    if not item.body_asset_ids():
+    """Keep positioned picture/gap carriers; positionless producers use prompt_lines.
+
+    Gap-fill bodies always keep their structured paragraphs, so each gap is placed
+    from its own segment and literal underscore runs in the text stay text.
+    """
+    if item.kind is not NativeExamItemKind.GAP_FILL and not item.body_asset_ids():
         return ()
     return body_prompt_paragraphs(item.body, gap_ids=_placed_gap_ids(item))
 

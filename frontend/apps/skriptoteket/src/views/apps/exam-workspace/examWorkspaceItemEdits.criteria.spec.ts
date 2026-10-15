@@ -38,6 +38,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }
@@ -75,6 +76,6 @@ describe("withCriteria", () => {
 
 describe("newTeacherItem", () => {
   it("starts a new free-text question with no criteria", () => {
-    expect(newTeacherItem("item_009", 9).criteria).toEqual([]);
+    expect(newTeacherItem("item_009", 9, "free_text").criteria).toEqual([]);
   });
 });

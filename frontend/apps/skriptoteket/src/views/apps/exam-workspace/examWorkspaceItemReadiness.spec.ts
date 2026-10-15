@@ -57,6 +57,7 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
     },
     sequence: 1,
     source_anchor: null,
+    tick_points: null,
     ...overrides,
   };
 }
@@ -251,11 +252,12 @@ describe("examWorkspaceItemReadiness for matching items", () => {
     expect(reasons).toEqual(["incomplete_match_key"]);
   });
 
-  it("reports a keyed item that uses a right entry twice", () => {
+  it("reports a keyed item with a repeated tick", () => {
     const reasons = examWorkspaceItemReadiness(
       buildMatchingItemWithPairs([
         [1, 2],
-        [2, 2],
+        [1, 2],
+        [2, 1],
         [3, 3],
       ]),
     );

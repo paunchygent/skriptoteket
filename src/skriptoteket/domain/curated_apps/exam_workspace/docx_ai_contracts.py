@@ -160,8 +160,9 @@ class ProducedItem(_Produced):
     )
     match_pairs: tuple[ProducedMatchPair, ...] = Field(
         default=(),
-        description="For matching: each pair the teacher's facit keys, one pair per match_left "
-        "entry; a match_right entry no pair uses stays in match_right. A proposed key "
+        description="For matching: every tick the teacher's facit keys, one pair per tick. "
+        "Every match_left entry appears in at least one pair and a match_right entry may "
+        "serve several pairs or none; the same pair never appears twice. A proposed key "
         "without a facit entry uses key_source invented. Empty for other kinds.",
     )
     criteria: tuple[ProducedCriterion, ...] = Field(
@@ -193,6 +194,12 @@ class ProducedItem(_Produced):
         for pair in self.match_pairs:
             if pair.left not in self.match_left or pair.right not in self.match_right:
                 raise ValueError("each match pair copies one match_left and one match_right entry")
+        pairs = {(pair.left, pair.right) for pair in self.match_pairs}
+        if len(pairs) != len(self.match_pairs):
+            raise ValueError("a matching key states each pair at most once")
+        if self.match_pairs and {pair.left for pair in self.match_pairs} != set(self.match_left):
+            raise ValueError("a matching key names every match_left entry at least once")
+
         if self.criteria and self.kind is not NativeExamItemKind.FREE_TEXT:
             raise ValueError("only free_text items carry criteria")
         if any(criterion.points is None for criterion in self.criteria) and len(self.criteria) != 1:

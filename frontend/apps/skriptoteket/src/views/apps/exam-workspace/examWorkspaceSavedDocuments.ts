@@ -23,9 +23,13 @@ export function mergeSavedDocuments(
   local: ExamWorkspaceDocumentSummary[],
   fetched: ExamWorkspaceDocumentSummary[],
 ): ExamWorkspaceDocumentSummary[] {
-  const localByLineage = new Map(local.map((entry) => [entry.lineage_id, entry]));
+  const localByLineage = new Map(
+    local.map((entry) => [entry.lineage_id, entry]),
+  );
   const fetchedLineages = new Set(fetched.map((entry) => entry.lineage_id));
-  const localOnly = local.filter((entry) => !fetchedLineages.has(entry.lineage_id));
+  const localOnly = local.filter(
+    (entry) => !fetchedLineages.has(entry.lineage_id),
+  );
   const merged = fetched.map((entry) => {
     const known = localByLineage.get(entry.lineage_id);
     return known && known.version > entry.version ? known : entry;

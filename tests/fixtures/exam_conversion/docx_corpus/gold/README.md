@@ -3,10 +3,13 @@
 TASK-SKRIPT-39-05-02 G1-G3 owns these source-authored gold files. Each JSON file
 was read from its DOCX and embedded facit, independently of the converter.
 `source_sha256` binds the file to the checked source bytes. The user confirmed all eight
-files on 2026-10-10; each carries `confirmed: true` and a `confirmation_note`
+source-authored files on 2026-10-10; each carries `confirmed: true` and a `confirmation_note`
 recording that decision. The same day the user accepted corrections from a blind
 second labelling to the English 1, poetry and Solid Gold 3 files. A later change to a gold file needs a new user
 confirmation. Unresolved `teacher_questions` prevent confirmation and produce comparison mismatches.
+The ninth file, `svenska_2_kategorisera_ordklasser_med_facit`, is the
+TASK-SKRIPT-39-09-03 R10 agent-authored teacher-style exam: the user chose speed over a
+real exam, so it carries `confirmed: false` and its comparison reports unconfirmed.
 
 The executable schema is `scripts/exam_conversion_eval/gold.py` (`GoldExam`,
 `schema_version` `exam_conversion_gold_v2`). `items` holds standalone items and
@@ -36,6 +39,16 @@ options live in `choices`; correct answers never enter student-visible text.
 an in-sentence gap is omitted. Matching items preserve the original table
 text in the prompt and state the correct directed pairs in `pairs`. Table rows in
 prompts drop empty cells, including blank matching answer cells.
+
+A Kategorisera grid is a matching item whose left entries are the sorted rows and
+whose right entries are the categories. The prompt keeps the source table, its
+header row and one line per sorted entry; the header's cells are the right list in
+source order and the blank tick cells of the data rows drop. A row's correct
+categories are several pairs that share its `left`, a category may serve several
+rows or none, and a category no tick uses stays in the header. The comparator reads
+every cell after a row's first cell as a right entry, so a header row or a distractor
+row may list several, and it compares the pairs as a set, so their order does not
+count.
 
 Open responses use `free_text` and keep any source grading guidance in notes.
 Shapes that fit no supported response kind use `review`, which corresponds to
@@ -126,17 +139,18 @@ response to `<dir>/recordings/` in the recorded fixture format. Live mode is a
 manual eval-loop step, not CI. A conversion crash fails the import job, so the
 report shows it as an exam that converted no items.
 
-| Source exam                 | Gold items | Points |
-| --------------------------- | ---------: | -----: |
-| BF26 diagnostic grammar     |        104 |    105 |
-| BF26 English 1 chapters 1–2 |         53 |     59 |
-| Chapter 4 poetry and lyrics |         28 |     28 |
-| Scientific methodology      |         16 |     20 |
-| Solid Gold 3 Unit 3         |         73 |     74 |
-| Svenska 2 grammar variant 1 |          8 |     38 |
-| Svenska 2 grammar variant 2 |          8 |     38 |
-| Svenska 2 course exam       |         24 |     36 |
-| Total                       |        314 |    398 |
+| Source exam                                        | Gold items | Points |
+| -------------------------------------------------- | ---------: | -----: |
+| BF26 diagnostic grammar                            |        104 |    105 |
+| BF26 English 1 chapters 1–2                        |         53 |     59 |
+| Chapter 4 poetry and lyrics                        |         28 |     28 |
+| Scientific methodology                             |         16 |     20 |
+| Solid Gold 3 Unit 3                                |         73 |     74 |
+| Svenska 2 grammar variant 1                        |          8 |     38 |
+| Svenska 2 grammar variant 2                        |          8 |     38 |
+| Svenska 2 course exam                              |         24 |     36 |
+| Svenska 2 kategorisera ordklasser (agent-authored) |          2 |      7 |
+| Total                                              |        316 |    405 |
 
 Methodology question 2, “Tidningsartiklar”, keeps the source facit C and D.
 The accepted decision keeps B excluded, so the item carries no open

@@ -1,15 +1,19 @@
-"""Source-bound completeness of the eight user-confirmed DOCX gold files."""
+"""Source-bound completeness of the confirmed DOCX gold files and the authored grid exam."""
 
 import hashlib
+from collections import Counter
 from pathlib import Path
 
 import pytest
+from docx import Document
 
 from scripts.exam_conversion_eval.compare import compare_exam
+from scripts.exam_conversion_eval.compare_questions import gold_questions
 from scripts.exam_conversion_eval.gold import GoldExam
 
 CORPUS = Path(__file__).resolve().parents[2] / "fixtures/exam_conversion/docx_corpus"
 GOLD = CORPUS / "gold"
+AUTHORED = "svenska_2_kategorisera_ordklasser_med_facit"
 
 # Counts are hand-read source question boundaries, independent of converter output.
 SOURCE_COUNTS = {
@@ -27,8 +31,7 @@ SOURCE_COUNTS = {
 def test_one_gold_file_per_source_exam() -> None:
     sources = {path.stem for path in CORPUS.glob("*.docx")}
     drafts = {path.stem for path in GOLD.glob("*.json")}
-    assert len(sources) == 8
-    assert drafts == sources == set(SOURCE_COUNTS)
+    assert drafts == sources == set(SOURCE_COUNTS) | {AUTHORED}
 
 
 @pytest.mark.parametrize("stem", SOURCE_COUNTS)
@@ -90,3 +93,34 @@ def test_gold_compares_equal_to_itself_without_unresolved_questions(stem: str) -
     assert [item.mismatches for item in comparison.items if not item.passed] == []
     assert comparison.passed
     assert not comparison.unconfirmed
+
+
+def test_the_authored_category_sorting_exam_is_labelled_and_source_bound() -> None:
+    source = CORPUS / f"{AUTHORED}.docx"
+    gold = GoldExam.model_validate_json((GOLD / f"{AUTHORED}.json").read_bytes())
+    assert gold.source_filename == source.name
+    assert gold.source_sha256 == hashlib.sha256(source.read_bytes()).hexdigest()
+    assert gold.source_sha256 == source.with_suffix(".docx.sha256").read_text().split()[0]
+    assert gold.confirmed is False, "an agent-authored fixture carries no user confirmation"
+    assert len(gold.questions) == 2
+    assert sum(item.points or 0 for item in gold.questions) == 7
+    assert all(item.kind == "matching" for item in gold.questions)
+    keyed = Counter(pair.left for item in gold.questions for pair in item.pairs)
+    assert max(keyed.values()) >= 2, "one grid row keys two correct categories"
+    unused = [
+        right
+        for item in gold.questions
+        for right in gold_questions((item,))[0].view.match_right
+        if right not in {pair.right for pair in item.pairs}
+    ]
+    assert unused, "one grid carries a category no tick uses"
+    tables = Document(str(source)).tables
+    assert len(tables) >= 2, "the exam has at least two category-sorting tables"
+    assert all(len(table.columns) >= 3 for table in tables)
+    comparison = compare_exam(gold, gold.items)
+    assert comparison.passed
+    assert [item.mismatches for item in comparison.items if not item.passed] == []
+    assert comparison.unconfirmed
+    readme = (GOLD / "README.md").read_text()
+    assert AUTHORED in readme
+    assert "agent-authored" in readme.casefold()

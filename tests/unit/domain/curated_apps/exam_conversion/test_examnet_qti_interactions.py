@@ -23,6 +23,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiExamNetProofStatus,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiMatchEntry,
+    ExamNetQtiMatchPair,
     ExamNetQtiTargetSupportStatus,
     ExamNetQtiTextEntryGap,
 )
@@ -219,6 +221,12 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
     match_interaction = item.find(f".//{{{QTI_NAMESPACE}}}qti-match-interaction")
     assert match_interaction is not None
     assert "shuffle" not in match_interaction.attrib
+    assert match_interaction.attrib["max-associations"] == "16"
+    left_set, right_set = match_interaction.findall(f"{{{QTI_NAMESPACE}}}qti-simple-match-set")
+    assert {choice.attrib["match-max"] for choice in left_set} == {"4"}
+    assert {choice.attrib["match-max"] for choice in right_set} == {"4"}
+    assert not list(item.iter(f"{{{QTI_NAMESPACE}}}qti-associate-interaction"))
+    assert not list(item.iter(f"{{{QTI_NAMESPACE}}}qti-order-interaction"))
     assert _response_declaration(item).attrib["base-type"] == "directedPair"
     assert _correct_values(item) == [
         "left_001 right_001",
@@ -247,6 +255,67 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
         ExamNetQtiTargetSupportStatus.PROOF_GATED
     )
     assert json_string(report, "examnet_proof_status") == (ExamNetQtiExamNetProofStatus.NOT_PROVEN)
+
+
+def test_many_to_many_grid_maps_every_row_with_columns_free() -> None:
+    plan = build_examnet_qti_package_plan(
+        package_name="kategorisera-grid",
+        items=(
+            ExamNetQtiItem(
+                item_id="item_001",
+                sequence=1,
+                title="Kategorisera",
+                interaction_type=ExamNetQtiInteractionType.MATCHING,
+                prompt_lines=("Sätt varje ord i rätt kategori.",),
+                max_score=1.5,
+                match_pairs=(
+                    ExamNetQtiMatchPair("left_001", "Rött", "right_001", "Färg"),
+                    ExamNetQtiMatchPair("left_001", "Rött", "right_002", "Frukt"),
+                    ExamNetQtiMatchPair("left_002", "Päron", "right_002", "Frukt"),
+                ),
+                match_left=(
+                    ExamNetQtiMatchEntry("left_001", "Rött"),
+                    ExamNetQtiMatchEntry("left_002", "Päron"),
+                ),
+                match_right=(
+                    ExamNetQtiMatchEntry("right_001", "Färg"),
+                    ExamNetQtiMatchEntry("right_002", "Frukt"),
+                    ExamNetQtiMatchEntry("right_003", "Obrukad"),
+                ),
+            ),
+        ),
+    )
+    with zipfile.ZipFile(BytesIO(build_examnet_qti_zip_bytes(plan))) as archive:
+        item = ElementTree.fromstring(archive.read("items/item_001.xml"))
+
+    match_interaction = item.find(f".//{{{QTI_NAMESPACE}}}qti-match-interaction")
+    assert match_interaction is not None
+    assert match_interaction.attrib["max-associations"] == "6"
+    left_set, right_set = match_interaction.findall(f"{{{QTI_NAMESPACE}}}qti-simple-match-set")
+    assert [choice.attrib["match-max"] for choice in left_set] == ["3", "3"]
+    assert [choice.attrib["match-max"] for choice in right_set] == ["2", "2", "2"]
+    assert _correct_values(item) == [
+        "left_001 right_001",
+        "left_001 right_002",
+        "left_002 right_002",
+    ]
+    assert _map_entry_pairs(item) == [
+        ("left_001 right_001", "0.5"),
+        ("left_001 right_002", "0.5"),
+        ("left_002 right_002", "0.5"),
+    ]
+    assert _mapping(item).attrib == {
+        "default-value": "0",
+        "lower-bound": "0",
+        "upper-bound": "1.5",
+    }
+    outcomes = {
+        outcome.attrib["identifier"]: outcome
+        for outcome in item.iter(f"{{{QTI_NAMESPACE}}}qti-outcome-declaration")
+    }
+    max_value = outcomes["MAXSCORE"].find(f".//{{{QTI_NAMESPACE}}}qti-value")
+    assert max_value is not None
+    assert max_value.text == "1.5"
 
 
 def _item_root(package_path: Path) -> ElementTree.Element:

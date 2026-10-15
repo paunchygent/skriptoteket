@@ -7,6 +7,8 @@ reported out of date once the kind or any other answer-relevant content
 changed, including a change to free_text, which has no keyed view.
 """
 
+from decimal import Decimal
+
 import pytest
 from pydantic import ValidationError
 
@@ -94,6 +96,7 @@ class TestSuggestionStorageAcrossKindChanges:
             base["gaps"] = (NativeGap(gap_id="gap_001", accepted_values=("Anna",)),)
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         elif kind is NativeExamItemKind.MATCHING:
+            base["tick_points"] = Decimal("1")
             base["match_left"] = (NativeMatchLeft(left_id="left_001", text="hund"),)
             base["match_right"] = (
                 NativeMatchRight(right_id="right_001", text="dog"),
@@ -162,12 +165,7 @@ class TestSuggestionStorageAcrossKindChanges:
             "choice_and_match": {"correct_choice_ids": ("choice_001",), "match_pairs": (pair,)},
             "match_and_gap": {"match_pairs": (pair,), "gap_accepted_values": (gap,)},
             "duplicate_choices": {"correct_choice_ids": ("choice_001", "choice_001")},
-            "duplicate_match_left": {
-                "match_pairs": (pair, NativeMatchPair(left_id="left_001", right_id="right_002"))
-            },
-            "duplicate_match_right": {
-                "match_pairs": (pair, NativeMatchPair(left_id="left_002", right_id="right_001"))
-            },
+            "duplicate_pair": {"match_pairs": (pair, pair)},
             "duplicate_gap": {"gap_accepted_values": (gap, gap)},
         }
 
@@ -180,8 +178,7 @@ class TestSuggestionStorageAcrossKindChanges:
             "choice_and_match",
             "match_and_gap",
             "duplicate_choices",
-            "duplicate_match_left",
-            "duplicate_match_right",
+            "duplicate_pair",
             "duplicate_gap",
         ],
     )
@@ -205,7 +202,7 @@ class TestSuggestionStorageAcrossKindChanges:
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
             body=(NativeParagraph(segments=(NativeTextSegment(text="Para ihop."),)),),
-            points=1,
+            tick_points=Decimal("1"),
             match_left=(NativeMatchLeft(left_id="left_001", text="hund"),),
             match_right=(
                 NativeMatchRight(right_id="right_001", text="dog"),
@@ -226,6 +223,7 @@ class TestSuggestionStorageAcrossKindChanges:
             {
                 **dict(item),
                 "ai_suggestion": suggestion,
+                "points": 1,
                 "answer_key": NativeAnswerKey(
                     origin=NativeAnswerKeyOrigin.MACHINE_PROPOSED,
                     match_pairs=suggestion.match_pairs,

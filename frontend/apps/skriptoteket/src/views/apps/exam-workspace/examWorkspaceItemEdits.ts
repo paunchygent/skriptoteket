@@ -47,7 +47,10 @@ export function withCriteria(
 }
 
 /** A points value the teacher sets is no estimate from a section total. */
-export function withPoints(item: NativeExamItem, points: number | null): NativeExamItem {
+export function withPoints(
+  item: NativeExamItem,
+  points: number | null,
+): NativeExamItem {
   return { ...item, points, points_estimated: false };
 }
 
@@ -113,7 +116,43 @@ export function withMatchEntryText(
       };
 }
 
-export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[]): NativeExamItem {
+/**
+ * A Kategorisera grid's points are its tick value times its ticks (Q10); an
+ * unkeyed grid has no points. Both values carry at most 2 decimals, so the
+ * product is rounded to 2 decimals to drop floating-point noise.
+ */
+function gridPoints(
+  tickPoints: string | null,
+  tickCount: number,
+): number | null {
+  if (tickPoints === null || tickCount === 0) {
+    return null;
+  }
+  return Math.round(Number(tickPoints) * tickCount * 100) / 100;
+}
+
+/**
+ * Re-derive a grid's points after its key changed by any route other than a
+ * tick edit: undoing an interpretation or writing a suggestion. Non-grid items
+ * and an unchanged total pass through; a changed total is no longer an estimate.
+ */
+function withGridPoints(item: NativeExamItem): NativeExamItem {
+  if (item.kind !== "matching") {
+    return item;
+  }
+  const points = gridPoints(
+    item.tick_points,
+    item.answer_key.match_pairs.length,
+  );
+  return points === item.points
+    ? item
+    : { ...item, points, points_estimated: false };
+}
+
+export function withMatchPairs(
+  item: NativeExamItem,
+  pairs: NativeExamMatchPair[],
+): NativeExamItem {
   return {
     ...item,
     answer_key: {
@@ -121,6 +160,21 @@ export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[
       match_pairs: pairs,
       origin: teacherKeyOrigin(pairs.length > 0),
     },
+    points: gridPoints(item.tick_points, pairs.length),
+    points_estimated: false,
+  };
+}
+
+/** Set the grid's value per correct tick; its points follow from the ticks. */
+export function withTickPoints(
+  item: NativeExamItem,
+  tickPoints: string,
+): NativeExamItem {
+  return {
+    ...item,
+    tick_points: tickPoints,
+    points: gridPoints(tickPoints, item.answer_key.match_pairs.length),
+    points_estimated: false,
   };
 }
 
@@ -180,7 +234,10 @@ export function withAutomaticValues(
     ...item,
     gaps: item.gaps.map((candidate) =>
       candidate.gap_id === gapId
-        ? { ...candidate, automatic_values: [...candidate.automatic_values, ...added] }
+        ? {
+            ...candidate,
+            automatic_values: [...candidate.automatic_values, ...added],
+          }
         : candidate,
     ),
   };
@@ -195,7 +252,9 @@ export function withGapValues(
   if (
     !current ||
     (current.accepted_values.length === acceptedValues.length &&
-      current.accepted_values.every((value, index) => value === acceptedValues[index]))
+      current.accepted_values.every(
+        (value, index) => value === acceptedValues[index],
+      ))
   ) {
     return item;
   }
@@ -218,11 +277,20 @@ export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
   if (item.answer_key.origin !== "ai_interpreted") {
     return item;
   }
-  return {
+  return withGridPoints({
     ...item,
-    answer_key: { ...item.answer_key, origin: "absent", correct_choice_ids: [], match_pairs: [] },
-    gaps: item.gaps.map((gap) => ({ ...gap, accepted_values: [], automatic_values: [] })),
-  };
+    answer_key: {
+      ...item.answer_key,
+      origin: "absent",
+      correct_choice_ids: [],
+      match_pairs: [],
+    },
+    gaps: item.gaps.map((gap) => ({
+      ...gap,
+      accepted_values: [],
+      automatic_values: [],
+    })),
+  });
 }
 
 /**
@@ -239,7 +307,9 @@ export function withoutAutomaticValue(
   if (
     !gap ||
     normalized.length === 0 ||
-    !gap.automatic_values.some((entry) => normalizedAnswer(entry) === normalized)
+    !gap.automatic_values.some(
+      (entry) => normalizedAnswer(entry) === normalized,
+    )
   ) {
     return item;
   }
@@ -265,7 +335,10 @@ export function withoutAutomaticValue(
 }
 
 /** Keep at least one gap and the item's points when turning an answer into text. */
-export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamItem {
+export function withGapAsText(
+  item: NativeExamItem,
+  gapId: string,
+): NativeExamItem {
   const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
   const text = gap?.accepted_values[0];
   if (item.gaps.length <= 1 || !text) {
@@ -289,7 +362,8 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
   return {
     ...item,
     answer_key:
-      item.answer_key.origin === "machine_proposed" || item.answer_key.origin === "ai_interpreted"
+      item.answer_key.origin === "machine_proposed" ||
+      item.answer_key.origin === "ai_interpreted"
         ? { ...item.answer_key, origin: "reviewed_advisory" }
         : item.answer_key,
     review: { ...item.review, state: "review_complete" },
@@ -299,7 +373,10 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
 function sameSet(left: string[], right: string[]): boolean {
   const leftSet = new Set(left);
   const rightSet = new Set(right);
-  return leftSet.size === rightSet.size && [...leftSet].every((value) => rightSet.has(value));
+  return (
+    leftSet.size === rightSet.size &&
+    [...leftSet].every((value) => rightSet.has(value))
+  );
 }
 
 function pairIds(pairs: NativeExamMatchPair[]): string[] {
@@ -320,7 +397,10 @@ function keyMatchesSuggestion(
   const key = item.answer_key;
   const keyedGaps = item.gaps.filter((gap) => gap.accepted_values.length > 0);
   const suggestedGaps = new Map(
-    suggestion.gap_accepted_values.map((entry) => [entry.gap_id, entry.accepted_values]),
+    suggestion.gap_accepted_values.map((entry) => [
+      entry.gap_id,
+      entry.accepted_values,
+    ]),
   );
   return (
     sameSet(key.correct_choice_ids, suggestion.correct_choice_ids) &&
@@ -329,7 +409,9 @@ function keyMatchesSuggestion(
       keyedGaps.map((gap) => gap.gap_id),
       [...suggestedGaps.keys()],
     ) &&
-    keyedGaps.every((gap) => sameSet(gap.accepted_values, suggestedGaps.get(gap.gap_id) ?? []))
+    keyedGaps.every((gap) =>
+      sameSet(gap.accepted_values, suggestedGaps.get(gap.gap_id) ?? []),
+    )
   );
 }
 
@@ -339,10 +421,14 @@ function withSuggestionAsKey(
   suggestion: NativeAnswerKeySuggestion,
 ): NativeExamItem {
   const gaps = item.gaps.map((gap) => {
-    const suggested = suggestion.gap_accepted_values.find((entry) => entry.gap_id === gap.gap_id);
-    return suggested ? { ...gap, accepted_values: [...suggested.accepted_values] } : gap;
+    const suggested = suggestion.gap_accepted_values.find(
+      (entry) => entry.gap_id === gap.gap_id,
+    );
+    return suggested
+      ? { ...gap, accepted_values: [...suggested.accepted_values] }
+      : gap;
   });
-  return {
+  return withGridPoints({
     ...item,
     ai_suggestion: suggestion,
     answer_key: {
@@ -352,7 +438,7 @@ function withSuggestionAsKey(
     },
     gaps,
     review: { ...item.review, state: "review_required" },
-  };
+  });
 }
 
 /**
@@ -366,7 +452,9 @@ function suggestionFitsItem(
   item: NativeExamItem,
   suggestion: NativeAnswerKeySuggestion,
 ): boolean {
-  const suggestedGapIds = suggestion.gap_accepted_values.map((entry) => entry.gap_id);
+  const suggestedGapIds = suggestion.gap_accepted_values.map(
+    (entry) => entry.gap_id,
+  );
   if (
     suggestedGapIds.length > 0 &&
     !sameSet(
@@ -429,20 +517,48 @@ export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
   return withSuggestionAsKey(item, suggestion);
 }
 
-/** The free-text question a teacher adds after the last item. */
-export function newTeacherItem(itemId: string, sequence: number): NativeExamItem {
+/** The kinds of question a teacher adds from "Ny fråga". */
+export type TeacherItemKind = "free_text" | "short_answer";
+
+/**
+ * The question a teacher adds after the last item: a free-text question, or a
+ * short answer, which is a Lucktext with one gap after the question text (Q14).
+ */
+export function newTeacherItem(
+  itemId: string,
+  sequence: number,
+  kind: TeacherItemKind,
+): NativeExamItem {
+  const question = { segments: [{ kind: "text" as const, text: "Ny fråga" }] };
+  const shortAnswer = kind === "short_answer";
   return {
     ai_suggestion: null,
     facit_text: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
+    // A Fritext carries no key; a short answer starts unkeyed until the teacher keys its gap.
+    answer_key: {
+      correct_choice_ids: [],
+      match_pairs: [],
+      origin: shortAnswer ? "absent" : "not_applicable",
+    },
+    body: shortAnswer
+      ? [question, { segments: [{ kind: "gap", gap_id: "gap_001" }] }]
+      : [question],
     choices: [],
-    gaps: [],
+    gaps: shortAnswer
+      ? [
+          {
+            gap_id: "gap_001",
+            accepted_values: [],
+            automatic_values: [],
+            excluded_automatic_values: [],
+          },
+        ]
+      : [],
     item_id: itemId,
-    kind: "free_text",
+    kind: shortAnswer ? "gap_fill" : "free_text",
     match_left: [],
     match_right: [],
     points: null,
@@ -455,5 +571,6 @@ export function newTeacherItem(itemId: string, sequence: number): NativeExamItem
     },
     sequence,
     source_anchor: null,
+    tick_points: null,
   };
 }
