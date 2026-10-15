@@ -93,7 +93,7 @@ const MARK_SHORTCUTS: Partial<Record<BodyMark, string>> = {
     </button>
     <template v-if="showHeadings">
       <span
-        class="mx-1 h-5 w-px bg-navy/20"
+        class="mx-1.5 h-5 w-px bg-navy/40"
         aria-hidden="true"
       />
       <button
