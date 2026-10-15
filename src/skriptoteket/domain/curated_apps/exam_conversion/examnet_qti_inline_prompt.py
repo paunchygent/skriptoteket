@@ -1,4 +1,4 @@
-"""QTI 2.1 inline prompt rendering for Exam.net-oriented assessment items.
+"""QTI 3.0 inline prompt rendering for Exam.net-oriented assessment items.
 
 Purpose:
     Render one item's inline content: interaction prompts and rich gap-fill
@@ -103,10 +103,10 @@ def _append_prompt_gap(
     gap = item.text_entry_gaps[gap_index]
     return ElementTree.SubElement(
         parent,
-        qti_tag("textEntryInteraction"),
+        qti_tag("qti-text-entry-interaction"),
         {
-            "responseIdentifier": gap.response_identifier,
-            "expectedLength": _expected_text_entry_length(gap),
+            "response-identifier": gap.response_identifier,
+            "expected-length": _expected_text_entry_length(gap),
         },
     )
 
@@ -116,7 +116,7 @@ def append_interaction_prompt(
     item: ExamNetQtiItem,
     image_paths: tuple[str, ...],
 ) -> None:
-    prompt = ElementTree.SubElement(interaction, qti_tag("prompt"))
+    prompt = ElementTree.SubElement(interaction, qti_tag("qti-prompt"))
     if item.prompt_paragraphs:
         _append_prompt_paragraphs(prompt, item, image_paths)
         return
@@ -257,10 +257,10 @@ def _append_labeled_gap(parent: ElementTree.Element, gap: ExamNetQtiTextEntryGap
     paragraph.text = f"{gap.label}: "
     ElementTree.SubElement(
         paragraph,
-        qti_tag("textEntryInteraction"),
+        qti_tag("qti-text-entry-interaction"),
         {
-            "responseIdentifier": gap.response_identifier,
-            "expectedLength": _expected_text_entry_length(gap),
+            "response-identifier": gap.response_identifier,
+            "expected-length": _expected_text_entry_length(gap),
         },
     )
 
@@ -306,10 +306,10 @@ def _append_gap_prompt_line(
         else:
             tail_target = ElementTree.SubElement(
                 paragraph,
-                qti_tag("textEntryInteraction"),
+                qti_tag("qti-text-entry-interaction"),
                 {
-                    "responseIdentifier": gap.response_identifier,
-                    "expectedLength": _expected_text_entry_length(gap),
+                    "response-identifier": gap.response_identifier,
+                    "expected-length": _expected_text_entry_length(gap),
                 },
             )
             consumed += 1

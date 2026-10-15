@@ -86,17 +86,17 @@ def test_public_inline_renderers_render_without_item_serialization() -> None:
         text_entry_gaps=(_gap(1, ("alfa",)),),
         image_resources=(_image(1, "Bild 1"),),
     )
-    body = ElementTree.Element(_tag("itemBody"))
+    body = ElementTree.Element(_tag("qti-item-body"))
 
     append_interaction_prompt(body, item, (_IMAGE_PATHS[0],))
 
-    prompt = body.find(_tag("prompt"))
+    prompt = body.find(_tag("qti-prompt"))
     assert prompt is not None
     assert prompt.text == "Före "
     gap_entry, image = list(prompt)
     assert gap_entry.attrib == {
-        "responseIdentifier": "RESPONSE_gap_001",
-        "expectedLength": "8",
+        "response-identifier": "RESPONSE_gap_001",
+        "expected-length": "8",
     }
     assert gap_entry.tail is None
     assert image.attrib == {"src": _IMAGE_PATHS[0], "alt": "Bild 1"}
@@ -123,7 +123,7 @@ def test_rich_free_text_prompt_places_the_image_between_its_text_runs() -> None:
 
     root = _root(item, (_IMAGE_PATHS[0],))
 
-    prompt = root.find(f".//{_tag('prompt')}")
+    prompt = root.find(f".//{_tag('qti-prompt')}")
     assert prompt is not None
     assert prompt.text == "Beskriv: "
     assert [child.tag for child in prompt] == [_tag("img")]
@@ -152,7 +152,7 @@ def test_rich_prompt_repeated_image_occurrences_use_their_own_resource_index() -
 
     root = _root(item, _IMAGE_PATHS)
 
-    prompt = root.find(f".//{_tag('prompt')}")
+    prompt = root.find(f".//{_tag('qti-prompt')}")
     assert prompt is not None
     assert [child.attrib["src"] for child in prompt] == list(_IMAGE_PATHS)
     assert [child.attrib["alt"] for child in prompt] == ["Bild 1", "Bild 2"]
@@ -185,7 +185,7 @@ def test_rich_gap_fill_body_keeps_gap_and_image_segment_order() -> None:
 
     root = _root(item, (_IMAGE_PATHS[0],))
 
-    body = root.find(_tag("itemBody"))
+    body = root.find(_tag("qti-item-body"))
     assert body is not None
     paragraphs = body.findall(_tag("p"))
     assert len(paragraphs) == 1
@@ -193,15 +193,15 @@ def test_rich_gap_fill_body_keeps_gap_and_image_segment_order() -> None:
     assert paragraph.text == "Före "
     children = list(paragraph)
     assert [child.tag for child in children] == [
-        _tag("textEntryInteraction"),
-        _tag("textEntryInteraction"),
+        _tag("qti-text-entry-interaction"),
+        _tag("qti-text-entry-interaction"),
         _tag("img"),
     ]
-    assert [child.attrib["responseIdentifier"] for child in children[:2]] == [
+    assert [child.attrib["response-identifier"] for child in children[:2]] == [
         "RESPONSE_gap_001",
         "RESPONSE_gap_002",
     ]
-    assert [child.attrib["expectedLength"] for child in children[:2]] == ["8", "8"]
+    assert [child.attrib["expected-length"] for child in children[:2]] == ["8", "8"]
     assert children[0].tail == " och "
     assert children[1].tail == " med "
     assert children[2].attrib == {"src": _IMAGE_PATHS[0], "alt": "Bild 1"}
@@ -223,14 +223,14 @@ def test_rich_gap_fill_body_appends_only_unplaced_gaps() -> None:
 
     root = _root(item)
 
-    body = root.find(_tag("itemBody"))
+    body = root.find(_tag("qti-item-body"))
     assert body is not None
     paragraphs = body.findall(_tag("p"))
     assert len(paragraphs) == 2
     assert paragraphs[0].text == "Endast "
-    assert paragraphs[0][0].attrib["responseIdentifier"] == "RESPONSE_gap_001"
+    assert paragraphs[0][0].attrib["response-identifier"] == "RESPONSE_gap_001"
     assert paragraphs[1].text == "Lucka 2: "
-    assert paragraphs[1][0].attrib["responseIdentifier"] == "RESPONSE_gap_002"
+    assert paragraphs[1][0].attrib["response-identifier"] == "RESPONSE_gap_002"
 
 
 def test_rich_gap_fill_child_uses_qualified_response_identifiers() -> None:
@@ -263,16 +263,16 @@ def test_rich_gap_fill_child_uses_qualified_response_identifiers() -> None:
 
     root = _root(parent)
 
-    declarations = root.findall(_tag("responseDeclaration"))
+    declarations = root.findall(_tag("qti-response-declaration"))
     assert [declaration.attrib["identifier"] for declaration in declarations] == [
         "child_1_SEPARATOR",
         "child_1_RESPONSE_gap_001",
     ]
-    entries = root.findall(f".//{_tag('textEntryInteraction')}")
+    entries = root.findall(f".//{_tag('qti-text-entry-interaction')}")
     assert len(entries) == 1
     assert entries[0].attrib == {
-        "responseIdentifier": "child_1_RESPONSE_gap_001",
-        "expectedLength": "8",
+        "response-identifier": "child_1_RESPONSE_gap_001",
+        "expected-length": "8",
     }
     assert entries[0].tail == " här."
 
@@ -289,7 +289,7 @@ def test_positionless_prompts_still_append_images() -> None:
     )
     free_text_root = _root(free_text, (_IMAGE_PATHS[0],))
 
-    prompt = free_text_root.find(f".//{_tag('prompt')}")
+    prompt = free_text_root.find(f".//{_tag('qti-prompt')}")
     assert prompt is not None
     assert prompt.text == "Beskriv bilden."
     assert [child.tag for child in prompt] == [_tag("img")]
@@ -307,12 +307,12 @@ def test_positionless_prompts_still_append_images() -> None:
     )
     gap_fill_root = _root(gap_fill, (_IMAGE_PATHS[0],))
 
-    body = gap_fill_root.find(_tag("itemBody"))
+    body = gap_fill_root.find(_tag("qti-item-body"))
     assert body is not None
     paragraphs = body.findall(_tag("p"))
     assert len(paragraphs) == 2
     assert paragraphs[0].text == "Fyll i "
-    assert paragraphs[0][0].tag == _tag("textEntryInteraction")
+    assert paragraphs[0][0].tag == _tag("qti-text-entry-interaction")
     assert paragraphs[1][0].tag == _tag("img")
     assert paragraphs[1][0].attrib["src"] == _IMAGE_PATHS[0]
 
@@ -334,7 +334,7 @@ def test_rich_multiple_paragraphs_use_p_children_and_lf_breaks_use_br() -> None:
 
     root = _root(item, (_IMAGE_PATHS[0],))
 
-    prompt = root.find(f".//{_tag('prompt')}")
+    prompt = root.find(f".//{_tag('qti-prompt')}")
     assert prompt is not None
     assert (prompt.text or "").strip() == ""
     paragraphs = prompt.findall(_tag("p"))

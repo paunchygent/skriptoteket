@@ -81,4 +81,4 @@ def first_manual_follow_up(report: dict[str, object]) -> dict[str, object]:
 
 
 def item_body_paragraphs(item: ElementTree.Element) -> list[ElementTree.Element]:
-    return item.findall(f"{{{QTI_NAMESPACE}}}itemBody/{{{QTI_NAMESPACE}}}p")
+    return item.findall(f"{{{QTI_NAMESPACE}}}qti-item-body/{{{QTI_NAMESPACE}}}p")

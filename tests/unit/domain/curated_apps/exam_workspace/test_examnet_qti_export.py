@@ -253,18 +253,20 @@ class TestGapFillMapping:
             serialize_qti_assessment_item(qti_item, image_paths=("../images/diagram.png",)),
         )
         placed = tuple(
-            element.attrib["responseIdentifier"]
+            element.attrib["response-identifier"]
             for element in root.iter()
-            if element.tag.rsplit("}", 1)[-1] == "textEntryInteraction"
+            if element.tag.rsplit("}", 1)[-1] == "qti-text-entry-interaction"
         )
         prefix = "item_001_" if shared_parent else ""
         assert placed == (f"{prefix}RESPONSE_gap_002", f"{prefix}RESPONSE_gap_001")
         declarations = {
             element.attrib["identifier"]: tuple(
-                child.text for child in element.iter() if child.tag.rsplit("}", 1)[-1] == "value"
+                child.text
+                for child in element.iter()
+                if child.tag.rsplit("}", 1)[-1] == "qti-value"
             )
             for element in root.iter()
-            if element.tag.rsplit("}", 1)[-1] == "responseDeclaration"
+            if element.tag.rsplit("}", 1)[-1] == "qti-response-declaration"
         }
         assert declarations[placed[0]] == ("beta",)
         assert declarations[placed[1]] == ("alpha",)
@@ -366,12 +368,12 @@ class TestGapFillMapping:
         correct_values = tuple(
             child.text
             for element in root.iter()
-            if element.tag.rsplit("}", 1)[-1] == "correctResponse"
+            if element.tag.rsplit("}", 1)[-1] == "qti-correct-response"
             for child in element
-            if child.tag.rsplit("}", 1)[-1] == "value"
+            if child.tag.rsplit("}", 1)[-1] == "qti-value"
         )
         assert correct_values == ("NF", "NE")
-        assert [e for e in root.iter() if e.tag.rsplit("}", 1)[-1] == "mapping"] == []
+        assert [e for e in root.iter() if e.tag.rsplit("}", 1)[-1] == "qti-mapping"] == []
 
 
 class TestAssetMapping:

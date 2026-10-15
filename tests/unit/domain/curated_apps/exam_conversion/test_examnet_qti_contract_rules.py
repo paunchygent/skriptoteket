@@ -3,7 +3,7 @@
 Purpose:
     Prove that the local package preflight rejects refuted constructions:
     non-positive map entries, orphaned scoring, uncovered matching left rows,
-    missing assessmentTest wiring, and shuffle delivery attributes.
+    missing qti-assessment-test wiring, and shuffle delivery attributes.
 
 Relationships:
     - Mutates deterministic sample package plans from the domain planner and
@@ -57,7 +57,7 @@ def test_non_positive_map_entry_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
-        lambda xml: _replaced(xml, 'mappedValue="4"', 'mappedValue="0"'),
+        lambda xml: _replaced(xml, 'mapped-value="4"', 'mapped-value="0"'),
     )
 
     report = _preflight(plan, package_bytes)
@@ -71,13 +71,13 @@ def test_mapping_without_correct_response_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
-        lambda xml: _regex_removed(xml, r"<correctResponse>.*?</correctResponse>"),
+        lambda xml: _regex_removed(xml, r"<qti-correct-response>.*?</qti-correct-response>"),
     )
 
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "mapping without correctResponse" in report.errors[0]
+    assert "qti-mapping without qti-correct-response" in report.errors[0]
 
 
 def test_shuffle_attribute_fails_preflight() -> None:
@@ -87,8 +87,8 @@ def test_shuffle_attribute_fails_preflight() -> None:
         "items/item_001.xml",
         lambda xml: _replaced(
             xml,
-            'responseIdentifier="RESPONSE" maxChoices="1"',
-            'responseIdentifier="RESPONSE" shuffle="false" maxChoices="1"',
+            'response-identifier="RESPONSE" max-choices="1"',
+            'response-identifier="RESPONSE" shuffle="false" max-choices="1"',
         ),
     )
 
@@ -103,7 +103,7 @@ def test_matching_left_choice_without_association_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
-        lambda xml: _regex_removed(xml, r"\s*<value>left_004 right_004</value>"),
+        lambda xml: _regex_removed(xml, r"\s*<qti-value>left_004 right_004</qti-value>"),
     )
 
     report = _preflight(plan, package_bytes)
@@ -117,13 +117,13 @@ def test_missing_assessment_test_resource_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "imsmanifest.xml",
-        lambda xml: _replaced(xml, 'type="imsqti_test_xmlv2p1"', 'type="imsqti_item_xmlv2p1"'),
+        lambda xml: _replaced(xml, 'type="imsqti_test_xmlv3p0"', 'type="imsqti_item_xmlv3p0"'),
     )
 
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "exactly one imsqti_test_xmlv2p1 resource" in report.errors[0]
+    assert "exactly one imsqti_test_xmlv3p0 resource" in report.errors[0]
 
 
 def test_missing_item_dependency_fails_preflight() -> None:
@@ -151,7 +151,7 @@ def test_unresolved_assessment_item_ref_fails_preflight() -> None:
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "assessmentItemRef href items/missing.xml does not resolve" in report.errors[0]
+    assert "qti-assessment-item-ref href items/missing.xml does not resolve" in report.errors[0]
 
 
 def test_package_root_image_src_fails_preflight() -> None:
@@ -183,7 +183,7 @@ def test_match_correct_template_fails_preflight() -> None:
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "match_correct responseProcessing template" in report.errors[0]
+    assert "match_correct qti-response-processing template" in report.errors[0]
 
 
 def test_unreferenced_item_resource_fails_preflight() -> None:
@@ -191,13 +191,13 @@ def test_unreferenced_item_resource_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "assessment.xml",
-        lambda xml: _regex_removed(xml, r"\s*<assessmentItemRef [^>]*/>"),
+        lambda xml: _regex_removed(xml, r"\s*<qti-assessment-item-ref [^>]*/>"),
     )
 
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "not referenced by an assessmentItemRef" in report.errors[0]
+    assert "not referenced by a qti-assessment-item-ref" in report.errors[0]
 
 
 def test_missing_interaction_prompt_fails_preflight() -> None:
@@ -205,13 +205,13 @@ def test_missing_interaction_prompt_fails_preflight() -> None:
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
-        lambda xml: _regex_removed(xml, r"\s*<prompt>.*?</prompt>"),
+        lambda xml: _regex_removed(xml, r"\s*<qti-prompt>.*?</qti-prompt>"),
     )
 
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "choiceInteraction must carry a non-empty prompt" in report.errors[0]
+    assert "qti-choice-interaction must carry a non-empty prompt" in report.errors[0]
 
 
 def test_sibling_body_content_before_interaction_fails_preflight() -> None:
@@ -221,8 +221,8 @@ def test_sibling_body_content_before_interaction_fails_preflight() -> None:
         "items/item_001.xml",
         lambda xml: _replaced(
             xml,
-            "<itemBody>",
-            "<itemBody><p>[STRAY] sibling stem before the interaction</p>",
+            "<qti-item-body>",
+            "<qti-item-body><p>[STRAY] sibling stem before the interaction</p>",
         ),
     )
 

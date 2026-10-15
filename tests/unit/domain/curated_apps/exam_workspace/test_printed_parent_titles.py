@@ -155,7 +155,7 @@ async def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(st
         exported = native_exam_to_examnet_qti_items(changed, assets_by_id={_ASSET.asset_id: _PNG})
         (qti,) = [entry for entry in exported if entry.image_resources]
         xml = ElementTree.fromstring(serialize_qti_assessment_item(qti, image_paths=("image.png",)))
-        body = xml.find("{*}itemBody")
+        body = xml.find("{*}qti-item-body")
         assert body is not None
         alts = [node.attrib["alt"] for node in body.iter() if node.tag.endswith("}img")]
         assert alts == [f"{labels.image} 1"], (stem, item.printed_label)

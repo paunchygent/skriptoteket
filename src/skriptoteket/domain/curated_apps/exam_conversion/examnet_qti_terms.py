@@ -1,4 +1,4 @@
-"""QTI 2.1 namespace vocabulary shared by the Exam.net item builders.
+"""QTI 3.0 namespace vocabulary shared by the Exam.net item builders.
 
 Purpose:
     Own the namespace identifiers, schema locations and element-name helpers so
@@ -12,12 +12,14 @@ Relationships:
 
 from __future__ import annotations
 
-QTI_NAMESPACE = "http://www.imsglobal.org/xsd/imsqti_v2p1"
+QTI_NAMESPACE = "http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
 QTI_SCHEMA_LOCATION = (
-    "http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd"
+    "http://www.imsglobal.org/xsd/imsqtiasi_v3p0 "
+    "https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 )
-MAP_RESPONSE_TEMPLATE = "http://www.imsglobal.org/question/qti_v2p1/rptemplates/map_response"
+MAP_RESPONSE_TEMPLATE = "https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"
+MATCH_CORRECT_TEMPLATE = "https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml"
 
 
 def qti_tag(local_name: str) -> str:
