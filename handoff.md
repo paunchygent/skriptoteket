@@ -21,9 +21,10 @@
     poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
     that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
     next: route them under story item 3.
-  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `done` (user closure 2026-10-12, staging walk `63de8094`, retained
-    `evidence/staging-walk/walk-63de8094.md`).
+  - [TASK-SKRIPT-39-05-11](docs/backlog/tasks/task-skript-39-05-11-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
+    `in_progress` (Claude parent, retained `01a13f01-f1dc-7614-beb6-76a946b50b74`):
+    fixture f2b78632 and editor split 34045206, review r2 approved. Next: merge,
+    push main, staging walk editing a matching pair; record the walk here.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
