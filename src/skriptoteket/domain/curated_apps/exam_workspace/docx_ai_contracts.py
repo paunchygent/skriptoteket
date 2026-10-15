@@ -177,6 +177,10 @@ class ProducedItem(_Produced):
     def _pairs_name_entries(self) -> "ProducedItem":
         if self.facit_text is not None and not self.facit_text.strip():
             raise ValueError("facit_text must contain the teacher's wording")
+        # Admission builds only a converted reply; a review or type_conflict reply gives only
+        # its anchors, reason and kind, so its key fields cannot reject it.
+        if self.outcome != "converted":
+            return self
         if self.key_source in {"copied", "interpreted"} and self.facit_text is None:
             raise ValueError("a facit-derived key requires facit_text")
         if self.key_source == "invented" and self.facit_text is not None:

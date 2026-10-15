@@ -153,7 +153,11 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
     }
     produced = {}
     for request in replay.provider.requests:
-        if not request.item_id.startswith("docx_w"):
+        # A type_conflict resend has no recording; the replay fails it and admission keeps the
+        # question's source review item, which no producer item backs.
+        if not request.item_id.startswith("docx_w") or (
+            request.item_id not in replay.provider.recording_ids
+        ):
             continue
         for raw in _list(recording(exam, replay.provider.recording_ids[request.item_id])["items"]):
             node = _object(raw)

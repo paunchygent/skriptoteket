@@ -1,11 +1,12 @@
 """A question that conflicts twice is resent once, then kept as converted with the type mark.
 
-The fresh english-exam recording holds q43's reply as a ``type_conflict`` whose key is
-incomplete, so the plain replay refuses it at the provenance validator. This test serves
-the same raw reply from memory with its key state made consistent, and synthesizes the one
-resend in memory from it (explicitly synthetic; the raw recordings are untouched). The
-resend reports the other kind again, so the question is kept as converted with the kind the
-source shows, exactly one resend, and the type-check mark.
+The fresh english-exam recording holds q43's reply as a ``type_conflict`` that states a key
+source over an incomplete key. Admission uses only a conflict's anchors and kind, so that raw
+reply is served unchanged and still causes the resend. The one resend is synthesized in
+memory (explicitly synthetic; the raw recordings are untouched). It reports the other kind
+again, so the question is kept as converted with the kind the source shows, exactly one
+resend, and the type-check mark. A kept reply is built like a converted one: a kept reply
+whose key breaks the converted rules becomes the question's source review item.
 """
 
 from __future__ import annotations
@@ -49,16 +50,11 @@ def _item(content: Mapping[str, JsonValue]) -> dict[str, JsonValue]:
     return item
 
 
-def _first_conflict(content: dict[str, JsonValue]) -> dict[str, JsonValue]:
-    """The current raw conflict reply with an empty objective key's source left unstated."""
-    item = _item(content)
-    assert item["outcome"] == "type_conflict"
-    assert item["conflict_kind"] == _CONFLICT_KIND
-    item["key_source"] = None
-    return content
+def _recorded_conflict() -> dict[str, JsonValue]:
+    return _item(recording(_EXAM, _RECORDED))
 
 
-def _resend() -> dict[str, JsonValue]:
+def _resend(*, gap_values: list[str]) -> dict[str, JsonValue]:
     """The one synthesized resend: the current raw reply stating the other kind again."""
     content = copy.deepcopy(recording(_EXAM, _RECORDED))
     item = _item(content)
@@ -81,7 +77,7 @@ def _resend() -> dict[str, JsonValue]:
                     {
                         "kind": "gap",
                         "text": None,
-                        "accepted_values": ["its"],
+                        "accepted_values": list[JsonValue](gap_values),
                         "asset_id": None,
                     },
                     {
@@ -98,7 +94,11 @@ def _resend() -> dict[str, JsonValue]:
 
 
 class _ConflictedReplies(ReplayProvider):
-    """Serve the fresh recordings with q43's reply and its one resend rewritten in memory."""
+    """Serve the fresh recordings unchanged and q43's one resend from memory."""
+
+    def __init__(self, exam: str, *, gap_values: list[str]) -> None:
+        super().__init__(exam)
+        self.gap_values = gap_values
 
     async def complete_structured(
         self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
@@ -107,23 +107,25 @@ class _ConflictedReplies(ReplayProvider):
             self.requests.append(request)
             self.recording_ids[request.item_id] = f"synthetic_{_RECORDED}c01"
             return StructuredLLMResponse(
-                content=_resend(), finish_reason="completed", usage=StructuredLLMUsage()
+                content=_resend(gap_values=self.gap_values),
+                finish_reason="completed",
+                usage=StructuredLLMUsage(),
             )
-        response = await super().complete_structured(request=request, profile=profile)
-        if self.recording_ids.get(request.item_id) != _RECORDED:
-            return response
-        content = copy.deepcopy(response.content)
-        assert isinstance(content, dict)
-        return StructuredLLMResponse(
-            content=_first_conflict(content),
-            finish_reason=response.finish_reason,
-            usage=response.usage,
-        )
+        return await super().complete_structured(request=request, profile=profile)
 
 
-async def _convert():
-    replay = build_replay(_EXAM, provider=_ConflictedReplies(_EXAM))
+async def _convert(gap_values: list[str] | None = None):
+    provider = _ConflictedReplies(_EXAM, gap_values=["its"] if gap_values is None else gap_values)
+    replay = build_replay(_EXAM, provider=provider)
     return replay, await replay.pipeline.convert(job=replay.job())
+
+
+def test_the_recorded_conflict_states_a_key_source_over_an_incomplete_key():
+    item = _recorded_conflict()
+
+    assert item["outcome"] == "type_conflict"
+    assert item["conflict_kind"] == _CONFLICT_KIND
+    assert item["key_source"] is not None
 
 
 async def test_a_second_type_conflict_is_not_resent_again():
@@ -164,3 +166,15 @@ async def test_every_grouped_question_still_maps_to_items_with_no_shared_anchor(
     assert len(set(anchors)) == len(anchors), "a chunk anchor starts two items"
     position = {c.anchor: n for n, c in enumerate(corpus_chunks(_EXAM))}
     assert [position[a or ""] for a in anchors] == sorted(position[a or ""] for a in anchors)
+
+
+async def test_a_kept_reply_whose_key_breaks_the_converted_rules_is_its_source_review():
+    # A copied key source over a gap without accepted values is no converted item.
+    _, outcome = await _convert(gap_values=[])
+
+    document = outcome.update.document
+    (item,) = [i for i in document.items if i.source_anchor == _CONFLICTED]
+    assert item.review.reasons
+    codes = [e.code for e in outcome.result.events]
+    assert codes.count("type_conflict_kept") == 1
+    assert "item_unparsed" in codes

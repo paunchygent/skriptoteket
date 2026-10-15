@@ -255,8 +255,18 @@ def _admit_item(
         # A resent question that conflicts again is kept as converted, as the kind the source
         # shows, with the type-check mark.
         state.record("admission", "type_conflict_kept", item=index, anchors=anchors, detail=kind)
+        try:
+            # The kept reply is built like a converted one, so it meets the converted rules.
+            produced = ProducedItem.model_validate(
+                {**produced.model_dump(), "outcome": "converted", "kind": kind}
+            )
+        except ValidationError as error:
+            detail = validation_detail(error)
+            state.accepted.append(
+                _source_review(index, anchors, state, seen, "item_unparsed", detail)
+            )
+            return
         state.kept_conflicts.update(anchors)
-        produced = produced.model_copy(update={"kind": kind})
     if produced.outcome == "review":
         cause = produced.review_reason or "ingen orsak angavs"
         reason = f"AI-tolkningen markerade frågan för granskning: {cause}"
