@@ -177,6 +177,24 @@ def test_wholly_omitted_marked_paragraph_is_rebuilt_not_silently_lost():
     assert source.path == "rebuilt"
 
 
+@pytest.mark.parametrize("label", ["Correct answer:", "Correct answers:", "Svar:", "Facit:"])
+def test_an_omitted_facit_paragraph_is_never_rebuilt_into_the_body(label):
+    # Live Diagnostic 85 2026-10-16: an omitted "Correct answer:" line was rebuilt as text.
+    chunks = (_source(("Läs frågan.", ())), _source((f"{label} ", ()), ("svaret", ("italic",))))
+    source = SourceFormatting(chunks)
+    body = formatted_text("Läs frågan.", source)
+    with pytest.raises(FormattingTransferError, match="expose facit wording"):
+        complete_source_formatting(
+            chunks,
+            (source,),
+            source,
+            body,
+            printed_label=None,
+            answers={},
+            can_rebuild_body=True,
+        )
+
+
 def test_flattened_table_rows_keep_separators_and_each_cell_mark():
     text = "a | b\nc | d"
     chunk = DocxChunk(

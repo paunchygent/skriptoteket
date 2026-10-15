@@ -74,13 +74,15 @@ class _HoldAllBatches(ReplayProvider):
         )
 
 
-async def test_a_104_family_exam_reserves_every_batch_at_once_under_the_default_daily_limit(
+async def test_a_104_family_exam_in_one_family_batches_reserves_them_all_under_the_daily_limit(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
+    # One family per batch is the most batches an exam can hold at once.
     settings = Settings.model_construct(
-        LLM_ANSWER_KEY_ENABLED=True, OPENAI_LLM_ANSWER_KEY_API_KEY=_API_KEY
+        LLM_ANSWER_KEY_ENABLED=True,
+        OPENAI_LLM_ANSWER_KEY_API_KEY=_API_KEY,
+        LLM_DOCX_BATCH_FAMILIES=1,
     )
-    assert settings.LLM_DOCX_BATCH_FAMILIES == 1
     provider = _HoldAllBatches()
     progress = RecordingProgress()
     now = datetime.now(UTC)

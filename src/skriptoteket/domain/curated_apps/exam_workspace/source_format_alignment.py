@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_gap_alignment import gap_spans
 
 # Existing inline-key recognition shared by projection and source ownership.
-ANSWER_LABEL = re.compile(r"\b(?:svar|facit|answer key)\s*:", re.IGNORECASE)
+ANSWER_LABEL = re.compile(r"\b(?:svar|facit|answer key|correct answers?)\s*:", re.IGNORECASE)
 
 
 def align_paragraph(

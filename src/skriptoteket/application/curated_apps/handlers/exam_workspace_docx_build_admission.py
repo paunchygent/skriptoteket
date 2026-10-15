@@ -223,6 +223,11 @@ def _with_left_out(
         for c in state.pending
         if c.anchor in own and c.anchor not in item_held and c.anchor not in seen
     )
+    # A left-out chunk the grouping lists as the question's facit is its answer key.
+    keys = {a for a in left_out if a in state.grouped_keys}
+    state.key_anchors.update(keys)
+    seen.update(keys)
+    left_out = tuple(a for a in left_out if a not in keys)
     if not left_out:
         return admitted
     seen.update(left_out)
@@ -302,6 +307,7 @@ def _admit_item(
         context = definition_context(state.chunks, anchors, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+        shown -= (state.key_anchors | state.grouped_keys) - set(anchors)
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
         item = native_item(
             with_printed_points(with_accepted_forms(produced, context), own),

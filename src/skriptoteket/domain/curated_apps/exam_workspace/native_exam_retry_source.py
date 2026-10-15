@@ -237,11 +237,13 @@ def retry_sources_by_anchor(
     sources: dict[str, NativeExamRetrySource] = {}
     for family in families:
         question_id = family.question_id
-        own = set(own_anchors.get(question_id, ()))
         keys = set(key_anchors.get(question_id, ()))
-        context = (family.claims - own - keys) | family.reads
+        # An own chunk the grouping also marks as facit is stored as a key; the retry's item
+        # may still hold it as question text.
+        own_listed = tuple(a for a in own_anchors.get(question_id, ()) if a not in keys)
+        context = (family.claims - set(own_listed) - keys) | family.reads
         source = question_retry_source(
-            own_anchors=own_anchors.get(question_id, ()),
+            own_anchors=own_listed,
             key_anchors=key_anchors.get(question_id, ()),
             read_anchors=frozenset(context),
             chunks=chunks,

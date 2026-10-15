@@ -178,7 +178,10 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
             "not_applicable" if producer.kind.value == "free_text" else origins[producer.key_source]
         )
         assert item.answer_key.origin.value == expected
-        assert item.facit_text == producer.facit_text
+        # The facit keeps the teacher's wording; the source's italic tags are not wording.
+        facit = producer.facit_text
+        assert item.facit_text == (facit.replace("<i>", "").replace("</i>", "") if facit else facit)
+        assert "<i>" not in (item.facit_text or "")
 
 
 @pytest.mark.parametrize("exam", recorded_exams())

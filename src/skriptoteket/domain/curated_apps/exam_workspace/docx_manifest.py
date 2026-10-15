@@ -157,7 +157,11 @@ def manifest_from_output(
         seen_ids.add(question_id)
         own = placement.claim(anchors)
         if own:
-            kept.append((question_id, own, list(dict.fromkeys(subparts)), placement.claim(keys)))
+            # An own chunk the question also lists as its key stays its own chunk and keeps
+            # the facit mark: it is the question's key unless the converted item holds it.
+            facit = [*dict.fromkeys(k for k in keys if k in own)]
+            claimed = placement.claim(tuple(k for k in keys if k not in own))
+            kept.append((question_id, own, list(dict.fromkeys(subparts)), [*facit, *claimed]))
         else:
             placement.invalid_only(keys)
 
