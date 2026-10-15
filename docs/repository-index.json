@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7a81a18a06c2a308619ba4e8edca498812835f763ca3d15a08982e2cedcaff00",
+  "source_set_digest": "80976b892b3888e782bf771b165d3d5550f2706cc2410dfd1c6581ebb1ad9787",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -983,7 +983,7 @@
       "type": "story",
       "title": "Klassrumskartan tutorial clips in Hjälp with a first-use dialog",
       "path": "docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-08",
       "owners": [
         {
@@ -2583,6 +2583,25 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-08-36-01",
+      "type": "task",
+      "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
+      "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-08-36",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
