@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "36f826db414c0dd274fe1e68e2f383d6d1914dc151eb799969bcf98943a5fcaa",
+  "source_set_digest": "94b7ff6582eb4ab662af485a8c3bcc5b940b803827bd92895a6c1cac1f5192fd",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5182,6 +5182,25 @@
         "decided_at": "2026-10-15",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "User chose \"Merge, push, walk\" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-13",
+      "type": "task",
+      "title": "Item-type conversion prompts built from general principles",
+      "path": "docs/backlog/tasks/task-skript-39-05-13-item-type-conversion-prompts-built-from-general-principles.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
