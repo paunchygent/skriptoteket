@@ -29,7 +29,7 @@ import {
 
 export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
-export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller ett svar i matchningen saknar text.";
+export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 
 export function hasNonPositivePoints(item: NativeExamItem): boolean {
   return typeof item.points === "number" && item.points <= 0;
@@ -80,7 +80,7 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
       items,
       hasEmptyMatchText,
       (refused) =>
-        `${questionSubject(refused)} har rader eller svar i matchningen utan text. Skriv text i varje rad och varje svar.`,
+        `${questionSubject(refused)} har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.`,
     ),
   ].filter((copy): copy is string => copy !== null);
   return refusals.length > 0 ? refusals.join(" ") : null;

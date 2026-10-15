@@ -5,7 +5,7 @@
  * Domain purpose:
  *   Edit one native exam item as the dominating Redigera surface:
  *   points, the question text with inline gaps, choices with the correct
- *   answer, matching lists with the correct right entry per left entry, and
+ *   answer, the Kategorisera grid with its tick value, and
  *   the mark-as-reviewed action. Previous/next and the details
  *   drawer toggle sit in the editor header so moving between questions
  *   never needs the list. Points that are not greater than zero and an
@@ -25,7 +25,7 @@
  *     it cannot move, remove or retype here.
  */
 
-import { computed, useId } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
 import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarning } from "../../../components/icons";
 
@@ -34,17 +34,12 @@ import type {
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
-import {
-  INCOMPLETE_MATCH_KEY_GUIDANCE,
-  isIncompleteMatchingItem,
-} from "./examWorkspaceAnswerKeyRules";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
+import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceMarkingGuideField from "./ExamWorkspaceMarkingGuideField.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
-  EMPTY_MATCH_TEXT_GUIDANCE,
   hasEmptyChoiceText,
-  hasEmptyMatchText,
   hasNonPositivePoints,
   isEmptyChoiceText,
   NON_POSITIVE_POINTS_GUIDANCE,
@@ -91,12 +86,11 @@ const emit = defineEmits<{
     segments: NativeExamBodySegment[],
   ];
   updatePoints: [itemId: string, points: number | null];
+  updateTickPoints: [itemId: string, tickPoints: string];
 }>();
 
 const pointsHintId = useId();
 const choiceHintId = useId();
-const matchHintId = useId();
-const matchKeyHintId = useId();
 
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
 
@@ -117,6 +111,30 @@ function choiceTextClass(choiceId: string, text: string): string {
   return isCorrectChoice(choiceId)
     ? "border-success shadow-[inset_4px_0_0_var(--color-success)]"
     : "border-navy/35";
+}
+
+const isGrid = computed(() => props.item.kind === "matching");
+
+/** A tick value is a positive number with at most 2 decimals (Q10). */
+const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
+
+const tickInvalid = ref(false);
+
+watch(
+  () => props.item.item_id,
+  () => {
+    tickInvalid.value = false;
+  },
+);
+
+/** Keep the last valid tick value in the document; mark the field while the typed value is invalid. */
+function handleTickPointsInput(event: Event): void {
+  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
+  const valid = TICK_POINTS_PATTERN.test(raw) && Number(raw) > 0;
+  tickInvalid.value = !valid;
+  if (valid) {
+    emit("updateTickPoints", props.item.item_id, String(Number(raw)));
+  }
 }
 
 function handlePointsInput(event: Event): void {
@@ -161,31 +179,6 @@ function choiceLetter(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
-function matchTextClass(text: string): string {
-  return isEmptyChoiceText(text) ? "border-warning" : "border-navy/35";
-}
-
-function handleMatchEntryTextInput(side: "left" | "right", entryId: string, event: Event): void {
-  const input = event.target as HTMLInputElement;
-  emit("updateMatchEntryText", props.item.item_id, side, entryId, input.value);
-}
-
-function selectedRightId(leftId: string): string {
-  return props.item.answer_key.match_pairs.find((pair) => pair.left_id === leftId)?.right_id ?? "";
-}
-
-/** Rebuild the full pair list in left order, with the new choice for one left entry. */
-function handleMatchPairSelect(leftId: string, event: Event): void {
-  const select = event.target as HTMLSelectElement;
-  const pairs: NativeExamMatchPair[] = [];
-  for (const left of props.item.match_left) {
-    const rightId = left.left_id === leftId ? select.value : selectedRightId(left.left_id);
-    if (rightId !== "") {
-      pairs.push({ left_id: left.left_id, right_id: rightId });
-    }
-  }
-  emit("updateMatchPairs", props.item.item_id, pairs);
-}
 </script>
 
 <template>
@@ -339,23 +332,50 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
     </div>
 
     <div class="grid gap-3">
-      <label class="grid gap-1 text-xs font-semibold text-navy/80">
-        Poäng
-        <input
-          class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
-          :class="pointsInvalid ? 'border-warning' : 'border-navy/35'"
-          type="number"
-          min="0"
-          step="any"
-          inputmode="decimal"
-          :value="item.points ?? ''"
-          :disabled="disabled"
-          :aria-invalid="pointsInvalid ? 'true' : undefined"
-          :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
-          data-test="exam-workspace-item-points-input"
-          @input="handlePointsInput"
+      <div class="flex flex-wrap items-end gap-3">
+        <label
+          v-if="item.kind === 'matching'"
+          class="grid gap-1 text-xs font-semibold text-navy/80"
         >
-      </label>
+          Poäng per kryss
+          <input
+            class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
+            :class="tickInvalid ? 'border-warning' : 'border-navy/35'"
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            :value="item.tick_points ?? ''"
+            :disabled="disabled"
+            :aria-invalid="tickInvalid ? 'true' : undefined"
+            data-test="exam-workspace-item-tick-points-input"
+            @input="handleTickPointsInput"
+          >
+        </label>
+        <label class="grid gap-1 text-xs font-semibold text-navy/80">
+          Poäng
+          <!-- A grid's points are its tick value times its ticks (Q10), so they are read-only. -->
+          <input
+            class="min-h-10 w-28 border px-3 text-sm font-normal text-navy"
+            :class="[
+              pointsInvalid ? 'border-warning' : 'border-navy/35',
+              isGrid ? 'bg-canvas' : 'bg-panel',
+            ]"
+            type="number"
+            min="0"
+            step="any"
+            inputmode="decimal"
+            :value="item.points ?? ''"
+            :disabled="disabled"
+            :readonly="isGrid"
+            :title="isGrid ? 'Poäng per kryss × antal kryss' : undefined"
+            :aria-invalid="pointsInvalid ? 'true' : undefined"
+            :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
+            data-test="exam-workspace-item-points-input"
+            @input="handlePointsInput"
+          >
+        </label>
+      </div>
       <p
         v-if="hasNonPositivePoints(item)"
         :id="pointsHintId"
@@ -443,92 +463,14 @@ function handleMatchPairSelect(leftId: string, event: Event): void {
       </p>
     </fieldset>
 
-    <fieldset
+    <ExamWorkspaceKategoriseraGrid
       v-if="item.kind === 'matching'"
-      class="grid gap-2"
-    >
-      <legend class="mb-2 text-xs font-semibold text-navy/80">
-        Matchning – välj rätt svar för varje rad
-      </legend>
-      <div
-        v-for="(left, leftIndex) in item.match_left"
-        :key="left.left_id"
-        class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,16rem)]"
-      >
-        <span
-          class="w-5 text-center text-sm font-semibold text-navy/70"
-          aria-hidden="true"
-        >{{ leftIndex + 1 }}</span>
-        <input
-          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="matchTextClass(left.text)"
-          type="text"
-          :value="left.text"
-          :disabled="disabled"
-          :aria-invalid="isEmptyChoiceText(left.text) ? 'true' : undefined"
-          :aria-describedby="isEmptyChoiceText(left.text) ? matchHintId : undefined"
-          :aria-label="`Text för rad ${leftIndex + 1}`"
-          :data-test="`exam-workspace-match-left-text-${left.left_id}`"
-          @input="handleMatchEntryTextInput('left', left.left_id, $event)"
-        >
-        <select
-          class="col-start-2 min-h-10 w-full border border-navy/35 bg-panel px-3 text-base text-navy sm:col-start-auto"
-          :value="selectedRightId(left.left_id)"
-          :disabled="disabled"
-          :aria-label="`Rätt svar för rad ${leftIndex + 1}`"
-          :data-test="`exam-workspace-match-pair-${left.left_id}`"
-          @change="handleMatchPairSelect(left.left_id, $event)"
-        >
-          <option value="">
-            Inget svar valt
-          </option>
-          <option
-            v-for="(right, rightIndex) in item.match_right"
-            :key="right.right_id"
-            :value="right.right_id"
-          >
-            {{ choiceLetter(rightIndex) }} – {{ right.text }}
-          </option>
-        </select>
-      </div>
-      <div
-        v-for="(right, rightIndex) in item.match_right"
-        :key="right.right_id"
-        class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2"
-      >
-        <span
-          class="w-5 text-center text-sm font-semibold text-navy/70"
-          aria-hidden="true"
-        >{{ choiceLetter(rightIndex) }}</span>
-        <input
-          class="min-h-10 w-full border bg-panel px-3 text-base text-navy"
-          :class="matchTextClass(right.text)"
-          type="text"
-          :value="right.text"
-          :disabled="disabled"
-          :aria-invalid="isEmptyChoiceText(right.text) ? 'true' : undefined"
-          :aria-describedby="isEmptyChoiceText(right.text) ? matchHintId : undefined"
-          :aria-label="`Text för svar ${choiceLetter(rightIndex)}`"
-          :data-test="`exam-workspace-match-right-text-${right.right_id}`"
-          @input="handleMatchEntryTextInput('right', right.right_id, $event)"
-        >
-      </div>
-      <p
-        v-if="hasEmptyMatchText(item)"
-        :id="matchHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-        data-test="exam-workspace-match-hint"
-      >
-        {{ EMPTY_MATCH_TEXT_GUIDANCE }}
-      </p>
-      <p
-        v-if="isIncompleteMatchingItem(item)"
-        :id="matchKeyHintId"
-        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-        data-test="exam-workspace-match-key-hint"
-      >
-        {{ INCOMPLETE_MATCH_KEY_GUIDANCE }}
-      </p>
-    </fieldset>
+      :disabled="disabled"
+      :item="item"
+      @update-entry-text="
+        (side, entryId, text) => emit('updateMatchEntryText', item.item_id, side, entryId, text)
+      "
+      @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
+    />
   </section>
 </template>

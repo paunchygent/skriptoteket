@@ -258,7 +258,7 @@ describe("ExamWorkspaceItemDrawer retry control", () => {
       ["single_choice", "Flerval: ett val"],
       ["multiple_response", "Flerval: flera val"],
       ["gap_fill", "Lucktext"],
-      ["matching", "Matchning"],
+      ["matching", "Kategorisera"],
     ]);
   });
 

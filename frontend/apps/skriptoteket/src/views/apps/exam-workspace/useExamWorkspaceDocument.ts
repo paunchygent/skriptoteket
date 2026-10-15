@@ -57,6 +57,7 @@ import {
   withMarkingGuide,
   withMatchEntryText,
   withMatchPairs,
+  withTickPoints,
   withParagraphSegments,
   withPoints,
   withRestoredSuggestion,
@@ -410,6 +411,10 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withMatchPairs(item, pairs));
   }
 
+  function updateItemTickPoints(itemId: string, tickPoints: string): void {
+    patchItem(itemId, (item) => withTickPoints(item, tickPoints));
+  }
+
   function updateItemGapValues(itemId: string, gapId: string, acceptedValues: string[]): void {
     patchItem(itemId, (item) => withGapValues(item, gapId, acceptedValues));
   }
@@ -487,6 +492,7 @@ export function useExamWorkspaceDocument() {
     updateItemMarkingGuide,
     updateItemMatchEntryText,
     updateItemMatchPairs,
+    updateItemTickPoints,
     updateItemPoints,
     workspaceDocument,
   };

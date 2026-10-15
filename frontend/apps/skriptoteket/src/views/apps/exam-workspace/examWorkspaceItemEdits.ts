@@ -95,6 +95,18 @@ export function withMatchEntryText(
       };
 }
 
+/**
+ * A Kategorisera grid's points are its tick value times its ticks (Q10); an
+ * unkeyed grid has no points. Both values carry at most 2 decimals, so the
+ * product is rounded to 2 decimals to drop floating-point noise.
+ */
+function gridPoints(tickPoints: string | null, tickCount: number): number | null {
+  if (tickPoints === null || tickCount === 0) {
+    return null;
+  }
+  return Math.round(Number(tickPoints) * tickCount * 100) / 100;
+}
+
 export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[]): NativeExamItem {
   return {
     ...item,
@@ -103,6 +115,18 @@ export function withMatchPairs(item: NativeExamItem, pairs: NativeExamMatchPair[
       match_pairs: pairs,
       origin: teacherKeyOrigin(pairs.length > 0),
     },
+    points: gridPoints(item.tick_points, pairs.length),
+    points_estimated: false,
+  };
+}
+
+/** Set the grid's value per correct tick; its points follow from the ticks. */
+export function withTickPoints(item: NativeExamItem, tickPoints: string): NativeExamItem {
+  return {
+    ...item,
+    tick_points: tickPoints,
+    points: gridPoints(tickPoints, item.answer_key.match_pairs.length),
+    points_estimated: false,
   };
 }
 
