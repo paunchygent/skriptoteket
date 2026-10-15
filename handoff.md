@@ -29,14 +29,12 @@
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
-  `proposed`, Q1-Q15 planned 2026-10-15 (epic story 8: QTI 3.0 for both
-  lanes, 2.1 deleted, plus the Exam.net routes moved from 39-06). Next: admit
-  to `ready` and implement task 1 (walking skeleton).
+  `active` (QTI 3.0 for both lanes plus the 39-06 routes). Task 1 `done`
+  (merged b6d6b3f4; Exam.net 5333228). Next: task 2 port shapes (images in
+  `items/images/`; uneven points all-or-nothing, user decision 2026-10-15).
 
-- TASK-SKRIPT-39-05-08 `done` 2026-10-14 (merged cc89175b, staging walk at
-  cc89175b; Exam.net import exam 5326264 — evidence in retained
-  `01a13559-bf2e-760d-a690-3a3dea446cd5`). Next: suggestion accuracy as a
-  scored gold-corpus eval metric (user decision 2026-10-13; not scaffolded).
+- TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
+  accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).

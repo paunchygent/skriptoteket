@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested one change on 0b66adff (generator and profile ids still named 2.1) and approved the repair 59bd596a (merged b6d6b3f4). Staging walk at b6d6b3f4: QTI export of document 55aecb08 imported into Exam.net as exam 5333228 with both single-choice keys, the gap answers, the grid and all points as in the workspace. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-01/ and evidence/walk/TASK-SKRIPT-39-09-01/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
   - The staging workspace exports a QTI 3.0 package whose single-choice question Exam.net imports with its key and points

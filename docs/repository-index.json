@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "12071cc4407c44760045fa4f871a9c365939ac1c22026af876077d7b7171124c",
+  "source_set_digest": "e1713b363c8196ad28bb58b1cb629b5acdb76946d869c47dc697fef8fe87c50e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5037,7 +5037,7 @@
       "type": "task",
       "title": "QTI 3.0 walking skeleton: workspace export of a single-choice question imports into Exam.net",
       "path": "docs/backlog/tasks/task-skript-39-09-01-qti-3-0-walking-skeleton-workspace-export-of-a-single-choice-question-imports-into-exam-net.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5048,7 +5048,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested one change on 0b66adff (generator and profile ids still named 2.1) and approved the repair 59bd596a (merged b6d6b3f4). Staging walk at b6d6b3f4: QTI export of document 55aecb08 imported into Exam.net as exam 5333228 with both single-choice keys, the gap answers, the grid and all points as in the workspace. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-01/ and evidence/walk/TASK-SKRIPT-39-09-01/staging-walk.md."
       }
     },
     {
