@@ -4,14 +4,20 @@
  * Expected behavior:
  *   The save refusal copy names every question that breaks a server item
  *   rule, one sentence group per rule in a stable order (partial gap key,
- *   points not greater than zero, choice without text), and is `null` when
+ *   points not greater than zero, choice without text, criteria that lack
+ *   text or points or are not the item's points), and is `null` when
  *   the server would accept every item.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import {
+  CRITERIA_ON_WRONG_KIND_GUIDANCE,
+  CRITERIA_POINTS_MISMATCH_GUIDANCE,
+  examWorkspaceSaveRefusalCopy,
+  INVALID_CRITERION_POINTS_GUIDANCE,
+} from "./examWorkspaceItemSaveRules";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import {
   buildMatchingItem,
@@ -26,7 +32,7 @@ function buildChoiceItem(
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
@@ -145,6 +151,80 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
 
     expect(examWorkspaceSaveRefusalCopy([emptyLeft])).toBe(
       "Fråga 1 har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.",
+    );
+  });
+});
+
+function buildCriteriaItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
+  return {
+    ...buildChoiceItem(1, {
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      choices: [],
+      kind: "free_text",
+      points: 3,
+    }),
+    criteria: [
+      { points: 2, text: "Definition" },
+      { points: 1, text: "Exempel" },
+    ],
+    ...overrides,
+  };
+}
+
+describe("examWorkspaceSaveRefusalCopy for free-text criteria", () => {
+  it("is null when a non-empty criteria list sums to the item's points", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem()])).toBeNull();
+  });
+
+  it("is null for a free-text item without criteria", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem({ criteria: [] })])).toBeNull();
+  });
+
+  it("refuses a criterion whose text is empty or whitespace only", () => {
+    const empty = buildCriteriaItem({
+      criteria: [
+        { points: 2, text: "" },
+        { points: 1, text: "Exempel" },
+      ],
+    });
+    const blank = buildCriteriaItem({
+      criteria: [
+        { points: 2, text: " \n\t " },
+        { points: 1, text: "Exempel" },
+      ],
+      item_id: "item_002",
+      sequence: 2,
+    });
+
+    expect(examWorkspaceSaveRefusalCopy([empty, blank])).toBe(
+      "Frågorna 1 och 2 har ett kriterium utan text. Skriv text i varje kriterium.",
+    );
+  });
+
+  it("refuses criterion points that are not whole or at least 1", () => {
+    const item = buildCriteriaItem({
+      criteria: [
+        { points: 1.5, text: "Definition" },
+        { points: 1.5, text: "Exempel" },
+      ],
+    });
+
+    expect(examWorkspaceSaveRefusalCopy([item])).toBe(
+      `Fråga 1 har ett kriterium med ogiltiga poäng. ${INVALID_CRITERION_POINTS_GUIDANCE}`,
+    );
+  });
+
+  it("refuses a criteria sum that is not the item's points", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem({ points: 2 })])).toBe(
+      `Fråga 1 har kriterier vars poängsumma inte stämmer med frågans poäng. ${CRITERIA_POINTS_MISMATCH_GUIDANCE}`,
+    );
+  });
+
+  it("refuses criteria on a question that is not free text", () => {
+    const item = buildChoiceItem(2, { criteria: [{ points: 1, text: "Definition" }] });
+
+    expect(examWorkspaceSaveRefusalCopy([item])).toBe(
+      `Fråga 2 har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
     );
   });
 });

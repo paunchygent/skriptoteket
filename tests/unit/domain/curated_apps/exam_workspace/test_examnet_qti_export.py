@@ -10,34 +10,51 @@ import pytest
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
+    ExamNetQtiItem,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import QTI_NAMESPACE
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeChoice,
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
-    NativeExamParent,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchPair,
     NativeMatchRight,
-    NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -106,6 +123,56 @@ class TestFreeTextMapping:
         assert qti_item.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
         assert qti_item.free_text_criterion_points is None
         assert qti_item.title == "Fråga 1"
+
+    def test_free_text_criteria_flatten_to_one_point_rows(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.FREE_TEXT,
+            body=_text_body("Resonera om satsdelar."),
+            points=3,
+            criteria=(
+                NativeExamCriterion(text="Ett korrekt exempel.", points=2),
+                NativeExamCriterion(text="En korrekt förklaring.", points=1),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
+            review=_review_complete(),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document((item,)))
+
+        assert qti_item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
+        assert qti_item.evaluation_mode is ExamNetQtiEvaluationMode.AUTOMATIC
+        assert qti_item.max_score == 3
+        assert qti_item.free_text_criterion_points == 1
+        root = ElementTree.fromstring(serialize_qti_assessment_item(qti_item))
+        mapping = root.find(f".//{{{QTI_NAMESPACE}}}qti-mapping")
+        assert mapping is not None
+        assert mapping.attrib == {
+            "default-value": "0",
+            "lower-bound": "0",
+            "upper-bound": "3",
+        }
+        assert [
+            (entry.attrib["map-key"], entry.attrib["mapped-value"])
+            for entry in mapping.findall(f"{{{QTI_NAMESPACE}}}qti-map-entry")
+        ] == [("CRITERION_1", "1"), ("CRITERION_2", "1"), ("CRITERION_3", "1")]
+        package_xml = serialize_qti_assessment_item(qti_item).decode("utf-8")
+        assert "Ett korrekt exempel." not in package_xml
+        assert "En korrekt förklaring." not in package_xml
+
+    def test_an_inconsistent_criterion_ratio_is_a_programming_error(self) -> None:
+        qti_item = ExamNetQtiItem(
+            item_id="item_001",
+            sequence=1,
+            title="Fråga 1",
+            interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+            prompt_lines=("Resonera.",),
+            max_score=4,
+            free_text_criterion_points=3,
+        )
+
+        with pytest.raises(ValueError, match="positive whole number"):
+            serialize_qti_assessment_item(qti_item)
 
 
 class TestChoiceMapping:

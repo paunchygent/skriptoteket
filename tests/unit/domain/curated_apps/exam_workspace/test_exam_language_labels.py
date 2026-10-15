@@ -16,10 +16,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamItem,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
 )
 from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9d971bb1f1e280df2d295d5b15fce7188b171edbed52d3ed1a26377d4274bcd0",
+  "source_set_digest": "1bc231f4ad71280f5a1fc78d690d0b0f013860890a20d80b32649666fbe739bc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5247,6 +5247,25 @@
       "type": "task",
       "title": "Kort svar: Ny fråga creates a one-gap Lucktext after the question text",
       "path": "docs/backlog/tasks/task-skript-39-09-05-kort-svar-ny-fråga-creates-a-one-gap-lucktext-after-the-question-text.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-06",
+      "type": "task",
+      "title": "Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings",
+      "path": "docs/backlog/tasks/task-skript-39-09-06-structured-misspellings-a-deterministic-producer-gives-every-keyed-gap-its-automatic-misspellings.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",

@@ -12,22 +12,34 @@ from scripts.exam_conversion_eval.compare import (
 )
 from scripts.exam_conversion_eval.compare_questions import Question, gold_questions
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
-    NativeExamParent,
-    NativeItemReview,
-    NativeItemReviewState,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchPair,
     NativeMatchRight,
-    NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.scripts.exam_conversion_corpus_support import (

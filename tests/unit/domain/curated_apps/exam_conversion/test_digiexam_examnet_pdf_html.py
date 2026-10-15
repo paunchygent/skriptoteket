@@ -8,7 +8,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_html 
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (

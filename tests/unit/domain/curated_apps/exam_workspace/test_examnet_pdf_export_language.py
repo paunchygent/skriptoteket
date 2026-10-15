@@ -20,13 +20,17 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeExamAsset,
-    NativeExamDocument,
-    NativeExamItemKind,
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,

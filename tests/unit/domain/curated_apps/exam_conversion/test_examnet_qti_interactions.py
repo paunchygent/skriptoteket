@@ -324,7 +324,11 @@ def _item_root(package_path: Path) -> ElementTree.Element:
 
 def _item_xml(package_path: Path) -> str:
     with zipfile.ZipFile(package_path) as archive:
-        item_names = sorted(name for name in archive.namelist() if name.startswith("items/"))
+        item_names = sorted(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         return archive.read(item_names[0]).decode("utf-8")
 
 

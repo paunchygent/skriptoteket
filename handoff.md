@@ -52,8 +52,9 @@
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
   `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`). Task 4 Fritext criteria and task 5
-  Kort svar `in_progress` in their own worktrees.
+  `../Skriptoteket-task-skript-39-09-03`). Tasks 4 (Fritext criteria,
+  in review), 5 (Kort svar) and 6 (structured misspelling producer, R15-R17)
+  `in_progress` in their own worktrees; task 7 export checklist follows.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).

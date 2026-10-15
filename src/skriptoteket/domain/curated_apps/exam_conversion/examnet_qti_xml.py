@@ -72,17 +72,18 @@ def append_response_declaration(
             },
         )
         if item.free_text_criterion_points is not None:
-            points = str(item.free_text_criterion_points)
+            upper_bound, entries = _free_text_mapping(item)
             mapping = ElementTree.SubElement(
                 declaration,
                 qti_tag("qti-mapping"),
-                {"default-value": "0", "lower-bound": "0", "upper-bound": points},
+                {"default-value": "0", "lower-bound": "0", "upper-bound": upper_bound},
             )
-            ElementTree.SubElement(
-                mapping,
-                qti_tag("qti-map-entry"),
-                {"map-key": FREE_TEXT_CRITERION_MAP_KEY, "mapped-value": points},
-            )
+            for criterion_map_key, row_value in entries:
+                ElementTree.SubElement(
+                    mapping,
+                    qti_tag("qti-map-entry"),
+                    {"map-key": criterion_map_key, "mapped-value": row_value},
+                )
             return (response_id,)
         return ()
 
@@ -138,6 +139,38 @@ def append_response_declaration(
             )
         return (response_id,)
     return ()
+
+
+def _free_text_mapping(item: ExamNetQtiItem) -> tuple[str, tuple[tuple[str, str], ...]]:
+    """Return the free text mapping's upper bound and one entry per rule row.
+
+    Exam.net reads the response mapping and writes one rule row per map entry at
+    the entry's own value (probe V110, V126-V128), so a criteria item carries one
+    row's value (1) and the item's total (their sum) and is written as one
+    1-point row per criterion point (Q13). An item without criteria carries its
+    total as the row value, so it stays one row worth its points. Criterion text
+    never enters the package; the map keys are opaque and Exam.net replaces them.
+    A value-total ratio that is not a positive whole number cannot come from
+    either lane and raises instead of encoding a corrupt score.
+    """
+
+    value = item.free_text_criterion_points
+    if value is None:
+        raise ValueError("free text mapping requires a criterion value")
+    per_row = Decimal(str(value))
+    total = Decimal(str(item.max_score)) if item.max_score is not None else per_row
+    if per_row <= 0:
+        raise ValueError("free text mapping row value must be positive")
+    row_count = total / per_row
+    if row_count != row_count.to_integral_value() or row_count < 1:
+        raise ValueError("free text mapping rows must be a positive whole number")
+    upper_bound = str(item.max_score) if item.max_score is not None else str(value)
+    count = int(row_count)
+    if count == 1:
+        return upper_bound, ((FREE_TEXT_CRITERION_MAP_KEY, str(value)),)
+    return upper_bound, tuple(
+        (f"CRITERION_{index}", _format_points(per_row)) for index in range(1, count + 1)
+    )
 
 
 def _append_gap_response_declaration(

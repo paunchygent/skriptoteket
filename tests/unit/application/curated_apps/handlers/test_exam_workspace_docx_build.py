@@ -21,7 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     title_without_answer_key,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

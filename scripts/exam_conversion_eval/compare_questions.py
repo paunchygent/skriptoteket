@@ -9,11 +9,17 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
-    NativeGapSegment,
     NativeItemReviewState,
     NativeParseOrigin,
 )

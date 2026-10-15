@@ -14,23 +14,33 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     proposal_from_model_content,
     suggestion_from_proposal,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeChoice,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
-    NativeGap,
-    NativeGapSegment,
-    NativeItemReview,
-    NativeItemReviewState,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchRight,
-    NativeParagraph,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 
 pytestmark = pytest.mark.unit

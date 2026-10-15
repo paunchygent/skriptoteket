@@ -89,7 +89,10 @@ Exam.net converts on import.
 4. Fritext criteria: the criteria list replaces the marking-guide text in the
    model, conversion and editor, and exports as 1-point rows.
 5. Kort svar: "Ny uppgift" creates a one-gap Lucktext after the question text.
-6. Export checklist: after a QTI export the export panel lists each Fritext
+6. Structured misspellings: one deterministic producer (attested learner
+   errors, hunspell REP reversal, keyboard typos) gives every keyed gap its
+   automatic misspellings, replacing the model's spelling candidates.
+7. Export checklist: after a QTI export the export panel lists each Fritext
    question with its criterion text and each question Q16 or Q17 flags.
 
 ## Verification
@@ -125,3 +128,4 @@ Exam.net converts on import.
 | Q15 | After a QTI export the export panel lists only what Exam.net loses on import: each Fritext question with its criterion text to paste into the row labels or Svarsalternativ, each shared-instruction subquestion scored all-or-nothing with 2 or more points, and each Lucktext with rounded gap values; there is no checklist file (user decisions 2026-10-15). |
 | Q16 | Choice, multiple-response and matching questions whose points do not divide evenly over their correct answers export all-or-nothing: one rule worth the points standalone; Exam.net gives a shared-instruction subquestion 1 point, which Q15 flags (user decisions 2026-10-15, probe r19). |
 | Q17 | A Lucktext whose points do not divide evenly over its gaps gives every gap the same value, the points divided by the gaps rounded down to 2 decimals, flagged by Q15 (user decision 2026-10-15, probe r19).                                           |
+| Q18 | Automatic misspellings come from one deterministic producer, ranked attested learner errors (DaLAJ; Birkbeck and Wikipedia lists), then hunspell REP reversal, then keyboard typos, within the A10 filter; it replaces the model's candidates in DOCX conversion and serves teacher-keyed gaps (user decision 2026-10-15). |

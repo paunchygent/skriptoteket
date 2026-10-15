@@ -33,8 +33,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
@@ -200,7 +202,11 @@ def test_the_joined_picture_reaches_the_packaged_item_at_its_place():
     )
 
     with zipfile.ZipFile(BytesIO(package)) as archive:
-        item_path = next(name for name in archive.namelist() if name.startswith("items/"))
+        item_path = next(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         root = ElementTree.fromstring(archive.read(item_path))
         images = [node for node in root.iter() if node.tag.rsplit("}", 1)[-1] == "img"]
         assert len(images) == 1
@@ -336,7 +342,11 @@ def test_a_shared_heading_with_points_keeps_its_picture_after_normalized_wording
         assets_by_id=built.assets_by_id,
     )
     with zipfile.ZipFile(BytesIO(package)) as archive:
-        path = next(name for name in archive.namelist() if name.startswith("items/"))
+        path = next(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         root = ElementTree.fromstring(archive.read(path))
         (image,) = [node for node in root.iter() if node.tag.rsplit("}", 1)[-1] == "img"]
         paragraph = next(node for node in root.iter() if image in list(node))
@@ -356,7 +366,11 @@ def test_echoed_instruction_text_does_not_replace_its_positioned_picture_content
         assets_by_id=built.assets_by_id,
     )
     with zipfile.ZipFile(BytesIO(package)) as archive:
-        path = next(name for name in archive.namelist() if name.startswith("items/"))
+        path = next(
+            name
+            for name in archive.namelist()
+            if name.startswith("items/") and name.endswith(".xml")
+        )
         root = ElementTree.fromstring(archive.read(path))
         (image,) = [node for node in root.iter() if node.tag.rsplit("}", 1)[-1] == "img"]
         paragraph = next(node for node in root.iter() if image in list(node))

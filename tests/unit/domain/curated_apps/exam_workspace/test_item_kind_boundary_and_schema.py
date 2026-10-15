@@ -19,7 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     GAP_FILL_DEFINITION,
     converter_kind_rule,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (

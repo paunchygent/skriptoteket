@@ -6082,6 +6082,16 @@ export interface components {
             /** Width */
             width?: number | null;
         };
+        /**
+         * NativeExamCriterion
+         * @description One Fritext rubric criterion: its text and its whole points (Q12).
+         */
+        NativeExamCriterion: {
+            /** Points */
+            points: number;
+            /** Text */
+            text: string;
+        };
         /** NativeExamDocument */
         "NativeExamDocument-Input": {
             /**
@@ -6179,6 +6189,11 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice"][];
+            /**
+             * Criteria
+             * @default []
+             */
+            criteria: components["schemas"]["NativeExamCriterion"][];
             /** Facit Text */
             facit_text?: string | null;
             /**
@@ -6189,8 +6204,6 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
-            /** Marking Guide */
-            marking_guide?: string | null;
             /**
              * Match Left
              * @default []
@@ -6230,6 +6243,11 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice"][];
+            /**
+             * Criteria
+             * @default []
+             */
+            criteria: components["schemas"]["NativeExamCriterion"][];
             /** Facit Text */
             facit_text: string | null;
             /**
@@ -6240,8 +6258,6 @@ export interface components {
             /** Item Id */
             item_id: string;
             kind: components["schemas"]["NativeExamItemKind"];
-            /** Marking Guide */
-            marking_guide: string | null;
             /**
              * Match Left
              * @default []

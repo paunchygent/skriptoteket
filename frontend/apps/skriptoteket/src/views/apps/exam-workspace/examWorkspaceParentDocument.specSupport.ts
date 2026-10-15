@@ -49,7 +49,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     tick_points: null,

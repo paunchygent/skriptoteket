@@ -27,9 +27,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics im
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_rendering import (
     answer_key_mismatch,
+    criteria_html,
     gap_answer_key_html,
     item_shell,
-    marking_guide_html,
     missing_answer_key,
     missing_gap_key_labels,
     option_texts_by_id,
@@ -59,7 +59,7 @@ class OpenEndedExamNetPdfItemStrategy:
                     labels=labels,
                     item_type_label=labels.free_text_type_label,
                     instruction="",
-                    body_html=marking_guide_html(item, labels),
+                    body_html=criteria_html(item, labels),
                     item_type_marker=labels.source_item_type_marker,
                 )
             )

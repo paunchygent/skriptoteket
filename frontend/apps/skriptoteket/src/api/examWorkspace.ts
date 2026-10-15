@@ -29,6 +29,7 @@ export type NativeExamBodyParagraph = Schemas["NativeParagraph"];
 export type NativeExamBodySegment = NativeExamBodyParagraph["segments"][number];
 export type NativeExamItemKind = Schemas["NativeExamItemKind"];
 export type NativeExamChoice = Schemas["NativeChoice"];
+export type NativeExamCriterion = Schemas["NativeExamCriterion"];
 export type NativeExamMatchLeft = Schemas["NativeMatchLeft"];
 export type NativeExamMatchRight = Schemas["NativeMatchRight"];
 export type NativeExamMatchPair = Schemas["NativeMatchPair"];

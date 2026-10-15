@@ -62,7 +62,7 @@ export function choiceItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: key, match_pairs: [], origin },
@@ -94,7 +94,7 @@ export function gapItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin },

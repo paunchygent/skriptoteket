@@ -176,7 +176,7 @@ async def test_matching_workspace_job_stores_pairs_for_recorded_unkeyed_items() 
             ("left_002", "right_002"),
             ("left_003", "right_001"),
         ]
-        assert entry.suggestion.prompt_template_version == "workspace_matching_answer_key_prompt_v1"
+        assert entry.suggestion.prompt_template_version == "workspace_matching_answer_key_prompt_v2"
 
 
 async def test_matching_workspace_job_fails_when_a_left_entry_is_left_unpaired() -> None:

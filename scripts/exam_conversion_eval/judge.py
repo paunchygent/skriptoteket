@@ -12,7 +12,9 @@ from pydantic import ValidationError
 from scripts.exam_conversion_eval.compare import compare_native_exam
 from scripts.exam_conversion_eval.gold import GoldExam
 from scripts.exam_conversion_eval.report import print_comparison
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
 )

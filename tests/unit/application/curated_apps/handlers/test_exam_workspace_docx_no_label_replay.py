@@ -23,9 +23,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeParseOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeParseOrigin,
 )
 from tests.unit.application.curated_apps.handlers import docx_pipeline_replay
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

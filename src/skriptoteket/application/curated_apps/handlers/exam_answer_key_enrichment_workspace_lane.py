@@ -59,7 +59,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     proposal_from_model_content,
     suggestion_from_proposal,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
 from skriptoteket.protocols.clock import ClockProtocol

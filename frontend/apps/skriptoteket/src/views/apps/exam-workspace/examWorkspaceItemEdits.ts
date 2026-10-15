@@ -15,17 +15,35 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamAnswerKeyOrigin,
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
+import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
 }
 
-export function withMarkingGuide(item: NativeExamItem, guide: string | null): NativeExamItem {
-  return { ...item, marking_guide: guide };
+/**
+ * Replace the item's criteria. A non-empty list is the teacher's point
+ * breakdown: the item's points become the exact sum of the criterion points
+ * and stop being an estimate from a printed section total.
+ */
+export function withCriteria(
+  item: NativeExamItem,
+  criteria: NativeExamCriterion[],
+): NativeExamItem {
+  if (criteria.length === 0) {
+    return { ...item, criteria };
+  }
+  return {
+    ...item,
+    criteria,
+    points: criteriaPointsTotal(criteria),
+    points_estimated: false,
+  };
 }
 
 /** A points value the teacher sets is no estimate from a section total. */
@@ -356,7 +374,7 @@ export function newTeacherItem(itemId: string, sequence: number): NativeExamItem
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },

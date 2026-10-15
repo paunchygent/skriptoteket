@@ -13,26 +13,25 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxImage,
     DocxMissingImage,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeAnswerKeySuggestion,
     NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeExamRetryChunk,
-    NativeExamRetryImage,
-    NativeExamRetrySource,
-    NativeItemReview,
-    NativeItemReviewState,
-    NativeParagraph,
-    NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetryChunk,
+    NativeExamRetryImage,
+    NativeExamRetrySource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     chunk_from_record,
@@ -44,6 +43,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source im
     source_asset_ids,
     source_review_item,
     with_retry_sources,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeAnswerKeySuggestion,
+    NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
+    NativeItemReviewState,
+    NativeParseOrigin,
 )
 
 pytestmark = pytest.mark.unit
@@ -118,25 +128,6 @@ def _source(
         ),
         label_kind=label_kind,
     )
-
-
-def test_a_retry_image_offset_beyond_the_text_is_rejected():
-    with pytest.raises(ValidationError):
-        NativeExamRetryChunk(
-            anchor="body:0001",
-            kind="drawing",
-            text="ab",
-            marked_text="ab",
-            images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=3, marked_offset=0),),
-        )
-    with pytest.raises(ValidationError):
-        NativeExamRetryChunk(
-            anchor="body:0001",
-            kind="drawing",
-            text="ab",
-            marked_text="ab",
-            images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=3),),
-        )
 
 
 def test_question_source_keeps_own_key_and_context_chunks_in_source_order():

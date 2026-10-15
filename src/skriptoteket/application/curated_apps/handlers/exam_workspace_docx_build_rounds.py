@@ -27,7 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import ma
 from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     converter_kind_rule,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -156,7 +156,7 @@ Rules:
 - Facit words are never student-visible text, whatever the kind, except the units and parts
   gap rule 4 keeps as text. In gap_fill they are the accepted_values of their gaps. In a kind
   without gaps, leave them out of the body, keep the rest of the sentence with its part label,
-  and for free_text copy them, each after its part label, into the marking_guide.
+  and for free_text put them into the criteria, each after its part label.
 - A gap's accepted_values hold the forms the facit gives, including variants it lists as also
   accepted. The converter itself adds each part of a form that joins alternatives with a
   slash, the short form an instruction defines ("short form = term") for a facit term,
@@ -186,10 +186,13 @@ Rules:
   pairs follows the invented key rule. The body holds the question's
   instructions without the lists.
   A matching item has no gaps and no choices; an empty answer cell is no blank.
-- A free_text question's marking_guide copies the teacher's grading guidance for it: the
-  sample answer, criteria or points guidance its facit gives, inline or in answer-key chunks,
-  without the facit label. null when the facit gives none and for every other kind. The
-  guide is never student-visible text.
+- A free_text question's criteria are the grading guidance its answer key states for it, in
+  the key's order: one criterion per criterion the key states, with the whole points the key
+  states for that criterion and its wording copied without the points or the facit label.
+  When the key gives a guide without per-criterion points, copy the whole guide as one
+  criterion with points null. Without such guidance criteria is empty, as for every other
+  kind. Never compute, split or distribute criterion points. Criteria are never
+  student-visible text.
 - The body omits the printed points. A text segment is never empty and never null: a
   printed blank or answer line in a kind without gaps is not the question text and never
   becomes a text segment of its own; the printed question goes in the body.

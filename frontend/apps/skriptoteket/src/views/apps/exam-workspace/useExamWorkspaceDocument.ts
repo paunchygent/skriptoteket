@@ -39,6 +39,7 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamDocument,
   NativeExamItem,
   NativeExamMatchPair,
@@ -50,11 +51,11 @@ import {
   reviewed,
   withChoiceText,
   withCorrectChoices,
+  withCriteria,
   withGapValues,
   withGapAsText,
   withoutAutomaticValue,
   withoutInterpretedKey,
-  withMarkingGuide,
   withMatchEntryText,
   withMatchPairs,
   withTickPoints,
@@ -374,8 +375,8 @@ export function useExamWorkspaceDocument() {
     workspaceDocument.value = { ...current, items };
   }
 
-  function updateItemMarkingGuide(itemId: string, guide: string | null): void {
-    patchItem(itemId, (item) => withMarkingGuide(item, guide));
+  function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
+    patchItem(itemId, (item) => withCriteria(item, criteria));
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
@@ -489,7 +490,7 @@ export function useExamWorkspaceDocument() {
     undoItemInterpretation,
     removeItemAutomaticValue,
     showItemGapAsText,
-    updateItemMarkingGuide,
+    updateItemCriteria,
     updateItemMatchEntryText,
     updateItemMatchPairs,
     updateItemTickPoints,

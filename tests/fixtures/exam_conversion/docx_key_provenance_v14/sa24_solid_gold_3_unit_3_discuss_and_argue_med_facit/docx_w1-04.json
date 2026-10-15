@@ -83,7 +83,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -132,7 +132,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -181,7 +181,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -231,7 +231,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -280,7 +280,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -329,7 +329,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -378,7 +378,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -427,7 +427,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -476,7 +476,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -525,7 +525,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -574,7 +574,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -623,7 +623,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -672,7 +672,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -721,7 +721,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -770,7 +770,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     },
     {
       "source_anchors": [
@@ -819,7 +819,7 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": null
+      "criteria": []
     }
   ]
 }

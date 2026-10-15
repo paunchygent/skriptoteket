@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import points_line
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 
