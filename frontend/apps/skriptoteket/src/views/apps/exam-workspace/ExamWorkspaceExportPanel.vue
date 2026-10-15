@@ -87,7 +87,10 @@ const emit = defineEmits<{
           :key="index"
           class="grid gap-0.5"
         >
-          <p class="text-sm font-medium leading-snug text-navy">
+          <p
+            class="truncate text-sm font-medium leading-snug text-navy"
+            :title="entry.question_text"
+          >
             {{ examWorkspaceQuestionLabel(Number(entry.question_number)) }}:
             {{ entry.question_text }}
           </p>
