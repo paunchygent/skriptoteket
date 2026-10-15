@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f14d6b9dda5340e67b635f6c167dd0913badee72f250e1da453eca9cb49cf3b7",
+  "source_set_digest": "9d971bb1f1e280df2d295d5b15fce7188b171edbed52d3ed1a26377d4274bcd0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5140,7 +5140,7 @@
       "type": "task",
       "title": "Repoint the parent-document spec support at the v14 English recording",
       "path": "docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5151,7 +5151,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "User chose \"Merge, push, walk\" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/"
       }
     },
     {

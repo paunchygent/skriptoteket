@@ -41,8 +41,8 @@
     recordings (`PYTHONPATH=src`); review aae91639; retained
     `01a13f02-cbaf-71c0-bb3b-f16fc81c7017` `evidence/`.
   - [TASK-SKRIPT-39-05-12](docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
-    `in_progress`, Claude parent, retained `01a13f01-f1dc-7614-beb6-76a946b50b74`;
-    review r2 approved 34045206. Next: push main, staging walk of a matching edit.
+    `done` 2026-10-15: merged b8e43394, staging walk saved a matching edit;
+    retained `01a13f01-f1dc-7614-beb6-76a946b50b74` `evidence/walk/`.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
