@@ -8,24 +8,16 @@
   Hemma hold, with the staging env check. No SSH, deployment or live proof yet.
   Namecheap CNAME deletion stays with the user.
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
-  Klassrumskartan tutorial clips in Hjälp with a first-use dialog. Owner: Claude
-  parent (Hemma); retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01
-  (walking skeleton) `in_progress`: staging baseline `03ba322d`; earlier reviews
-  `8576afb7`/`3c95199d`. The 2026-10-15 Mac browser walk was ruled FAILED by
-  the user on F1 (staging sign-out CORS, HuleEdu TASK-HULE-01-06-14, Mac Sol
-  lead) and F2 (no Hjälp at 1024–1279 px); evidence
-  `evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md`. The Mac
-  session repairs both and reruns the walk; closure waits for it.
-  [TASK-SKRIPT-08-36-02](docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md)
-  `in_progress` (retained `01a13f60-f5d1-7cee-9c93-2d226dad61de`): F2 repaired
-  on `fix/planner-hjalp-1024` `0a91a86a`, ruthless review approved 2026-10-15,
-  merged to main; next: staging deploy and signed-in walks at 375/900/1024/1280+ px.
-  [TASK-SKRIPT-REP-0039](docs/backlog/tasks/task-skript-rep-0039-show-the-hj%C3%A4lp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md)
-  duplicates 08-36-02 and closes with it.
-  User gates: talmanus approval (7 clips, HuleFilm ST-VIDEO-12-01), ElevenLabs
-  draft spend, render approval, prod media deploy. Guide step 3 wording (paste
-  does not parse Skola24 text) still needs correction.
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+  Klassrumskartan tutorial clips in Hjälp. Owner: Claude parent (Hemma);
+  retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01 (walking skeleton)
+  `done` 2026-10-15: reviews `8576afb7`/`3c95199d`, main `03ba322d`; walk 2 on
+  staging passed all five steps (`evidence/staging-walk-prep-b8e43394/walk-2-2026-10-15/WALK.md`).
+  Task 02 (Hjälp at 1024 px) `done` `ff25a484`; TASK-SKRIPT-REP-0039 canceled as
+  its duplicate. Draft Klass clip (synthetic timing) on dev media. Next: real
+  clips wait on HuleFilm ST-VIDEO-12-01 gates (talmanus approval in progress,
+  ElevenLabs draft spend, render approval, prod media deploy). Guide step 3
+  wording (paste does not parse Skola24 text) still needs correction.
 
 - [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`

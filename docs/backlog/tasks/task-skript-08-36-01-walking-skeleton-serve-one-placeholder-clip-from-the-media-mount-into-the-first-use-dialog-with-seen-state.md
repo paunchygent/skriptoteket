@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d. Walk 1 on staging b8e43394 was ruled failed by the user on F1/F2 (T16); after TASK-SKRIPT-08-36-02 (Hjälp at 1024 px) and HuleEdu TASK-HULE-01-06-14 (staging preflight) landed, walk 2 on 2026-10-15 15:21-15:35 UTC in visible Chrome on the Mac passed all five steps as guest and as skriptoteket-proof-user@local.dev (evidence/staging-walk-prep-b8e43394/walk-2-2026-10-15/WALK.md, 27 screenshots), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55.
 task_kind: story
 acceptance_criteria:
 - GET /static/media/klassrumskartan/clips.json and the clip file are served with range
@@ -81,3 +85,4 @@ Core vertical: manifest on the media directory, served by the static mount, read
 | T14 | Finding F2 (signed-in planner shell at 1024–1279 px shows only Meny, no Hjälp control): pre-existing top-bar breakpoint gap in `AuthTopBar.vue` (`--xl-sidebar-breakpoint` hidden from 768 px, shown from 1280 px) and the drawer omits Hjälp by design. The first-use dialog still opens; replay from Hjälp is unreachable at those widths when signed in. Repair TASK-SKRIPT-REP-0039. |
 | T15 | Minor: the Hjälp badge rounds `duration_seconds` 78 to 1:18 while the player shows the media duration 1:17; accepted, the manifest value is the published metadata. |
 | T16 | User ruling 2026-10-15 (mailbox, supersedes the walk's END report): the 2026-10-15 walk FAILED on F1 and F2; the task stays open. A Mac Sol lead repairs F1 (HuleEdu TASK-HULE-01-06-14) and F2 (TASK-SKRIPT-REP-0039) and reruns the full walk in visible Chrome; closure waits for that rerun's evidence and the user's closure. |
+| T17 | Walk 2 (2026-10-15, staging ca3d89ce→7c8c6bd7, huleedu-dev f5843740): guest desktop dialog paused at zero with `preload=none`, reload no dialog; guest 900 px no pop-up and Hjälp replay; signed-in reset via PATCH then dialog, close PATCH 200 (a first 502 during a concurrent staging rebuild showed the retry toast and the dialog was re-offered after reload, as T10 requires), reload no dialog; Hjälp reachable signed in at 452, 900, 1024 and 1280 px; Logga ut preflight 200 and POST 200. Closure by the parent on the user's instruction. Observation for staging owners: no lock prevents a rebuild during another session's walk. |

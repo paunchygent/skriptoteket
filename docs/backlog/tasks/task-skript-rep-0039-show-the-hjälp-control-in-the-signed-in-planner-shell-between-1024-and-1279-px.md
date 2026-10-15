@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: canceled
 closeout_review:
   record: inline
   status: not_started
@@ -21,6 +21,8 @@ backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
+
+Canceled 2026-10-15: duplicate of TASK-SKRIPT-08-36-02, which repaired the Hjälp control at 1024 px and merged as main `ff25a484`; walk 2 of TASK-SKRIPT-08-36-01 confirmed Hjälp reachable at 452, 900, 1024 and 1280 px.
 
 Found by the ST-SKRIPT-08-36 staging walk on 2026-10-15 (retained session
 `01a13d03-cc0c-731e-a9e5-b3d536821e55`, `evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md`,
