@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7a81a18a06c2a308619ba4e8edca498812835f763ca3d15a08982e2cedcaff00",
+  "source_set_digest": "c8bac948d1c602afdb40d54ac2e300e0b3fc132d140f0cf072b6a9caf091c428",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5051,6 +5051,25 @@
         "decided_at": "2026-10-14",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer approved the frontend repair e4a5e2eb after review of c7d6db01 (merged c270419e) and the replay repair 42050a03 after review of the re-record commit 87478dcd (merged 426d7551). 118 live v14 replies replace the obsolete recordings; source audit of all eight corpus exams found no misreported key source. Staging walk at c270419e: glyph, undo, review, automatic misspellings and Visa som text passed; Exam.net import exam 5332346 accepted several values per gap (Stockholm, Stockolm; syre, syr). Records in Skriptoteket session 01a13a87-acac-7730-bb4e-746618d73cfd evidence/review/TASK-SKRIPT-39-05-10/ and evidence/walk/TASK-SKRIPT-39-05-10/staging-walk.md."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-11",
+      "type": "task",
+      "title": "Repoint the parent-document spec support at the v14 English recording",
+      "path": "docs/backlog/tasks/task-skript-39-05-11-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
