@@ -27,7 +27,8 @@ The input
   understand the questions in chunks and to tell a line that serves a whole section from a line
   that belongs to one question. Their questions and wording are converted by their own part.
 - Chunk text marks the teacher's italics as <i>...</i> and each source picture as
-  <image asset_id="..."/>. The <i> tags show formatting; output text carries the words alone.
+  <image asset_id="..."/>. The <i> tags show formatting: every output field, facit_text and
+  accepted_values included, carries the words without the tags.
 - item_kinds lists the kinds of question this part holds.
 
 Where each chunk goes
@@ -35,11 +36,12 @@ Every chunk in chunks goes to exactly one place: one item's source_anchors, the 
 an instruction or answer_key_anchors. This holds up to the last chunk, also after the last
 question.
 - The exam title is the document's opening heading, copied verbatim.
-- An item is one question: its heading or label line, stem, options, blanks, pictures and its
-  own points line. A heading or label line printed for one question, such as
-  "Question 3 (2 points)" or "Part B: term (1 point)", belongs to that question: its wording
-  without the question number and points is the first paragraph of the body, and its points
-  are the question's points.
+- An item is one question with every line printed for it alone: its heading or label line,
+  an instruction, word list or passage printed only for this question, its stem, options,
+  blanks, pictures and its own points line. A heading or label line printed for one question,
+  such as "Question 3 (2 points)" or "Part B: term (1 point)", belongs to that question: its
+  wording without the question number and points is the first paragraph of the body, and its
+  points are the question's points.
 - An instruction is text printed once for several questions: a heading above two or more
   questions, a section instruction, a word bank or a shared passage. Copy it verbatim. The
   converter places it above the questions it serves, so their bodies leave it out.
@@ -74,9 +76,10 @@ Building an item
   gaps is answer space, not question text.
 
 The facit and the key
-- facit_text copies this question's whole facit entry verbatim: every line, including inline
-  answers, notes and listed alternatives such as "Also accepted: …". It is null when the
-  question has no facit entry.
+- facit_text copies the teacher's answers for this question verbatim, wherever the source
+  prints them: a facit line, a facit section, or inline in the question itself. It includes
+  every line, note and listed alternative such as "Also accepted: …". It is null only when the
+  source prints no answer for this question.
 - Inline facit: a question line can carry its own answer, set apart by formatting (usually
   italics) or after an answer label ("Label: value"). Italic words that complete the statement
   the student is asked to complete or decide are its answer. Italic material the question gives
@@ -156,6 +159,8 @@ answer place.
 What stays text
 Every word the student reads stays text in its printed order: the words around each gap,
 the pieces the answers are about, the + signs or other marks between them, and every cue.
+This holds also when the student's answer translates, rewrites or replaces those words: the
+student still needs to read them.
 A cue is a hint printed for the student, such as a first letter, a word count, or a word or
 phrase in brackets, often in another language. It stays where it is printed, with its
 brackets and all of its words, before or after the gap.
@@ -172,6 +177,9 @@ Examples
    Body: She [gap: walks] to school and [gap: comes] home at four. (walk, come)
 2. Source "We have lived here ___. (i tio år)", facit "for ten years".
    Body: We have lived here [gap: for ten years]. (i tio år)
+   Under the instruction "Translate the words in brackets", source "They ___ (har ätit)
+   already.", facit "have eaten".
+   Body: They [gap: have eaten] (har ätit) already.
 3. Source "Name the word class of each word: The old dog sleeps.", facit "The (article) old
    (adjective) dog (noun) sleeps (verb)".
    Body paragraph 1: Name the word class of each word:

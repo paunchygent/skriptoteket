@@ -1,6 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
 import hashlib
+import re
 from collections.abc import Callable, Iterable, Mapping
 from decimal import Decimal
 from types import MappingProxyType
@@ -100,6 +101,8 @@ _BLANK = NativeTextSegment(text="____", marks=())
 
 # No shared context governs two or more questions: every instruction is placed by its run.
 NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
+
+_ITALIC_TAG = re.compile(r"</?i>")
 
 
 def _missing_picture_reason(missing: DocxMissingImage) -> str:
@@ -276,7 +279,8 @@ def native_item(
         sequence=1,
         kind=produced.kind,
         printed_label=produced.printed_label,
-        facit_text=produced.facit_text,
+        # The source's italic tags mark formatting for the model, never the teacher's wording.
+        facit_text=_ITALIC_TAG.sub("", produced.facit_text) if produced.facit_text else None,
         body=formatted_body,
         points=points,
         points_estimated=points_estimated,

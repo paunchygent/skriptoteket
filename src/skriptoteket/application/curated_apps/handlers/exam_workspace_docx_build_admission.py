@@ -130,12 +130,27 @@ def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tu
     )
 
 
+def _squashed(text: str) -> str:
+    return " ".join(text.split())
+
+
 def _admit_keys(
-    raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
+    raw: JsonValue,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+    facit_texts: tuple[str, ...],
 ) -> None:
     listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
     for anchor in _free(listed, state, seen):
-        if item_held.intersection(state.question_by_anchor.get(anchor, ())):
+        # An own chunk of a question an item holds stays question text, unless no item lists
+        # it and the reply copies it whole as an item's facit: then it is a facit line.
+        chunk = state.chunk_by_anchor[anchor]
+        copies = {_squashed(chunk.text), _squashed(chunk.marked_text)}
+        if item_held.intersection(state.question_by_anchor.get(anchor, ())) and (
+            anchor in item_held
+            or not any(copy in facit for copy in copies for facit in facit_texts)
+        ):
             continue
         state.key_anchors.add(anchor)
         seen.add(anchor)
@@ -302,6 +317,7 @@ def _admit_item(
         context = definition_context(state.chunks, anchors, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+        shown -= state.key_anchors - set(anchors)
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
         item = native_item(
             with_printed_points(with_accepted_forms(produced, context), own),
@@ -334,7 +350,12 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     raw_items = content.get("items")
     items = raw_items if isinstance(raw_items, list) else []
     item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
-    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
+    facit_texts = tuple(
+        _squashed(facit)
+        for raw in items
+        if isinstance(raw, dict) and isinstance(facit := raw.get("facit_text"), str)
+    )
+    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held, facit_texts)
     if content.get("title"):
         _admit_metadata(content["title"], "title", state, seen, item_held)
     raw_instructions = content.get("instructions")

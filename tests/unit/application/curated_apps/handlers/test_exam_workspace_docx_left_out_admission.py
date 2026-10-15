@@ -104,6 +104,36 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     assert state.pending == ()
 
 
+def test_an_own_facit_line_the_reply_copies_whole_as_facit_is_its_answer_key():
+    # Live SA24 2026-10-16: grouping listed each facit line among its question's own chunks.
+    state = _state("11. ______ (s…t) – A drug that keeps you awake.", _FACIT)
+    gap: JsonValue = {"kind": "gap", "text": None, "accepted_values": ["stimulant"]}
+    body: JsonValue = [{"segments": [gap, _text(" (s…t) – A drug that keeps you awake.")]}]
+
+    admit_batch(
+        {
+            "answer_key_anchors": ["body:0002"],
+            "items": [
+                _item(
+                    ["body:0001"],
+                    kind="gap_fill",
+                    key_source="copied",
+                    facit_text=f" {_FACIT}\n",
+                    body=body,
+                    printed_label="11",
+                )
+            ],
+        },
+        state,
+    )
+
+    assert state.key_anchors == {"body:0002"}
+    ((admitted, anchors),) = state.accepted
+    assert anchors == ("body:0001",)
+    assert _FACIT not in " ".join(_stem_texts(admitted))
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+
+
 @pytest.mark.parametrize(
     "facit",
     [
