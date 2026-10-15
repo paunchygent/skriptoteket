@@ -447,3 +447,28 @@ def test_section_title_over_two_subsection_parents_opens_the_first_parent_only()
         ("item_003", "item_004"),
     ]
     assert all("Del A" not in item.plain_text_lines() for item in placed.items)
+
+
+def test_points_labelled_section_heading_opens_its_own_questions() -> None:
+    # A styled heading is a title even when its label is short and prints points; a
+    # plain "Total: 59 points" paragraph is no heading at all.
+    chunks = (
+        _titled("body:0001", "Unit test", 1),
+        _chunk("body:0002", "paragraph", "Total: 59 points"),
+        _titled("body:0003", "Vocabulary Matching (9 points)", 2),
+        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        _titled("body:0006", "Language Choice (6 points)", 2),
+        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
+        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
+    )
+    placed = _place(
+        chunks,
+        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
+        title_anchors=frozenset({"body:0001"}),
+    )
+
+    assert [body_text_lines(parent.instruction) for parent in placed.parents] == [
+        ("Vocabulary Matching",),
+        ("Language Choice",),
+    ]

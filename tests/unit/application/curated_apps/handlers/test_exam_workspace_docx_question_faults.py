@@ -32,9 +32,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     question_families,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import manifest_from_output
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeTextSegment,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -46,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -118,12 +116,8 @@ def _comparable(item: NativeExamItem) -> NativeExamItem:
 
 
 def _text(item: NativeExamItem) -> list[str]:
-    return [
-        segment.text
-        for paragraph in item.body
-        for segment in paragraph.segments
-        if isinstance(segment, NativeTextSegment)
-    ]
+    """Each body paragraph's text, whatever runs its source marks split it into."""
+    return list(body_text_lines(item.body))
 
 
 def _anchor(item: NativeExamItem) -> str:

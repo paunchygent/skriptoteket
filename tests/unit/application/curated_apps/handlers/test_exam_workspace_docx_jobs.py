@@ -120,7 +120,9 @@ async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_
         *["batch_ready"] * len(batches),
         "publish_final",
     ]
-    assert finished.diagnostics == ()
+    # Formatting events record each item's typography path; nothing else was observed.
+    assert [d for d in finished.diagnostics if d["stage"] != "formatting"] == []
+    assert finished.diagnostics
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     document = opened.document
