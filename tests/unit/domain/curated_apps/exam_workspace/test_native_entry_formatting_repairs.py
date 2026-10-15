@@ -11,9 +11,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeSegment,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
 
 
 def _source(anchor, lines, *, kind="paragraph", separator="\n", one_paragraph=False):
@@ -54,7 +63,7 @@ def test_native_choices_account_for_each_marked_source_label_in_one_chunk():
     prompt = _source("body:0001", [("Choose an answer.", "")])
     options = _source("body:0002", [("A. red", "A."), ("B. blue", "B.")])
     chunks = (prompt, options)
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item(
             "single_choice",
@@ -78,7 +87,7 @@ def test_native_matching_accounts_for_marked_row_and_column_entry_labels():
         kind="table",
     )
     chunks = (prompt, entries)
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
@@ -105,7 +114,7 @@ def test_choice_rebuild_restores_marked_content_before_its_aligned_wording(prefi
         one_paragraph=layout in {"line", "inline"},
     )
     chunks = (prompt, options)
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item(
             "single_choice",
@@ -118,7 +127,7 @@ def test_choice_rebuild_restores_marked_content_before_its_aligned_wording(prefi
     )
     expected = original.removeprefix("a) ")
     assert body_plain_text(result.choices[0].body) == expected
-    assert result.choices[0].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
     assert body_plain_text(result.choices[1].body) == "blue"
     assert body_plain_text(result.body) == "Choose an answer."
     assert paths == ["rebuilt"]
@@ -148,8 +157,8 @@ def test_matching_rebuilds_missing_marked_words_on_each_entry_side():
         "Caution. warm",
         "cold",
     ]
-    assert result.match_left[0].body[0].segments[0].marks == ("bold",)
-    assert result.match_right[0].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.match_left[0].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.match_right[0].body[0].segments[0]).marks == ("bold",)
     assert body_plain_text(result.body) == "Choose an answer."
 
 
@@ -161,7 +170,7 @@ def test_native_item_keeps_unmarked_model_wording_and_recovers_the_omitted_headi
     )
     question = _source("body:0002", [("Answer the question.", "")])
     chunks = (heading, question)
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item(
             "free_text",
@@ -216,8 +225,8 @@ def test_interleaved_matching_entries_never_share_one_anothers_source():
         "Caution. warm",
         "cold",
     ]
-    assert result.match_left[0].body[0].segments[0].marks == ("bold",)
-    assert result.match_right[0].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.match_left[0].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.match_right[0].body[0].segments[0]).marks == ("bold",)
 
 
 def test_rewritten_matching_entry_rebuilds_only_its_own_span():
@@ -273,8 +282,8 @@ def test_rewritten_adjacent_choices_keep_their_own_source_spans():
         "Identify the important concept.",
         "blue",
     ]
-    assert result.choices[0].body[0].segments[0].marks == ("bold",)
-    assert result.choices[1].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.choices[1].body[0].segments[0]).marks == ("bold",)
 
 
 @pytest.mark.parametrize("continuation_label", ["Follow the safety note.", ""])
@@ -311,7 +320,9 @@ def test_continuation_heading_paragraph_belongs_to_its_entry(continuation_label)
         "blue",
     ]
     assert result.choices[0].body[1].heading_level == 2
-    assert result.choices[0].body[1].segments[0].marks == (("bold",) if continuation_label else ())
+    assert _as_text(result.choices[0].body[1].segments[0]).marks == (
+        ("bold",) if continuation_label else ()
+    )
 
 
 def test_marked_continuation_after_the_last_choice_belongs_to_that_choice():
@@ -338,7 +349,7 @@ def test_marked_continuation_after_the_last_choice_belongs_to_that_choice():
         "red",
         "blue\nFollow the safety note.",
     ]
-    assert result.choices[1].body[1].segments[0].marks == ("bold",)
+    assert _as_text(result.choices[1].body[1].segments[0]).marks == ("bold",)
 
 
 def test_marked_continuation_after_the_last_matching_entry_belongs_to_it():
@@ -365,7 +376,7 @@ def test_marked_continuation_after_the_last_matching_entry_belongs_to_it():
         "warm",
         "cold\nFollow the safety note.",
     ]
-    assert result.match_right[1].body[1].segments[0].marks == ("bold",)
+    assert _as_text(result.match_right[1].body[1].segments[0]).marks == ("bold",)
 
 
 def test_unlabelled_entry_prefix_is_excluded_from_a_rewritten_body():
@@ -396,7 +407,7 @@ def test_unlabelled_entry_prefix_is_excluded_from_a_rewritten_body():
         language="en",
     )
     assert body_plain_text(result.choices[0].body) == "Safety. blue"
-    assert result.choices[0].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
     assert body_plain_text(result.choices[1].body) == "red"
     assert body_plain_text(result.body) == "Safety. Do not mix acids."
 
@@ -421,7 +432,7 @@ def test_entry_label_delimiter_never_consumes_a_content_dot():
         ".NET is useful",
         "plain",
     ]
-    assert result.choices[0].body[0].segments[0].marks == ("bold",)
+    assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
 
 
 def test_duplicate_word_matching_entries_keep_their_own_side_formatting():
@@ -455,10 +466,10 @@ def test_duplicate_word_matching_entries_keep_their_own_side_formatting():
     )
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == ["red", "blue"]
-    assert result.match_left[0].body[0].segments[0].marks == ("bold",)
-    assert result.match_left[1].body[0].segments[0].marks == ("bold",)
-    assert result.match_right[0].body[0].segments[0].marks == ("italic",)
-    assert result.match_right[1].body[0].segments[0].marks == ("italic",)
+    assert _as_text(result.match_left[0].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.match_left[1].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.match_right[0].body[0].segments[0]).marks == ("italic",)
+    assert _as_text(result.match_right[1].body[0].segments[0]).marks == ("italic",)
 
 
 def test_wholly_rewritten_first_choice_keeps_its_labeled_source_span():
@@ -479,5 +490,5 @@ def test_wholly_rewritten_first_choice_keeps_its_labeled_source_span():
         language="en",
     )
     assert [body_plain_text(choice.body) for choice in result.choices] == ["Safety. red", "blue"]
-    assert result.choices[0].body[0].segments[0].marks == ("bold",)
-    assert result.choices[1].body[0].segments[0].marks == ()
+    assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
+    assert _as_text(result.choices[1].body[0].segments[0]).marks == ()

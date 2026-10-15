@@ -21,7 +21,7 @@ def test_seeded_every_source_word_has_exactly_one_owner():
         matching = rng.choice([False, True])
         count = 2 if matching else rng.randint(2, 5)
         sequences = ("match_left", "match_right") if matching else ("choices",)
-        models = {sequence: [] for sequence in sequences}
+        models: dict[str, list[str]] = {sequence: [] for sequence in sequences}
         source_parts = []
         labelled = rng.choice([False, True])
         for ordinal in range(1, count + 1):

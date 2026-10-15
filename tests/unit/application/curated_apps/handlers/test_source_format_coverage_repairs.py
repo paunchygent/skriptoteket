@@ -18,6 +18,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeSegment,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
@@ -25,6 +29,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
 
 
 def _chunk(anchor, text, runs, heading=None):
@@ -69,8 +78,8 @@ def test_native_item_rebuilds_a_marked_free_text_prefix_from_source():
     )
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert body_plain_text(item.body) == text
-    assert item.body[0].segments[0].text == "Safety."
-    assert item.body[0].segments[0].marks == ("bold",)
+    assert _as_text(item.body[0].segments[0]).text == "Safety."
+    assert _as_text(item.body[0].segments[0]).marks == ("bold",)
 
 
 def test_assembled_item_keeps_an_omitted_size_heading():

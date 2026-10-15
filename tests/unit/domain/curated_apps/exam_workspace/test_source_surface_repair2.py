@@ -12,6 +12,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
+    NativeGapSegment,
+    NativeSegment,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     complete_source_formatting,
@@ -22,6 +28,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
 )
 
 pytestmark = pytest.mark.unit
+
+
+def _as_text(segment: NativeSegment) -> NativeTextSegment:
+    assert isinstance(segment, NativeTextSegment)
+    return segment
 
 
 def _chunk(anchor, text, *, heading=None, marks=()):
@@ -69,7 +80,7 @@ def test_question_label_omission_never_deletes_continuation_content(continuation
         _chunk("body:0001", "1. Read the values."),
         _chunk("body:0002", continuation, marks=("bold",)),
     )
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item(chunks, ["Read the values.", "State the measured value."]),
         chunks=chunks,
@@ -77,7 +88,7 @@ def test_question_label_omission_never_deletes_continuation_content(continuation
         formatting_observer=paths.append,
     )
     assert body_plain_text(result.body) == "Read the values.\n" + continuation
-    assert result.body[1].segments[0].marks == ("bold",)
+    assert _as_text(result.body[1].segments[0]).marks == ("bold",)
     assert paths == ["rebuilt"]
 
 
@@ -123,7 +134,7 @@ def test_omitted_size_heading_merges_into_body_without_copying_choices(heading_a
     prompt = _chunk("body:0001", "1. Choose an answer.")
     options = (_chunk("body:0003", "A. red"), _chunk("body:0004", "B. blue"))
     chunks = (prompt, heading, *options) if heading_at_end else (heading, prompt, *options)
-    paths = []
+    paths: list[str] = []
     result = native_item(
         _item(
             chunks,
@@ -175,8 +186,12 @@ def test_heading_recovery_retains_picture_and_gap_atoms_in_their_native_paragrap
     assert result.body[0].heading_level == 3
     assert body_plain_text(result.body).startswith("Complete this section.\n")
     assert [s.kind for s in result.body[1].segments] == ["asset", "text", "gap", "text"]
-    assert result.body[1].segments[0].asset_id == image.asset_id
-    assert result.body[1].segments[2].gap_id == result.gaps[0].gap_id
+    asset = result.body[1].segments[0]
+    assert isinstance(asset, NativeAssetSegment)
+    assert asset.asset_id == image.asset_id
+    gap = result.body[1].segments[2]
+    assert isinstance(gap, NativeGapSegment)
+    assert gap.gap_id == result.gaps[0].gap_id
 
 
 @pytest.mark.parametrize("repeat_after_heading", [False, True])
@@ -192,7 +207,7 @@ def test_heading_merge_orders_standalone_pictures_around_the_recovered_heading(
         (drawing, heading, repeated, prompt) if repeat_after_heading else (drawing, heading, prompt)
     )
     produced = _item(chunks, ["Explain the picture."])
-    picture = {
+    picture: dict[str, list[dict[str, object]]] = {
         "segments": [
             {"kind": "asset", "text": None, "accepted_values": [], "asset_id": image.asset_id}
         ]
