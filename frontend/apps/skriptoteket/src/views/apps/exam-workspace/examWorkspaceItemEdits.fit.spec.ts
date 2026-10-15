@@ -48,6 +48,7 @@ function keylessMatchingItem(
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
     match_left: leftIds.map((left_id) => ({ left_id, text: left_id })),
     match_right: rightIds.map((right_id) => ({ right_id, text: right_id })),
+    points: null,
     review: UNREVIEWED,
   });
 }
