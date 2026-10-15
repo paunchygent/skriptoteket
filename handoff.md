@@ -21,7 +21,7 @@
     poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
     that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
     next: route them under story item 3.
-  - [TASK-SKRIPT-39-05-11](docs/backlog/tasks/task-skript-39-05-11-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
+  - [TASK-SKRIPT-39-05-12](docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
     `in_progress` (Claude parent, retained `01a13f01-f1dc-7614-beb6-76a946b50b74`):
     fixture f2b78632 and editor split 34045206, review r2 approved. Next: merge,
     push main, staging walk editing a matching pair; record the walk here.

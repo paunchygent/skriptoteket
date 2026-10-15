@@ -1,6 +1,6 @@
 ---
 type: task
-id: TASK-SKRIPT-39-05-11
+id: TASK-SKRIPT-39-05-12
 title: Repoint the parent-document spec support at the v14 English recording
 repository: skriptoteket
 owners:
@@ -40,6 +40,10 @@ holds the first single_choice item. The spec support imports both and keeps
 its current item mapping; the document shape and item IDs are unchanged.
 
 ## Contract Inputs
+
+- Renumbered from 39-05-11 on 2026-10-15 after an ID collision on main;
+  retained evidence for this task sits under `evidence/*/TASK-SKRIPT-39-05-11/`
+  in session `01a13f01-f1dc-7614-beb6-76a946b50b74`.
 
 - `tests/fixtures/exam_conversion/docx_key_provenance_v14/README.md` and
   `bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-01.json`, `docx_w1-04.json`.

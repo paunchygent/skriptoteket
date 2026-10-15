@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fa03627c6cb5aa43d30ba909f47c28374978271f3c106f3fb572fe26d63178f4",
+  "source_set_digest": "12e4f9b19ea40d59d7d95e4fe21e0b2cc3328ae8cc7c5ef1af10c86b7bdfd073",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5054,10 +5054,10 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-39-05-11",
+      "id": "TASK-SKRIPT-39-05-12",
       "type": "task",
       "title": "Repoint the parent-document spec support at the v14 English recording",
-      "path": "docs/backlog/tasks/task-skript-39-05-11-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
+      "path": "docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
