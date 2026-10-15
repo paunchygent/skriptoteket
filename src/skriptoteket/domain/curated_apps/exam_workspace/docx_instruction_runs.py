@@ -312,14 +312,41 @@ def _shown_heading(chunk: DocxChunk, item: NativeExamItem | None) -> DocxChunk:
     )
 
 
+# Heading 4 and deeper, and a heading style without a level, rank below level 3.
+_UNRANKED_LEVEL = 4
+
+
+def _heading_rank(chunk: DocxChunk) -> int:
+    level = chunk.paragraphs[0].heading_level if chunk.paragraphs else None
+    return level if level is not None else _UNRANKED_LEVEL
+
+
 def _span(
-    run: Run, ordered: list[Placed], boundaries: list[int], starts: list[int], chunk_count: int
+    run: Run,
+    ordered: list[Placed],
+    boundaries: list[int],
+    starts: list[int],
+    chunks: tuple[DocxChunk, ...],
 ) -> tuple[int, ...]:
-    """The items after a run, up to the next section boundary or later instruction."""
+    """The items after a run, up to the next section boundary or later instruction.
+
+    A heading run passes its subsection headings: it ends at the next boundary heading of
+    the same or a higher level, so a section title directly above a subsection heading
+    still reaches its section's questions.
+    """
+    chunk_count = len(chunks)
+    rank = _heading_rank(run.sources[0]) if run.heading else None
     following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
     first_item = next((ordered[k][0] for k in following if ordered[k][0] > run.start), chunk_count)
     end = min(
-        next((i for i in boundaries if i > run.start), chunk_count),
+        next(
+            (
+                i
+                for i in boundaries
+                if i > run.start and (rank is None or _heading_rank(chunks[i]) <= rank)
+            ),
+            chunk_count,
+        ),
         next((s for s in starts if s > first_item), chunk_count),
     )
     return tuple(k for k in following if ordered[k][0] < end)
@@ -351,7 +378,7 @@ def reaches(
                 if run.only is not None
                 else _exact(run, ordered)
                 if run.governs
-                else _span(run, ordered, shape.boundaries, starts, len(chunks))
+                else _span(run, ordered, shape.boundaries, starts, chunks)
             )
             chunk = run.sources[0]
             # A chunk the grouping marks as governing keeps its whole text (D40).
@@ -399,7 +426,7 @@ def reaches(
             reach = _exact(run, ordered)
             reached.append(Run(run.origin, run.start, sources, reach, reach, run.governs))
             continue
-        span = _span(run, ordered, shape.boundaries, starts, len(chunks))
+        span = _span(run, ordered, shape.boundaries, starts, chunks)
         terms = defined_terms("\n".join(chunk.text for chunk in sources))
         following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
         quoted = (
@@ -425,7 +452,8 @@ def parent_groups(reached: list[Run]) -> list[list[Run]]:
     parent here when no exact parent stands, and opens the body of its first question
     in placement instead. A section heading without a governing scope has only its
     heuristic reach, which an item inserted before its first question can narrow; such
-    a heading still joins a wider parent that contains its reach.
+    a heading still joins a wider parent that contains its reach. A section title over
+    several subsection parents opens the first of them, ahead of its subsection heading.
     """
     candidates: dict[tuple[int, ...], list[Run]] = {}
     for run in reached:
@@ -448,9 +476,9 @@ def parent_groups(reached: list[Run]) -> list[list[Run]]:
     for run in reached:
         if run.heading and run.only is None and len(run.reach) >= 2 and id(run) not in grouped:
             for group in groups:
-                if set(run.reach) <= set(group[0].reach) and (
-                    not run.governs or set(run.reach) == set(group[0].reach)
-                ):
+                within = set(run.reach) <= set(group[0].reach)
+                opens = not run.governs and run.reach[0] == group[0].reach[0]
+                if (within or opens) and (not run.governs or set(run.reach) == set(group[0].reach)):
                     group.append(run)
                     break
     return groups

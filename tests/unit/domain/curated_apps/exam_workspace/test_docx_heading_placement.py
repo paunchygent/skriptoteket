@@ -14,7 +14,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
+    DocxChunk,
+    DocxSourceParagraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     Placed,
     SectionInstructions,
@@ -44,6 +47,16 @@ _NOTHING_GOVERNED: MappingProxyType[str, frozenset[str]] = MappingProxyType({})
 
 def _chunk(anchor: str, kind: str, text: str) -> DocxChunk:
     return DocxChunk(anchor=anchor, kind=kind, text=text, marked_text=text)
+
+
+def _titled(anchor: str, text: str, level: int) -> DocxChunk:
+    return DocxChunk(
+        anchor=anchor,
+        kind="heading",
+        text=text,
+        marked_text=text,
+        paragraphs=(DocxSourceParagraph(offset=0, text=text, heading_level=level),),
+    )
 
 
 def _item(text: str) -> NativeExamItem:
@@ -364,3 +377,73 @@ def test_source_text_fallback_keeps_the_printed_points() -> None:
     item = review_source_item(chunks, "Kontrollera frågan manuellt.")
 
     assert item.points == 3
+
+
+def test_section_title_above_subsections_opens_its_own_questions_once() -> None:
+    # TASK-SKRIPT-39-09-08 walk: a Heading 1 directly above a Heading 2 reached no
+    # question and became exam-wide text repeated above every group.
+    chunks = (
+        _titled("body:0001", "Formateringsprov", 1),
+        _titled("body:0002", "Del A: Grundbegrepp", 1),
+        _titled("body:0003", "Flervalsfrågor", 2),
+        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        _titled("body:0006", "Del B: Resonemang", 1),
+        _titled("body:0007", "Fritextfrågor", 2),
+        _titled("body:0008", "Energi", 3),
+        _chunk("body:0009", "paragraph", "3. Fråga tre?"),
+    )
+    instructions = (
+        ProducedMetadata(text="Del A: Grundbegrepp", source_anchors=("body:0002",)),
+        ProducedMetadata(text="Del B: Resonemang", source_anchors=("body:0006",)),
+    )
+    placed = _place(
+        chunks,
+        _ordered(chunks, "body:0004", "body:0005", "body:0009"),
+        instructions=instructions,
+        title_anchors=frozenset({"body:0001"}),
+    )
+
+    assert set(placed.landed) == {0, 1}
+    assert len(placed.parents) == 1
+    assert body_text_lines(placed.parents[0].instruction) == (
+        "Del A: Grundbegrepp",
+        "Flervalsfrågor",
+    )
+    assert placed.parents[0].item_ids == ("item_001", "item_002")
+    assert placed.items[2].plain_text_lines()[:3] == (
+        "Del B: Resonemang",
+        "Fritextfrågor",
+        "Energi",
+    )
+    shown = [line for item in placed.items for line in item.plain_text_lines()]
+    assert "Del A: Grundbegrepp" not in shown
+    assert shown.count("Del B: Resonemang") == 1
+
+
+def test_section_title_over_two_subsection_parents_opens_the_first_parent_only() -> None:
+    chunks = (
+        _titled("body:0001", "Provets titel", 1),
+        _titled("body:0002", "Del A", 1),
+        _titled("body:0003", "Flerval", 2),
+        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        _titled("body:0006", "Fritext", 2),
+        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
+        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
+    )
+    placed = _place(
+        chunks,
+        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
+        title_anchors=frozenset({"body:0001"}),
+    )
+
+    assert [body_text_lines(parent.instruction) for parent in placed.parents] == [
+        ("Del A", "Flerval"),
+        ("Fritext",),
+    ]
+    assert [parent.item_ids for parent in placed.parents] == [
+        ("item_001", "item_002"),
+        ("item_003", "item_004"),
+    ]
+    assert all("Del A" not in item.plain_text_lines() for item in placed.items)
