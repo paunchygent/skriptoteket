@@ -110,8 +110,8 @@ const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summar
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
   useExamWorkspaceSourceFile(importDocument, importBlocked);
 
-const { exportBlockersByItemId, exportDocument, exportNotice, exportingTarget } =
-  useExamWorkspaceExports(summary);
+const { exportBlockersByItemId, exportChecklist, exportDocument, exportNotice, exportingTarget } =
+  useExamWorkspaceExports(summary, workspaceDocument);
 
 const {
   enrichmentLookupError,
@@ -362,6 +362,7 @@ async function handleSave(): Promise<void> {
             :enrichment-disabled="enrichmentDisabled"
             :enrichment-lookup-error="enrichmentLookupError"
             :enrichment-message="enrichmentMessage"
+            :export-checklist="exportChecklist"
             :export-notice="exportNotice"
             :exporting-target="exportingTarget"
             :has-document="workspaceDocument !== null"

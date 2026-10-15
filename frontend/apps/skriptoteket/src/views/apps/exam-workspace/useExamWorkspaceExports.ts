@@ -16,12 +16,17 @@ import { ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { downloadExamWorkspaceExport } from "../../../api/examWorkspace";
+import {
+  downloadExamWorkspaceExport,
+  getExamWorkspaceExportChecklist,
+} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentSummary,
   ExamWorkspaceExportBlocker,
   ExamWorkspaceExportBlockerReason,
+  ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
+  NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
@@ -89,16 +94,27 @@ function groupBlockers(blockers: ExamWorkspaceExportBlocker[]): Record<string, s
   return grouped;
 }
 
-export function useExamWorkspaceExports(summary: Ref<ExamWorkspaceDocumentSummary | null>) {
+export function useExamWorkspaceExports(
+  summary: Ref<ExamWorkspaceDocumentSummary | null>,
+  workspaceDocument: Ref<NativeExamDocument | null>,
+) {
   const toast = useToast();
 
   const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
   const exportBlockersByItemId = ref<Record<string, string[]>>({});
   const exportNotice = ref<string | null>(null);
+  const exportChecklist = ref<ExamWorkspaceExportChecklistEntry[]>([]);
+  /** Bumped by every clear, so an in-flight checklist response can be dropped. */
+  let checklistRequestId = 0;
 
   function clearExportFeedback(): void {
     exportBlockersByItemId.value = {};
     exportNotice.value = null;
+  }
+
+  function clearExportChecklist(): void {
+    checklistRequestId += 1;
+    exportChecklist.value = [];
   }
 
   watch(
@@ -106,12 +122,44 @@ export function useExamWorkspaceExports(summary: Ref<ExamWorkspaceDocumentSummar
     () => clearExportFeedback(),
   );
 
+  watch(
+    () => [summary.value?.lineage_id, summary.value?.version, workspaceDocument.value],
+    () => clearExportChecklist(),
+  );
+
+  /** Whether a checklist this request reserved is still the one the document wants. */
+  function isCurrentChecklistRequest(requestId: number, lineageId: string): boolean {
+    return requestId === checklistRequestId && summary.value?.lineage_id === lineageId;
+  }
+
+  /**
+   * Show the losses of the revision just exported. The reserved request id
+   * drops the response once any clear or export start has moved past it, so
+   * a slow response cannot reappear over a changed document.
+   */
+  async function loadExportChecklist(lineageId: string, requestId: number): Promise<void> {
+    try {
+      const response = await getExamWorkspaceExportChecklist(lineageId);
+      if (!isCurrentChecklistRequest(requestId, lineageId)) {
+        return;
+      }
+      exportChecklist.value = response.entries;
+    } catch {
+      if (!isCurrentChecklistRequest(requestId, lineageId)) {
+        return;
+      }
+      toast.warning("QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.");
+    }
+  }
+
   async function exportDocument(target: ExamWorkspaceExportTarget): Promise<void> {
     const currentSummary = summary.value;
     if (!currentSummary || exportingTarget.value !== null) {
       return;
     }
     exportingTarget.value = target;
+    clearExportChecklist();
+    const requestId = checklistRequestId;
     try {
       const response = await downloadExamWorkspaceExport(currentSummary.lineage_id, target);
       triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
@@ -128,14 +176,19 @@ export function useExamWorkspaceExports(summary: Ref<ExamWorkspaceDocumentSummar
         exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
         toast.failure(exportNotice.value);
       }
+      return;
     } finally {
       exportingTarget.value = null;
+    }
+    if (target === "qti") {
+      await loadExportChecklist(currentSummary.lineage_id, requestId);
     }
   }
 
   return {
     clearExportFeedback,
     exportBlockersByItemId,
+    exportChecklist,
     exportDocument,
     exportNotice,
     exportingTarget,

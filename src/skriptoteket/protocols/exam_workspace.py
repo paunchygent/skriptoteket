@@ -11,6 +11,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
@@ -137,6 +138,13 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
         lineage_id: UUID,
         target: ExamWorkspaceExportTarget,
     ) -> ExamWorkspaceExportFile: ...
+
+    async def checklist(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+    ) -> ExamWorkspaceExportChecklistResponse: ...
 
 
 class RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):

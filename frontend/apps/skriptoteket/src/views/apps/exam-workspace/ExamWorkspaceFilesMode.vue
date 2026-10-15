@@ -20,6 +20,7 @@ import { Upload } from "lucide-vue-next";
 
 import type {
   ExamWorkspaceDocumentSummary,
+  ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceEnrichmentPanel from "./ExamWorkspaceEnrichmentPanel.vue";
@@ -37,6 +38,7 @@ defineProps<{
   enrichmentDisabled: boolean;
   enrichmentLookupError: string | null;
   enrichmentMessage: string | null;
+  exportChecklist: ExamWorkspaceExportChecklistEntry[];
   exportNotice: string | null;
   exportingTarget: ExamWorkspaceExportTarget | null;
   hasDocument: boolean;
@@ -198,6 +200,7 @@ function handleDrop(event: DragEvent): void {
         </section>
 
         <ExamWorkspaceExportPanel
+          :export-checklist="exportChecklist"
           :export-notice="exportNotice"
           :exporting-target="exportingTarget"
           :is-busy="isBusy"

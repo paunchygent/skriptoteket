@@ -18,6 +18,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
     RetryExamWorkspaceItemRequest,
@@ -136,6 +137,22 @@ async def export_exam_workspace_document(
         media_type=result.media_type,
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
     )
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/export-checklist",
+    response_model=ExamWorkspaceExportChecklistResponse,
+)
+async def export_exam_workspace_document_checklist(
+    lineage_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceExportChecklistResponse:
+    """List what an Exam.net import of this document's QTI package loses (Q15)."""
+
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.checklist(actor=user, lineage_id=lineage_id)
 
 
 @router.put(

@@ -49,6 +49,7 @@ __all__ = [
     "append_score_outcome",
     "emits_map_response",
     "emits_all_or_nothing",
+    "gap_point_values",
     "qti_tag",
     "xsi_tag",
 ]
@@ -88,10 +89,10 @@ def append_response_declaration(
         return ()
 
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
-        gap_point_values = _gap_point_values(item)
+        gap_values = gap_point_values(item)
         mapped_gap_ids: list[str] = []
         for index, gap in enumerate(item.text_entry_gaps):
-            gap_points = None if gap_point_values is None else gap_point_values[index]
+            gap_points = None if gap_values is None else gap_values[index]
             if _append_gap_response_declaration(root, gap, gap_points):
                 mapped_gap_ids.append(gap.response_identifier)
         return tuple(mapped_gap_ids)
@@ -214,7 +215,14 @@ def _append_gap_response_declaration(
     return True
 
 
-def _gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
+def gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
+    """The formatted value every gap gets, or None when the writer maps no gap points.
+
+    None means the item carries no total or no gaps, or the rounded-down share is
+    0.00; the QTI writer then writes no gap mapping at all. The checklist reads the
+    same predicate so the two can never disagree about the rounded value.
+    """
+
     if item.max_score is None or not item.text_entry_gaps:
         return None
     value = (Decimal(str(item.max_score)) / len(item.text_entry_gaps)).quantize(

@@ -1568,6 +1568,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/export-checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Exam Workspace Document Checklist
+         * @description List what an Exam.net import of this document's QTI package loses (Q15).
+         */
+        get: operations["export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/exports/{target}": {
         parameters: {
             query?: never;
@@ -5173,6 +5193,79 @@ export interface components {
          * @enum {string}
          */
         ExamWorkspaceEnrichmentState: "not_eligible" | "queued" | "running" | "succeeded" | "failed";
+        /**
+         * ExamWorkspaceExportChecklistAllOrNothing
+         * @description One shared-instruction subquestion Exam.net gives 1 point instead of its own (Q16).
+         */
+        ExamWorkspaceExportChecklistAllOrNothing: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "all_or_nothing";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistCriterion
+         * @description One Fritext criterion's text and points, which Exam.net replaces with a bare row.
+         */
+        ExamWorkspaceExportChecklistCriterion: {
+            /** Points */
+            points: number;
+            /** Text */
+            text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistFreeTextCriteria
+         * @description One Fritext question whose criteria import as unlabelled 1-point rows (Q13).
+         */
+        ExamWorkspaceExportChecklistFreeTextCriteria: {
+            /** Criteria */
+            criteria: components["schemas"]["ExamWorkspaceExportChecklistCriterion"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "free_text_criteria";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
+        };
+        /**
+         * ExamWorkspaceExportChecklistResponse
+         * @description What an Exam.net import of this document's QTI package loses (Q15-Q17).
+         */
+        ExamWorkspaceExportChecklistResponse: {
+            /** Entries */
+            entries: (components["schemas"]["ExamWorkspaceExportChecklistFreeTextCriteria"] | components["schemas"]["ExamWorkspaceExportChecklistAllOrNothing"] | components["schemas"]["ExamWorkspaceExportChecklistRoundedGaps"])[];
+        };
+        /**
+         * ExamWorkspaceExportChecklistRoundedGaps
+         * @description One Lucktext whose rounded per-gap value leaves part of its points unused (Q17).
+         */
+        ExamWorkspaceExportChecklistRoundedGaps: {
+            /** Gap Points */
+            gap_points: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "rounded_gaps";
+            /** Points */
+            points: number;
+            /** Question Number */
+            question_number: string;
+            /** Question Text */
+            question_text: string;
+        };
         /**
          * ExamWorkspaceExportTarget
          * @enum {string}
@@ -12692,6 +12785,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceExportChecklistResponse"];
                 };
             };
             /** @description Validation Error */

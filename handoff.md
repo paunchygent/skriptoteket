@@ -62,7 +62,11 @@
   Task 6 `in_progress` (R15-R17): `0ed61820` by Pi `bff77816`, main merged;
   next: independent review, then staging/Exam.net walk. Evidence: session
   `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-06/implementation-report-2.md`.
-  Task 7 follows. No broad test suites in parallel (user 2026-10-15).
+  Task 7 `in_progress`, Pi `73729d8a`, branch `codex/task-skript-39-09-07`:
+  checklist API/plain panel implemented; focused tests, typechecks and build pass.
+  Report: session `01a13c92`, `evidence/impl/TASK-SKRIPT-39-09-07/implementation-report.md`.
+  Next: independent review, parent-owned polish and staging/Exam.net walk.
+  No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).

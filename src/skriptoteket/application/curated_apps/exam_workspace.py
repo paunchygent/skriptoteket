@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -177,3 +177,63 @@ class ExamWorkspaceExportFile(BaseModel):
     filename: str
     media_type: str
     content: bytes
+
+
+class ExamWorkspaceExportChecklistCriterion(BaseModel):
+    """One Fritext criterion's text and points, which Exam.net replaces with a bare row."""
+
+    model_config = ConfigDict(frozen=True)
+
+    text: str
+    points: int
+
+
+class ExamWorkspaceExportChecklistFreeTextCriteria(BaseModel):
+    """One Fritext question whose criteria import as unlabelled 1-point rows (Q13)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["free_text_criteria"]
+    question_number: str
+    question_text: str
+    points: int | float
+    criteria: tuple[ExamWorkspaceExportChecklistCriterion, ...]
+
+
+class ExamWorkspaceExportChecklistAllOrNothing(BaseModel):
+    """One shared-instruction subquestion Exam.net gives 1 point instead of its own (Q16)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["all_or_nothing"]
+    question_number: str
+    question_text: str
+    points: int | float
+
+
+class ExamWorkspaceExportChecklistRoundedGaps(BaseModel):
+    """One Lucktext whose rounded per-gap value leaves part of its points unused (Q17)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["rounded_gaps"]
+    question_number: str
+    question_text: str
+    points: int | float
+    gap_points: int | float
+
+
+ExamWorkspaceExportChecklistEntry = Annotated[
+    ExamWorkspaceExportChecklistFreeTextCriteria
+    | ExamWorkspaceExportChecklistAllOrNothing
+    | ExamWorkspaceExportChecklistRoundedGaps,
+    Field(discriminator="kind"),
+]
+
+
+class ExamWorkspaceExportChecklistResponse(BaseModel):
+    """What an Exam.net import of this document's QTI package loses (Q15-Q17)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    entries: tuple[ExamWorkspaceExportChecklistEntry, ...]

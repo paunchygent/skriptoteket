@@ -5,14 +5,20 @@
  * Domain purpose:
  *   Offer QTI, PDF, and DOCX files from the saved version. The server owns
  *   the export gate; this panel only disables the actions for unsaved edits
- *   or work in flight and shows the notice the server outcome produced.
+ *   or work in flight and shows the notice the server outcome produced. After
+ *   a QTI export it lists what Exam.net loses on import, so the teacher can
+ *   correct those rows in Exam.net.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; emits `export` with the target and the
  *     view runs it through `useExamWorkspaceExports`.
  */
 
-import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceExportChecklistEntry,
+  ExamWorkspaceExportTarget,
+} from "../../../api/examWorkspace";
+import { examWorkspaceQuestionLabel } from "./examWorkspaceRows";
 
 const EXPORT_TARGETS: { target: ExamWorkspaceExportTarget; label: string }[] = [
   { label: "QTI", target: "qti" },
@@ -21,6 +27,7 @@ const EXPORT_TARGETS: { target: ExamWorkspaceExportTarget; label: string }[] = [
 ];
 
 defineProps<{
+  exportChecklist: ExamWorkspaceExportChecklistEntry[];
   exportNotice: string | null;
   exportingTarget: ExamWorkspaceExportTarget | null;
   isBusy: boolean;
@@ -67,5 +74,52 @@ const emit = defineEmits<{
     >
       Spara provet innan du skapar filer. Filerna skapas från den sparade versionen.
     </p>
+    <div
+      v-if="exportChecklist.length > 0"
+      class="grid gap-2 border border-navy/20 bg-canvas px-3 py-2"
+      data-test="exam-workspace-export-checklist"
+    >
+      <h3 class="text-xs font-semibold leading-tight text-navy/80">
+        Det här tappar Exam.net vid import
+      </h3>
+      <ul class="grid gap-2">
+        <li
+          v-for="(entry, index) in exportChecklist"
+          :key="index"
+          class="grid gap-0.5"
+          data-test="exam-workspace-export-checklist-entry"
+          :data-test-kind="entry.kind"
+        >
+          <p class="text-sm font-medium leading-snug text-navy">
+            {{ examWorkspaceQuestionLabel(Number(entry.question_number)) }}:
+            {{ entry.question_text }}
+          </p>
+          <template v-if="entry.kind === 'free_text_criteria'">
+            <p
+              v-for="(criterion, criterionIndex) in entry.criteria"
+              :key="criterionIndex"
+              class="text-xs leading-snug text-navy/70"
+              data-test="exam-workspace-export-checklist-criterion"
+            >
+              {{ criterion.text }} ({{ criterion.points }} p)
+            </p>
+          </template>
+          <p
+            v-else-if="entry.kind === 'all_or_nothing'"
+            class="text-xs leading-snug text-navy/70"
+            data-test="exam-workspace-export-checklist-points"
+          >
+            Exam.net ger 1 poäng. Sätt {{ entry.points }} poäng.
+          </p>
+          <p
+            v-else
+            class="text-xs leading-snug text-navy/70"
+            data-test="exam-workspace-export-checklist-gap-points"
+          >
+            Frågan ger {{ entry.points }} poäng. Varje lucka får {{ entry.gap_points }} poäng.
+          </p>
+        </li>
+      </ul>
+    </div>
   </section>
 </template>

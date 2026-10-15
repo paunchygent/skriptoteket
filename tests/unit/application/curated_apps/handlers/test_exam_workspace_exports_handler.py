@@ -1,18 +1,31 @@
 """Unit tests for the exam workspace export handler (S4 gate + three targets)."""
 
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceExportChecklistCriterion,
+    ExamWorkspaceExportChecklistFreeTextCriteria,
+    ExamWorkspaceExportChecklistRoundedGaps,
     ExamWorkspaceExportTarget,
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.models import User
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -69,6 +82,38 @@ async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
     return actor, imported.summary.lineage_id
 
 
+def _loss_item(item: NativeExamItem) -> NativeExamItem:
+    """Give the seeded fixture one rounded Lucktext and one Fritext with criteria."""
+
+    if item.item_id == "item_001":
+        # The fixture's 6 points over 3 gaps divide evenly; 5 leaves 1.66 per gap.
+        return item.model_copy(update={"points": 5})
+    if item.kind is NativeExamItemKind.FREE_TEXT:
+        points = int(item.points or 1)
+        return item.model_copy(
+            update={
+                "points": points,
+                "criteria": (NativeExamCriterion(text="Ett korrekt resonemang.", points=points),),
+            }
+        )
+    return item
+
+
+async def _imported_and_reviewed_with_losses(env: _Env) -> tuple[User, UUID]:
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    reviewed = _reviewed(imported.document)
+    document = with_next_revision(
+        reviewed.model_copy(update={"items": tuple(_loss_item(item) for item in reviewed.items)})
+    )
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=document),
+    )
+    return actor, imported.summary.lineage_id
+
+
 @pytest.mark.asyncio
 async def test_unreviewed_document_blocks_every_target(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
@@ -120,4 +165,46 @@ async def test_unknown_lineage_is_not_found(env: _Env) -> None:
             lineage_id=uuid4(),
             target=ExamWorkspaceExportTarget.QTI,
         )
+    assert exc_info.value.code is ErrorCode.NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_checklist_lists_the_saved_heads_losses(env: _Env) -> None:
+    actor, lineage_id = await _imported_and_reviewed_with_losses(env)
+
+    response = await _export_handler(env).checklist(actor=actor, lineage_id=lineage_id)
+
+    entries = response.entries
+    assert len(entries) == 2
+    rounded, criteria = entries
+    assert isinstance(rounded, ExamWorkspaceExportChecklistRoundedGaps)
+    assert rounded.question_number == "1"
+    assert rounded.points == 5
+    assert rounded.gap_points == 1.66
+    assert rounded.question_text
+    assert isinstance(criteria, ExamWorkspaceExportChecklistFreeTextCriteria)
+    assert criteria.question_number == "8"
+    assert criteria.points == 8
+    assert criteria.criteria == (
+        ExamWorkspaceExportChecklistCriterion(text="Ett korrekt resonemang.", points=8),
+    )
+    assert criteria.question_text
+
+
+@pytest.mark.asyncio
+async def test_unreviewed_document_blocks_the_checklist(env: _Env) -> None:
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+
+    with pytest.raises(DomainError) as exc_info:
+        await _export_handler(env).checklist(actor=actor, lineage_id=imported.summary.lineage_id)
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert "blockers" in (exc_info.value.details or {})
+
+
+@pytest.mark.asyncio
+async def test_checklist_unknown_lineage_is_not_found(env: _Env) -> None:
+    with pytest.raises(DomainError) as exc_info:
+        await _export_handler(env).checklist(actor=_actor(), lineage_id=uuid4())
     assert exc_info.value.code is ErrorCode.NOT_FOUND

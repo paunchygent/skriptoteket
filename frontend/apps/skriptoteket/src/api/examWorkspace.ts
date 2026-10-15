@@ -4,8 +4,9 @@
  * Domain purpose:
  *   Thin typed client for the teacher exam workspace document lifecycle:
  *   import a .docx exam, list and reopen saved documents, save versioned
- *   revisions, download on-demand exports, and request AI answer-key
- *   suggestions for the questions exactly as the editor shows them.
+ *   revisions, download on-demand exports, list what Exam.net loses on
+ *   import, and request AI answer-key suggestions for the questions exactly
+ *   as the editor shows them.
  *
  * Relationships:
  *   - Uses `api/client.ts` helpers for protected API calls.
@@ -68,6 +69,15 @@ export type ExamWorkspaceExportBlocker = {
   item_id: string;
   reason: ExamWorkspaceExportBlockerReason;
 };
+
+export type ExamWorkspaceExportChecklistCriterion =
+  Schemas["ExamWorkspaceExportChecklistCriterion"];
+export type ExamWorkspaceExportChecklistEntry =
+  | Schemas["ExamWorkspaceExportChecklistFreeTextCriteria"]
+  | Schemas["ExamWorkspaceExportChecklistAllOrNothing"]
+  | Schemas["ExamWorkspaceExportChecklistRoundedGaps"];
+export type ExamWorkspaceExportChecklistResponse =
+  Schemas["ExamWorkspaceExportChecklistResponse"];
 
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
@@ -139,6 +149,19 @@ export async function downloadExamWorkspaceExport(
 ): Promise<ApiBlobResponse> {
   return await apiFetchBlobResponse(
     `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}`,
+  );
+}
+
+/**
+ * What Exam.net loses when it imports the saved revision: Fritext criteria,
+ * all-or-nothing subquestions, and rounded gap values, computed from the QTI
+ * items the export itself builds.
+ */
+export async function getExamWorkspaceExportChecklist(
+  lineageId: string,
+): Promise<ExamWorkspaceExportChecklistResponse> {
+  return await apiGet<ExamWorkspaceExportChecklistResponse>(
+    `${documentPath(lineageId)}/export-checklist`,
   );
 }
 

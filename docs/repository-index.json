@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9efa8d759b6ba5f8c7b05017901decb1483941420031ef4703350c7b5a5b88ff",
+  "source_set_digest": "6e66722444ad8b5722400327a47d82f8746877168e817be731583550b073e432",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5312,7 +5312,7 @@
       "type": "task",
       "title": "Export checklist: the export panel lists what Exam.net loses on import after a QTI export",
       "path": "docs/backlog/tasks/task-skript-39-09-07-export-checklist-the-export-panel-lists-what-exam-net-loses-on-import-after-a-qti-export.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [

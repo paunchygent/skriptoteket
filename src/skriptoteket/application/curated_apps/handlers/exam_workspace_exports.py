@@ -11,6 +11,12 @@ from __future__ import annotations
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamWorkspaceExportChecklistAllOrNothing,
+    ExamWorkspaceExportChecklistCriterion,
+    ExamWorkspaceExportChecklistEntry,
+    ExamWorkspaceExportChecklistFreeTextCriteria,
+    ExamWorkspaceExportChecklistResponse,
+    ExamWorkspaceExportChecklistRoundedGaps,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
 )
@@ -29,8 +35,18 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_export_checklist import (
+    ExamNetExportChecklistAllOrNothing,
+    ExamNetExportChecklistEntry,
+    ExamNetExportChecklistFreeTextCriteria,
+    ExamNetExportChecklistRoundedGaps,
+    native_exam_export_checklist,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
@@ -53,7 +69,7 @@ _CONTAINER_SUFFIX = ".provdokument.zip"
 
 
 class ExportExamWorkspaceDocumentHandler:
-    """Generate one validated export file from the head document revision."""
+    """Generate one validated export file, or the package's import loss checklist."""
 
     def __init__(
         self,
@@ -81,14 +97,7 @@ class ExportExamWorkspaceDocumentHandler:
     ) -> ExamWorkspaceExportFile:
         head, container = await self._load_head(actor=actor, lineage_id=lineage_id)
         document = container.document
-
-        blockers = native_export_blockers(document)
-        if blockers:
-            raise DomainError(
-                code=ErrorCode.VALIDATION_ERROR,
-                message="Provet har frågor som måste åtgärdas före export.",
-                details={"blockers": [blocker.model_dump(mode="json") for blocker in blockers]},
-            )
+        self._raise_for_blockers(document)
 
         base = head.name.removesuffix(_CONTAINER_SUFFIX) or "prov"
         if target is ExamWorkspaceExportTarget.QTI:
@@ -136,6 +145,33 @@ class ExportExamWorkspaceDocumentHandler:
             content=content,
         )
 
+    async def checklist(
+        self, *, actor: User, lineage_id: UUID
+    ) -> ExamWorkspaceExportChecklistResponse:
+        """List what Exam.net loses on import for the head document's QTI package (Q15).
+
+        The same load and the same S4 gate as the QTI export decide which document
+        is checked, so the panel can only ever describe a package that could be
+        exported.
+        """
+
+        _head, container = await self._load_head(actor=actor, lineage_id=lineage_id)
+        document = container.document
+        self._raise_for_blockers(document)
+        entries = native_exam_export_checklist(document, assets_by_id=container.assets_by_id)
+        return ExamWorkspaceExportChecklistResponse(
+            entries=tuple(_checklist_entry(entry) for entry in entries)
+        )
+
+    def _raise_for_blockers(self, document: NativeExamDocument) -> None:
+        blockers = native_export_blockers(document)
+        if blockers:
+            raise DomainError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="Provet har frågor som måste åtgärdas före export.",
+                details={"blockers": [blocker.model_dump(mode="json") for blocker in blockers]},
+            )
+
     async def _load_head(
         self, *, actor: User, lineage_id: UUID
     ) -> tuple[VaultFile, ExamWorkspaceContainerContent]:
@@ -146,3 +182,35 @@ class ExportExamWorkspaceDocumentHandler:
             raise _document_not_found(lineage_id)
         content = await self._store.load_version(actor=actor, vault_file=head)
         return head, self._codec.parse(content=content)
+
+
+def _checklist_entry(entry: ExamNetExportChecklistEntry) -> ExamWorkspaceExportChecklistEntry:
+    """Map one domain checklist entry onto the wire shape the export panel reads."""
+
+    if isinstance(entry, ExamNetExportChecklistFreeTextCriteria):
+        return ExamWorkspaceExportChecklistFreeTextCriteria(
+            kind="free_text_criteria",
+            question_number=entry.question_number,
+            question_text=entry.question_text,
+            points=entry.points,
+            criteria=tuple(
+                ExamWorkspaceExportChecklistCriterion(text=criterion.text, points=criterion.points)
+                for criterion in entry.criteria
+            ),
+        )
+    if isinstance(entry, ExamNetExportChecklistAllOrNothing):
+        return ExamWorkspaceExportChecklistAllOrNothing(
+            kind="all_or_nothing",
+            question_number=entry.question_number,
+            question_text=entry.question_text,
+            points=entry.points,
+        )
+    if isinstance(entry, ExamNetExportChecklistRoundedGaps):
+        return ExamWorkspaceExportChecklistRoundedGaps(
+            kind="rounded_gaps",
+            question_number=entry.question_number,
+            question_text=entry.question_text,
+            points=entry.points,
+            gap_points=entry.gap_points,
+        )
+    raise TypeError(f"Unknown checklist entry: {entry!r}")
