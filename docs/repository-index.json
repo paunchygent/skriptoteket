@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "25fd53a0320709ad5f86f24167808057679cf89144175023d79e1f8ab04195cb",
+  "source_set_digest": "8eb191cabc7c6ec40fdbd187c9be1cde648bbafffb836a1a152d9912c4c0c4aa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5247,7 +5247,7 @@
       "type": "task",
       "title": "Fritext criteria: a criteria list replaces the marking guide and exports as 1-point rows",
       "path": "docs/backlog/tasks/task-skript-39-09-04-fritext-criteria-a-criteria-list-replaces-the-marking-guide-and-exports-as-1-point-rows.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5258,7 +5258,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 28454af4 (oversized model and test modules) and approved the repair at dddf0d2f (merged a3525650). Staging walk at a3525650: DOCX-converted document a57a952f carries conversion-filled Fritext criteria; the criteria editor set 2+2+2 and 5; QTI export wrote 20 one-point rows, imported into Exam.net as 5337577 with 6, 5, 3 and 6 one-point rules. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-04/ and evidence/walk/TASK-SKRIPT-39-09-04/walk-record.md."
       }
     },
     {
@@ -5266,7 +5270,7 @@
       "type": "task",
       "title": "Kort svar: Ny fråga creates a one-gap Lucktext after the question text",
       "path": "docs/backlog/tasks/task-skript-39-09-05-kort-svar-ny-fråga-creates-a-one-gap-lucktext-after-the-question-text.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",
       "owners": [
@@ -5277,7 +5281,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (gpt-6.1-sol) reviewed b58778a8, rereviewed b0afb311 and approved 41972ac6 (merged 5c8c540f). Staging walk found standalone Lucktext gaps bound to literal underscore lines; fixed in 4b54bceb. Walk at 4b54bceb: Ny fråga: kort svar, keyed Stockholm, 1 point; export imported into Exam.net as 5337942, a one-gap fillGaps task with Stockholm keyed and one 1-point rule. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-05/ and evidence/walk/TASK-SKRIPT-39-09-05/walk-record.md."
       }
     },
     {

@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) reviewed b58778a8, rereviewed b0afb311 and approved 41972ac6 (merged 5c8c540f). Staging walk found standalone Lucktext gaps bound to literal underscore lines; fixed in 4b54bceb. Walk at 4b54bceb: Ny fråga: kort svar, keyed Stockholm, 1 point; export imported into Exam.net as 5337942, a one-gap fillGaps task with Stockholm keyed and one 1-point rule. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-05/ and evidence/walk/TASK-SKRIPT-39-09-05/walk-record.md.'
 task_kind: story
 acceptance_criteria:
 - A teacher picks Kort svar from Ny fråga, gets a Lucktext with one gap after the

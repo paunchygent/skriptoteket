@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 28454af4 (oversized model and test modules) and approved the repair at dddf0d2f (merged a3525650). Staging walk at a3525650: DOCX-converted document a57a952f carries conversion-filled Fritext criteria; the criteria editor set 2+2+2 and 5; QTI export wrote 20 one-point rows, imported into Exam.net as 5337577 with 6, 5, 3 and 6 one-point rules. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-04/ and evidence/walk/TASK-SKRIPT-39-09-04/walk-record.md.'
 task_kind: story
 acceptance_criteria:
 - A teacher's Fritext with criteria exports one 1-point rule row per criterion point

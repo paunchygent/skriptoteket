@@ -56,9 +56,11 @@
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
   `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`). Tasks 4 (Fritext criteria,
-  in review), 5 (Kort svar) and 6 (structured misspelling producer, R15-R17)
-  `in_progress` in their own worktrees; task 7 export checklist follows.
+  `../Skriptoteket-task-skript-39-09-03`). Task 4 `done` (a3525650; Exam.net
+  5337577). Task 5 `done` (5c8c540f, walk fix 4b54bceb; Exam.net 5337942).
+  Task 6 (structured misspelling producer, R15-R17) `in_progress` in its
+  worktree; task 7 export checklist follows. No broad test suites in parallel
+  (user rule 2026-10-15).
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
@@ -167,11 +169,8 @@
 
 ## Recent
 
-- TASK-SKRIPT-39-04-09 `done` 2026-10-13: review `d09bd286`, main `c018ae9e`, walk retained `01a13559…/evidence/staging-walk-c018ae9e/README.md`.
-
-- TASK-SKRIPT-39-04-07 `done` 2026-10-13 (review of final repair `ace0cc39` waived by user): main `838baea9`, walk retained `01a133f5…/evidence/staging-walk-838baea9/README.md`.
-
-- TASK-SKRIPT-39-05-07 `done` 2026-10-13: review `58dabe3f`, walk on ebc2a9c7 retained `01a13274…/evidence/staging-walk-ebc2a9c7/`.
+- 2026-10-13 `done`: TASK-SKRIPT-39-04-09 (main `c018ae9e`), 39-04-07 (`838baea9`),
+  39-05-07 (`ebc2a9c7`); walk records are cited in each task's closeout.
 
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
