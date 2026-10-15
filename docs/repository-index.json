@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1c31fb0623b8bb035a1b2cf48363ded991849cece762461f88880919dacfdbac",
+  "source_set_digest": "355530bc8e76da72780031ae10c7f373f16aaca68ee03f999bc63bfdc5f9d925",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2369,7 +2369,7 @@
       "type": "story",
       "title": "QTI 3.0 native export for Exam.net",
       "path": "docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2382,7 +2382,10 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "All eight tasks done (TASK-SKRIPT-39-09-01..08), each proven by a Hemma staging walk and an Exam.net import read back through /api/exams/automarked; task reviews recorded per task, task 8 review waived by the user 2026-10-15."
       }
     },
     {

@@ -71,7 +71,7 @@
   Exam.net 5337577); task 5 `done` (5c8c540f, fix 4b54bceb; Exam.net 5337942).
   Tasks 6, 7 and 8 `done` (8: merge 0262f054, divider e72f27f3; review waived by
   user; staging walk and Exam.net import 5339805 show all marks and h1-h3).
-  Next: story ST-SKRIPT-39-09 closeout and epic summary. Open defect: section
+  Story ST-SKRIPT-39-09 `done`. Open defect: section
   headings (Del A/Del B) stack at the top instead of before their questions.
   No Hemma access during storage hold; no parallel full suites (user 2026-10-15).
 

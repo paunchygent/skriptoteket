@@ -141,7 +141,7 @@ closes the epic and is not on the critical path.
     empirically proven native QTI 3.0 Exam.net contract from the HuleEduOS
     `examnet-qti-import` skill, porting the proven shapes (inline choice,
     ordering, grid/matching layouts, mapping-based scoring), and replaces
-    the QTI 2.1 writer outright (`ST-SKRIPT-39-09`, `proposed`; user decisions
+    the QTI 2.1 writer outright (`ST-SKRIPT-39-09`, `done`; user decisions
     2026-10-15). It also delivers the Exam.net import routes: Kategorisera
     grid, Fritext criteria, Kort svar and the export checklist.
 09. Teacher authoring of every Exam.net question type with parent and child
@@ -185,6 +185,14 @@ closes the epic and is not on the critical path.
 
 ## Current Implementation Summary
 
+- `ST-SKRIPT-39-09` is done (2026-10-15). The workspace export and the
+  DigiExam converter write one QTI 3.0 package shape that Exam.net imports with
+  the workspace's tasks, keys and points. It delivers Kategorisera grids with
+  many-to-many keys, Fritext criteria as 1-point rows, Kort svar as a one-gap
+  Lucktext, deterministic misspellings for keyed gaps, the post-export
+  checklist, and source formatting (bold, italic, underline, sub/superscript,
+  h1-h3) from DOCX through the editor and export. Open follow-up: section
+  headings stack at the top instead of before their own questions.
 - `ST-SKRIPT-39-02` is done and independently verified. Skriptoteket now owns
   the execution-worker answer-key completion line with Luna low-effort as the
   primary provider, transient-only GLM-5.3-flash failover, a Postgres/UoW

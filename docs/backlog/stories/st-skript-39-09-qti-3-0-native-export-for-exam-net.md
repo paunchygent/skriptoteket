@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-15'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-15'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'All eight tasks done (TASK-SKRIPT-39-09-01..08), each proven by a Hemma staging walk and an Exam.net import read back through /api/exams/automarked; task reviews recorded per task, task 8 review waived by the user 2026-10-15.'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - The exam workspace exports a QTI 3.0 package that Exam.net imports with the same tasks, keys and points as the workspace shows
