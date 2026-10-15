@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: proposed
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -37,6 +37,9 @@ replaying a clip from Hjälp does not.
 Deliver one visible Hjälp control in the signed-in planner shell at every width
 from 1024 px up, with the same help panel behind it, without duplicating app
 lanes in the drawer.
+
+Owner: the user's Mac Claude session (2026-10-15), which repairs this together
+with HuleEdu TASK-HULE-REP-0142 and then reruns the ST-SKRIPT-08-36 walk.
 
 ## Contract Inputs
 

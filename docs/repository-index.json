@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b6ae072af3f4f23aa684953e62b0bf886b1ee17ccdc86f68a12d190466c2e22d",
+  "source_set_digest": "2a1df5b147e5d75fb7339d574d25db26b1189c06baf25fb461271c5b8539a961",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2633,7 +2633,7 @@
       "type": "task",
       "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
       "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
-      "status": "done",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
       "owners": [
@@ -2644,11 +2644,7 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "approved",
-        "reviewer": "ruthless-reviewer",
-        "decided_at": "2026-10-15",
-        "approval_protocol": "agent-overseer:approved-review-closeout",
-        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the backend at 8576afb7 and the frontend at 3c95199d (retained evidence/reviews/ST-SKRIPT-08-36/); merged main ef92afd8, pushed 03ba322d, staging rebuilt on b8e43394; the Mac browser walk on 2026-10-15 passed guest desktop, guest narrow and signed-in steps (PATCH 200, no reopen after reload) with the Klass thumbnail in Hjälp (evidence/staging-walk-prep-b8e43394/walk-2026-10-15/WALK.md), all in session 01a13d03-cc0c-731e-a9e5-b3d536821e55."
+        "status": "not_started"
       }
     },
     {
@@ -6269,7 +6265,7 @@
       "type": "task",
       "title": "Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px",
       "path": "docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
