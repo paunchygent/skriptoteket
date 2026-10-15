@@ -57,6 +57,15 @@
   - [TASK-SKRIPT-39-05-12](docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
     `done` 2026-10-15: merged b8e43394, staging walk saved a matching edit;
     retained `01a13f01-f1dc-7614-beb6-76a946b50b74` `evidence/walk/`.
+  - [TASK-SKRIPT-39-05-13](docs/backlog/tasks/task-skript-39-05-13-item-type-conversion-prompts-built-from-general-principles.md)
+    `in_progress`, owner Claude parent; merged `5d878505` (prompt core plus
+    item-kind sections, grouped-facit admission principle, D6 16-family
+    batches). Live corpus 307/316 at 16 families vs 298/316 at 1; staging walk
+    passed, Exam.net 5339992; retained `01a141b5-f55d-747d-8515-1e07d2fc0d0f`
+    `evidence/staging-walk/walk.md`. Next: user closure; then plan
+    TASK-SKRIPT-39-05-14 (exam header lines into document/QTI metadata, never
+    exam text; user 2026-10-16) and the grouping fault that drops headings
+    such as "2. Tempus (3 p)" into other_anchors.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
