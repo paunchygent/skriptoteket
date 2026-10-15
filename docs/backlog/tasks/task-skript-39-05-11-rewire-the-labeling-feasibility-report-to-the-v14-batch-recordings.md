@@ -76,3 +76,4 @@ names the v14 recordings. Reading 64 small JSON files is negligible.
 | D2 | The baseline for an exam is the joined items of all its `docx_w*.json` batches, retries included (parent decision 2026-10-15, no anchor overlap found). |
 | D3 | Remove `_CONVERTER_RECORDINGS` and `--converter-recordings` with no fallback; the repo keeps no backward compatibility (CLAUDE.md, parent decision 2026-10-15). |
 | D4 | A Sol 6.1 implementation-specialist implements and a Sol 6.1 ruthless-reviewer reviews (user decision 2026-10-15). |
+| D5 | Review repair widens the write scope within `scripts/labeling_feasibility/`: typed loader and baseline input instead of `Any`, `methods.py` (615 lines) split by responsibility under 500 lines per file with behavior preserved, unconditional baseline line, and removal of the unused `_metric` and `methods.dump` (parent decision 2026-10-15, ruthless-review findings 1-3, Boy Scout rule). |
