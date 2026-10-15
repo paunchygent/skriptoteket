@@ -9,19 +9,27 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     merge_conversion,
     target_from_update,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeExamAsset,
-    NativeExamDocument,
-    NativeExamDocumentOrigin,
-    NativeExamItem,
-    NativeExamItemKind,
-    NativeExamRetryChunk,
-    NativeExamRetryImage,
-    NativeExamRetrySource,
     NativeParagraph,
     NativeSegment,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
+    NativeExamRetryChunk,
+    NativeExamRetryImage,
+    NativeExamRetrySource,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (

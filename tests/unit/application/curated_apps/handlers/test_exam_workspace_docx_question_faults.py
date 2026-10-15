@@ -32,13 +32,19 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     question_families,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import manifest_from_output
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate

@@ -8,7 +8,10 @@
  *   Mirrors these `NativeExamItem` field rules exactly: points must be
  *   greater than zero (`_positive_finite_points`), and choice text must not
  *   be empty (`NativeChoice.text`, `min_length=1`, not stripped), and so must
- *   matching entry text. A partial gap key or an incomplete matching key
+ *   matching entry text. A free-text item's criteria must have non-empty
+ *   text and whole points of at least 1, only free-text items carry them,
+ *   and a non-empty list's points are exactly the item's points. A partial
+ *   gap key or an incomplete matching key
  *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
  *
  * Relationships:
@@ -18,7 +21,7 @@
  *     `ExamWorkspaceItemEditor` (inline field hints).
  */
 
-import type { NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";
 import {
   incompleteMatchKeyCopy,
   isIncompleteMatchingItem,
@@ -30,6 +33,12 @@ import {
 export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
 export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller ett svar i matchningen saknar text.";
+export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";
+export const INVALID_CRITERION_POINTS_GUIDANCE =
+  "Poängen för ett kriterium måste vara ett heltal som är minst 1.";
+export const CRITERIA_POINTS_MISMATCH_GUIDANCE =
+  "Kriteriernas poängsumma ska vara frågans poäng.";
+export const CRITERIA_ON_WRONG_KIND_GUIDANCE = "Endast fritextfrågor kan ha kriterier.";
 
 export function hasNonPositivePoints(item: NativeExamItem): boolean {
   return typeof item.points === "number" && item.points <= 0;
@@ -45,6 +54,33 @@ export function hasEmptyChoiceText(item: NativeExamItem): boolean {
 
 export function hasEmptyMatchText(item: NativeExamItem): boolean {
   return [...item.match_left, ...item.match_right].some((entry) => isEmptyChoiceText(entry.text));
+}
+
+/** The exact sum the model requires of a non-empty criteria list. */
+export function criteriaPointsTotal(criteria: readonly NativeExamCriterion[]): number {
+  return criteria.reduce((sum, criterion) => sum + criterion.points, 0);
+}
+
+/**
+ * The model strips criterion text only to check it, so whitespace alone is
+ * an empty criterion, unlike a choice's text.
+ */
+export function hasEmptyCriterionText(item: NativeExamItem): boolean {
+  return item.criteria.some((criterion) => criterion.text.trim().length === 0);
+}
+
+export function hasInvalidCriterionPoints(item: NativeExamItem): boolean {
+  return item.criteria.some(
+    (criterion) => !Number.isInteger(criterion.points) || criterion.points < 1,
+  );
+}
+
+export function hasCriteriaPointsMismatch(item: NativeExamItem): boolean {
+  return item.criteria.length > 0 && item.points !== criteriaPointsTotal(item.criteria);
+}
+
+export function hasCriteriaOnWrongKind(item: NativeExamItem): boolean {
+  return item.criteria.length > 0 && item.kind !== "free_text";
 }
 
 function refusal(
@@ -81,6 +117,30 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
       hasEmptyMatchText,
       (refused) =>
         `${questionSubject(refused)} har rader eller svar i matchningen utan text. Skriv text i varje rad och varje svar.`,
+    ),
+    refusal(
+      items,
+      hasEmptyCriterionText,
+      (refused) =>
+        `${questionSubject(refused)} har ett kriterium utan text. Skriv text i varje kriterium.`,
+    ),
+    refusal(
+      items,
+      hasInvalidCriterionPoints,
+      (refused) =>
+        `${questionSubject(refused)} har ett kriterium med ogiltiga poäng. ${INVALID_CRITERION_POINTS_GUIDANCE}`,
+    ),
+    refusal(
+      items,
+      hasCriteriaPointsMismatch,
+      (refused) =>
+        `${questionSubject(refused)} har kriterier vars poängsumma inte stämmer med frågans poäng. ${CRITERIA_POINTS_MISMATCH_GUIDANCE}`,
+    ),
+    refusal(
+      items,
+      hasCriteriaOnWrongKind,
+      (refused) =>
+        `${questionSubject(refused)} har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
     ),
   ].filter((copy): copy is string => copy !== null);
   return refusals.length > 0 ? refusals.join(" ") : null;

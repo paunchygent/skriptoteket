@@ -46,7 +46,12 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": "När en handling, egenskap eller process uttrycks som substantiv."
+      "criteria": [
+        {
+          "text": "När en handling, egenskap eller process uttrycks som substantiv.",
+          "points": null
+        }
+      ]
     }
   ]
 }

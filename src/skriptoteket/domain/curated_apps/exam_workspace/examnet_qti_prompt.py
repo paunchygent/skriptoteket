@@ -15,7 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamAsset
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_asset_ids
 from skriptoteket.domain.errors import DomainError, ErrorCode
 

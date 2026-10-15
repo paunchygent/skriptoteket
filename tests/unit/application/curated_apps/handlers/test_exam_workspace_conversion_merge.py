@@ -14,11 +14,15 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     merge_conversion,
     target_from_update,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate

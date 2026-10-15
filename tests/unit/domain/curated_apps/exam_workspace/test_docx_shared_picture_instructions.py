@@ -28,13 +28,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     question_retry_source,
     with_retry_sources,
     with_source_assets,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,

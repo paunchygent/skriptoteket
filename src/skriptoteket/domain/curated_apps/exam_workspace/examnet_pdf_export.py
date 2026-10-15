@@ -40,6 +40,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_promp
 )
 from skriptoteket.domain.curated_apps.exam_conversion.exam_pdf_item_semantics import (
     PdfExamAnswerKeySemantics,
+    PdfExamCriterionSemantics,
     PdfExamGapAnswerSemantics,
     PdfExamGapSemantics,
     PdfExamItemKind,
@@ -60,14 +61,20 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
     ExamLanguageLabels,
     exam_language_labels,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeExamDocument,
-    NativeExamItem,
-    NativeExamItemKind,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
 )
 
 NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
@@ -209,7 +216,10 @@ def _pdf_item_semantics(
         points=points,
         prompt_html=prompt_html,
         source_item_type_label=item.kind.value,
-        marking_guide=item.marking_guide,
+        criteria=tuple(
+            PdfExamCriterionSemantics(text=criterion.text, points=criterion.points)
+            for criterion in item.criteria
+        ),
         options=tuple(
             PdfExamOptionSemantics(option_id=_choice_number(choice.choice_id), text=choice.text)
             for choice in item.choices

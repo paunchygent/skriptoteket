@@ -28,14 +28,18 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_fields import (
     digest_json as _digest,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamParent,
-    NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
     validate_parent_structure,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate

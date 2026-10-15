@@ -39,7 +39,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate

@@ -17,24 +17,37 @@ from PIL import Image
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     exam_language_labels,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeChoice,
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
+    NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
     NativeGap,
-    NativeGapSegment,
     NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
     NativeItemReviewState,
-    NativeParagraph,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
@@ -112,7 +125,7 @@ def shared_picture_document() -> SharedPictureDocument:
                 ),
             ),
             points=1,
-            marking_guide=_SHARED_MARKING_GUIDE,
+            criteria=(NativeExamCriterion(text=_SHARED_MARKING_GUIDE, points=1),),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=_review_complete(),
         ),
@@ -442,7 +455,8 @@ class TestSharedInstructionPictures:
             if paragraph.style is not None and paragraph.style.name == "Heading 2"
         ]
         assert labels.answer_key in heading_names
-        assert labels.keyed(labels.marking_guide, _SHARED_MARKING_GUIDE) in texts
+        assert f"{labels.marking_guide}:" in texts
+        assert f"• {_SHARED_MARKING_GUIDE} (1 p)" in texts
 
     def test_item_body_picture_keeps_plain_text_rendering(self) -> None:
         fixture = shared_picture_document()

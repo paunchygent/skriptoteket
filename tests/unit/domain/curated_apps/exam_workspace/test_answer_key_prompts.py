@@ -40,21 +40,29 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_fingerprint_for_view,
     answer_key_item_views,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeChoice,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
     NativeGap,
-    NativeGapSegment,
     NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
     NativeItemReviewState,
-    NativeParagraph,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 
 pytestmark = pytest.mark.unit

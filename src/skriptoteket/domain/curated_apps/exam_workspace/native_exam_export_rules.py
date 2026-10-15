@@ -8,9 +8,13 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
     NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,

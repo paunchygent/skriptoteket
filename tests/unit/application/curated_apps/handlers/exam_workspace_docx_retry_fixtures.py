@@ -38,23 +38,33 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKey,
-    NativeAnswerKeyOrigin,
-    NativeAnswerKeySuggestion,
     NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
     NativeExamRetrySource,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeAnswerKeySuggestion,
     NativeItemReview,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
+    NativeExamItemKind,
     NativeItemReviewState,
-    NativeParagraph,
     NativeParseOrigin,
-    NativeTextSegment,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
@@ -267,7 +277,7 @@ def retry_reply(
                 "match_left": [],
                 "match_right": [],
                 "match_pairs": [],
-                "marking_guide": None,
+                "criteria": [],
             }
         ],
     }

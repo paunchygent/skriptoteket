@@ -21,15 +21,21 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
-    NativeExamItemKind,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetryChunk,
     NativeExamRetryImage,
     NativeExamRetrySource,
-    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
 )
 
 _PNG = b"picture-one"
@@ -81,7 +87,7 @@ def _produced(segments: list[dict[str, object]]) -> ProducedItem:
             "match_left": [],
             "match_right": [],
             "match_pairs": [],
-            "marking_guide": None,
+            "criteria": [],
         }
     )
 

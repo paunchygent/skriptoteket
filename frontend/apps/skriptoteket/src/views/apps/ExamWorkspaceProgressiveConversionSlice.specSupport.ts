@@ -147,9 +147,15 @@ export async function forceInput(view: ViewWrapper, control: string, value: stri
   await flushPromises();
 }
 
+/** Dispatch a click straight on the element, past its `disabled` attribute. */
+export async function forceClick(view: ViewWrapper, control: string) {
+  view.get(`[data-test="${control}"]`).element.dispatchEvent(new MouseEvent("click"));
+  await flushPromises();
+}
+
 const EDIT_CONTROLS = [
   "exam-workspace-item-points-input",
-  "exam-workspace-marking-guide-input",
+  "exam-workspace-criterion-add",
 ];
 
 /** Every edit control of the selected item's editor is enabled, or every one is disabled. */
