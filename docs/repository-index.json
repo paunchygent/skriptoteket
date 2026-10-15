@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9a55f81759e899df82454f7f2adf4b39746037d41dd4997b3d81b528001cb3f",
+  "source_set_digest": "ce9dcb6af70c0b4d72aada7aac795841e604602cc33a26159c63d06962bd2cce",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -752,6 +752,27 @@
       }
     },
     {
+      "id": "ST-SKRIPT-06-17",
+      "type": "story",
+      "title": "Migration idempotency harness supports merge revisions",
+      "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "ST-SKRIPT-08-04",
       "type": "story",
       "title": "Catalog help (browse + run)",
@@ -983,7 +1004,7 @@
       "type": "story",
       "title": "Klassrumskartan tutorial clips in Hjälp with a first-use dialog",
       "path": "docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-08",
       "owners": [
         {
@@ -2474,6 +2495,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-06-17-01",
+      "type": "task",
+      "title": "Resolve merge-revision parents in the migration idempotency support",
+      "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-08-27-01",
       "type": "task",
       "title": "AI frontend: SRP refactor audit follow-ups (editor AI hotspots)",
@@ -2583,6 +2623,25 @@
         "record": "inline",
         "status": "not_started"
       },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-08-36-01",
+      "type": "task",
+      "title": "Walking skeleton: serve one placeholder clip from the media mount into the first-use dialog with seen-state",
+      "path": "docs/backlog/tasks/task-skript-08-36-01-walking-skeleton-serve-one-placeholder-clip-from-the-media-mount-into-the-first-use-dialog-with-seen-state.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-08-36",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
       "closeout_review": {
         "record": "inline",
         "status": "not_started"

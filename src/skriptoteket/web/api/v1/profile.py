@@ -13,7 +13,7 @@ Relationships:
 from typing import Literal
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from skriptoteket.application.identity.commands import (
     GetProfileCommand,
@@ -23,7 +23,11 @@ from skriptoteket.application.identity.commands import (
 )
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
 from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import User, UserProfile
+from skriptoteket.domain.identity.models import (
+    User,
+    UserProfile,
+    normalize_classroom_planner_tutorial_seen_sections,
+)
 from skriptoteket.protocols.identity import (
     GetProfileHandlerProtocol,
     UpdateAiSettingsHandlerProtocol,
@@ -84,6 +88,15 @@ class UpdateClassroomPlannerSettingsRequest(BaseModel):
     smart_enabled: bool | None = None
     use_history: bool | None = None
     grouping_seating_distance_enabled: bool | None = None
+    # Replace semantics: the client sends the full list of seen tutorial sections.
+    tutorial_seen_sections: list[str] | None = None
+
+    @field_validator("tutorial_seen_sections")
+    @classmethod
+    def validate_tutorial_seen_sections(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        return normalize_classroom_planner_tutorial_seen_sections(value)
 
     @model_validator(mode="after")
     def validate_at_least_one_field(self) -> "UpdateClassroomPlannerSettingsRequest":
@@ -91,6 +104,7 @@ class UpdateClassroomPlannerSettingsRequest(BaseModel):
             self.smart_enabled is None
             and self.use_history is None
             and self.grouping_seating_distance_enabled is None
+            and self.tutorial_seen_sections is None
         ):
             raise ValueError("At least one classroom planner setting is required")
         return self
@@ -165,6 +179,7 @@ async def update_classroom_planner_settings(
             smart_enabled=payload.smart_enabled,
             use_history=payload.use_history,
             grouping_seating_distance_enabled=payload.grouping_seating_distance_enabled,
+            tutorial_seen_sections=payload.tutorial_seen_sections,
         )
     )
     return ProfileResponse(user=result.user, profile=result.profile)

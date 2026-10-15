@@ -95,6 +95,29 @@ class User(BaseModel):
     updated_at: datetime
 
 
+CLASSROOM_PLANNER_TUTORIAL_SECTIONS: tuple[str, ...] = (
+    "planner_overview",
+    "planner_seating",
+    "planner_grouping",
+    "planner_rules",
+)
+
+
+def normalize_classroom_planner_tutorial_seen_sections(sections: list[str]) -> list[str]:
+    """Return known tutorial section ids deduplicated in first-seen order.
+
+    Raises:
+        ValueError: when a section id is not a known Klassrumskartan help section.
+    """
+
+    unknown = [
+        section for section in sections if section not in CLASSROOM_PLANNER_TUTORIAL_SECTIONS
+    ]
+    if unknown:
+        raise ValueError(f"Unknown classroom planner tutorial sections: {', '.join(unknown)}")
+    return list(dict.fromkeys(sections))
+
+
 class UserProfile(BaseModel):
     """User profile data aligned with HuleEdu identity expectations."""
 
@@ -109,6 +132,7 @@ class UserProfile(BaseModel):
     classroom_planner_smart_enabled: bool | None = None
     classroom_planner_use_history: bool | None = None
     classroom_planner_grouping_seating_distance_enabled: bool | None = None
+    classroom_planner_tutorial_seen_sections: list[str] | None = None
     locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime
