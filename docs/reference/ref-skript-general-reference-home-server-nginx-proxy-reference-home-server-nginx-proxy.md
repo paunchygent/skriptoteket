@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-home-server-nginx-proxy
 title: 'Reference: Home Server nginx-proxy'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-home-server-nginx-proxy
+  - REF-home-server-nginx-proxy
 summary: 'Reference: Home Server nginx-proxy'
 ---
 
@@ -22,24 +22,37 @@ Details for adding services behind nginx-proxy and maintaining edge hardening.
 
 ## Facts And Semantics
 
-### Source: Current edge reality (verified 2026-05-02)
+### Source: Edge observation (2026-05-02) and retirement policy (2026-10-15)
 
-Hemma's shared edge stack is:
+The 2026-05-02 reference recorded Hemma's shared edge stack as:
 
 - `nginxproxy/nginx-proxy:1.6` (`nginx-proxy`)
 - `nginxproxy/acme-companion:2.4` (`acme-companion`)
 - `DEFAULT_HOST=skriptoteket.hule.education`
 
-Known active routed hosts on the shared proxy:
+Supported routed product hosts, with the 2026-10-15 retirement applied:
 
 - `skriptoteket.hule.education`
-- `convert.hule.education`
 - `projektveckor.hule.education`
 - `hule.education`
 - `api.hule.education`
 - `ws.hule.education`
 
 The HuleEdu hostnames are claimed by HuleEdu runtime services.
+
+Sir Convert-a-Lot public host retired (2026-10-15, source-based):
+
+- The user retired `convert.hule.education` on 2026-10-15. The source
+  retirement is Sir `fix/retire-convert-public-edge` commit `904d0e3f` with
+  accepted `ADR-SIRCON-0014`; the hostname has no supported public conversion
+  or reserved status, and private and Gateway authorization boundaries remain
+  in force. Do not re-add it as a `VIRTUAL_HOST`.
+- Sir Convert-a-Lot's supported service lane is private:
+  `sir_convert_a_lot_prod:8085` on `hule-network`
+  (`http://sir_convert_a_lot_prod:8085`). Sir production remains offline by
+  user decision.
+- Namecheap CNAME deletion stays with the user. No DNS, vhost, or certificate
+  deployment proof is claimed here; this record is source-based.
 
 Fallback/default host behavior:
 

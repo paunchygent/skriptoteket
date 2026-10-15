@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8eb191cabc7c6ec40fdbd187c9be1cde648bbafffb836a1a152d9912c4c0c4aa",
+  "source_set_digest": "b8f7b538636b73ca074e142b3198e70be23f973e94c8ab1c5845e1299f81f941",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6315,6 +6315,24 @@
       "type": "task",
       "title": "Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px",
       "path": "docs/backlog/tasks/task-skript-rep-0039-show-the-hjälp-control-in-the-signed-in-planner-shell-between-1024-and-1279-px.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0040",
+      "type": "task",
+      "title": "Retire Sir Convert public-host defaults and align private conversion lanes",
+      "path": "docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md",
       "status": "in_progress",
       "task_kind": "repository",
       "owners": [

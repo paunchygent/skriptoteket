@@ -239,6 +239,44 @@ def test_remote_proof_gateway_rejects_local_gateway_targets(gateway_backend_url:
     assert exc_info.value.metadata["job_submit_allowed"] is False
 
 
+def test_retired_public_host_does_not_establish_remote_compute_without_service_profile() -> None:
+    with pytest.raises(SirConvertTrustLanePreflightError) as exc_info:
+        run_trust_lane_preflight(
+            _input(
+                gateway_backend_url="https://convert.hule.education",
+                gateway_signer_fingerprint=HEMMA_VERIFIER_FINGERPRINT,
+                sir_convert_trusted_fingerprint=HEMMA_VERIFIER_FINGERPRINT,
+                sir_convert_service_profile=None,
+            )
+        )
+
+    error = exc_info.value
+    assert error.blocker_kind == "sir_convert_trust_lane_unresolved"
+    assert error.metadata["base_url_kind"] == "local"
+    assert error.metadata["remote_compute"] is False
+    assert error.metadata["job_submit_allowed"] is False
+
+
+def test_retired_public_host_producer_target_fails_producer_validation_before_submit() -> None:
+    with pytest.raises(SirConvertTrustLanePreflightError) as exc_info:
+        run_trust_lane_preflight(
+            _input(
+                gateway_backend_url="https://api.hule.education/sir-convert/v2/convert",
+                producer_backend_url="https://convert.hule.education",
+                gateway_signer_fingerprint=HEMMA_VERIFIER_FINGERPRINT,
+                sir_convert_trusted_fingerprint=HEMMA_VERIFIER_FINGERPRINT,
+                sir_convert_service_profile=None,
+                proof_lane="remote-proof-gateway",
+            )
+        )
+
+    error = exc_info.value
+    assert error.blocker_kind == "sir_convert_producer_lane_unresolved"
+    assert error.metadata["remote_compute"] is True
+    assert error.metadata["producer_backend_url"] == "https://convert.hule.education"
+    assert error.metadata["job_submit_allowed"] is False
+
+
 def test_mixed_tunnel_debug_lane_still_requires_cli_opt_in() -> None:
     with pytest.raises(SirConvertTrustLanePreflightError) as exc_info:
         run_trust_lane_preflight(
@@ -274,7 +312,7 @@ def test_failure_summary_keeps_only_public_redacted_metadata() -> None:
         run_trust_lane_preflight(
             _input(
                 gateway_backend_url=(
-                    "https://service-user:super-secret-password@convert.hule.education/"
+                    "http://service-user:super-secret-password@host.docker.internal:28085/"
                     "v2?token=private-token#cookie"
                 ),
                 allow_mixed_sir_convert_tunnel=True,
@@ -293,7 +331,8 @@ def test_failure_summary_keeps_only_public_redacted_metadata() -> None:
     assert summary["blocker_kind"] == "sir_convert_trust_lane_mismatch"
     assert summary["base_url"] == "http://127.0.0.1:5173"
     assert (
-        summary["trust_lane_preflight"]["gateway_backend_url"] == "https://convert.hule.education"
+        summary["trust_lane_preflight"]["gateway_backend_url"]
+        == "http://host.docker.internal:28085"
     )
     assert LOCAL_SIGNER_FINGERPRINT in rendered
     assert HEMMA_VERIFIER_FINGERPRINT in rendered

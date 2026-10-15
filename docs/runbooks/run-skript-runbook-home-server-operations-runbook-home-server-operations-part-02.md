@@ -262,29 +262,35 @@ containers.
 
 Hemma reference values for Conversion Hub:
 
-- `SIR_CONVERT_A_LOT_V2_BASE_URL=https://convert.hule.education`
+- `SIR_CONVERT_A_LOT_V2_BASE_URL=http://sir_convert_a_lot_prod:8085`
 - `SIR_CONVERT_A_LOT_V2_API_KEY=<same secret used by Sir Convert-a-Lot v2>`
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL=https://skriptoteket.hule.education`
 
-Why the public URL: Sir Convert-a-Lot is published on Hemma as `127.0.0.1:28085` on the host. That loopback-only
-binding is not reachable from inside `skriptoteket-web` via `host.docker.internal:28085`, so the curated app must use
-the public domain (or another container-reachable address).
+Why the private service: production `web` and `worker` are configured on `hule-network` to reach Sir Convert-a-Lot at
+`http://sir_convert_a_lot_prod:8085`, the existing `compose.prod.yaml` default. The public `convert.hule.education`
+host was retired by the user's 2026-10-15 decision (source retirement: Sir `fix/retire-convert-public-edge` commit
+`904d0e3f`, accepted `ADR-SIRCON-0014`); it must not return as a default or fallback. Production requires an approved
+running Sir Convert service on `hule-network`. Sir production remains offline by user decision; no live reachability
+was verified for this change. Namecheap CNAME deletion stays with the user.
 
 Local-dev policy:
 
-- Default local Skriptoteket development to the same public Sir Convert domain,
-  `https://convert.hule.education`.
-- Do not run a host-local Sir Convert `uvicorn` process on the laptop as the
-  normal path.
-- If a local converter lane is explicitly needed for debugging, it must be a
-  separate CPU-only Docker dev profile that runs on the MacBook without ROCm.
+- Default Docker development to the canonical Mac tunnel through
+  `http://host.docker.internal:28085`. Deliberate host-run clients use
+  `http://127.0.0.1:28085`.
+- Do not use the retired `https://convert.hule.education` hostname as a
+  development or production default, and do not run a host-local Sir Convert
+  `uvicorn` process as the normal path.
+- Docker development requires an approved service and a separately managed
+  tunnel on the Mac. No service or tunnel was started for this change.
 
-Validation:
+When host operations are authorized, inspect only the URL settings and private
+service DNS; API keys must remain secret:
 
 ```bash
-ssh hemma "sudo docker exec skriptoteket-web env | grep '^SIR_CONVERT_A_LOT_V2_'"
-ssh hemma "sudo docker exec skriptoteket-worker env | grep '^SIR_CONVERT_A_LOT_V2_'"
-ssh hemma "sudo docker exec skriptoteket-web getent hosts host.docker.internal"
+ssh hemma "sudo docker exec skriptoteket-web printenv SIR_CONVERT_A_LOT_V2_BASE_URL SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL"
+ssh hemma "sudo docker exec skriptoteket-worker printenv SIR_CONVERT_A_LOT_V2_BASE_URL SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL"
+ssh hemma "sudo docker exec skriptoteket-web getent hosts sir_convert_a_lot_prod"
 ssh hemma "sudo docker exec skriptoteket-web env | grep -E '^(ALLOWED_HOSTS|TRUST_PROXY_HEADERS|TRUSTED_PROXY_CIDRS|HEALTHZ_DETAILED_RESPONSE|METRICS_IDENTITY_GAUGES_ENABLED)='"
 ssh hemma "sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy"
 ```

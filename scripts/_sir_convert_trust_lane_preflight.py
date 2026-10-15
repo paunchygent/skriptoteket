@@ -43,7 +43,6 @@ REMOTE_PROOF_TUNNEL_PORTS = {28085, 38085}
 REMOTE_BACKEND_MARKERS = (
     "127.0.0.1:28085",
     "host.docker.internal:28085",
-    "convert.hule.education",
     "sir_convert_a_lot_prod",
 )
 TRUST_LANE_ENV_KEYS = {
