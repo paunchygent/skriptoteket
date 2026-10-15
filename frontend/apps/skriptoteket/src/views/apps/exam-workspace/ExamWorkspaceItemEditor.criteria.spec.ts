@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import { EMPTY_CRITERION_TEXT_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 const CRITERIA = '[data-test="exam-workspace-criteria"]';
@@ -122,7 +123,7 @@ describe("ExamWorkspaceItemEditor Fritext criteria", () => {
     );
 
     expect(wrapper.get('[data-test="exam-workspace-criterion-text-hint"]').text()).toBe(
-      "Ett kriterium saknar text.",
+      EMPTY_CRITERION_TEXT_GUIDANCE,
     );
   });
 
