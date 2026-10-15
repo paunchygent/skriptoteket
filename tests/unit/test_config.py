@@ -29,10 +29,12 @@ def test_host_dev_settings_use_tmp_roots_for_local_storage(monkeypatch) -> None:
         ENVIRONMENT="development",
         ARTIFACTS_ROOT=Path("/var/lib/skriptoteket/artifacts"),
         VAULT_ROOT=Path("/var/lib/skriptoteket/vault"),
+        MEDIA_ROOT=Path("/var/lib/skriptoteket/media"),
     )
 
     assert settings.ARTIFACTS_ROOT == Path("/tmp/skriptoteket/artifacts")
     assert settings.VAULT_ROOT == Path("/tmp/skriptoteket/vault")
+    assert settings.MEDIA_ROOT == Path("/tmp/skriptoteket/media")
 
 
 def test_host_dev_settings_rewrite_container_only_sir_convert_base_url(monkeypatch) -> None:
@@ -57,11 +59,13 @@ def test_container_runtime_keeps_container_paths_and_urls(monkeypatch) -> None:
         ENVIRONMENT="development",
         ARTIFACTS_ROOT=Path("/var/lib/skriptoteket/artifacts"),
         VAULT_ROOT=Path("/var/lib/skriptoteket/vault"),
+        MEDIA_ROOT=Path("/var/lib/skriptoteket/media"),
         SIR_CONVERT_A_LOT_V2_BASE_URL="http://host.docker.internal:8085",
     )
 
     assert settings.ARTIFACTS_ROOT == Path("/var/lib/skriptoteket/artifacts")
     assert settings.VAULT_ROOT == Path("/var/lib/skriptoteket/vault")
+    assert settings.MEDIA_ROOT == Path("/var/lib/skriptoteket/media")
     assert settings.SIR_CONVERT_A_LOT_V2_BASE_URL == "http://host.docker.internal:8085"
 
 

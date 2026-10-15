@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -31,6 +32,10 @@ class UserProfileModel(Base):
     classroom_planner_use_history: Mapped[bool | None] = mapped_column(Boolean(), nullable=True)
     classroom_planner_grouping_seating_distance_enabled: Mapped[bool | None] = mapped_column(
         Boolean(),
+        nullable=True,
+    )
+    classroom_planner_tutorial_seen_sections: Mapped[list[str] | None] = mapped_column(
+        JSONB,
         nullable=True,
     )
     locale: Mapped[str] = mapped_column(

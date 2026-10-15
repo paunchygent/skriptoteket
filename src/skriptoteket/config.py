@@ -25,6 +25,8 @@ _CONTAINER_ARTIFACTS_ROOT = Path("/var/lib/skriptoteket/artifacts")
 _CONTAINER_VAULT_ROOT = Path("/var/lib/skriptoteket/vault")
 _HOST_DEV_ARTIFACTS_ROOT = Path("/tmp/skriptoteket/artifacts")
 _HOST_DEV_VAULT_ROOT = Path("/tmp/skriptoteket/vault")
+_CONTAINER_MEDIA_ROOT = Path("/var/lib/skriptoteket/media")
+_HOST_DEV_MEDIA_ROOT = Path("/tmp/skriptoteket/media")
 _DOCKER_HOST_ALIASES = frozenset({"host.docker.internal", "gateway.docker.internal"})
 _NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web", "skriptoteket-web"})
 
@@ -139,6 +141,9 @@ class Settings(BaseSettings):
     VAULT_MAX_FILE_BYTES: int = 20_000_000
     VAULT_MAX_TOTAL_BYTES: int = 200_000_000
     VAULT_RETENTION_DAYS: int = 30
+
+    # Published tutorial media (HuleFilm publish step), served read-only at /static/media.
+    MEDIA_ROOT: Path = _CONTAINER_MEDIA_ROOT
 
     # Platform-only debug capture (OFF by default; see ADR-0051).
     # Captures are written under ARTIFACTS_ROOT and may contain tool code/model output.
@@ -409,6 +414,8 @@ class Settings(BaseSettings):
             self.ARTIFACTS_ROOT = _HOST_DEV_ARTIFACTS_ROOT
         if self.VAULT_ROOT == _CONTAINER_VAULT_ROOT:
             self.VAULT_ROOT = _HOST_DEV_VAULT_ROOT
+        if self.MEDIA_ROOT == _CONTAINER_MEDIA_ROOT:
+            self.MEDIA_ROOT = _HOST_DEV_MEDIA_ROOT
 
         normalized_base_url = _normalize_host_dev_sir_convert_base_url(
             self.SIR_CONVERT_A_LOT_V2_BASE_URL

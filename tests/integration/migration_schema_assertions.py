@@ -94,6 +94,11 @@ async def _assert_0026_profile_ai_settings(engine: AsyncEngine) -> None:
     assert "allow_remote_fallback" in await _column_map(engine, "user_profiles")
 
 
+async def _assert_1eb5_profile_tutorial_seen_sections(engine: AsyncEngine) -> None:
+    columns = await _column_map(engine, "user_profiles")
+    assert columns["classroom_planner_tutorial_seen_sections"]["is_nullable"] == "YES"
+
+
 async def _assert_8f3d_password_reset_tokens(engine: AsyncEngine) -> None:
     tables = await _table_names(engine)
     assert "password_reset_tokens" in tables
@@ -738,6 +743,7 @@ SCHEMA_ASSERTIONS: dict[str, RevisionAssertion] = {
     "e1f2a3b4c5d6": _assert_e1f2_conversion_hub_transcript_formatter_artifacts,
     "e9a4b6c8d2f0": _assert_e9a4_conversion_hub_transcript_formatter_artifact_content,
     "f4c8e2a6b9d1": _assert_f4c8_conversion_hub_transcript_formatter_export_states,
+    "1eb507ae2278": _assert_1eb5_profile_tutorial_seen_sections,
 }
 
 
