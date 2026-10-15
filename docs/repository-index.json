@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "355530bc8e76da72780031ae10c7f373f16aaca68ee03f999bc63bfdc5f9d925",
+  "source_set_digest": "aa7bbe0a37fbd6b06746fe6f05b691b6091213d1737212894f473acd6df6df9f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5365,6 +5365,25 @@
         "decided_at": "2026-10-15",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User waived the review after repair 6 (2026-10-15). Five Pi ruthless-reviewer rounds requested changes on a864a085 through 60256eb1; repair 6 66e2fe37 fixed the last findings (token-level provenance, alignment boundary costs, linear exact allocation): 287 focused tests, recorded corpus 304 exact / 7 aligned / 2 rebuilt / 0 Granska, every timing row under 1 s. Merged 0262f054 and pushed with toolbar divider e72f27f3. Staging walk on e72f27f3: formateringsprov_t08.docx kept bold, italic, underline, sup, sub and H1-H3 in the editor; Cmd+I toggled a mark and saved. QTI export and Exam.net import 5339805 showed strong, em, u, sup, sub and h1-h3. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/impl/TASK-SKRIPT-39-09-08/ and evidence/reviews/TASK-SKRIPT-39-09-08/."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-09",
+      "type": "task",
+      "title": "Section headings: a higher-level heading opens its own questions instead of becoming exam-wide text",
+      "path": "docs/backlog/tasks/task-skript-39-09-09-section-headings-a-higher-level-heading-opens-its-own-questions-instead-of-becoming-exam-wide-text.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
