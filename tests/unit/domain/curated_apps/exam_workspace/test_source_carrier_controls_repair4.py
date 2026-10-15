@@ -243,19 +243,19 @@ def test_source_only_rebuild_keeps_points_without_a_native_field():
     assert body_plain_text(result) == "Choose an answer.\nTotal: 38 poäng"
 
 
-def test_leading_mathematical_point_expression_in_a_continuation_survives():
+def test_recovered_matching_score_before_a_continuation_is_metadata():
     result = _choice_result("A. red B. blue\n(2 p) times q.", ["red", "blue"])
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
-        "blue\n(2 p) times q.",
+        "blue\n times q.",
     ]
 
 
-def test_leading_implicit_multiplication_survives():
+def test_recovered_matching_score_before_an_operand_is_metadata():
     result = _choice_result("A. red B. blue\n(2 p) q.", ["red", "blue"])
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
-        "blue\n(2 p) q.",
+        "blue\n q.",
     ]
 
 

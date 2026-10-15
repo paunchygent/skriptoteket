@@ -2,10 +2,11 @@
 
 A single shortest-path search walks the source token index. A state is the
 current source token, one next-entry ordinal per surface, and the active
-entry's wording cursor. Matching and adopting a printed label are free; while
-substituting, inserting, deleting, leaving a source token unowned and leaving
-an entry unassigned are positive costs. An exact copy is therefore reached
-first, and a rewrite stays on the same path instead of a second algorithm.
+entry's wording cursor. Matching, adopting a printed label and skipping optional score annotations
+are free; substituting, inserting visible content, deleting, leaving visible
+source tokens unowned and leaving an entry unassigned have positive costs.
+An exact copy is therefore reached first, and a rewrite stays on the same path
+instead of a second algorithm.
 Completing an active entry consumes its contiguous token interval and exposes
 the next ordinal of that surface.
 
@@ -21,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from heapq import heappop, heappush
 
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import LabelOption
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import (
     SourceToken,
@@ -98,6 +100,10 @@ def _available(token: SourceToken, blocked: tuple[tuple[int, int], ...]) -> bool
     return not any(token.start < end and start < token.end for start, end in blocked)
 
 
+def _word_token(value: str) -> bool:
+    return value[0].isalnum() or value[0] == "_"
+
+
 def align_entries(
     text: str,
     sequences: tuple[str, ...],
@@ -116,6 +122,22 @@ def align_entries(
     """
     tokens = source_tokens(text)
     available = tuple(_available(token, blocked) for token in tokens)
+    # Optional metadata is neutral alignment material, not an edit to visible
+    # wording. This changes search costs only; provenance decides exclusion.
+    annotations = tuple((m.start(), m.end()) for m in POINT_LABEL.finditer(text))
+    annotation_index = 0
+    neutral_tokens: list[bool] = []
+    for token in tokens:
+        while (
+            annotation_index < len(annotations) and annotations[annotation_index][1] <= token.start
+        ):
+            annotation_index += 1
+        neutral_tokens.append(
+            annotation_index < len(annotations)
+            and annotations[annotation_index][0] <= token.start
+            and token.end <= annotations[annotation_index][1]
+        )
+    neutral = tuple(neutral_tokens)
     wordings = tuple(tuple(wording_tokens(value) for value in surface) for surface in texts)
     counts = tuple(len(surface) for surface in texts)
     surfaces = len(texts)
@@ -136,6 +158,12 @@ def align_entries(
             )
             floor[ordinal - 1] = floor[ordinal] + lowest
         preference_floor.append(floor)
+    structural = {option.first_token for options in options_by_entry.values() for option in options}
+    paragraph_starts = {
+        index
+        for index in range(1, len(tokens))
+        if "\n" in text[tokens[index - 1].end : tokens[index].start]
+    }
     available_suffix = [0] * (len(tokens) + 1)
     for index in range(len(tokens) - 1, -1, -1):
         available_suffix[index] = available_suffix[index + 1] + (1 if available[index] else 0)
@@ -211,7 +239,7 @@ def align_entries(
                     key,
                     cost,
                     (token_index + 1, progress, None),
-                    _ZERO if not available[token_index] else _UNOWNED,
+                    _ZERO if not available[token_index] or neutral[token_index] else _UNOWNED,
                 )
             for index in range(surfaces):
                 ordinal = progress[index] + 1
@@ -252,6 +280,17 @@ def align_entries(
         wanted = wordings[index][ordinal - 1]
         length = len(wanted)
         if token_index < len(tokens) and available[token_index]:
+            crossing: _Cost = (
+                (
+                    (0, 8, 0)
+                    if token_index in structural
+                    else (0, 1, 0)
+                    if token_index in paragraph_starts
+                    else _ZERO
+                )
+                if consumed
+                else _ZERO
+            )
             if cursor < length and tokens[token_index].folded == wanted[cursor]:
                 relax(
                     key,
@@ -259,18 +298,20 @@ def align_entries(
                     (token_index + 1, progress, (index, has_label, cursor + 1, True)),
                     _ZERO,
                 )
-            if cursor < length:
+            if cursor < length and (
+                _word_token(tokens[token_index].folded) == _word_token(wanted[cursor])
+            ):
                 relax(
                     key,
                     cost,
                     (token_index + 1, progress, (index, has_label, cursor + 1, True)),
-                    _SUBSTITUTE,
+                    _add(_SUBSTITUTE, crossing),
                 )
             relax(
                 key,
                 cost,
                 (token_index + 1, progress, (index, has_label, cursor, True)),
-                _INSERT,
+                _add(_ZERO if neutral[token_index] else _INSERT, crossing),
             )
         if cursor < length:
             relax(

@@ -87,7 +87,10 @@ def item_source_formatting(
         )
         for paragraph in produced.body
     )
-    emitted |= emitted_positions(text, body_wording)
+    body_regions = tuple(visible_intervals(0, len(text), ownership.exclusion_ranges()))
+    emitted |= frozenset().union(
+        *(emitted_positions(text[start:end], body_wording, start) for start, end in body_regions)
+    )
     regions = tuple(
         (
             owner.start
@@ -101,7 +104,6 @@ def item_source_formatting(
         for owner in ownership.owners
         if owner.start >= 0
     )
-    body_regions = tuple(visible_intervals(0, len(text), ownership.exclusion_ranges()))
     carrier_spans = native_carrier_spans(
         text,
         points=produced.points,
