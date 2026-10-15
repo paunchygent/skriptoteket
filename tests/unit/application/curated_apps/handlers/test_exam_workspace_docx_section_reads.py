@@ -13,7 +13,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     question_families,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import manifest_from_output
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (

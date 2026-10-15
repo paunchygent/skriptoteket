@@ -48,7 +48,12 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": "Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas."
+      "criteria": [
+        {
+          "text": "Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+          "points": null
+        }
+      ]
     }
   ]
 }

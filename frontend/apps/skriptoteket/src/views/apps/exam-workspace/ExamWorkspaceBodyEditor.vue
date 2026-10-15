@@ -421,7 +421,7 @@ function handleGapAsText(itemId: string, gapId: string): void {
         v-for="(paragraph, paragraphIndex) in item.body"
         :key="paragraphIndex"
         :ref="(element) => setParagraphElement(paragraphIndex, element)"
-        class="min-h-14 whitespace-pre-wrap break-words border border-navy/35 bg-canvas px-4 py-3 text-base leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
+        class="min-h-14 whitespace-pre-wrap [overflow-wrap:anywhere] border border-navy/35 bg-canvas px-4 py-3 text-base leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
         role="textbox"
         aria-multiline="true"
         :aria-label="`Frågetext, stycke ${paragraphIndex + 1}`"

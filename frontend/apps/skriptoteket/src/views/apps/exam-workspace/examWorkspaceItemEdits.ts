@@ -15,17 +15,35 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamAnswerKeyOrigin,
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
+import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
 }
 
-export function withMarkingGuide(item: NativeExamItem, guide: string | null): NativeExamItem {
-  return { ...item, marking_guide: guide };
+/**
+ * Replace the item's criteria. A non-empty list is the teacher's point
+ * breakdown: the item's points become the exact sum of the criterion points
+ * and stop being an estimate from a printed section total.
+ */
+export function withCriteria(
+  item: NativeExamItem,
+  criteria: NativeExamCriterion[],
+): NativeExamItem {
+  if (criteria.length === 0) {
+    return { ...item, criteria };
+  }
+  return {
+    ...item,
+    criteria,
+    points: criteriaPointsTotal(criteria),
+    points_estimated: false,
+  };
 }
 
 /** A points value the teacher sets is no estimate from a section total. */
@@ -327,20 +345,39 @@ export function withRestoredSuggestion(item: NativeExamItem): NativeExamItem {
   return withSuggestionAsKey(item, suggestion);
 }
 
-/** The free-text question a teacher adds after the last item. */
-export function newTeacherItem(itemId: string, sequence: number): NativeExamItem {
+/** The kinds of question a teacher adds from "Ny fråga". */
+export type TeacherItemKind = "free_text" | "short_answer";
+
+/**
+ * The question a teacher adds after the last item: a free-text question, or a
+ * short answer, which is a Lucktext with one gap after the question text (Q14).
+ */
+export function newTeacherItem(
+  itemId: string,
+  sequence: number,
+  kind: TeacherItemKind,
+): NativeExamItem {
+  const question = { segments: [{ kind: "text" as const, text: "Ny fråga" }] };
+  const shortAnswer = kind === "short_answer";
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [{ segments: [{ kind: "text", text: "Ny fråga" }] }],
+    // A Fritext carries no key; a short answer starts unkeyed until the teacher keys its gap.
+    answer_key: {
+      correct_choice_ids: [],
+      match_pairs: [],
+      origin: shortAnswer ? "absent" : "not_applicable",
+    },
+    body: shortAnswer
+      ? [question, { segments: [{ kind: "gap", gap_id: "gap_001" }] }]
+      : [question],
     choices: [],
-    gaps: [],
+    gaps: shortAnswer ? [{ gap_id: "gap_001", accepted_values: [], automatic_values: [] }] : [],
     item_id: itemId,
-    kind: "free_text",
+    kind: shortAnswer ? "gap_fill" : "free_text",
     match_left: [],
     match_right: [],
     points: null,

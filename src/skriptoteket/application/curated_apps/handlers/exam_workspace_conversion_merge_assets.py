@@ -10,12 +10,18 @@ progress port; this module only decides which assets the merged document keeps.
 
 from __future__ import annotations
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
-    NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_asset_ids
 

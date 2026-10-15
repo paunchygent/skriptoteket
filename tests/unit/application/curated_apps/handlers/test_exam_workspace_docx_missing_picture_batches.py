@@ -54,7 +54,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxMissingImage,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
 )
@@ -144,7 +144,7 @@ def _converted(text: str, *anchors: int) -> dict[str, JsonValue]:
         "match_left": [],
         "match_right": [],
         "match_pairs": [],
-        "marking_guide": "",
+        "criteria": [],
     }
 
 

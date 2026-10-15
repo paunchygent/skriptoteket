@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'User chose "Merge, push, walk" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/'
 task_kind: story
 acceptance_criteria:
 - The frontend typecheck passes on main with no import of the removed docx_build_v7

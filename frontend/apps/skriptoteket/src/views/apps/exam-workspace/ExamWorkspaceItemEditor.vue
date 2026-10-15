@@ -18,8 +18,10 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for the selected item.
  *   - Delegates the question text and gap answers to
- *     `ExamWorkspaceBodyEditor` and the matching lists to
- *     `ExamWorkspaceMatchingEditor`.
+ *     `ExamWorkspaceBodyEditor`, the matching lists to
+ *     `ExamWorkspaceMatchingEditor` and the Fritext criteria to
+ *     `ExamWorkspaceCriteriaField`; while criteria exist the points are
+ *     their sum and read-only.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the save rules from `examWorkspaceItemSaveRules`.
  *   - Tells the teacher when the question is a child of a parent, which
@@ -32,11 +34,12 @@ import { IconAi, IconCheck, IconNextPage, IconPreviousPage, IconUndo, IconWarnin
 
 import type {
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
-import ExamWorkspaceMarkingGuideField from "./ExamWorkspaceMarkingGuideField.vue";
+import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
 import ExamWorkspaceMatchingEditor from "./ExamWorkspaceMatchingEditor.vue";
 import {
   EMPTY_CHOICE_TEXT_GUIDANCE,
@@ -72,6 +75,7 @@ const emit = defineEmits<{
   toggleDetails: [];
   updateChoiceText: [itemId: string, choiceId: string, text: string];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateMatchEntryText: [
     itemId: string,
@@ -79,7 +83,6 @@ const emit = defineEmits<{
     entryId: string,
     text: string,
   ];
-  updateMarkingGuide: [itemId: string, guide: string | null];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [
     itemId: string,
@@ -103,6 +106,7 @@ const typeUncertain = computed(
 );
 
 const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
+const hasCriteria = computed(() => props.item.criteria.length > 0);
 
 function choiceTextClass(choiceId: string, text: string): string {
   if (isEmptyChoiceText(text)) {
@@ -311,14 +315,16 @@ function choiceLetter(index: number): string {
       <label class="grid gap-1 text-xs font-semibold text-navy/80">
         Poäng
         <input
-          class="min-h-10 w-28 border bg-panel px-3 text-sm font-normal text-navy"
-          :class="pointsInvalid ? 'border-warning' : 'border-navy/35'"
+          class="min-h-10 w-28 border px-3 text-sm font-normal text-navy"
+          :class="[pointsInvalid ? 'border-warning' : 'border-navy/35', hasCriteria ? 'bg-canvas' : 'bg-panel']"
           type="number"
           min="0"
           step="any"
           inputmode="decimal"
           :value="item.points ?? ''"
           :disabled="disabled"
+          :readonly="hasCriteria"
+          :title="hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
           :aria-invalid="pointsInvalid ? 'true' : undefined"
           :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
           data-test="exam-workspace-item-points-input"
@@ -345,11 +351,11 @@ function choiceLetter(index: number): string {
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
     />
 
-    <ExamWorkspaceMarkingGuideField
+    <ExamWorkspaceCriteriaField
       v-if="item.kind === 'free_text'"
       :disabled="disabled"
-      :guide="item.marking_guide ?? null"
-      @update="(guide) => emit('updateMarkingGuide', item.item_id, guide)"
+      :item="item"
+      @update="(criteria) => emit('updateCriteria', item.item_id, criteria)"
     />
 
     <fieldset

@@ -207,7 +207,7 @@ def _converted(text: str, *anchors: int, asset_ids: tuple[str, ...] = ()) -> dic
         "match_left": [],
         "match_right": [],
         "match_pairs": [],
-        "marking_guide": "",
+        "criteria": [],
     }
 
 

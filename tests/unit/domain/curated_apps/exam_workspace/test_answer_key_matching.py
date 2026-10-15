@@ -22,11 +22,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     proposal_from_model_content,
     suggestion_from_proposal,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeAnswerKeyOrigin,
-    NativeAnswerKeySuggestion,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchRight,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKeySuggestion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
 )
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     document_of,

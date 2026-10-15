@@ -48,7 +48,12 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": "I bisats står inte och andra satsadverbial före det finita verbet."
+      "criteria": [
+        {
+          "text": "I bisats står inte och andra satsadverbial före det finita verbet.",
+          "points": null
+        }
+      ]
     }
   ]
 }

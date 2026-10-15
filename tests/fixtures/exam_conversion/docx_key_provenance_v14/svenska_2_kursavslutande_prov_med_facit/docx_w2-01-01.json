@@ -54,7 +54,12 @@
       "match_left": [],
       "match_right": [],
       "match_pairs": [],
-      "marking_guide": "En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap."
+      "criteria": [
+        {
+          "text": "En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
+          "points": null
+        }
+      ]
     }
   ]
 }

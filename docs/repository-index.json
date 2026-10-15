@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2a1df5b147e5d75fb7339d574d25db26b1189c06baf25fb461271c5b8539a961",
+  "source_set_digest": "ef19463cb9eb1abef2346ee8c410d49eaa74e6ca01b0620760e683034208bbde",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5140,7 +5140,7 @@
       "type": "task",
       "title": "Repoint the parent-document spec support at the v14 English recording",
       "path": "docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5151,7 +5151,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "User chose \"Merge, push, walk\" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/"
       }
     },
     {
@@ -5243,6 +5247,25 @@
       "type": "task",
       "title": "Kort svar: Ny fråga creates a one-gap Lucktext after the question text",
       "path": "docs/backlog/tasks/task-skript-39-09-05-kort-svar-ny-fråga-creates-a-one-gap-lucktext-after-the-question-text.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-09",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-09-06",
+      "type": "task",
+      "title": "Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings",
+      "path": "docs/backlog/tasks/task-skript-39-09-06-structured-misspellings-a-deterministic-producer-gives-every-keyed-gap-its-automatic-misspellings.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-09",

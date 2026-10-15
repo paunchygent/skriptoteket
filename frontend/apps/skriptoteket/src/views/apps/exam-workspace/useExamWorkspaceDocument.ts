@@ -39,6 +39,7 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   NativeExamBodySegment,
+  NativeExamCriterion,
   NativeExamDocument,
   NativeExamItem,
   NativeExamMatchPair,
@@ -47,14 +48,15 @@ import { useToast } from "../../../composables/useToast";
 import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
 import {
   newTeacherItem,
+  type TeacherItemKind,
   reviewed,
   withChoiceText,
   withCorrectChoices,
+  withCriteria,
   withGapValues,
   withGapAsText,
   withoutAutomaticValue,
   withoutInterpretedKey,
-  withMarkingGuide,
   withMatchEntryText,
   withMatchPairs,
   withParagraphSegments,
@@ -373,8 +375,8 @@ export function useExamWorkspaceDocument() {
     workspaceDocument.value = { ...current, items };
   }
 
-  function updateItemMarkingGuide(itemId: string, guide: string | null): void {
-    patchItem(itemId, (item) => withMarkingGuide(item, guide));
+  function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
+    patchItem(itemId, (item) => withCriteria(item, criteria));
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
@@ -434,13 +436,13 @@ export function useExamWorkspaceDocument() {
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  function addItem(): void {
+  function addItem(kind: TeacherItemKind): void {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) {
       return;
     }
     const itemId = nextItemId(current.items.map((item) => item.item_id));
-    const newItem = newTeacherItem(itemId, current.items.length + 1);
+    const newItem = newTeacherItem(itemId, current.items.length + 1, kind);
     workspaceDocument.value = { ...current, items: [...current.items, newItem] };
     selectedItemId.value = itemId;
   }
@@ -484,7 +486,7 @@ export function useExamWorkspaceDocument() {
     undoItemInterpretation,
     removeItemAutomaticValue,
     showItemGapAsText,
-    updateItemMarkingGuide,
+    updateItemCriteria,
     updateItemMatchEntryText,
     updateItemMatchPairs,
     updateItemPoints,

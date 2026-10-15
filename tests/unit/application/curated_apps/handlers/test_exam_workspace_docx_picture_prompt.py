@@ -12,7 +12,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMProviderProfile,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamItemKind
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
 
 
 def test_model_chunk_keeps_two_pictures_between_their_original_text_runs() -> None:

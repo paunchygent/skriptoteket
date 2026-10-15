@@ -25,7 +25,7 @@ function buildItem(origin: NativeExamItem["answer_key"]["origin"]): NativeExamIt
   return {
     ai_suggestion: null,
     facit_text: null,
-    marking_guide: null,
+    criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin },
