@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on c6e0e28c and 0fa48e19, approved 07bede41 (merged 2ebed4cb). Live eval found valid type_conflict replies rejected by the key validator; repair 7c8c6bd7 approved and merged. Walk at 7c8c6bd7: kategorisera exam converted to two Kategorisera grids with vila keyed to two columns; tick 0.5 gave 2 points; export imported into Exam.net as 5339116, categorizingItems 2p with four 0.5 rules and answers [1,2]. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-03/ and evidence/walk/TASK-SKRIPT-39-09-03/walk-7c8c6bd7.md.'
 task_kind: story
 acceptance_criteria:
 - A teacher keys a many-to-many Kategorisera grid with one tick value, exports it,
