@@ -179,10 +179,8 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
         )
         assert item.answer_key.origin.value == expected
         # The facit keeps the teacher's wording; the source's italic tags are not wording.
-        expected = producer.facit_text
-        assert item.facit_text == (
-            expected.replace("<i>", "").replace("</i>", "") if expected else expected
-        )
+        facit = producer.facit_text
+        assert item.facit_text == (facit.replace("<i>", "").replace("</i>", "") if facit else facit)
         assert "<i>" not in (item.facit_text or "")
 
 
