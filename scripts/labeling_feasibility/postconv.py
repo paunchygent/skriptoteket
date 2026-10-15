@@ -13,8 +13,8 @@ from typing import Any
 from scripts.exam_conversion_eval.gold import GoldExam
 from scripts.labeling_feasibility.api import OpenAIClient
 from scripts.labeling_feasibility.evaluate import _keyed_equal
-from scripts.labeling_feasibility.methods import MethodResult, decide
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
+from scripts.labeling_feasibility.requests import MethodResult, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 RECORDINGS = Path("tests/fixtures/exam_conversion/docx_key_provenance_v14")

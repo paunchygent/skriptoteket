@@ -6,12 +6,8 @@
   `01a12706-566c-7480-acc3-427145283942`.
 
   - TASK-SKRIPT-39-05-01/-02/-03 `done` 2026-10-11 (walk `1db37835`, retained
-    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -05 and
-    -06 `done` 2026-10-14.
-  - [TASK-SKRIPT-39-05-09](docs/backlog/tasks/task-skript-39-05-09-label-first-per-question-retry-docx-pictures-as-exam-assets-field-label-gaps-and-the-marking-guide-rubric.md)
-    `done` 2026-10-14 (review approved 659973e5, merged eafb1487; staging walk
-    and Exam.net import exam 5331367 in retained
-    `01a13798-9df1-75fa-a4c5-bd755b4bfd85` `evidence/walk/TASK-SKRIPT-39-05-09/`).
+    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -04, -05,
+    -06 and -09 `done` (closure evidence in long-term memory 2026-10-15).
   - [TASK-SKRIPT-39-05-10](docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md)
     `done` 2026-10-14 (reviews approved e4a5e2eb and 42050a03, merged
     426d7551; staging walk at c270419e and Exam.net import exam 5332346 in
@@ -21,9 +17,10 @@
     poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
     that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
     next: route them under story item 3.
-  - [TASK-SKRIPT-39-05-04](docs/backlog/tasks/task-skript-39-05-04-label-items-with-a-decisions-classifier-and-convert-type-focused-batches-in-parallel.md)
-    `done` (user closure 2026-10-12, staging walk `63de8094`, retained
-    `evidence/staging-walk/walk-63de8094.md`).
+  - [TASK-SKRIPT-39-05-11](docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md)
+    `done` 2026-10-15: `labeling_feasibility evaluate` scores the v14 batch
+    recordings (run with `PYTHONPATH=src`); review approved aae91639; retained
+    `01a13f02-cbaf-71c0-bb3b-f16fc81c7017` `evidence/`.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
@@ -33,7 +30,8 @@
   (b6d6b3f4; Exam.net 5333228). Task 2 `done` (6807d20c; Exam.net 5333308,
   5333310; probe r19 in session 01a13c92 `evidence/probe-r19/`). Task 3
   `in_progress` (TASK-SKRIPT-39-09-03, worktree
-  `../Skriptoteket-task-skript-39-09-03`).
+  `../Skriptoteket-task-skript-39-09-03`). Task 4 Fritext criteria and task 5
+  Kort svar `in_progress` in their own worktrees.
 
 - TASK-SKRIPT-39-05-08 `done` 2026-10-14 (Exam.net 5326264). Next: suggestion
   accuracy as a scored gold-corpus eval metric (user decision 2026-10-13).
