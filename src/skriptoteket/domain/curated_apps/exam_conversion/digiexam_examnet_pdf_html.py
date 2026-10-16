@@ -23,9 +23,15 @@ def build_examnet_pdf_html(
     *,
     source_filename: str,
     items: tuple[DigiExamExamNetPdfItemRender, ...],
+    header_lines: tuple[str, ...] = (),
 ) -> str:
     """Build the complete HTML document rendered by WeasyPrint."""
 
+    header_html = ""
+    if header_lines:
+        title, *details = header_lines
+        detail_html = "".join(f"<p>{escape(line)}</p>" for line in details)
+        header_html = f'<header class="exam-header"><h1>{escape(title)}</h1>{detail_html}</header>'
     item_html = "\n".join(item.html for item in items)
     return f"""<!doctype html>
 <html lang="sv">
@@ -113,6 +119,7 @@ p {{
 </head>
 <body>
 <main>
+{header_html}
 {item_html}
 </main>
 </body>

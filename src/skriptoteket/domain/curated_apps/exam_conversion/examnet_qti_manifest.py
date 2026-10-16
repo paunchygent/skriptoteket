@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     XSI_NAMESPACE,
 )
 
+IMSMD_NAMESPACE = "http://ltsc.ieee.org/xsd/LOM"
 IMSCP_NAMESPACE = "http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
 IMSCP_SCHEMA_LOCATION = (
     "http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1 "
@@ -35,11 +36,14 @@ IMSCP_SCHEMA_LOCATION = (
 
 def serialize_qti_manifest(
     *,
+    title: str,
+    course_hint: str | None,
     item_files: tuple[ExamNetQtiPackageFile, ...],
     image_files_by_item_id: dict[str, tuple[ExamNetQtiPackageFile, ...]],
 ) -> bytes:
     ElementTree.register_namespace("", IMSCP_NAMESPACE)
     ElementTree.register_namespace("xsi", XSI_NAMESPACE)
+    ElementTree.register_namespace("imsmd", IMSMD_NAMESPACE)
     manifest = ElementTree.Element(
         _cp("manifest"),
         {
@@ -52,6 +56,17 @@ def serialize_qti_manifest(
     schema.text = "QTI Package"
     schema_version = ElementTree.SubElement(metadata, _cp("schemaversion"))
     schema_version.text = "3.0.0"
+    lom = ElementTree.SubElement(metadata, f"{{{IMSMD_NAMESPACE}}}lom")
+    general = ElementTree.SubElement(lom, f"{{{IMSMD_NAMESPACE}}}general")
+    title_element = ElementTree.SubElement(general, f"{{{IMSMD_NAMESPACE}}}title")
+    ElementTree.SubElement(
+        title_element, f"{{{IMSMD_NAMESPACE}}}string", {"language": "sv"}
+    ).text = title
+    if course_hint is not None:
+        keyword = ElementTree.SubElement(general, f"{{{IMSMD_NAMESPACE}}}keyword")
+        ElementTree.SubElement(
+            keyword, f"{{{IMSMD_NAMESPACE}}}string", {"language": "sv"}
+        ).text = course_hint
     ElementTree.SubElement(manifest, _cp("organizations"))
     resources = ElementTree.SubElement(manifest, _cp("resources"))
     for item_file in item_files:
