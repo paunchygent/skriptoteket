@@ -13,29 +13,21 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     NOTHING_GOVERNED,
     assemble_build_result,
-    native_item,
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
-    ProducedItem,
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    preserve_native_scores,
-    with_heading_points_review,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
     split_section_totals,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
-    printed_points,
     title_without_answer_key,
-    with_printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
     Language,
@@ -93,9 +85,6 @@ class DocxBuildState:
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
-    score_sources: dict[str, tuple[ProducedItem, tuple[DocxChunk, ...]]] = field(
-        default_factory=dict
-    )
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
@@ -150,40 +139,10 @@ class DocxBuildState:
             and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
         )
 
-    def resolve_heading_score(self, item: NativeExamItem, heading: DocxChunk) -> NativeExamItem:
-        """Rebuild missing printed scores from producer provenance, never an estimate flag."""
-        source = self.score_sources.get(item.source_anchor or "")
-        points = printed_points((heading,))
-        if source is None or points is None:
-            return preserve_native_scores(item, heading)
-        produced, own = source
-        if produced.points is not None:
-            return with_heading_points_review(item, points, produced.points)
-        try:
-            rebuilt = native_item(
-                with_printed_points(produced, (heading,)), chunks=own, language=self.language
-            )
-        except (ValueError, DomainError):
-            return preserve_native_scores(item, heading)
-        # Keep the complete rebuilt scoring model. Placement and provenance collected
-        # since admission are orthogonal to the producer's scoring decision.
-        return rebuilt.model_copy(
-            update={
-                "item_id": item.item_id,
-                "sequence": item.sequence,
-                "printed_label": item.printed_label,
-                "body": item.body,
-                "review": item.review,
-                "retry_source": item.retry_source,
-                "ai_suggestion": item.ai_suggestion,
-            }
-        )
-
     def snapshot(self) -> "DocxBuildState":
         """A copy a trial merge may change without changing this state; items are frozen."""
         trial = copy.copy(self)
         trial.accepted = list(self.accepted)
-        trial.score_sources = dict(self.score_sources)
         trial.key_anchors = set(self.key_anchors)
         trial.claimed = set(self.claimed)
         trial.reasons = dict(self.reasons)
@@ -345,6 +304,7 @@ class DocxBuildState:
             tuple(self.accepted),
             instructions,
             frozenset(chunk.anchor for chunk in self.pending),
+            questions=questions or self.questions,
         )
         accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
         for item, anchors in points.accepted:
@@ -372,7 +332,6 @@ class DocxBuildState:
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
             accepted=tuple(accepted),
-            resolve_heading_score=self.resolve_heading_score,
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,

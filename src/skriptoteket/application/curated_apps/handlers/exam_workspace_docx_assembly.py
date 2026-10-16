@@ -62,7 +62,6 @@ def merge_batch(
     batch finishes first; a title another batch reports is kept as an instruction.
     """
     target.accepted.extend(batch.accepted)
-    target.score_sources.update(batch.score_sources)
     title = batch.title
     if (
         title is not None
@@ -177,7 +176,6 @@ def provisional_result(
         source_sha256=state.source_sha256,
         chunks=tuple(c for c in state.chunks if c.anchor not in state.header_anchors),
         accepted=(*state.accepted, *placeholders),
-        resolve_heading_score=state.resolve_heading_score,
         review_reasons={
             chunk.anchor: state.reasons.get(chunk.anchor, NO_ITEM_REASON)
             for chunk in state.chunks

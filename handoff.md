@@ -24,8 +24,7 @@
   its duplicate. Draft Klass clip (synthetic timing) on dev media. Next: real
   clips wait on HuleFilm ST-VIDEO-12-01 gates (talmanus approval in progress,
   ElevenLabs draft spend, render approval, prod media deploy). Talmanus review
-  package (BRIEF.md, repomix, 20 staging screenshots) retained at
-  `evidence/talmanus-review-package-2026-10-15/`, sent to the Mac 2026-10-15.
+  package retained at `evidence/talmanus-review-package-2026-10-15/` (sent 2026-10-15).
   Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
   parses Skola24; correction and `generate-planner-help` regen still pending.
 
@@ -62,20 +61,21 @@
     307/316 at 16 families; Exam.net 5339992; retained
     `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
   - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`,
-    worktree `Skriptoteket-task-skript-39-05-14`): all units reviewed and
-    integrated (`7eec5716`). New grouping prompt keeps Del 1/2/3 titles
-    (`evidence/regroup-2026-10-16b/`); build replays keep the old groupings
-    (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
-    Regression on main from this merge (lead 39-08-01, 2026-10-16):
-    `test_exam_workspace_source_formatting.py` 2 failed (Svenska 2 `Fråga 17`
-    missing after replay; morpheme alignment) and 2 QTI reference mismatches in
-    `test_exam_conversion_parity.py`; both pass at `0505b89e`. Evidence
-    `01a145b6.../evidence/lead/{source-formatting-regression,exam-conversion-parity}-on-main-2026-10-16.md`.
-    Unowned, pre-existing (lead 39-08-01, 2026-10-16): docker suite
-    `tests/integration/test_exam_workspace_docx_background.py` fails 2/9 (quiz
-    batches; bf26 english `no recording for docx_exam_build`) on main and at
-    `8bb83759`; evidence `01a145b6.../evidence/lead/docx-background-replay-on-main-2026-10-16.md`.
+    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
+    D12-D14 repair reviewed and merged to main `827c301a`; re-record
+    `evidence/regroup-2026-10-16c/`. Staging re-walk passes (judge 24/24, 0
+    review, no header text in bodies or QTI;
+    `evidence/staging-walk-39-05-14b/walk-report.md`); Exam.net 5344745 has
+    24 items, 36p, no header text. Next (Claude parent): user closure, then
+    worktree retirement and ST-SKRIPT-39-05 closure.
+    Still failing on main `212ce386` (lead 39-08-01, 2026-10-16), introduced by
+    this task's merges: `test_exam_workspace_source_formatting.py` 2 failed
+    (Svenska 2 `Fråga 17` missing after replay; morpheme alignment), 2 QTI
+    reference mismatches in `test_exam_conversion_parity.py` and, since
+    `827c301a`, `test_exam_workspace_docx_grid_points_review.py` (MATCHING vs
+    FREE_TEXT). Pre-existing and unowned: docker suite
+    `test_exam_workspace_docx_background.py` 2/9 fail on main and at `8bb83759`.
+    Evidence `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `in_progress` 2026-10-16; owner Claude parent on Hemma (session
     `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca`, worktree

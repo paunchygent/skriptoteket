@@ -18,9 +18,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    preserve_native_scores,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
@@ -105,7 +102,6 @@ def test_assembled_item_keeps_an_omitted_size_heading():
         filename="heading.docx",
         source_sha256="a" * 64,
         chunks=(heading, question),
-        resolve_heading_score=preserve_native_scores,
         accepted=((item, (heading.anchor, question.anchor)),),
         review_reasons={},
     )

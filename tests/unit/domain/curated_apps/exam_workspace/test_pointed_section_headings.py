@@ -79,9 +79,7 @@ def _produced(anchor: str, prompt: str) -> dict[str, JsonValue]:
         HeadingCase("2. (3 p)", 2, (), item_points=(2, 1)),
         HeadingCase("Tempus", 1, ("Tempus",), instruction=True),
         HeadingCase("2. Tempus (3 p)", 1, ("Tempus",), label="2", item_points=3, rubric=True),
-        HeadingCase(
-            "2. Begrepp (3 p)", 1, ("Begrepp",), label="2", item_points=4.98, matching=True
-        ),
+        HeadingCase("2. Begrepp (3 p)", 1, ("Begrepp",), label="2", item_points=3, matching=True),
         HeadingCase(
             "Del 2: grammatik och språkstrukturer, 16 poäng",
             2,
@@ -223,6 +221,6 @@ def test_heading_family_keeps_structure_metadata_and_native_scores_coherent(
         ]
     if case.matching:
         item = document.items[0]
-        assert item.tick_points == Decimal("1.66")
-        assert item.points_estimated
-        assert any("3" in reason and "5" in reason for reason in item.review.reasons)
+        assert item.tick_points == Decimal("1")
+        assert not item.points_estimated
+        assert item.review.reasons == ()

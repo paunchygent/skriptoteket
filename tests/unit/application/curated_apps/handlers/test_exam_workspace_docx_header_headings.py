@@ -293,17 +293,16 @@ def test_unclaimed_header_heading_never_becomes_fallback_title_or_parent_instruc
     assert all(_HEADER not in " ".join(item.plain_text_lines()) for item in document.items)
 
 
-def test_conflicting_heading_points_keep_producer_points_and_name_both_values_for_review() -> None:
+def test_printed_heading_points_replace_build_points_without_conflict_review() -> None:
     chunks = (_chunk(2, "heading", _HEADING), _chunk(3, "paragraph", _PROMPT))
     own = (("body:0002", "body:0003"),)
     state = _state(chunks, questions=own)
     admit_batch({"items": [_item(["body:0002", "body:0003"], "Tempus\n" + _PROMPT, 5)]}, state)
     item = state.result(questions=own).document.items[0]
 
-    assert item.points == 5
-    assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    reasons = " ".join(item.review.reasons)
-    assert "3" in reasons and "5" in reasons
+    assert item.points == 3
+    assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert item.review.reasons == ()
 
 
 def test_producer_emitting_the_question_heading_as_a_separate_item_creates_no_extra_item() -> None:
