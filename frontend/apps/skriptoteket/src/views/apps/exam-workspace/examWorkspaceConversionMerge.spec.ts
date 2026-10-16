@@ -73,7 +73,8 @@ function buildDocument(
     origin: { kind: "docx_import" },
     parents: [],
     revision,
-    schema_version: "native_exam_document_v2",
+    header: {},
+    schema_version: "native_exam_document_v3",
     title: "Prov",
     ...overrides,
   };

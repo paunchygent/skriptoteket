@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
     Placed,
     SectionInstructions,
     place_section_instructions,
+    preserve_native_scores,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -82,7 +83,14 @@ def _place(
     title_anchors: frozenset[str] = frozenset(),
     governed: MappingProxyType[str, frozenset[str]] = _NOTHING_GOVERNED,
 ) -> SectionInstructions:
-    return place_section_instructions(chunks, placed, instructions, governed, title_anchors)
+    return place_section_instructions(
+        chunks,
+        placed,
+        instructions,
+        governed,
+        title_anchors,
+        resolve_heading_score=preserve_native_scores,
+    )
 
 
 def _ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
@@ -351,6 +359,7 @@ def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions
         filename="prov.docx",
         source_sha256="0" * 64,
         chunks=chunks,
+        resolve_heading_score=preserve_native_scores,
         accepted=accepted,
         review_reasons={},
         instructions=instructions,

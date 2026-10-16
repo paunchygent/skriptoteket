@@ -62,6 +62,7 @@ def merge_batch(
     batch finishes first; a title another batch reports is kept as an instruction.
     """
     target.accepted.extend(batch.accepted)
+    target.score_sources.update(batch.score_sources)
     title = batch.title
     if (
         title is not None
@@ -130,7 +131,11 @@ def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExa
     its exact place while the converter runs and the question stays locked for the teacher.
     """
     return review_source_item(
-        tuple(state.chunk_by_anchor[anchor] for anchor in family.question_anchors),
+        tuple(
+            state.chunk_by_anchor[anchor]
+            for anchor in family.question_anchors
+            if anchor not in state.header_anchors
+        ),
         PLACEHOLDER_REASON,
     )
 
@@ -162,20 +167,28 @@ def provisional_result(
     finished = frozenset(
         a for family in families if family.question_id not in pending for a in family.claims
     )
+    heading_instructions = state.heading_instructions
+    heading_anchors = {
+        a for instruction in heading_instructions for a in instruction.source_anchors
+    }
     return assemble_build_result(
         document_id=state.document_id,
         filename=state.filename,
         source_sha256=state.source_sha256,
-        chunks=state.chunks,
+        chunks=tuple(c for c in state.chunks if c.anchor not in state.header_anchors),
         accepted=(*state.accepted, *placeholders),
+        resolve_heading_score=state.resolve_heading_score,
         review_reasons={
             chunk.anchor: state.reasons.get(chunk.anchor, NO_ITEM_REASON)
             for chunk in state.chunks
-            if chunk.anchor in finished and chunk.anchor not in state.claimed
+            if chunk.anchor in finished
+            and chunk.anchor not in state.claimed
+            and chunk.anchor not in state.header_anchors
+            and chunk.anchor not in heading_anchors
         },
         key_anchors=frozenset(state.key_anchors),
         title=state.title,
-        instructions=state.instructions,
+        instructions=(*state.instructions, *heading_instructions),
         governed=governed,
         questions=tuple(family.question_anchors for family in families),
     )

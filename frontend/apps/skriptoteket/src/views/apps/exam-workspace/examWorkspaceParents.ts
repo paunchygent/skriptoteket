@@ -22,6 +22,7 @@
 
 import type { NativeExamItem, NativeExamParent } from "../../../api/examWorkspace";
 import { examWorkspaceSharedParagraphs } from "./examWorkspaceSharedInstruction";
+import { examWorkspaceTotalSignal } from "./examWorkspaceTotals";
 import type { ExamWorkspaceSharedParagraph } from "./examWorkspaceSharedInstruction";
 
 export const PARENT_HEADING_COPY = "Uppgift med deluppgifter";
@@ -32,6 +33,7 @@ export type ExamWorkspaceParentBlock = {
   instruction: ExamWorkspaceSharedParagraph[];
   parentId: string;
   pointsLabel: string;
+  totalsSignal: string | null;
 };
 
 export type ExamWorkspaceParentChild = {
@@ -72,6 +74,7 @@ export function examWorkspaceParentBlocksByFirstChild(
   assetUrls: Record<string, string> = {},
 ): Record<string, ExamWorkspaceParentBlock> {
   const blocks: Record<string, ExamWorkspaceParentBlock> = {};
+  const itemsById = new Map(items.map((item) => [item.item_id, item]));
   for (const parent of parents) {
     const firstChildId = parent.item_ids[0];
     if (firstChildId === undefined) {
@@ -81,6 +84,14 @@ export function examWorkspaceParentBlocksByFirstChild(
       instruction: examWorkspaceSharedParagraphs(parent.instruction, assetUrls),
       parentId: parent.parent_id,
       pointsLabel: examWorkspaceParentPointsLabel(examWorkspaceParentPoints(parent, items)),
+      totalsSignal: examWorkspaceTotalSignal(
+        parent.printed_total,
+        parent.item_ids.flatMap((id) => {
+          const item = itemsById.get(id);
+          return item ? [item] : [];
+        }),
+        "parent",
+      ),
     };
   }
   return blocks;

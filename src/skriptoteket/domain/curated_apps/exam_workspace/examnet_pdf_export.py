@@ -59,6 +59,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
+    exam_export_header_lines,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     ExamLanguageLabels,
     exam_language_labels,
@@ -160,7 +163,11 @@ def native_exam_to_pdf_document(
 
     return DigiExamExamNetPdfDocument(
         status=DigiExamExamNetPdfStatus.SUCCESS,
-        html=build_examnet_pdf_html(source_filename=document.title, items=tuple(items)),
+        html=build_examnet_pdf_html(
+            source_filename=document.title,
+            items=tuple(items),
+            header_lines=exam_export_header_lines(document),
+        ),
         asset_files=asset_files,
         warnings=tuple(warnings),
     )

@@ -32,6 +32,8 @@ class NativeExamParent(BaseModel):
 
     A parent owns no points and no answer key: each child item keeps its own kind, points
     and answer key, as an Exam.net information block holds questions of any type (D27).
+    ``printed_total`` is the part total the source prints over these children; it is
+    compared with their points and never shown as instruction text (TASK-SKRIPT-39-05-14).
     Its instruction is one body of positioned paragraphs: the shared wording with every
     shared picture at its exact source place (F2), never a gap the student fills.
     """
@@ -41,6 +43,7 @@ class NativeExamParent(BaseModel):
     parent_id: str = Field(pattern=_PARENT_ID_PATTERN)
     instruction: tuple[NativeParagraph, ...] = Field(min_length=1)
     item_ids: tuple[str, ...] = Field(min_length=1)
+    printed_total: int | float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def _instruction_is_shared_text(self) -> "NativeExamParent":
