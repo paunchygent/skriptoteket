@@ -46,14 +46,14 @@
   `test_exam_workspace_docx_background.py` 2/9 fail on main and at `8bb83759`.
   Evidence `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
 - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
-  `in_progress` 2026-10-16; owner Claude parent on Hemma (session
-  `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca`, worktree
-  `skriptoteket-task-skript-39-08-01` from `9322879c`. Committed after
-  review: U1 `2b29faea`, U2 `b3361de8`, U3 `5409fb07`, U4 `6bc3732e`, U5
-  `2a9589f2`, slice mocks `3203b507`, docs `0505b89e` (tasks 2-4 `ready`),
-  merge of main `fd0469a6`. Approved, uncommitted in the worktree: U5R3,
-  U6 (header course, drawer), U7 (course line in exports), U2R2 (vault
-  fake). Next: commit, staging walk, user closure gate, merge into main.
+  `in_progress` 2026-10-16, user closure gate next; owner Claude parent on
+  Hemma, retained `01a145b6-c404-761f-aeef-39de058ba7ca`. All units reviewed,
+  committed on `codex/task-skript-39-08-01` and merged into main `255eef88`
+  (pushed). Staging walk at `255eef88` passes headless from Hemma: course
+  pick, Svenska 2 conversion, drawer title and name, every lineage version
+  renamed, QTI title and course keyword, judge 24/24; evidence
+  `01a145b6.../evidence/staging-walk-808d8f11/WALK.md`. Exam.net import of
+  the QTI is pending user action; then retire the worktree.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
