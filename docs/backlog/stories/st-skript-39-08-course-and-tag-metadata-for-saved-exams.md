@@ -25,6 +25,17 @@ backlog_document_profile: contract-derived
 
 ## Contract Inputs
 
+- User decisions 2026-10-16 (TASK-SKRIPT-39-05-14 planning): the teacher
+  selects a course (gymnasiet) or a subject (grundskolan); for gymnasiet the
+  subject follows from the course. Valid courses and subjects come from
+  Skolverket's registers. The choice is a simple dropdown that doubles as a
+  search field in the import panel, and it can be changed after conversion in
+  a metadata panel together with the Mina filer file name and the exam title
+  used in the QTI data. This story's first task builds that dropdown, the
+  course list and the metadata panel; TASK-SKRIPT-39-05-14 leaves a raw course
+  hint from the source document for the dropdown to preselect from. Mina filer
+  renaming follows ST-SKRIPT-37-05.
+
 ## Tasks
 
 ## Verification

@@ -13,9 +13,10 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-- Every item of every exam in the eight-exam DOCX corpus converts to its hand-checked
-  gold item on each eval run, and anything that cannot be converted becomes a review
-  item holding its source text
+- Each eval run aims for every item of every corpus exam to match its hand-checked
+  gold item, as a best-effort target; anything that cannot be converted becomes a
+  review item holding its source text. Full corpus reruns stay rare because of their
+  cost.
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -99,7 +100,8 @@ Planned order; each task is scaffolded and contracted before work starts.
    user, and an eval runner that reports every item mismatch.
 3. Corpus breadth: Decisions classification, retries for failing items
    only, and general rules added only where the eval loop shows a need,
-   until every corpus item meets the conversion principles against its gold.
+   aiming for every corpus item to meet the conversion principles against its
+   gold as a best-effort target.
 4. Matching kind: native model, editor, and QTI export (delivered in
    `TASK-SKRIPT-39-05-03`, D1, D7, D8).
 5. `TASK-SKRIPT-39-05-10` (done 2026-10-14) teacher surface: AI glyph with undo on interpreted
@@ -110,7 +112,7 @@ Planned order; each task is scaffolded and contracted before work starts.
    editor, QTI, PDF and DOCX; a prompt sentence keeps low-27 field-label phrases
    as text (D44); the marking guide stays out of QTI after the Exam.net probe
    (D31). Exam.net imports the pictures.
-7. `TASK-SKRIPT-39-05-07`: export is blocked only by missing values and unbuilt
+7. `TASK-SKRIPT-39-05-07` (done 2026-10-13): export is blocked only by missing values and unbuilt
    questions; printed "(N p)" markers become points; possible parsing issues
    fire only where wording is lost (user decisions 2026-10-13).
 8. `TASK-SKRIPT-39-05-08` (done 2026-10-14): imported questions carry no
@@ -122,12 +124,15 @@ Planned order; each task is scaffolded and contracted before work starts.
    shared core plus one section per item kind; a chunk the grouping lists as
    a question's facit is its answer key unless the item holds it; batches hold
    16 question families (307/316 items match gold vs 298/316 at 1).
+11. `TASK-SKRIPT-39-05-14`: exam header lines become document metadata
+   (course hint, printed totals checked against item points) and never exam
+   text; numbered or pointed question headings open their question or parent.
 
 ## Verification
 
-- Eval loop: every item of every corpus exam meets the conversion principles
-  (TASK-SKRIPT-39-05-03) against its gold file on each
-  run; a change is one change followed by a full corpus rerun.
+- Eval loop: each run aims for every item of every corpus exam to meet the
+  conversion principles (TASK-SKRIPT-39-05-03) against its gold file, as a
+  best-effort target; full corpus reruns stay rare because of their cost.
 - Unit tests for chunking, contract validation, the retry bound, and the
   review-item fallback.
 - QTI export of every converted corpus exam passes the fail-closed
@@ -142,11 +147,11 @@ Planned order; each task is scaffolded and contracted before work starts.
 | --- | --------------------- |
 | A1 | The AI-first converter is this story under EPIC-SKRIPT-39; TASK-SKRIPT-39-04-03 is superseded with a pointer and ST-SKRIPT-39-04 stays as delivered (user decision 2026-10-10). |
 | A2 | The parser only segments; AI produces contract-ready items using the Decisions and Responses APIs in combination, strict JSON, no tools, batched across items; only failing items are retried, at most three rounds; first-call success is the target (user direction 2026-10-10). |
-| A3 | Rules know input types, never one exam's wording; rules are added only where the eval loop shows a need, one change per full corpus rerun (user direction 2026-10-10). |
+| A3 | Rules know input types, never one exam's wording; rules are added only where the eval loop shows a need (user direction 2026-10-10; full corpus reruns stay rare per A15). |
 | A4 | Unconvertible input becomes a free-text review item holding its source text with a Swedish note; export stays blocked until fixed (user decision 2026-10-10). |
 | A5 | Conversion runs as a background job with a visible status; the uploaded DOCX is kept until the job finishes (user decision 2026-10-10). |
 | A6 | A matching kind is added; a word bank becomes gap text where each gap accepts its own facit word; other shapes become review items (user decision 2026-10-10). |
-| A7 | The pass bar is a user-confirmed gold file per corpus exam; every item must meet the conversion principles against it on every run. Gold is one correct conversion, not the only one (user decision 2026-10-10, refined 2026-10-11). |
+| A7 | The pass bar is a user-confirmed gold file per corpus exam; each run aims for every item to meet the conversion principles against it, as a best-effort target. Gold is one correct conversion, not the only one (user decision 2026-10-10, refined 2026-10-11 and 2026-10-16 per A15). |
 | A8 | Check-passing AI interpretation of the teacher's facit is applied and export-eligible as "Tolkad av AI" with undo (user decision 2026-10-10, carried from 39-04-03 F10). |
 | A9 | AI-invented answer keys without a facit keep the teacher check before export (user decision 2026-10-10, carried from F11). |
 | A10 | The app adds obvious misspellings of facit answers within a code-enforced edit distance, never synonyms (user decision 2026-10-10, carried from F6). |
@@ -154,3 +159,4 @@ Planned order; each task is scaffolded and contracted before work starts.
 | A12 | The app resolves what AI and code can reasonably resolve; the teacher is asked only about the rest (user direction 2026-10-10). |
 | A13 | Every failure in the conversion path is observed with its exact reason, as a structured log event with the job id and a reason code and persisted with the job outcome; no failure is silent (user decision 2026-10-10, after the live staging walk of TASK-SKRIPT-39-05-01 failed without rejection reasons). |
 | A14 | The AI call carries the producer contract: a strict structured-output schema for the native item shapes plus the conversion rules in the instructions. The consumer parses that guaranteed output and runs only the native document contract and export validation; it does not re-verify the producer with forensic source-binding rules (user decision 2026-10-10, "producer contract, not consumer validation"). |
+| A15 | The gold-corpus bar is a best-effort target, not a closure gate on every item of every run; full corpus reruns stay rare because a 314-item run is costly. The earlier every-item-every-run wording was stricter than the GrillMe agreement (user decision 2026-10-16). |
