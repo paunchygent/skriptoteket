@@ -62,7 +62,9 @@ def _referenced_payloads(
     }
 
 
-def _version_name(job: ExamAnswerKeyEnrichmentJob) -> str:
+def _version_name(job: ExamAnswerKeyEnrichmentJob, head: VaultFile | None = None) -> str:
+    if head is not None:
+        return head.name
     return f"{PurePosixPath(job.input_filename).stem}.provdokument.zip"
 
 
@@ -190,7 +192,7 @@ class ExamWorkspaceConversionProgress:
                         job=job,
                         actor=actor,
                         file_id=file_id,
-                        name=_version_name(job),
+                        name=_version_name(job, head_file),
                         merged=merged,
                         head_file=head_file,
                         assets_by_id=head.assets_by_id,
@@ -269,7 +271,7 @@ class ExamWorkspaceConversionProgress:
             job=job,
             actor=actor,
             file_id=file_id,
-            name=name,
+            name=_version_name(job, head_file),
             merged=merged,
             head_file=head_file,
             assets_by_id=_referenced_payloads(

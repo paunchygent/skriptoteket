@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from hashlib import blake2b
 from uuid import UUID
 
-from sqlalchemy import asc, desc, func, select
+from sqlalchemy import asc, desc, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.scripting.vault import VaultFile, VaultListSort, VaultListState
@@ -18,7 +19,7 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         self._session = session
 
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
-        model = await self._session.get(UserVaultFileModel, file_id)
+        model = await self._session.get(UserVaultFileModel, file_id, populate_existing=True)
         return VaultFile.model_validate(model) if model else None
 
     async def list_for_user(
@@ -113,6 +114,7 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
             .where(UserVaultFileModel.deleted_at.is_(None))
             .order_by(desc(UserVaultFileModel.document_version))
             .limit(1)
+            .execution_options(populate_existing=True)
         )
         result = await self._session.execute(stmt)
         model = result.scalars().first()
@@ -146,6 +148,86 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         heads = [VaultFile.model_validate(item) for item in result.scalars().all()]
         return sorted(heads, key=lambda file: (file.created_at, file.id), reverse=True)
 
+    async def name_in_use(
+        self,
+        *,
+        user_id: UUID,
+        name: str,
+        exclude_lineage_id: UUID | None,
+        exclude_file_id: UUID | None,
+    ) -> bool:
+        stmt = select(UserVaultFileModel.id).where(
+            UserVaultFileModel.user_id == user_id,
+            UserVaultFileModel.name == name,
+            UserVaultFileModel.deleted_at.is_(None),
+        )
+        if exclude_lineage_id is not None:
+            stmt = stmt.where(
+                or_(
+                    UserVaultFileModel.document_lineage_id.is_(None),
+                    UserVaultFileModel.document_lineage_id != exclude_lineage_id,
+                )
+            )
+        if exclude_file_id is not None:
+            stmt = stmt.where(UserVaultFileModel.id != exclude_file_id)
+        result = await self._session.execute(select(stmt.exists()))
+        return bool(result.scalar_one())
+
+    async def list_lineage_versions(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[VaultFile]:
+        stmt = (
+            select(UserVaultFileModel)
+            .where(
+                UserVaultFileModel.user_id == user_id,
+                UserVaultFileModel.document_lineage_id == document_lineage_id,
+            )
+            .order_by(asc(UserVaultFileModel.document_version), asc(UserVaultFileModel.id))
+        )
+        result = await self._session.execute(stmt)
+        return [VaultFile.model_validate(item) for item in result.scalars().all()]
+
+    async def _lock(self, *, key: str) -> None:
+        # Stable, namespaced signed bigint; locks last until the owning UoW ends.
+        lock_id = int.from_bytes(blake2b(key.encode(), digest_size=8).digest(), signed=True)
+        await self._session.execute(select(func.pg_advisory_xact_lock(lock_id)))
+
+    async def lock_owner_renames(self, *, user_id: UUID) -> None:
+        await self._lock(key=f"vault:rename-owner:{user_id}")
+
+    async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None:
+        await self._lock(key=f"vault:lineage:{user_id}:{document_lineage_id}")
+
+    async def rename_active(self, *, user_id: UUID, file_id: UUID, name: str) -> VaultFile | None:
+        result = await self._session.execute(
+            update(UserVaultFileModel)
+            .where(
+                UserVaultFileModel.id == file_id,
+                UserVaultFileModel.user_id == user_id,
+                UserVaultFileModel.deleted_at.is_(None),
+            )
+            .values(name=name)
+            .returning(UserVaultFileModel)
+            .execution_options(populate_existing=True)
+        )
+        model = result.scalar_one_or_none()
+        return VaultFile.model_validate(model) if model is not None else None
+
+    async def rename_lineage(
+        self, *, user_id: UUID, document_lineage_id: UUID, name: str
+    ) -> list[VaultFile]:
+        result = await self._session.execute(
+            update(UserVaultFileModel)
+            .where(
+                UserVaultFileModel.user_id == user_id,
+                UserVaultFileModel.document_lineage_id == document_lineage_id,
+            )
+            .values(name=name)
+            .returning(UserVaultFileModel)
+            .execution_options(populate_existing=True)
+        )
+        return [VaultFile.model_validate(model) for model in result.scalars().all()]
+
     async def create(self, *, file: VaultFile) -> VaultFile:
         model = UserVaultFileModel(
             id=file.id,
@@ -170,14 +252,8 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         if model is None:
             return file
 
-        model.name = file.name
-        model.bytes = file.bytes
-        model.source_kind = file.source_kind.value
-        model.source_run_id = file.source_run_id
-        model.source_artifact_id = file.source_artifact_id
-        model.document_lineage_id = file.document_lineage_id
-        model.document_version = file.document_version
-        model.created_at = file.created_at
+        # Lifecycle callers own only trash state. A stale delete/restore payload
+        # must not overwrite a concurrently committed name or immutable metadata.
         model.deleted_at = file.deleted_at
 
         await self._session.flush()

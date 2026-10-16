@@ -37,6 +37,7 @@ from skriptoteket.application.scripting.handlers.list_tool_file_refs import (
     ListToolFileRefsHandler,
 )
 from skriptoteket.application.scripting.handlers.list_vault_files import ListVaultFilesHandler
+from skriptoteket.application.scripting.handlers.rename_vault_file import RenameVaultFileHandler
 from skriptoteket.application.scripting.handlers.restore_vault_file import RestoreVaultFileHandler
 from skriptoteket.application.scripting.handlers.run_active_tool import RunActiveToolHandler
 from skriptoteket.application.scripting.handlers.save_vault_file import SaveVaultFileHandler
@@ -96,6 +97,7 @@ from skriptoteket.protocols.vault import (
     DeleteVaultFileHandlerProtocol,
     DownloadVaultFileHandlerProtocol,
     ListVaultFilesHandlerProtocol,
+    RenameVaultFileHandlerProtocol,
     RestoreVaultFileHandlerProtocol,
     SaveVaultFileHandlerProtocol,
     VaultFileRepositoryProtocol,
@@ -289,6 +291,14 @@ class ScriptingProvider(Provider):
             vault_usage=vault_usage,
             clock=clock,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def rename_vault_file_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+    ) -> RenameVaultFileHandlerProtocol:
+        return RenameVaultFileHandler(uow=uow, vault_files=vault_files)
 
     @provide(scope=Scope.REQUEST)
     def restore_vault_file_handler(
