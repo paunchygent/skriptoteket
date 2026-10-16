@@ -66,9 +66,9 @@
     D12-D14 repair reviewed and merged to main `827c301a`; re-record
     `evidence/regroup-2026-10-16c/`. Staging re-walk passes (judge 24/24, 0
     review, no header text in bodies or QTI;
-    `evidence/staging-walk-39-05-14b/walk-report.md`). Next (Claude parent):
-    Exam.net import of that QTI (Chrome extension was offline), then user
-    closure and worktree retirement.
+    `evidence/staging-walk-39-05-14b/walk-report.md`); Exam.net 5344745 has
+    24 items, 36p, no header text. Next (Claude parent): user closure, then
+    worktree retirement and ST-SKRIPT-39-05 closure.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `ready` 2026-10-16 (story `ready` D1-D22; retained
     `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
