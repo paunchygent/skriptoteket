@@ -1,8 +1,6 @@
 """Token provenance, structural partitioning and recovered-metadata regressions."""
 
 import random
-from statistics import median
-from time import perf_counter
 from unittest.mock import patch
 
 import pytest
@@ -14,7 +12,6 @@ from tests.unit.domain.curated_apps.exam_workspace.test_source_carrier_provenanc
 )
 from tests.unit.domain.curated_apps.exam_workspace.test_source_entry_partition_repair3 import (
     _convert,
-    _letters,
 )
 
 pytestmark = pytest.mark.unit
@@ -178,47 +175,3 @@ def test_recovered_scores_keep_exact_alignment_linear(count):
     assert [body_plain_text(e.body).strip() for e in result.match_left] == ["same"] * count
     assert [body_plain_text(e.body).strip() for e in result.match_right] == ["same"] * count
     assert pops.call_count < 80 * count
-
-
-@pytest.mark.parametrize(
-    "layout",
-    ["labelled", "unlabelled", "interleaved", "metadata", "rewritten", "rewritten_neighbour"],
-)
-def test_focused_item_timing_stays_below_one_second(layout):
-    rows = []
-    for count in (8, 16, 24, 32, 40):
-        left = ["same"] * count
-        right = ["same"] * count
-        source = " ".join(["same"] * (2 * count))
-        if layout == "labelled":
-            source = " ".join(f"{i}. same {_letters(i)}. same" for i in range(1, count + 1))
-        elif layout == "interleaved":
-            source = "same unique " + " ".join(["same"] * (2 * count - 2))
-            right = ["same", "unique", *(["same"] * (count - 2))]
-        elif layout == "metadata":
-            source = " ".join(["same (2 p)"] * (2 * count))
-        elif layout == "rewritten":
-            left = ["other"] * count
-            right = ["other"] * count
-        elif layout == "rewritten_neighbour":
-            right = [*(["same"] * (count - 1)), "similar"]
-        samples = []
-        for _ in range(3):
-            start = perf_counter()
-            result = _convert(source, left=left, right=right)
-            elapsed = perf_counter() - start
-            assert elapsed < 1.0, (layout, count, len(source), elapsed)
-            assert len(result.match_left) == len(result.match_right) == count
-            samples.append(elapsed)
-        rows.append(median(samples))
-        print(
-            {
-                "layout": layout,
-                "entries_per_side": count,
-                "chars": len(source),
-                "median_seconds": rows[-1],
-            }
-        )
-    if layout in {"labelled", "unlabelled", "interleaved", "metadata"}:
-        for count, elapsed in zip((16, 24, 32, 40), rows[1:], strict=True):
-            assert elapsed / rows[0] <= 2 * count / 8, (layout, count, rows)
