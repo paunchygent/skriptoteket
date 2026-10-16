@@ -55,6 +55,14 @@ This task changes the conversion and the exports as follows:
   title; the manifest metadata carries the title and the course hint. PDF and
   DOCX print a generated header with the title, the course hint when present,
   and "Totalt: N poäng" computed from item points.
+- A line whose whole content is metadata is a header anchor at its own scope:
+  the exam, a part, or one question. A question's own points line, such as
+  "Poäng: 3 poäng" under that question, is a question-level header anchor that
+  governs that one question. It never enters item text. The printed value sets
+  the question's points; a question split into several items distributes them
+  through the existing automatic distribution. Walk of 2026-10-16 (document
+  f0ea76bf, revision 18) showed these lines in item bodies of questions 16, 22
+  and 24 after the grouping put them into question anchors.
 - The editor gets no course control in this task.
 - The document format changes in place under a new schema version. Skriptoteket
   is not a live app with users, so no reader, migration or compatibility path
@@ -109,6 +117,9 @@ exam and the task adds no model call.
 - Re-record only the grouping step for the eight corpus exams and replay the
   existing build recordings offline through the replay harness. No full corpus
   rerun.
+- After the question-level repair: a fresh grouping-only re-record of the
+  corpus exams, then a staging re-walk of Svenska 2 kursavslutande with the
+  Exam.net import.
 - Hemma staging walk: convert Svenska 2 kursavslutande, check the editor, the
   PDF header and the totals, export QTI and import it into Exam.net with no
   header text in any item.
@@ -130,3 +141,6 @@ exam and the task adds no model call.
 | D8  | A totals mismatch is a non-blocking signal; export stays allowed (user 2026-10-16). |
 | D9  | This task is the conversion fix; the course dropdown, course list and metadata panel are the first task of ST-SKRIPT-39-08 (user 2026-10-16). |
 | D11 | PDF and DOCX print a generated header with the title, the raw course hint and "Totalt: N poäng" computed from item points; the editor gets no course control in this task (user 2026-10-16). |
+| D12 | A line whose whole content is metadata is a header anchor at its own scope (exam, part or one question); a question's own points line is a question-level header anchor and never item text (user 2026-10-16). |
+| D13 | The printed question points set that question's points; a question split into several items uses the existing automatic distribution; the build model does not derive points from that line (user 2026-10-16). |
+| D14 | The question-level repair is validated by focused tests, a fresh grouping-only corpus re-record, and a staging re-walk of Svenska 2 kursavslutande with the Exam.net import (user 2026-10-16). |
