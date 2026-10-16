@@ -72,7 +72,7 @@ This task delivers:
   lineage, and the collision check ignores that lineage's own records.
 
 Out of scope: own courses in the profile (T2), tags and import suggestion of
-course and tags (T3), the class label and saved-exam sorting (T4), a rename
+course and tags (T3), saved-exam sorting (T4), any class label, a rename
 control on the Mina filer page (TASK-SKRIPT-37-05-04), and the GY11 phase-out
 after school year 2026/27.
 
