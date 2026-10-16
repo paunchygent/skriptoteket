@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "20a0d85b84008c5e0251d46b16d5a2754ceca0851f6910b651da12cdef71edd2",
+  "source_set_digest": "3e32522847ec4127845319d0a0388c95c18e51a7c686b675e2796fe0d9623d27",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6554,7 +6554,7 @@
       "type": "task",
       "title": "Repair ten main test failures in worker healthchecks, the compose contract and alignment timing",
       "path": "docs/backlog/tasks/task-skript-rep-0041-repair-ten-main-test-failures-in-worker-healthchecks-the-compose-contract-and-alignment-timing.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
