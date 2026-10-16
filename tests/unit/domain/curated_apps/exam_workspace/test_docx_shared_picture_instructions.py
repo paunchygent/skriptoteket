@@ -23,9 +23,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    preserve_native_scores,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
@@ -117,7 +114,6 @@ def _assembled() -> tuple[NativeExamDocument, dict[str, bytes], str, str]:
         filename="prov.docx",
         source_sha256="0" * 64,
         chunks=chunks,
-        resolve_heading_score=preserve_native_scores,
         accepted=(
             (_converted("body:0001", "Vad betyder alpha?"), ("body:0001",)),
             (_converted("body:0002", "Vad betyder beta?"), ("body:0002",)),
@@ -201,7 +197,6 @@ def test_global_pictured_heading_retains_original_wording_and_interior_position(
         filename="prov.docx",
         source_sha256="0" * 64,
         chunks=(_chunk("body:0000", "Fråga 1. Vad?"), heading),
-        resolve_heading_score=preserve_native_scores,
         accepted=((_converted("body:0000", "Vad?"), ("body:0000",)),),
         review_reasons={},
         instructions=(metadata,),

@@ -4,7 +4,10 @@ import re
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import matching_score
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
+    matching_score,
+    point_shares,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -79,6 +82,8 @@ def split_section_totals(
     accepted: tuple[AcceptedItem, ...],
     instructions: tuple[ProducedMetadata, ...],
     unbuilt: frozenset[str],
+    *,
+    questions: tuple[tuple[str, ...], ...] = (),
 ) -> SectionPoints:
     """Give each item in a section that prints no points a share of what remains (D38).
 
@@ -100,6 +105,19 @@ def split_section_totals(
     points marked as estimated (D6).
     """
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    # A grouped question's heading belongs to its question-wide score pass, not
+    # to the section estimate. This applies whether the producer claimed it or not.
+    question_by_anchor = {anchor: own for own in questions for anchor in own}
+    question_headings = frozenset(
+        chunk.anchor
+        for chunk in chunks
+        if chunk.kind == "heading" and chunk.anchor in question_by_anchor
+    )
+    instructions = tuple(
+        instruction
+        for instruction in instructions
+        if not question_headings.intersection(instruction.source_anchors)
+    )
     starts = [min(positions[anchor] for anchor in anchors) for _, anchors in accepted]
     first_question = min(starts, default=len(chunks))
     totals = [(instruction, _total(instruction, chunks, positions)) for instruction in instructions]
@@ -108,7 +126,7 @@ def split_section_totals(
         for instruction, total in totals
         if total is not None and not _closes(instruction, chunks, positions, first_question)
     }
-    for anchor in unbuilt:
+    for anchor in unbuilt - question_headings:
         if anchor in positions and anchor not in starting:
             heading = ProducedMetadata(text="heading", source_anchors=(anchor,))
             if (total := _total(heading, chunks, positions)) is not None:
@@ -124,6 +142,11 @@ def split_section_totals(
             key=starts.__getitem__,
         )
         if not members:
+            continue
+        owners = {question_by_anchor.get(accepted[i][0].source_anchor or "") for i in members}
+        if len(owners) == 1 and None not in owners:
+            # All of this section's outputs belong to one grouped question. Its
+            # printed total is applied atomically after heading placement instead.
             continue
         last_start = starts[members[-1]]
         closing = (
@@ -148,10 +171,9 @@ def split_section_totals(
             continue
         absorbed.update(closing & unbuilt)
         remaining = int(total - sum(accepted[i][0].points or 0 for i in printing))
-        share, extra = divmod(max(remaining, 0), len(unprinted))
-        for rank, i in enumerate(unprinted):
+        shares = point_shares(max(remaining, 0), len(unprinted))
+        for i, guess in zip(unprinted, shares, strict=True):
             item, anchors = accepted[i]
-            guess = share + 1 if rank < extra else share
             if guess > 0:
                 if item.kind is NativeExamItemKind.MATCHING:
                     # An unkeyed grid has no ticks from which to derive a positive total.

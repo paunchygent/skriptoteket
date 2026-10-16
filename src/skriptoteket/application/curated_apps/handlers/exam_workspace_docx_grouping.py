@@ -61,8 +61,8 @@ GROUPING_INSTRUCTIONS = (
     "also when one heading, instruction or points line stands above several such "
     "units. Such text governs all of them and joins none of them into one question: "
     "a heading or instruction above several questions is shared context with scope "
-    'section_instruction and owner "exam", governing those questions. A heading or '
-    "points line of ONE question is in that question's anchors and opens it. "
+    'section_instruction and owner "exam", governing those questions. A '
+    "heading of ONE question is in that question's anchors and opens it. "
     "Part labels such as a), b) inside "
     "one question's body, which share one response and one answer, stay subparts of "
     "that question.\n"
@@ -75,14 +75,14 @@ GROUPING_INSTRUCTIONS = (
     "question it belongs to. A shared chunk never also appears in a question's "
     "anchors.\n"
     "- title_anchors: the exam title.\n"
-    "- header_anchors: lines whose whole content is metadata: the course name or a "
-    'total. For example, "Poäng: 15 poäng" is header metadata; '
-    '"Del 1: litteraturhistoria, 15 poäng" also carries heading words and is structure, '
-    "not a header anchor. A heading opens its question, or is a section_instruction "
-    "over several questions; its points are that question's or part's printed points. "
-    "Each header entry gives its anchor, kind (course, exam_total or part_total), and "
-    "governs. A part total lists the question ids of its part in governs; course and "
-    "exam total give an empty governs.\n"
+    "- header_anchors: lines whose whole content is metadata at their own scope. "
+    "Each entry gives its anchor, kind and governs: course and exam_total have empty "
+    "governs, part_total governs its part's questions, and question_total governs "
+    "exactly the one question whose points it prints. For example, a standalone "
+    '"Poäng: 3 poäng" belonging to q16 has kind question_total and governs ["q16"]. '
+    "A line that also carries heading words is structure, not a header anchor: "
+    "it opens its question, or is a section_instruction over several questions; "
+    "its points are that question's or part's printed points.\n"
     "- Other metadata lines, such as name and date lines, are shared_contexts with "
     'scope exam_metadata and owner "exam". Course and totals go to header_anchors.\n'
     "- Every input anchor appears exactly once across questions[].anchors, "
@@ -141,7 +141,10 @@ GROUPING_SCHEMA: dict[str, JsonValue] = {
                 "type": "object",
                 "properties": {
                     "anchor": {"type": "string"},
-                    "kind": {"type": "string", "enum": ["course", "exam_total", "part_total"]},
+                    "kind": {
+                        "type": "string",
+                        "enum": ["course", "exam_total", "part_total", "question_total"],
+                    },
                     "governs": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": ["anchor", "kind", "governs"],

@@ -186,12 +186,13 @@ def test_part_total_uses_the_same_owned_context_mapping_as_pipeline_assembly() -
             _chunk("p2", "Två"),
         ),
     )
-    assert result.parents[0].printed_total == 15
-    assert result.items[0].points == 1
+    assert result.parents[0].printed_total is None
+    assert result.items[0].points == 15
+    assert result.items[1].points == 1
 
 
 @pytest.mark.parametrize("existing_points", [None, 3, 7.5])
-def test_single_unparented_question_takes_missing_points_or_gets_nonblocking_reason(
+def test_single_unparented_question_owns_its_printed_points(
     existing_points: int | float | None,
 ) -> None:
     document = _document()
@@ -203,9 +204,5 @@ def test_single_unparented_question_takes_missing_points_or_gets_nonblocking_rea
         (_chunk("h", "Totalt 7,5 p"), _chunk("p1", "Frågan")),
     )
     assert result.parents == ()
-    assert result.items[0].points == (7.5 if existing_points is None else existing_points)
-    assert result.items[0].review.state == item.review.state
-    if existing_points == 3:
-        assert "Tryckt delsumma 7,5 p, frågan har 3 p" in result.items[0].review.reasons
-    else:
-        assert result.items[0].review.reasons == item.review.reasons
+    assert result.items[0].points == 7.5
+    assert result.items[0].review == item.review

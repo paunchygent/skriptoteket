@@ -28,6 +28,12 @@ def matching_score(points: int | float | None, ticks: int) -> tuple[Decimal, flo
     return tick, float(total), total != stated
 
 
+def point_shares(total: int | float, count: int) -> tuple[int | float, ...]:
+    """Even source-ordered shares, with the whole-point remainder first (D38)."""
+    share, extra = divmod(total, count)
+    return tuple(share + min(max(extra - rank, 0), 1) for rank in range(count))
+
+
 def _whole_points(value: int | float) -> int | None:
     """The value as an int when it is a whole number, else None."""
     return int(value) if float(value).is_integer() else None
