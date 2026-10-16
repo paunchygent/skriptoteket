@@ -28,19 +28,23 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_fields import (
     digest_json as _digest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_parents import (
+    merge_parents,
+    parents_digest,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
+    NativeExamHeader,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
-    validate_parent_structure,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 
@@ -73,6 +77,7 @@ class ConversionProgress(BaseModel):
     units: tuple[ConversionUnit, ...] = ()
     revision: int | None = Field(default=None, ge=1)
     title_digest: str | None = None
+    header_digest: str | None = None
     instructions_digest: str | None = None
     parents_digest: str | None = None
 
@@ -113,6 +118,7 @@ class ConversionTarget:
 
     units: tuple[CandidateUnit, ...]
     title: str | None = None
+    header: NativeExamHeader | None = None
     instructions: tuple[NativeParagraph, ...] | None = None
     parents: tuple[NativeExamParent, ...] | None = None
     assets: tuple[NativeExamAsset, ...] | None = None
@@ -130,10 +136,6 @@ def items_digest(items: Sequence[NativeExamItem]) -> str:
     return _digest(
         [item.model_dump(mode="json", exclude={"item_id", "sequence"}) for item in items]
     )
-
-
-def _parents_digest(parents: Sequence[NativeExamParent]) -> str:
-    return _digest([parent.model_dump(mode="json") for parent in parents])
 
 
 def target_from_update(update: ConversionUpdate) -> ConversionTarget:
@@ -167,6 +169,7 @@ def target_from_update(update: ConversionUpdate) -> ConversionTarget:
     return ConversionTarget(
         units=tuple(units),
         title=update.document.title,
+        header=update.document.header,
         instructions=update.document.instructions,
         parents=update.document.parents,
         assets=update.document.assets,
@@ -193,10 +196,11 @@ def first_conversion(*, update: ConversionUpdate, progress: ConversionProgress) 
             units=_ordered_units(progress, written),
             revision=1,
             title_digest=_digest(document.title),
+            header_digest=_digest(document.header.model_dump(mode="json")),
             instructions_digest=_digest(
                 [paragraph.model_dump(mode="json") for paragraph in document.instructions]
             ),
-            parents_digest=_parents_digest(document.parents),
+            parents_digest=parents_digest(document.parents),
         ),
         changed=True,
     )
@@ -390,10 +394,17 @@ def merge_conversion(
         for sequence, item in enumerate(ordered, start=1)
     )
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
+    header, header_digest = _choose(head.header, target.header, progress.header_digest)
     instructions, instructions_digest = _choose(
         head.instructions, target.instructions, progress.instructions_digest
     )
-    parents, parents_digest = _merge_parents(head, target, progress, id_map, items)
+    parents, delivered_parents_digest = merge_parents(
+        current=head.parents,
+        proposed=target.parents,
+        delivered_digest=progress.parents_digest,
+        id_map=id_map,
+        items=items,
+    )
     assets = merged_assets(
         head=head,
         delivered=target.assets,
@@ -405,6 +416,7 @@ def merge_conversion(
         update={
             "revision": head.revision + 1,
             "title": title,
+            "header": header,
             "instructions": instructions,
             "items": items,
             "parents": parents,
@@ -419,79 +431,10 @@ def merge_conversion(
             update={
                 "units": _ordered_units(progress, written),
                 "title_digest": title_digest,
+                "header_digest": header_digest,
                 "instructions_digest": instructions_digest,
-                "parents_digest": parents_digest,
+                "parents_digest": delivered_parents_digest,
             }
         ),
         changed=changed,
     )
-
-
-def _merge_parents(
-    head: NativeExamDocument,
-    target: ConversionTarget,
-    progress: ConversionProgress,
-    id_map: dict[str, str],
-    items: tuple[NativeExamItem, ...],
-) -> tuple[tuple[NativeExamParent, ...], str | None]:
-    """Conversion's parents while the teacher kept the delivered ones (D30).
-
-    A parent whose saved children no longer form one consecutive run is split into such runs,
-    each carrying the instruction, so no child loses its instruction. Children of any kinds
-    share a parent (D27).
-    """
-    delivered = (
-        target.parents is not None and _parents_digest(head.parents) == progress.parents_digest
-    )
-    if delivered and target.parents is not None:
-        proposed = [
-            parent.model_copy(
-                update={"item_ids": tuple(id_map[i] for i in parent.item_ids if i in id_map)}
-            )
-            for parent in target.parents
-        ]
-    else:
-        proposed = list(head.parents)
-    by_id = {item.item_id: item for item in items}
-    parent_ids = _ParentIds(parent.parent_id for parent in proposed)
-    claimed: set[str] = set()
-    accepted: list[NativeExamParent] = []
-    for parent in proposed:
-        children = sorted(
-            (by_id[i] for i in dict.fromkeys(parent.item_ids) if i in by_id and i not in claimed),
-            key=lambda item: item.sequence,
-        )
-        for index, run in enumerate(_consecutive_runs(children)):
-            parent_id = parent.parent_id if index == 0 else parent_ids.fresh()
-            accepted.append(parent.model_copy(update={"parent_id": parent_id, "item_ids": run}))
-            claimed.update(run)
-    parents = tuple(accepted)
-    validate_parent_structure(parents, items)
-    return parents, (_parents_digest(parents) if delivered else progress.parents_digest)
-
-
-def _consecutive_runs(children: Sequence[NativeExamItem]) -> list[tuple[str, ...]]:
-    """Maximal runs of children that are consecutive in the document."""
-    runs: list[list[NativeExamItem]] = []
-    for child in children:
-        last = runs[-1][-1] if runs else None
-        if last is not None and child.sequence == last.sequence + 1:
-            runs[-1].append(child)
-        else:
-            runs.append([child])
-    return [tuple(child.item_id for child in run) for run in runs]
-
-
-class _ParentIds:
-    """Fresh parent ids for the runs a split parent adds."""
-
-    def __init__(self, used: Iterable[str]) -> None:
-        self._used = set(used)
-        self._next = max([0, *(int(p[7:]) for p in self._used if p[7:].isdigit())]) + 1
-
-    def fresh(self) -> str:
-        while f"parent_{self._next:03d}" in self._used:
-            self._next += 1
-        parent_id = f"parent_{self._next:03d}"
-        self._used.add(parent_id)
-        return parent_id

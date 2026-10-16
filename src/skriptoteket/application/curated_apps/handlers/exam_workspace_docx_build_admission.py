@@ -30,6 +30,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
     TypeConflict,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_produced_content import (
+    normalized_content,
+    with_heading_content,
+    without_header_content,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -43,8 +48,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     with_left_out_mark,
     wording_left_out,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    with_heading_points_review,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
+    QUESTION_HEADING_LABEL,
     definition_context,
+    printed_points,
     title_without_answer_key,
     with_accepted_forms,
     with_printed_points,
@@ -163,6 +174,18 @@ def _admit_metadata(
         state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
         return
     listed = _free(metadata.source_anchors, state, seen)
+    listed = tuple(
+        a
+        for a in listed
+        if not (
+            a in state.question_by_anchor
+            and state.chunk_by_anchor[a].kind == "heading"
+            and (
+                QUESTION_HEADING_LABEL.match(state.chunk_by_anchor[a].text)
+                or POINT_LABEL.search(state.chunk_by_anchor[a].text)
+            )
+        )
+    )
     # The grouping decides ownership: a question's own chunk an item of the reply lists stays
     # with that item. A title or instruction holding another own chunk is an instruction that
     # stands only where assembly places it at its question (D42).
@@ -171,7 +194,7 @@ def _admit_metadata(
     if not anchors:
         state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
         return
-    if len(anchors) < len(listed):
+    if anchors != metadata.source_anchors:
         metadata = _source(metadata, anchors, state)
     else:
         metadata = metadata.model_copy(update={"source_anchors": anchors})
@@ -259,7 +282,46 @@ def _admit_item(
         state.record("admission", "anchor_conflict", item=index, anchors=produced.source_anchors)
     if not anchors:
         return
+    produced = normalized_content(produced)
+    # A header mixed into a reply may also have contaminated its rendered text.
+    if state.header_anchors.intersection(produced.source_anchors):
+        header_texts = tuple(
+            state.chunk_by_anchor[a].text
+            for a in state.header_anchors
+            if a in state.chunk_by_anchor
+        )
+        try:
+            produced = without_header_content(produced, header_texts)
+        except ValidationError as error:
+            seen.update(anchors)
+            state.accepted.append(
+                _source_review(
+                    index, anchors, state, seen, "header_text_removed", validation_detail(error)
+                )
+            )
+            return
+    own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    headings = tuple(
+        c
+        for c in state.chunks
+        if c.anchor in own
+        and c.anchor not in state.header_anchors
+        and c.kind == "heading"
+        and (QUESTION_HEADING_LABEL.match(c.text) or POINT_LABEL.search(c.text))
+    )
+    if headings and set(anchors).issubset(c.anchor for c in headings):
+        # A separately emitted heading is not a second question when the reply also
+        # emits the question's body. Its leading anchor joins that body below.
+        if (own - {c.anchor for c in headings}).intersection(item_held):
+            return
+    leading = tuple(
+        c.anchor
+        for c in headings
+        if c.anchor not in anchors and c.anchor not in seen | state.claimed
+    )
+    anchors = (*leading, *anchors)
     produced = produced.model_copy(update={"source_anchors": anchors})
+    produced = with_heading_content(produced, headings)
     seen.update(anchors)
     if produced.outcome == "type_conflict":
         kind = produced.conflict_kind
@@ -308,15 +370,23 @@ def _admit_item(
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
         shown -= (state.key_anchors | state.grouped_keys) - set(anchors)
+        shown -= state.header_anchors
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
+        scored = with_printed_points(with_accepted_forms(produced, context), own)
         item = native_item(
-            with_printed_points(with_accepted_forms(produced, context), own),
+            scored,
             chunks=own,
             language=state.language,
             formatting_observer=lambda path: state.record_formatting(
                 path, item=index, anchors=anchors
             ),
         )
+        if headings:
+            printed_label = QUESTION_HEADING_LABEL.match(headings[0].text)
+            if printed_label:
+                item = item.model_copy(
+                    update={"printed_label": printed_label.group(1) or printed_label.group(2)}
+                )
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())
         if source_images != emitted:
@@ -328,6 +398,10 @@ def _admit_item(
             raise ValueError(
                 f"source pictures differ: missing {dict(missing)}, extra {dict(extra)}"
             )
+        if produced.points is not None:
+            item = with_heading_points_review(item, printed_points(headings), produced.points)
+        if item.source_anchor is not None:
+            state.score_sources[item.source_anchor] = (scored, own)
         return item
 
     built = _built(index, anchors, state, seen, build)

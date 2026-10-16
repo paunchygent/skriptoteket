@@ -4,6 +4,7 @@ import hashlib
 import json
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamHeader
 
 
 def digest_json(value: object) -> str:
@@ -11,7 +12,7 @@ def digest_json(value: object) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def choose_delivered_field[T: (str, tuple[NativeParagraph, ...])](
+def choose_delivered_field[T: (str, tuple[NativeParagraph, ...], NativeExamHeader)](
     current: T,
     proposed: T | None,
     delivered_digest: str | None,
@@ -22,6 +23,8 @@ def choose_delivered_field[T: (str, tuple[NativeParagraph, ...])](
     current_json = (
         [paragraph.model_dump(mode="json") for paragraph in current]
         if isinstance(current, tuple)
+        else current.model_dump(mode="json")
+        if isinstance(current, NativeExamHeader)
         else current
     )
     if digest_json(current_json) != delivered_digest:
@@ -29,6 +32,8 @@ def choose_delivered_field[T: (str, tuple[NativeParagraph, ...])](
     proposed_json = (
         [paragraph.model_dump(mode="json") for paragraph in proposed]
         if isinstance(proposed, tuple)
+        else proposed.model_dump(mode="json")
+        if isinstance(proposed, NativeExamHeader)
         else proposed
     )
     return proposed, digest_json(proposed_json)

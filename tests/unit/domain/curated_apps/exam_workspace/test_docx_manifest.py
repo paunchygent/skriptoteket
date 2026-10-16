@@ -60,13 +60,13 @@ def _raw(
     questions: list[dict[str, JsonValue]],
     contexts: list[dict[str, JsonValue]] | None = None,
     title: list[str] | None = None,
-    other: list[str] | None = None,
+    header: list[dict[str, JsonValue]] | None = None,
 ) -> dict[str, JsonValue]:
     return {
         "title_anchors": list(title or []),
         "questions": list(questions),
         "shared_contexts": list(contexts or []),
-        "other_anchors": list(other or []),
+        "header_anchors": list(header or []),
     }
 
 
@@ -145,13 +145,15 @@ def test_a_subpart_listed_only_as_a_subpart_is_owned_unless_placed_elsewhere(
     manifest = manifest_from_output(
         _raw(
             [_question("q1", [_b(8)], subparts=[_b(9), _b(10)]), _question("q2", Q2)],
-            other=[_b(10)],
+            header=[{"anchor": _b(10), "kind": "part_total", "governs": ["q1"]}],
         ),
         chunks,
     )
     assert manifest.questions[0].anchors == (_b(8), _b(9))
     assert manifest.questions[0].subpart_anchors == (_b(9),)
-    assert manifest.other_anchors == (_b(10),)
+    assert [(h.anchor, h.kind, h.governs) for h in manifest.header] == [
+        (_b(10), "part_total", ("q1",))
+    ]
     assert manifest.duplicate_anchors == ()
     assert _b(9) not in manifest.unplaced_anchors
 
@@ -186,7 +188,7 @@ def test_zero_questions_is_manifest_empty(chunks: tuple[DocxChunk, ...]) -> None
 
 def test_missing_key_is_manifest_shape(chunks: tuple[DocxChunk, ...]) -> None:
     raw = _raw([_question("q1", Q1)])
-    del raw["other_anchors"]
+    del raw["header_anchors"]
     with pytest.raises(ManifestInvalid) as error:
         manifest_from_output(raw, chunks)
     assert error.value.code == "manifest_shape"
@@ -202,7 +204,12 @@ def test_unplaced_anchors_are_all_unclaimed_chunks_in_order(
     chunks: tuple[DocxChunk, ...],
 ) -> None:
     manifest = manifest_from_output(
-        _raw([_question("q1", Q1)], title=[_b(2)], other=[_b(4)]), chunks
+        _raw(
+            [_question("q1", Q1)],
+            title=[_b(2)],
+            header=[{"anchor": _b(4), "kind": "course", "governs": []}],
+        ),
+        chunks,
     )
     everything = [chunk.anchor for chunk in chunks]
     claimed = {*Q1, _b(2), _b(4)}
@@ -221,7 +228,7 @@ def test_question_source_has_section_heading_and_instruction_but_no_metadata() -
                 _context(_b(4), scope="exam_metadata", governs=["q1"]),
             ],
             title=[_b(2)],
-            other=[_b(6)],
+            header=[{"anchor": _b(6), "kind": "exam_total", "governs": []}],
         ),
         labeler_chunks,
     )

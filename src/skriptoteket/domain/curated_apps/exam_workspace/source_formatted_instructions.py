@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import _shown_heading
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import QUESTION_HEADING_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
@@ -33,7 +34,10 @@ def instruction_paragraphs(
     if body_plain_text(raw) == instruction.text:
         return raw
     normalized = source_paragraphs(
-        _shown_heading(chunk, None) if chunk.kind == "heading" else chunk for chunk in sources
+        _shown_heading(chunk, None, QUESTION_HEADING_LABEL.match(chunk.text))
+        if chunk.kind == "heading"
+        else chunk
+        for chunk in sources
     )
     if body_plain_text(normalized) == instruction.text:
         return raw if any(chunk.images or chunk.missing_images for chunk in sources) else normalized

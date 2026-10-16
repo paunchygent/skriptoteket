@@ -13,19 +13,29 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     NOTHING_GOVERNED,
     assemble_build_result,
+    native_item,
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
+    ProducedItem,
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    preserve_native_scores,
+    with_heading_points_review,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
     split_section_totals,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
+    QUESTION_HEADING_LABEL,
+    printed_points,
     title_without_answer_key,
+    with_printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
     Language,
@@ -76,12 +86,16 @@ class DocxBuildState:
     questions: tuple[tuple[str, ...], ...] = ()
     governing: frozenset[str] = frozenset()
     grouped_keys: frozenset[str] = frozenset()
+    header_anchors: frozenset[str] = frozenset()
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
     accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
+    score_sources: dict[str, tuple[ProducedItem, tuple[DocxChunk, ...]]] = field(
+        default_factory=dict
+    )
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
@@ -109,7 +123,9 @@ class DocxBuildState:
 
     @property
     def owned(self) -> frozenset[str]:
-        return self.known_anchors if self.claimable is None else self.claimable
+        return (
+            self.known_anchors if self.claimable is None else self.claimable
+        ) - self.header_anchors
 
     @property
     def pending(self) -> tuple[DocxChunk, ...]:
@@ -120,10 +136,54 @@ class DocxBuildState:
             if chunk.anchor in owned and chunk.anchor not in self.claimed
         )
 
+    @property
+    def heading_instructions(self) -> tuple[ProducedMetadata, ...]:
+        """Headings omitted by a successful build stay structural until T1/T2 decides reach.
+
+        A failed batch's headings keep its failure reason and source-review path.
+        """
+        return tuple(
+            ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
+            for chunk in self.pending
+            if chunk.kind == "heading"
+            and chunk.anchor not in self.reasons
+            and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+        )
+
+    def resolve_heading_score(self, item: NativeExamItem, heading: DocxChunk) -> NativeExamItem:
+        """Rebuild missing printed scores from producer provenance, never an estimate flag."""
+        source = self.score_sources.get(item.source_anchor or "")
+        points = printed_points((heading,))
+        if source is None or points is None:
+            return preserve_native_scores(item, heading)
+        produced, own = source
+        if produced.points is not None:
+            return with_heading_points_review(item, points, produced.points)
+        try:
+            rebuilt = native_item(
+                with_printed_points(produced, (heading,)), chunks=own, language=self.language
+            )
+        except (ValueError, DomainError):
+            return preserve_native_scores(item, heading)
+        # Keep the complete rebuilt scoring model. Placement and provenance collected
+        # since admission are orthogonal to the producer's scoring decision.
+        return rebuilt.model_copy(
+            update={
+                "item_id": item.item_id,
+                "sequence": item.sequence,
+                "printed_label": item.printed_label,
+                "body": item.body,
+                "review": item.review,
+                "retry_source": item.retry_source,
+                "ai_suggestion": item.ai_suggestion,
+            }
+        )
+
     def snapshot(self) -> "DocxBuildState":
         """A copy a trial merge may change without changing this state; items are frozen."""
         trial = copy.copy(self)
         trial.accepted = list(self.accepted)
+        trial.score_sources = dict(self.score_sources)
         trial.key_anchors = set(self.key_anchors)
         trial.claimed = set(self.claimed)
         trial.reasons = dict(self.reasons)
@@ -142,6 +202,7 @@ class DocxBuildState:
         entry holds yet, which join ``taken``.
         """
         shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        shown -= self.header_anchors
         extra = tuple(
             c.anchor
             for c in self.pending
@@ -274,10 +335,15 @@ class DocxBuildState:
         share marked as estimated (D38, D6). A section's points line the split absorbs is
         metadata, never a review item.
         """
+        heading_instructions = self.heading_instructions
+        heading_anchors = {
+            a for instruction in heading_instructions for a in instruction.source_anchors
+        }
+        instructions = (*self.instructions, *heading_instructions)
         points = split_section_totals(
-            self.chunks,
+            tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
             tuple(self.accepted),
-            self.instructions,
+            instructions,
             frozenset(chunk.anchor for chunk in self.pending),
         )
         accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
@@ -290,7 +356,7 @@ class DocxBuildState:
                 accepted.append((item, anchors))
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor in points.absorbed:
+            if chunk.anchor in points.absorbed or chunk.anchor in heading_anchors:
                 continue
             if chunk.anchor in governed and chunk.text:
                 # Assembly makes it its section parent's instruction (D40).
@@ -304,12 +370,13 @@ class DocxBuildState:
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
-            chunks=self.chunks,
+            chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
             accepted=tuple(accepted),
+            resolve_heading_score=self.resolve_heading_score,
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,
-            instructions=self.instructions,
+            instructions=instructions,
             governed=governed,
             questions=questions,
             events=tuple(self.events),

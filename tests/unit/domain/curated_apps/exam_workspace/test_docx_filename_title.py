@@ -5,6 +5,9 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    preserve_native_scores,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
 )
@@ -36,6 +39,7 @@ def _fallback(filename: str, corpus_stem: str = SA24) -> NativeExamDocument:
         filename=filename,
         source_sha256=gold_exam(corpus_stem).source_sha256,
         chunks=chunks,
+        resolve_heading_score=preserve_native_scores,
         review_reasons={chunk.anchor: "Ej konverterat källstycke." for chunk in chunks},
         title=None,
     ).document

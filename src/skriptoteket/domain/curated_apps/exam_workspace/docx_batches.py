@@ -1,15 +1,15 @@
 """Question families and type batches for parallel DOCX conversion (TASK-SKRIPT-39-05-04).
 
 A family is one grouped question with its subparts and answer key; it never splits (D2).
-Every source chunk has exactly one owning family: its own chunks, the shared instructions
-and passages it owns, a points line the grouping left unplaced (the question before it),
-and the title, headings and other unplaced chunks (the question after them). A shared
+Every non-header source chunk has exactly one owning family: its own chunks, the shared
+instructions and passages it owns, a points line the grouping left unplaced (the question
+before it), and the title, headings and other unplaced chunks (the question after them). A shared
 instruction reaches every other family it governs as read-only context. A family that owns
 chunks beyond its own question and answer key, such as a section heading or a points line
 after the section's last question, also reads the other questions of each section it sits
 in, so that it sees which of those chunks serve the whole section. A
 batch holds families of one item kind; only single choice and multiple response share a
-batch (D3).
+batch (D3). Header anchors are placed metadata, never claimed or read by any family.
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ def _nearest_question(
 def question_families(
     manifest: ExamManifest, chunks: tuple[DocxChunk, ...]
 ) -> tuple[QuestionFamily, ...]:
-    """Assign every chunk to exactly one family; shared context is read by its other governees.
+    """Assign every non-header chunk once; shared context is read by its other governees.
 
     A family owning section-level chunks also reads the own chunks of the other questions
     its multi-question shared contexts govern; their answer keys stay with their owners.
@@ -98,7 +98,9 @@ def question_families(
         for governed in context.governs:
             if governed != owner:
                 reads[governed].add(context.anchor)
-    placed = {anchor for owned in claims.values() for anchor in owned}
+    placed = {anchor for owned in claims.values() for anchor in owned} | {
+        header.anchor for header in manifest.header
+    }
     for chunk in chunks:
         if chunk.anchor not in placed:
             owner = _nearest_question(

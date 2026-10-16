@@ -152,7 +152,7 @@ _DRAWN_GROUPING: dict[str, JsonValue] = {
     "title_anchors": ["body:0001"],
     "questions": [_question("q1", 2, 3, 4), _question("q2", 5, 6), _question("q3", 7, 8)],
     "shared_contexts": [],
-    "other_anchors": [],
+    "header_anchors": [],
 }
 
 
@@ -160,7 +160,7 @@ _BETWEEN_GROUPING: dict[str, JsonValue] = {
     "title_anchors": ["body:0001"],
     "questions": [_question("q1", 2, 3), _question("q2", 4)],
     "shared_contexts": [],
-    "other_anchors": [],
+    "header_anchors": [],
 }
 
 
@@ -226,7 +226,7 @@ _GROUPING: dict[str, JsonValue] = {
         },
     ],
     "shared_contexts": [],
-    "other_anchors": [],
+    "header_anchors": [],
 }
 
 

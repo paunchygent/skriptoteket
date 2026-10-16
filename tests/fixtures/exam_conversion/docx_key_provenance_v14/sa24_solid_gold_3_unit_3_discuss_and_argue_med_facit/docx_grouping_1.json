@@ -831,9 +831,5 @@
       ]
     }
   ],
-  "other_anchors": [
-    "body:0003",
-    "body:0106",
-    "body:0141"
-  ]
+  "header_anchors": []
 }

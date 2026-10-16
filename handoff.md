@@ -62,18 +62,19 @@
     307/316 at 16 families; Exam.net 5339992; retained
     `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
   - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `ready` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
-    header lines become metadata. Next (Claude parent): implement on user
-    go-ahead. Story bar is best effort (A15).
+    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`,
+    worktree `Skriptoteket-task-skript-39-05-14`): all units reviewed and
+    integrated (`7eec5716`). New grouping prompt keeps Del 1/2/3 titles
+    (`evidence/regroup-2026-10-16b/`); build replays keep the old groupings
+    (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `in_progress` 2026-10-16; owner Claude parent on Hemma (session
     `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca`, worktree
     `skriptoteket-task-skript-39-08-01` from `9322879c`. Committed after
-    review: U3 `5409fb07`, U4 `6bc3732e`, slice mocks `3203b507`. U1 and U5
-    in rereview after repair; U2 rename concurrency repair in progress. U6
-    header course and U7 export names wait for 39-05-14 on main. Tasks 2-4
-    scaffolded `ready`. Next: commit U1/U2/U5 on approval, merge main after
-    39-05-14, U6/U7, staging walk, user closure gate.
+    review: U1 `2b29faea`, U2 `b3361de8`, U3 `5409fb07`, U4 `6bc3732e`, U5
+    `2a9589f2`, slice mocks `3203b507`; main with 39-05-14 merged. Tasks 2-4
+    contracted `ready` (`0505b89e`). Next: U6 header course and U7 export
+    names as Sol pairs, staging walk, user closure gate, merge into main.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.

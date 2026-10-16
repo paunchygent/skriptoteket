@@ -11,7 +11,7 @@
  *   preceding unit when the local copy lacks it, whatever the local copy
  *   holds. A converted unit is replaced by the head's items only while the
  *   teacher has not touched it since the base the local copy started from;
- *   otherwise the teacher's version stays. The title, the instructions and
+ *   otherwise the teacher's version stays. The title, the header, the instructions and
  *   the parents follow the converted-unit rule. Items the teacher added
  *   belong to no unit and keep their place; when the head is a later save
  *   from another tab, its edits of such items follow the same rule and the
@@ -239,6 +239,7 @@ export function mergeConversionRevision({
   }));
 
   const title = pick(base.title, local.title, head.title).value;
+  const header = pick(base.header, local.header, head.header).value;
   const instructions = pick(
     base.instructions,
     local.instructions,
@@ -261,6 +262,7 @@ export function mergeConversionRevision({
   return {
     ...local,
     document_id: head.document_id,
+    header,
     instructions,
     items,
     parents,

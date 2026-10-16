@@ -15,7 +15,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import SharedContext
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
+    ExamManifest,
+    SharedContext,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -52,6 +55,7 @@ class DocxConversionRun:
         self.state = DocxBuildState(
             job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
         )
+        self.manifest: ExamManifest | None = None
         self.families: tuple[QuestionFamily, ...] = ()
         self.title_anchors: frozenset[str] = frozenset()
         self.context_anchors: frozenset[str] = frozenset()

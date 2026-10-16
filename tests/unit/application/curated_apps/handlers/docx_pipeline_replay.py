@@ -121,7 +121,19 @@ class ReplayProvider:
         if request.output_spec.schema_name == "docx_exam_build":
             payload = json.loads(request.user_payload)
             pending = {chunk["anchor"] for chunk in payload["chunks"]}
-            visible = pending | {chunk["anchor"] for chunk in payload["context_chunks"]}
+            grouping = recording(self._exam, "docx_grouping_1", self._root)
+            headers = grouping["header_anchors"]
+            assert isinstance(headers, list)
+            header_anchors = {
+                anchor
+                for entry in headers
+                if isinstance(entry, dict)
+                for anchor in [entry.get("anchor")]
+                if isinstance(anchor, str)
+            }
+            visible = (
+                pending | {chunk["anchor"] for chunk in payload["context_chunks"]} | header_anchors
+            )
             fits = {}
             for candidate in sorted((self._root / self._exam).glob("docx_w*.json")):
                 if candidate.stem in self._served:

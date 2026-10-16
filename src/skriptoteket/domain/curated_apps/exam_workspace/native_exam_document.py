@@ -33,7 +33,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v2"] = "native_exam_document_v2"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v3"] = "native_exam_document_v3"
 
 
 class NativeExamAsset(BaseModel):
@@ -63,13 +63,28 @@ class NativeExamDocumentOrigin(BaseModel):
         return self
 
 
+class NativeExamHeader(BaseModel):
+    """Exam header data from the source: never exam text (TASK-SKRIPT-39-05-14 D1).
+
+    ``course_hint`` is the raw text of the source course line; ``printed_total`` is the
+    exam total the source prints. Both are metadata, compared or shown, never repeated
+    as instructions or item text.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    course_hint: str | None = Field(default=None, min_length=1)
+    printed_total: int | float | None = Field(default=None, gt=0)
+
+
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v2"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v3"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str = Field(min_length=1)
+    header: NativeExamHeader = NativeExamHeader()
     instructions: tuple[NativeParagraph, ...] = ()
     items: tuple[NativeExamItem, ...] = Field(min_length=1)
     parents: tuple[NativeExamParent, ...] = ()

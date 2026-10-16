@@ -18,6 +18,7 @@
  */
 
 import { IconAi, IconCheck, IconWarning } from "../../../components/icons";
+import { UiDenseStatusPill } from "../../../components/ui";
 import ExamWorkspaceSharedInstruction from "./ExamWorkspaceSharedInstruction.vue";
 import { PARENT_HEADING_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceItemRow } from "./examWorkspaceRows";
@@ -57,6 +58,14 @@ const emit = defineEmits<{
           class="font-semibold text-navy/80"
           data-test="exam-workspace-parent-points"
         >{{ row.parentBlock.pointsLabel }}</span>
+        <UiDenseStatusPill
+          v-if="row.parentBlock.totalsSignal"
+          :label="row.parentBlock.totalsSignal"
+          :title="row.parentBlock.totalsSignal"
+          tone="warning"
+          class="min-w-0 max-w-full justify-self-start overflow-hidden whitespace-nowrap"
+          data-test="exam-workspace-parent-total-signal"
+        />
       </div>
       <button
         type="button"

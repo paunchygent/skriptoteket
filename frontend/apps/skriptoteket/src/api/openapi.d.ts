@@ -6326,6 +6326,8 @@ export interface components {
              * Format: uuid
              */
             document_id: string;
+            /** @default {} */
+            header: components["schemas"]["NativeExamHeader"];
             /**
              * Instructions
              * @default []
@@ -6343,10 +6345,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v2
+             * @default native_exam_document_v3
              * @constant
              */
-            schema_version: "native_exam_document_v2";
+            schema_version: "native_exam_document_v3";
             /** Title */
             title: string;
         };
@@ -6362,6 +6364,8 @@ export interface components {
              * Format: uuid
              */
             document_id: string;
+            /** @default {} */
+            header: components["schemas"]["NativeExamHeader"];
             /**
              * Instructions
              * @default []
@@ -6379,10 +6383,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v2
+             * @default native_exam_document_v3
              * @constant
              */
-            schema_version: "native_exam_document_v2";
+            schema_version: "native_exam_document_v3";
             /** Title */
             title: string;
         };
@@ -6399,6 +6403,20 @@ export interface components {
             source_filename?: string | null;
             /** Source Sha256 */
             source_sha256?: string | null;
+        };
+        /**
+         * NativeExamHeader
+         * @description Exam header data from the source: never exam text (TASK-SKRIPT-39-05-14 D1).
+         *
+         *     ``course_hint`` is the raw text of the source course line; ``printed_total`` is the
+         *     exam total the source prints. Both are metadata, compared or shown, never repeated
+         *     as instructions or item text.
+         */
+        NativeExamHeader: {
+            /** Course Hint */
+            course_hint?: string | null;
+            /** Printed Total */
+            printed_total?: (number) | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Input": {
@@ -6520,6 +6538,8 @@ export interface components {
          *
          *     A parent owns no points and no answer key: each child item keeps its own kind, points
          *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     ``printed_total`` is the part total the source prints over these children; it is
+         *     compared with their points and never shown as instruction text (TASK-SKRIPT-39-05-14).
          *     Its instruction is one body of positioned paragraphs: the shared wording with every
          *     shared picture at its exact source place (F2), never a gap the student fills.
          */
@@ -6530,6 +6550,8 @@ export interface components {
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
+            /** Printed Total */
+            printed_total?: (number) | null;
         };
         /**
          * NativeExamParent
@@ -6537,6 +6559,8 @@ export interface components {
          *
          *     A parent owns no points and no answer key: each child item keeps its own kind, points
          *     and answer key, as an Exam.net information block holds questions of any type (D27).
+         *     ``printed_total`` is the part total the source prints over these children; it is
+         *     compared with their points and never shown as instruction text (TASK-SKRIPT-39-05-14).
          *     Its instruction is one body of positioned paragraphs: the shared wording with every
          *     shared picture at its exact source place (F2), never a gap the student fills.
          */
@@ -6547,6 +6571,8 @@ export interface components {
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
+            /** Printed Total */
+            printed_total?: (number) | null;
         };
         /**
          * NativeExamRetryChunk
