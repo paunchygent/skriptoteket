@@ -32,8 +32,11 @@
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
-- Main test failures from the TASK-SKRIPT-39-05-14 merges (reported by the
-  39-08-01 lead; owner Claude parent, Mac session; next: verify and repair).
+- [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
+  reopened `in_progress` 2026-10-16 (user; story ST-SKRIPT-39-05 stays `ready`;
+  retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`). Owner: Claude parent on the
+  Mac. Walk and Exam.net 5344745 passed (`evidence/staging-walk-39-05-14b/`);
+  next: Sol pair repairs five main test failures, Sol review, then closure.
   Still failing on main `212ce386` (lead 39-08-01, 2026-10-16), introduced by
   this task's merges: `test_exam_workspace_source_formatting.py` 2 failed
   (Svenska 2 `Fråga 17` missing after replay; morpheme alignment), 2 QTI
@@ -131,11 +134,6 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
-
-- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  `done` 2026-10-16 (user closure), tasks 01-14; last TASK-SKRIPT-39-05-14
-  merged `827c301a`, Exam.net 5344745; retained
-  `01a144e3-b8c4-7ea5-bee6-6dfc5e242786` `evidence/staging-walk-39-05-14b/`.
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;

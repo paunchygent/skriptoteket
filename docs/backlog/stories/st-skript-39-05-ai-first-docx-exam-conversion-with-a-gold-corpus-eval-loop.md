@@ -7,13 +7,10 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: done
+status: ready
 closeout_review:
   record: inline
-  status: not_required
-  decided_at: '2026-10-16'
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: 'User closed the story on 2026-10-16 ("close TASK-SKRIPT-39-05-14 and ST-SKRIPT-39-05 as done (user closure)"). Tasks 39-05-01 to 39-05-14 are done (39-05-14 closed the same day). Last corpus replay 307/316 items match gold (TASK-SKRIPT-39-05-13, best-effort target per the acceptance criterion); staging walk at 827c301a converted Svenska 2 kursavslutande to 24 items with 0 review items and judge 24/24 gold, and Exam.net import 5344745 shows three parts, 24 tasks, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14b/walk-report.md).'
+  status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
 - Each eval run aims for every item of every corpus exam to match its hand-checked
@@ -127,7 +124,7 @@ Planned order; each task is scaffolded and contracted before work starts.
    shared core plus one section per item kind; a chunk the grouping lists as
    a question's facit is its answer key unless the item holds it; batches hold
    16 question families (307/316 items match gold vs 298/316 at 1).
-11. `TASK-SKRIPT-39-05-14` (done 2026-10-16): exam header lines become document metadata
+11. `TASK-SKRIPT-39-05-14`: exam header lines become document metadata
    (course hint, printed totals checked against item points) and never exam
    text; numbered or pointed question headings open their question or parent.
 

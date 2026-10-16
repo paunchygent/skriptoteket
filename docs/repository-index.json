@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c2198609e5faf6010edece50703e01a7085a8a71157401b64daa71c8fae77a14",
+  "source_set_digest": "6599f773ae2acd33dc5e5aa1ca2a11403728eec762fb6ea764ed9f49ba832c98",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2285,7 +2285,7 @@
       "type": "story",
       "title": "AI-first DOCX exam conversion with a gold-corpus eval loop",
       "path": "docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md",
-      "status": "done",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2298,10 +2298,7 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_required",
-        "decided_at": "2026-10-16",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "User closed the story on 2026-10-16 (\"close TASK-SKRIPT-39-05-14 and ST-SKRIPT-39-05 as done (user closure)\"). Tasks 39-05-01 to 39-05-14 are done (39-05-14 closed the same day). Last corpus replay 307/316 items match gold (TASK-SKRIPT-39-05-13, best-effort target per the acceptance criterion); staging walk at 827c301a converted Svenska 2 kursavslutande to 24 items with 0 review items and judge 24/24 gold, and Exam.net import 5344745 shows three parts, 24 tasks, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14b/walk-report.md)."
+        "status": "not_started"
       }
     },
     {
@@ -5214,7 +5211,7 @@
       "type": "task",
       "title": "Exam header lines become document metadata and question headings stay with their questions",
       "path": "docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md",
-      "status": "done",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5225,10 +5222,7 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_required",
-        "decided_at": "2026-10-16",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "User closed the task on 2026-10-16 (\"close TASK-SKRIPT-39-05-14 and ST-SKRIPT-39-05 as done (user closure)\"). Units U2a-U9 passed independent Sol review and rereview before integration (review-*.md, rereview-*.md). Merged to main 7eec5716 and 827c301a. Grouping-only re-record evidence/regroup-2026-10-16c/ (EXIT=0). Staging re-walk at 827c301a: Svenska 2 kursavslutande converted to 24 items, 0 review items, 36 points, judge 24/24 gold, QTI export 200; Exam.net import 5344745 shows three parts, 24 tasks, 36p and no header text. Records in Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14b/walk-report.md."
+        "status": "not_started"
       }
     },
     {

@@ -8,13 +8,10 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-16'
-status: done
+status: in_progress
 closeout_review:
   record: inline
-  status: not_required
-  decided_at: '2026-10-16'
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: 'User closed the task on 2026-10-16 ("close TASK-SKRIPT-39-05-14 and ST-SKRIPT-39-05 as done (user closure)"). Units U2a-U9 passed independent Sol review and rereview before integration (review-*.md, rereview-*.md). Merged to main 7eec5716 and 827c301a. Grouping-only re-record evidence/regroup-2026-10-16c/ (EXIT=0). Staging re-walk at 827c301a: Svenska 2 kursavslutande converted to 24 items, 0 review items, 36 points, judge 24/24 gold, QTI export 200; Exam.net import 5344745 shows three parts, 24 tasks, 36p and no header text. Records in Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14b/walk-report.md.'
+  status: not_started
 task_kind: story
 acceptance_criteria:
 - A converted DOCX exam shows no header line (course line, exam total, part totals)
