@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "53cda0a848081c71c186948e54046b38f4a90195b34c099d8d0519566d6477ed",
+  "source_set_digest": "8f533cc2b19cf2d4235d3502188458294de884e3c60c7a44ce0fc66f1ff5f8f1",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5230,7 +5230,7 @@
       "type": "task",
       "title": "Course picker at import and exam metadata drawer for course, title and file name",
       "path": "docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5241,7 +5241,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-16",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Each unit (U1-U7 and the repair units) was approved by its own Sol ruthless-reviewer, records in the retained root 01a145b6-c404-761f-aeef-39de058ba7ca under evidence/review-U*.md; merged into main 255eef88; headless staging walk at 255eef88 passed (evidence/staging-walk-808d8f11/WALK.md); the user closed the task on 2026-10-16 at the closure gate, Exam.net import of the exported QTI left to the user."
       }
     },
     {
