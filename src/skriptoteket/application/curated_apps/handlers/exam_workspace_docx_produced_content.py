@@ -15,7 +15,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
-    printed_points,
 )
 
 
@@ -84,9 +83,6 @@ def with_heading_content(produced: ProducedItem, headings: tuple[DocxChunk, ...]
     """Put printed heading fields in metadata, leaving heading words in the body."""
     if not headings:
         return produced
-    heading_points = printed_points(headings)
-    if produced.points is None and heading_points is not None:
-        produced = produced.model_copy(update={"points": heading_points})
     label = QUESTION_HEADING_LABEL.match(headings[0].text)
     if label:
         produced = produced.model_copy(

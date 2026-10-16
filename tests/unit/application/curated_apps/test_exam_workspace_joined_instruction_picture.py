@@ -33,9 +33,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    preserve_native_scores,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
 )
@@ -147,7 +144,6 @@ def _built(*, item_paragraphs: _PARAGRAPHS | None = None) -> DocxBuildResult:
         filename="joined.docx",
         source_sha256="0" * 64,
         chunks=chunks,
-        resolve_heading_score=preserve_native_scores,
         accepted=((item, ("body:0001", "body:0003")),),
         review_reasons={},
         instructions=(_JOINED_INSTRUCTION,),
@@ -173,7 +169,6 @@ def _built_headed(heading_text: str = _HEADING_TEXT) -> DocxBuildResult:
         filename="headed.docx",
         source_sha256="0" * 64,
         chunks=chunks,
-        resolve_heading_score=preserve_native_scores,
         accepted=(
             (_converted("body:0003"), ("body:0003",)),
             (_converted("body:0004"), ("body:0004",)),
@@ -274,7 +269,6 @@ def test_a_repeated_source_paragraph_keeps_both_picture_occurrences(
         filename="repeated.docx",
         source_sha256="0" * 64,
         chunks=(*chunks[:2], duplicate, chunks[2]),
-        resolve_heading_score=preserve_native_scores,
         accepted=((_joined_item(paragraphs), ("body:0001", "body:0003")),),
         review_reasons={},
         instructions=instructions,
@@ -310,7 +304,6 @@ def test_identical_picture_paragraphs_at_distinct_shared_source_anchors_both_lan
         filename="parent.docx",
         source_sha256="0" * 64,
         chunks=chunks,
-        resolve_heading_score=preserve_native_scores,
         accepted=(
             (_converted("body:0003"), ("body:0003",)),
             (_converted("body:0004"), ("body:0004",)),
@@ -400,7 +393,6 @@ def test_heading_normalization_maps_interior_and_removed_text_picture_positions(
         filename="heading.docx",
         source_sha256="0" * 64,
         chunks=chunks,
-        resolve_heading_score=preserve_native_scores,
         accepted=((_converted("body:0003", text), ("body:0002", "body:0003")),),
         review_reasons={},
         questions=(("body:0002", "body:0003"),),
@@ -432,7 +424,6 @@ def test_heading_without_retained_wording_still_delivers_its_picture(text: str):
             DocxChunk("body:0002", "heading", text, text, (image,)),
             DocxChunk("body:0003", "paragraph", "Svara.", "Svara."),
         ),
-        resolve_heading_score=preserve_native_scores,
         accepted=((_converted("body:0003", "Svara."), ("body:0002", "body:0003")),),
         review_reasons={},
         questions=(("body:0002", "body:0003"),),

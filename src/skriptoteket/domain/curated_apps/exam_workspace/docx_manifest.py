@@ -20,7 +20,7 @@ ContextScope = Literal[
     "section_instruction", "shared_passage", "word_bank", "exam_metadata", "other"
 ]
 _SCOPES: frozenset[str] = frozenset(get_args(ContextScope))
-HeaderKind = Literal["course", "exam_total", "part_total"]
+HeaderKind = Literal["course", "exam_total", "part_total", "question_total"]
 _HEADER_KINDS: frozenset[str] = frozenset(get_args(HeaderKind))
 _EXAM_OWNER = "exam"
 
@@ -53,7 +53,7 @@ class SharedContext:
 class HeaderAnchor:
     """A source header line: exam metadata, never exam text (TASK-SKRIPT-39-05-14 D1).
 
-    ``governs`` names the questions of a part total; it is empty for the course line
+    ``governs`` names the questions of a part or question total; it is empty for the course line
     and the exam total.
     """
 
@@ -236,7 +236,11 @@ def manifest_from_output(
             HeaderAnchor(
                 anchor=anchor,
                 kind=_header_kind(kind),
-                governs=tuple(q for q in ids if q in governs) if kind == "part_total" else (),
+                governs=(
+                    tuple(q for q in ids if q in governs)
+                    if kind in {"part_total", "question_total"}
+                    else ()
+                ),
             )
             for anchor, kind, governs in header_kept
         ),

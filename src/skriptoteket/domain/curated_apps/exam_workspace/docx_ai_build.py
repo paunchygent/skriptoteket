@@ -30,9 +30,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     return_misplaced_own_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    HeadingScoreResolver,
     SectionInstructions,
     place_section_instructions,
+    with_question_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     printed_points,
@@ -336,8 +336,6 @@ def _ordered_items(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
-    *,
-    resolve_heading_score: HeadingScoreResolver,
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -358,7 +356,6 @@ def _ordered_items(
         governed,
         title_anchors,
         own_anchors,
-        resolve_heading_score=resolve_heading_score,
     )
 
 
@@ -368,7 +365,6 @@ def assemble_build_result(
     filename: str,
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
-    resolve_heading_score: HeadingScoreResolver,
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...] = (),
     review_reasons: dict[str, str],
     key_anchors: frozenset[str] = frozenset(),
@@ -406,7 +402,6 @@ def assemble_build_result(
         governed,
         title_anchors,
         own_anchors,
-        resolve_heading_score=resolve_heading_score,
     )
     while returned := return_misplaced_own_chunks(
         chunks, accepted, instructions, placed.landed, questions, governed
@@ -421,10 +416,20 @@ def assemble_build_result(
             governed,
             title_anchors,
             own_anchors,
-            resolve_heading_score=resolve_heading_score,
         )
-    items = placed.items
+    scored_items = list(placed.items)
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    for own in questions:
+        indices = [i for i, item in enumerate(scored_items) if item.source_anchor in own]
+        members = tuple(scored_items[i] for i in indices)
+        points = printed_points(
+            by_anchor[a] for a in own if a in by_anchor and by_anchor[a].kind == "heading"
+        )
+        if points is None:
+            points = placed.printed_totals.get(frozenset(item.item_id for item in members))
+        for i, item in zip(indices, with_question_points(members, points), strict=True):
+            scored_items[i] = item
+    items = tuple(scored_items)
     global_instructions = tuple(
         paragraph
         for index, instruction in enumerate(instructions)

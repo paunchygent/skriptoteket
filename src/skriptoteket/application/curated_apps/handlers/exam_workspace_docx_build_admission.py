@@ -48,14 +48,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     with_left_out_mark,
     wording_left_out,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    with_heading_points_review,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
     definition_context,
-    printed_points,
     title_without_answer_key,
     with_accepted_forms,
     with_printed_points,
@@ -372,7 +368,10 @@ def _admit_item(
         shown -= (state.key_anchors | state.grouped_keys) - set(anchors)
         shown -= state.header_anchors
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
-        scored = with_printed_points(with_accepted_forms(produced, context), own)
+        scored = with_printed_points(
+            with_accepted_forms(produced, context),
+            (chunk for chunk in own if chunk.kind != "heading"),
+        )
         item = native_item(
             scored,
             chunks=own,
@@ -398,10 +397,6 @@ def _admit_item(
             raise ValueError(
                 f"source pictures differ: missing {dict(missing)}, extra {dict(extra)}"
             )
-        if produced.points is not None:
-            item = with_heading_points_review(item, printed_points(headings), produced.points)
-        if item.source_anchor is not None:
-            state.score_sources[item.source_anchor] = (scored, own)
         return item
 
     built = _built(index, anchors, state, seen, build)

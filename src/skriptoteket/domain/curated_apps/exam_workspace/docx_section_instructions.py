@@ -11,11 +11,15 @@ same pass (``docx_instruction_runs``): over one question a heading opens its bod
 over two or more consecutive questions it opens their parent's instruction (T1, T2).
 """
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
+    matching_score,
+    point_shares,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import (
     Joined,
@@ -33,7 +37,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
-    printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -45,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
     NativeItemReviewState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
@@ -112,39 +116,55 @@ class SectionInstructions:
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
     landed: Mapping[int, frozenset[str]]
+    printed_totals: Mapping[frozenset[str], int | float]
 
 
-HeadingScoreResolver = Callable[[NativeExamItem, DocxChunk], NativeExamItem]
+def with_question_points(
+    items: tuple[NativeExamItem, ...], points: int | float | None
+) -> tuple[NativeExamItem, ...]:
+    """Printed question points own the total, including rubric/grid and split scores.
 
-
-def preserve_native_scores(item: NativeExamItem, heading: DocxChunk) -> NativeExamItem:
-    """Without producer provenance, keep the coherent native score and flag a mismatch.
-
-    Estimation describes how scoring was derived, not whether its total is replaceable.
-    Only the producer-aware build resolver can supply missing printed points.
+    Reuse the section allocator in source order; never change only an item's total
+    while leaving its rubric or uniform tick value inconsistent.
     """
-    return with_heading_points_review(item, printed_points((heading,)), item.points)
-
-
-def with_heading_points_review(
-    item: NativeExamItem, points: int | float | None, stated: int | float | None
-) -> NativeExamItem:
-    """Report disagreement with the authoritative score without changing its derivation."""
-    if points is None or stated == points:
-        return item
-    reason = f"Rubriken anger {points} poäng; AI-tolkningen anger {stated} poäng."
-    if reason and reason not in item.review.reasons:
-        item = item.model_copy(
-            update={
-                "review": item.review.model_copy(
-                    update={
-                        "state": NativeItemReviewState.REVIEW_REQUIRED,
-                        "reasons": (*item.review.reasons, reason),
-                    }
+    if points is None or not items:
+        return items
+    result: list[NativeExamItem] = []
+    try:
+        for item, share in zip(items, point_shares(points, len(items)), strict=True):
+            updates: dict[str, object] = {"points": share, "points_estimated": False}
+            if share <= 0:
+                raise ValueError("the printed total cannot give each item positive points")
+            if item.kind is NativeExamItemKind.MATCHING:
+                tick, total, estimated = matching_score(share, len(item.answer_key.match_pairs))
+                updates.update(tick_points=tick, points=total, points_estimated=estimated)
+            if item.criteria and sum(criterion.points for criterion in item.criteria) != share:
+                shares = point_shares(share, len(item.criteria))
+                if any(value < 1 or not float(value).is_integer() for value in shares):
+                    raise ValueError("the printed total cannot give each criterion whole points")
+                updates["criteria"] = tuple(
+                    criterion.model_copy(update={"points": int(value)})
+                    for criterion, value in zip(item.criteria, shares, strict=True)
                 )
-            }
+            result.append(item.model_copy(update=updates))
+    except ValueError:
+        reason = (
+            f"Tryckta {points:g} poäng kan inte fördelas på frågans bedömning. Kontrollera poängen."
         )
-    return item
+        return tuple(
+            item.model_copy(
+                update={
+                    "review": item.review.model_copy(
+                        update={
+                            "state": NativeItemReviewState.REVIEW_REQUIRED,
+                            "reasons": tuple(dict.fromkeys((*item.review.reasons, reason))),
+                        }
+                    )
+                }
+            )
+            for item in items
+        )
+    return tuple(result)
 
 
 def _lines(text: str) -> list[str]:
@@ -276,8 +296,6 @@ def place_section_instructions(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
-    *,
-    resolve_heading_score: HeadingScoreResolver,
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
 
@@ -350,8 +368,6 @@ def place_section_instructions(
     for k, (_, _, item) in enumerate(ordered):
         for run in reached:
             if run.heading and run.reach == (k,):
-                heading = chunks[run.start]
-                item = resolve_heading_score(item, heading)
                 label = run.question_label
                 if label:
                     item = item.model_copy(
@@ -378,5 +394,14 @@ def place_section_instructions(
         for number, group in enumerate(groups, start=1)
     )
     return SectionInstructions(
-        tuple(items), parents, MappingProxyType({o: frozenset(a) for o, a in landed.items()})
+        tuple(items),
+        parents,
+        MappingProxyType({o: frozenset(a) for o, a in landed.items()}),
+        MappingProxyType(
+            {
+                frozenset(_item_id(k) for k in run.reach): run.printed_total
+                for run in reached
+                if run.heading and run.printed_total is not None and run.reach
+            }
+        ),
     )
