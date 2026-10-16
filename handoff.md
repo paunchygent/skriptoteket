@@ -45,15 +45,10 @@
   FREE_TEXT). Pre-existing and unowned: docker suite
   `test_exam_workspace_docx_background.py` 2/9 fail on main and at `8bb83759`.
   Evidence `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
-- [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
-  `in_progress` 2026-10-16, user closure gate next; owner Claude parent on
-  Hemma, retained `01a145b6-c404-761f-aeef-39de058ba7ca`. All units reviewed,
-  committed on `codex/task-skript-39-08-01` and merged into main `255eef88`
-  (pushed). Staging walk at `255eef88` passes headless from Hemma: course
-  pick, Svenska 2 conversion, drawer title and name, every lineage version
-  renamed, QTI title and course keyword, judge 24/24; evidence
-  `01a145b6.../evidence/staging-walk-808d8f11/WALK.md`. Exam.net import of
-  the QTI is pending user action; then retire the worktree.
+
+- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
+  `ready`: task 1 `done` 2026-10-16; tasks 2-4 contracted `ready`, next is
+  TASK-SKRIPT-39-08-02 (own courses in the profile); no owner yet.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
@@ -134,6 +129,12 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
+  `done` 2026-10-16 (user closure gate): course picker at import, metadata
+  drawer, course line in exports; main `255eef88`, headless staging walk
+  `01a145b6.../evidence/staging-walk-808d8f11/WALK.md`; worktree retired.
+  Exam.net import of the walk's QTI is left to the user.
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-16'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-16'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: Each unit (U1-U7 and the repair units) was approved by its own Sol ruthless-reviewer, records in the retained root 01a145b6-c404-761f-aeef-39de058ba7ca under evidence/review-U*.md; merged into main 255eef88; headless staging walk at 255eef88 passed (evidence/staging-walk-808d8f11/WALK.md); the user closed the task on 2026-10-16 at the closure gate, Exam.net import of the exported QTI left to the user.
 task_kind: story
 acceptance_criteria:
   - A teacher can pick an official Skolverket course (gymnasiet) or subject and year band (grundskolan) by typing in a dropdown in the exam workspace import panel, or get it preselected from a uniquely matching course hint; change the course, the exam title and the Mina filer name afterwards in a document metadata drawer; and the chosen course's official name and the title appear in the QTI, PDF and DOCX exports, with a rename applied to every saved version of the exam
