@@ -67,6 +67,8 @@ def test_printed_exam_total_reads_the_points_not_an_earlier_part_number(
         _document(),
         _manifest((HeaderAnchor("h1", "exam_total", ()),)),
         (_chunk("h1", line),),
+        course_key=None,
+        courses=(),
     )
     assert result.header.printed_total == expected
 
@@ -90,6 +92,8 @@ def test_course_lines_keep_plain_source_order_and_first_parsable_exam_total() ->
             _chunk("t2", "Total: 36 poäng"),
             _chunk("t3", "Total: 99 poäng"),
         ),
+        course_key=None,
+        courses=(),
     )
     assert result.header.course_hint == "Svenska 2 Kursavslutande"
     assert result.header.printed_total == 36
@@ -101,6 +105,8 @@ def test_empty_course_line_has_no_hint() -> None:
         _document(),
         _manifest((HeaderAnchor("c1", "course", ()),)),
         (_chunk("c1", "   "),),
+        course_key=None,
+        courses=(),
     )
     assert result.header.course_hint is None
 
@@ -135,6 +141,8 @@ def test_part_totals_follow_source_ownership_into_adjacent_parents() -> None:
             _chunk("p21b", "Tjugoett b"),
             _chunk("p22", "Tjugotvå"),
         ),
+        course_key=None,
+        courses=(),
     )
     assert [parent.printed_total for parent in result.parents] == [None, 15]
     assert [item.points for item in result.items] == [1, 1, 1, 1, 1]
@@ -153,6 +161,8 @@ def test_part_total_uses_largest_overlap_even_when_some_questions_are_unparented
             tuple(_question(f"q{i}", f"p{i}") for i in range(1, 7)),
         ),
         (_chunk("h", "Totalt 40 p"), *(_chunk(f"p{i}", f"Fråga {i}") for i in range(1, 7))),
+        course_key=None,
+        courses=(),
     )
     assert [parent.printed_total for parent in result.parents] == [None, 40]
 
@@ -185,6 +195,8 @@ def test_part_total_uses_the_same_owned_context_mapping_as_pipeline_assembly() -
             _chunk("p1", "Ett"),
             _chunk("p2", "Två"),
         ),
+        course_key=None,
+        courses=(),
     )
     assert result.parents[0].printed_total == 15
     assert result.items[0].points == 1
@@ -201,6 +213,8 @@ def test_single_unparented_question_takes_missing_points_or_gets_nonblocking_rea
         document,
         _manifest((HeaderAnchor("h", "part_total", ("q1",)),), (_question("q1", "p1"),)),
         (_chunk("h", "Totalt 7,5 p"), _chunk("p1", "Frågan")),
+        course_key=None,
+        courses=(),
     )
     assert result.parents == ()
     assert result.items[0].points == (7.5 if existing_points is None else existing_points)

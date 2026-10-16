@@ -67,46 +67,50 @@
     integrated (`7eec5716`). New grouping prompt keeps Del 1/2/3 titles
     (`evidence/regroup-2026-10-16b/`); build replays keep the old groupings
     (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
+    Regression on main from this merge (lead 39-08-01, 2026-10-16):
+    `test_exam_workspace_source_formatting.py` 2 failed (Svenska 2 `Fråga 17`
+    missing after replay; morpheme alignment); passes at `0505b89e`. Evidence
+    `01a145b6.../evidence/lead/source-formatting-regression-on-main-2026-10-16.md`.
+    Unowned, pre-existing (lead 39-08-01, 2026-10-16): docker suite
+    `tests/integration/test_exam_workspace_docx_background.py` fails 2/9 (quiz
+    batches; bf26 english `no recording for docx_exam_build`) on main and at
+    `8bb83759`; evidence `01a145b6.../evidence/lead/docx-background-replay-on-main-2026-10-16.md`.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `in_progress` 2026-10-16; owner Claude parent on Hemma (session
     `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca`, worktree
     `skriptoteket-task-skript-39-08-01` from `9322879c`. Committed after
     review: U1 `2b29faea`, U2 `b3361de8`, U3 `5409fb07`, U4 `6bc3732e`, U5
-    `2a9589f2`, slice mocks `3203b507`; main with 39-05-14 merged. Tasks 2-4
-    contracted `ready` (`0505b89e`). Next: U6 header course and U7 export
-    names as Sol pairs, staging walk, user closure gate, merge into main.
+    `2a9589f2`, slice mocks `3203b507`, docs `0505b89e` (tasks 2-4 `ready`),
+    merge of main `fd0469a6`. Approved, uncommitted in the worktree: U5R3,
+    U6 (header course, drawer), U7 (course line in exports), U2R2 (vault
+    fake). Next: commit, staging walk, user closure gate, merge into main.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
-  D6 (editor and version views show and save every bundle file) rereview approved
-  `578d4a4d`, merged `4b68bcde` and pushed; staging `skriptoteket-dev` rebuilt and
-  healthy on it. Gruppgenerator run on staging done. Production: `hemma-deploy`
-  and `seed-script-bank --sync-code` were run there by mistake; gruppgeneratorn
-  depublished, the other seeded tools stay unpublished. Staging grants
-  `skriptoteket-proof-user` the contributor role and gruppgeneratorn maintainership.
-  Next: finish the staging editor walk (sibling `grouping.py` shown; edit a sibling
-  file, sandbox run, save), record the proof, close docs. UX note: a saved class
-  list looks selected in step 2 but is not until the class name is filled.
+  D6 (every bundle file shown and saved) rereview approved `578d4a4d`, merged
+  `4b68bcde`, pushed; staging `skriptoteket-dev` rebuilt on it, Gruppgenerator run
+  done. Production was deployed and seeded by mistake: gruppgeneratorn depublished,
+  other seeded tools unpublished. Staging grants `skriptoteket-proof-user`
+  contributor role and gruppgeneratorn maintainership. Next: staging editor walk
+  (edit sibling `grouping.py`, sandbox run, save), record proof, close docs. UX
+  note: a saved class list is not selected in step 2 until the class name is filled.
 
 - [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
-  is `ready` (user decision 2026-10-11); label behaviour user-witnessed. Review
-  F1 (synthetic tests) and F2 (repeated listing queries) repaired, Sol rereview
-  approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Follow-up: Mina filer keeps every workspace version
-  visible by user choice; head-only listing is a later task.
+  `ready` (user 2026-10-11); label behaviour user-witnessed; F1/F2 repaired, Sol
+  rereview approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Mina filer
+  keeps every workspace version visible by user choice; head-only listing is later.
 
-- TASK-SKRIPT-REP-0035 passive web liveness is deployed in production and staging.
-  Owner: skill-repository parent 01a1036b; next: terminal closeout.
-  Published c282c74b; exact image 0ae40a8a34a2; full startup healthy; /healthz 200.
+- TASK-SKRIPT-REP-0035 passive web liveness deployed in production and staging
+  (c282c74b, image 0ae40a8a34a2, /healthz 200). Owner skill-repository parent 01a1036b; next: terminal closeout.
   34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
   Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
 
 - [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
-  and ST-SKRIPT-40-01 are `active`. TASK-SKRIPT-40-01-01 is `done`
-  (user closure 2026-10-12; review `bda00b6a`; Hemma staging walk passed at
-  `fc42b918`, Skriptoteket retained session
+  and ST-SKRIPT-40-01 are `active`. TASK-SKRIPT-40-01-01 is `done` (user
+  closure 2026-10-12; review `bda00b6a`; Hemma walk `fc42b918`, retained
   `01a13061-ff38-7099-aa3d-e23f6e5bba43` evidence/staging-walk). Next:
   TASK-SKRIPT-40-01-03 (shared action buttons), which TASK-SKRIPT-39-04-05
   waits on. TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Open defect
@@ -114,9 +118,8 @@
   after the modal closes.
 
 - ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
-  (rules removal: all of .codex/rules moves into skills, user 2026-10-12;
-  shadow and panel sweep, per-app token passes).
-  Retained plan in session `01a13082-a8f9-7137-aa65-848f7e3c53c2`; S1-S7
+  (rules removal into skills, user 2026-10-12; shadow and panel sweep, per-app
+  token passes). Retained plan `01a13082-a8f9-7137-aa65-848f7e3c53c2`, S1-S7
   closed. Release first (user 2026-10-12): skill-repository
   `TASK-SKILL-REP-0279` and HuleEdu `TASK-HULE-REP-0142` are done
   (0.1.24 without offset shadows, in repository-governance 0.11.109; HuleEdu
@@ -130,10 +133,8 @@
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 
-- Historical 2026-09-05 workspace planning, not current readiness:
-  EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091 and ST-SKRIPT-39-04 hold the
-  durable direction. Prior planning history is archived in
-  `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
+- Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
+  ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 - [TASK-SKRIPT-39-03-03](docs/backlog/tasks/task-skript-39-03-03-retire-the-sir-convert-exam-specific-integration.md)
   and [TASK-SKRIPT-39-03-04](docs/backlog/tasks/task-skript-39-03-04-retire-the-hemma-qwen-answer-key-sidecar.md)

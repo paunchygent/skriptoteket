@@ -140,7 +140,6 @@ class _CountedProgress:
         lineage_id: UUID,
         actor: User,
         file_id: UUID,
-        name: str,
         update: ConversionUpdate,
         notes: tuple[str, ...],
     ) -> None:
@@ -217,6 +216,7 @@ async def _evaluate(
                 source_sha256=source_sha256,
                 source_docx=content,
                 chunks=chunks,
+                course_key=None,
             )
         )
     except Exception as error:

@@ -5,6 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamWorkspaceMetadataDrawer from "./ExamWorkspaceMetadataDrawer.vue";
 
+vi.mock("../../../api/examWorkspace", () => ({
+  getExamCourseCatalog: vi.fn().mockResolvedValue({ courses: [] }),
+}));
 const rename = vi.hoisted(() => vi.fn());
 
 const wrappers: ReturnType<typeof mount>[] = [];
@@ -13,6 +16,7 @@ function mountDrawer() {
     attachTo: document.body,
     props: {
       title: "NO-prov HT25",
+      header: { course: null, course_hint: null, printed_total: null },
       name: "NO. höst.provdokument.zip",
       vaultFileId: "vault-head-7",
       renameFile: rename,

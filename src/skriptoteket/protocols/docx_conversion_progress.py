@@ -85,7 +85,6 @@ class DocxConversionProgressProtocol(Protocol):
         lineage_id: UUID,
         actor: User,
         file_id: UUID,
-        name: str,
         update: ConversionUpdate,
         notes: tuple[str, ...],
     ) -> None:

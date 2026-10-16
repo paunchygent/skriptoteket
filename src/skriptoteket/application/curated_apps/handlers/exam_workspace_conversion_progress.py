@@ -120,7 +120,6 @@ class ExamWorkspaceConversionProgress:
                         job=job,
                         actor=actor,
                         file_id=file_id,
-                        name=_version_name(job),
                         update=update,
                         notes=None,
                     )
@@ -143,7 +142,6 @@ class ExamWorkspaceConversionProgress:
         lineage_id: UUID,
         actor: User,
         file_id: UUID,
-        name: str,
         update: ConversionUpdate,
         notes: tuple[str, ...],
     ) -> None:
@@ -159,7 +157,6 @@ class ExamWorkspaceConversionProgress:
                         job=job,
                         actor=actor,
                         file_id=file_id,
-                        name=name,
                         update=update,
                         notes=notes,
                     )
@@ -237,7 +234,6 @@ class ExamWorkspaceConversionProgress:
         job: ExamAnswerKeyEnrichmentJob,
         actor: User,
         file_id: UUID,
-        name: str,
         update: ConversionUpdate,
         notes: tuple[str, ...] | None,
     ) -> None:
@@ -256,7 +252,7 @@ class ExamWorkspaceConversionProgress:
                 job=job,
                 actor=actor,
                 file_id=file_id,
-                name=name,
+                name=_version_name(job),
                 merged=ConversionMerge(document=document, progress=merged.progress, changed=True),
                 head_file=None,
                 assets_by_id=_referenced_payloads(document, update.assets_by_id),

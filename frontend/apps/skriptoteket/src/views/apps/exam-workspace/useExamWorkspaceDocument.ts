@@ -38,6 +38,7 @@ import {
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
+  ExamCourseChoice,
   NativeExamDocument,
   NativeExamItem,
   NativeExamItemKind,
@@ -119,7 +120,7 @@ export function useExamWorkspaceDocument() {
     syncAfterConflict,
   } = useExamWorkspaceConversion(() => isBusy.value, {
     applyResponse,
-    readDocument,
+    beginDocumentRead,
     beforeFirstRevision: () => {
       selectedItemId.value = null;
       conflictNotice.value = null;
@@ -193,11 +194,17 @@ export function useExamWorkspaceDocument() {
       : (items[0]?.item_id ?? null);
   }
 
-  /** Reconcile metadata at the read boundary, retaining every document/revision field. */
-  async function readDocument(lineageId: string): Promise<ExamWorkspaceDocumentResponse> {
+  /**
+   * Capture rename ordering before the GET and reconcile in its caller's continuation.
+   * Installing an opening must not wait an extra microtask: other completions
+   * settling in the same turn must already see that the previous opening ended.
+   */
+  function beginDocumentRead() {
     const reconcile = beginSummaryRead();
-    const response = await getExamWorkspaceDocument(lineageId);
-    return { ...response, summary: reconcile(response.summary) };
+    return (response: ExamWorkspaceDocumentResponse): ExamWorkspaceDocumentResponse => ({
+      ...response,
+      summary: reconcile(response.summary),
+    });
   }
 
   async function loadSavedDocuments(): Promise<void> {
@@ -216,7 +223,8 @@ export function useExamWorkspaceDocument() {
     }
     operationBusy.value = true;
     try {
-      const response = await readDocument(lineageId);
+      const reconcile = beginDocumentRead();
+      const response = reconcile(await getExamWorkspaceDocument(lineageId));
       selectedItemId.value = null;
       applyResponse(response);
       keying.invalidateCopy();
@@ -233,7 +241,8 @@ export function useExamWorkspaceDocument() {
   /** Returns whether the reloaded revision replaced the teacher's copy. */
   async function reloadAfterConflict(lineageId: string): Promise<boolean> {
     try {
-      const response = await readDocument(lineageId);
+      const reconcile = beginDocumentRead();
+      const response = reconcile(await getExamWorkspaceDocument(lineageId));
       applyResponse(response);
       keying.invalidateCopy();
       return true;
@@ -318,7 +327,8 @@ export function useExamWorkspaceDocument() {
     }
     operationBusy.value = true;
     try {
-      const response = await readDocument(currentSummary.lineage_id);
+      const reconcile = beginDocumentRead();
+      const response = reconcile(await getExamWorkspaceDocument(currentSummary.lineage_id));
       applyResponse(response);
       keying.invalidateCopy();
       conflictNotice.value = null;
@@ -338,6 +348,12 @@ export function useExamWorkspaceDocument() {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) return;
     workspaceDocument.value = { ...current, title };
+  }
+
+  function setCourse(course: ExamCourseChoice | null): void {
+    const current = workspaceDocument.value;
+    if (!current || isBusy.value) return;
+    workspaceDocument.value = { ...current, header: { ...current.header, course } };
   }
 
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
@@ -457,6 +473,7 @@ export function useExamWorkspaceDocument() {
     savedRevision,
     selectItem,
     setTitle,
+    setCourse,
     selectedItem,
     selectedItemId,
     summary,

@@ -7,7 +7,7 @@
  * picture URLs once above the question list and phone sheet.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useId, watch } from "vue";
 
 import { IconPlus } from "../../components/icons";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
@@ -20,7 +20,8 @@ import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspace
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
-import ExamWorkspaceMetadataDrawer from "./exam-workspace/ExamWorkspaceMetadataDrawer.vue";
+import ExamWorkspaceMetadata from "./exam-workspace/ExamWorkspaceMetadata.vue";
+import ExamWorkspaceMetadataTitle from "./exam-workspace/ExamWorkspaceMetadataTitle.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
@@ -69,6 +70,7 @@ const {
   savedRevision,
   selectItem,
   setTitle,
+  setCourse,
   selectedItem,
   selectedItemId,
   summary,
@@ -113,13 +115,11 @@ const {
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
-const metadataOpen = ref(false);
-watch(detailsOpen, (open) => { if (open) metadataOpen.value = false; });
-
-function openMetadata(): void {
+const metadata = ref<InstanceType<typeof ExamWorkspaceMetadata> | null>(null);
+const metadataDrawerId = useId();
+function prepareMetadata(): void {
   detailsOpen.value = false;
   mode.value = "redigera";
-  metadataOpen.value = true;
 }
 const questionSheetOpen = ref(false);
 
@@ -187,7 +187,6 @@ watch(
   () => summary.value?.lineage_id ?? null,
   (lineageId, previousLineageId) => {
     showDocument(lineageId);
-    metadataOpen.value = false;
     if (!lineageId) {
       mode.value = "filer";
     } else if (lineageId !== previousLineageId) {
@@ -281,17 +280,12 @@ async function handleSave(): Promise<void> {
             class="flex min-w-0 flex-1 items-center justify-end gap-3"
             data-test="exam-workspace-summary"
           >
-            <button
-              type="button"
-              class="min-w-0 truncate text-sm font-medium leading-snug text-navy underline decoration-navy/35 underline-offset-4"
+            <ExamWorkspaceMetadataTitle
               :title="workspaceDocument.title || summary.name"
-              aria-haspopup="dialog"
-              :aria-expanded="metadataOpen"
-              data-test="exam-workspace-summary-title"
-              @click="openMetadata"
-            >
-              {{ workspaceDocument.title || summary.name }}
-            </button>
+              :is-open="metadata?.isOpen ?? false"
+              :drawer-id="metadataDrawerId"
+              @open="metadata?.open()"
+            />
             <ExamWorkspaceTotalSignal :document="workspaceDocument" />
             <span
               class="shrink-0 text-xs leading-snug text-navy/65"
@@ -426,17 +420,20 @@ async function handleSave(): Promise<void> {
             @update-tick-points="updateItemTickPoints"
           >
             <template #metadata>
-              <ExamWorkspaceMetadataDrawer
-                v-if="metadataOpen && summary"
-                :title="workspaceDocument.title"
-                :name="summary.name"
-                :vault-file-id="summary.vault_file_id"
+              <ExamWorkspaceMetadata
+                v-if="summary"
+                ref="metadata"
+                :document="workspaceDocument"
+                :summary="summary"
+                :details-open="detailsOpen"
+                :drawer-id="metadataDrawerId"
+                :set-title="setTitle"
+                :set-course="setCourse"
                 :rename-file="renameFile"
                 :rename-failure="renameFailure"
                 :disabled="isBusy"
                 :layout="layout"
-                @update:title="setTitle"
-                @close="metadataOpen = false"
+                @open="prepareMetadata"
               />
             </template>
           </ExamWorkspaceEditorPane>

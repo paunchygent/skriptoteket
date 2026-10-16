@@ -237,7 +237,6 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
                 lineage_id=lineage_id,
                 actor=actor,
                 file_id=file_id,
-                name="prov.provdokument.zip",
                 update=batch(lineage_id, q2="Fråga två", q3="Fråga tre slutlig"),
                 notes=("Facit: 1 Ja",),
             )

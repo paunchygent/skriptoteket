@@ -5138,6 +5138,16 @@ export interface components {
             generated_at: string;
         };
         /**
+         * ExamCourseChoice
+         * @description Official course name at the time of the teacher's choice.
+         */
+        ExamCourseChoice: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
+        /**
          * ExamWorkspaceAnswerKeySuggestionItem
          * @description One AI suggestion that arrived for one question.
          */
@@ -6345,10 +6355,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v3
+             * @default native_exam_document_v4
              * @constant
              */
-            schema_version: "native_exam_document_v3";
+            schema_version: "native_exam_document_v4";
             /** Title */
             title: string;
         };
@@ -6383,10 +6393,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v3
+             * @default native_exam_document_v4
              * @constant
              */
-            schema_version: "native_exam_document_v3";
+            schema_version: "native_exam_document_v4";
             /** Title */
             title: string;
         };
@@ -6413,6 +6423,7 @@ export interface components {
          *     as instructions or item text.
          */
         NativeExamHeader: {
+            course?: components["schemas"]["ExamCourseChoice"] | null;
             /** Course Hint */
             course_hint?: string | null;
             /** Printed Total */

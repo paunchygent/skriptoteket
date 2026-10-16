@@ -24,6 +24,8 @@ type Schemas = components["schemas"];
 const ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace";
 
 export type NativeExamDocument = Schemas["NativeExamDocument-Output"];
+export type ExamCourseChoice = Schemas["ExamCourseChoice"];
+export type NativeExamHeader = Schemas["NativeExamHeader"];
 export type NativeExamItem = Schemas["NativeExamItem-Output"];
 export type NativeExamParent = Schemas["NativeExamParent-Output"];
 export type NativeExamBodyParagraph = Schemas["NativeParagraph"];

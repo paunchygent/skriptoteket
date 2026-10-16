@@ -44,6 +44,7 @@ class DocxConversionJob:
     source_sha256: str
     source_docx: bytes
     chunks: tuple[DocxChunk, ...]
+    course_key: str | None
 
 
 class DocxConversionRun:

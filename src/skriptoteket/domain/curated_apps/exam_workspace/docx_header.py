@@ -4,7 +4,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import questio
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import printed_points
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
+    ExamCourse,
+    match_course_hint,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    ExamCourseChoice,
     NativeExamDocument,
     NativeExamHeader,
 )
@@ -15,7 +20,12 @@ def _number(value: int | float) -> str:
 
 
 def apply_header(
-    document: NativeExamDocument, manifest: ExamManifest, chunks: tuple[DocxChunk, ...]
+    document: NativeExamDocument,
+    manifest: ExamManifest | None,
+    chunks: tuple[DocxChunk, ...],
+    *,
+    course_key: str | None,
+    courses: tuple[ExamCourse, ...],
 ) -> NativeExamDocument:
     """Attach source-ordered course and totals, mapping questions through source anchors.
 
@@ -24,10 +34,18 @@ def apply_header(
     """
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    headers = sorted(manifest.header, key=lambda entry: positions[entry.anchor])
-    course = " ".join(
+    headers = sorted(manifest.header, key=lambda entry: positions[entry.anchor]) if manifest else []
+    course_hint = " ".join(
         text for h in headers if h.kind == "course" if (text := by_anchor[h.anchor].text.strip())
     )
+    if course_key is not None:
+        chosen = next((entry for entry in courses if entry.key == course_key), None)
+        if chosen is None:
+            raise ValueError(f"Unknown exam course key: {course_key}")
+    else:
+        match = match_course_hint(course_hint, courses)
+        chosen = match.course if match.kind == "unique" else None
+    course = ExamCourseChoice(key=chosen.key, name=chosen.name) if chosen else None
     total = next(
         (
             value
@@ -39,7 +57,7 @@ def apply_header(
     )
     question_anchors = (
         {family.question_id: family.claims for family in question_families(manifest, chunks)}
-        if any(h.kind == "part_total" for h in headers)
+        if manifest is not None and any(h.kind == "part_total" for h in headers)
         else {}
     )
     parents = list(document.parents)
@@ -74,7 +92,9 @@ def apply_header(
                 items[index] = item.model_copy(update={"review": review})
     return document.model_copy(
         update={
-            "header": NativeExamHeader(course_hint=course or None, printed_total=total),
+            "header": NativeExamHeader(
+                course=course, course_hint=course_hint or None, printed_total=total
+            ),
             "parents": tuple(parents),
             "items": tuple(items),
         }

@@ -3,12 +3,16 @@
 import { computed, ref, useId, watch } from "vue";
 
 import { IconX } from "../../../components/icons";
+import type { ExamCourseChoice, NativeExamHeader } from "../../../api/examWorkspace";
+import ExamCourseCombobox from "./ExamCourseCombobox.vue";
+import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 
 const props = defineProps<{
   title: string;
+  header: NativeExamHeader;
   name: string;
   vaultFileId: string;
   renameFile: (fileId: string, stem: string) => Promise<string | null>;
@@ -19,7 +23,15 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
   "update:title": [title: string];
+  "update:course": [course: ExamCourseChoice | null];
 }>();
+
+const { courses, courseByKey, error: catalogError } = useExamCourseCatalog();
+const selectedCourse = computed(() => courseByKey(props.header.course?.key ?? null));
+function chooseCourse(key: string | null): void {
+  const course = courseByKey(key);
+  emit("update:course", course ? { key: course.key, name: course.name } : null);
+}
 
 const EXTENSION = ".provdokument.zip";
 const FRAME_CLASS: Record<ExamWorkspaceLayout, string> = {
@@ -163,8 +175,30 @@ async function rename(): Promise<void> {
           {{ renameError }}
         </p>
       </form>
-      <!-- U6: official course combobox and read-only gymnasiet subject mount here. -->
-      <slot name="course" />
+      <div class="grid gap-2">
+        <ExamCourseCombobox
+          :model-value="header.course?.key ?? null"
+          :courses="courses"
+          :disabled="disabled"
+          :input-id="`${id}-course`"
+          :hint="header.course_hint"
+          @update:model-value="chooseCourse"
+        />
+        <p
+          v-if="catalogError"
+          role="alert"
+          class="text-sm text-error"
+        >
+          {{ catalogError }}
+        </p>
+        <p
+          v-if="selectedCourse?.school_form === 'gymnasiet'"
+          class="text-sm text-navy/65"
+          data-test="exam-workspace-metadata-subject"
+        >
+          Ämne: {{ selectedCourse.subject_name }}
+        </p>
+      </div>
     </aside>
   </div>
 </template>
