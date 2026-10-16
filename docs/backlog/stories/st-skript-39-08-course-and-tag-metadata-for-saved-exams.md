@@ -82,11 +82,12 @@ filer page (TASK-SKRIPT-37-05-04).
 
 1. TASK-SKRIPT-39-08-01: course list, import dropdown and document metadata
    drawer for course, exam title and Mina filer name (ready).
-2. Own courses: profile registration of school form, years taught and courses;
-   the dropdown default and ordering (to be planned).
-3. Tags from central content and import suggestion of course and tags (to be
-   planned).
-4. Saved-exam tab sorted by course and date (to be planned).
+2. TASK-SKRIPT-39-08-02: own courses in the profile and the course dropdown
+   default (ready).
+3. TASK-SKRIPT-39-08-03: central-content tags suggested by a Decisions
+   classifier at import and from the drawer; no model course suggestion (ready).
+4. TASK-SKRIPT-39-08-04: Prov mode lists saved exams grouped by course and
+   sorted by date (ready).
 
 ## Verification
 
@@ -115,5 +116,5 @@ official course name.
 | D13 | Suggested course and tags arrive preselected and the teacher can change or clear them (user 2026-10-16). |
 | D14 | Grundskolan year bands are never grouped; each exam belongs to one band and its tags come only from that band (user 2026-10-16). |
 | D20 | A grundskolan choice is one entry per subject and year band (user 2026-10-16). |
-| D21 | The profile records school form(s), grundskolan years taught (åk 1–9) and gymnasiet courses; matching entries are the dropdown default (user 2026-10-16). |
+| D21 | The profile records school form(s), grundskolan subject-and-band entries and gymnasiet courses; matching entries are the dropdown default (user 2026-10-16; amended 2026-10-16 by TASK-SKRIPT-39-08-02 P2 from years to subject-and-band entries). |
 | D22 | Minimum clicks and frustration; a preselection or suggestion is made only when very likely correct; teachers do not dig through entries they do not need (user 2026-10-16). |

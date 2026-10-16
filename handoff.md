@@ -67,14 +67,13 @@
     go-ahead. Story bar is best effort (A15).
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `in_progress` 2026-10-16; owner Claude parent on Hemma (session
-    `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca` (the Mac
-    planning root `01a1451f` is not on Hemma); worktree
-    `skriptoteket-task-skript-39-08-01` from `9322879c`. D18 amended and
-    D23-D26 decided (user 2026-10-16); shared interfaces scaffolded. Units
-    U1 catalog, U2 rename, U3 combobox, U4 import pick, U5 drawer shell run as
-    Sol pairs with one Sol reviewer each; U6 header course and U7 export names
-    wait for 39-05-14 on main. Next: unit reviews, merge main after 39-05-14,
-    staging walk; plan story tasks 2-4.
+    `704dc5a5`), retained `01a145b6-c404-761f-aeef-39de058ba7ca`, worktree
+    `skriptoteket-task-skript-39-08-01` from `9322879c`. Committed after
+    review: U3 `5409fb07`, U4 `6bc3732e`, slice mocks `3203b507`. U1 and U5
+    in rereview after repair; U2 rename concurrency repair in progress. U6
+    header course and U7 export names wait for 39-05-14 on main. Tasks 2-4
+    scaffolded `ready`. Next: commit U1/U2/U5 on approval, merge main after
+    39-05-14, U6/U7, staging walk, user closure gate.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
