@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "52243205414b08656d43bff89018e82e0d11bb7498793069295dc92408c68297",
+  "source_set_digest": "980f9ffc356d2026a7df0061f9538a67c51dbdf003b4b0d24b74cb36553a7010",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5211,7 +5211,7 @@
       "type": "task",
       "title": "Exam header lines become document metadata and question headings stay with their questions",
       "path": "docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
