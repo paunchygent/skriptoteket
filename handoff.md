@@ -62,11 +62,13 @@
     307/316 at 16 families; Exam.net 5339992; retained
     `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
   - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`,
-    worktree `Skriptoteket-task-skript-39-05-14`): all units reviewed and
-    integrated (`7eec5716`). New grouping prompt keeps Del 1/2/3 titles
-    (`evidence/regroup-2026-10-16b/`); build replays keep the old groupings
-    (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
+    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
+    D12-D14 repair reviewed and merged to main `827c301a`; re-record
+    `evidence/regroup-2026-10-16c/`. Staging re-walk passes (judge 24/24, 0
+    review, no header text in bodies or QTI;
+    `evidence/staging-walk-39-05-14b/walk-report.md`). Next (Claude parent):
+    Exam.net import of that QTI (Chrome extension was offline), then user
+    closure and worktree retirement.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `ready` 2026-10-16 (story `ready` D1-D22; retained
     `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
