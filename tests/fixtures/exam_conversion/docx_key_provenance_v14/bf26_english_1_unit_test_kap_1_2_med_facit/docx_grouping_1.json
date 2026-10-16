@@ -642,12 +642,5 @@
       ]
     }
   ],
-  "other_anchors": [
-    "body:0003",
-    "body:0005",
-    "body:0057",
-    "body:0073",
-    "body:0095",
-    "body:0127"
-  ]
+  "header_anchors": []
 }

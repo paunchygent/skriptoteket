@@ -20,6 +20,8 @@ ContextScope = Literal[
     "section_instruction", "shared_passage", "word_bank", "exam_metadata", "other"
 ]
 _SCOPES: frozenset[str] = frozenset(get_args(ContextScope))
+HeaderKind = Literal["course", "exam_total", "part_total"]
+_HEADER_KINDS: frozenset[str] = frozenset(get_args(HeaderKind))
 _EXAM_OWNER = "exam"
 
 
@@ -48,11 +50,24 @@ class SharedContext:
 
 
 @dataclass(frozen=True)
+class HeaderAnchor:
+    """A source header line: exam metadata, never exam text (TASK-SKRIPT-39-05-14 D1).
+
+    ``governs`` names the questions of a part total; it is empty for the course line
+    and the exam total.
+    """
+
+    anchor: str
+    kind: HeaderKind
+    governs: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ExamManifest:
     questions: tuple[ManifestQuestion, ...]
     contexts: tuple[SharedContext, ...]
     title_anchors: tuple[str, ...]
-    other_anchors: tuple[str, ...]
+    header: tuple[HeaderAnchor, ...]
     invalid_anchors: tuple[str, ...]
     duplicate_anchors: tuple[str, ...]
     unplaced_anchors: tuple[str, ...]
@@ -125,7 +140,13 @@ def manifest_from_output(
     """Validate grouping output against the chunk anchors and normalise it."""
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     title = _strings(raw, "title_anchors")
-    other = _strings(raw, "other_anchors")
+    header_entries = [
+        (_string(entry, "anchor"), _string(entry, "kind"), _strings(entry, "governs"))
+        for entry in _entries(raw, "header_anchors")
+    ]
+    for _anchor, kind, _governs in header_entries:
+        if kind not in _HEADER_KINDS:
+            raise _shape(f"header kind {kind}")
     question_entries = [
         (
             _string(entry, "id"),
@@ -170,7 +191,11 @@ def manifest_from_output(
         if placement.claim((anchor,)):
             contexts_kept.append((anchor, scope, owner, governs))
     kept_title = tuple(placement.claim(title))
-    kept_other = tuple(placement.claim(other))
+    header_kept = [
+        (anchor, kind, governs)
+        for anchor, kind, governs in header_entries
+        if placement.claim((anchor,))
+    ]
     # A subpart the model lists only as a subpart, and places nowhere else, is one of its
     # question's own chunks.
     for _question_id, owned, listed, _keys in kept:
@@ -207,7 +232,14 @@ def manifest_from_output(
         questions=questions,
         contexts=contexts,
         title_anchors=kept_title,
-        other_anchors=kept_other,
+        header=tuple(
+            HeaderAnchor(
+                anchor=anchor,
+                kind=_header_kind(kind),
+                governs=tuple(q for q in ids if q in governs) if kind == "part_total" else (),
+            )
+            for anchor, kind, governs in header_kept
+        ),
         invalid_anchors=tuple(placement.invalid),
         duplicate_anchors=tuple(placement.duplicate),
         unplaced_anchors=tuple(a for a in positions if a not in placement.placed),
@@ -220,6 +252,14 @@ def _scope(scope: str) -> ContextScope:
         if scope == allowed:
             return allowed
     raise _shape(f"scope {scope}")
+
+
+def _header_kind(kind: str) -> HeaderKind:
+    kinds: tuple[HeaderKind, ...] = get_args(HeaderKind)
+    for allowed in kinds:
+        if kind == allowed:
+            return allowed
+    raise _shape(f"header kind {kind}")
 
 
 def question_source(manifest: ExamManifest, chunks: tuple[DocxChunk, ...], question_id: str) -> str:

@@ -229,7 +229,5 @@
     }
   ],
   "shared_contexts": [],
-  "other_anchors": [
-    "body:0003"
-  ]
+  "header_anchors": []
 }

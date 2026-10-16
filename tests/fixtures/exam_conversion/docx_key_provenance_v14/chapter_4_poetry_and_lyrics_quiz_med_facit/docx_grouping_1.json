@@ -334,9 +334,5 @@
     }
   ],
   "shared_contexts": [],
-  "other_anchors": [
-    "body:0003",
-    "body:0005",
-    "body:0108"
-  ]
+  "header_anchors": []
 }
