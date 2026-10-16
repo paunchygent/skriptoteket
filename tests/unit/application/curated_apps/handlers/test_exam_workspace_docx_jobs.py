@@ -90,6 +90,7 @@ async def claim(env: JobEnvironment, content: bytes | None = None) -> ExamAnswer
         actor=env.actor,
         filename=_QUIZ.name,
         content=content if content is not None else _QUIZ.read_bytes(),
+        course_key=None,
     )
     assert status.state == "queued"
     assert env.replay.provider.requests == []
@@ -209,4 +210,6 @@ async def test_status_owner_authorization_and_upload_validation():
         await status.handle(actor=env.actor, job_id=uuid4())
     for filename, content in [("exam.pdf", b"x"), ("exam.docx", b"")]:
         with pytest.raises(DomainError):
-            await env.importer.handle(actor=env.actor, filename=filename, content=content)
+            await env.importer.handle(
+                actor=env.actor, filename=filename, content=content, course_key=None
+            )

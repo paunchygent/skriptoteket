@@ -1,9 +1,10 @@
 """Exam workspace document store: versioned container persistence in Mina filer.
 
 The native exam document persists as one immutable Mina filer container per
-revision (D2/S3). Version numbers advance under the per-user vault usage
-lock, with the partial unique index on (user, lineage, version) as the
-database backstop; a duplicate version maps to CONFLICT. Retiring a
+revision (D2/S3). Writers share a transaction-scoped lineage lock with
+rename, then take the per-user vault usage lock. The partial unique index
+on (user, lineage, version) is the database backstop; a duplicate version
+maps to CONFLICT. Retiring a
 superseded revision soft-deletes its row and releases its bytes from vault
 usage.
 """
@@ -75,6 +76,16 @@ class ExamWorkspaceDocumentStore:
         stored = False
         try:
             async with self._uow:
+                # Shared by document saves, conversion writes and lineage renames.
+                # Read the name here, not from a head captured before this lock.
+                await self._vault_files.lock_document_lineage(
+                    user_id=actor.id, document_lineage_id=lineage_id
+                )
+                head = await self._vault_files.get_document_head(
+                    user_id=actor.id, document_lineage_id=lineage_id
+                )
+                if head is not None:
+                    name = head.name
                 usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
                 if usage.bytes_total + actual_bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
                     raise validation_error(
@@ -132,13 +143,20 @@ class ExamWorkspaceDocumentStore:
 
         Runs inside the caller's unit of work; the stored payload expires with the row.
         """
+        assert retired.document_lineage_id is not None
+        await self._vault_files.lock_document_lineage(
+            user_id=actor.id, document_lineage_id=retired.document_lineage_id
+        )
+        current = await self._vault_files.get_by_id(file_id=retired.id)
+        if current is None or current.deleted_at is not None:
+            return
         now = self._clock.now()
-        await self._vault_files.update(file=retired.model_copy(update={"deleted_at": now}))
+        await self._vault_files.update(file=current.model_copy(update={"deleted_at": now}))
         usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
         await self._vault_usage.upsert(
             usage=VaultUsage(
                 user_id=actor.id,
-                bytes_total=max(0, usage.bytes_total - retired.bytes),
+                bytes_total=max(0, usage.bytes_total - current.bytes),
                 updated_at=now,
             )
         )

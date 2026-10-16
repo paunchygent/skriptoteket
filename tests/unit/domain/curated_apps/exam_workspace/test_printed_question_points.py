@@ -244,7 +244,9 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
             assert accepted_item.review.confidence is not None
             assert 0 < accepted_item.review.confidence < 0.95
     admitted = tuple(item for item, _ in state.accepted)
-    document = apply_header(state.result(questions=questions).document, manifest, chunks)
+    document = apply_header(
+        state.result(questions=questions).document, manifest, chunks, course_key=None, courses=()
+    )
     NativeExamDocument.model_validate(document.model_dump())
     assert len(document.items) == len(prompts)
     assert tuple(item.points for item in document.items) == case.expected

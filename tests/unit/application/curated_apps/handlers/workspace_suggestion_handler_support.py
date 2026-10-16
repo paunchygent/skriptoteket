@@ -66,7 +66,7 @@ from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_sup
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
 )
-from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
     InMemoryVaultFileRepository,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body

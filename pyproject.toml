@@ -459,6 +459,7 @@ pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --
 exam-converter-real-dxe-e2e = "python -m scripts.exam_converter_real_dxe_e2e"
 exam-conversion-eval = { cmd = "python -m scripts.exam_conversion_eval", env = { PYTHONPATH = "src" } }
 build-answer-misspellings = { cmd = "python -m scripts.build_answer_misspellings", env = { PYTHONPATH = "src" } }
+build-exam-course-catalog = { cmd = "python -m scripts.build_exam_course_catalog", env = { PYTHONPATH = "src" } }
 exam-conversion-judge = { cmd = "python -m scripts.exam_conversion_eval.judge", env = { PYTHONPATH = "src" } }
 transcript-parity-proof = "python -m scripts.transcript_parity_proof_launcher"
 audio-transcription-reattempt-proof = "python -m scripts.audio_transcription_retryable_reattempt_public_proof"

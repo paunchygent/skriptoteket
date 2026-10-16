@@ -340,6 +340,7 @@ async def _convert(
             source_sha256="0" * 64,
             source_docx=content,
             chunks=PythonDocxExamChunker().chunk(content=content),
+            course_key=None,
         )
     )
     return decisions, provider, outcome

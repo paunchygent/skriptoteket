@@ -35,7 +35,10 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
-vi.mock("../../api/examWorkspace", () => apiMocks);
+vi.mock("../../api/examWorkspace", async () => ({
+  ...apiMocks,
+  getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 async function mountImported() {
   const { wrapper } = await mountExamWorkspace();

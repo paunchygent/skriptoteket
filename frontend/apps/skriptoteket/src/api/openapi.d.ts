@@ -1471,6 +1471,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/courses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Course Catalog */
+        get: operations["get_exam_course_catalog_api_v1_apps_documents_conversion_hub_exam_workspace_courses_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents": {
         parameters: {
             query?: never;
@@ -3158,6 +3175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/vault/files/{file_id}/rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rename Vault File */
+        post: operations["rename_vault_file_api_v1_vault_files__file_id__rename_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/vault/files/{file_id}/restore": {
         parameters: {
             query?: never;
@@ -3349,6 +3383,8 @@ export interface components {
         };
         /** Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post */
         Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post: {
+            /** Course Key */
+            course_key?: string | null;
             /** File */
             file: string;
         };
@@ -5053,6 +5089,65 @@ export interface components {
             warning_count: number;
         };
         /**
+         * ExamCourse
+         * @description One selectable catalog entry.
+         *
+         *     ``key`` is the stable unique identifier stored in exam documents: the
+         *     Skolverket course code for gymnasiet and ``<subject code>/<year band>`` for
+         *     grundskolan. ``name`` is what the teacher reads and what a course hint is
+         *     matched against: the official course name for GY11, subject plus level for
+         *     GY25 ("Engelska nivå 1", D23) and subject plus band for grundskolan
+         *     ("Matematik, åk 7–9"). ``code`` is Skolverket's code as shown in the meta line.
+         */
+        ExamCourse: {
+            /** Code */
+            code: string;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Points */
+            points?: number | null;
+            /** Reform */
+            reform?: ("GY11" | "GY25") | null;
+            /**
+             * School Form
+             * @enum {string}
+             */
+            school_form: "gymnasiet" | "grundskolan";
+            /** Subject Code */
+            subject_code: string;
+            /** Subject Name */
+            subject_name: string;
+            /** Year Band */
+            year_band?: string | null;
+            /** Year Band Label */
+            year_band_label?: string | null;
+        };
+        /**
+         * ExamCourseCatalogResponse
+         * @description The committed course catalog, loaded once per page and searched in the browser.
+         */
+        ExamCourseCatalogResponse: {
+            /**
+             * Courses
+             * @default []
+             */
+            courses: components["schemas"]["ExamCourse"][];
+            /** Generated At */
+            generated_at: string;
+        };
+        /**
+         * ExamCourseChoice
+         * @description Official course name at the time of the teacher's choice.
+         */
+        ExamCourseChoice: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
+        /**
          * ExamWorkspaceAnswerKeySuggestionItem
          * @description One AI suggestion that arrived for one question.
          */
@@ -6260,10 +6355,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v3
+             * @default native_exam_document_v4
              * @constant
              */
-            schema_version: "native_exam_document_v3";
+            schema_version: "native_exam_document_v4";
             /** Title */
             title: string;
         };
@@ -6298,10 +6393,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v3
+             * @default native_exam_document_v4
              * @constant
              */
-            schema_version: "native_exam_document_v3";
+            schema_version: "native_exam_document_v4";
             /** Title */
             title: string;
         };
@@ -6328,6 +6423,7 @@ export interface components {
          *     as instructions or item text.
          */
         NativeExamHeader: {
+            course?: components["schemas"]["ExamCourseChoice"] | null;
             /** Course Hint */
             course_hint?: string | null;
             /** Printed Total */
@@ -7994,6 +8090,20 @@ export interface components {
             kind: string;
             /** Student Ids */
             student_ids: string[];
+        };
+        /** RenameVaultFileRequest */
+        RenameVaultFileRequest: {
+            /** Stem */
+            stem: string;
+        };
+        /** RenameVaultFileResult */
+        RenameVaultFileResult: {
+            file: components["schemas"]["VaultFileInfo"];
+            /**
+             * Renamed File Ids
+             * @default []
+             */
+            renamed_file_ids: string[];
         };
         /**
          * ReplaceExamConverterCorrectionIntentsRequest
@@ -12647,6 +12757,26 @@ export interface operations {
             };
         };
     };
+    get_exam_course_catalog_api_v1_apps_documents_conversion_hub_exam_workspace_courses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamCourseCatalogResponse"];
+                };
+            };
+        };
+    };
     list_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_documents_get: {
         parameters: {
             query?: never;
@@ -16073,6 +16203,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_vault_file_api_v1_vault_files__file_id__rename_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameVaultFileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenameVaultFileResult"];
                 };
             };
             /** @description Validation Error */

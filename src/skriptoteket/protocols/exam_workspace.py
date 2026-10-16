@@ -7,6 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamCourseCatalogResponse,
     ExamWorkspaceAnswerKeySuggestionsResponse,
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
@@ -108,8 +109,12 @@ class ListExamWorkspaceDocumentsHandlerProtocol(Protocol):
 
 class ImportExamWorkspaceDocumentHandlerProtocol(Protocol):
     async def handle(
-        self, *, actor: User, filename: str, content: bytes
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus: ...
+
+
+class GetExamCourseCatalogHandlerProtocol(Protocol):
+    def handle(self) -> ExamCourseCatalogResponse: ...
 
 
 class GetExamWorkspaceConversionStatusHandlerProtocol(Protocol):

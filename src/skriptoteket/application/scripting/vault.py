@@ -88,3 +88,22 @@ class RestoreVaultFileResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     file: VaultFileInfo
+
+
+class RenameVaultFileCommand(BaseModel):
+    """Rename one owned record by its stem; the record's extension is kept (TASK-SKRIPT-37-05-04).
+
+    A record with a document lineage renames every version of that lineage (D9).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    file_id: UUID
+    stem: str = Field(min_length=1, max_length=255)
+
+
+class RenameVaultFileResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    file: VaultFileInfo
+    renamed_file_ids: tuple[UUID, ...] = ()

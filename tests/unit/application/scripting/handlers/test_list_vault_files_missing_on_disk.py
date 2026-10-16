@@ -16,7 +16,6 @@ from skriptoteket.domain.scripting.models import RunContext, ToolRun
 from skriptoteket.domain.scripting.vault import (
     VaultFile,
     VaultFileSourceKind,
-    VaultListSort,
     VaultListState,
     VaultUsage,
 )
@@ -25,11 +24,13 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import RecentRunRow, ToolRunRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
-    VaultFileRepositoryProtocol,
     VaultStorageProtocol,
     VaultUsageRepositoryProtocol,
 )
 from tests.fixtures.identity_fixtures import make_user
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
+)
 
 
 class FakeUow(UnitOfWorkProtocol):
@@ -43,63 +44,6 @@ class FakeUow(UnitOfWorkProtocol):
         tb: TracebackType | None,
     ) -> None:
         return None
-
-
-class FakeVaultFiles(VaultFileRepositoryProtocol):
-    def __init__(self, files: list[VaultFile]) -> None:
-        self._files = files
-
-    async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
-        for file in self._files:
-            if file.id == file_id:
-                return file
-        return None
-
-    async def list_for_user(
-        self,
-        *,
-        user_id: UUID,
-        state: VaultListState,
-        search: str | None,
-        sort: VaultListSort,
-        limit: int,
-        offset: int,
-    ) -> list[VaultFile]:
-        return self._files
-
-    async def list_active_for_user(self, *, user_id: UUID) -> list[VaultFile]:
-        raise NotImplementedError
-
-    async def list_by_ids(
-        self,
-        *,
-        user_id: UUID,
-        file_ids: list[UUID],
-        include_deleted: bool,
-    ) -> list[VaultFile]:
-        raise NotImplementedError
-
-    async def list_expired(self, *, cutoff: datetime, limit: int) -> list[VaultFile]:
-        raise NotImplementedError
-
-    async def get_document_head(
-        self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> VaultFile | None:
-        raise NotImplementedError
-
-    async def list_document_heads(
-        self, *, user_id: UUID, source_artifact_prefix: str
-    ) -> list[VaultFile]:
-        raise NotImplementedError
-
-    async def create(self, *, file: VaultFile) -> VaultFile:
-        raise NotImplementedError
-
-    async def update(self, *, file: VaultFile) -> VaultFile:
-        raise NotImplementedError
-
-    async def delete(self, *, file_id: UUID) -> None:
-        raise NotImplementedError
 
 
 class FakeVaultUsage(VaultUsageRepositoryProtocol):
@@ -295,12 +239,14 @@ async def test_list_vault_files_marks_files_missing_on_disk() -> None:
         ),
     ]
 
+    vault_files = InMemoryVaultFileRepository()
+    vault_files.files.update((file.id, file) for file in files)
     handler = ListVaultFilesHandler(
         uow=FakeUow(),
         runs=FakeRuns(),
         tools=FakeTools(),
         curated_apps=FakeCuratedApps(),
-        vault_files=FakeVaultFiles(files),
+        vault_files=vault_files,
         vault_usage=FakeVaultUsage(VaultUsage(user_id=actor.id, bytes_total=20, updated_at=now)),
         vault_storage=FakeVaultStorage(missing_ids={missing_id}),
         settings=Settings(VAULT_MAX_TOTAL_BYTES=1000, VAULT_MAX_FILE_BYTES=1000),

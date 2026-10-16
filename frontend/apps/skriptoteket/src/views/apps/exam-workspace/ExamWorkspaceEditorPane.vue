@@ -207,6 +207,7 @@ const redigeraGridClass = computed(() => {
           </p>
         </div>
       </div>
+      <slot name="metadata" />
       <ExamWorkspaceItemDrawer
         v-if="detailsOpen && selectedItem"
         :disabled="disabled || selectedItemLocked"

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import PurePosixPath
 
 import structlog
 from pydantic import JsonValue
@@ -91,6 +90,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     source_sha256=hashlib.sha256(job.source_docx).hexdigest(),
                     source_docx=job.source_docx,
                     chunks=self._chunker.chunk(content=job.source_docx),
+                    course_key=job.workspace_course_key,
                 ),
                 fallback_reason=fallback_reason,
             )
@@ -109,7 +109,6 @@ class ProcessExamWorkspaceDocxJobHandler:
                         lineage_id=job.workspace_lineage_id,
                         actor=actor,
                         file_id=file_id,
-                        name=f"{PurePosixPath(job.input_filename).stem}.provdokument.zip",
                         update=outcome.update,
                         notes=result.notes,
                     )

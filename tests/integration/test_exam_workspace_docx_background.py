@@ -131,7 +131,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
             clock=clock,
             settings=settings,
             id_generator=ids,
-        ).handle(actor=actor, filename=_QUIZ.name, content=_QUIZ.read_bytes())
+        ).handle(actor=actor, filename=_QUIZ.name, content=_QUIZ.read_bytes(), course_key=None)
     assert queued.state == "queued"
 
     async def open_head() -> ExamWorkspaceDocumentResponse:
@@ -287,6 +287,7 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
         source_sha256=hashlib.sha256(content).hexdigest(),
         source_docx=content,
         chunks=PythonDocxExamChunker().chunk(content=content),
+        course_key=None,
     )
     async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as client:
         pipeline = build_pipeline(

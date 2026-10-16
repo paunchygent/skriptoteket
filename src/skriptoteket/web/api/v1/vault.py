@@ -3,12 +3,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.application.scripting.vault import (
     DeleteVaultFileCommand,
     DeleteVaultFileResult,
     ListVaultFilesQuery,
     ListVaultFilesResult,
+    RenameVaultFileCommand,
+    RenameVaultFileResult,
     RestoreVaultFileCommand,
     RestoreVaultFileResult,
     SaveVaultFileCommand,
@@ -20,6 +23,7 @@ from skriptoteket.protocols.vault import (
     DeleteVaultFileHandlerProtocol,
     DownloadVaultFileHandlerProtocol,
     ListVaultFilesHandlerProtocol,
+    RenameVaultFileHandlerProtocol,
     RestoreVaultFileHandlerProtocol,
     SaveVaultFileHandlerProtocol,
 )
@@ -76,6 +80,25 @@ async def restore_vault_file(
     user: User = Depends(require_app_user_api),
 ) -> RestoreVaultFileResult:
     return await handler.handle(actor=user, command=RestoreVaultFileCommand(file_id=file_id))
+
+
+class RenameVaultFileRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    stem: str = Field(min_length=1, max_length=255)
+
+
+@router.post("/files/{file_id}/rename", response_model=RenameVaultFileResult)
+async def rename_vault_file(
+    file_id: UUID,
+    request: RenameVaultFileRequest,
+    handler: FromDishka[RenameVaultFileHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> RenameVaultFileResult:
+    return await handler.handle(
+        actor=user,
+        command=RenameVaultFileCommand(file_id=file_id, stem=request.stem),
+    )
 
 
 @router.get("/files/{file_id}/download")

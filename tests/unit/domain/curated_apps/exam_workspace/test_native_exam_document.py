@@ -53,7 +53,7 @@ class TestSerializationRoundTrip:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_document_declares_the_v2_schema(self) -> None:
-        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v3"
+        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v4"
 
     def test_saved_v1_payload_has_no_compatibility_reader(self) -> None:
         document = make_document(make_free_text_item())

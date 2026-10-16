@@ -16,6 +16,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_assets import
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_courses import (
+    GetExamCourseCatalogHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
@@ -81,6 +84,7 @@ from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -102,6 +106,10 @@ from skriptoteket.protocols.vault import (
 
 class ExamWorkspaceProvider(Provider):
     """Provide exam workspace conversion, persistence, and handlers."""
+
+    @provide(scope=Scope.APP)
+    def course_catalog(self) -> GetExamCourseCatalogHandlerProtocol:
+        return GetExamCourseCatalogHandler()
 
     @provide(scope=Scope.APP)
     def misspellings(self) -> GenerateExamWorkspaceMisspellingsHandlerProtocol:

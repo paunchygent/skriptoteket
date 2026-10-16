@@ -33,7 +33,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v3"] = "native_exam_document_v3"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v4"] = "native_exam_document_v4"
 
 
 class NativeExamAsset(BaseModel):
@@ -63,6 +63,15 @@ class NativeExamDocumentOrigin(BaseModel):
         return self
 
 
+class ExamCourseChoice(BaseModel):
+    """Official course name at the time of the teacher's choice."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    key: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+
+
 class NativeExamHeader(BaseModel):
     """Exam header data from the source: never exam text (TASK-SKRIPT-39-05-14 D1).
 
@@ -73,6 +82,7 @@ class NativeExamHeader(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    course: ExamCourseChoice | None = None
     course_hint: str | None = Field(default=None, min_length=1)
     printed_total: int | float | None = Field(default=None, gt=0)
 
@@ -80,7 +90,7 @@ class NativeExamHeader(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v3"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v4"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str = Field(min_length=1)

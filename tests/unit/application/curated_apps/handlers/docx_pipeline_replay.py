@@ -268,7 +268,6 @@ class RecordingProgress:
         lineage_id: UUID,
         actor: User,
         file_id: UUID,
-        name: str,
         update: ConversionUpdate,
         notes: tuple[str, ...],
     ) -> None:
@@ -281,7 +280,6 @@ class RecordingProgress:
                 lineage_id=lineage_id,
                 actor=actor,
                 file_id=file_id,
-                name=name,
                 update=update,
                 notes=notes,
             )
@@ -311,6 +309,7 @@ class Replay:
             source_sha256=hashlib.sha256(content).hexdigest(),
             source_docx=content,
             chunks=PythonDocxExamChunker().chunk(content=content),
+            course_key=None,
         )
 
 

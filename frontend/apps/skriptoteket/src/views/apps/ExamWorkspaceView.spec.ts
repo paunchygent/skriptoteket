@@ -33,7 +33,10 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
-vi.mock("../../api/examWorkspace", () => apiMocks);
+vi.mock("../../api/examWorkspace", async () => ({
+  ...apiMocks,
+  getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 const FORBIDDEN_VISIBLE_WORDS = [
   "artefakt",
@@ -89,7 +92,7 @@ function buildDocument(): NativeExamDocument {
     parents: [],
     revision: 1,
     header: {},
-    schema_version: "native_exam_document_v3",
+    schema_version: "native_exam_document_v4",
     title: "NO-prov HT25",
   };
 }

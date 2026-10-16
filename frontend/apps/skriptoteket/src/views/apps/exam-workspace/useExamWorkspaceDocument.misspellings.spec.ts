@@ -48,7 +48,10 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspace", async () => ({
+  ...apiMocks,
+  getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 function keyedGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {

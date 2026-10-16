@@ -74,7 +74,7 @@ function buildDocument(
     parents: [],
     revision,
     header: {},
-    schema_version: "native_exam_document_v3",
+    schema_version: "native_exam_document_v4",
     title: "Prov",
     ...overrides,
   };

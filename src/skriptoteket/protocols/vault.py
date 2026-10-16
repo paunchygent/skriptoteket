@@ -9,6 +9,8 @@ from skriptoteket.application.scripting.vault import (
     DeleteVaultFileResult,
     ListVaultFilesQuery,
     ListVaultFilesResult,
+    RenameVaultFileCommand,
+    RenameVaultFileResult,
     RestoreVaultFileCommand,
     RestoreVaultFileResult,
     SaveVaultFileCommand,
@@ -61,6 +63,31 @@ class VaultFileRepositoryProtocol(Protocol):
         *,
         user_id: UUID,
         source_artifact_prefix: str,
+    ) -> list[VaultFile]: ...
+
+    async def name_in_use(
+        self,
+        *,
+        user_id: UUID,
+        name: str,
+        exclude_lineage_id: UUID | None,
+        exclude_file_id: UUID | None,
+    ) -> bool: ...
+
+    async def list_lineage_versions(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[VaultFile]: ...
+
+    async def lock_owner_renames(self, *, user_id: UUID) -> None: ...
+
+    async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None: ...
+
+    async def rename_active(
+        self, *, user_id: UUID, file_id: UUID, name: str
+    ) -> VaultFile | None: ...
+
+    async def rename_lineage(
+        self, *, user_id: UUID, document_lineage_id: UUID, name: str
     ) -> list[VaultFile]: ...
 
     async def create(self, *, file: VaultFile) -> VaultFile: ...
@@ -149,3 +176,12 @@ class RestoreVaultFileHandlerProtocol(Protocol):
         actor: User,
         command: RestoreVaultFileCommand,
     ) -> RestoreVaultFileResult: ...
+
+
+class RenameVaultFileHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RenameVaultFileCommand,
+    ) -> RenameVaultFileResult: ...
