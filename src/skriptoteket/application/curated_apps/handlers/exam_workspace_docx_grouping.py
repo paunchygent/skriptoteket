@@ -2,7 +2,7 @@
 
 One low-effort ``gpt-6-luna`` call returns each question with its subparts and answer
 key, each shared instruction or passage with its scope, single owner and governed
-questions, the title and other anchors. Instructions and schema are Grouping A as
+questions, the title and header anchors. Instructions and schema are Grouping A as
 measured in the feasibility step (2026-10-11). A failed call or an unusable manifest is
 retried; three failures stop the grouping.
 
@@ -60,8 +60,10 @@ GROUPING_INSTRUCTIONS = (
     "numbered unit with its own choices and its own answer is a question of its own, "
     "also when one heading, instruction or points line stands above several such "
     "units. Such text governs all of them and joins none of them into one question: "
-    'an instruction above them is shared context with owner "exam", and a heading or '
-    "points line above them goes to other_anchors. Part labels such as a), b) inside "
+    "a heading or instruction above several questions is shared context with scope "
+    'section_instruction and owner "exam", governing those questions. A heading or '
+    "points line of ONE question is in that question's anchors and opens it. "
+    "Part labels such as a), b) inside "
     "one question's body, which share one response and one answer, stay subparts of "
     "that question.\n"
     "- answer_key_anchors of a question: chunks that give its correct answer, sample "
@@ -72,11 +74,17 @@ GROUPING_INSTRUCTIONS = (
     'owner: "exam" for section- or exam-level text, otherwise the id of the single '
     "question it belongs to. A shared chunk never also appears in a question's "
     "anchors.\n"
-    "- title_anchors: the exam title. other_anchors: totals, section headings, points"
-    " lines and other metadata.\n"
+    "- title_anchors: the exam title.\n"
+    '- header_anchors: the course line (e.g. "Svenska 2"), the exam total line '
+    '(e.g. "Total: 36 poäng") and each part total line (e.g. "Poäng: 15 poäng" '
+    "above or below one part). Each entry gives its anchor, kind (course, exam_total "
+    "or part_total), and governs. A part total lists the question ids of its part in "
+    "governs; course and exam total give an empty governs.\n"
+    "- Other metadata lines, such as name and date lines, are shared_contexts with "
+    'scope exam_metadata and owner "exam". Course and totals go to header_anchors.\n'
     "- Every input anchor appears exactly once across questions[].anchors, "
     "questions[].answer_key_anchors, shared_contexts, title_anchors and "
-    "other_anchors. subpart_anchors repeat anchors already in the question's anchors."
+    "header_anchors. subpart_anchors repeat anchors already in the question's anchors."
     "\n"
     "- Question ids are q1, q2, ... in source order.\n"
     "- Judge structure from layout, numbering and instructions, not from the subject "
@@ -124,9 +132,21 @@ GROUPING_SCHEMA: dict[str, JsonValue] = {
                 "additionalProperties": False,
             },
         },
-        "other_anchors": {"type": "array", "items": {"type": "string"}},
+        "header_anchors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "anchor": {"type": "string"},
+                    "kind": {"type": "string", "enum": ["course", "exam_total", "part_total"]},
+                    "governs": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["anchor", "kind", "governs"],
+                "additionalProperties": False,
+            },
+        },
     },
-    "required": ["title_anchors", "questions", "shared_contexts", "other_anchors"],
+    "required": ["title_anchors", "questions", "shared_contexts", "header_anchors"],
     "additionalProperties": False,
 }
 

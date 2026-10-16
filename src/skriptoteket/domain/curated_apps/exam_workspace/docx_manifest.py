@@ -276,18 +276,18 @@ def question_source_anchors(
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     all_keys = {a for q in manifest.questions for a in q.key_anchors}
     all_questions = {a for q in manifest.questions for a in q.anchors}
-    titles = set(manifest.title_anchors)
+    metadata = set(manifest.title_anchors) | {header.anchor for header in manifest.header}
     governing = {
         context.anchor
         for context in manifest.contexts
         if question_id in context.governs
         and context.scope != "exam_metadata"
-        and context.anchor not in titles | all_keys
+        and context.anchor not in metadata | all_keys
     }
     included = set(question.anchors) | set(question.key_anchors) | governing
     present = [positions[anchor] for anchor in question.anchors if anchor in positions]
     if present:
-        excluded = titles | all_questions | all_keys
+        excluded = metadata | all_questions | all_keys
         heading = next(
             (
                 chunk.anchor
