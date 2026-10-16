@@ -540,7 +540,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=2, proposed=3, done=3 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=3, proposed=2, done=3 | tasks=none
 - EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=1, ready=1, proposed=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
@@ -604,6 +604,7 @@
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-05 | [AI-first DOCX exam conversion with a gold-corpus eval loop](stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### proposed
@@ -611,7 +612,6 @@
 - ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked
