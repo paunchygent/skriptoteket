@@ -46,7 +46,10 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspace", async () => ({
+  ...apiMocks,
+  getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
 const REQUEST_FAILURE_COPY = "Det gick inte att begära facitförslag. Försök igen.";
