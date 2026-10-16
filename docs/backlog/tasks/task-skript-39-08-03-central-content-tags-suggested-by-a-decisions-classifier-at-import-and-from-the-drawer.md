@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-08-03
-title: Central-content tags suggested by a Decisions classifier at import and from
-  the drawer
+title: Central-content tags suggested by a Decisions classifier at import and from the drawer
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: ready
 closeout_review:
@@ -14,11 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- An exam whose course is known when the import runs opens with central-content tags
-  suggested and preselected in the metadata drawer, each citing the questions that cover
-  it; picking or changing the course in the drawer runs the same suggestion as a
-  background job; the teacher ticks or unticks items in a checklist of the course's
-  central content and saves; a classifier failure never blocks a conversion
+  - An exam whose course is known when the import runs opens with central-content tags suggested and preselected in the metadata drawer, each citing the questions that cover it; picking or changing the course in the drawer runs the same suggestion as a background job; the teacher ticks or unticks items in a checklist of the course's central content and saves; a classifier failure never blocks a conversion
 story: ST-SKRIPT-39-08
 backlog_document_profile: contract-derived
 ---
@@ -132,10 +127,10 @@ model call when the course is unknown.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q1  | One classifier on the Decisions endpoint assigns each question a central-content item or none; a tag is suggested when some question reaches the threshold and those questions are its citation; trigger 1 runs in the labeling stage of the import when the course is known, trigger 2 runs as a background job when the course is picked or changed in the drawer (user 2026-10-16). |
-| Q2  | No model course suggestion; with no picked course and no unique hint match the teacher picks in the drawer and the hint stays visible (user 2026-10-16). |
-| Q3  | One tag per bullet item of the Skolverket central content; tag id is the catalog key plus the normalized item text and the text snapshot is stored with the tag; the generator commits central content per course and per band (user 2026-10-16). |
-| Q5  | A course change in the drawer clears the old course's tags before the new suggestion runs; the drawer loads one course's content items on demand from a small GET route (user 2026-10-16). |
-| Q4  | Tags live in the document header next to the course with origin and citing questions; the drawer shows the course's items as a checklist with suggested items preselected; one threshold constant decides preselection; a classifier failure never blocks conversion (user 2026-10-16). |
+| Q2  | No model course suggestion; with no picked course and no unique hint match the teacher picks in the drawer and the hint stays visible (user 2026-10-16).                                                                                                                                                                                                                               |
+| Q3  | One tag per bullet item of the Skolverket central content; tag id is the catalog key plus the normalized item text and the text snapshot is stored with the tag; the generator commits central content per course and per band (user 2026-10-16).                                                                                                                                      |
+| Q5  | A course change in the drawer clears the old course's tags before the new suggestion runs; the drawer loads one course's content items on demand from a small GET route (user 2026-10-16).                                                                                                                                                                                             |
+| Q4  | Tags live in the document header next to the course with origin and citing questions; the drawer shows the course's items as a checklist with suggested items preselected; one threshold constant decides preselection; a classifier failure never blocks conversion (user 2026-10-16).                                                                                                |

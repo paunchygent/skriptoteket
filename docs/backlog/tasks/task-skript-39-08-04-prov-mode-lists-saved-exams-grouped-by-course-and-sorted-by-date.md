@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-08-04
 title: Prov mode lists saved exams grouped by course and sorted by date
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: ready
 closeout_review:
@@ -13,12 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- The exam workspace's first mode is Prov with the import drop zone at the top and the saved
-  exams below, either grouped by course (registered courses first, newest saved first within a
-  course, exams without a course last) or as one flat list newest first; the teacher switches
-  the ordering with a sort control whose choice is saved in the backend as the default and
-  survives another browser; a save, a conversion publish and a rename update the group and
-  position without a reload
+  - The exam workspace's first mode is Prov with the import drop zone at the top and the saved exams below, either grouped by course (registered courses first, newest saved first within a course, exams without a course last) or as one flat list newest first; the teacher switches the ordering with a sort control whose choice is saved in the backend as the default and survives another browser; a save, a conversion publish and a rename update the group and position without a reload
 story: ST-SKRIPT-39-08
 backlog_document_profile: contract-derived
 ---
@@ -107,9 +102,9 @@ The list is one query over the index and head rows.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| R1  | The Filer mode becomes Prov: exams grouped by course, registered courses first, newest first within a course, Utan kurs last, with the import drop zone at the top; the modes are Prov and Redigera (user 2026-10-16). |
-| R3  | In the grouped order, unregistered courses sit between Mina kurser and Utan kurs ordered by official name; the index migration seeds a row for every existing head vault record from vault rows alone with the file stem as title until the next save (user 2026-10-16). |
-| R4  | Two orderings, grouped by course with newest first within a group and a flat list newest first; a sort control switches and the chosen ordering is saved in the backend as the teacher's default so it persists across browsers (user 2026-10-16). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R1  | The Filer mode becomes Prov: exams grouped by course, registered courses first, newest first within a course, Utan kurs last, with the import drop zone at the top; the modes are Prov and Redigera (user 2026-10-16).                                                                                                         |
+| R3  | In the grouped order, unregistered courses sit between Mina kurser and Utan kurs ordered by official name; the index migration seeds a row for every existing head vault record from vault rows alone with the file stem as title until the next save (user 2026-10-16).                                                       |
+| R4  | Two orderings, grouped by course with newest first within a group and a flat list newest first; a sort control switches and the chosen ordering is saved in the backend as the teacher's default so it persists across browsers (user 2026-10-16).                                                                             |
 | R2  | An exam-owned index row per lineage (owner, lineage, course key, title, saved time, head file id) is maintained by the document save, the conversion publish and the rename; the list reads the index joined to the head vault row; no exam columns on user_vault_files and no document parsing per request (user 2026-10-16). |

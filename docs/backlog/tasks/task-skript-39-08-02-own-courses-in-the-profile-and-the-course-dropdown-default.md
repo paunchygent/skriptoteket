@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-08-02
 title: Own courses in the profile and the course dropdown default
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: ready
 closeout_review:
@@ -13,11 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A teacher registers school forms and courses (gymnasiet courses, grundskolan subject-and-band
-  entries) in a Mina kurser section on the profile page, adds a picked course to that list from
-  the course dropdown without leaving the exam workspace, and the course dropdown in the import
-  panel and the metadata drawer lists the registered courses first before typing and ranks them
-  first when typing
+  - A teacher registers school forms and courses (gymnasiet courses, grundskolan subject-and-band entries) in a Mina kurser section on the profile page, adds a picked course to that list from the course dropdown without leaving the exam workspace, and the course dropdown in the import panel and the metadata drawer lists the registered courses first before typing and ranks them first when typing
 story: ST-SKRIPT-39-08
 backlog_document_profile: contract-derived
 ---
@@ -100,10 +96,10 @@ catalog and no keystroke makes a server request.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| P1  | Registration lives in a Mina kurser section on /profile; the course dropdown also offers "Lägg till i mina kurser" on any picked course (user 2026-10-16). |
-| P2  | The profile records grundskolan subject-and-band entries, the same entries as the dropdown, not years only; amends story D21 (user 2026-10-16). |
+| ID  | Decided contract term                                                                                                                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | Registration lives in a Mina kurser section on /profile; the course dropdown also offers "Lägg till i mina kurser" on any picked course (user 2026-10-16).                                                                                |
+| P2  | The profile records grundskolan subject-and-band entries, the same entries as the dropdown, not years only; amends story D21 (user 2026-10-16).                                                                                           |
 | P3  | The registered courses are one ordered JSONB list of catalog keys with the school forms in a column on user_profiles, read and written through a dedicated PATCH profile handler; the catalog key is the only identity (user 2026-10-16). |
-| P5  | The Alla kurser group is limited to the recorded school forms when at least one is recorded; a typed query still searches the whole catalog (user 2026-10-16). |
-| P4  | Before typing the dropdown lists the registered courses under Mina kurser, then the catalog under Alla kurser; a typed query searches the whole catalog with the same search rule and ranks registered matches first (user 2026-10-16). |
+| P5  | The Alla kurser group is limited to the recorded school forms when at least one is recorded; a typed query still searches the whole catalog (user 2026-10-16).                                                                            |
+| P4  | Before typing the dropdown lists the registered courses under Mina kurser, then the catalog under Alla kurser; a typed query searches the whole catalog with the same search rule and ranks registered matches first (user 2026-10-16).   |

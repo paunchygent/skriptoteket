@@ -15,7 +15,7 @@
   Hemma hold, with the staging env check. No SSH, deployment or live proof yet.
   Namecheap CNAME deletion stays with the user.
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hjälp-with-a-first-use-dialog.md)
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp. Owner: Claude parent (Hemma);
   retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01 (walking skeleton)
   `done` 2026-10-15: reviews `8576afb7`/`3c95199d`, main `03ba322d`; walk 2 on
@@ -69,8 +69,9 @@
     (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
     Regression on main from this merge (lead 39-08-01, 2026-10-16):
     `test_exam_workspace_source_formatting.py` 2 failed (Svenska 2 `Fråga 17`
-    missing after replay; morpheme alignment); passes at `0505b89e`. Evidence
-    `01a145b6.../evidence/lead/source-formatting-regression-on-main-2026-10-16.md`.
+    missing after replay; morpheme alignment) and 2 QTI reference mismatches in
+    `test_exam_conversion_parity.py`; both pass at `0505b89e`. Evidence
+    `01a145b6.../evidence/lead/{source-formatting-regression,exam-conversion-parity}-on-main-2026-10-16.md`.
     Unowned, pre-existing (lead 39-08-01, 2026-10-16): docker suite
     `tests/integration/test_exam_workspace_docx_background.py` fails 2/9 (quiz
     batches; bf26 english `no recording for docx_exam_build`) on main and at
