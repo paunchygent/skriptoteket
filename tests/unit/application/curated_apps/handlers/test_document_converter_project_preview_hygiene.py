@@ -33,13 +33,15 @@ from tests.fixtures.time_fixtures import (
     FixedIdGenerator,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_project_previews import (
     InMemoryProjectPreviewStore,
     _store_preview,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 
 

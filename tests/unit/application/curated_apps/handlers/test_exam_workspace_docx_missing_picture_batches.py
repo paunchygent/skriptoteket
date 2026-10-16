@@ -258,6 +258,7 @@ async def _convert(
             source_sha256="0" * 64,
             source_docx=content,
             chunks=PythonDocxExamChunker().chunk(content=content),
+            course_key=None,
         )
     )
     return decisions, provider, outcome
@@ -319,6 +320,7 @@ def _run(chunks: tuple[DocxChunk, ...], families: tuple[QuestionFamily, ...]) ->
             source_sha256="0" * 64,
             source_docx=b"",
             chunks=chunks,
+            course_key=None,
         ),
         time.monotonic(),
     )

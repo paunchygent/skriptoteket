@@ -24,6 +24,8 @@ type Schemas = components["schemas"];
 const ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace";
 
 export type NativeExamDocument = Schemas["NativeExamDocument-Output"];
+export type ExamCourseChoice = Schemas["ExamCourseChoice"];
+export type NativeExamHeader = Schemas["NativeExamHeader"];
 export type NativeExamItem = Schemas["NativeExamItem-Output"];
 export type NativeExamParent = Schemas["NativeExamParent-Output"];
 export type NativeExamBodyParagraph = Schemas["NativeParagraph"];
@@ -43,6 +45,8 @@ export type NativeExamItemReview = Schemas["NativeItemReview"];
 export type NativeExamAsset = Schemas["NativeExamAsset"];
 
 export type ExamWorkspaceDocumentSummary = Schemas["ExamWorkspaceDocumentSummary"];
+export type ExamCourse = Schemas["ExamCourse"];
+export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
@@ -112,10 +116,18 @@ export async function listExamWorkspaceDocuments(): Promise<ExamWorkspaceDocumen
 
 export async function importExamWorkspaceDocument(
   file: File,
+  courseKey: string | null = null,
 ): Promise<ExamWorkspaceConversionStatus> {
   const form = new FormData();
   form.append("file", file, file.name);
+  if (courseKey) {
+    form.append("course_key", courseKey);
+  }
   return await apiPost<ExamWorkspaceConversionStatus>(`${ROOT}/documents`, form);
+}
+
+export async function getExamCourseCatalog(): Promise<ExamCourseCatalogResponse> {
+  return await apiGet<ExamCourseCatalogResponse>(`${ROOT}/courses`);
 }
 
 export async function getExamWorkspaceConversionStatus(

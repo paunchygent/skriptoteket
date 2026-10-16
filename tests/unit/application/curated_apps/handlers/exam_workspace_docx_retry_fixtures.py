@@ -79,9 +79,11 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
     SequenceIdGenerator,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 
 NOW = datetime(2026, 10, 14, 12, 0, tzinfo=UTC)

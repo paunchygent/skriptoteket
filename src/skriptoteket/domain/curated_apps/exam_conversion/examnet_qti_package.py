@@ -58,7 +58,7 @@ def build_examnet_qti_package_plan(
     package_name: str,
     items: tuple[ExamNetQtiItem, ...],
     assessment_title: str | None = None,
-    course_hint: str | None = None,
+    course: str | None = None,
 ) -> ExamNetQtiPackagePlan:
     """Build a deterministic QTI package plan for the supplied items.
 
@@ -101,7 +101,7 @@ def build_examnet_qti_package_plan(
         content_type="application/xml",
         payload=serialize_qti_manifest(
             title=title,
-            course_hint=course_hint,
+            course=course,
             item_files=tuple(item_files),
             image_files_by_item_id=image_files_by_item_id,
         ),

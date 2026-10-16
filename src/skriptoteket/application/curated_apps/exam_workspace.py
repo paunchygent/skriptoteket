@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import ExamCourse
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -87,6 +88,15 @@ class ExamWorkspaceDocumentListResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     documents: tuple[ExamWorkspaceDocumentSummary, ...] = ()
+
+
+class ExamCourseCatalogResponse(BaseModel):
+    """The committed course catalog, loaded once per page and searched in the browser."""
+
+    model_config = ConfigDict(frozen=True)
+
+    generated_at: str
+    courses: tuple[ExamCourse, ...] = ()
 
 
 class SaveExamWorkspaceDocumentRequest(BaseModel):

@@ -70,9 +70,11 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     build_replay,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 
 _NOW = datetime(2026, 8, 29, 12, 0, 0, tzinfo=UTC)

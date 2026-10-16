@@ -45,9 +45,11 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
     SequenceIdGenerator,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
     with_next_revision,
@@ -179,6 +181,25 @@ async def test_store_creates_version_one(env: _Env, fixture_bytes: bytes) -> Non
     stored = env.vault_files.files[result.summary.vault_file_id]
     assert stored.document_version == 1
     assert stored.document_lineage_id == result.summary.lineage_id
+
+
+@pytest.mark.asyncio
+async def test_store_uses_authoritative_head_name_not_a_writers_stale_copy(env: _Env) -> None:
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    original = env.vault_files.files[imported.summary.vault_file_id]
+    env.vault_files.files[original.id] = original.model_copy(
+        update={"name": "Lärarens namn.provdokument.zip"}
+    )
+    saved = await env.store.save_version(
+        actor=actor,
+        file_id=uuid4(),
+        name=original.name,
+        content=b"next version payload",
+        lineage_id=imported.summary.lineage_id,
+        version=2,
+    )
+    assert saved.name == "Lärarens namn.provdokument.zip"
 
 
 @pytest.mark.asyncio

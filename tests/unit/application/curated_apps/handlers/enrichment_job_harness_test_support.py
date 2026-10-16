@@ -65,8 +65,10 @@ from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_sup
     docx_job_handler,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 
 

@@ -1,0 +1,422 @@
+{
+  "subjects": [
+    {
+      "canceledDate": "2025-07-01",
+      "canceledSkolfs": "2023:130",
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "ENG",
+      "courses": [
+        {
+          "code": "ENGENG05",
+          "name": "Engelska 5",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "ENGENG06",
+          "name": "Engelska 6",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "ENGENG07",
+          "name": "Engelska 7",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        }
+      ],
+      "endDate": "2030-06-30",
+      "modifiedDate": "2026-01-16",
+      "name": "Engelska",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2022-07-01",
+      "typeOfSyllabus": "SUBJECT_SYLLABUS",
+      "version": 6
+    },
+    {
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "ENGE",
+      "courses": [
+        {
+          "code": "ENGE1000X",
+          "name": "Nivå 1",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "ENGE2000X",
+          "name": "Nivå 2",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "ENGE3000X",
+          "name": "Nivå 3",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        }
+      ],
+      "modifiedDate": "2025-12-15",
+      "name": "Engelska",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2025-07-01",
+      "typeOfSyllabus": "GRADE_SUBJECT_SYLLABUS",
+      "version": 1
+    },
+    {
+      "canceledDate": "2025-07-01",
+      "canceledSkolfs": "2023:130",
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "HIS",
+      "courses": [
+        {
+          "code": "HISHIS01a1",
+          "name": "Historia 1a1",
+          "point": "50",
+          "points": "50",
+          "sortOrder": 1
+        },
+        {
+          "code": "HISHIS01a2",
+          "name": "Historia 1a2",
+          "point": "50",
+          "points": "50",
+          "sortOrder": 2
+        },
+        {
+          "code": "HISHIS01b",
+          "name": "Historia 1b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        },
+        {
+          "code": "HISHIS02a",
+          "name": "Historia 2a",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 4
+        },
+        {
+          "code": "HISHIS02b",
+          "name": "Historia 2b – kultur",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 5
+        },
+        {
+          "code": "HISHIS03",
+          "name": "Historia 3",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 6
+        }
+      ],
+      "endDate": "2030-06-30",
+      "modifiedDate": "2026-01-16",
+      "name": "Historia",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2022-07-01",
+      "typeOfSyllabus": "SUBJECT_SYLLABUS",
+      "version": 10
+    },
+    {
+      "canceledDate": "2025-07-01",
+      "canceledSkolfs": "2023:130",
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "MAT",
+      "courses": [
+        {
+          "code": "MATMAT01a",
+          "name": "Matematik 1a",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "MATMAT01b",
+          "name": "Matematik 1b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "MATMAT01c",
+          "name": "Matematik 1c",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        },
+        {
+          "code": "MATMAT02a",
+          "name": "Matematik 2a",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 4
+        },
+        {
+          "code": "MATMAT02b",
+          "name": "Matematik 2b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 5
+        },
+        {
+          "code": "MATMAT02c",
+          "name": "Matematik 2c",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 6
+        },
+        {
+          "code": "MATMAT03b",
+          "name": "Matematik 3b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 7
+        },
+        {
+          "code": "MATMAT03c",
+          "name": "Matematik 3c",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 8
+        },
+        {
+          "code": "MATMAT04",
+          "name": "Matematik 4",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 9
+        },
+        {
+          "code": "MATMAT05",
+          "name": "Matematik 5",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 10
+        },
+        {
+          "code": "MATMAT00S",
+          "name": "Matematik – specialisering",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 11
+        }
+      ],
+      "endDate": "2030-06-30",
+      "modifiedDate": "2026-01-16",
+      "name": "Matematik",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2022-07-01",
+      "typeOfSyllabus": "SUBJECT_SYLLABUS",
+      "version": 11
+    },
+    {
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "MATE",
+      "courses": [
+        {
+          "code": "MATE1A00X",
+          "name": "Nivå 1a",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "MATE1B00X",
+          "name": "Nivå 1b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "MATE1C00X",
+          "name": "Nivå 1c",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        },
+        {
+          "code": "MATE2A00X",
+          "name": "Nivå 2a",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 4
+        },
+        {
+          "code": "MATE2B00X",
+          "name": "Nivå 2b",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 5
+        },
+        {
+          "code": "MATE2C00X",
+          "name": "Nivå 2c",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 6
+        }
+      ],
+      "modifiedDate": "2025-12-19",
+      "name": "Matematik",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2025-07-01",
+      "typeOfSyllabus": "GRADE_SUBJECT_SYLLABUS",
+      "version": 1
+    },
+    {
+      "canceledDate": "2025-07-01",
+      "canceledSkolfs": "2023:130",
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "SVE",
+      "courses": [
+        {
+          "code": "SVESVE01",
+          "name": "Svenska 1",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "SVESVE02",
+          "name": "Svenska 2",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "SVESVE03",
+          "name": "Svenska 3",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        },
+        {
+          "code": "SVELIT0",
+          "name": "Litteratur",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 4
+        },
+        {
+          "code": "SVERET0",
+          "name": "Retorik",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 5
+        },
+        {
+          "code": "SVESKR0",
+          "name": "Skrivande",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 6
+        }
+      ],
+      "endDate": "2030-06-30",
+      "modifiedDate": "2026-01-16",
+      "name": "Svenska",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2022-07-01",
+      "typeOfSyllabus": "SUBJECT_SYLLABUS",
+      "version": 8
+    },
+    {
+      "categories": [
+        {
+          "code": "COMMON2",
+          "name": "Kapitel 4-ämne"
+        }
+      ],
+      "code": "SVEN",
+      "courses": [
+        {
+          "code": "SVEN1000X",
+          "name": "Nivå 1",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 1
+        },
+        {
+          "code": "SVEN2000X",
+          "name": "Nivå 2",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 2
+        },
+        {
+          "code": "SVEN3000X",
+          "name": "Nivå 3",
+          "point": "100",
+          "points": "100",
+          "sortOrder": 3
+        }
+      ],
+      "modifiedDate": "2025-12-19",
+      "name": "Svenska",
+      "schoolTypes": [
+        "GY",
+        "VUXGY"
+      ],
+      "startDate": "2025-07-01",
+      "typeOfSyllabus": "GRADE_SUBJECT_SYLLABUS",
+      "version": 1
+    }
+  ]
+}

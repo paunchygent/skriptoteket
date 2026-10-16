@@ -25,6 +25,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import (
     build_examnet_qti_package_plan,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
+    exam_course_line,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     NO_EXPORT_ASSETS,
     native_exam_to_examnet_qti_items,
@@ -63,7 +66,7 @@ def build_native_examnet_qti_package(
         package_name=package_name,
         items=items,
         assessment_title=document.title,
-        course_hint=document.header.course_hint,
+        course=exam_course_line(document.header),
     )
     if plan.status is not ExamNetQtiPackageStatus.PASSED:
         raise DomainError(

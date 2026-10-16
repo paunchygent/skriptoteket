@@ -102,7 +102,7 @@ async def test_a_picture_survives_provisional_saves_and_later_batches(
             clock=clock,
             settings=SETTINGS,
             id_generator=Ids(),
-        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
+        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes", course_key=None)
         world = ConversionWorld(session, storage, clock)
         async with world.uow:
             claimed = await world.jobs.claim_next(

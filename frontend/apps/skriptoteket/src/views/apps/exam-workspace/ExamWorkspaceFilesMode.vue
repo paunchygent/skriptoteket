@@ -17,12 +17,15 @@
 
 import { IconCheck, IconWarning } from "../../../components/icons";
 import { Upload } from "lucide-vue-next";
+import { ref } from "vue";
 
 import type {
   ExamWorkspaceDocumentSummary,
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
 } from "../../../api/examWorkspace";
+import ExamCourseCombobox from "./ExamCourseCombobox.vue";
+import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import ExamWorkspaceEnrichmentPanel from "./ExamWorkspaceEnrichmentPanel.vue";
 import ExamWorkspaceExportPanel from "./ExamWorkspaceExportPanel.vue";
 import ExamWorkspaceSavedDocuments from "./ExamWorkspaceSavedDocuments.vue";
@@ -52,15 +55,18 @@ defineProps<{
   sourceFileError: string | null;
 }>();
 
+const selectedCourseKey = ref<string | null>(null);
+const { courses, error: courseCatalogError } = useExamCourseCatalog();
+
 const emit = defineEmits<{
-  dropFiles: [files: File[]];
+  dropFiles: [files: File[], courseKey: string | null];
   export: [target: ExamWorkspaceExportTarget];
   goToItem: [itemId: string];
   open: [lineageId: string];
   reload: [];
   requestProposals: [];
   retryEnrichmentLookup: [];
-  selectFile: [file: File];
+  selectFile: [file: File, courseKey: string | null];
 }>();
 
 function handleSourceFileInput(event: Event): void {
@@ -70,13 +76,13 @@ function handleSourceFileInput(event: Event): void {
   }
   const [file] = Array.from(input.files ?? []);
   if (file) {
-    emit("selectFile", file);
+    emit("selectFile", file, selectedCourseKey.value);
   }
   input.value = "";
 }
 
 function handleDrop(event: DragEvent): void {
-  emit("dropFiles", Array.from(event.dataTransfer?.files ?? []));
+  emit("dropFiles", Array.from(event.dataTransfer?.files ?? []), selectedCourseKey.value);
 }
 </script>
 
@@ -93,6 +99,25 @@ function handleDrop(event: DragEvent): void {
         <h2 class="text-sm font-semibold leading-tight text-navy">
           {{ hasDocument ? 'Importera ett annat prov' : 'Provfil' }}
         </h2>
+        <label
+          for="exam-workspace-import-course"
+          class="text-xs font-medium text-navy"
+        >
+          Kurs (valfritt)
+        </label>
+        <ExamCourseCombobox
+          v-model="selectedCourseKey"
+          input-id="exam-workspace-import-course"
+          :courses="courses"
+          :disabled="importBlocked"
+        />
+        <p
+          v-if="courseCatalogError"
+          class="text-xs leading-snug text-error"
+          role="status"
+        >
+          {{ courseCatalogError }}
+        </p>
         <label
           class="grid cursor-pointer gap-2 border border-dashed border-navy/35 bg-canvas px-3 py-5 text-center hover:bg-panel"
           :class="importBlocked ? 'cursor-not-allowed opacity-60' : undefined"

@@ -190,7 +190,7 @@ def test_heading_family_keeps_structure_metadata_and_native_scores_coherent(
         duplicate_anchors=(),
         unplaced_anchors=(),
     )
-    document = apply_header(document, manifest, chunks)
+    document = apply_header(document, manifest, chunks, course_key=None, courses=())
     # model_copy does not validate: enforce the final persisted native contract.
     NativeExamDocument.model_validate(document.model_dump())
 

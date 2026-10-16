@@ -39,6 +39,9 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
+    load_exam_course_catalog,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -97,7 +100,7 @@ class ImportExamWorkspaceDocumentHandler:
         self._id_generator = id_generator
 
     async def handle(
-        self, *, actor: User, filename: str, content: bytes
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus:
         safe_name = sanitize_input_filename(input_filename=filename)
         if not safe_name.lower().endswith(".docx"):
@@ -106,6 +109,19 @@ class ImportExamWorkspaceDocumentHandler:
             raise validation_error("Filen saknar innehåll.")
         if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
             raise validation_error("Word-dokumentet är större än maxstorleken för Mina filer.")
+
+        selected_course_key = (course_key or "").strip() or None
+        if selected_course_key is not None:
+            if len(selected_course_key) > 64:
+                raise validation_error(
+                    "Kurskoden får vara högst 64 tecken.", details={"field": "course_key"}
+                )
+            if not any(
+                course.key == selected_course_key for course in load_exam_course_catalog().courses
+            ):
+                raise validation_error(
+                    "Välj en kurs ur kurslistan.", details={"field": "course_key"}
+                )
 
         document_id = self._id_generator.new_uuid()
         now = self._clock.now()
@@ -120,6 +136,7 @@ class ImportExamWorkspaceDocumentHandler:
                     source_docx=content,
                     workspace_lineage_id=document_id,
                     workspace_document_revision=1,
+                    workspace_course_key=selected_course_key,
                     available_at=now,
                     created_at=now,
                     updated_at=now,

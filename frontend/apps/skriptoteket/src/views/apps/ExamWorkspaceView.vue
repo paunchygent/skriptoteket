@@ -1,36 +1,13 @@
 <script setup lang="ts">
 /**
- * Teacher exam workspace host frame.
- *
- * Domain purpose:
- *   Convert a .docx exam into files Exam.net imports as intended, in two
- *   modes switched in one stable toolbar: Filer (import, saved exams,
- *   readiness, QTI/PDF/DOCX files, answer-key suggestions) and Redigera
- *   (question list plus one dominating editor, with question details in a
- *   drawer). Save state stays in the toolbar in both modes. Desktop is the
- *   canonical composition; tablet narrows it and overlays the drawer; phone
- *   makes the editor the screen with a "Fråga N av M" question sheet.
- *
- * Relationships:
- *   - Mounted by the canonical `/apps/exam-workspace` route; the
- *     `?document=<lineage_id>` query and the open document stay in step
- *     through `useExamWorkspaceAddress`.
- *   - Owns state through `useExamWorkspaceDocument`,
- *     `useExamWorkspaceExports`, and `useExamWorkspaceEnrichment`; takes
- *     .docx files through `useExamWorkspaceSourceFile`; selects the
- *     composition through `useExamWorkspaceLayout`; mirrors the export gate
- *     and the save rules per question through `examWorkspaceItemReadiness`.
- *   - `ExamWorkspaceConversionStatus` renders conversion progress and retry;
- *     `ExamWorkspaceConvertingNotice` marks a question whose batch still
- *     converts, and the editor pane locks it until that batch arrives.
- *   - Files mode and `ExamWorkspaceEditorPane` (question list, editor, and
- *     drawer) render the workspace; phones add a question bar and sheet.
- *   - Resolves the open document's shared instructions and each parent's stem
- *     against its picture URLs once, so the list and sheet show the same text
- *     and diagrams read-only.
+ * Teacher exam workspace: file intake and exports, responsive question editor,
+ * and mutually exclusive item/document metadata drawers. Document state owns
+ * edits and saves; address, conversion, enrichment and export composables own
+ * their respective lifecycles. Shared instructions and parent stems resolve
+ * picture URLs once above the question list and phone sheet.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, useId, watch } from "vue";
 
 import { IconPlus } from "../../components/icons";
 import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
@@ -43,6 +20,8 @@ import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspace
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
+import ExamWorkspaceMetadata from "./exam-workspace/ExamWorkspaceMetadata.vue";
+import ExamWorkspaceMetadataTitle from "./exam-workspace/ExamWorkspaceMetadataTitle.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
@@ -83,11 +62,15 @@ const {
   openDocument,
   openExam,
   reloadDocument,
+  renameFailure,
+  renameFile,
   retryItem,
   saveDocument,
   savedDocuments,
   savedRevision,
   selectItem,
+  setTitle,
+  setCourse,
   selectedItem,
   selectedItemId,
   summary,
@@ -132,6 +115,12 @@ const {
 
 const mode = ref<ExamWorkspaceMode>("filer");
 const detailsOpen = ref(false);
+const metadata = ref<InstanceType<typeof ExamWorkspaceMetadata> | null>(null);
+const metadataDrawerId = useId();
+function prepareMetadata(): void {
+  detailsOpen.value = false;
+  mode.value = "redigera";
+}
 const questionSheetOpen = ref(false);
 
 const isPhone = computed(() => layout.value === "phone");
@@ -291,13 +280,12 @@ async function handleSave(): Promise<void> {
             class="flex min-w-0 flex-1 items-center justify-end gap-3"
             data-test="exam-workspace-summary"
           >
-            <span
-              class="min-w-0 truncate text-sm font-medium leading-snug text-navy"
-              :class="isPhone ? 'sr-only' : undefined"
-              data-test="exam-workspace-summary-title"
-            >
-              {{ workspaceDocument.title || summary.name }}
-            </span>
+            <ExamWorkspaceMetadataTitle
+              :title="workspaceDocument.title || summary.name"
+              :is-open="metadata?.isOpen ?? false"
+              :drawer-id="metadataDrawerId"
+              @open="metadata?.open()"
+            />
             <ExamWorkspaceTotalSignal :document="workspaceDocument" />
             <span
               class="shrink-0 text-xs leading-snug text-navy/65"
@@ -314,7 +302,7 @@ async function handleSave(): Promise<void> {
             <button
               type="button"
               class="btn-cta shrink-0 shadow-none"
-              :disabled="!isDirty || isBusy"
+              :disabled="!isDirty || isBusy || !workspaceDocument.title.trim()"
               data-test="exam-workspace-save"
               @click="handleSave"
             >
@@ -430,7 +418,25 @@ async function handleSave(): Promise<void> {
             @update-paragraph-heading="updateItemParagraphHeading"
             @update-points="updateItemPoints"
             @update-tick-points="updateItemTickPoints"
-          />
+          >
+            <template #metadata>
+              <ExamWorkspaceMetadata
+                v-if="summary"
+                ref="metadata"
+                :document="workspaceDocument"
+                :summary="summary"
+                :details-open="detailsOpen"
+                :drawer-id="metadataDrawerId"
+                :set-title="setTitle"
+                :set-course="setCourse"
+                :rename-file="renameFile"
+                :rename-failure="renameFailure"
+                :disabled="isBusy"
+                :layout="layout"
+                @open="prepareMetadata"
+              />
+            </template>
+          </ExamWorkspaceEditorPane>
         </div>
       </div>
     </section>

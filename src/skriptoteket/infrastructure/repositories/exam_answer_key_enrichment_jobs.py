@@ -56,6 +56,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             source_docx=job.source_docx,
             workspace_lineage_id=job.workspace_lineage_id,
             workspace_document_revision=job.workspace_document_revision,
+            workspace_course_key=job.workspace_course_key,
             workspace_request_json=job.workspace_request_json,
             workspace_suggestions_json=job.workspace_suggestions_json,
             retry_identity=job.retry_identity,
@@ -92,6 +93,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             )
         model.status = job.status.value
         model.source_docx = job.source_docx
+        model.workspace_course_key = job.workspace_course_key
         model.workspace_suggestions_json = job.workspace_suggestions_json
         model.attempts = job.attempts
         model.max_attempts = job.max_attempts

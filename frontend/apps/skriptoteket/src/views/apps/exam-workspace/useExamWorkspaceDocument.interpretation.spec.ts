@@ -9,7 +9,10 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
-vi.mock("../../../api/examWorkspace", () => api);
+vi.mock("../../../api/examWorkspace", async () => ({
+  ...api,
+  getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();

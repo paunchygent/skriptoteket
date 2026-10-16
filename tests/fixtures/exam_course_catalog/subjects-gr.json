@@ -1,0 +1,28 @@
+{
+  "subjects": [
+    {
+      "code": "GRGRMSP01",
+      "modifiedDate": "2024-06-27",
+      "name": "Moderna språk",
+      "schoolTypes": [
+        "GR",
+        "SAM"
+      ],
+      "startDate": "2024-07-01",
+      "typeOfSyllabus": "COURSE_SYLLABUS",
+      "version": 15
+    },
+    {
+      "code": "GRGRSVE01",
+      "modifiedDate": "2024-08-24",
+      "name": "Svenska",
+      "schoolTypes": [
+        "GR",
+        "SAM"
+      ],
+      "startDate": "2022-07-01",
+      "typeOfSyllabus": "COURSE_SYLLABUS",
+      "version": 15
+    }
+  ]
+}

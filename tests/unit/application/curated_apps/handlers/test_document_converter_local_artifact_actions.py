@@ -40,11 +40,13 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryDocumentConverterArtifactStore,
-    InMemoryVaultFileRepository,
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
     _document_job,
     _settings,
+)
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
 )
 
 

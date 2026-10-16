@@ -44,7 +44,10 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
-vi.mock("../../api/examWorkspace", () => apiMocks);
+vi.mock("../../api/examWorkspace", async () => ({
+  ...apiMocks,
+  getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
+}));
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 

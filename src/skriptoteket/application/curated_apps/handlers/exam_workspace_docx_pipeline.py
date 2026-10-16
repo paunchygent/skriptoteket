@@ -86,6 +86,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     assign_question_headings,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
+    load_exam_course_catalog,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     retry_sources_by_anchor,
     with_retry_sources,
@@ -427,7 +430,13 @@ class DocxConversionPipeline:
             assets_by_id=provisional.assets_by_id,
         )
         if run.manifest is not None:
-            document = apply_header(document, run.manifest, run.job.chunks)
+            document = apply_header(
+                document,
+                run.manifest,
+                run.job.chunks,
+                course_key=run.job.course_key,
+                courses=load_exam_course_catalog().courses,
+            )
         provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
         update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
         run.state = trial
@@ -458,8 +467,13 @@ class DocxConversionPipeline:
             chunks=run.job.chunks,
             assets_by_id=result.assets_by_id,
         )
-        if manifest is not None:
-            document = apply_header(document, manifest, run.job.chunks)
+        document = apply_header(
+            document,
+            manifest,
+            run.job.chunks,
+            course_key=run.job.course_key,
+            courses=load_exam_course_catalog().courses,
+        )
         update = conversion_update(
             document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
         )

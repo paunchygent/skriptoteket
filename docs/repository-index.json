@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2f277e4d690f5ef25af966c9c65bf7ad70a1edfe68b3fe8094786f169017171e",
+  "source_set_digest": "c2198609e5faf6010edece50703e01a7085a8a71157401b64daa71c8fae77a14",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5236,6 +5236,63 @@
       "type": "task",
       "title": "Course picker at import and exam metadata drawer for course, title and file name",
       "path": "docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-08-02",
+      "type": "task",
+      "title": "Own courses in the profile and the course dropdown default",
+      "path": "docs/backlog/tasks/task-skript-39-08-02-own-courses-in-the-profile-and-the-course-dropdown-default.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-08-03",
+      "type": "task",
+      "title": "Central-content tags suggested by a Decisions classifier at import and from the drawer",
+      "path": "docs/backlog/tasks/task-skript-39-08-03-central-content-tags-suggested-by-a-decisions-classifier-at-import-and-from-the-drawer.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-08-04",
+      "type": "task",
+      "title": "Prov mode lists saved exams grouped by course and sorted by date",
+      "path": "docs/backlog/tasks/task-skript-39-08-04-prov-mode-lists-saved-exams-grouped-by-course-and-sorted-by-date.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
