@@ -34,7 +34,7 @@
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
 - [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  is `ready` (A1-A12). Owner: Claude parent session; implementers are Opus 5.5
+  is `ready` (A1-A15). Owner: Claude parent session; implementers are Opus 5.5
   assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
   `01a12706-566c-7480-acc3-427145283942`.
 
