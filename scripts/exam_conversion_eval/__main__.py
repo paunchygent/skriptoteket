@@ -2,7 +2,9 @@
 
 The eval composes the converter with ``skriptoteket.di.docx_conversion``, as the job does, and
 calls the configured live providers. Each Responses reply is stored next to the report under
-its request id, and each exam reports the elapsed seconds of every pipeline stage.
+its request id, and each exam reports the elapsed seconds of every pipeline stage. With
+``--grouping-only`` the eval runs only the grouping pass and stores its replies, so a grouping
+recording can be refreshed without a new build recording.
 """
 
 from __future__ import annotations
@@ -22,6 +24,12 @@ import httpx
 from pydantic import JsonValue
 from pydantic_core import to_jsonable_python
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
+    DocxBuildRoundExchange,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_grouping import (
+    ResponsesExamGrouper,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
 )
@@ -47,6 +55,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
+    build_luna_docx_grouping_profile,
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.protocols.docx_conversion_progress import ConversionOutline, ConversionUpdate
@@ -243,20 +254,50 @@ async def _evaluate(
     )
 
 
+def _live_provider(client: httpx.AsyncClient, settings: Settings) -> _RecordingProvider:
+    recorder = _RecordingProvider(
+        OpenAIAnswerKeyStructuredProvider(
+            client=client,
+            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+            api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+            timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
+        )
+    )
+    client.event_hooks["response"] = [recorder.on_response]
+    return recorder
+
+
+async def _live_grouping(docx: Path, settings: Settings, evidence_dir: Path) -> str:
+    """Run only the job's grouping pass and store its replies; return a one-line summary."""
+    async with httpx.AsyncClient() as client:
+        recorder = _live_provider(client, settings)
+        grouper = ResponsesExamGrouper(
+            exchange=DocxBuildRoundExchange(
+                recorder, _UnmeteredLeases(), SerializedUnitOfWork(_NoTransaction()), UTCClock()
+            ),
+            profile=build_luna_docx_grouping_profile(settings),
+        )
+        chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
+        grouping = await grouper.group(job_id=uuid4(), chunks=chunks)
+    _write_recordings(recorder, evidence_dir / "recordings" / docx.stem)
+    manifest = grouping.manifest
+    header = ", ".join(f"{h.kind}:{h.anchor}" for h in manifest.header) or "none"
+    return (
+        f"{docx.stem}: {len(manifest.questions)} questions, {len(recorder.replies)} grouping"
+        f" calls, unplaced {list(manifest.unplaced_anchors)}, header {header}"
+    )
+
+
 async def _live_exam(docx: Path, settings: Settings, evidence_dir: Path) -> _ExamReport:
     """One client per exam, so each exam's Decisions replies are recorded with that exam."""
     async with httpx.AsyncClient() as client:
-        recorder = _RecordingProvider(
-            OpenAIAnswerKeyStructuredProvider(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
-                timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
-            )
-        )
-        client.event_hooks["response"] = [recorder.on_response]
+        recorder = _live_provider(client, settings)
         report = await _evaluate(docx, client, settings, recorder)
-    directory = evidence_dir / "recordings" / docx.stem
+    _write_recordings(recorder, evidence_dir / "recordings" / docx.stem)
+    return report
+
+
+def _write_recordings(recorder: _RecordingProvider, directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     for request_id, content in recorder.replies.items():
         path = directory / f"{request_id.replace(':', '_')}.json"
@@ -264,11 +305,16 @@ async def _live_exam(docx: Path, settings: Settings, evidence_dir: Path) -> _Exa
     for number, body in enumerate(recorder.decisions, start=1):
         path = directory / f"decisions_{number}.json"
         path.write_text(json.dumps(body, ensure_ascii=False, indent=2) + "\n")
-    return report
 
 
 async def _live(settings: Settings, evidence_dir: Path, exams: list[Path]) -> list[_ExamReport]:
     return list(await asyncio.gather(*(_live_exam(docx, settings, evidence_dir) for docx in exams)))
+
+
+async def _live_groupings(settings: Settings, evidence_dir: Path, exams: list[Path]) -> list[str]:
+    return list(
+        await asyncio.gather(*(_live_grouping(docx, settings, evidence_dir) for docx in exams))
+    )
 
 
 def _print_report(reports: Sequence[_ExamReport]) -> None:
@@ -304,6 +350,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=[],
         help="Corpus DOCX stem to convert; repeat for several. Every corpus exam by default.",
     )
+    parser.add_argument(
+        "--grouping-only",
+        action="store_true",
+        help="Run and record only the grouping pass; no build, no gold comparison.",
+    )
     args = parser.parse_args(argv)
     # The eval runs conversion with the job's composition whatever the local enable flag says.
     settings = Settings().model_copy(update={"LLM_ANSWER_KEY_ENABLED": True})
@@ -314,6 +365,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         if missing:
             raise SystemExit(f"not in the corpus: {sorted(missing)}")
     args.evidence_dir.mkdir(parents=True, exist_ok=True)
+    if args.grouping_only:
+        for line in asyncio.run(_live_groupings(settings, args.evidence_dir, exams)):
+            print(line)
+        return 0
     reports = asyncio.run(_live(settings, args.evidence_dir, exams))
     _print_report(reports)
     failed = [report.exam for report in reports if not report.comparison.passed]
