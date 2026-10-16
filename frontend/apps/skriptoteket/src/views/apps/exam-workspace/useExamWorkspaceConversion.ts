@@ -26,7 +26,6 @@ import type { Ref } from "vue";
 
 import {
   getExamWorkspaceConversionStatus,
-  getExamWorkspaceDocument,
   importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
@@ -52,6 +51,8 @@ export type ExamWorkspaceConversionBinding = {
   serverDocument: Ref<NativeExamDocument | null>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   workspaceDocument: Ref<NativeExamDocument | null>;
+  /** Read through the document owner's metadata reconciliation boundary. */
+  readDocument: (lineageId: string) => Promise<ExamWorkspaceDocumentResponse>;
   /** Replace the local copy with a server response; `local` keeps merged teacher edits. */
   applyResponse: (response: ExamWorkspaceDocumentResponse, local?: NativeExamDocument) => void;
   /** Called once before the first revision of a new import is shown. */
@@ -223,7 +224,7 @@ export function useExamWorkspaceConversion(
     if (binding.isSaving() && !duringSave) return true;
     const first = binding.summary.value?.lineage_id !== status.lineage_id;
     const shown = shownUnits.value ?? [];
-    const response = await getExamWorkspaceDocument(status.lineage_id);
+    const response = await binding.readDocument(status.lineage_id);
     if (pollGeneration !== generation) return false;
     const conversion = response.conversion;
     if (conversion === null) {

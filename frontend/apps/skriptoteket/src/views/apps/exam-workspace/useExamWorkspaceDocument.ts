@@ -56,6 +56,7 @@ import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
+import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -118,6 +119,7 @@ export function useExamWorkspaceDocument() {
     syncAfterConflict,
   } = useExamWorkspaceConversion(() => isBusy.value, {
     applyResponse,
+    readDocument,
     beforeFirstRevision: () => {
       selectedItemId.value = null;
       conflictNotice.value = null;
@@ -191,10 +193,18 @@ export function useExamWorkspaceDocument() {
       : (items[0]?.item_id ?? null);
   }
 
+  /** Reconcile metadata at the read boundary, retaining every document/revision field. */
+  async function readDocument(lineageId: string): Promise<ExamWorkspaceDocumentResponse> {
+    const reconcile = beginSummaryRead();
+    const response = await getExamWorkspaceDocument(lineageId);
+    return { ...response, summary: reconcile(response.summary) };
+  }
+
   async function loadSavedDocuments(): Promise<void> {
+    const reconcile = beginSummaryRead();
     try {
       const response = await listExamWorkspaceDocuments();
-      savedDocuments.value = mergeSavedDocuments(savedDocuments.value, response.documents);
+      savedDocuments.value = mergeSavedDocuments(savedDocuments.value, response.documents.map(reconcile));
     } catch {
       toast.failure(LIST_FAILURE_COPY);
     }
@@ -206,7 +216,7 @@ export function useExamWorkspaceDocument() {
     }
     operationBusy.value = true;
     try {
-      const response = await getExamWorkspaceDocument(lineageId);
+      const response = await readDocument(lineageId);
       selectedItemId.value = null;
       applyResponse(response);
       keying.invalidateCopy();
@@ -223,7 +233,7 @@ export function useExamWorkspaceDocument() {
   /** Returns whether the reloaded revision replaced the teacher's copy. */
   async function reloadAfterConflict(lineageId: string): Promise<boolean> {
     try {
-      const response = await getExamWorkspaceDocument(lineageId);
+      const response = await readDocument(lineageId);
       applyResponse(response);
       keying.invalidateCopy();
       return true;
@@ -237,6 +247,10 @@ export function useExamWorkspaceDocument() {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || (isBusy.value && !afterConversionConflict)) {
+      return false;
+    }
+    if (!current.title.trim()) {
+      toast.failure("Skriv en titel innan du sparar provet.");
       return false;
     }
     const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
@@ -304,7 +318,7 @@ export function useExamWorkspaceDocument() {
     }
     operationBusy.value = true;
     try {
-      const response = await getExamWorkspaceDocument(currentSummary.lineage_id);
+      const response = await readDocument(currentSummary.lineage_id);
       applyResponse(response);
       keying.invalidateCopy();
       conflictNotice.value = null;
@@ -319,6 +333,19 @@ export function useExamWorkspaceDocument() {
   function selectItem(itemId: string): void {
     selectedItemId.value = itemId;
   }
+
+  function setTitle(title: string): void {
+    const current = workspaceDocument.value;
+    if (!current || isBusy.value) return;
+    workspaceDocument.value = { ...current, title };
+  }
+
+  const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
+    isBusy: () => isBusy.value,
+    operationBusy,
+    summary,
+    savedDocuments,
+  });
 
   const { retryItem: requestItemRetry } = useExamWorkspaceItemRetry({
     isBusy: () => isBusy.value,
@@ -421,12 +448,15 @@ export function useExamWorkspaceDocument() {
     openDocument,
     openExam: computed(() => openExam.value),
     reloadDocument,
+    renameFailure,
+    renameFile,
     restoreItemSuggestion,
     retryItem,
     saveDocument,
     savedDocuments,
     savedRevision,
     selectItem,
+    setTitle,
     selectedItem,
     selectedItemId,
     summary,
