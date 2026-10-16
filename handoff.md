@@ -33,47 +33,11 @@
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
-- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  is `ready` (A1-A15). Owner: Claude parent session; implementers are Opus 5.5
-  assignments and reviewers Pi Sol 6.1 high (role routes). Retained session
-  `01a12706-566c-7480-acc3-427145283942`.
-
-  - TASK-SKRIPT-39-05-01/-02/-03 `done` 2026-10-11 (walk `1db37835`, retained
-    `evidence/task-skript-39-05-03/staging-walk-1db37835/summary.md`); -04, -05,
-    -06 and -09 `done` (closure evidence in long-term memory 2026-10-15).
-  - [TASK-SKRIPT-39-05-10](docs/backlog/tasks/task-skript-39-05-10-tolkad-av-ai-with-undo-checked-ai-invented-keys-automatic-misspellings-and-visa-som-text.md)
-    `done` 2026-10-14 (reviews approved e4a5e2eb and 42050a03, merged
-    426d7551; staging walk at c270419e and Exam.net import exam 5332346 in
-    retained `01a13a87-acac-7730-bb4e-746618d73cfd`
-    `evidence/walk/TASK-SKRIPT-39-05-10/`). Live v14 eval 0/8 gold; open
-    model-quality findings (SA24 dropped accepted forms, truncated facit_text,
-    poetry Q8 prompt repeat, English type_conflict "copied" claim) listed in
-    that root's `evidence/implementation/TASK-SKRIPT-39-05-10/backend/result.md`;
-    next: route them under story item 3.
-  - [TASK-SKRIPT-39-05-11](docs/backlog/tasks/task-skript-39-05-11-rewire-the-labeling-feasibility-report-to-the-v14-batch-recordings.md)
-    `done` 2026-10-15: `labeling_feasibility evaluate` scores the v14 batch
-    recordings (`PYTHONPATH=src`); review aae91639; retained
-    `01a13f02-cbaf-71c0-bb3b-f16fc81c7017` `evidence/`.
-  - [TASK-SKRIPT-39-05-12](docs/backlog/tasks/task-skript-39-05-12-repoint-the-parent-document-spec-support-at-the-v14-english-recording.md)
-    `done` 2026-10-15: merged b8e43394, staging walk saved a matching edit;
-    retained `01a13f01-f1dc-7614-beb6-76a946b50b74` `evidence/walk/`.
-  - [TASK-SKRIPT-39-05-13](docs/backlog/tasks/task-skript-39-05-13-item-type-conversion-prompts-built-from-general-principles.md)
-    `done` 2026-10-16 (user closure, no review): merged `5d878505`; corpus
-    307/316 at 16 families; Exam.net 5339992; retained
-    `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
-  - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
-    D12-D14 repair reviewed and merged to main `827c301a`; re-record
-    `evidence/regroup-2026-10-16c/`. Staging re-walk passes (judge 24/24, 0
-    review, no header text in bodies or QTI;
-    `evidence/staging-walk-39-05-14b/walk-report.md`); Exam.net 5344745 has
-    24 items, 36p, no header text. Next (Claude parent): user closure, then
-    worktree retirement and ST-SKRIPT-39-05 closure.
-  - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
-    `ready` 2026-10-16 (story `ready` D1-D22; retained
-    `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
-    metadata drawer. Owner: Claude on Hemma (tmux `st-39-08`, user go-ahead
-    2026-10-16): header-independent units first; header units after 39-05-14.
+- [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
+  `ready` 2026-10-16 (story `ready` D1-D22; retained
+  `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
+  metadata drawer. Owner: Claude on Hemma (tmux `st-39-08`, user go-ahead
+  2026-10-16); 39-05-14 header metadata is on main (`827c301a`).
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
@@ -162,6 +126,11 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
+  `done` 2026-10-16 (user closure), tasks 01-14; last TASK-SKRIPT-39-05-14
+  merged `827c301a`, Exam.net 5344745; retained
+  `01a144e3-b8c4-7ea5-bee6-6dfc5e242786` `evidence/staging-walk-39-05-14b/`.
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;
