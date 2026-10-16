@@ -37,7 +37,7 @@ IMSCP_SCHEMA_LOCATION = (
 def serialize_qti_manifest(
     *,
     title: str,
-    course_hint: str | None,
+    course: str | None,
     item_files: tuple[ExamNetQtiPackageFile, ...],
     image_files_by_item_id: dict[str, tuple[ExamNetQtiPackageFile, ...]],
 ) -> bytes:
@@ -62,11 +62,11 @@ def serialize_qti_manifest(
     ElementTree.SubElement(
         title_element, f"{{{IMSMD_NAMESPACE}}}string", {"language": "sv"}
     ).text = title
-    if course_hint is not None:
+    if course is not None:
         keyword = ElementTree.SubElement(general, f"{{{IMSMD_NAMESPACE}}}keyword")
         ElementTree.SubElement(
             keyword, f"{{{IMSMD_NAMESPACE}}}string", {"language": "sv"}
-        ).text = course_hint
+        ).text = course
     ElementTree.SubElement(manifest, _cp("organizations"))
     resources = ElementTree.SubElement(manifest, _cp("resources"))
     for item_file in item_files:
