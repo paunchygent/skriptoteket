@@ -1,8 +1,10 @@
-"""Behavioral proof for native health callers using real curl and storage writes."""
+"""Native health contracts using real HTTP and storage writes with fake worker tools."""
 
 from __future__ import annotations
 
 import os
+import shlex
+import shutil
 import subprocess
 import threading
 import time
@@ -80,11 +82,22 @@ def executable(path: Path, body: str) -> None:
 
 
 def worker_environment(tmp_path: Path) -> dict[str, str]:
+    timeout = shutil.which("timeout") or shutil.which(
+        "timeout", path="/usr/bin:/opt/homebrew/bin:/usr/local/bin"
+    )
+    if timeout is None:
+        pytest.fail("Worker healthcheck tests require GNU timeout (install coreutils).")
     tools = tmp_path / "tools"
     tools.mkdir()
     executable(
+        tools / "timeout",
+        f'printf "%s\\n" "$@" > "$TIMEOUT_RECEIPT"\nexec {shlex.quote(timeout)} "$@"\n',
+    )
+    executable(
         tools / "psql",
-        'printf "%s" "$PGDATABASE" > "$RECEIPT"\nexit "${DB_EXIT:-0}"\n',
+        'printf "%s" "$PGDATABASE" > "$RECEIPT"\n'
+        'printf "%s\\n" "$@" > "$QUERY_RECEIPT"\n'
+        'exit "${DB_EXIT:-0}"\n',
     )
     executable(
         tools / "curl",
@@ -98,6 +111,8 @@ def worker_environment(tmp_path: Path) -> dict[str, str]:
         "DATABASE_URL": "postgresql+asyncpg://user:fake-secret@db/test",
         "ARTIFACTS_ROOT": str(tmp_path / "artifacts"),
         "RECEIPT": str(tmp_path / "database"),
+        "QUERY_RECEIPT": str(tmp_path / "query"),
+        "TIMEOUT_RECEIPT": str(tmp_path / "timeout"),
         "SOCKET_RECEIPT": str(tmp_path / "socket"),
         "DOCKER_HOST": "unix:///run/user/1000/docker.sock",
     }
@@ -109,13 +124,41 @@ def run_worker(environment: dict[str, str]) -> subprocess.CompletedProcess[bytes
 
 def test_worker_queries_database_pings_selected_socket_and_cleans_write(tmp_path: Path) -> None:
     environment = worker_environment(tmp_path)
-    assert run_worker(environment).returncode == 0
-    assert Path(environment["RECEIPT"]).read_text() == (
-        "postgresql://user:fake-secret@db/test?connect_timeout=2"
+    executable(
+        tmp_path / "tools/rm",
+        'for argument in "$@"; do\n'
+        '    if [ -f "$argument" ]; then cat "$argument" > "$WRITE_RECEIPT"; fi\n'
+        'done\nexec /bin/rm "$@"\n',
     )
-    assert "--unix-socket /run/user/1000/docker.sock" in (
-        Path(environment["SOCKET_RECEIPT"]).read_text()
+    environment["WRITE_RECEIPT"] = str(tmp_path / "write")
+    result = run_worker(environment)
+    assert result.returncode == 0
+    assert result.stdout == result.stderr == b""
+    database_url = "postgresql://user:fake-secret@db/test?connect_timeout=2"
+    assert Path(environment["RECEIPT"]).read_text() == database_url
+    query_arguments = [
+        "--dbname",
+        database_url,
+        "--no-psqlrc",
+        "--no-password",
+        "--set",
+        "ON_ERROR_STOP=1",
+        "--tuples-only",
+        "--no-align",
+        "--command",
+        "SELECT 1",
+    ]
+    assert Path(environment["QUERY_RECEIPT"]).read_text().splitlines() == query_arguments
+    assert Path(environment["TIMEOUT_RECEIPT"]).read_text().splitlines() == [
+        "4",
+        "psql",
+        *query_arguments,
+    ]
+    assert Path(environment["SOCKET_RECEIPT"]).read_text() == (
+        "--silent --fail --noproxy * --max-time 3 "
+        "--unix-socket /run/user/1000/docker.sock http://localhost/_ping"
     )
+    assert Path(environment["WRITE_RECEIPT"]).read_text() == "ok"
     assert list(Path(environment["ARTIFACTS_ROOT"]).iterdir()) == []
 
 
@@ -126,7 +169,9 @@ def test_database_authentication_or_query_failure_is_safe(tmp_path: Path, exit_c
     result = run_worker(environment)
     assert result.returncode != 0
     assert result.stderr == b"Database healthcheck failed\n"
+    assert Path(environment["RECEIPT"]).exists()
     assert not Path(environment["SOCKET_RECEIPT"]).exists()
+    assert not Path(environment["ARTIFACTS_ROOT"]).exists()
 
 
 @pytest.mark.parametrize(("response", "exit_code"), [("not OK", "0"), ("", "7"), ("OK", "22")])
@@ -137,7 +182,14 @@ def test_docker_transport_http_and_response_failures(
     environment.update(DOCKER_RESPONSE=response, DOCKER_EXIT=exit_code)
     result = run_worker(environment)
     assert result.returncode != 0
-    assert b"Docker healthcheck" in result.stderr
+    expected_error = (
+        b"Docker healthcheck response failed\n"
+        if exit_code == "0"
+        else b"Docker healthcheck failed\n"
+    )
+    assert result.stderr == expected_error
+    assert Path(environment["RECEIPT"]).exists()
+    assert Path(environment["SOCKET_RECEIPT"]).exists()
     assert not Path(environment["ARTIFACTS_ROOT"]).exists()
 
 
@@ -147,6 +199,9 @@ def test_artifact_create_failure(tmp_path: Path) -> None:
     result = run_worker(environment)
     assert result.returncode != 0
     assert result.stderr == b"Artifacts healthcheck failed\n"
+    assert Path(environment["RECEIPT"]).exists()
+    assert Path(environment["SOCKET_RECEIPT"]).exists()
+    assert Path(environment["ARTIFACTS_ROOT"]).read_text() == "a file blocks mkdir"
 
 
 def test_actual_write_failure_removes_created_probe(tmp_path: Path) -> None:
@@ -154,11 +209,13 @@ def test_actual_write_failure_removes_created_probe(tmp_path: Path) -> None:
     probe = Path(environment["ARTIFACTS_ROOT"]) / ".healthcheck-worker-write-failure"
     executable(
         tmp_path / "tools/mktemp",
-        f'ln -s /dev/full "{probe}"\nprintf "%s" "{probe}"\n',
+        f'ln -s "{tmp_path}" "{probe}"\nprintf "%s" "{probe}"\n',
     )
     result = run_worker(environment)
     assert result.returncode != 0
-    assert b"Artifacts healthcheck write failed" in result.stderr
+    assert result.stderr == b"Artifacts healthcheck write failed\n"
+    assert Path(environment["RECEIPT"]).exists()
+    assert Path(environment["SOCKET_RECEIPT"]).exists()
     assert not probe.is_symlink()
     assert list(probe.parent.iterdir()) == []
 

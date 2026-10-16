@@ -34,10 +34,6 @@ HULEEDU_CONTAINER_PUBLIC_KEY_PATH = (
     "${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-"
     "/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem}"
 )
-WORKER_FAST_HEALTHCHECK_COMMAND = (
-    "PYTHONPATH=/app/__pypackages__/3.13/lib:/app/src "
-    "python -m skriptoteket.cli.commands.healthcheck_execution_worker_fast"
-)
 
 
 def _service_environment(compose_path: Path, service_name: str) -> dict[str, str]:
@@ -99,8 +95,9 @@ def test_docker_dev_worker_does_not_inherit_host_playwright_platform_override() 
     assert worker_environment["PLAYWRIGHT_BROWSERS_PATH"] == "/ms-playwright"
     assert worker_environment["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] == ""
     assert worker_service["healthcheck"]["test"] == [
-        "CMD-SHELL",
-        WORKER_FAST_HEALTHCHECK_COMMAND,
+        "CMD",
+        "/bin/sh",
+        "/app/src/skriptoteket/cli/commands/healthcheck_execution_worker.sh",
     ]
 
 
@@ -169,8 +166,9 @@ def test_production_compose_mounts_huleedu_gateway_public_key_for_protected_api(
         == "${HULEEDU_INTERNAL_IDENTITY_AUDIENCE:-skriptoteket}"
     )
     assert worker_service["healthcheck"]["test"] == [
-        "CMD-SHELL",
-        WORKER_FAST_HEALTHCHECK_COMMAND,
+        "CMD",
+        "/bin/sh",
+        "/app/src/skriptoteket/cli/commands/healthcheck_execution_worker.sh",
     ]
 
 
