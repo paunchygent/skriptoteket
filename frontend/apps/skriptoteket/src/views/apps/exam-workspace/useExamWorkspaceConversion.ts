@@ -345,7 +345,7 @@ export function useExamWorkspaceConversion(
     return conversionRevision > expectedRevision ? "unknown" : "unrelated";
   }
 
-  async function importDocument(file: File): Promise<void> {
+  async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
     const pollGeneration = ++generation;
     isImporting.value = true;
@@ -354,7 +354,7 @@ export function useExamWorkspaceConversion(
     shownUnits.value = null;
     pollFailures = 0;
     try {
-      const status = await requestImportExamWorkspaceDocument(file);
+      const status = await requestImportExamWorkspaceDocument(file, courseKey);
       if (pollGeneration !== generation) return;
       isConverting.value = true;
       conversionStatus.value = status;

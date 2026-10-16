@@ -27,12 +27,12 @@ function isDocxFile(file: File): boolean {
 }
 
 export function useExamWorkspaceSourceFile(
-  importDocument: (file: File) => Promise<void>,
+  importDocument: (file: File, courseKey: string | null) => Promise<void>,
   importBlocked: Readonly<Ref<boolean>>,
 ) {
   const sourceFileError = ref<string | null>(null);
 
-  function handleSelectedFile(file: File): void {
+  function handleSelectedFile(file: File, courseKey: string | null): void {
     if (importBlocked.value) {
       return;
     }
@@ -41,10 +41,10 @@ export function useExamWorkspaceSourceFile(
       return;
     }
     sourceFileError.value = null;
-    void importDocument(file);
+    void importDocument(file, courseKey);
   }
 
-  function handleDroppedFiles(files: File[]): void {
+  function handleDroppedFiles(files: File[], courseKey: string | null): void {
     if (importBlocked.value) {
       return;
     }
@@ -56,7 +56,7 @@ export function useExamWorkspaceSourceFile(
     const [file] = docxFiles;
     if (file) {
       sourceFileError.value = null;
-      void importDocument(file);
+      void importDocument(file, courseKey);
       return;
     }
     sourceFileError.value = INVALID_DOCX_COPY;

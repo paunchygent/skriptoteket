@@ -53,6 +53,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     source_docx: bytes | None = Field(default=None, min_length=1)
     workspace_lineage_id: UUID | None = None
     workspace_document_revision: int | None = Field(default=None, ge=1)
+    workspace_course_key: str | None = Field(default=None, max_length=64)
     # Editor-sent answer-key views a workspace suggestion job runs on, and the
     # suggestions it produced; both stay on the job, never in an overlay table.
     workspace_request_json: dict[str, JsonValue] | None = None
