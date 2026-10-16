@@ -58,9 +58,10 @@ This task changes the conversion and the exports as follows:
 - A line whose whole content is metadata is a header anchor at its own scope:
   the exam, a part, or one question. A question's own points line, such as
   "Poäng: 3 poäng" under that question, is a question-level header anchor that
-  governs that one question. It never enters item text. The printed value sets
-  the question's points; a question split into several items distributes them
-  through the existing automatic distribution. Walk of 2026-10-16 (document
+  governs that one question. It never enters item text. A question's printed
+  points, in its heading or on that line, set its points; criteria and split
+  items are redistributed through native scoring. The build's points apply only
+  when nothing is printed. Walk of 2026-10-16 (document
   f0ea76bf, revision 18) showed these lines in item bodies of questions 16, 22
   and 24 after the grouping put them into question anchors.
 - The editor gets no course control in this task.
@@ -142,5 +143,5 @@ exam and the task adds no model call.
 | D9  | This task is the conversion fix; the course dropdown, course list and metadata panel are the first task of ST-SKRIPT-39-08 (user 2026-10-16). |
 | D11 | PDF and DOCX print a generated header with the title, the raw course hint and "Totalt: N poäng" computed from item points; the editor gets no course control in this task (user 2026-10-16). |
 | D12 | A line whose whole content is metadata is a header anchor at its own scope (exam, part or one question); a question's own points line is a question-level header anchor and never item text (user 2026-10-16). |
-| D13 | The printed question points set that question's points; a question split into several items uses the existing automatic distribution; the build model does not derive points from that line (user 2026-10-16). |
+| D13 | A question's printed points, in its heading or on its own points line, set that question's points; criteria and split items are redistributed through native scoring; the build's points apply only when nothing is printed, replacing the heading-conflict review (user 2026-10-16). |
 | D14 | The question-level repair is validated by focused tests, a fresh grouping-only corpus re-record, and a staging re-walk of Svenska 2 kursavslutande with the Exam.net import (user 2026-10-16). |
