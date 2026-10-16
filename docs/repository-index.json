@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "673d597ffb69a3ad461fa128739552e4d2349ad9fc7020590b7194b735701fb7",
+  "source_set_digest": "e40a89aad6092194b7a1dcbb1f7d948b2fb30854e49efb096259e8225ad4c717",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5230,7 +5230,7 @@
       "type": "task",
       "title": "Course picker at import and exam metadata drawer for course, title and file name",
       "path": "docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [

@@ -112,7 +112,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             clock=clock,
             settings=SETTINGS,
             id_generator=Ids(),
-        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
+        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes", course_key=None)
         world = ConversionWorld(session, storage, clock)
         async with world.uow:
             claimed = await world.jobs.claim_next(
@@ -278,7 +278,7 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
             clock=clock,
             settings=SETTINGS,
             id_generator=Ids(),
-        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes")
+        ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes", course_key=None)
         lineage_id = queued.lineage_id
         world = ConversionWorld(session, storage, clock)
         async with world.uow:

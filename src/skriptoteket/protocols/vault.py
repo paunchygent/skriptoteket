@@ -9,6 +9,8 @@ from skriptoteket.application.scripting.vault import (
     DeleteVaultFileResult,
     ListVaultFilesQuery,
     ListVaultFilesResult,
+    RenameVaultFileCommand,
+    RenameVaultFileResult,
     RestoreVaultFileCommand,
     RestoreVaultFileResult,
     SaveVaultFileCommand,
@@ -149,3 +151,12 @@ class RestoreVaultFileHandlerProtocol(Protocol):
         actor: User,
         command: RestoreVaultFileCommand,
     ) -> RestoreVaultFileResult: ...
+
+
+class RenameVaultFileHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        command: RenameVaultFileCommand,
+    ) -> RenameVaultFileResult: ...

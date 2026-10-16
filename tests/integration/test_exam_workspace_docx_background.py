@@ -131,7 +131,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
             clock=clock,
             settings=settings,
             id_generator=ids,
-        ).handle(actor=actor, filename=_QUIZ.name, content=_QUIZ.read_bytes())
+        ).handle(actor=actor, filename=_QUIZ.name, content=_QUIZ.read_bytes(), course_key=None)
     assert queued.state == "queued"
 
     async def open_head() -> ExamWorkspaceDocumentResponse:

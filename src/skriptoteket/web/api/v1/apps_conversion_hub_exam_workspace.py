@@ -12,9 +12,10 @@ Relationships:
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamCourseCatalogResponse,
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
@@ -33,6 +34,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
@@ -86,11 +88,30 @@ async def import_exam_workspace_document(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[ImportExamWorkspaceDocumentHandlerProtocol],
     file: UploadFile = File(...),
+    course_key: str | None = Form(None, max_length=64),
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceConversionStatus:
     require_conversion_hub_access(registry=registry, user=user)
     content = await file.read()
-    return await handler.handle(actor=user, filename=file.filename or "prov.docx", content=content)
+    return await handler.handle(
+        actor=user,
+        filename=file.filename or "prov.docx",
+        content=content,
+        course_key=course_key or None,
+    )
+
+
+@router.get(
+    "/exam-workspace/courses",
+    response_model=ExamCourseCatalogResponse,
+)
+def get_exam_course_catalog(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[GetExamCourseCatalogHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamCourseCatalogResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return handler.handle()
 
 
 @router.get(

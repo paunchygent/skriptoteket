@@ -97,7 +97,7 @@ class ImportExamWorkspaceDocumentHandler:
         self._id_generator = id_generator
 
     async def handle(
-        self, *, actor: User, filename: str, content: bytes
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus:
         safe_name = sanitize_input_filename(input_filename=filename)
         if not safe_name.lower().endswith(".docx"):
