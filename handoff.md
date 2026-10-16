@@ -130,6 +130,12 @@
 
 ## Recent
 
+- [TASK-SKRIPT-REP-0041](docs/backlog/tasks/task-skript-rep-0041-repair-ten-main-test-failures-in-worker-healthchecks-the-compose-contract-and-alignment-timing.md)
+  `done` 2026-10-17 (approved review): healthcheck tests use the real
+  `timeout`, compose contract tests track the native worker healthcheck, the
+  host-dependent repair6 timing test is deleted; main `23fc5cf0`; reviews in
+  `01a146ac.../evidence/`.
+
 - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
   `done` 2026-10-16 (user closure gate): course picker at import, metadata
   drawer, course line in exports; main `255eef88`, headless staging walk

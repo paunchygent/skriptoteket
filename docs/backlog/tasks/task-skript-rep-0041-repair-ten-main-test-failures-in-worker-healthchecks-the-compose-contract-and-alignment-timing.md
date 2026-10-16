@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-16'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-code-review
+  decided_at: '2026-10-17T00:10:00+02:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent Sol review .orchestration/context/sessions/01a146ac-4ce2-72db-8d74-98aef59f9a51/evidence/review-rep0041.md (changes requested, F1 timeout double) and rereview evidence/rereview-rep0041.md in the same root (approved, F1 resolved); merged to main as 23fc5cf0; focused 97 passed on main after the merge.'
 task_kind: repository
 acceptance_criteria:
   - The six worker-healthcheck tests in tests/unit/cli/test_native_healthchecks.py pass on the Mac and on Linux without changing the production script's behaviour.
