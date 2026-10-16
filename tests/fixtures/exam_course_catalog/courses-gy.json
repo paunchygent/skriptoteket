@@ -1,0 +1,153 @@
+{
+  "courses": [
+    {
+      "courseCode": "ENGE1000X",
+      "courseName": "Nivå 1",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "modifiedDate": "2025-12-15",
+        "startDate": "2025-07-01",
+        "subjectCode": "ENGE",
+        "subjectName": "Engelska",
+        "version": 1
+      }
+    },
+    {
+      "courseCode": "ENGENG05",
+      "courseName": "Engelska 5",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "endDate": "2030-06-30",
+        "modifiedDate": "2026-01-16",
+        "startDate": "2022-07-01",
+        "subjectCode": "ENG",
+        "subjectName": "Engelska",
+        "version": 6
+      }
+    },
+    {
+      "courseCode": "HISHIS01a1",
+      "courseName": "Historia 1a1",
+      "coursePoints": "50",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "endDate": "2030-06-30",
+        "modifiedDate": "2026-01-16",
+        "startDate": "2022-07-01",
+        "subjectCode": "HIS",
+        "subjectName": "Historia",
+        "version": 10
+      }
+    },
+    {
+      "courseCode": "HISHIS01b",
+      "courseName": "Historia 1b",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "endDate": "2030-06-30",
+        "modifiedDate": "2026-01-16",
+        "startDate": "2022-07-01",
+        "subjectCode": "HIS",
+        "subjectName": "Historia",
+        "version": 10
+      }
+    },
+    {
+      "courseCode": "MATE1A00X",
+      "courseName": "Nivå 1a",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "modifiedDate": "2025-12-19",
+        "startDate": "2025-07-01",
+        "subjectCode": "MATE",
+        "subjectName": "Matematik",
+        "version": 1
+      }
+    },
+    {
+      "courseCode": "MATMAT01a",
+      "courseName": "Matematik 1a",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "endDate": "2030-06-30",
+        "modifiedDate": "2026-01-16",
+        "startDate": "2022-07-01",
+        "subjectCode": "MAT",
+        "subjectName": "Matematik",
+        "version": 11
+      }
+    },
+    {
+      "courseCode": "SVEN2000X",
+      "courseName": "Nivå 2",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "modifiedDate": "2025-12-19",
+        "startDate": "2025-07-01",
+        "subjectCode": "SVEN",
+        "subjectName": "Svenska",
+        "version": 1
+      }
+    },
+    {
+      "courseCode": "SVESVE02",
+      "courseName": "Svenska 2",
+      "coursePoints": "100",
+      "subjectParent": {
+        "categories": [
+          {
+            "code": "COMMON2",
+            "name": "Kapitel 4-ämne"
+          }
+        ],
+        "endDate": "2030-06-30",
+        "modifiedDate": "2026-01-16",
+        "startDate": "2022-07-01",
+        "subjectCode": "SVE",
+        "subjectName": "Svenska",
+        "version": 8
+      }
+    }
+  ]
+}

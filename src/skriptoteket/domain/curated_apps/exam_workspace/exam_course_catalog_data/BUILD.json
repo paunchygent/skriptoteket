@@ -1,0 +1,42 @@
+{
+  "counts": {
+    "GY11": 1079,
+    "GY25": 1113,
+    "grundskolan": 77
+  },
+  "generated_at": "2026-10-16T17:48:27.460179+00:00",
+  "source_urls": [
+    "https://api.skolverket.se/syllabus/v1/courses?schooltype=GY&timespan=LATEST",
+    "https://api.skolverket.se/syllabus/v1/subjects?schooltype=GY&timespan=LATEST",
+    "https://api.skolverket.se/syllabus/v1/subjects?schooltype=GR&timespan=LATEST",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRBIL01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRBIO01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRDAN01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRENG01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRFYS01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRGEO01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRHIS01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRHKK01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRIDR01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRJUD01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRKEM01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMAT01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMOD01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMOE01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMOM01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMOR01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMOS01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMSP01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRMUS01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRREL01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRSAM01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRSLJ01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRSVA01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRSVE01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRTEK01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRGRTSP01",
+    "https://api.skolverket.se/syllabus/v1/subjects/GRSMSMI01"
+  ],
+  "total": 2269,
+  "valid_on": "2026-10-16"
+}

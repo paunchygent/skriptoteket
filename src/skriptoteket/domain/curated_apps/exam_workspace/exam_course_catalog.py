@@ -16,7 +16,11 @@ Relationships:
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from collections.abc import Sequence
+from functools import lru_cache
+from importlib.resources import files
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -74,10 +78,23 @@ class CourseHintMatch(BaseModel):
     candidates: tuple[ExamCourse, ...] = ()
 
 
+@lru_cache(maxsize=1)
 def load_exam_course_catalog() -> ExamCourseCatalog:
     """Load the committed snapshot once from the package directory."""
+    payload = files(__package__).joinpath("exam_course_catalog_data/catalog.json")
+    return ExamCourseCatalog.model_validate_json(payload.read_text(encoding="utf-8"))
 
-    raise NotImplementedError("TASK-SKRIPT-39-08-01 U1 implements the catalog loader")
+
+def _tokens(text: str) -> tuple[str, ...]:
+    normalized = "".join("-" if unicodedata.category(c) == "Pd" else c for c in text)
+    return tuple(re.findall(r"[^\W_]+", normalized.casefold()))
+
+
+def _outcome(courses: Sequence[ExamCourse]) -> CourseHintMatch:
+    ordered = tuple(sorted(courses, key=lambda course: course.key))
+    if len(ordered) == 1:
+        return CourseHintMatch(kind="unique", course=ordered[0])
+    return CourseHintMatch(kind="ambiguous" if ordered else "none", candidates=ordered)
 
 
 def match_course_hint(hint: str, courses: Sequence[ExamCourse]) -> CourseHintMatch:
@@ -88,4 +105,30 @@ def match_course_hint(hint: str, courses: Sequence[ExamCourse]) -> CourseHintMat
     or code. Several maximal matches are ``ambiguous``; no match is ``none``.
     """
 
-    raise NotImplementedError("TASK-SKRIPT-39-08-01 U1 implements the hint matcher")
+    hint_tokens = _tokens(hint)
+    if not hint_tokens:
+        return CourseHintMatch(kind="none")
+    exact: dict[str, ExamCourse] = {}
+    spans: list[tuple[int, int, ExamCourse]] = []
+    for course in courses:
+        for text in (course.name, course.code):
+            tokens = _tokens(text)
+            if not tokens:
+                continue
+            if tokens == hint_tokens:
+                exact[course.key] = course
+            for start in range(len(hint_tokens) - len(tokens) + 1):
+                end = start + len(tokens)
+                if hint_tokens[start:end] == tokens:
+                    spans.append((start, end, course))
+    if exact:
+        return _outcome(tuple(exact.values()))
+    maximal = {
+        course.key: course
+        for start, end, course in spans
+        if not any(
+            left <= start and end <= right and (left, right) != (start, end)
+            for left, right, _ in spans
+        )
+    }
+    return _outcome(tuple(maximal.values()))
