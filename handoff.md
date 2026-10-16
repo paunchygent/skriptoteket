@@ -62,14 +62,16 @@
     307/316 at 16 families; Exam.net 5339992; retained
     `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
   - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `ready` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
-    header lines become metadata. Next (Claude parent): implement on user
-    go-ahead. Story bar is best effort (A15).
+    `in_progress` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`,
+    worktree `Skriptoteket-task-skript-39-05-14`): all units reviewed and
+    integrated (`7eec5716`). New grouping prompt keeps Del 1/2/3 titles
+    (`evidence/regroup-2026-10-16b/`); build replays keep the old groupings
+    (user 2026-10-16). Next (Claude parent): staging walk with Exam.net import.
   - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
     `ready` 2026-10-16 (story `ready` D1-D22; retained
     `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
-    metadata drawer. Next (Claude parent): implement after 39-05-14, on user
-    go-ahead; plan story tasks 2-4.
+    metadata drawer. Owner: Claude on Hemma (tmux `st-39-08`, user go-ahead
+    2026-10-16): header-independent units first; header units after 39-05-14.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
