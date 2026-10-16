@@ -24,6 +24,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    preserve_native_scores,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeParagraph,
@@ -126,6 +129,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
         filename="bildprov.docx",
         source_sha256=hashlib.sha256(b"source").hexdigest(),
         chunks=(chunk,),
+        resolve_heading_score=preserve_native_scores,
         accepted=((converted, (chunk.anchor,)),),
         review_reasons={},
     )

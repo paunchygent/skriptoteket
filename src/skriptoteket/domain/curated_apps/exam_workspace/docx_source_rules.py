@@ -15,6 +15,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import validation_error
 
+QUESTION_HEADING_LABEL = re.compile(
+    r"^\s*(?:(?:Fråga|Question)\s+(\d{1,3})(?:\s*[.):\-])?|"
+    r"(\d{1,3})\s*[.)])(?:\s+|$)",
+    re.IGNORECASE,
+)
+
+
 _ANSWER_KEY_PHRASES = ("answer key", "key", "facit", "med facit", "with answers", "svar")
 _ANSWER_KEY_LABEL = "(?:" + "|".join(re.escape(phrase) for phrase in _ANSWER_KEY_PHRASES) + ")"
 _ANSWER_KEY_PREFIX = re.compile(
@@ -205,10 +212,11 @@ def with_accepted_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> Pro
     return item.model_copy(update={"body": tuple(body)})
 
 
-# A printed point label: "(2 p)", "(1 point)" or "Total: 38 poäng".
+# A number and a complete points-unit token, optionally ending in one period.
+# Whitespace, punctuation other than a period, or end of text must end the token.
 POINT_LABEL = re.compile(
-    r"\(\s*\d+(?:[.,]\d+)?\s*(?:p|poäng|points?|pts?)\.?\s*\)"
-    r"|\b\d+(?:[.,]\d+)?\s*(?:poäng|points?)\b",
+    r"(?:\(\s*)?\b\d+(?:[.,]\d+)?\s*(?:poäng|points?|pts?|p)"
+    r"\.?(?=$|[^\w.])(?:\s*\))?",
     re.IGNORECASE,
 )
 _WORD = re.compile(r"\w+")

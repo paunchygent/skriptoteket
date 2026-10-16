@@ -75,11 +75,14 @@ GROUPING_INSTRUCTIONS = (
     "question it belongs to. A shared chunk never also appears in a question's "
     "anchors.\n"
     "- title_anchors: the exam title.\n"
-    '- header_anchors: the course line (e.g. "Svenska 2"), the exam total line '
-    '(e.g. "Total: 36 poäng") and each part total line (e.g. "Poäng: 15 poäng" '
-    "above or below one part). Each entry gives its anchor, kind (course, exam_total "
-    "or part_total), and governs. A part total lists the question ids of its part in "
-    "governs; course and exam total give an empty governs.\n"
+    "- header_anchors: lines whose whole content is metadata: the course name or a "
+    'total. For example, "Poäng: 15 poäng" is header metadata; '
+    '"Del 1: litteraturhistoria, 15 poäng" also carries heading words and is structure, '
+    "not a header anchor. A heading opens its question, or is a section_instruction "
+    "over several questions; its points are that question's or part's printed points. "
+    "Each header entry gives its anchor, kind (course, exam_total or part_total), and "
+    "governs. A part total lists the question ids of its part in governs; course and "
+    "exam total give an empty governs.\n"
     "- Other metadata lines, such as name and date lines, are shared_contexts with "
     'scope exam_metadata and owner "exam". Course and totals go to header_anchors.\n'
     "- Every input anchor appears exactly once across questions[].anchors, "

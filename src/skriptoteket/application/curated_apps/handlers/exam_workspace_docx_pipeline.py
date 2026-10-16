@@ -78,9 +78,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     pack_batches,
     question_families,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_header import apply_header
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     question_source_anchors,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    assign_question_headings,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     retry_sources_by_anchor,
@@ -187,7 +191,9 @@ class DocxConversionPipeline:
         for usage in grouping.usage:
             run.state.record_usage(usage)
         run.timed("grouping", started)
-        manifest = grouping.manifest
+        manifest = assign_question_headings(grouping.manifest, job.chunks)
+        run.manifest = manifest
+        run.state.header_anchors = frozenset(h.anchor for h in manifest.header)
         run.families = question_families(manifest, job.chunks)
         run.title_anchors = frozenset(manifest.title_anchors)
         run.context_anchors = frozenset(context.anchor for context in manifest.contexts)
@@ -420,6 +426,8 @@ class DocxConversionPipeline:
             chunks=run.job.chunks,
             assets_by_id=provisional.assets_by_id,
         )
+        if run.manifest is not None:
+            document = apply_header(document, run.manifest, run.job.chunks)
         provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
         update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
         run.state = trial
@@ -450,6 +458,8 @@ class DocxConversionPipeline:
             chunks=run.job.chunks,
             assets_by_id=result.assets_by_id,
         )
+        if manifest is not None:
+            document = apply_header(document, manifest, run.job.chunks)
         update = conversion_update(
             document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
         )

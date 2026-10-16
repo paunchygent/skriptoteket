@@ -19,11 +19,11 @@ from collections.abc import Mapping
 from types import MappingProxyType
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    asset_manifest,
     missing_picture_reasons,
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
+from skriptoteket.domain.curated_apps.exam_workspace.docx_build_assets import asset_manifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxImage,
