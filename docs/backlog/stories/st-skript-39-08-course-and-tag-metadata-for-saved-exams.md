@@ -77,7 +77,8 @@ filer page (TASK-SKRIPT-37-05-04).
 ## Tasks
 
 1. TASK-SKRIPT-39-08-01: course list, import dropdown and document metadata
-   drawer for course, exam title and Mina filer name (ready).
+   drawer for course, exam title and Mina filer name (in_progress, merged
+   into main `255eef88`, staging walk passed, user closure gate next).
 2. TASK-SKRIPT-39-08-02: own courses in the profile and the course dropdown
    default (ready).
 3. TASK-SKRIPT-39-08-03: central-content tags suggested by a Decisions
