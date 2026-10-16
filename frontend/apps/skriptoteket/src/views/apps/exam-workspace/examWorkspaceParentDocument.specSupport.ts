@@ -112,7 +112,8 @@ export function buildParentDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [buildRecordedParent()],
     revision: 1,
-    schema_version: "native_exam_document_v2",
+    header: {},
+    schema_version: "native_exam_document_v3",
     title: "English 1",
   };
 }

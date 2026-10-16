@@ -48,6 +48,7 @@ import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQu
 import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
 import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
 import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
+import ExamWorkspaceTotalSignal from "./exam-workspace/ExamWorkspaceTotalSignal.vue";
 import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
@@ -297,6 +298,7 @@ async function handleSave(): Promise<void> {
             >
               {{ workspaceDocument.title || summary.name }}
             </span>
+            <ExamWorkspaceTotalSignal :document="workspaceDocument" />
             <span
               class="shrink-0 text-xs leading-snug text-navy/65"
               data-test="exam-workspace-summary-version"

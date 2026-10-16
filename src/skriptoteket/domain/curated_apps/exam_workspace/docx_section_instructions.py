@@ -11,8 +11,8 @@ same pass (``docx_instruction_runs``): over one question a heading opens its bod
 over two or more consecutive questions it opens their parent's instruction (T1, T2).
 """
 
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
@@ -27,6 +27,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
     reaches,
     with_heading_runs,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
+    ExamManifest,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
+    QUESTION_HEADING_LABEL,
+    printed_points,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
 )
@@ -36,6 +44,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
     body_plain_text,
@@ -43,7 +54,51 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     source_paragraphs,
 )
 
-__all__ = ["Placed", "SectionInstructions", "place_section_instructions"]
+
+def assign_question_headings(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
+    """Move numbered/pointed single-question headings into that question before batching."""
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    moved: dict[str, str] = {}
+    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    for context in manifest.contexts:
+        chunk = by_anchor[context.anchor]
+        if (
+            chunk.kind == "heading"
+            and len(context.governs) == 1
+            and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+        ):
+            moved[context.anchor] = context.governs[0]
+    if not moved:
+        return manifest
+    questions = tuple(
+        replace(
+            question,
+            anchors=tuple(
+                sorted(
+                    (
+                        *question.anchors,
+                        *(a for a, owner in moved.items() if owner == question.question_id),
+                    ),
+                    key=positions.__getitem__,
+                )
+            ),
+        )
+        for question in manifest.questions
+    )
+    return replace(
+        manifest,
+        questions=questions,
+        contexts=tuple(c for c in manifest.contexts if c.anchor not in moved),
+        unplaced_anchors=tuple(a for a in manifest.unplaced_anchors if a not in moved),
+    )
+
+
+__all__ = [
+    "Placed",
+    "SectionInstructions",
+    "place_section_instructions",
+    "assign_question_headings",
+]
 
 
 @dataclass(frozen=True)
@@ -57,6 +112,39 @@ class SectionInstructions:
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
     landed: Mapping[int, frozenset[str]]
+
+
+HeadingScoreResolver = Callable[[NativeExamItem, DocxChunk], NativeExamItem]
+
+
+def preserve_native_scores(item: NativeExamItem, heading: DocxChunk) -> NativeExamItem:
+    """Without producer provenance, keep the coherent native score and flag a mismatch.
+
+    Estimation describes how scoring was derived, not whether its total is replaceable.
+    Only the producer-aware build resolver can supply missing printed points.
+    """
+    return with_heading_points_review(item, printed_points((heading,)), item.points)
+
+
+def with_heading_points_review(
+    item: NativeExamItem, points: int | float | None, stated: int | float | None
+) -> NativeExamItem:
+    """Report disagreement with the authoritative score without changing its derivation."""
+    if points is None or stated == points:
+        return item
+    reason = f"Rubriken anger {points} poäng; AI-tolkningen anger {stated} poäng."
+    if reason and reason not in item.review.reasons:
+        item = item.model_copy(
+            update={
+                "review": item.review.model_copy(
+                    update={
+                        "state": NativeItemReviewState.REVIEW_REQUIRED,
+                        "reasons": (*item.review.reasons, reason),
+                    }
+                )
+            }
+        )
+    return item
 
 
 def _lines(text: str) -> list[str]:
@@ -188,6 +276,8 @@ def place_section_instructions(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
+    *,
+    resolve_heading_score: HeadingScoreResolver,
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
 
@@ -199,11 +289,13 @@ def place_section_instructions(
     opens the items of its run, which ends at the next section heading (a heading no item
     owns, other than a lead-in label) or at the next instruction printed after one of the
     run's items. Points lines are structure and are never instruction text, except in a
-    chunk the grouping marks as governing, which keeps its whole text (D40). A printed
+    non-heading chunk the grouping marks as governing, which keeps its whole text (D40).
+    A printed
     heading is a run starting at the heading under the same section rule: over one question
     it opens its body, and over two or more consecutive questions it is the first line of
     their parent's instruction, ahead of the run's other instruction lines in source order
-    (T1, T2). A heading whose run cannot form or join a parent opens the body of the run's
+    (T1, T2). Heading points become the parent's printed total, never instruction words.
+    A heading whose run cannot form or join a parent opens the body of the run's
     first question, so its wording stays student-visible.
     The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
@@ -256,6 +348,15 @@ def place_section_instructions(
             carried.setdefault(k, []).extend(source_paragraphs(run.sources))
     items: list[NativeExamItem] = []
     for k, (_, _, item) in enumerate(ordered):
+        for run in reached:
+            if run.heading and run.reach == (k,):
+                heading = chunks[run.start]
+                item = resolve_heading_score(item, heading)
+                label = run.question_label
+                if label:
+                    item = item.model_copy(
+                        update={"printed_label": label.group(1) or label.group(2)}
+                    )
         delivered = list(item.body)
         item = _with_joined(item, joined.get(k, []), delivered)
         item = _with_paragraphs(item, carried.get(k, []), delivered)
@@ -264,6 +365,14 @@ def place_section_instructions(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
             instruction=_parent_instruction(group),
+            printed_total=next(
+                (
+                    run.printed_total
+                    for run in group
+                    if run.heading and run.printed_total is not None
+                ),
+                None,
+            ),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )
         for number, group in enumerate(groups, start=1)

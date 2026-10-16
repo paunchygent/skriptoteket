@@ -112,7 +112,7 @@ _GROUPING: dict[str, JsonValue] = {
     "title_anchors": ["body:0001"],
     "questions": [_question("q1", 3), _question("q2", 4)],
     "shared_contexts": [],
-    "other_anchors": [],
+    "header_anchors": [],
 }
 
 

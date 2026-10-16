@@ -320,23 +320,5 @@
       ]
     }
   ],
-  "other_anchors": [
-    "body:0003",
-    "body:0004",
-    "body:0006",
-    "body:0008",
-    "body:0055",
-    "body:0059",
-    "body:0064",
-    "body:0070",
-    "body:0076",
-    "body:0079",
-    "body:0085",
-    "body:0087",
-    "body:0091",
-    "body:0096",
-    "body:0102",
-    "body:0108",
-    "body:0114"
-  ]
+  "header_anchors": []
 }

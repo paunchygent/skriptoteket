@@ -58,6 +58,7 @@ def build_examnet_qti_package_plan(
     package_name: str,
     items: tuple[ExamNetQtiItem, ...],
     assessment_title: str | None = None,
+    course_hint: str | None = None,
 ) -> ExamNetQtiPackagePlan:
     """Build a deterministic QTI package plan for the supplied items.
 
@@ -93,13 +94,14 @@ def build_examnet_qti_package_plan(
         )
         image_files_by_item_id[item.item_id] = image_files
 
-    assessment_file = _assessment_test_file(
-        title=(assessment_title or "").strip() or package_name, items=ordered_items
-    )
+    title = assessment_title if assessment_title and assessment_title.strip() else package_name
+    assessment_file = _assessment_test_file(title=title, items=ordered_items)
     manifest = _package_file(
         relative_path="imsmanifest.xml",
         content_type="application/xml",
         payload=serialize_qti_manifest(
+            title=title,
+            course_hint=course_hint,
             item_files=tuple(item_files),
             image_files_by_item_id=image_files_by_item_id,
         ),

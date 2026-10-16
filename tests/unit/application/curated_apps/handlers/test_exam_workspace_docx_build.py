@@ -108,6 +108,9 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wa
     directory = tmp_path / exam
     directory.mkdir()
     (directory / f"{name}.json").write_bytes((RECORDINGS / exam / f"{name}.json").read_bytes())
+    (directory / "docx_grouping_1.json").write_bytes(
+        (RECORDINGS / exam / "docx_grouping_1.json").read_bytes()
+    )
     provider = ReplayProvider(exam, root=tmp_path)
     profile = StructuredLLMProviderProfile(
         "replay", "replay", StructuredLLMEndpointKind.RESPONSES, False, 4096, 1024
@@ -138,6 +141,26 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wa
     with pytest.raises(MissingRecording, match="no unused batch reply"):
         await provider.complete_structured(request=request, profile=profile)
     assert provider.served == [(request.item_id, name)]
+
+    # A pre-change build may cite a header omitted from the current conversion batch.
+    grouping = recording(exam, "docx_grouping_1", tmp_path)
+    grouping["header_anchors"] = [
+        {"anchor": "recorded_header", "kind": "exam_total", "governs": []}
+    ]
+    (directory / "docx_grouping_1.json").write_text(json.dumps(grouping))
+    reply = recording(exam, name, tmp_path)
+    reply["answer_key_anchors"] = [*_list(reply["answer_key_anchors"]), "recorded_header"]
+    (directory / f"{name}.json").write_text(json.dumps(reply))
+    header_provider = ReplayProvider(exam, root=tmp_path)
+    response = await header_provider.complete_structured(request=request, profile=profile)
+    assert response.content == reply
+    # The exception is only for recorded headers, not arbitrary unseen source anchors.
+    reply["answer_key_anchors"] = [*_list(reply["answer_key_anchors"]), "unseen_non_header"]
+    (directory / f"{name}.json").write_text(json.dumps(reply))
+    with pytest.raises(MissingRecording, match="no unused batch reply"):
+        await ReplayProvider(exam, root=tmp_path).complete_structured(
+            request=request, profile=profile
+        )
 
 
 @pytest.mark.parametrize("exam", recorded_exams())

@@ -1,12 +1,12 @@
 """Map produced items to the native contract and assemble the build result."""
 
-import hashlib
 import re
 from collections.abc import Callable, Iterable, Mapping
 from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_workspace import docx_build_assets
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -20,7 +20,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
-    DocxImage,
     DocxMissingImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
@@ -31,6 +30,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     return_misplaced_own_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    HeadingScoreResolver,
     SectionInstructions,
     place_section_instructions,
 )
@@ -52,7 +52,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
     NativeExamCriterion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
@@ -77,7 +76,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    body_asset_ids,
     source_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
@@ -338,6 +336,8 @@ def _ordered_items(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
+    *,
+    resolve_heading_score: HeadingScoreResolver,
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -352,53 +352,14 @@ def _ordered_items(
     )
     ordered.sort(key=lambda entry: entry[0])
     return place_section_instructions(
-        chunks, ordered, instructions, governed, title_anchors, own_anchors
+        chunks,
+        ordered,
+        instructions,
+        governed,
+        title_anchors,
+        own_anchors,
+        resolve_heading_score=resolve_heading_score,
     )
-
-
-def asset_manifest(
-    items: Iterable[NativeExamItem],
-    chunks: Iterable[DocxChunk],
-    *,
-    shared_bodies: Iterable[tuple[NativeParagraph, ...]] = (),
-) -> tuple[tuple[NativeExamAsset, ...], Mapping[str, bytes]]:
-    """The pictures the document references: native metadata and payloads, in asset-id order.
-
-    Every picture an item's student body references, every picture a shared instruction
-    body places at its source position (a parent or the document-global instruction), and
-    every picture an item's stored retry source keeps (facit and read-only context
-    included) is carried, because the native contract rejects an orphan asset; the QTI
-    export reads the body references only, so a source-only picture never reaches a
-    student. The container requires payloads to match the document's asset list exactly.
-    """
-    images: dict[str, DocxImage] = {}
-    for chunk in chunks:
-        for image in chunk.images:
-            images.setdefault(image.asset_id, image)
-    referenced = sorted(
-        {
-            asset_id
-            for item in items
-            for asset_id in (*item.body_asset_ids(), *item.source_asset_ids())
-        }
-        | {asset_id for body in shared_bodies for asset_id in body_asset_ids(body)}
-    )
-    missing = [asset_id for asset_id in referenced if asset_id not in images]
-    if missing:
-        raise ValueError(f"items reference unknown source pictures: {', '.join(missing)}")
-    assets = tuple(
-        NativeExamAsset(
-            asset_id=asset_id,
-            sha256=hashlib.sha256(images[asset_id].payload).hexdigest(),
-            media_type=images[asset_id].media_type,
-            byte_length=len(images[asset_id].payload),
-            width=images[asset_id].width,
-            height=images[asset_id].height,
-        )
-        for asset_id in referenced
-    )
-    payloads = {asset_id: images[asset_id].payload for asset_id in referenced}
-    return assets, MappingProxyType(payloads)
 
 
 def assemble_build_result(
@@ -407,6 +368,7 @@ def assemble_build_result(
     filename: str,
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
+    resolve_heading_score: HeadingScoreResolver,
     accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...] = (),
     review_reasons: dict[str, str],
     key_anchors: frozenset[str] = frozenset(),
@@ -437,7 +399,14 @@ def assemble_build_result(
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
     placed = _ordered_items(
-        chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
+        chunks,
+        accepted,
+        review_reasons,
+        instructions,
+        governed,
+        title_anchors,
+        own_anchors,
+        resolve_heading_score=resolve_heading_score,
     )
     while returned := return_misplaced_own_chunks(
         chunks, accepted, instructions, placed.landed, questions, governed
@@ -445,7 +414,14 @@ def assemble_build_result(
         accepted, instructions = returned.accepted, returned.instructions
         events = (*events, *returned.events)
         placed = _ordered_items(
-            chunks, accepted, review_reasons, instructions, governed, title_anchors, own_anchors
+            chunks,
+            accepted,
+            review_reasons,
+            instructions,
+            governed,
+            title_anchors,
+            own_anchors,
+            resolve_heading_score=resolve_heading_score,
         )
     items = placed.items
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
@@ -459,7 +435,9 @@ def assemble_build_result(
         *(parent.instruction for parent in placed.parents),
         global_instructions,
     )
-    assets, assets_by_id = asset_manifest(items, chunks, shared_bodies=shared_bodies)
+    assets, assets_by_id = docx_build_assets.asset_manifest(
+        items, chunks, shared_bodies=shared_bodies
+    )
     # Document-level notes only: each item shows its own reasons (D8).
     notes = [chunk.text for chunk in chunks if chunk.anchor in key_anchors]
     if title is not None:

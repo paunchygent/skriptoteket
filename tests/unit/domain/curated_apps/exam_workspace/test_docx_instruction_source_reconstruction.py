@@ -35,6 +35,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    preserve_native_scores,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeSegment,
@@ -151,6 +154,7 @@ def test_full_assembly_keeps_a_rewritten_multi_anchor_instruction_source_backed(
         filename="instructions.docx",
         source_sha256="a" * 64,
         chunks=(question, bold, italic, heading),
+        resolve_heading_score=preserve_native_scores,
         accepted=((_converted("body:0000", "Answer this question."), ("body:0000",)),),
         review_reasons={},
         instructions=(instruction,),
@@ -178,6 +182,7 @@ def test_full_assembly_reconstructs_a_reversed_anchor_list_in_source_order() -> 
         filename="instructions.docx",
         source_sha256="a" * 64,
         chunks=(question, bold, italic, heading),
+        resolve_heading_score=preserve_native_scores,
         accepted=((_converted("body:0000", "Answer this question."), ("body:0000",)),),
         review_reasons={},
         instructions=(instruction,),

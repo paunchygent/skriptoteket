@@ -19,6 +19,9 @@ from docx import Document
 from docx.document import Document as DocxDocument
 from docx.opc.exceptions import PackageNotFoundError
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
+    exam_export_header_lines,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     ExamLanguageLabels,
     exam_language_labels,
@@ -90,7 +93,10 @@ class ExamWorkspaceDocxWriter:
     ) -> bytes:
         labels = exam_language_labels(document)
         output = Document()
-        output.add_heading(document.title, level=1)
+        title, *header_details = exam_export_header_lines(document)
+        output.add_heading(title, level=1)
+        for line in header_details:
+            output.add_paragraph(line)
         _write_shared_body(output, document.instructions, assets_by_id=assets_by_id)
 
         for item in document.items:

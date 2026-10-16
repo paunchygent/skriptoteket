@@ -17,8 +17,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Pr
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
+    QUESTION_HEADING_LABEL,
     defined_terms,
     points_line,
+    printed_points,
     uses_term,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
@@ -32,7 +34,6 @@ Placed = tuple[int, tuple[str, ...], NativeExamItem]
 _NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
 # A question line that opens with quoted material, after any list label.
 _OPENS_WITH_QUOTE = re.compile(r"^\s*(?:\w{1,3}[.)]\s*)?[\"“‘«„]")
-_NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)](?:\s+|$)")
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,8 @@ class Run:
     heading: bool = False
     only: int | None = None
     raw: str = ""
+    printed_total: int | float | None = None
+    question_label: re.Match[str] | None = None
 
 
 @dataclass(frozen=True)
@@ -132,10 +135,12 @@ def heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
     and points leaves nothing. A numbered question line set in a heading style, such
     as "Fråga 6. Ange …", leaves its stem, which the item already prints.
     """
-    return _heading_content(chunk, item)[0]
+    return _heading_content(chunk, item, QUESTION_HEADING_LABEL.match(chunk.text))[0]
 
 
-def _heading_content(chunk: DocxChunk, item: NativeExamItem | None) -> tuple[str, tuple[int, ...]]:
+def _heading_content(
+    chunk: DocxChunk, item: NativeExamItem | None, question_label: re.Match[str] | None
+) -> tuple[str, tuple[int, ...]]:
     """Normalize heading wording while retaining each shown character's source index.
 
     Deleted labels consume no shown characters. A picture in deleted wording therefore
@@ -155,12 +160,16 @@ def _heading_content(chunk: DocxChunk, item: NativeExamItem | None) -> tuple[str
         normalized.extend(origins[word.start() : word.end()])
     text = " ".join(word.group() for word in words)
     label = (item.printed_label or "") if item is not None else ""
-    if label and text.casefold().startswith(label.casefold()):
+    if question_label is not None:
+        # The same source parse supplies the eventual item's label. Source indices
+        # survive points deletion and whitespace normalization above.
+        prefix = sum(origin < question_label.end() for origin in normalized)
+    elif label and text.casefold().startswith(label.casefold()):
+        # A producer may label a non-numbered question, for example a lettered subpart.
         prefix = len(label)
         prefix += len(text[prefix:]) - len(text[prefix:].lstrip(" .):-"))
     else:
-        numbered = _NUMBERED_LINE.match(text)
-        prefix = numbered.end() if numbered else 0
+        prefix = 0
     text = text[prefix:]
     normalized = normalized[prefix:]
     left = len(text) - len(text.lstrip())
@@ -258,7 +267,7 @@ def with_heading_runs(
         if (
             chunk.kind != "heading"
             or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
-            or at == 0
+            or (at == 0 and chunk.anchor not in owner and chunk.anchor not in governed)
             or chunk.anchor in title_anchors
         ):
             continue
@@ -281,15 +290,18 @@ def with_heading_runs(
                 heading=True,
                 only=only,
                 raw=chunk.text,
+                question_label=QUESTION_HEADING_LABEL.match(chunk.text),
             )
         )
     shape = SectionShape(boundaries, labels, frozenset(r.sources[0].anchor for r in headings))
     return [*runs, *headings], shape
 
 
-def _shown_heading(chunk: DocxChunk, item: NativeExamItem | None) -> DocxChunk:
+def _shown_heading(
+    chunk: DocxChunk, item: NativeExamItem | None, question_label: re.Match[str] | None
+) -> DocxChunk:
     """Place every picture through the same deterministic deletion as heading text."""
-    text, origins = _heading_content(chunk, item)
+    text, origins = _heading_content(chunk, item, question_label)
     if text == chunk.text:
         return chunk
 
@@ -382,26 +394,27 @@ def reaches(
                 else _span(run, ordered, shape.boundaries, starts, chunks)
             )
             chunk = run.sources[0]
-            # A chunk the grouping marks as governing keeps its whole text (D40).
-            shown = (
-                chunk
-                if run.governs
-                else _shown_heading(chunk, ordered[reach[0]][2] if len(reach) == 1 else None)
+            # D2 splits every heading the same way, whether it opens one question
+            # or governs a parent: only its wording is displayed.
+            shown = _shown_heading(
+                chunk, ordered[reach[0]][2] if len(reach) == 1 else None, run.question_label
             )
-            if not reach or not (shown.text or shown.images or shown.missing_images):
+            if not reach:
                 reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))
                 continue
             reached.append(
                 Run(
                     run.origin,
                     run.start,
-                    (shown,),
+                    (shown,) if shown.text or shown.images or shown.missing_images else (),
                     reach,
                     reach,
                     run.governs,
                     heading=True,
                     only=run.only,
                     raw=run.raw,
+                    printed_total=printed_points((chunk,)),
+                    question_label=run.question_label,
                 )
             )
             continue
@@ -469,7 +482,7 @@ def parent_groups(reached: list[Run]) -> list[list[Run]]:
         candidates.items(), key=lambda entry: (all(run.heading for run in entry[1]), entry[0])
     )
     for span, group in ordered_candidates:
-        if not taken.intersection(span):
+        if any(run.sources for run in group) and not taken.intersection(span):
             taken.update(span)
             groups.append(group)
     groups.sort(key=lambda group: group[0].reach)
