@@ -62,12 +62,14 @@
     307/316 at 16 families; Exam.net 5339992; retained
     `01a141b5-f55d-747d-8515-1e07d2fc0d0f` `evidence/staging-walk/walk.md`.
   - [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-    `ready` 2026-10-16 (plan D1-D12 closed in retained
-    `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`): header lines become document
-    metadata, totals checked, numbered headings open their question.
-    Next (owner Claude parent): implementation on user go-ahead. Story bar is
-    now best effort (A15); ST-SKRIPT-39-08 holds the course-picker inputs and
-    its first task follows this one.
+    `ready` 2026-10-16 (retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`):
+    header lines become metadata. Next (Claude parent): implement on user
+    go-ahead. Story bar is best effort (A15).
+  - [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
+    `ready` 2026-10-16 (story `ready` D1-D22; retained
+    `01a1451f-5c45-71ed-b425-1cda7bf79a02`): course list, import dropdown,
+    metadata drawer. Next (Claude parent): implement after 39-05-14, on user
+    go-ahead; plan story tasks 2-4.
 
 - [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
   `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
@@ -120,7 +122,6 @@
   `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
   waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
   39-04-08 (scaffold: Mina filer exports, pruning); 39-05-08 is done.
-  ST-SKRIPT-39-08 (metadata) is scaffolded.
   EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
   becomes a secondary input mode of the workspace.
 

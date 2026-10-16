@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1f5b32c5b3b82335044386350ff6ff41d2a57426a2f96f17ad1e1ef33519de6e",
+  "source_set_digest": "f66b44745f59f41d5c2882b105ebb597a69c106b4cdff6dc88846e9c9eb1d81a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2348,7 +2348,7 @@
       "type": "story",
       "title": "Course and tag metadata for saved exams",
       "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -5230,7 +5230,7 @@
       "type": "task",
       "title": "Course picker at import and exam metadata drawer for course, title and file name",
       "path": "docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
