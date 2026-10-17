@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f079c46af4e5caa44c1427453b7b34752dd6228e7561bfebda31449117ed491d",
+  "source_set_digest": "b498845f54a3a0923f138bcb58b708b97b3134afbd10e4ff0617a82d5bae0398",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5480,7 +5480,7 @@
       "type": "task",
       "title": "Own courses in the profile and the course dropdown default",
       "path": "docs/backlog/tasks/task-skript-39-08-02-own-courses-in-the-profile-and-the-course-dropdown-default.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5491,7 +5491,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approvals for the task and its U-1/U-2 repairs, including rereviews 09754cfb and a8b301a2 (U-1 rounds 3 and 4), merged to main 02e6676c by the Hemma lead. The Mac parent re-walked staging in retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd: U-2 on fdc2973b (evidence/staging-rewalk-fdc2973b/) and the two-tab CSRF recovery on 02e6676c (evidence/staging-rewalk-02e6676c/): a write in either tab after the other renews the token gets 403, refreshes and retries to 200 without a reload. The parent authorized closure."
       }
     },
     {
