@@ -16,7 +16,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel">
     <div class="p-4 space-y-4">
       <div class="space-y-1">
         <h2 class="text-lg font-semibold text-navy">Klass</h2>
@@ -36,7 +36,7 @@ const emit = defineEmits<{
             v-model.number="form.studentCount"
             type="number"
             min="1"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
         </div>
 
@@ -50,7 +50,7 @@ const emit = defineEmits<{
             v-model.number="form.studentsPerGroup"
             type="number"
             min="1"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
         </div>
 
@@ -63,7 +63,7 @@ const emit = defineEmits<{
             id="rpc-vol-group"
             v-model="form.volPerGroupMl"
             inputmode="decimal"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
         </div>
 
@@ -76,13 +76,13 @@ const emit = defineEmits<{
             id="rpc-safety-factor"
             v-model="form.safetyFactor"
             inputmode="decimal"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
           <p class="text-xs text-navy/60">Ex: 0,10 = 10% extra.</p>
         </div>
       </div>
 
-      <div class="p-3 border border-navy bg-canvas shadow-none text-sm text-navy/80 space-y-1">
+      <div class="p-3 rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-canvas text-sm text-navy/80 space-y-1">
         <p class="font-semibold text-navy">Snabb översikt</p>
         <p v-if="props.derivedGroups !== null">
           Grupper: <span class="font-mono">{{ props.derivedGroups }}</span>

@@ -2,8 +2,8 @@
  * Transcript formatter export panel specs.
  *
  * Domain purpose:
- *   Prove the saved transcript export controls keep selector state visually
- *   separate from neutral download and Mina filer command buttons.
+ *   Prove format selection reaches export commands and unavailable or running
+ *   artifacts cannot trigger download or save work.
  *
  * Relationships:
  *   - Exercises `TranscriptFormatterExportPanel.vue` as the DOM boundary.
@@ -51,32 +51,49 @@ function mountPanel(
 }
 
 describe("TranscriptFormatterExportPanel", () => {
-  it("keeps selected format styling separate from neutral command buttons", async () => {
-    const wrapper = mountPanel();
+  it("sends the selected format to both commands after keyboard selection", async () => {
+    const wrapper = mountPanel({ canRequest: true });
+    const txt = wrapper.get("[data-test='transcript-format-option-txt']");
+    const md = wrapper.get("[data-test='transcript-format-option-md']");
 
-    const selectedTxt = wrapper.get("[data-test='transcript-format-option-txt']");
+    expect(txt.attributes("aria-checked")).toBe("true");
+    await txt.trigger("keydown", { key: "ArrowRight" });
+    expect(md.attributes("aria-checked")).toBe("true");
+    expect(txt.attributes("aria-checked")).toBe("false");
+
+    await wrapper.get("[data-test='transcript-download-selected-format']").trigger("click");
+    await wrapper.get("[data-test='transcript-save-selected-format']").trigger("click");
+
+    expect(wrapper.emitted("downloadFormatterArtifact")).toEqual([["md"]]);
+    expect(wrapper.emitted("saveFormatterArtifact")).toEqual([["md"]]);
+  });
+
+  it("blocks unavailable formats and running artifact actions without emitting work", async () => {
+    const wrapper = mountPanel();
     const download = wrapper.get("[data-test='transcript-download-selected-format']");
     const save = wrapper.get("[data-test='transcript-save-selected-format']");
 
-    expect(selectedTxt.attributes("aria-pressed")).toBe("true");
-    expect(selectedTxt.classes()).toContain("bg-navy");
-    expect(selectedTxt.classes()).toContain("text-canvas");
-
-    for (const command of [download, save]) {
-      expect(command.classes()).not.toContain("btn-cta");
-      expect(command.classes()).not.toContain("bg-navy");
-      expect(command.classes()).not.toContain("text-canvas");
-      expect(command.classes()).toContain("bg-panel");
-      expect(command.classes()).toContain("text-navy");
-    }
-
     await wrapper.get("[data-test='transcript-format-option-md']").trigger("click");
+    expect(download.attributes("disabled")).toBe("");
+    expect(save.attributes("disabled")).toBe("");
+    await download.trigger("click");
+    await save.trigger("click");
 
-    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).toContain(
-      "bg-navy",
-    );
-    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).toContain(
-      "text-canvas",
-    );
+    await wrapper.get("[data-test='transcript-format-option-txt']").trigger("click");
+    expect(download.attributes("disabled")).toBeUndefined();
+    expect(save.attributes("disabled")).toBeUndefined();
+
+    await wrapper.setProps({
+      canRequest: true,
+      actionStates: {
+        transcript_txt: { download: "running", save: "idle", savedFilename: null },
+      },
+    });
+    expect(download.attributes("disabled")).toBe("");
+    expect(save.attributes("disabled")).toBe("");
+    await download.trigger("click");
+    await save.trigger("click");
+    expect(wrapper.emitted("downloadFormatterArtifact")).toBeUndefined();
+    expect(wrapper.emitted("saveFormatterArtifact")).toBeUndefined();
   });
 });

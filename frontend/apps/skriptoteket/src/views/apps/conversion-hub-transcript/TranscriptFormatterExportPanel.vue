@@ -22,7 +22,7 @@ import {
   formatterArtifactActionState,
   type FormatterArtifactActionStates,
 } from "./transcriptFormatterArtifactActions";
-import { TRANSCRIPT_COMMAND_BUTTON_CLASS } from "./transcriptCommandButtonClasses";
+import { UiSegmentedToggle } from "../../../components/ui";
 
 type TranscriptFormatterRequestedArtifact =
   ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
@@ -106,33 +106,25 @@ function stateMessage(): string {
     class="grid min-w-0 gap-3 border-t border-navy/15 pt-4"
     aria-label="Exportera transkript"
   >
-    <div
-      class="grid min-w-0 grid-cols-4 border border-navy/25"
+    <UiSegmentedToggle
+      :model-value="selectedFormat"
+      :options="FORMAT_OPTIONS.map((format) => ({
+        value: format,
+        label: formatLabel(format),
+        dataTest: `transcript-format-option-${format}`,
+      }))"
       aria-label="Välj format"
+      variant="subrail"
+      width="full"
+      :columns="4"
       data-test="transcript-format-selector"
-    >
-      <button
-        v-for="format in FORMAT_OPTIONS"
-        :key="format"
-        type="button"
-        class="h-9 border-r border-navy/25 text-xs font-black transition last:border-r-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-action"
-        :class="
-          selectedFormat === format
-            ? 'bg-navy text-canvas hover:bg-navy'
-            : 'bg-panel text-navy hover:bg-action/10'
-        "
-        :aria-pressed="selectedFormat === format"
-        :data-test="`transcript-format-option-${format}`"
-        @click="selectedFormat = format"
-      >
-        {{ formatLabel(format) }}
-      </button>
-    </div>
+      @update:model-value="selectedFormat = $event as TranscriptFormatterRequestedArtifact"
+    />
 
     <div class="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
       <button
         type="button"
-        :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
+        class="btn-ghost"
         :disabled="!selectedActionEnabled"
         data-test="transcript-download-selected-format"
         @click="emit('downloadFormatterArtifact', selectedFormat)"
@@ -145,7 +137,7 @@ function stateMessage(): string {
       </button>
       <button
         type="button"
-        :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
+        class="btn-ghost"
         :disabled="!selectedActionEnabled"
         data-test="transcript-save-selected-format"
         @click="emit('saveFormatterArtifact', selectedFormat)"

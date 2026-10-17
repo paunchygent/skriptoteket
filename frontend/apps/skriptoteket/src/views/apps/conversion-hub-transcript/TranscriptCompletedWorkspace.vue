@@ -13,6 +13,8 @@
 
 import { Check } from "lucide-vue-next";
 
+import { UiDenseActionButton } from "../../../components/ui";
+
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
   ConversionHubTranscriptFormatterExportStatus,
@@ -21,6 +23,7 @@ import type { ConversionHubTranscriptSpeakerOverlayEntry } from "../../../api/co
 import type { TranscriptJson } from "../../../api/sirConvertGateway";
 import TranscriptFormatterExportPanel from "./TranscriptFormatterExportPanel.vue";
 import type { FormatterArtifactActionStates } from "./transcriptFormatterArtifactActions";
+import { speakerOverlayEntriesCoverTranscript } from "./transcriptSpeakerOverlayCoverage";
 
 type TranscriptFormatterRequestedArtifact =
   ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
@@ -84,19 +87,6 @@ function speakerInitial(
   return (displayName[0] ?? label[0] ?? "?").toLocaleUpperCase("sv-SE");
 }
 
-function speakerOverlayCoverageComplete(
-  entries: readonly ConversionHubTranscriptSpeakerOverlayEntry[],
-  labels: readonly string[],
-): boolean {
-  if (labels.length === 0) return false;
-  const namedLabels = new Set(
-    entries
-      .filter((entry) => entry.display_name.trim().length > 0)
-      .map((entry) => entry.canonical_speaker_label),
-  );
-  return labels.every((label) => namedLabels.has(label));
-}
-
 function formatTimestamp(seconds: number): string {
   const rounded = Math.max(0, Math.floor(seconds));
   const minutes = Math.floor(rounded / 60);
@@ -142,16 +132,14 @@ function handleSpeakerOverlayInput(label: string, event: Event): void {
             </template>
             <template v-else>Sparar automatiskt</template>
           </p>
-          <button
+          <UiDenseActionButton
             v-if="saveStatus === 'failed'"
-            type="button"
-            class="mt-3 inline-flex h-9 items-center gap-2 border border-navy/25 bg-panel px-3 text-sm font-semibold leading-none text-navy transition hover:border-action disabled:cursor-not-allowed disabled:text-navy/45"
+            class="mt-3"
+            label="Försök igen"
             :disabled="!canRetryTranscriptSave"
             data-test="transcript-save-retry"
             @click="emit('retryTranscriptSave')"
-          >
-            Försök igen
-          </button>
+          />
           <h3
             id="transcript-complete-title"
             class="mt-3 text-xl font-semibold leading-tight text-navy"
@@ -249,7 +237,7 @@ function handleSpeakerOverlayInput(label: string, event: Event): void {
               </template>
               <template
                 v-else-if="
-                  speakerOverlayCoverageComplete(speakerOverlayEntries, speakerLabels(transcript))
+                  speakerOverlayEntriesCoverTranscript(transcript.segments, speakerOverlayEntries)
                 "
               >
                 Namnen sparas automatiskt.

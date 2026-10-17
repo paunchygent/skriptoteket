@@ -161,7 +161,7 @@ describe("TranscriptWorkspaceShell", () => {
       "8.0 MB av 16.0 MB",
     );
     expect(wrapper.find("[data-test='transcript-progress-steps']").exists()).toBe(false);
-    expect(wrapper.get("[data-test='transcript-abort-state']").classes()).toContain("invisible");
+    expect(wrapper.get("[data-test='transcript-abort-state']").text()).toBe("");
     expect(wrapper.get("[data-test='transcript-abort-state']").attributes("aria-hidden")).toBe(
       "true",
     );
@@ -194,9 +194,8 @@ describe("TranscriptWorkspaceShell", () => {
     expect(wrapper.get("[data-test='transcript-abort-state']").text()).toContain(
       "Det gick inte att avbryta. Transkriberingen fortsätter.",
     );
-    expect(wrapper.get("[data-test='transcript-abort-state']").classes()).not.toContain(
-      "invisible",
-    );
+    expect(wrapper.get("[data-test='transcript-abort-state'] [role='status']").attributes("aria-live"))
+      .toBe("polite");
   });
 
   it("emits retry when automatic transcript persistence fails", async () => {

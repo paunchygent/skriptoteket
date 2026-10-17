@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SystemMessage } from "../../../components/ui";
 import type { ReagentPrepChefPrepSheet } from "./types";
 
 type Props = {
@@ -25,7 +26,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel">
     <div class="p-4 space-y-4">
       <h2 class="text-lg font-semibold text-navy">Resultat</h2>
 
@@ -87,12 +88,13 @@ const emit = defineEmits<{
             </ol>
           </div>
 
-          <div
+          <SystemMessage
             v-if="props.warnings.length > 0"
-            class="p-3 border border-warning bg-warning/10 shadow-none space-y-1"
+            tone="warning"
+            class="space-y-1"
           >
-            <p class="font-semibold text-warning">Varningar</p>
-            <ul class="list-disc pl-5 space-y-1 text-warning">
+            <p class="font-semibold">Varningar</p>
+            <ul class="list-disc pl-5 space-y-1">
               <li
                 v-for="(warning, index) in props.warnings"
                 :key="index"
@@ -100,13 +102,13 @@ const emit = defineEmits<{
                 {{ warning }}
               </li>
             </ul>
-          </div>
+          </SystemMessage>
         </div>
       </div>
 
       <div
         v-if="props.safety"
-        class="p-3 border border-navy bg-canvas shadow-none space-y-2 text-sm"
+        class="p-3 rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-canvas space-y-2 text-sm"
       >
         <p class="font-semibold text-navy">Säkerhet</p>
         <p
@@ -190,12 +192,13 @@ const emit = defineEmits<{
         </RouterLink>
       </p>
 
-      <p
+      <SystemMessage
         v-if="props.actionErrorMessage"
-        class="text-sm text-critical whitespace-pre-wrap"
+        tone="failure"
+        class="whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}
-      </p>
+      </SystemMessage>
     </div>
   </section>
 </template>

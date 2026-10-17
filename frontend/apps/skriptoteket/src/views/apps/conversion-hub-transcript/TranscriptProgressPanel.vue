@@ -15,6 +15,8 @@
 import { computed } from "vue";
 import { Info } from "lucide-vue-next";
 
+import { SystemMessage } from "../../../components/ui";
+
 import type { SirConvertTranscriptJob } from "../../../api/sirConvertGateway";
 import type { TranscriptAbortState, TranscriptUploadState } from "./useTranscriptGatewayRuntime";
 import {
@@ -139,7 +141,7 @@ function stepClasses(step: ProgressStep): string {
         </p>
         <div
           v-if="uploadPercentValue !== null"
-          class="h-4 border-2 border-navy bg-canvas"
+          class="h-4 border border-navy/20 bg-canvas"
           aria-label="Uppladdningsprogress"
           :aria-valuenow="uploadPercentValue"
           aria-valuemin="0"
@@ -183,19 +185,20 @@ function stepClasses(step: ProgressStep): string {
         </div>
       </div>
 
-      <p
-        class="min-h-[2.5rem] border px-3 py-2 text-xs font-medium leading-snug"
-        :class="
-          shouldShowAbortState
-            ? 'border-warning/35 bg-warning/10 text-navy'
-            : 'invisible border-transparent bg-transparent text-transparent'
-        "
+      <div
+        class="min-h-[2.5rem]"
         data-test="transcript-abort-state"
         :aria-hidden="shouldShowAbortState ? undefined : true"
-        :aria-live="shouldShowAbortState ? 'polite' : 'off'"
       >
-        {{ abortState.message ?? "" }}
-      </p>
+        <SystemMessage
+          v-if="shouldShowAbortState"
+          tone="warning"
+          role="status"
+          aria-live="polite"
+        >
+          {{ abortState.message }}
+        </SystemMessage>
+      </div>
     </div>
   </div>
 </template>

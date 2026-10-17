@@ -103,7 +103,7 @@
   width: calc(794px * var(--dc-preview-scale));
   height: calc(1124px * var(--dc-preview-scale));
   overflow: hidden;
-  background: white;
+  background: var(--color-panel);
 }
 
 .dc-artifact-frame {
@@ -111,7 +111,7 @@
   height: 1124px;
   display: block;
   border: 0;
-  background: white;
+  background: var(--color-panel);
   pointer-events: none;
   transform: scale(var(--dc-preview-scale));
   transform-origin: top left;
@@ -174,7 +174,7 @@
   margin: 0;
   color: var(--color-navy);
   font-size: var(--huleedu-text-sm);
-  font-weight: 700;
+  font-weight: var(--huleedu-font-bold);
 }
 
 .dc-feedback--error {
@@ -258,24 +258,6 @@
 .dc-filename-field strong {
   padding-right: 0.55rem;
   color: color-mix(in srgb, var(--color-navy) 58%, transparent);
-}
-
-.dc-icon-button {
-  width: 2.25rem;
-  height: 2.25rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--color-navy) 35%, transparent);
-  border-radius: 4px;
-  background: var(--color-canvas);
-  color: var(--color-navy);
-}
-
-.dc-icon-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 @media (max-width: 72rem) {

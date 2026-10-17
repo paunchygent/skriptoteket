@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import UiMarkdown from "../../../components/ui/UiMarkdown.vue";
+import { useId, watch } from "vue";
+
+import { IconX } from "../../../components/icons";
+import { SystemMessage, UiDenseIconButton, UiMarkdown } from "../../../components/ui";
 
 const props = withDefaults(defineProps<{
   isOpen: boolean;
@@ -20,6 +23,26 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   close: [];
 }>();
+
+const titleId = useId();
+
+watch(() => props.isOpen, (isOpen, _previous, onCleanup) => {
+  if (!isOpen) return;
+
+  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  function handleEscape(event: KeyboardEvent): void {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      emit("close");
+    }
+  }
+
+  document.addEventListener("keydown", handleEscape);
+  onCleanup(() => {
+    document.removeEventListener("keydown", handleEscape);
+    if (opener?.isConnected) opener.focus();
+  });
+}, { immediate: true, flush: "post" });
 </script>
 
 <template>
@@ -28,22 +51,28 @@ const emit = defineEmits<{
       <div
         v-if="props.isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
-        role="dialog"
-        aria-modal="true"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-4xl mx-4 p-6 bg-modal border border-navy shadow-md">
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+        <div
+          class="relative w-full max-w-4xl mx-4 p-6 rounded-[var(--huleedu-panel-radius)] bg-modal border border-navy/20 shadow-md"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="titleId"
+        >
+          <UiDenseIconButton
+            class="absolute top-3 right-3"
+            label="Stäng SDS"
             @click="emit('close')"
           >
-            &times;
-          </button>
+            <IconX :size="16" />
+          </UiDenseIconButton>
 
           <div class="flex flex-wrap items-start justify-between gap-3 pr-8">
             <div class="space-y-1">
-              <h2 class="text-xl font-semibold text-navy">
+              <h2
+                :id="titleId"
+                class="text-xl font-semibold text-navy"
+              >
                 {{ props.title }}
               </h2>
               <p class="text-xs text-navy/70">
@@ -62,19 +91,13 @@ const emit = defineEmits<{
             </a>
           </div>
 
-          <div class="mt-4 border border-navy bg-panel shadow-none max-h-[70vh] overflow-auto p-4">
-            <p
-              v-if="props.isLoading"
-              class="text-sm text-navy/70"
-            >
+          <div class="mt-4 rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel max-h-[70vh] overflow-auto p-4">
+            <SystemMessage v-if="props.isLoading">
               Laddar SDS…
-            </p>
-            <p
-              v-else-if="!props.markdown"
-              class="text-sm text-navy/70"
-            >
+            </SystemMessage>
+            <SystemMessage v-else-if="!props.markdown">
               SDS saknas.
-            </p>
+            </SystemMessage>
             <UiMarkdown
               v-else
               :markdown="props.markdown"

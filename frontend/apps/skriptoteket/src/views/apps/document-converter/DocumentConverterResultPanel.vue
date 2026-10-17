@@ -14,6 +14,7 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 
 import { IconFitView, IconZoomIn, IconZoomOut } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 import { useAnchoredDocumentPreviewZoom } from "./useAnchoredDocumentPreviewZoom";
 import { useDocumentPreviewTouchGestures } from "./useDocumentPreviewTouchGestures";
 
@@ -90,16 +91,13 @@ onBeforeUnmount(() => {
         class="dc-preview-toolbar"
         aria-label="Förhandsvisningens zoom"
       >
-        <button
-          type="button"
-          class="dc-icon-button"
+        <UiDenseIconButton
+          label="Zooma ut"
           data-testid="document-converter-preview-zoom-out"
-          aria-label="Zooma ut"
-          title="Zooma ut"
           @click="zoom.zoomOut"
         >
           <IconZoomOut :size="16" />
-        </button>
+        </UiDenseIconButton>
         <span
           class="dc-preview-zoom-label"
           data-testid="document-converter-preview-zoom-label"
@@ -107,26 +105,20 @@ onBeforeUnmount(() => {
         >
           {{ zoom.scalePercent.value }}%
         </span>
-        <button
-          type="button"
-          class="dc-icon-button"
+        <UiDenseIconButton
+          label="Zooma in"
           data-testid="document-converter-preview-zoom-in"
-          aria-label="Zooma in"
-          title="Zooma in"
           @click="zoom.zoomIn"
         >
           <IconZoomIn :size="16" />
-        </button>
-        <button
-          type="button"
-          class="dc-icon-button"
+        </UiDenseIconButton>
+        <UiDenseIconButton
+          label="Anpassa till vyn"
           data-testid="document-converter-preview-fit"
-          aria-label="Anpassa till vyn"
-          title="Anpassa till vyn"
           @click="zoom.fitToView"
         >
           <IconFitView :size="16" />
-        </button>
+        </UiDenseIconButton>
       </div>
     </header>
 
