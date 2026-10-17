@@ -166,7 +166,7 @@ describe("TutorialClipDialog", () => {
     expect(query("[data-test='tutorial-clip-dialog-title']")?.textContent?.trim()).toBe("Klass");
   });
 
-  it("wraps Tab at both ends of the modal without focusing the backdrop", async () => {
+  it("wraps focus at both ends of the modal without focusing the backdrop", async () => {
     const { opener } = await mountDialog();
     const close = query<HTMLButtonElement>('[data-test="tutorial-clip-dialog-close"]');
     const items = document.body.querySelectorAll<HTMLButtonElement>(
@@ -176,18 +176,51 @@ describe("TutorialClipDialog", () => {
     expect(close).not.toBeNull();
     expect(last).toBeDefined();
 
-    last?.focus();
-    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    // Tab past the last control lands on the end sentinel, which wraps to the start.
+    query<HTMLElement>('[data-test="tutorial-clip-focus-end"]')?.focus();
     expect(document.activeElement).toBe(close);
-    close?.focus();
-    document.body.dispatchEvent(new KeyboardEvent("keydown", {
-      key: "Tab", shiftKey: true, bubbles: true,
-    }));
+    // Shift+Tab before the first control lands on the start sentinel, which wraps to the end.
+    query<HTMLElement>('[data-test="tutorial-clip-focus-start"]')?.focus();
     expect(document.activeElement).toBe(last);
 
     opener.focus();
-    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    const forward = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    document.body.dispatchEvent(forward);
+    expect(forward.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(close);
+  });
+
+  it("lets Tab leave a one-clip dialog's video natively so its media controls stay reachable", async () => {
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, "play")
+      .mockImplementation(() => Promise.resolve());
+    try {
+      const firstClip = clips[0];
+      expect(firstClip).toBeDefined();
+      wrapper = mount(TutorialClipDialog, {
+        props: { clips: firstClip ? [firstClip] : [], initialClipId: null, open: true },
+        attachTo: document.body,
+      });
+      await nextTick();
+      await nextTick();
+      expect(query('[data-test="tutorial-clip-list-item"]')).toBeNull();
+
+      query<HTMLButtonElement>("[data-test='tutorial-clip-play']")?.click();
+      await nextTick();
+      const video = query<HTMLVideoElement>("[data-test='tutorial-clip-video']");
+      expect(document.activeElement).toBe(video);
+
+      for (const shiftKey of [false, true]) {
+        const tab = new KeyboardEvent("keydown", {
+          key: "Tab", shiftKey, bubbles: true, cancelable: true,
+        });
+        video?.dispatchEvent(tab);
+        expect(tab.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(video);
+      }
+    } finally {
+      play.mockRestore();
+    }
   });
 
   it("clears a failed clip when another clip is selected without starting playback", async () => {
