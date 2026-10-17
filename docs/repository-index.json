@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "004eff4d28fc56442dd0fab3e74a7a58d1f47d1a119cbabea0c4df59777de35e",
+  "source_set_digest": "9c1b2522169ba6a5452644957d0382bee6a2507ffa26b130ae34a731f212ab79",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5822,7 +5822,7 @@
       "type": "task",
       "title": "Refresh home, catalog and the script runner onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-01-refresh-home-catalog-and-the-script-runner-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5833,7 +5833,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the rereview of ee2bc6c0 and the review of the walk repairs e5fb26ee (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-01/); merged to main 2017d223 and d9c2b3bb. The Mac parent's staging walk on 1c133433 passed the flows at 1440, 768 and 375 widths, and its re-walk on d9c2b3bb on 2026-10-17 passed the field-error links and the exam-converter failure alert; the missing-file case is exempt from function walks by the user (2026-10-17) and proven by unit specs. The parent authorized closure."
       }
     },
     {

@@ -69,7 +69,7 @@
   the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `done` (walk
   passed on 1c133433). 40-03-01 walk repairs merged (d9c2b3bb) and re-walked
   there (`evidence/staging-rewalk-40-03-01-d9c2b3bb/`: items 1 and 3 pass, item 2 is a
-  user-generated-tool path, exempt by the user); lead closeout next. 40-03-03 repairs
+  user-generated-tool path, exempt by the user); 40-03-01 `done`. 40-03-03 repairs
   (dialog Escape and focus return) are with a Hemma Sol agent, then a parent re-walk. 40-03-05 and 40-03-06
   walked on 1b417b64 (`evidence/staging-walk-batch2-1b417b64/`): defects B2-1..B2-8,
   one Hemma Sol agent per fix in a shared worktree; Ljudtranskribering is product-disabled

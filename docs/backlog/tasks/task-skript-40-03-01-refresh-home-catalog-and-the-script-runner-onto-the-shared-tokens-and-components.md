@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) approved the rereview of ee2bc6c0 and the review of the walk repairs e5fb26ee (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-01/); merged to main 2017d223 and d9c2b3bb. The Mac parent's staging walk on 1c133433 passed the flows at 1440, 768 and 375 widths, and its re-walk on d9c2b3bb on 2026-10-17 passed the field-error links and the exam-converter failure alert; the missing-file case is exempt from function walks by the user (2026-10-17) and proven by unit specs. The parent authorized closure.
 task_kind: story
 acceptance_criteria:
   - Home, catalog browsing, the tool run page and Mina körningar render with the shared tokens, action buttons and components and no hard offset shadows, keep their layout, and pass a browser walk at phone, tablet and desktop widths
