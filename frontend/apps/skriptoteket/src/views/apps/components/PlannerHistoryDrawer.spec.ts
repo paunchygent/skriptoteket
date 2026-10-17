@@ -40,6 +40,15 @@ describe("PlannerHistoryDrawer", () => {
       },
     });
 
+    const dialog = wrapper.get('[role="dialog"]');
+    expect(dialog.attributes("aria-modal")).toBe("true");
+    const titleId = dialog.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    const heading = dialog.get("h3");
+    expect(heading.attributes("id")).toBe(titleId);
+    expect(heading.text()).toBe("Grupper");
+    expect(heading.isVisible()).toBe(true);
+
     expect(wrapper.text()).toContain("Aktuellt grupputkast");
     expect(wrapper.text()).toContain("Tidigare grupputkast");
     expect(wrapper.text()).toContain("Aktivt nu");

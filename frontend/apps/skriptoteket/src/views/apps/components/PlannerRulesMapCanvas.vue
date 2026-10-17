@@ -318,13 +318,14 @@ function handleStudentSelection(studentId: string): void {
       <div class="flex flex-wrap items-center gap-2">
         <span
           data-test="rules-zoom-percent"
-          class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+          class="border border-navy/20 bg-panel px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
         >
           {{ scalePercent }}%
         </span>
         <button
           type="button"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
+          class="btn-inline-cancel"
+          aria-label="Zooma ut"
           data-test="rules-zoom-out"
           :disabled="isPlanningMap"
           @click="zoomOut"
@@ -333,7 +334,8 @@ function handleStudentSelection(studentId: string): void {
         </button>
         <button
           type="button"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
+          class="btn-inline-cancel"
+          aria-label="Zooma in"
           data-test="rules-zoom-in"
           :disabled="isPlanningMap"
           @click="zoomIn"
@@ -342,7 +344,7 @@ function handleStudentSelection(studentId: string): void {
         </button>
         <button
           type="button"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
+          class="btn-inline-cancel"
           data-test="rules-zoom-fit"
           :disabled="isPlanningMap"
           @click="resetZoom"

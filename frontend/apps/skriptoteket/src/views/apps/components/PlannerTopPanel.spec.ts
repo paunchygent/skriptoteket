@@ -33,7 +33,6 @@ describe("PlannerTopPanel", () => {
     expect(exitButton.text()).toBe("");
     expect(exitButton.attributes("aria-label")).toBe("Avsluta");
     expect(exitButton.attributes("title")).toBe("Avsluta");
-    expect(exitButton.classes()).toContain("planner-btn-icon-md");
 
     await exitButton.trigger("click");
 

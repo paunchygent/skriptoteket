@@ -39,7 +39,7 @@ const benchNeighbors = computed(() => getBenchNeighbors(props.fixture, props.fix
 
 const labelClass = computed(() => {
   return props.fixture.tone === "strong" || props.fixture.type === "teacher_desk"
-    ? "text-white"
+    ? "text-button-primary-text"
     : "text-navy";
 });
 
@@ -80,13 +80,13 @@ const labelStyle = computed<CSSProperties>(() => {
 const wallBodyClass = computed(() => {
   switch (props.fixture.type) {
     case "whiteboard":
-      return "bg-white border border-navy shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)]";
+      return "bg-panel border border-navy";
     case "window":
-      return "bg-white border border-navy";
+      return "bg-panel border border-navy";
     case "door":
-      return "bg-white border border-navy";
+      return "bg-panel border border-navy";
     default:
-      return "bg-white border border-navy/40";
+      return "bg-panel border border-navy/40";
   }
 });
 
@@ -132,7 +132,7 @@ const benchStyle = computed<CSSProperties>(() => {
 const benchClass = computed(() => {
   const roundedLeft = benchNeighbors.value.left ? "" : "rounded-l-md";
   const roundedRight = benchNeighbors.value.right ? "" : "rounded-r-md";
-  return `absolute top-1/2 h-6 -translate-y-1/2 border border-navy/70 bg-navy/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${roundedLeft} ${roundedRight}`;
+  return `absolute top-1/2 h-6 -translate-y-1/2 border border-navy/70 bg-navy/20 ${roundedLeft} ${roundedRight}`;
 });
 </script>
 
@@ -158,18 +158,18 @@ const benchClass = computed(() => {
     </template>
 
     <template v-else-if="fixture.type === 'teacher_desk'">
-      <div class="absolute inset-0 rounded-sm border-2 border-navy bg-navy/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]" />
-      <div class="absolute inset-x-2 top-2 h-2 rounded bg-white/25" />
+      <div class="absolute inset-0 rounded-sm border border-navy bg-navy/85" />
+      <div class="absolute inset-x-2 top-2 h-2 rounded bg-panel/25" />
     </template>
 
     <template v-else-if="fixture.type === 'round_table'">
-      <div class="absolute inset-0 rounded-full border-2 border-navy bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
-      <div class="absolute inset-[10%] rounded-full border border-navy/30 bg-white" />
+      <div class="absolute inset-0 rounded-full border border-navy bg-panel" />
+      <div class="absolute inset-[10%] rounded-full border border-navy/30 bg-panel" />
     </template>
 
     <template v-else-if="fixture.type === 'square_table'">
-      <div class="absolute inset-0 border-2 border-navy bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]" />
-      <div class="absolute inset-[10%] border border-navy/30 bg-white" />
+      <div class="absolute inset-0 border border-navy bg-panel" />
+      <div class="absolute inset-[10%] border border-navy/30 bg-panel" />
     </template>
 
     <template v-else-if="fixture.type === 'bench'">

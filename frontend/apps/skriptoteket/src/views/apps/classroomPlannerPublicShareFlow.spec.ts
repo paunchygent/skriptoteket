@@ -145,6 +145,50 @@ describe("createClassroomPlannerPublicShareFlow", () => {
     });
   });
 
+  it("keeps the created link and offers Swedish recovery when copying is denied", async () => {
+    const clipboardError = new DOMException("Write permission denied.", "NotAllowedError");
+    const writeText = vi.fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(clipboardError);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    const created = createdShare("/share/classroom/current/klass-7a", "current-secret");
+    const flow = createClassroomPlannerPublicShareFlow({
+      plannerState: {
+        draft: createDraft(),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      },
+      getSnapshot: vi.fn(async () => createSnapshot("sha256:first")),
+      draftKind: "grouping",
+      createShare: vi.fn().mockResolvedValue(created),
+      revokeShare: vi.fn(),
+      messages: {
+        missingDraftMessage: "missing",
+        initialStatusLabel: "Skapar delningslänk…",
+        copiedMessage: "copied",
+        revokedMessage: "revoked",
+        fallbackMessage: "failed",
+        revokeFallbackMessage: "revoke failed",
+      },
+    });
+    await flow.startShare();
+    toastMocks.success.mockClear();
+
+    await flow.copyShareLink(flow.shares.value[0]!);
+
+    expect(writeText).toHaveBeenLastCalledWith(created.public_url);
+    expect(flow.shares.value[0]?.public_url).toBe(created.public_url);
+    expect(flow.isBusy.value).toBe(false);
+    expect(flow.statusLabel.value).toBeNull();
+    expect(flow.errorMessage.value).toContain("Länken");
+    expect(flow.errorMessage.value).toContain("Kopiera");
+    expect(flow.errorMessage.value).not.toContain(clipboardError.message);
+    expect(toastMocks.success).not.toHaveBeenCalled();
+    expect(toastMocks.warning).toHaveBeenCalledWith(flow.errorMessage.value);
+  });
+
   it("sends previous guest share metadata after snapshot content changes", async () => {
     let snapshot = createSnapshot("sha256:first");
     const createShare = vi

@@ -386,7 +386,6 @@ describe("PlannerRulesWorkspacePane", () => {
     expect(wrapper.get('[data-test="rules-fixed-seat-help"]').text()).toBe("Skapa regel låser eleven till platsen.");
     expect(wrapper.get('[data-test="rules-fixed-seat-pending-binding"]').text()).not.toContain("->");
     expect(wrapper.get('[data-test="rules-fixed-seat-pending-link"]').html()).toContain("lucide-link-2");
-    expect(wrapper.get('[data-test="rules-fixed-seat-pending-seat"]').classes()).toContain("bg-white");
     expect(wrapper.get('[data-test="rules-commit-fixed-seat"]').text()).toBe("Skapa regel");
     expect(wrapper.get('[data-test="rules-commit-fixed-seat"]').attributes("disabled")).toBeUndefined();
     expect(wrapper.get('[data-test="rules-clear-selection"]').attributes("disabled")).toBeUndefined();

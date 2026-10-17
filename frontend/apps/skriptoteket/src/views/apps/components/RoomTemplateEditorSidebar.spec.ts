@@ -43,9 +43,8 @@ describe("RoomTemplateEditorSidebar", () => {
     expect(wrapper.get('[data-test="room-template-selected-tool-meta"]').text()).toContain(
       "Sittplats",
     );
-    expect(wrapper.get('[data-test="room-template-tool-seat"]').classes()).toContain(
-      "planner-choice-button-active",
-    );
+    expect(wrapper.get('[data-test="room-template-tool-seat"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').attributes("aria-pressed")).toBe("false");
 
     await wrapper.get('[data-test="room-template-tool-whiteboard"]').trigger("click");
     expect(wrapper.emitted("update:selectedTool")).toEqual([["whiteboard"]]);
@@ -55,9 +54,8 @@ describe("RoomTemplateEditorSidebar", () => {
       "Whiteboard",
     );
     expect(wrapper.get('[data-test="room-template-selected-tool-help"]').text()).toContain("vägg");
-    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').classes()).toContain(
-      "planner-choice-button-active",
-    );
+    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="room-template-tool-seat"]').attributes("aria-pressed")).toBe("false");
   });
 
   it("keeps clear-room as a separate action below the tool feedback", async () => {

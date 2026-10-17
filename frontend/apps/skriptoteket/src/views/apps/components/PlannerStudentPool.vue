@@ -69,7 +69,7 @@ function handleStudentClick(studentId: string): void {
       :data-test="rootTestId ? `${rootTestId}-header` : undefined"
     >
       <div>
-        <h3 class="font-serif text-lg text-navy">
+        <h3 class="font-sans text-lg text-navy">
           {{ title }}
         </h3>
       </div>
@@ -88,6 +88,7 @@ function handleStudentClick(studentId: string): void {
         type="button"
         class="flex items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
         :class="isStudentSelected(student.id) ? 'planner-choice-button-active' : 'planner-choice-button-strong'"
+        :aria-pressed="isStudentSelected(student.id)"
         :disabled="disabled"
         :draggable="!disabled"
         @click="handleStudentClick(student.id)"

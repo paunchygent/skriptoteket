@@ -67,6 +67,19 @@ describe("CreateRoomTemplateModal", () => {
     clientMocks.apiPut.mockReset();
   });
 
+  it("exposes a modal dialog named by its visible title", () => {
+    const wrapper = mount(CreateRoomTemplateModal);
+    const dialog = wrapper.get('[role="dialog"]');
+    expect(dialog.attributes("aria-modal")).toBe("true");
+    const titleId = dialog.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    const heading = dialog.get("h2");
+    expect(heading.attributes("id")).toBe(titleId);
+    expect(heading.text()).toBe("Nytt klassrum");
+    expect(heading.isVisible()).toBe(true);
+    wrapper.unmount();
+  });
+
   it("lets wall objects share the edge with seats without consuming floor space", async () => {
     clientMocks.apiPost.mockResolvedValueOnce({
       id: "template-1",
@@ -376,7 +389,7 @@ describe("CreateRoomTemplateModal", () => {
       },
     });
 
-    await editWrapper.get("button.planner-btn-danger").trigger("click");
+    await editWrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
 
     expect(deleteTemplate).toHaveBeenCalledWith("guest-template-1");
     expect(clientMocks.apiDelete).not.toHaveBeenCalled();
@@ -441,7 +454,7 @@ describe("CreateRoomTemplateModal", () => {
       },
     });
 
-    await wrapper.get("button.planner-btn-danger").trigger("click");
+    await wrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
     await Promise.resolve();
 
     expect(wrapper.text()).toContain("Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.");

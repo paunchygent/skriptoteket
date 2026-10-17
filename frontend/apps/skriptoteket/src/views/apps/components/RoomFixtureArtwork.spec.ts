@@ -66,7 +66,6 @@ describe("RoomFixtureArtwork", () => {
     expect(door.text()).toContain("Dörr");
     expect(door.html()).toContain("writing-mode: vertical-lr;");
     expect(teacherDesk.text()).toContain("Kateder");
-    expect(teacherDesk.html()).toContain("text-white");
   });
 
   it("renders round tables as truly round", () => {
@@ -86,7 +85,7 @@ describe("RoomFixtureArtwork", () => {
       },
     });
 
-    expect(wrapper.html()).toContain("rounded-full border-2 border-navy");
+    expect(wrapper.find(".rounded-full").exists()).toBe(true);
   });
 
   it("extends adjacent benches into one continuous bench in the builder grid", () => {

@@ -531,7 +531,7 @@ watch(
       </div>
       <button
         type="button"
-        class="btn-ghost planner-btn-ghost"
+        class="btn-ghost"
         @click="reloadAfterConflict"
       >
         Ladda om utkast

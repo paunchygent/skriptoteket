@@ -9,6 +9,7 @@
 
 import { computed, ref } from "vue";
 
+import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import type { BuilderTool } from "../roomTemplateEditorDomain";
 import type { RoomFixturePaletteEntry, RoomGridDimensions } from "../roomFixtureLayout";
 
@@ -100,7 +101,7 @@ defineExpose({
         type="text"
         placeholder="Till exempel Sal 304"
         data-test="room-template-name-input"
-        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
+        class="w-full border border-navy bg-panel px-3 py-2 text-sm text-navy"
         :aria-invalid="nameError ? 'true' : undefined"
         :aria-describedby="nameError ? 'room-template-name-error' : undefined"
         @input="updateNameFromEvent"
@@ -129,41 +130,41 @@ defineExpose({
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-navy/70">Bredd</span>
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact planner-btn-disabled-soft"
+            <PlannerToolbarIconButton
+              label="Minska bredd"
+              size="utility"
               :disabled="!canShrinkCols"
               @click="emit('resize-room', { axis: 'cols', delta: -1 })"
             >
               −
-            </button>
-            <button
-              type="button"
-              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact"
+            </PlannerToolbarIconButton>
+            <PlannerToolbarIconButton
+              label="Öka bredd"
+              size="utility"
               @click="emit('resize-room', { axis: 'cols', delta: 1 })"
             >
               +
-            </button>
+            </PlannerToolbarIconButton>
           </div>
         </div>
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-navy/70">Höjd</span>
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact planner-btn-disabled-soft"
+            <PlannerToolbarIconButton
+              label="Minska höjd"
+              size="utility"
               :disabled="!canShrinkRows"
               @click="emit('resize-room', { axis: 'rows', delta: -1 })"
             >
               −
-            </button>
-            <button
-              type="button"
-              class="btn-ghost planner-btn-ghost-canvas planner-btn-ghost-compact"
+            </PlannerToolbarIconButton>
+            <PlannerToolbarIconButton
+              label="Öka höjd"
+              size="utility"
               @click="emit('resize-room', { axis: 'rows', delta: 1 })"
             >
               +
-            </button>
+            </PlannerToolbarIconButton>
           </div>
         </div>
       </div>
@@ -187,8 +188,9 @@ defineExpose({
           v-for="tool in toolEntries"
           :key="tool.id"
           type="button"
-          class="btn-ghost planner-btn-ghost justify-start"
-          :class="selectedTool === tool.id ? 'planner-choice-button-active' : 'planner-choice-button-idle'"
+          class="btn-ghost justify-start"
+          :class="selectedTool === tool.id ? 'border-action bg-action/10' : ''"
+          :aria-pressed="selectedTool === tool.id"
           :data-test="`room-template-tool-${tool.id}`"
           @click="emit('update:selectedTool', tool.id)"
         >
@@ -212,7 +214,7 @@ defineExpose({
         <button
           type="button"
           data-test="builder-clear-room"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-sm mt-2.5 w-full justify-center"
+          class="btn-ghost mt-2.5 w-full"
           @click="emit('clear-room')"
         >
           Rensa

@@ -111,7 +111,14 @@ describe("PlannerShareExportPanel", () => {
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Dela och exportera");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Länk");
     expect(wrapper.get('[data-test="grouping-share-management"]').text()).toContain("Filer");
-    expect(wrapper.get('[data-test="grouping-share-management"]').attributes("aria-modal")).toBe("true");
+    const dialog = wrapper.get('[role="dialog"]');
+    expect(dialog.attributes("aria-modal")).toBe("true");
+    const titleId = dialog.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    const heading = dialog.get("h2");
+    expect(heading.attributes("id")).toBe(titleId);
+    expect(heading.text()).toBe("Dela och exportera");
+    expect(heading.isVisible()).toBe(true);
     expect(wrapper.get('[data-test="planner-share-export-scroll"]').classes()).toContain("overscroll-contain");
     expect(wrapper.find('[data-test="planner-share-export-backdrop"]').exists()).toBe(true);
     expect(document.body.style.overflow).toBe("hidden");

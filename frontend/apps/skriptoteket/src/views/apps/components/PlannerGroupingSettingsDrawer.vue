@@ -13,6 +13,7 @@ import { IconX } from "../../../components/icons";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
+  UiDenseIconButton,
   UiDenseToggle,
 } from "../../../components/ui";
 import { useToast } from "../../../composables/useToast";
@@ -118,19 +119,17 @@ onUnmounted(() => {
         <div class="min-w-0">
           <h3
             id="grouping-settings-title"
-            class="font-serif text-xl text-navy"
+            class="font-sans text-xl text-navy"
           >
             Avancerade inställningar
           </h3>
         </div>
-        <button
-          type="button"
-          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
-          aria-label="Stäng avancerade inställningar"
+        <UiDenseIconButton
+          label="Stäng avancerade inställningar"
           @click="emit('close')"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </div>
 
       <div class="flex-1 space-y-4 overflow-y-auto p-4">

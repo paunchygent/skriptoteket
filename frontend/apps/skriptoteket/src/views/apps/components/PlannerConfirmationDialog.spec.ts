@@ -17,6 +17,15 @@ describe("PlannerConfirmationDialog", () => {
       },
     });
 
+    const dialog = wrapper.get('[role="dialog"]');
+    expect(dialog.attributes("aria-modal")).toBe("true");
+    const titleId = dialog.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    const heading = dialog.get("h2");
+    expect(heading.attributes("id")).toBe(titleId);
+    expect(heading.text()).toBe("Ta bort klass?");
+    expect(heading.isVisible()).toBe(true);
+
     const alert = wrapper.get('[role="alert"]');
     expect(alert.attributes("aria-live")).toBe("assertive");
     expect(alert.attributes("aria-atomic")).toBe("true");

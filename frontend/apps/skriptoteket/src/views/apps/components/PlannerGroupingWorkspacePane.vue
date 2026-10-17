@@ -101,7 +101,7 @@ function selectMobileGroup(groupId: string): void {
         </p>
         <button
           type="button"
-          class="btn-ghost planner-btn-alert planner-btn-ghost-sm"
+          class="btn-inline-cancel"
           data-test="grouping-smart-retry-hydration"
           @click="void state.retrySmartRuleHydration()"
         >
@@ -124,6 +124,7 @@ function selectMobileGroup(groupId: string): void {
           type="button"
           class="planner-phone-tab"
           :class="mobileActiveGroup?.id === group.id ? 'planner-phone-tab-active' : ''"
+          :aria-pressed="mobileActiveGroup?.id === group.id"
           :data-test="`phone-grouping-tab-${group.id}`"
           @click="selectMobileGroup(group.id)"
         >

@@ -11,6 +11,7 @@
 import { computed, onUnmounted, ref, watch } from "vue";
 
 import { useHelp } from "../../components/help/useHelp";
+import { SystemMessage, UiDenseActionButton } from "../../components/ui";
 import { useToast } from "../../composables/useToast";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
 import type { ClassroomPlannerShareArtifact } from "./classroomPlannerShareApi";
@@ -369,21 +370,20 @@ watch(
 
 <template>
   <section :class="PLANNER_WORKSPACE_SHELL_CLASS">
-    <div
+    <SystemMessage
       v-if="plannerState.plannerConflictMessage"
-      class="system-message system-message-warning"
+      :model-value="plannerState.plannerConflictMessage"
+      tone="warning"
+      class="flex items-start gap-3"
     >
-      <div class="system-message-content">
+      <div class="break-words">
         {{ plannerState.plannerConflictMessage }}
       </div>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost"
+      <UiDenseActionButton
+        label="Ladda om utkast"
         @click="void reloadAfterConflict()"
-      >
-        Ladda om utkast
-      </button>
-    </div>
+      />
+    </SystemMessage>
 
     <PlannerTopPanel
       :title="plannerTitle"

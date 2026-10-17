@@ -122,7 +122,7 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         </p>
         <button
           type="button"
-          class="btn-ghost planner-btn-alert planner-btn-ghost-sm"
+          class="btn-inline-cancel"
           data-test="seating-smart-retry-hydration"
           @click="void plannerState.retrySmartRuleHydration()"
         >

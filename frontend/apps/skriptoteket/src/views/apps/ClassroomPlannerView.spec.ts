@@ -145,7 +145,9 @@ describe("ClassroomPlannerView", () => {
     window.history.replaceState(null, "");
   });
 
-  it("keeps a stable centered desktop shell when mounted inside a flex host", () => {
+  it("keeps a stable centered desktop shell when mounted inside a flex host", async () => {
+    clientMocks.apiGet.mockResolvedValue([]);
+    stateMocks.plannerState.getResumableDraft.mockResolvedValue(null);
     const wrapper = mount(ClassroomPlannerView, {
       global: {
         plugins: [createPinia()],
@@ -156,6 +158,8 @@ describe("ClassroomPlannerView", () => {
     expect(wrapper.classes()).toContain("max-w-[90rem]");
     expect(wrapper.classes()).toContain("self-center");
     expect(wrapper.classes()).not.toContain("mx-auto");
+    await flushPromises();
+    wrapper.unmount();
   });
 
   it("opens straight into the overview-first workspace using the resumable draft roster", async () => {

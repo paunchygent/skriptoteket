@@ -8,11 +8,11 @@
  * fall back to manual edits when the parser needs help.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
 import { IconTrash } from "../../../components/icons";
-import { SystemMessage } from "../../../components/ui";
+import { SystemMessage, UiDenseIconButton, UiGlyph } from "../../../components/ui";
 import type { AmbiguousRow } from "../useClassListImportFlow";
 import { useClassListImportFlow } from "../useClassListImportFlow";
 import type { Roster, Student } from "../classroomPlannerTypes";
@@ -40,6 +40,7 @@ const isSubmitting = ref(false);
 const isDeleting = ref(false);
 const formError = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
+const importTrigger = ref<HTMLButtonElement | null>(null);
 const ambiguousRows = ref<AmbiguousRow[]>([]);
 const isImportDropActive = ref(false);
 
@@ -54,9 +55,9 @@ const importDropZoneClass = computed(() => {
     return "border-navy/20 bg-navy/5 text-navy/45";
   }
   if (isImportDropActive.value) {
-    return "border-action bg-white text-navy";
+    return "border-action bg-panel text-navy";
   }
-  return "border-navy/25 bg-white/80 text-navy/70";
+  return "border-navy/25 bg-panel/80 text-navy/70";
 });
 
 function buildStudentsForSubmit(lines: string[], existingStudents: Student[]): Student[] {
@@ -172,6 +173,14 @@ async function removeRoster(): Promise<void> {
       "Det gick inte att ta bort klasslistan. Försök igen eller stäng dialogrutan.";
   } finally {
     isDeleting.value = false;
+  }
+}
+
+async function updateImportError(value: string | null): Promise<void> {
+  importError.value = value;
+  if (value === null) {
+    await nextTick();
+    importTrigger.value?.focus();
   }
 }
 
@@ -310,6 +319,9 @@ function closeModal(): void {
     <div class="relative flex min-h-full items-start justify-center py-4">
       <div
         class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-modal shadow-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="roster-modal-title"
         data-test="roster-modal-shell"
       >
         <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
@@ -317,17 +329,23 @@ function closeModal(): void {
             <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
               Klasslistor
             </p>
-            <h2 class="font-serif text-2xl text-navy">
+            <h2
+              id="roster-modal-title"
+              class="font-sans text-2xl text-navy"
+            >
               {{ isEditing ? "Redigera klasslista" : "Ny klasslista" }}
             </h2>
           </div>
-          <button
-            type="button"
-            class="mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md md:mr-8 md:mt-8"
+          <UiDenseIconButton
+            label="Stäng"
+            class="mr-6 mt-6 md:mr-8 md:mt-8"
             @click="closeModal"
           >
-            ×
-          </button>
+            <UiGlyph
+              meaning="close"
+              :size="14"
+            />
+          </UiDenseIconButton>
         </div>
 
         <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
@@ -378,6 +396,7 @@ function closeModal(): void {
                   Dra och släpp filen här, eller klicka på knappen för att välja fil.
                 </p>
                 <button
+                  ref="importTrigger"
                   type="button"
                   class="btn-primary shrink-0"
                   data-test="roster-modal-import-trigger"
@@ -390,12 +409,13 @@ function closeModal(): void {
 
               <SystemMessage
                 v-if="importError"
-                v-model="importError"
+                :model-value="importError"
                 tone="failure"
                 dismissible
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
+                @update:model-value="updateImportError"
               />
 
               <div
@@ -435,7 +455,7 @@ function closeModal(): void {
                 v-model="name"
                 type="text"
                 placeholder="Till exempel Klass 9A"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
+                class="w-full border border-navy/20 bg-panel px-3 py-2 text-sm text-navy"
               >
             </div>
 
@@ -456,7 +476,7 @@ function closeModal(): void {
                 v-model="rawStudents"
                 rows="12"
                 placeholder="Anna Andersson&#10;Bilal Berg&#10;Cecilia Ceder"
-                class="min-h-[280px] w-full resize-y border border-navy bg-white px-3 py-3 font-mono text-sm text-navy"
+                class="min-h-[280px] w-full resize-y border border-navy/20 bg-panel px-3 py-3 font-mono text-sm text-navy"
               />
               <p class="text-[11px] leading-relaxed text-navy/60">
                 Skriv eller klistra in ett namn per rad.
@@ -490,14 +510,14 @@ function closeModal(): void {
                   <div class="flex flex-wrap gap-3">
                     <button
                       type="button"
-                      class="planner-text-link-danger"
+                      class="btn-inline-primary"
                       @click="appendAmbiguousRow(index)"
                     >
                       Lägg till i elevlistan
                     </button>
                     <button
                       type="button"
-                      class="planner-text-link-muted"
+                      class="btn-inline-cancel"
                       @click="dismissAmbiguousRow(index)"
                     >
                       Ignorera
@@ -517,7 +537,7 @@ function closeModal(): void {
             <button
               v-if="isEditing"
               type="button"
-              class="btn-ghost planner-btn-danger planner-modal-footer-button inline-flex items-center gap-2"
+              class="btn-ghost"
               :disabled="isDeleting"
               @click="removeRoster"
             >
@@ -532,14 +552,14 @@ function closeModal(): void {
           <div class="flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost planner-btn-ghost-canvas planner-modal-footer-button"
+              class="btn-ghost"
               @click="closeModal"
             >
               Avbryt
             </button>
             <button
               type="button"
-              class="btn-primary planner-modal-footer-button"
+              class="btn-primary"
               :disabled="!isValid || isSubmitting"
               @click="submit"
             >

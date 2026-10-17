@@ -12,6 +12,7 @@
  */
 
 import { IconX } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 
 const emit = defineEmits<{
   (e: "accept"): void;
@@ -25,22 +26,21 @@ const emit = defineEmits<{
     class="relative border border-navy bg-canvas p-3"
     data-test="rules-fixed-seat-switch-prompt"
   >
-    <button
-      type="button"
-      class="planner-row-remove-button absolute right-2 top-2"
-      aria-label="Stäng"
+    <UiDenseIconButton
+      label="Stäng"
+      class="absolute right-2 top-2"
       data-test="rules-fixed-seat-switch-close"
       @click="emit('close')"
     >
       <IconX :size="14" />
-    </button>
+    </UiDenseIconButton>
     <p class="pr-6 text-sm font-semibold leading-relaxed text-navy">
       Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?
     </p>
     <div class="mt-3 flex gap-2">
       <button
         type="button"
-        class="btn-primary planner-btn-primary-sm"
+        class="btn-inline-primary"
         data-test="rules-fixed-seat-switch-yes"
         @click="emit('accept')"
       >
@@ -48,7 +48,7 @@ const emit = defineEmits<{
       </button>
       <button
         type="button"
-        class="btn-ghost planner-btn-ghost planner-btn-ghost-sm"
+        class="btn-inline-cancel"
         data-test="rules-fixed-seat-switch-no"
         @click="emit('decline')"
       >

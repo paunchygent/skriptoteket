@@ -98,9 +98,9 @@ function handleSeatClick(): void {
         class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px]"
         :class="{
           'border-navy/35 bg-canvas text-navy': marker.tone === 'neutral',
-          'border-success bg-success text-white': marker.tone === 'success',
+          'border-success bg-success text-button-primary-text': marker.tone === 'success',
           'border-warning bg-warning text-navy': marker.tone === 'warning',
-          'border-error bg-error text-white': marker.tone === 'error',
+          'border-error bg-error text-button-primary-text': marker.tone === 'error',
         }"
         :title="marker.label"
         :aria-label="marker.label"
@@ -115,7 +115,7 @@ function handleSeatClick(): void {
 
     <span
       v-if="selectionOrder !== null"
-      class="pointer-events-none absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-white text-[11px] font-semibold text-action"
+      class="pointer-events-none absolute -left-2 -top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-panel text-[11px] font-semibold text-action"
       :data-test="`rules-seat-order-${seat.id}`"
     >
       {{ selectionOrder }}

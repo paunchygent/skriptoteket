@@ -12,6 +12,7 @@ import { computed, ref, watch } from "vue";
 import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
+import { copyShareTextToClipboard, SHARE_COPY_RECOVERY_MESSAGE } from "./classroomPlannerShareClipboard";
 import type { PlanDraft, PlanDraftKind } from "./classroomPlannerTypes";
 import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
 import type {
@@ -67,15 +68,6 @@ function normalizeShareError(error: unknown, fallbackMessage: string): string {
     return error.message || fallbackMessage;
   }
   return normalizeClassroomPlannerUiError(error, fallbackMessage);
-}
-
-async function copyTextToClipboard(value: string): Promise<boolean> {
-  const clipboard = navigator.clipboard;
-  if (!clipboard) {
-    return false;
-  }
-  await clipboard.writeText(value);
-  return true;
 }
 
 export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>(
@@ -151,22 +143,18 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
   async function copyShareLink(share: ClassroomPlannerShareArtifact): Promise<void> {
     copiedShareId.value = null;
     errorMessage.value = null;
+    statusLabel.value = null;
     if (!share.public_url) {
       errorMessage.value = options.messages.copyUnavailableMessage;
       return;
     }
-    try {
-      const copied = await copyTextToClipboard(share.public_url);
-      if (!copied) {
-        statusLabel.value = share.public_url;
-        return;
-      }
-      copiedShareId.value = share.id;
-      statusLabel.value = null;
-      toast.success(options.messages.copiedMessage);
-    } catch (error: unknown) {
-      errorMessage.value = normalizeShareError(error, "Kunde inte kopiera länken.");
+    const copied = await copyShareTextToClipboard(share.public_url);
+    if (!copied) {
+      errorMessage.value = SHARE_COPY_RECOVERY_MESSAGE;
+      return;
     }
+    copiedShareId.value = share.id;
+    toast.success(options.messages.copiedMessage);
   }
 
   async function startShare(): Promise<void> {
@@ -191,30 +179,28 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
     statusLabel.value = options.messages.initialStatusLabel;
     copiedShareId.value = null;
 
-    const saveOutcome = await options.plannerState.prepareForExport({
-      conflictMessage: "Lös sparkonflikten innan du delar länken.",
-      fallbackMessage: "Kunde inte spara ändringarna innan delning.",
-    });
-    if (saveOutcome.status === "blocked") {
+    try {
+      const saveOutcome = await options.plannerState.prepareForExport({
+        conflictMessage: "Lös sparkonflikten innan du delar länken.",
+        fallbackMessage: "Kunde inte spara ändringarna innan delning.",
+      });
+      if (saveOutcome.status === "blocked") {
+        if (!isActiveScope(scope)) {
+          return;
+        }
+        errorMessage.value = saveOutcome.message;
+        return;
+      }
+
       if (!isActiveScope(scope)) {
         return;
       }
-      isCreating.value = false;
-      errorMessage.value = saveOutcome.message;
-      statusLabel.value = null;
-      return;
-    }
 
-    if (!isActiveScope(scope)) {
-      return;
-    }
+      const activeDraft = options.plannerState.draft;
+      if (!activeDraft || activeDraft.draft_kind !== options.draftKind) {
+        throw new ShareFlowScopeChangedError(options.messages.scopeChangedMessage);
+      }
 
-    const activeDraft = options.plannerState.draft;
-    if (!activeDraft || activeDraft.draft_kind !== options.draftKind) {
-      throw new ShareFlowScopeChangedError(options.messages.scopeChangedMessage);
-    }
-
-    try {
       const created = await options.createShare({
         draftId: activeDraft.id,
         expectedRevision: activeDraft.revision,
@@ -232,6 +218,7 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
     } finally {
       if (isActiveScope(scope)) {
         isCreating.value = false;
+        statusLabel.value = null;
       }
     }
   }
@@ -241,6 +228,7 @@ export function createClassroomPlannerShareFlow<DraftKind extends PlanDraftKind>
       return;
     }
     revokingShareId.value = share.id;
+    statusLabel.value = null;
     errorMessage.value = null;
     copiedShareId.value = null;
     try {

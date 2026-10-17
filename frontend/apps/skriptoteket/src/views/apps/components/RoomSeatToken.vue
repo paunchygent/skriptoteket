@@ -29,16 +29,16 @@ const displaySeatId = computed(() => props.seatId.replace(/^seat-/i, "plats-"));
     class="flex h-full w-full items-center justify-center rounded-full border text-center transition-colors"
     :class="[
       ghost
-        ? 'border-2 border-dashed border-navy/60 bg-white/55 text-navy/50'
+        ? 'border-2 border-dashed border-navy/60 bg-panel/55 text-navy/50'
         : '',
       !ghost && selected
         ? 'border-action bg-action/10 text-action'
         : '',
       !ghost && studentName && !selected
-        ? 'bg-white text-navy'
+        ? 'bg-panel text-navy'
         : '',
       !ghost && !studentName && !selected
-        ? 'border-navy/30 border-dashed bg-white/75 text-navy/45'
+        ? 'border-navy/30 border-dashed bg-panel/75 text-navy/45'
         : '',
     ]"
   >

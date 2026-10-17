@@ -23,6 +23,7 @@ import {
   IconTeacherAnchor,
   IconTrash,
 } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 import type { FixedSeatRule, RelationshipRule, Student } from "../classroomPlannerTypes";
 import {
   formatRelationshipRuleHeading,
@@ -136,26 +137,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
           </p>
         </div>
         <div class="planner-phone-rules-active-actions">
-          <button
-            type="button"
-            class="planner-phone-rule-action-button"
+          <UiDenseIconButton
+            :label="`Redigera fast plats ${fixedSeatRuleHeading(rule)}`"
             :data-test="`phone-rules-edit-fixed-seat-${rule.id}`"
             :disabled="!canEdit"
-            :aria-label="`Redigera fast plats ${fixedSeatRuleHeading(rule)}`"
             @click="emit('edit-fixed-seat-rule', rule.id)"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="planner-phone-rule-action-button planner-phone-rule-action-button-danger"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            :label="`Ta bort fast plats ${fixedSeatRuleHeading(rule)}`"
+            tone="danger"
             :data-test="`phone-rules-delete-fixed-seat-${rule.id}`"
             :disabled="!canEdit"
-            :aria-label="`Ta bort fast plats ${fixedSeatRuleHeading(rule)}`"
             @click="emit('delete-fixed-seat-rule', rule.id)"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
 
@@ -178,26 +176,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
           </p>
         </div>
         <div class="planner-phone-rules-active-actions">
-          <button
-            type="button"
-            class="planner-phone-rule-action-button"
+          <UiDenseIconButton
+            label="Redigera regeln Nära läraren"
             data-test="phone-rules-edit-near-teacher"
             :disabled="!canEdit"
-            aria-label="Redigera regeln Nära läraren"
             @click="emit('edit-near-teacher')"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="planner-phone-rule-action-button planner-phone-rule-action-button-danger"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            label="Ta bort regeln Nära läraren"
+            tone="danger"
             data-test="phone-rules-delete-near-teacher"
             :disabled="!canEdit"
-            aria-label="Ta bort regeln Nära läraren"
             @click="emit('delete-near-teacher')"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
 
@@ -227,26 +222,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
           </p>
         </div>
         <div class="planner-phone-rules-active-actions">
-          <button
-            type="button"
-            class="planner-phone-rule-action-button"
+          <UiDenseIconButton
+            :label="`Redigera ${relationshipRuleHeading(rule, index)}`"
             :data-test="`phone-rules-edit-rule-${index}`"
             :disabled="!canEdit"
-            :aria-label="`Redigera ${relationshipRuleHeading(rule, index)}`"
             @click="emit('edit-rule', rule.id)"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="planner-phone-rule-action-button planner-phone-rule-action-button-danger"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            :label="`Ta bort ${relationshipRuleHeading(rule, index)}`"
+            tone="danger"
             :data-test="`phone-rules-delete-rule-${index}`"
             :disabled="!canEdit"
-            :aria-label="`Ta bort ${relationshipRuleHeading(rule, index)}`"
             @click="emit('delete-rule', rule.id)"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
     </div>

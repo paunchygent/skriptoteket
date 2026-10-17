@@ -10,6 +10,7 @@
 import { computed } from "vue";
 
 import { IconEdit, IconTrash } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 import type { FixedSeatRule, RelationshipRule, Student } from "../classroomPlannerTypes";
 import {
   formatRelationshipRuleHeading,
@@ -81,7 +82,7 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             && relationshipRules.length === 0
             && fixedSeatRules.length === 0
         "
-        class="flex min-h-full w-full items-center border border-dashed border-navy/20 bg-white px-3 py-3 text-sm text-navy/55"
+        class="flex min-h-full w-full items-center border border-dashed border-navy/20 bg-panel px-3 py-3 text-sm text-navy/55"
         data-test="rules-summary-empty-state"
       >
         Inga smarta regler ännu.
@@ -106,26 +107,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
         </p>
 
         <div class="mt-3 flex items-center gap-1.5">
-          <button
-            type="button"
-            class="btn-ghost planner-btn-ghost planner-btn-icon-sm"
+          <UiDenseIconButton
+            :label="`Redigera fast plats ${fixedSeatRuleHeading(rule)}`"
             :data-test="`rules-edit-fixed-seat-${rule.id}`"
             :disabled="!canEdit"
-            :aria-label="`Redigera fast plats ${fixedSeatRuleHeading(rule)}`"
             @click="emit('edit-fixed-seat-rule', rule.id)"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="btn-ghost planner-btn-danger-soft planner-btn-icon-sm"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            :label="`Ta bort fast plats ${fixedSeatRuleHeading(rule)}`"
+            tone="danger"
             :data-test="`rules-delete-fixed-seat-${rule.id}`"
             :disabled="!canEdit"
-            :aria-label="`Ta bort fast plats ${fixedSeatRuleHeading(rule)}`"
             @click="emit('delete-fixed-seat-rule', rule.id)"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
 
@@ -143,26 +141,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
         </p>
 
         <div class="mt-3 flex items-center gap-1.5">
-          <button
-            type="button"
-            class="btn-ghost planner-btn-ghost planner-btn-icon-sm"
+          <UiDenseIconButton
+            label="Redigera regeln Nära läraren"
             data-test="rules-edit-near-teacher-0"
             :disabled="!canEdit"
-            aria-label="Redigera regeln Nära läraren"
             @click="emit('edit-near-teacher')"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="btn-ghost planner-btn-danger-soft planner-btn-icon-sm"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            label="Ta bort regeln Nära läraren"
+            tone="danger"
             data-test="rules-delete-near-teacher-0"
             :disabled="!canEdit"
-            aria-label="Ta bort regeln Nära läraren"
             @click="emit('delete-near-teacher')"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
 
@@ -185,26 +180,23 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
         </p>
 
         <div class="mt-3 flex items-center gap-1.5">
-          <button
-            type="button"
-            class="btn-ghost planner-btn-ghost planner-btn-icon-sm"
+          <UiDenseIconButton
+            :label="`Redigera ${relationshipRuleHeading(rule, index)}`"
             :data-test="`rules-edit-rule-${index}`"
             :disabled="!canEdit"
-            :aria-label="`Redigera ${relationshipRuleHeading(rule, index)}`"
             @click="emit('edit-rule', rule.id)"
           >
             <IconEdit :size="14" />
-          </button>
-          <button
-            type="button"
-            class="btn-ghost planner-btn-danger-soft planner-btn-icon-sm"
+          </UiDenseIconButton>
+          <UiDenseIconButton
+            :label="`Ta bort ${relationshipRuleHeading(rule, index)}`"
+            tone="danger"
             :data-test="`rules-delete-rule-${index}`"
             :disabled="!canEdit"
-            :aria-label="`Ta bort ${relationshipRuleHeading(rule, index)}`"
             @click="emit('delete-rule', rule.id)"
           >
             <IconTrash :size="14" />
-          </button>
+          </UiDenseIconButton>
         </div>
       </div>
     </div>

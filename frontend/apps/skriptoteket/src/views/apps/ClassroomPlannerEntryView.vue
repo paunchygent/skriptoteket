@@ -56,7 +56,7 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
     <section
       v-if="authenticatedGuestUpgradeCompletedReceipt"
       data-test="guest-upgrade-result-summary"
-      class="mx-auto w-full max-w-4xl border border-success/30 bg-canvas p-6"
+      class="mx-auto w-full max-w-4xl rounded-[var(--huleedu-panel-radius)] border border-success/30 bg-canvas p-6"
     >
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-2">
@@ -64,7 +64,7 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
             Inloggad import klar
           </p>
           <div class="space-y-1">
-            <h2 class="font-serif text-2xl text-navy">
+            <h2 class="font-sans text-2xl font-semibold text-navy">
               Gästarbetsytan importerades till ditt konto
             </h2>
             <p class="text-sm leading-6 text-navy/80">
@@ -84,32 +84,32 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
       </div>
 
       <div class="mt-4 grid gap-4 md:grid-cols-4">
-        <article class="border border-success/30 bg-panel p-4">
-          <h3 class="font-serif text-lg text-navy">
+        <article class="rounded-[var(--huleedu-panel-radius)] border border-success/30 bg-panel p-4">
+          <h3 class="font-sans text-lg font-semibold text-navy">
             Skapades
           </h3>
           <p class="mt-2 text-2xl text-navy">
             {{ authenticatedGuestUpgradeCompletedReceipt.created.length }}
           </p>
         </article>
-        <article class="border border-navy/20 bg-panel p-4">
-          <h3 class="font-serif text-lg text-navy">
+        <article class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel p-4">
+          <h3 class="font-sans text-lg font-semibold text-navy">
             Återanvändes
           </h3>
           <p class="mt-2 text-2xl text-navy">
             {{ authenticatedGuestUpgradeCompletedReceipt.reused.length }}
           </p>
         </article>
-        <article class="border border-warning/20 bg-panel p-4">
-          <h3 class="font-serif text-lg text-navy">
+        <article class="rounded-[var(--huleedu-panel-radius)] border border-warning/20 bg-panel p-4">
+          <h3 class="font-sans text-lg font-semibold text-navy">
             Hoppades över
           </h3>
           <p class="mt-2 text-2xl text-navy">
             {{ authenticatedGuestUpgradeCompletedReceipt.skipped.length }}
           </p>
         </article>
-        <article class="border border-error/20 bg-panel p-4">
-          <h3 class="font-serif text-lg text-navy">
+        <article class="rounded-[var(--huleedu-panel-radius)] border border-error/20 bg-panel p-4">
+          <h3 class="font-sans text-lg font-semibold text-navy">
             Konflikter
           </h3>
           <p class="mt-2 text-2xl text-navy">
@@ -126,7 +126,7 @@ const authenticatedGuestUpgradeCompletedReceipt = computed(() => {
       class="fixed inset-0 z-50 flex items-center justify-center bg-navy/30 p-4 backdrop-blur-[1px]"
       data-test="guest-upgrade-blocking-modal"
     >
-      <div class="w-full max-w-[28rem] border border-navy bg-modal px-6 py-5 text-sm text-navy/80 shadow-md">
+      <div class="w-full max-w-[28rem] rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-modal px-6 py-5 text-sm text-navy/80 shadow-md">
         Kontrollerar om det finns tidigare arbete i den här webbläsaren...
       </div>
     </div>

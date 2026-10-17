@@ -82,7 +82,7 @@ const canClearSelection = computed(() => (
       </div>
       <button
         type="button"
-        class="planner-phone-link-button"
+        class="btn-inline-cancel"
         data-test="phone-fixed-seat-clear"
         :disabled="!canClearSelection"
         @click="emit('clear-selection')"

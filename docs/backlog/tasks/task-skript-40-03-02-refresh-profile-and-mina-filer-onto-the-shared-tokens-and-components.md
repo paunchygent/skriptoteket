@@ -47,6 +47,9 @@ What changes:
 - Panels, cards and surfaces carry no hard offset shadow and no heavy frame:
   flat surfaces use hairline borders, floating layers the soft shadow-md, and
   press and hover feedback is colour only.
+- Boy Scout fix (parent 2026-10-17, from the 40-01-02 staging walk): the
+  profile card no longer blanks while the profile reloads after "Spara
+  ändringar"; a test that fails on the current code proves it.
 
 What stays: the placement and order of every element, the breakpoints and the
 workflow.

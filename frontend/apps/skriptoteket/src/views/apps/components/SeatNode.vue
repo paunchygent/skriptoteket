@@ -120,9 +120,9 @@ function onDragStart(event: DragEvent): void {
         class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px]"
         :class="{
           'border-navy/35 bg-canvas text-navy': marker.tone === 'neutral',
-          'border-success bg-success text-white': marker.tone === 'success',
+          'border-success bg-success text-button-primary-text': marker.tone === 'success',
           'border-warning bg-warning text-navy': marker.tone === 'warning',
-          'border-error bg-error text-white': marker.tone === 'error',
+          'border-error bg-error text-button-primary-text': marker.tone === 'error',
         }"
         :title="marker.label"
         :aria-label="marker.label"
@@ -137,7 +137,7 @@ function onDragStart(event: DragEvent): void {
 
     <span
       v-if="fixed"
-      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-white"
+      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-button-primary-text"
       :title="fixedSeatTitle ?? undefined"
       :aria-label="fixedSeatTitle ?? 'Fast plats'"
       :data-test="`seat-fixed-lock-${seat.id}`"
@@ -166,6 +166,7 @@ function onDragStart(event: DragEvent): void {
       v-if="student"
       type="button"
       class="planner-marker-button"
+      :aria-label="`Ta bort ${student.display_name} från plats`"
       @click.stop="emit('student-removed', student.id)"
     >
       ×

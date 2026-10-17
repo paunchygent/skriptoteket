@@ -11,6 +11,7 @@
 import { ref, watch } from "vue";
 
 import { IconTrash, IconX } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
 import { PLANNER_GROUP_CARD_CLASS } from "../plannerWorkspaceLayout";
 import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
@@ -103,36 +104,31 @@ function commitName(): void {
         >
       </div>
       <div class="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          aria-label="Flytta grupp upp"
+        <UiDenseIconButton
+          label="Flytta grupp upp"
           data-test="move-group-up"
-          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-lg"
           :disabled="props.disabled || !canMoveUp"
           @click="emit('group-moved', group.id, -1)"
         >
           ↑
-        </button>
-        <button
-          type="button"
-          aria-label="Flytta grupp ned"
+        </UiDenseIconButton>
+        <UiDenseIconButton
+          label="Flytta grupp ned"
           data-test="move-group-down"
-          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-lg"
           :disabled="props.disabled || !canMoveDown"
           @click="emit('group-moved', group.id, 1)"
         >
           ↓
-        </button>
-        <button
-          type="button"
+        </UiDenseIconButton>
+        <UiDenseIconButton
+          label="Ta bort grupp"
+          tone="danger"
           data-test="remove-group"
-          class="btn-ghost planner-btn-danger planner-btn-icon-lg"
           :disabled="props.disabled"
-          aria-label="Ta bort grupp"
           @click="emit('group-removed', group.id)"
         >
           <IconTrash :size="14" />
-        </button>
+        </UiDenseIconButton>
       </div>
     </div>
 
@@ -145,7 +141,7 @@ function commitName(): void {
         :key="student.id"
         :data-test="`group-student-row-${student.id}`"
         class="flex min-h-[56px] items-start justify-between gap-2.5 border px-3 py-1.5 text-left transition-colors"
-        :class="'border-navy bg-white text-navy hover:bg-canvas'"
+        :class="'border-navy bg-panel text-navy hover:bg-canvas'"
         :draggable="!props.disabled"
         @dragstart="onDragStart($event, student)"
       >
@@ -165,15 +161,14 @@ function commitName(): void {
             />
           </div>
         </div>
-        <button
-          type="button"
-          class="planner-row-remove-button"
+        <UiDenseIconButton
+          :label="`Ta bort ${student.display_name} från grupp`"
+          tone="danger"
           :disabled="props.disabled"
-          :aria-label="`Ta bort ${student.display_name} från grupp`"
           @click.stop="emit('student-removed', student.id)"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </div>
 
       <div

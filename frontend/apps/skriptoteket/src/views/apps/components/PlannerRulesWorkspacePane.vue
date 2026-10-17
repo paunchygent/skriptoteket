@@ -207,7 +207,7 @@ watch(mapView, (nextValue) => {
         </p>
         <button
           type="button"
-          class="btn-ghost planner-btn-alert planner-btn-ghost-sm"
+          class="btn-inline-cancel"
           data-test="rules-smart-retry-hydration"
           @click="void plannerState.retrySmartRuleHydration()"
         >
@@ -235,6 +235,7 @@ watch(mapView, (nextValue) => {
           type="button"
           class="planner-phone-rule-row"
           :class="plannerState.activeSeatingSmartTool === tool.id ? 'planner-phone-rule-row-active' : ''"
+          :aria-pressed="plannerState.activeSeatingSmartTool === tool.id"
           :disabled="!plannerState.canEditSeatingSmartRules"
           :data-test="`phone-rules-tool-${tool.id}`"
           @click="selectTool(tool.id)"
@@ -349,7 +350,7 @@ watch(mapView, (nextValue) => {
       <button
         v-if="phoneCanCommitRelationshipRule"
         type="button"
-        class="btn-primary planner-btn-primary-sm w-full"
+        class="btn-primary w-full"
         data-test="phone-rules-commit-rule"
         :disabled="!plannerState.canCommitPendingRelationshipRule"
         @click="plannerState.commitPendingRelationshipRule()"
@@ -360,7 +361,7 @@ watch(mapView, (nextValue) => {
       <button
         v-if="plannerState.activeSeatingSmartTool === 'fixed_seat'"
         type="button"
-        class="btn-primary planner-btn-primary-sm w-full"
+        class="btn-primary w-full"
         data-test="phone-rules-commit-fixed-seat"
         :disabled="!plannerState.canCommitPendingFixedSeatRule"
         @click="plannerState.commitPendingFixedSeatRule()"

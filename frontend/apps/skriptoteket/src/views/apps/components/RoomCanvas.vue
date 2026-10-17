@@ -9,6 +9,8 @@
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
+import { UiDenseActionButton } from "../../../components/ui";
+import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import SeatNode from "./SeatNode.vue";
 import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
 import type {
@@ -164,7 +166,7 @@ onBeforeUnmount(() => {
       :class="props.compact ? 'planner-room-canvas-compact-toolbar' : ''"
     >
       <div v-if="!props.compact">
-        <h3 class="font-serif text-lg text-navy">
+        <h3 class="font-sans text-lg text-navy">
           Sittschema
         </h3>
         <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
@@ -175,36 +177,33 @@ onBeforeUnmount(() => {
         class="flex flex-wrap items-center gap-2"
         :class="props.compact ? 'w-full justify-between' : ''"
       >
-        <button
-          type="button"
+        <PlannerToolbarIconButton
+          label="Zooma ut"
+          size="utility"
           data-test="seating-zoom-out"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-out')"
         >
           −
-        </button>
+        </PlannerToolbarIconButton>
         <span
           data-test="seating-zoom-percent"
-          class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+          class="border border-navy/20 bg-panel px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
         >
           {{ scalePercent }}%
         </span>
-        <button
-          type="button"
+        <PlannerToolbarIconButton
+          label="Zooma in"
+          size="utility"
           data-test="seating-zoom-in"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-in')"
         >
           +
-        </button>
-        <button
-          type="button"
+        </PlannerToolbarIconButton>
+        <UiDenseActionButton
+          label="Anpassa"
           data-test="seating-zoom-fit"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-fit')"
-        >
-          Anpassa
-        </button>
+        />
       </div>
     </div>
 
@@ -234,14 +233,14 @@ onBeforeUnmount(() => {
               :style="roomSurfaceTransformStyle"
             >
               <div
-                class="absolute inset-0 border border-navy/40 bg-white"
+                class="absolute inset-0 border border-navy/40 bg-panel"
               />
 
               <div
                 class="absolute"
                 :style="roomFloorLayerStyle"
               >
-                <div class="absolute inset-0 border border-navy bg-white" />
+                <div class="absolute inset-0 border border-navy bg-panel" />
                 <div
                   class="absolute inset-0 room-canvas-grid opacity-15"
                 />

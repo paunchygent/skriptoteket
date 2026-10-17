@@ -9,10 +9,9 @@
 
 import { computed, ref, unref, watch, type Ref } from "vue";
 
-import { isApiError } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { ClassroomPlannerGuestSnapshot } from "./classroomPlannerGuestSnapshot";
-import { normalizeClassroomPlannerUiError } from "./classroomPlannerRouteShellErrors";
+import { copyShareTextToClipboard, SHARE_COPY_RECOVERY_MESSAGE } from "./classroomPlannerShareClipboard";
 import type { ClassroomPlannerShareArtifact } from "./classroomPlannerShareApi";
 import type { PlanDraft, PlanDraftKind } from "./classroomPlannerTypes";
 import type { PlannerTransitionResult } from "./plannerTransitionPolicies";
@@ -70,13 +69,6 @@ type CreateClassroomPlannerPublicShareFlowOptions<DraftKind extends PlanDraftKin
 
 const STORAGE_PREFIX = "skriptoteket:classroom-planner:public-share";
 const PENDING_STORAGE_PREFIX = `${STORAGE_PREFIX}:pending`;
-
-function normalizeShareError(error: unknown, fallbackMessage: string): string {
-  if (isApiError(error)) {
-    return error.message || fallbackMessage;
-  }
-  return normalizeClassroomPlannerUiError(error, fallbackMessage);
-}
 
 function randomBrowserSecret(byteLength: number): string {
   const randomValues = new Uint8Array(byteLength);
@@ -232,15 +224,6 @@ function clearPendingOperation(
   }
 }
 
-async function copyTextToClipboard(value: string): Promise<boolean> {
-  const clipboard = navigator.clipboard;
-  if (!clipboard) {
-    return false;
-  }
-  await clipboard.writeText(value);
-  return true;
-}
-
 export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraftKind>(
   options: CreateClassroomPlannerPublicShareFlowOptions<DraftKind>,
 ) {
@@ -304,6 +287,7 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
 
     const activeDraft = getActiveDraft();
     if (!activeDraft) {
+      statusLabel.value = null;
       errorMessage.value = options.messages.missingDraftMessage;
       toast.warning(options.messages.missingDraftMessage);
       return;
@@ -359,38 +343,32 @@ export function createClassroomPlannerPublicShareFlow<DraftKind extends PlanDraf
       clearPendingOperation(snapshot, options.draftKind, draftAfterFlush.revision);
       shares.value = [displayShare];
 
-      const copied = await copyTextToClipboard(created.public_url);
-      statusLabel.value = copied ? null : created.public_url;
-      toast.success(options.messages.copiedMessage);
-      errorMessage.value = null;
+      await copyShareLink(displayShare);
     } catch {
       errorMessage.value = null;
       toast.failure(options.messages.fallbackMessage);
     } finally {
       isBusy.value = false;
-      if (statusLabel.value === options.messages.initialStatusLabel) {
-        statusLabel.value = null;
-      }
+      statusLabel.value = null;
     }
   }
 
   async function copyShareLink(share: ClassroomPlannerShareArtifact): Promise<void> {
+    statusLabel.value = null;
+    errorMessage.value = null;
     if (!share.public_url) {
       errorMessage.value = options.messages.fallbackMessage;
       toast.warning(options.messages.fallbackMessage);
       return;
     }
 
-    try {
-      const copied = await copyTextToClipboard(share.public_url);
-      statusLabel.value = copied ? null : share.public_url;
-      errorMessage.value = null;
-      toast.success(options.messages.copiedMessage);
-    } catch (error: unknown) {
-      const message = normalizeShareError(error, options.messages.fallbackMessage);
-      errorMessage.value = message;
-      toast.warning(message);
+    const copied = await copyShareTextToClipboard(share.public_url);
+    if (!copied) {
+      errorMessage.value = SHARE_COPY_RECOVERY_MESSAGE;
+      toast.warning(SHARE_COPY_RECOVERY_MESSAGE);
+      return;
     }
+    toast.success(options.messages.copiedMessage);
   }
 
   async function revokePublicShare(share: ClassroomPlannerShareArtifact): Promise<void> {
