@@ -8,9 +8,9 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, nextTick, ref, type Component } from "vue";
+import { computed, nextTick, ref } from "vue";
 
-import { IconAdjustments, IconHistory, IconPlus, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
+import { IconPlus, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
@@ -20,13 +20,11 @@ import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi"
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
-import type {
-  PlannerExportFileOption,
-  PlannerExportOptionValue,
-} from "./plannerShareExportActions";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
-import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
+import { useSeatingToolbarOverflow } from "./useSeatingToolbarOverflow";
+import { useSeatingToolbarReset } from "./useSeatingToolbarReset";
+import { useSeatingToolbarShareExport } from "./useSeatingToolbarShareExport";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(
@@ -72,28 +70,6 @@ const props = withDefaults(
   },
 );
 
-const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
-const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
-const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 400;
-const PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX = 340;
-const OVERFLOW_PRIORITY_ORDER = ["context", "reset", "distribution"];
-
-function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
-  if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
-    return null;
-  }
-  if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
-    return null;
-  }
-  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
-  }
-  if (rootElement.clientWidth > PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
-  }
-  return OVERFLOW_PRIORITY_ORDER;
-}
-
 const emit = defineEmits<{
   (e: "change-seating-template", templateId: string | null): void;
   (e: "new-seating-draft", templateId: string): void;
@@ -108,33 +84,24 @@ const emit = defineEmits<{
   (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
-type OverflowActionItem = {
-  id: string;
-  label: string;
-  icon?: Component;
-  disabled: boolean;
-  group?: "primary" | "secondary";
-  hasPopup?: "dialog" | "menu";
-  expanded?: boolean;
-  responsiveVisibility?: "all" | "phone";
-  tone?: "danger";
-  testId: string;
-  onSelect: () => void;
-};
-
 const plannerState = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
 const seatingTemplateSelect = ref<HTMLSelectElement | null>(null);
 const showSeatingTemplateRequiredHint = ref(false);
-const isResetSeatingDialogOpen = ref(false);
-
-function isSeatingExportOption(option: PlannerExportOptionValue): option is SeatingExportOption {
-  return option === "a3_landscape" || option === "a4_landscape" || option === "xlsx";
-}
-
-const canEditCurrentTemplate = computed(() => plannerState.template !== null);
+const {
+  hasSeatingAssignments,
+  isResetSeatingDialogOpen,
+  openResetSeatingDialog,
+  closeResetSeatingDialog,
+  confirmResetSeatingDraft,
+} = useSeatingToolbarReset({
+  seatingLifecycleBusy: () => props.seatingLifecycleBusy,
+  workspaceBusy: () => plannerState.isWorkspaceBusy,
+  assignmentCount: () => plannerState.seatAssignments.length,
+  clearSeatingAssignments: () => plannerState.clearSeatingAssignments(),
+});
 const canRandomizeSeating = computed(() => {
   return (
     plannerState.template !== null
@@ -145,104 +112,40 @@ const canRandomizeSeating = computed(() => {
     && !props.seatingLifecycleBusy
   );
 });
-const hasSeatingAssignments = computed(() => plannerState.seatAssignments.length > 0);
-const exportOptions = computed<PlannerExportFileOption[]>(() => [
-  {
-    id: "a3",
-    label: "Affisch (A3)",
-    option: "a3_landscape",
-    isDefault: true,
-  },
-  {
-    id: "a4",
-    label: "Affisch (A4)",
-    option: "a4_landscape",
-  },
-  {
-    id: "xlsx",
-    label: "Excel (.xlsx)",
-    option: "xlsx",
-  },
-]);
 const {
   hiddenContributionIds,
   stageLabel,
   thresholds,
-} = usePlannerToolbarOverflow({
+  secondaryActionItems,
+  isUndoRedoInline,
+  isResetInline,
+  isNewDraftInline,
+  isContextInline,
+  isDistributionInline,
+  hasContextOverflowPanel,
+  showOverflowPanel,
+} = useSeatingToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
-  forcedHiddenContributionIds: resolvePhoneHiddenContributionIds,
-  contributions: [
-    {
-      id: "context",
-      selector: '[data-overflow-contribution="context"]',
-    },
-    {
-      id: "reset",
-      selector: '[data-overflow-contribution="reset"]',
-    },
-    {
-      id: "distribution",
-      selector: '[data-overflow-contribution="distribution"]',
-    },
-  ],
+  seatingLifecycleBusy: () => props.seatingLifecycleBusy,
+  workspaceBusy: () => plannerState.isWorkspaceBusy,
+  hasSeatingAssignments: () => hasSeatingAssignments.value,
+  canEditCurrentTemplate: () => plannerState.template !== null,
+  availableTemplateCount: () => props.availableTemplates.length,
+  showHistoryAction: () => props.showHistoryAction,
+  showSmartControls: () => props.showSmartControls,
+  smartSettingsOpen: () => props.smartSettingsOpen,
+  openResetSeatingDialog,
+  openHistory: () => emit("open-history"),
+  editRoster: () => emit("edit-roster"),
+  editCurrentTemplate,
+  openSettings: () => emit("open-settings"),
 });
-const overflowActionItems = computed(() => {
-  const isResetOverflowed = hiddenContributionIds.value.includes("reset");
-  if (!isResetOverflowed) {
-    return [];
-  }
-  return [{
-    id: "reset-seating",
-    label: "Börja om",
-    disabled: props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value,
-    group: "primary" as const,
-    tone: "danger" as const,
-    testId: "seating-overflow-reset",
-    responsiveVisibility: "all" as const,
-    onSelect: openResetSeatingDialog,
-  }];
-});
-const secondaryActionItems = computed(() => {
-  const items: OverflowActionItem[] = [...overflowActionItems.value];
-  if (props.showHistoryAction) {
-    items.push({
-      id: "history",
-      label: "Historik",
-      icon: IconHistory,
-      disabled: props.seatingLifecycleBusy,
-      testId: "seating-history",
-      onSelect: () => emit("open-history"),
-    });
-  }
-  items.push({
-    id: "edit-roster",
-    label: "Redigera klass",
-    icon: IconAdjustments,
-    disabled: plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
-    testId: "edit-seating-roster",
-    onSelect: () => emit("edit-roster"),
-  });
-  items.push({
-    id: "edit-classroom",
-    label: "Redigera klassrum",
-    icon: IconAdjustments,
-    disabled: !canEditCurrentTemplate.value || plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
-    testId: "edit-current-template",
-    onSelect: editCurrentTemplate,
-  });
-  if (props.showSmartControls) {
-    items.push({
-      id: "advanced-settings",
-      label: "Avancerade inställningar",
-      icon: IconAdjustments,
-      disabled: plannerState.isWorkspaceBusy || props.seatingLifecycleBusy,
-      hasPopup: "dialog",
-      expanded: props.smartSettingsOpen,
-      testId: "seating-overflow-open-settings",
-      onSelect: () => emit("open-settings"),
-    });
-  }
-  return items;
+const { showDistributionAction, shareExportPanelBindings } = useSeatingToolbarShareExport(props, {
+  createShare: () => emit("share-link"),
+  copyShare: (share) => emit("copy-share", share),
+  revokeShare: (share) => emit("revoke-share", share),
+  exportDefault: () => emit("export-default"),
+  exportOption: (option) => emit("export-option", option),
 });
 
 async function startNewSeatingDraft(): Promise<void> {
@@ -291,45 +194,12 @@ function changeSeatingTemplateFromEvent(event: Event): void {
   emit("change-seating-template", target.value || null);
 }
 
-function openResetSeatingDialog(): void {
-  if (props.seatingLifecycleBusy || plannerState.isWorkspaceBusy || !hasSeatingAssignments.value) {
-    return;
-  }
-  isResetSeatingDialogOpen.value = true;
-}
-
-function closeResetSeatingDialog(): void {
-  isResetSeatingDialogOpen.value = false;
-}
-
-function confirmResetSeatingDraft(): void {
-  plannerState.clearSeatingAssignments();
-  closeResetSeatingDialog();
-}
-
 function editCurrentTemplate(): void {
   if (plannerState.template) {
     emit("edit-current-template", plannerState.template);
   }
 }
 
-function handleExportOption(option: PlannerExportOptionValue): void {
-  if (!isSeatingExportOption(option)) {
-    return;
-  }
-  emit("export-option", option);
-}
-
-const isUndoRedoInline = computed(() => true);
-const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
-const isNewDraftInline = computed(() => true);
-const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isDistributionInline = computed(() => !hiddenContributionIds.value.includes("distribution"));
-const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
-const hasContextOverflowPanel = computed(() => props.availableTemplates.length > 0 && !isContextInline.value);
-const showOverflowPanel = computed(() => (
-  hasContextOverflowPanel.value
-));
 </script>
 
 <template>
@@ -474,28 +344,8 @@ const showOverflowPanel = computed(() => (
           :aria-hidden="!isDistributionInline"
         >
           <PlannerShareExportPanel
-            :file-options="exportOptions"
-            :shares="shares"
-            :share-loading="shareLoading"
-            :share-busy="shareBusy"
-            :share-status-label="shareStatusLabel"
-            :share-error-message="shareErrorMessage"
-            :export-busy="exportBusy"
-            :export-error-message="exportErrorMessage"
-            :revoking-share-id="revokingShareId"
-            :show-file-actions="showExportActions"
-            :show-share-actions="showShareLinkAction"
-            :show-revoke-action="showShareRevokeAction"
+            v-bind="shareExportPanelBindings"
             trigger-test-id="seating-share-trigger"
-            panel-test-id="seating-share-management"
-            create-share-test-id="seating-share-create"
-            create-share-mobile-test-id="seating-share-create-mobile"
-            file-option-test-id-prefix="seating-export-option"
-            @create-share="emit('share-link')"
-            @copy-share="emit('copy-share', $event)"
-            @revoke-share="emit('revoke-share', $event)"
-            @export-default="emit('export-default')"
-            @export-option="handleExportOption"
           />
         </div>
         <PlannerToolbarOverflowMenu
@@ -541,30 +391,10 @@ const showOverflowPanel = computed(() => (
             #footer
           >
             <PlannerShareExportPanel
-              :file-options="exportOptions"
-              :shares="shares"
-              :share-loading="shareLoading"
-              :share-busy="shareBusy"
-              :share-status-label="shareStatusLabel"
-              :share-error-message="shareErrorMessage"
-              :export-busy="exportBusy"
-              :export-error-message="exportErrorMessage"
-              :revoking-share-id="revokingShareId"
-              :show-file-actions="showExportActions"
-              :show-share-actions="showShareLinkAction"
-              :show-revoke-action="showShareRevokeAction"
+              v-bind="shareExportPanelBindings"
               trigger-variant="menu-item"
               trigger-test-id="seating-overflow-share-trigger"
               trigger-meta=""
-              panel-test-id="seating-share-management"
-              create-share-test-id="seating-share-create"
-              create-share-mobile-test-id="seating-share-create-mobile"
-              file-option-test-id-prefix="seating-export-option"
-              @create-share="emit('share-link')"
-              @copy-share="emit('copy-share', $event)"
-              @revoke-share="emit('revoke-share', $event)"
-              @export-default="emit('export-default')"
-              @export-option="handleExportOption"
             />
           </template>
         </PlannerToolbarOverflowMenu>
