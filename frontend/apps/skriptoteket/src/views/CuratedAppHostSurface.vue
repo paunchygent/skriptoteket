@@ -9,6 +9,8 @@
 
 import type { Component } from "vue";
 
+import { SystemMessage, UiDenseSpinner } from "../components/ui/shared";
+
 defineProps<{
   errorMessage: string | null;
   fallbackView: Component | null;
@@ -25,31 +27,33 @@ defineProps<{
     v-if="isLoading || errorMessage || shouldBlock"
     class="max-w-3xl space-y-6"
   >
-    <div
-      v-if="isLoading"
-      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
-    >
-      Laddar...
-    </div>
+    <SystemMessage v-if="isLoading">
+      <span class="inline-flex items-center gap-2">
+        <UiDenseSpinner />
+        Laddar...
+      </span>
+    </SystemMessage>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel text-error text-sm"
+      tone="failure"
     >
       {{ errorMessage }}
-    </div>
+    </SystemMessage>
 
-    <div
+    <SystemMessage
       v-else
-      class="p-4 border border-critical bg-panel space-y-2"
+      tone="warning"
     >
-      <p class="text-sm font-semibold text-critical">
-        Den här appen kräver en anpassad vy som inte är installerad ännu.
-      </p>
-      <p class="text-sm text-navy/70">
-        Kontakta admin eller uppdatera installationen för att få tillgång till appen.
-      </p>
-    </div>
+      <div class="space-y-2">
+        <p class="text-sm font-semibold">
+          Den här appen kräver en anpassad vy som inte är installerad ännu.
+        </p>
+        <p class="text-sm text-navy/70">
+          Kontakta admin eller uppdatera installationen för att få tillgång till appen.
+        </p>
+      </div>
+    </SystemMessage>
   </div>
 
   <component
