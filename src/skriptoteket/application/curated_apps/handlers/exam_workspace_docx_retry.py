@@ -347,17 +347,31 @@ def _review_reason(state: DocxBuildState, outcome: BatchOutcome) -> str:
 
 
 def _validate_retry_history(original: NativeExamItem, draft_item: NativeExamItem) -> None:
-    """A working record must extend, not erase or rewrite, the saved import steps."""
+    """Anchor import facts, but allow teacher retry history to branch after undo.
+
+    Chosen type, answer-key origin and import type-conflict resends cannot change.
+    Only the teacher-request tail is working state: it may predate or diverge from
+    Spara, or include several unsaved attempts. Wording is copied from the saved
+    record by ``_placed``, never trusted from the working document.
+    """
     saved = original.import_record
     if saved is None:
         return
+    import_end = next(
+        (
+            index
+            for index, step in enumerate(saved.steps)
+            if isinstance(step, NativeExamRetryStep) and step.reason == "teacher_request"
+        ),
+        len(saved.steps),
+    )
     current = draft_item.import_record
     if (
         current is None
-        or current.steps[: len(saved.steps)] != saved.steps
+        or current.steps[:import_end] != saved.steps[:import_end]
         or any(
             not isinstance(step, NativeExamRetryStep) or step.reason != "teacher_request"
-            for step in current.steps[len(saved.steps) :]
+            for step in current.steps[import_end:]
         )
     ):
         raise validation_error(

@@ -241,12 +241,14 @@ async def test_unsaved_retries_keep_all_attempts_through_reload_save_and_reopen(
         ] == expected_record.model_dump(mode="json")
 
 
-@pytest.mark.parametrize("tamper", ["remove", "rewrite"])
-async def test_retry_rejects_draft_history_that_does_not_extend_saved_steps(tamper: str) -> None:
+@pytest.mark.parametrize(
+    "tamper", ["remove-resend", "rewrite-resend", "chosen-type", "key-origin", "extra-resend"]
+)
+async def test_retry_rejects_forged_import_facts_or_non_teacher_branch(tamper: str) -> None:
     env = Env()
     original = imported_document()
     saved_step = NativeExamRetryStep(
-        reason="teacher_request",
+        reason="type_conflict",
         from_kind=NativeExamItemKind.FREE_TEXT,
         chosen_kind=NativeExamItemKind.SINGLE_CHOICE,
         outcome="review_required",
@@ -258,9 +260,24 @@ async def test_retry_rejects_draft_history_that_does_not_extend_saved_steps(tamp
         update={"items": (original.items[0].model_copy(update={"import_record": saved_record}),)}
     )
     await env.seed(original)
-    draft_steps = saved_record.steps[:-1]
-    if tamper == "rewrite":
-        draft_steps = (*draft_steps, saved_step.model_copy(update={"outcome": "converted"}))
+    draft_steps = saved_record.steps
+    if tamper == "remove-resend":
+        draft_steps = draft_steps[:-1]
+    elif tamper == "rewrite-resend":
+        draft_steps = (*draft_steps[:-1], saved_step.model_copy(update={"outcome": "converted"}))
+    elif tamper == "chosen-type":
+        draft_steps = (
+            NativeExamChosenTypeStep(chosen_kind=NativeExamItemKind.GAP_FILL),
+            *draft_steps[1:],
+        )
+    elif tamper == "key-origin":
+        draft_steps = (
+            draft_steps[0],
+            NativeExamAnswerKeyStep(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+            *draft_steps[2:],
+        )
+    else:
+        draft_steps = (*draft_steps, saved_step)
     draft = original.model_copy(
         update={
             "items": (
@@ -276,6 +293,105 @@ async def test_retry_rejects_draft_history_that_does_not_extend_saved_steps(tamp
         await env.retry(draft)
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert env.exchange.requests == []
+
+
+@pytest.mark.parametrize("saved_attempts", [1, 2])
+async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
+    saved_attempts: int,
+) -> None:
+    env = _Env()
+    retry_env = Env()
+    actor = retry_env.actor
+    original = imported_document()
+    lineage = original.document_id
+    handler = RetryExamWorkspaceItemHandler(
+        vault_files=env.vault_files,
+        codec=env.codec,
+        store=env.store,
+        exchange=retry_env.exchange,
+        profile=PROFILE,
+        enabled=True,
+    )
+    await env.store.save(
+        actor=actor,
+        file_id=uuid4(),
+        name="import.provdokument.zip",
+        content=env.codec.build(
+            content=ExamWorkspaceContainerContent(document=original, assets_by_id={})
+        ),
+        lineage_id=lineage,
+        version=1,
+    )
+    history = await env.save_handler.history(actor=actor, lineage_id=lineage)
+    draft = original
+    retry_env.exchange.failure = DocxBuildRoundFailure("Otillgänglig", code="provider_unavailable")
+    for _ in range(saved_attempts):
+        retried = await handler.handle(
+            actor=actor,
+            lineage_id=lineage,
+            request=RetryExamWorkspaceItemRequest(
+                document=draft, item_id="item_001", kind=NativeExamItemKind.SINGLE_CHOICE
+            ),
+        )
+        draft = draft.model_copy(update={"items": (retried.item,)})
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=lineage,
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=draft.model_copy(update={"revision": 2})
+        ),
+    )
+    head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage)
+    assert head is not None
+    saved_bytes = await env.store.load(actor=actor, vault_file=head)
+    # The existing history route returns earlier content at the current saved revision.
+    undone = await env.save_handler.history_step(
+        actor=actor, lineage_id=lineage, step_id=history.baseline_step_id
+    )
+    draft = undone.document
+    assert draft.revision == 2
+    assert draft.items[0].import_record == original.items[0].import_record
+    expected = import_record()
+    for kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.FREE_TEXT):
+        retried = await handler.handle(
+            actor=actor,
+            lineage_id=lineage,
+            request=RetryExamWorkspaceItemRequest(document=draft, item_id="item_001", kind=kind),
+        )
+        expected = expected.model_copy(
+            update={
+                "steps": (
+                    *expected.steps,
+                    NativeExamRetryStep(
+                        reason="teacher_request",
+                        from_kind=draft.items[0].kind,
+                        chosen_kind=kind,
+                        outcome="review_required",
+                    ),
+                )
+            }
+        )
+        assert retried.item.import_record == expected
+        draft = NativeExamDocument.model_validate_json(
+            draft.model_copy(update={"items": (retried.item,)}).model_dump_json()
+        )
+        assert await env.store.load(actor=actor, vault_file=head) == saved_bytes
+    assert len(retry_env.exchange.requests) == saved_attempts + 2
+    assert all(
+        not isinstance(step, NativeExamRetryStep)
+        or step.chosen_kind is not NativeExamItemKind.SINGLE_CHOICE
+        for step in expected.steps
+    )
+    saved = await env.save_handler.handle(
+        actor=actor,
+        lineage_id=lineage,
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=2, document=draft.model_copy(update={"revision": 3})
+        ),
+    )
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
+    assert saved.document.items[0].import_record == expected
+    assert reopened.saved_document.items[0].import_record == expected
 
 
 @pytest.mark.parametrize("enabled", [True, False])
