@@ -16,7 +16,7 @@ import { useRoute } from "vue-router";
 
 import HelpIndex from "./HelpIndex.vue";
 import UiDenseIconButton from "../ui/shared/components/UiDenseIconButton.vue";
-import IconX from "../icons/IconX.vue";
+import { UiGlyph } from "../ui/shared";
 import { prefetchHelpTopics, resolveHelpTopicComponent } from "./helpTopics";
 import { resolveHelpTopic, useHelp } from "./useHelp";
 import { useAuthStore } from "../../stores/auth";
@@ -137,7 +137,10 @@ watch(
             size="touch"
             @click="close()"
           >
-            <IconX :size="20" />
+            <UiGlyph
+              meaning="close"
+              :size="20"
+            />
           </UiDenseIconButton>
         </header>
 

@@ -19,7 +19,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import UiDenseIconButton from "../../ui/shared/components/UiDenseIconButton.vue";
 import SystemMessage from "../../ui/shared/components/SystemMessage.vue";
 import IconRun from "../../icons/IconRun.vue";
-import IconX from "../../icons/IconX.vue";
+import { UiGlyph } from "../../ui/shared";
 import { resolveTutorialMediaUrl, type TutorialClip } from "../../../api/tutorialClips";
 import { formatClipDuration, TUTORIAL_COPY } from "./tutorialCopy";
 
@@ -193,7 +193,10 @@ onBeforeUnmount(() => {
               data-test="tutorial-clip-dialog-close"
               @click="close"
             >
-              <IconX :size="20" />
+              <UiGlyph
+                meaning="close"
+                :size="20"
+              />
             </UiDenseIconButton>
           </header>
 
