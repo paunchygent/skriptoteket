@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -52,7 +52,7 @@
       "id": "dense-tool-primitives",
       "kind": "typescript.primitive",
       "path": "src/vue/denseToolPrimitives.ts",
-      "sha256": "fa18d02f857f759dbf999f76986d62625268f3089a28a7744828291f7d03f432"
+      "sha256": "0131187e15313992aba42ee563cd24ebf417dd1ea718b168738ec1465690773c"
     },
     {
       "id": "ui-glyphs",
@@ -70,13 +70,13 @@
       "id": "ui-dense-icon-button",
       "kind": "vue.component",
       "path": "src/vue/components/UiDenseIconButton.vue",
-      "sha256": "f976527c85807f1c6711383e819b27191015fc6bde52cf858017bbd7546304d2"
+      "sha256": "235d755febd9477bdee0d7c3f65bbbff2ebdae87568171b2f7d27f8d0e1b28a1"
     },
     {
       "id": "ui-dense-status-pill",
       "kind": "vue.component",
       "path": "src/vue/components/UiDenseStatusPill.vue",
-      "sha256": "872db33ffcf36eed9a67d109b4197274cb4749ce421a70af2c5082c81d2cbcf6"
+      "sha256": "d619ca47ba55e611810d3a66de9d90e98d2e994d89c3f06d171d9945d73fafe4"
     },
     {
       "id": "ui-dense-spinner",

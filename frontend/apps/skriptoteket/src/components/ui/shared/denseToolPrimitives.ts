@@ -9,7 +9,7 @@
  */
 
 export type DenseActionTone = "default" | "primary" | "secondary" | "danger";
-export type DenseActionSize = "icon" | "utility";
+export type DenseActionSize = "icon" | "utility" | "touch";
 export type DenseActionGroupPosition = "single" | "start" | "middle" | "end";
 export type DenseStatusTone = "neutral" | "success" | "warning" | "error";
 
@@ -25,6 +25,7 @@ export type DenseStatusPillClassOptions = {
   tone?: DenseStatusTone;
   interactive?: boolean;
   active?: boolean;
+  compact?: boolean;
 };
 
 export type DenseActionValueClassOptions = {
@@ -125,9 +126,11 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
   const base =
     "inline-flex items-center justify-center gap-1.5 border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
   const sizeClass =
-    size === "icon"
-      ? `${DENSE_ICON_SIZE_CLASS} p-0 text-[12px]`
-      : `${DENSE_TEXT_HEIGHT_CLASS} px-2.5 py-1 text-[10px]`;
+    size === "touch"
+      ? `h-[44px] min-h-[44px] min-w-[44px] shrink-0 ${iconOnly ? "w-[44px] p-0 text-[12px]" : "px-2.5 py-1 text-[10px]"}`
+      : size === "icon"
+        ? `${DENSE_ICON_SIZE_CLASS} p-0 text-[12px]`
+        : `${DENSE_TEXT_HEIGHT_CLASS} px-2.5 py-1 text-[10px]`;
   const disabledClass = iconOnly ? "disabled:opacity-40" : "disabled:opacity-50";
 
   return [
@@ -144,14 +147,23 @@ export function denseMenuItemClass(tone: DenseActionTone = "default"): string {
 }
 
 export function denseStatusPillClass(options: DenseStatusPillClassOptions = {}): string {
-  const { tone = "neutral", interactive = false, active = false } = options;
-  const base =
-    "inline-flex h-[28px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide leading-none";
+  const { tone = "neutral", interactive = false, active = false, compact = false } = options;
+  const base = compact
+    ? "inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-0 bg-transparent p-0"
+    : "inline-flex h-[28px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide leading-none";
   const interactiveClass = interactive
     ? "cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
     : "";
 
-  return [base, interactiveClass, statusToneClass(tone, active, interactive)].join(" ").trim();
+  const compactToneClass: Record<DenseStatusTone, string> = {
+    neutral: "text-navy/70",
+    success: "text-success",
+    warning: "text-warning",
+    error: "text-error",
+  };
+  const toneClass = compact ? compactToneClass[tone] : statusToneClass(tone, active, interactive);
+
+  return [base, interactiveClass, toneClass].join(" ").trim();
 }
 
 export function denseActionValueClass(options: DenseActionValueClassOptions = {}): string {
