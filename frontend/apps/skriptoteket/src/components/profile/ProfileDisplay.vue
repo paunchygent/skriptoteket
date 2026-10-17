@@ -3,6 +3,7 @@ import { computed, ref, reactive, watch } from "vue";
 
 import { isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
+import { UiGlyph } from "../ui/shared";
 import { useProfile } from "../../composables/useProfile";
 import { useToast } from "../../composables/useToast";
 import ProfileAiSettingsInline from "./ProfileAiSettingsInline.vue";
@@ -126,11 +127,11 @@ watch(() => props.profile, () => {
 </script>
 
 <template>
-  <div class="profile-panel border border-navy bg-panel">
+  <div class="profile-panel rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
     <!-- Header with avatar -->
     <div class="flex items-center gap-4 border-b border-navy/20 p-4">
       <div
-        class="flex h-14 w-14 shrink-0 items-center justify-center border-2 border-navy/30 bg-navy text-xl font-bold text-canvas"
+        class="flex h-14 w-14 shrink-0 items-center justify-center border border-[var(--huleedu-panel-border)] bg-navy text-xl font-bold text-canvas"
       >
         {{ initials }}
       </div>
@@ -155,19 +156,10 @@ watch(() => props.profile, () => {
           class="btn-inline-edit"
           @click="toggleEditingPersonal"
         >
-          <svg
-            class="w-3 h-3 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
+          <UiGlyph
+            meaning="edit"
+            :size="12"
+          />
           {{ isEditingPersonal ? 'Stäng' : 'Ändra' }}
         </button>
       </div>
@@ -317,19 +309,10 @@ watch(() => props.profile, () => {
           class="btn-inline-edit"
           @click="toggleEditingAi"
         >
-          <svg
-            class="w-3 h-3 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
+          <UiGlyph
+            meaning="edit"
+            :size="12"
+          />
           {{ isEditingAi ? 'Stäng' : 'Ändra' }}
         </button>
       </div>
@@ -353,15 +336,15 @@ watch(() => props.profile, () => {
   align-items: center;
   justify-content: space-between;
   padding: 0.625rem 1rem;
-  background: rgba(245, 243, 239, 0.5); /* canvas/50 */
+  background: var(--huleedu-canvas-50);
 }
 
 .section-title {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(26, 43, 60, 0.7);
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 /* Read-only fields list */
@@ -374,7 +357,7 @@ watch(() => props.profile, () => {
   grid-template-columns: 1fr;
   gap: 0.25rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(26, 43, 60, 0.1);
+  border-bottom: 1px solid var(--huleedu-surface-divider);
 }
 
 .field-row:last-child {
@@ -390,16 +373,16 @@ watch(() => props.profile, () => {
 }
 
 .field-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(26, 43, 60, 0.7);
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 .field-value {
-  font-size: 0.875rem;
-  color: #1a2b3c;
+  font-size: var(--huleedu-text-sm);
+  color: var(--huleedu-navy);
 }
 
 .field-action {
@@ -441,11 +424,11 @@ watch(() => props.profile, () => {
 }
 
 .edit-field-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(26, 43, 60, 0.6);
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
 }
 
 .section-actions {
@@ -454,7 +437,7 @@ watch(() => props.profile, () => {
   gap: 0.75rem;
   margin-top: 0.5rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(26, 43, 60, 0.1);
+  border-top: 1px solid var(--huleedu-surface-divider);
 }
 
 @media (min-width: 640px) {

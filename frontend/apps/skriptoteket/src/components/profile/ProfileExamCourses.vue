@@ -20,8 +20,8 @@ import {
 import { useToast } from "../../composables/useToast";
 import ExamCourseCombobox from "../../views/apps/exam-workspace/ExamCourseCombobox.vue";
 import { useExamCourseCatalog } from "../../views/apps/exam-workspace/useExamCourseCatalog";
-import { IconPlus, IconTrash } from "../icons";
 import { SystemMessage } from "../ui";
+import { UiDenseIconButton, UiGlyph } from "../ui/shared";
 
 const props = defineProps<{
   examCourses: components["schemas"]["ExamCourses"] | null;
@@ -163,17 +163,20 @@ async function save(): Promise<void> {
           input-id="profile-exam-course"
         />
       </div>
-      <button
-        type="button"
-        class="flex w-11 shrink-0 items-center justify-center border border-navy/35 bg-panel text-navy transition-colors hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:opacity-40"
+      <UiDenseIconButton
+        label="Lägg till kurs"
+        size="touch"
         data-test="profile-course-add"
         aria-label="Lägg till kurs"
         title="Lägg till kurs"
         :disabled="isSaving || !canAdd"
         @click="addCourse"
       >
-        <IconPlus :size="16" />
-      </button>
+        <UiGlyph
+          meaning="add"
+          :size="16"
+        />
+      </UiDenseIconButton>
     </div>
 
     <ol
@@ -193,17 +196,20 @@ async function save(): Promise<void> {
         >
           {{ row.name }}<template v-if="row.detail"> · {{ row.detail }}</template>
         </span>
-        <button
-          type="button"
-          class="courses-remove"
+        <UiDenseIconButton
+          :label="`Ta bort ${row.name}`"
+          tone="danger"
           data-test="profile-course-remove"
           :aria-label="`Ta bort ${row.name}`"
           title="Ta bort"
           :disabled="isSaving"
           @click="removeCourse(row.key)"
         >
-          <IconTrash :size="14" />
-        </button>
+          <UiGlyph
+            meaning="delete"
+            :size="14"
+          />
+        </UiDenseIconButton>
       </li>
     </ol>
     <p
@@ -237,11 +243,11 @@ async function save(): Promise<void> {
 }
 
 .courses-legend {
-  font-size: var(--huleedu-text-xs, 0.75rem);
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--huleedu-navy-70, rgba(26, 43, 60, 0.7));
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 .courses-list {
@@ -257,27 +263,11 @@ async function save(): Promise<void> {
   justify-content: space-between;
   gap: 0.75rem;
   min-height: 2.25rem;
-  border-bottom: 1px solid rgba(26, 43, 60, 0.1);
+  border-bottom: 1px solid var(--huleedu-surface-divider);
 }
 
 .courses-row:last-child {
   border-bottom: none;
-}
-
-.courses-remove {
-  flex-shrink: 0;
-  padding: 0.375rem;
-  color: rgba(26, 43, 60, 0.65);
-  transition: color 150ms ease;
-}
-
-.courses-remove:hover:not(:disabled) {
-  color: var(--color-error, #b3261e);
-}
-
-.courses-remove:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
 }
 
 .courses-actions {
@@ -285,6 +275,6 @@ async function save(): Promise<void> {
   align-items: center;
   gap: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(26, 43, 60, 0.1);
+  border-top: 1px solid var(--huleedu-surface-divider);
 }
 </style>

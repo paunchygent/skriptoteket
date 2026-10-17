@@ -272,16 +272,16 @@ defineExpose({ startEditing, cancelEditing });
 }
 
 .ai-setting-label {
-  font-size: var(--huleedu-text-xs, 0.75rem);
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--huleedu-navy-70, rgba(26, 43, 60, 0.7));
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 .ai-setting-value {
-  font-size: var(--huleedu-text-sm, 0.875rem);
-  color: var(--huleedu-navy, #1a2b3c);
+  font-size: var(--huleedu-text-sm);
+  color: var(--huleedu-navy);
 }
 
 /* Edit form */
@@ -299,11 +299,11 @@ defineExpose({ startEditing, cancelEditing });
 }
 
 .ai-fieldset-legend {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(26, 43, 60, 0.6);
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
   margin-bottom: 0.5rem;
 }
 
@@ -312,6 +312,6 @@ defineExpose({ startEditing, cancelEditing });
   align-items: center;
   gap: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(26, 43, 60, 0.1);
+  border-top: 1px solid var(--huleedu-surface-divider);
 }
 </style>

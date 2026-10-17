@@ -93,8 +93,8 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <section class="expand-left-40 border border-navy bg-panel">
-    <div class="border-b border-navy px-4 py-3">
+  <section class="expand-left-40 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
+    <div class="border-b border-[var(--huleedu-surface-divider)] px-4 py-3">
       <h2 class="text-sm font-semibold text-navy">AI-inställningar</h2>
       <p class="text-xs text-navy/70">Styr om kodassistenten får använda externa AI-API:er.</p>
     </div>
