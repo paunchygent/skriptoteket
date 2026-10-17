@@ -62,10 +62,8 @@ export function useToolRun({ slug }: UseToolRunOptions) {
   const firstFileError = computed(() => {
     return Object.values(toolInputs.fileErrors.value).find((value) => value !== null) ?? null;
   });
-  const canSubmitRun = computed(() => {
-    if (!tool.value) return false;
-    return inputsValid.value;
-  });
+  // Invalid inputs must still reach submitRun so it can explain what needs fixing.
+  const canSubmitRun = computed(() => tool.value !== null);
 
   function isTerminalStatus(status: RunStatus): boolean {
     return status !== "running" && status !== "queued";

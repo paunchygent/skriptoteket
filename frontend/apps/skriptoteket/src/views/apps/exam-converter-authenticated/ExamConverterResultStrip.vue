@@ -44,7 +44,9 @@ const iconClassByTone: Record<ExamConverterResultStripState["tone"], string> = {
   <section
     class="border px-4 py-3"
     :class="containerClassByTone[result.tone]"
-    aria-live="polite"
+    :role="result.status === 'failed' ? 'alert' : 'status'"
+    :aria-live="result.status === 'failed' ? 'assertive' : 'polite'"
+    :aria-atomic="result.status === 'failed' ? 'true' : undefined"
     data-test="exam-converter-result-strip"
   >
     <div

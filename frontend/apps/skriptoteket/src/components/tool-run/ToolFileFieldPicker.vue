@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useId } from "vue";
 
 import { UiDenseActionButton, UiSegmentedToggle, type UiSegmentedToggleOption } from "../ui";
 import VaultPickerModal from "../vault/VaultPickerModal.vue";
@@ -39,6 +39,11 @@ const sortedRefs = computed(() => {
 });
 
 const activeVaultField = ref<ToolFileFieldSpec | null>(null);
+const errorIdBase = useId();
+
+function errorId(field: ToolFileFieldSpec): string {
+  return `${errorIdBase}-${field.name}-error`;
+}
 
 function selectionFor(field: ToolFileFieldSpec): FileFieldSelection {
   return props.selections[field.name] ?? { mode: "upload", uploads: [], refs: [] };
@@ -255,6 +260,8 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                   </span>
                   <input
                     type="file"
+                    :aria-invalid="errors[field.name] ? 'true' : undefined"
+                    :aria-describedby="errors[field.name] ? errorId(field) : undefined"
                     :multiple="field.max > 1"
                     :accept="acceptByField[field.name]"
                     class="sr-only"
@@ -265,7 +272,13 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
               </div>
 
               <div v-else>
-                <div :class="[isCompact ? 'space-y-2' : 'space-y-3']">
+                <div
+                  role="group"
+                  :aria-label="field.label"
+                  :aria-invalid="errors[field.name] ? 'true' : undefined"
+                  :aria-describedby="errors[field.name] ? errorId(field) : undefined"
+                  :class="[isCompact ? 'space-y-2' : 'space-y-3']"
+                >
                   <div class="flex flex-wrap items-center gap-2">
                     <UiDenseActionButton
                       label="Markera alla"
@@ -303,6 +316,8 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                     >
                       <input
                         type="checkbox"
+                        :aria-invalid="errors[field.name] ? 'true' : undefined"
+                        :aria-describedby="errors[field.name] ? errorId(field) : undefined"
                         class="mt-0.5 accent-action"
                         :checked="selectionFor(field).refs.includes(sessionRef.ref)"
                         :disabled="isReadOnly || (!selectionFor(field).refs.includes(sessionRef.ref) && selectionFor(field).refs.length >= field.max)"
@@ -331,6 +346,8 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       <button
                         type="button"
                         class="btn-ghost"
+                        :aria-invalid="errors[field.name] ? 'true' : undefined"
+                        :aria-describedby="errors[field.name] ? errorId(field) : undefined"
                         :disabled="isReadOnly || remainingVaultSlots(field) === 0"
                         @click="openVaultPicker(field)"
                       >
@@ -380,6 +397,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
 
         <p
           v-if="errors[field.name]"
+          :id="errorId(field)"
           :class="[isCompact ? 'text-[10px] font-semibold text-critical' : 'text-xs font-semibold text-critical']"
         >
           {{ errors[field.name] }}
