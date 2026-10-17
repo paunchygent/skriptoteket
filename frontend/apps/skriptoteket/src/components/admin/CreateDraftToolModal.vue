@@ -22,14 +22,23 @@ const emit = defineEmits<{
 }>();
 
 const titleInputRef = ref<HTMLInputElement | null>(null);
+let returnFocusTo: HTMLElement | null = null;
 
 watch(
   () => props.isOpen,
-  (isOpen) => {
-    if (!isOpen) return;
-    void nextTick().then(() => {
-      titleInputRef.value?.focus();
-    });
+  async (isOpen) => {
+    if (isOpen) {
+      returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      await nextTick();
+      if (props.isOpen) titleInputRef.value?.focus();
+      return;
+    }
+
+    await nextTick();
+    if (!props.isOpen) {
+      returnFocusTo?.focus();
+      returnFocusTo = null;
+    }
   },
 );
 </script>
@@ -45,6 +54,7 @@ watch(
         aria-labelledby="create-tool-dialog-title"
         :aria-describedby="error ? 'create-tool-dialog-error' : undefined"
         @click.self="emit('close')"
+        @keydown.esc.stop.prevent="emit('close')"
       >
         <div class="relative w-full max-w-lg mx-4 p-6 bg-modal rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] shadow-md">
           <UiDenseIconButton

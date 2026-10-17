@@ -130,6 +130,7 @@ watch(
         ref="textarea"
         v-model="draft"
         rows="2"
+        aria-label="Meddelande till kodassistenten"
         class="w-full resize-none border border-navy/30 bg-panel px-3 py-2 pr-10 text-sm text-navy shadow-none"
         :placeholder="mode === 'chat' ? 'Fråga mig vad du vill' : 'Beskriv vad du vill ändra...'"
         :disabled="props.isStreaming"
