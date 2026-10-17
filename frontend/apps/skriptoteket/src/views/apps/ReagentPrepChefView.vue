@@ -50,6 +50,7 @@ const {
   chemicalSearchResults,
   derivedGroups,
   derivedTotalVolumeMl,
+  fieldErrors,
   canCalculate,
   applyDefaults,
   buildRequestPayload,
@@ -60,6 +61,16 @@ const {
   resetSelection,
   selectChemicalFromSearch,
 } = useReagentPrepChefForm(chemicals);
+
+const prerequisiteErrors = computed(() => [
+  ...(!form.chemicalFormula.trim() ? ["Ange en kemisk formel i steget Ämne."] : []),
+  ...[
+    fieldErrors.value.studentCount,
+    fieldErrors.value.studentsPerGroup,
+    fieldErrors.value.volPerGroupMl,
+    fieldErrors.value.safetyFactor,
+  ].filter((message): message is string => message !== null),
+]);
 
 const {
   prep,
@@ -369,6 +380,7 @@ onMounted(() => {
         v-model:form="form"
         :derived-groups="derivedGroups"
         :derived-total-volume-ml="derivedTotalVolumeMl"
+        :field-errors="fieldErrors"
         @back="goTo('reagent')"
         @next="goTo('source')"
       />
@@ -379,6 +391,8 @@ onMounted(() => {
         :is-calculating="isCalculating"
         :is-exporting="isExporting"
         :can-calculate="canCalculate"
+        :field-errors="fieldErrors"
+        :prerequisite-errors="prerequisiteErrors"
         :action-error-message="actionErrorMessage"
         @back="goTo('class')"
         @calculate="handleCalculate"

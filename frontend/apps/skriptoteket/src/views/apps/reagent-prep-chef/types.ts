@@ -49,6 +49,11 @@ export type ReagentPrepChefFormState = {
   solutePurity: string;
 };
 
+export type ReagentPrepChefFieldErrors = Record<
+  Exclude<keyof ReagentPrepChefFormState, "chemicalFormula" | "sourceType">,
+  string | null
+>;
+
 export type RiskOverrideDraft = {
   id: string;
   measures: string[] | null;

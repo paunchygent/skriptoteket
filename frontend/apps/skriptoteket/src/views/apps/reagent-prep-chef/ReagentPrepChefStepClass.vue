@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { ReagentPrepChefFormState } from "./types";
+import type { ReagentPrepChefFieldErrors, ReagentPrepChefFormState } from "./types";
 
 type Props = {
   derivedGroups: number | null;
   derivedTotalVolumeMl: number | null;
+  fieldErrors: ReagentPrepChefFieldErrors;
 };
 
 const props = defineProps<Props>();
@@ -34,10 +35,20 @@ const emit = defineEmits<{
           <input
             id="rpc-students"
             v-model.number="form.studentCount"
+            :aria-invalid="Boolean(props.fieldErrors.studentCount)"
+            :aria-describedby="props.fieldErrors.studentCount ? 'rpc-students-error' : undefined"
             type="number"
             min="1"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
+          <p
+            v-if="props.fieldErrors.studentCount"
+            id="rpc-students-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.studentCount }}
+          </p>
         </div>
 
         <div class="space-y-2">
@@ -48,10 +59,20 @@ const emit = defineEmits<{
           <input
             id="rpc-per-group"
             v-model.number="form.studentsPerGroup"
+            :aria-invalid="Boolean(props.fieldErrors.studentsPerGroup)"
+            :aria-describedby="props.fieldErrors.studentsPerGroup ? 'rpc-per-group-error' : undefined"
             type="number"
             min="1"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
+          <p
+            v-if="props.fieldErrors.studentsPerGroup"
+            id="rpc-per-group-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.studentsPerGroup }}
+          </p>
         </div>
 
         <div class="space-y-2">
@@ -62,9 +83,19 @@ const emit = defineEmits<{
           <input
             id="rpc-vol-group"
             v-model="form.volPerGroupMl"
+            :aria-invalid="Boolean(props.fieldErrors.volPerGroupMl)"
+            :aria-describedby="props.fieldErrors.volPerGroupMl ? 'rpc-vol-group-error' : undefined"
             inputmode="decimal"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
+          <p
+            v-if="props.fieldErrors.volPerGroupMl"
+            id="rpc-vol-group-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.volPerGroupMl }}
+          </p>
         </div>
 
         <div class="space-y-2">
@@ -75,10 +106,22 @@ const emit = defineEmits<{
           <input
             id="rpc-safety-factor"
             v-model="form.safetyFactor"
+            :aria-invalid="Boolean(props.fieldErrors.safetyFactor)"
+            :aria-describedby="props.fieldErrors.safetyFactor ? 'rpc-safety-factor-error' : undefined"
             inputmode="decimal"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
           <p class="text-xs text-navy/60">Ex: 0,10 = 10% extra.</p>
+          <p
+            v-if="props.fieldErrors.safetyFactor"
+            id="rpc-safety-factor-error"
+            class="text-xs text-error"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            {{ props.fieldErrors.safetyFactor }}
+          </p>
         </div>
       </div>
 
@@ -104,7 +147,7 @@ const emit = defineEmits<{
         <button
           type="button"
           class="btn-primary"
-          :disabled="props.derivedGroups === null || props.derivedTotalVolumeMl === null"
+          :disabled="Boolean(props.fieldErrors.studentCount || props.fieldErrors.studentsPerGroup || props.fieldErrors.volPerGroupMl || props.fieldErrors.safetyFactor)"
           @click="emit('next')"
         >
           Fortsätt →

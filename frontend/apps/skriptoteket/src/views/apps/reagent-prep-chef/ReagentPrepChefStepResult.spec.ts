@@ -30,6 +30,11 @@ const sites = [
         stockMolarity: "1", solutePurity: "1",
       },
       isCalculating: false, isExporting: false, canCalculate: true, actionErrorMessage: null,
+      fieldErrors: {
+        targetMolarity: null, volPerGroupMl: null, studentCount: null, studentsPerGroup: null,
+        safetyFactor: null, stockMolarity: null, solutePurity: null,
+      },
+      prerequisiteErrors: [],
     } }),
   },
   {
