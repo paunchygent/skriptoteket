@@ -6,13 +6,13 @@ defineProps<{ title: string }>();
 
 <template>
   <section class="space-y-3">
-    <button
-      type="button"
-      class="text-sm text-navy/70 underline hover:text-action"
-      @click="emit('back')"
+    <a
+      href="#help-index"
+      class="text-sm font-medium text-action underline underline-offset-2 hover:text-action/80"
+      @click.prevent="emit('back')"
     >
       ← Till hjälpindex
-    </button>
+    </a>
     <h3 class="text-lg font-semibold text-navy">{{ title }}</h3>
     <slot />
     <slot name="footer" />

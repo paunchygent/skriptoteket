@@ -76,6 +76,30 @@ describe("MicroHelp", () => {
     wrapper.unmount();
   });
 
+  it("keeps content clicks inside and returns focus when its close control is used", async () => {
+    const wrapper = mount(MicroHelp, {
+      attachTo: document.body,
+      props: { id: "interactive-help", label: "Visa hjälp", title: "Fälthjälp" },
+      slots: { default: '<a href="#details">Mer information</a>' },
+    });
+    const trigger = wrapper.get('button[aria-label="Visa hjälp"]');
+    await trigger.trigger("click");
+    await flushUi();
+
+    expect(wrapper.get('[role="dialog"]').attributes("id")).toBe(
+      trigger.attributes("aria-controls"),
+    );
+    await wrapper.get('a[href="#details"]').trigger("click");
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(true);
+    await wrapper.get('button[aria-label="Stäng hjälp"]').trigger("click");
+    await flushUi();
+
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger.element);
+    wrapper.unmount();
+  });
+
   it("closes when the user clicks outside the help disclosure", async () => {
     const wrapper = mount(MicroHelp, {
       attachTo: document.body,
