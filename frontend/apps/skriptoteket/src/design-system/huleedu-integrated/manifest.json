@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -34,7 +34,7 @@
       "id": "action-buttons",
       "kind": "css.component",
       "path": "src/css/action-buttons.css",
-      "sha256": "b95c14d8461b2593e6756d83e59afff577a50e589b1dd2dcc52349f8c908df8e"
+      "sha256": "cbecf3db3c6e173adb44c034783df231699f39001ab7d422ee0942e1800bb9b7"
     },
     {
       "id": "auth-lifecycle",

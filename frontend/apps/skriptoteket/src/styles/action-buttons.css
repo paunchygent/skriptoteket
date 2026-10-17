@@ -83,6 +83,7 @@
   box-shadow: none;
   color: var(--button-secondary-text);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .btn-primary:disabled,
