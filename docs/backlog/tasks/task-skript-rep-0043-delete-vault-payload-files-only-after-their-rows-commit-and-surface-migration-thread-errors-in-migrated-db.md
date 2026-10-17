@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer 6a23c23d reviewed 1d4e669b (retained session 01a14bdc-65b7-73e1-a8ee-3c75001a36fa, evidence/reviews/TASK-SKRIPT-REP-0043/review-1.md): changes_requested with F1 medium (Any-typed fixture calls in the migrated_db tests) and N1 low (stale delete docstring); D1, D2 and the lock-order barrier test hold, 61 unit and 17 PostgreSQL integration tests pass. Both were repaired in 1011cff9 and, as medium and low findings, admitted by the parent on focused checks without rereview (focused cleanup tests, lint and typecheck pass). Merged to main 2026-10-18.'
 task_kind: repository
 acceptance_criteria:
   - A purge whose row commit fails leaves every payload file in place, and a migration error inside the migrated_db fixture fails the test setup with that error
