@@ -145,21 +145,18 @@ const isRetainedProjectPreviewVisible = computed(() => {
   return isCurrentProjectPreviewFailure.value && Boolean(project.previewPdfUrl.value || projectHistory.activePreviewUrl.value);
 });
 
-const feedbackMessage = computed(() => {
-  if (workspaceMode.value === "project_preview") {
-    if (isRetainedProjectPreviewVisible.value && project.errorMessage.value) {
-      return `${project.errorMessage.value} Försök igen för att skapa en ny PDF.`;
-    }
-    return project.statusMessage.value ?? project.errorMessage.value;
+const feedback = computed(() => {
+  const current = workspaceMode.value === "project_preview" ? project : singleFile;
+  const errorMessage = current.errorMessage.value;
+  if (errorMessage) {
+    return {
+      message: isRetainedProjectPreviewVisible.value
+        ? `${errorMessage} Försök igen för att skapa en ny PDF.`
+        : errorMessage,
+      isError: true,
+    };
   }
-  return singleFile.statusMessage.value ?? singleFile.errorMessage.value;
-});
-
-const feedbackIsError = computed(() => {
-  if (workspaceMode.value === "project_preview") {
-    return Boolean(project.errorMessage.value);
-  }
-  return Boolean(singleFile.errorMessage.value);
+  return { message: current.statusMessage.value, isError: false };
 });
 
 const canRetryCurrentMode = computed(() => {
@@ -374,8 +371,8 @@ async function retryCurrentMode(): Promise<void> {
           :can-download="canDownloadResult"
           :can-retry="canRetryCurrentMode"
           :can-save="canSaveResult"
-          :feedback-is-error="feedbackIsError"
-          :feedback-message="feedbackMessage"
+          :feedback-is-error="feedback.isError"
+          :feedback-message="feedback.message"
           :filename-extension="filenameExtensionLabel"
           :filename-stem="filenameStemIntent"
           :is-downloading="isDownloadingResult"
