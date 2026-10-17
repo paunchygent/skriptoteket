@@ -38,6 +38,9 @@ from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
+)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -81,6 +84,8 @@ class ConversionWorld:
             vault_files=self.vault_files,
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=storage,
+            index=PostgreSQLExamIndexRepository(session),
+            codec=self.codec,
             uow=self.uow,
             clock=clock,
             settings=SETTINGS,
@@ -95,7 +100,9 @@ class ConversionWorld:
             clock=clock,
             id_generator=Ids(),
         )
-        self.status = GetExamWorkspaceConversionStatusHandler(jobs=self.jobs)
+        self.status = GetExamWorkspaceConversionStatusHandler(
+            jobs=self.jobs, index=PostgreSQLExamIndexRepository(session)
+        )
 
     async def opened(self, actor: User, lineage_id: UUID) -> ExamWorkspaceDocumentResponse:
         return await GetExamWorkspaceDocumentHandler(

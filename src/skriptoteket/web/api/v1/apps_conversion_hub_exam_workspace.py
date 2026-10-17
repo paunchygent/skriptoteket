@@ -36,6 +36,13 @@ from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    ContentSuggestionsResponse,
+    ExamCourseContentResponse,
+    GetExamContentSuggestionsHandler,
+    RequestExamContentSuggestionsHandler,
+    course_content,
+)
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -45,6 +52,7 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
@@ -59,6 +67,46 @@ from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
+
+
+@router.get("/exam-workspace/courses/{key:path}/content", response_model=ExamCourseContentResponse)
+def get_exam_course_content(
+    key: str,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamCourseContentResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return course_content(key)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/content-suggestions",
+    response_model=ContentSuggestionsResponse,
+    status_code=202,
+)
+async def request_exam_content_suggestions(
+    lineage_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[RequestExamContentSuggestionsHandler],
+    user: User = Depends(require_app_user_api),
+) -> ContentSuggestionsResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user, lineage_id=lineage_id)
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/content-suggestions/{job_id}",
+    response_model=ContentSuggestionsResponse,
+)
+async def get_exam_content_suggestions(
+    lineage_id: UUID,
+    job_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[GetExamContentSuggestionsHandler],
+    user: User = Depends(require_app_user_api),
+) -> ContentSuggestionsResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user, lineage_id=lineage_id, job_id=job_id)
 
 
 @router.post(
@@ -106,6 +154,27 @@ async def import_exam_workspace_document(
         actor=user,
         filename=file.filename or "prov.docx",
         content=content,
+        course_key=course_key or None,
+    )
+
+
+@router.post(
+    "/exam-workspace/import-digiexam",
+    response_model=ExamWorkspaceConversionStatus,
+    status_code=202,
+)
+async def import_exam_workspace_digiexam_document(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ImportExamWorkspaceDigiExamDocumentHandlerProtocol],
+    file: UploadFile = File(...),
+    course_key: str | None = Form(None, max_length=64),
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceConversionStatus:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(
+        actor=user,
+        filename=file.filename or "prov.dxe",
+        content=await file.read(),
         course_key=course_key or None,
     )
 

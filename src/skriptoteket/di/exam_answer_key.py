@@ -17,6 +17,12 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
     GetAnswerKeyLeaseStatusHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    ProcessExamContentSuggestionsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
+    ProcessExamWorkspaceDigiExamJobHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
@@ -164,6 +170,8 @@ class ExamAnswerKeyProvider(Provider):
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
+        digiexam_handler: ProcessExamWorkspaceDigiExamJobHandler,
+        content_tags_handler: ProcessExamContentSuggestionsHandler,
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
@@ -178,6 +186,8 @@ class ExamAnswerKeyProvider(Provider):
             clock=clock,
             id_generator=id_generator,
             docx_handler=docx_handler,
+            digiexam_handler=digiexam_handler,
+            content_tags_handler=content_tags_handler,
         )
 
     @provide(scope=Scope.REQUEST)

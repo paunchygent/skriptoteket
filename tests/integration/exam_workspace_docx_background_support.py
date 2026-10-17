@@ -34,6 +34,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     manifest_from_output,
     question_source,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -43,6 +46,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
 )
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -267,6 +273,8 @@ def document_store(
         vault_files=PostgreSQLUserVaultFileRepository(session),
         vault_usage=PostgreSQLUserVaultUsageRepository(session),
         vault_storage=storage,
+        index=PostgreSQLExamIndexRepository(session),
+        codec=ExamWorkspaceContainerCodec(),
         uow=uow or SQLAlchemyUnitOfWork(session),
         clock=clock,
         settings=settings,

@@ -55,6 +55,7 @@ from skriptoteket.protocols.curated_apps import (
     CuratedAppExecutorProtocol,
     CuratedAppRegistryProtocol,
 )
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.execution_queue import ToolRunJobRepositoryProtocol
 from skriptoteket.protocols.file_refs import FileRefResolverProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -297,8 +298,9 @@ class ScriptingProvider(Provider):
         self,
         uow: UnitOfWorkProtocol,
         vault_files: VaultFileRepositoryProtocol,
+        index: ExamIndexRepositoryProtocol,
     ) -> RenameVaultFileHandlerProtocol:
-        return RenameVaultFileHandler(uow=uow, vault_files=vault_files)
+        return RenameVaultFileHandler(uow=uow, vault_files=vault_files, index=index)
 
     @provide(scope=Scope.REQUEST)
     def restore_vault_file_handler(

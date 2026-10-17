@@ -45,6 +45,12 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_w
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
     AnswerKeyProviderAttemptRunner,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    ProcessExamContentSuggestionsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
+    ProcessExamWorkspaceDigiExamJobHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
@@ -83,10 +89,14 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
+        digiexam_handler: ProcessExamWorkspaceDigiExamJobHandler,
+        content_tags_handler: ProcessExamContentSuggestionsHandler,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
         self._uow = uow
         self._docx_handler = docx_handler
+        self._digiexam_handler = digiexam_handler
+        self._content_tags_handler = content_tags_handler
         attempts = AnswerKeyProviderAttemptRunner(
             provider=provider,
             leases=leases,
@@ -123,6 +133,10 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         """Run one claimed enrichment job to a terminal status."""
 
+        if job.source_kind is ExamAnswerKeySourceKind.CONTENT_TAGS:
+            return await self._content_tags_handler.handle(job=job)
+        if job.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT:
+            return await self._digiexam_handler.handle(job=job)
         if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
             return await self._docx_handler.handle(job=job)
         if job.source_kind is ExamAnswerKeySourceKind.WORKSPACE:
@@ -153,6 +167,15 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
             )
             if job is None:
                 return None
+        if job.source_kind is ExamAnswerKeySourceKind.CONTENT_TAGS:
+            return await self._content_tags_handler.fail(
+                job=job, last_error="enrichment_worker_lease_expired"
+            )
+        if job.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT:
+            return await self._digiexam_handler.handle(
+                job=job,
+                fallback_reason="Importen avbröts. Försök importera DigiExam-exporten igen.",
+            )
         if job.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
             return await self._docx_handler.handle(
                 job=job,

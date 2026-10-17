@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 from datetime import timedelta
 from pathlib import Path
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
@@ -38,8 +39,14 @@ from skriptoteket.application.curated_apps.handlers.exam_converter_correction_se
 from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
     ExamConverterProductHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    ProcessExamContentSuggestionsHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
+    ProcessExamWorkspaceDigiExamJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -103,6 +110,9 @@ from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases impor
 )
 from skriptoteket.infrastructure.repositories.exam_converter_correction_sessions import (
     PostgreSQLExamConverterCorrectionSessionRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
@@ -221,6 +231,8 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         vault_files=vault_files,
         vault_usage=PostgreSQLUserVaultUsageRepository(db_session),
         vault_storage=vault_storage,
+        index=PostgreSQLExamIndexRepository(db_session),
+        codec=codec,
         uow=uow,
         clock=clock,
         settings=settings,
@@ -271,6 +283,16 @@ async def test_real_dxe_crosses_postgres_worker_review_and_replay_vertical(
         clock=clock,
         id_generator=ids,
         docx_handler=docx_handler,
+        digiexam_handler=ProcessExamWorkspaceDigiExamJobHandler(
+            jobs=enrichment_jobs,
+            store=store,
+            users=users,
+            uow=uow,
+            clock=clock,
+            id_generator=ids,
+            codec=codec,
+        ),
+        content_tags_handler=AsyncMock(spec=ProcessExamContentSuggestionsHandler),
     )
     worker_container = make_async_container(
         WorkerProvider(handler=processor, jobs=enrichment_jobs, uow=uow)

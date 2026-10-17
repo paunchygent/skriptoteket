@@ -9,9 +9,18 @@ from __future__ import annotations
 
 import httpx
 from dishka import Provider, Scope, provide
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.application.curated_apps.exam_content_tagging import (
+    MeteredExamContentTagClassifier,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_assets import (
     GetExamWorkspaceAssetHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    GetExamContentSuggestionsHandler,
+    ProcessExamContentSuggestionsHandler,
+    RequestExamContentSuggestionsHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
@@ -19,12 +28,16 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_pr
 from skriptoteket.application.curated_apps.handlers.exam_workspace_courses import (
     GetExamCourseCatalogHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
+    ProcessExamWorkspaceDigiExamJobHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
+    ImportExamWorkspaceDigiExamDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
     ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
@@ -76,8 +89,14 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
+from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
+    OpenAIDecisionsItemTypeLabeler,
+)
 from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_docx_conversion_profile,
+)
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
@@ -85,6 +104,7 @@ from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
@@ -94,6 +114,7 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
@@ -116,6 +137,62 @@ from skriptoteket.protocols.vault import (
 
 class ExamWorkspaceProvider(Provider):
     """Provide exam workspace conversion, persistence, and handlers."""
+
+    @provide(scope=Scope.REQUEST)
+    def content_classifier(
+        self,
+        client: httpx.AsyncClient,
+        settings: Settings,
+        sleeper: SleeperProtocol,
+        leases: AnswerKeyTokenLeaseRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> MeteredExamContentTagClassifier:
+        return MeteredExamContentTagClassifier(
+            classifier=OpenAIDecisionsItemTypeLabeler(
+                client=client,
+                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
+                sleeper=sleeper,
+                max_attempts=1,
+            ),
+            leases=leases,
+            uow=uow,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def request_content_suggestions(
+        self,
+        reader: GetExamWorkspaceDocumentHandlerProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> RequestExamContentSuggestionsHandler:
+        return RequestExamContentSuggestionsHandler(
+            reader=reader, jobs=jobs, uow=uow, clock=clock, id_generator=id_generator
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def get_content_suggestions(
+        self,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ) -> GetExamContentSuggestionsHandler:
+        return GetExamContentSuggestionsHandler(jobs=jobs)
+
+    @provide(scope=Scope.REQUEST)
+    def process_content_suggestions(
+        self,
+        classifier: MeteredExamContentTagClassifier,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+    ) -> ProcessExamContentSuggestionsHandler:
+        return ProcessExamContentSuggestionsHandler(
+            classifier=classifier, jobs=jobs, uow=uow, clock=clock
+        )
 
     @provide(scope=Scope.REQUEST)
     def course_catalog(
@@ -213,8 +290,9 @@ class ExamWorkspaceProvider(Provider):
     def conversion_status_handler(
         self,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        index: ExamIndexRepositoryProtocol,
     ) -> GetExamWorkspaceConversionStatusHandlerProtocol:
-        return GetExamWorkspaceConversionStatusHandler(jobs=jobs)
+        return GetExamWorkspaceConversionStatusHandler(jobs=jobs, index=index)
 
     @provide(scope=Scope.REQUEST)
     def retry_item_handler(
@@ -254,6 +332,10 @@ class ExamWorkspaceProvider(Provider):
         return ExamWorkspaceContainerCodec()
 
     @provide(scope=Scope.REQUEST)
+    def exam_index(self, session: AsyncSession) -> ExamIndexRepositoryProtocol:
+        return PostgreSQLExamIndexRepository(session)
+
+    @provide(scope=Scope.REQUEST)
     def document_store(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -262,6 +344,8 @@ class ExamWorkspaceProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
+        index: ExamIndexRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
     ) -> ExamWorkspaceDocumentStore:
         """Provide the versioned Mina filer document store."""
         return ExamWorkspaceDocumentStore(
@@ -271,6 +355,46 @@ class ExamWorkspaceProvider(Provider):
             uow=uow,
             clock=clock,
             settings=settings,
+            index=index,
+            codec=codec,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def process_digiexam_job(
+        self,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        store: ExamWorkspaceDocumentStore,
+        users: UserRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        id_generator: IdGeneratorProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+    ) -> ProcessExamWorkspaceDigiExamJobHandler:
+        return ProcessExamWorkspaceDigiExamJobHandler(
+            jobs=jobs,
+            store=store,
+            users=users,
+            uow=uow,
+            clock=clock,
+            id_generator=id_generator,
+            codec=codec,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def import_digiexam_handler(
+        self,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+        clock: ClockProtocol,
+        settings: Settings,
+        id_generator: IdGeneratorProtocol,
+    ) -> ImportExamWorkspaceDigiExamDocumentHandlerProtocol:
+        return ImportExamWorkspaceDigiExamDocumentHandler(
+            jobs=jobs,
+            uow=uow,
+            clock=clock,
+            settings=settings,
+            id_generator=id_generator,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -321,10 +445,13 @@ class ExamWorkspaceProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def list_handler(
-        self, vault_files: VaultFileRepositoryProtocol
+        self,
+        index: ExamIndexRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
     ) -> ListExamWorkspaceDocumentsHandlerProtocol:
-        """Provide the head-version document list handler."""
-        return ListExamWorkspaceDocumentsHandler(vault_files=vault_files)
+        """Provide the joined saved-exam index list handler."""
+        return ListExamWorkspaceDocumentsHandler(index=index, profiles=profiles, uow=uow)
 
     @provide(scope=Scope.REQUEST)
     def export_handler(
