@@ -57,22 +57,21 @@
   Owner: Mac Opus parent, root `01a149c9-5bc7-7713-ba64-12dee0470bdd`. Rules: walk
   only exam-converter changes, once per wave; restyle and repairs close on approved
   review plus unit tests. Wave 2 is closed (Recent).
-  TASK-SKRIPT-40-04-03 (workspace UI) on `codex/task-skript-40-04-03-remote` (Hemma):
-  r3 builds the red blocker panel and save-then-export (`697ac00b`); builder
-  `53c3f973` applied the rulings (no header banner, one plain line per level, no
-  "Godkänn alla"; `72282832`). Independent review `0ff04626` (Pi) running. Next:
-  admit findings, merge to main, rebuild staging, walk the editor once.
-  DOCX import totals: root causes confirmed by replay (retained
-  `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`); TASK-SKRIPT-39-04-11 `ready` (part totals
-  one path, one owner per points line, code-owned exam total; no fallbacks).
-  Next: implementation lead.
-  Next lanes: 39-06-02 Exam.net ordering/dropdown probe, 39-07-03 retire old
-  converter routes. Stories 39-04, 39-06, 39-07 await story closeout.
-  Follow-ups: trash cleanup deletes payload files before its row commit;
-  `migrated_db` swallows migration-thread errors; backend for the export filename
-  field; W14 dropdown option editor unbuilt.
+  2026-10-18 on main: TASK-SKRIPT-40-04-03 `done` (merge 10eef9fd, staging walk
+  passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
+  `done` (user: build ordering, new 39-06 task with P3/P21 still to plan); tutorial
+  video focus fix 39230851.
+  TASK-SKRIPT-39-04-11 on `codex/task-skript-39-04-11-remote` (Hemma, lead
+  `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): review-1 changes_requested
+  (two high, two medium); lead repairing all four (user 2026-10-18: headings may
+  carry the exam total, section-start lines never do). Next: rereview by `15716f77`,
+  merge, one Svenska 2 staging import.
+  Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); ordering
+  task planning; stories 39-04, 39-06, 39-07 await closeout.
+  Follow-ups: backend for the export filename field; W14 dropdown option editor.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
-  main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
+  main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
+  session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.

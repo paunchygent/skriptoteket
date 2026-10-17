@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer session 0ff04626 (rereview b5338e7a, f2379108; retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-04-03/review-1.md..review-3.md): review-3 clears the high R2-F1 saved-position finding and requests only one medium fixture repair (two integration tests seeded malformed container bytes, failing identically on main). That repair landed in 9f3ec452 and, as a medium finding, was admitted by the parent on focused checks without rereview. Merged to main 10eef9fd; affected frontend Vitest 1896 passed, vue-tsc, ESLint, backend lint and typecheck clean. The parent''s staging walk on 10eef9fd on 2026-10-18 passed: fresh Svenska 2 import, edit, Spara, undo/redo, reopen and undo (evidence/staging-walk-10eef9fd/walk.md).'
 task_kind: story
 acceptance_criteria:
   - A teacher imports, edits, saves, undoes and exports an exam in the one-editor workspace from the approved prototype, with every current workspace feature and the planned controls working against their backends

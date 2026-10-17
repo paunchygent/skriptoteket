@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8a0bf324bf3804c437097641181bb5639073f625764320eebc8c8c7662f42c95",
+  "source_set_digest": "cd7a00433c2f3fe30b907523c3a366c025eac0a1914435576ed8fa4f820486a9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6224,7 +6224,7 @@
       "type": "task",
       "title": "Build the redesigned exam workspace editor from the approved prototype",
       "path": "docs/backlog/tasks/task-skript-40-04-03-build-the-redesigned-exam-workspace-editor-from-the-approved-prototype.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6235,7 +6235,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer session 0ff04626 (rereview b5338e7a, f2379108; retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-04-03/review-1.md..review-3.md): review-3 clears the high R2-F1 saved-position finding and requests only one medium fixture repair (two integration tests seeded malformed container bytes, failing identically on main). That repair landed in 9f3ec452 and, as a medium finding, was admitted by the parent on focused checks without rereview. Merged to main 10eef9fd; affected frontend Vitest 1896 passed, vue-tsc, ESLint, backend lint and typecheck clean. The parent's staging walk on 10eef9fd on 2026-10-18 passed: fresh Svenska 2 import, edit, Spara, undo/redo, reopen and undo (evidence/staging-walk-10eef9fd/walk.md)."
       }
     },
     {
