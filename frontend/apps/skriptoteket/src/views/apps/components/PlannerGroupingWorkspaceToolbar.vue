@@ -8,11 +8,9 @@
  * lives in the adjacent settings drawer instead of in extra toolbar toggles.
  */
 
-import { computed, ref, type Component } from "vue";
+import { computed, ref } from "vue";
 
 import {
-  IconAdjustments,
-  IconHistory,
   IconMinus,
   IconPlus,
   IconRedo,
@@ -29,14 +27,11 @@ import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi"
 import type { Roster } from "../classroomPlannerTypes";
 import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import PlannerShareExportPanel from "./PlannerShareExportPanel.vue";
-import type {
-  PlannerExportFileOption,
-  PlannerExportOptionValue,
-} from "./plannerShareExportActions";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
-import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
+import { useGroupingToolbarOverflow } from "./useGroupingToolbarOverflow";
+import { useGroupingToolbarReset } from "./useGroupingToolbarReset";
+import { useGroupingToolbarShareExport } from "./useGroupingToolbarShareExport";
 import { useClassroomState } from "../useClassroomState";
 
 const props = withDefaults(
@@ -80,28 +75,6 @@ const props = withDefaults(
   },
 );
 
-const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
-const PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX = 540;
-const PHONE_RESET_OVERFLOW_MAX_WIDTH_PX = 405;
-const PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX = 380;
-const OVERFLOW_PRIORITY_ORDER = ["context", "reset", "distribution"];
-
-function resolvePhoneHiddenContributionIds(rootElement: HTMLElement): string[] | null {
-  if (typeof window === "undefined" || !window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY).matches) {
-    return null;
-  }
-  if (rootElement.clientWidth > PHONE_CONTEXT_OVERFLOW_MAX_WIDTH_PX) {
-    return null;
-  }
-  if (rootElement.clientWidth > PHONE_RESET_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 1);
-  }
-  if (rootElement.clientWidth > PHONE_DISTRIBUTION_OVERFLOW_MAX_WIDTH_PX) {
-    return OVERFLOW_PRIORITY_ORDER.slice(0, 2);
-  }
-  return OVERFLOW_PRIORITY_ORDER;
-}
-
 const emit = defineEmits<{
   (e: "change-grouping-roster", rosterId: string): void;
   (e: "new-grouping-draft"): void;
@@ -115,25 +88,17 @@ const emit = defineEmits<{
   (e: "revoke-share", share: ClassroomPlannerShareArtifact): void;
 }>();
 
-type OverflowActionItem = {
-  id: string;
-  label: string;
-  icon?: Component;
-  disabled: boolean;
-  group?: "primary" | "secondary";
-  hasPopup?: "dialog" | "menu";
-  expanded?: boolean;
-  responsiveVisibility?: "all" | "phone";
-  tone?: "danger";
-  testId: string;
-  onSelect: () => void;
-};
-
 const state = useClassroomState();
 const actionBarRef = ref<{
   getRootElement: () => HTMLDivElement | null;
 } | null>(null);
-const hasGroupingAssignments = computed(() => state.groupAssignments.length > 0);
+const {
+  hasGroupingAssignments,
+  isResetGroupingDialogOpen,
+  openResetGroupingDialog,
+  closeResetGroupingDialog,
+  confirmResetGroupingDraft,
+} = useGroupingToolbarReset(state);
 const groupCount = computed(() => state.groups.length);
 const selectedRosterValue = computed(() => {
   return props.selectedRosterId ?? props.availableRosters[0]?.id ?? "";
@@ -144,96 +109,39 @@ const removableGroupId = computed(() => {
   }
   return [...state.groups].sort((left, right) => left.sort_order - right.sort_order).at(-1)?.id ?? null;
 });
-const exportOptions = computed<PlannerExportFileOption[]>(() => [
-  {
-    id: "xlsx",
-    label: "Excel (.xlsx)",
-    option: "xlsx",
-    isDefault: true,
-  },
-  {
-    id: "pdf",
-    label: "PDF (A4 stående)",
-    option: "pdf_a4_portrait",
-  },
-]);
 const {
   hiddenContributionIds,
   stageLabel,
   thresholds,
-} = usePlannerToolbarOverflow({
+  secondaryActionItems,
+  isUndoRedoInline,
+  isResetInline,
+  isNewDraftInline,
+  isContextInline,
+  isDistributionInline,
+  hasContextOverflowPanel,
+  showOverflowPanel,
+} = useGroupingToolbarOverflow({
   getRootElement: () => actionBarRef.value?.getRootElement() ?? null,
-  forcedHiddenContributionIds: resolvePhoneHiddenContributionIds,
-  contributions: [
-    {
-      id: "context",
-      selector: '[data-overflow-contribution="context"]',
-    },
-    {
-      id: "reset",
-      selector: '[data-overflow-contribution="reset"]',
-    },
-    {
-      id: "distribution",
-      selector: '[data-overflow-contribution="distribution"]',
-    },
-  ],
+  props,
+  state,
+  hasGroupingAssignments,
+  openResetGroupingDialog,
+  openHistory: () => emit("open-history"),
+  editRoster: () => emit("edit-roster"),
+  openSettings: () => emit("open-settings"),
 });
-const overflowActionItems = computed(() => {
-  const isResetOverflowed = hiddenContributionIds.value.includes("reset");
-  if (!isResetOverflowed) {
-    return [];
-  }
-  return [{
-    id: "reset-grouping",
-    label: "Börja om",
-    disabled: state.isWorkspaceBusy || !hasGroupingAssignments.value,
-    group: "primary" as const,
-    tone: "danger" as const,
-    testId: "grouping-overflow-reset",
-    responsiveVisibility: "all" as const,
-    onSelect: openResetGroupingDialog,
-  }];
+const {
+  shareExportPanelProps,
+  shareExportPanelListeners,
+  showDistributionAction,
+} = useGroupingToolbarShareExport(props, {
+  createShare: () => emit("share-link"),
+  copyShare: (share) => emit("copy-share", share),
+  revokeShare: (share) => emit("revoke-share", share),
+  exportDefault: () => emit("export-default"),
+  exportOption: (option) => emit("export-option", option),
 });
-const secondaryActionItems = computed(() => {
-  const items: OverflowActionItem[] = [...overflowActionItems.value];
-  if (props.showHistoryAction) {
-    items.push({
-      id: "history",
-      label: "Historik",
-      icon: IconHistory,
-      disabled: state.isWorkspaceBusy,
-      testId: "grouping-history",
-      onSelect: () => emit("open-history"),
-    });
-  }
-  items.push({
-    id: "edit-roster",
-    label: "Redigera klass",
-    icon: IconAdjustments,
-    disabled: state.isWorkspaceBusy,
-    testId: "edit-grouping-roster",
-    onSelect: () => emit("edit-roster"),
-  });
-  if (props.showSmartControls) {
-    items.push({
-      id: "advanced-settings",
-      label: "Avancerade inställningar",
-      icon: IconAdjustments,
-      disabled: state.isWorkspaceBusy,
-      hasPopup: "dialog",
-      expanded: props.smartSettingsOpen,
-      testId: "grouping-overflow-open-settings",
-      onSelect: () => emit("open-settings"),
-    });
-  }
-  return items;
-});
-const isResetGroupingDialogOpen = ref(false);
-
-function isGroupingExportOption(option: PlannerExportOptionValue): option is GroupingExportOption {
-  return option === "xlsx" || option === "pdf_a4_portrait";
-}
 
 function changeGroupingRoster(event: Event): void {
   const target = event.target;
@@ -241,29 +149,6 @@ function changeGroupingRoster(event: Event): void {
     return;
   }
   emit("change-grouping-roster", target.value);
-}
-
-function openResetGroupingDialog(): void {
-  if (state.isWorkspaceBusy || !hasGroupingAssignments.value) {
-    return;
-  }
-  isResetGroupingDialogOpen.value = true;
-}
-
-function closeResetGroupingDialog(): void {
-  isResetGroupingDialogOpen.value = false;
-}
-
-function confirmResetGroupingDraft(): void {
-  state.clearGroupingAssignments();
-  closeResetGroupingDialog();
-}
-
-function handleExportOption(option: PlannerExportOptionValue): void {
-  if (!isGroupingExportOption(option)) {
-    return;
-  }
-  emit("export-option", option);
 }
 
 function decrementGroupCount(): void {
@@ -280,16 +165,6 @@ function incrementGroupCount(): void {
   state.addGroup();
 }
 
-const isUndoRedoInline = computed(() => true);
-const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
-const isNewDraftInline = computed(() => true);
-const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
-const isDistributionInline = computed(() => !hiddenContributionIds.value.includes("distribution"));
-const showDistributionAction = computed(() => props.showExportActions || props.showShareLinkAction);
-const hasContextOverflowPanel = computed(() => props.availableRosters.length > 0 && !isContextInline.value);
-const showOverflowPanel = computed(() => (
-  hasContextOverflowPanel.value
-));
 </script>
 
 <template>
@@ -309,7 +184,8 @@ const showOverflowPanel = computed(() => (
           data-overflow-contribution="undo-redo"
           data-test="grouping-undo-redo-cluster"
         >
-          <PlannerToolbarIconButton
+          <UiDenseActionButton
+            icon-only
             label="Ångra"
             size="utility"
             group-position="start"
@@ -318,9 +194,12 @@ const showOverflowPanel = computed(() => (
             @mousedown.prevent
             @click="void state.undoGroupingDraft()"
           >
-            <IconUndo :size="16" />
-          </PlannerToolbarIconButton>
-          <PlannerToolbarIconButton
+            <template #leading>
+              <IconUndo :size="16" />
+            </template>
+          </UiDenseActionButton>
+          <UiDenseActionButton
+            icon-only
             label="Gör om"
             size="utility"
             group-position="end"
@@ -329,8 +208,10 @@ const showOverflowPanel = computed(() => (
             @mousedown.prevent
             @click="void state.redoGroupingDraft()"
           >
-            <IconRedo :size="16" />
-          </PlannerToolbarIconButton>
+            <template #leading>
+              <IconRedo :size="16" />
+            </template>
+          </UiDenseActionButton>
         </div>
         <div
           v-if="isNewDraftInline"
@@ -379,7 +260,8 @@ const showOverflowPanel = computed(() => (
           data-test="grouping-group-count-control"
         >
           <div class="flex items-center [&>*+*]:-ml-px">
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Minska antal grupper"
               title="Ta bort sista gruppen"
               size="utility"
@@ -388,8 +270,10 @@ const showOverflowPanel = computed(() => (
               :disabled="state.isWorkspaceBusy || removableGroupId === null"
               @click="decrementGroupCount"
             >
-              <IconMinus :size="16" />
-            </PlannerToolbarIconButton>
+              <template #leading>
+                <IconMinus :size="16" />
+              </template>
+            </UiDenseActionButton>
             <span
               :class="denseActionValueClass({ groupPosition: 'middle' })"
               data-test="group-count-value"
@@ -397,7 +281,8 @@ const showOverflowPanel = computed(() => (
             >
               {{ groupCount }}
             </span>
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Öka antal grupper"
               title="Lägg till grupp"
               size="utility"
@@ -406,8 +291,10 @@ const showOverflowPanel = computed(() => (
               :disabled="state.isWorkspaceBusy"
               @click="incrementGroupCount"
             >
-              <IconPlus :size="16" />
-            </PlannerToolbarIconButton>
+              <template #leading>
+                <IconPlus :size="16" />
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
       </template>
@@ -453,28 +340,9 @@ const showOverflowPanel = computed(() => (
           :aria-hidden="!isDistributionInline"
         >
           <PlannerShareExportPanel
-            :file-options="exportOptions"
-            :shares="shares"
-            :share-loading="shareLoading"
-            :share-busy="shareBusy"
-            :share-status-label="shareStatusLabel"
-            :share-error-message="shareErrorMessage"
-            :export-busy="exportBusy"
-            :export-error-message="exportErrorMessage"
-            :revoking-share-id="revokingShareId"
-            :show-file-actions="showExportActions"
-            :show-share-actions="showShareLinkAction"
-            :show-revoke-action="showShareRevokeAction"
+            v-bind="shareExportPanelProps"
             trigger-test-id="grouping-share-trigger"
-            panel-test-id="grouping-share-management"
-            create-share-test-id="grouping-share-create"
-            create-share-mobile-test-id="grouping-share-create-mobile"
-            file-option-test-id-prefix="grouping-export-option"
-            @create-share="emit('share-link')"
-            @copy-share="emit('copy-share', $event)"
-            @revoke-share="emit('revoke-share', $event)"
-            @export-default="emit('export-default')"
-            @export-option="handleExportOption"
+            v-on="shareExportPanelListeners"
           />
         </div>
         <PlannerToolbarOverflowMenu
@@ -516,30 +384,11 @@ const showOverflowPanel = computed(() => (
             #footer
           >
             <PlannerShareExportPanel
-              :file-options="exportOptions"
-              :shares="shares"
-              :share-loading="shareLoading"
-              :share-busy="shareBusy"
-              :share-status-label="shareStatusLabel"
-              :share-error-message="shareErrorMessage"
-              :export-busy="exportBusy"
-              :export-error-message="exportErrorMessage"
-              :revoking-share-id="revokingShareId"
-              :show-file-actions="showExportActions"
-              :show-share-actions="showShareLinkAction"
-              :show-revoke-action="showShareRevokeAction"
+              v-bind="shareExportPanelProps"
               trigger-variant="menu-item"
               trigger-test-id="grouping-overflow-share-trigger"
               trigger-meta=""
-              panel-test-id="grouping-share-management"
-              create-share-test-id="grouping-share-create"
-              create-share-mobile-test-id="grouping-share-create-mobile"
-              file-option-test-id-prefix="grouping-export-option"
-              @create-share="emit('share-link')"
-              @copy-share="emit('copy-share', $event)"
-              @revoke-share="emit('revoke-share', $event)"
-              @export-default="emit('export-default')"
-              @export-option="handleExportOption"
+              v-on="shareExportPanelListeners"
             />
           </template>
         </PlannerToolbarOverflowMenu>

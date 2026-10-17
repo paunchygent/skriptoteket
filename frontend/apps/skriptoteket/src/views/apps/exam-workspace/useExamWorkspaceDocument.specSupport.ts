@@ -27,26 +27,28 @@ export type DocumentState = ReturnType<typeof useExamWorkspaceDocument>;
 export function buildResponse(
   item: NativeExamItem = buildMatchingItem(),
 ): ExamWorkspaceDocumentResponse {
+  const document: NativeExamDocument = {
+    assets: [],
+    document_id: "doc-1",
+    instructions: [],
+    items: [item],
+    origin: {
+      extractor_version: "docx-extractor-1",
+      kind: "docx_import",
+      source_filename: "english-1.docx",
+      source_sha256: "abc123",
+    },
+    parents: [],
+    revision: 1,
+    header: {},
+    schema_version: "native_exam_document_v4",
+    title: "English 1",
+  };
   return {
     history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: null,
-    document: {
-      assets: [],
-      document_id: "doc-1",
-      instructions: [],
-      items: [item],
-      origin: {
-        extractor_version: "docx-extractor-1",
-        kind: "docx_import",
-        source_filename: "english-1.docx",
-        source_sha256: "abc123",
-      },
-      parents: [],
-      revision: 1,
-      header: {},
-      schema_version: "native_exam_document_v4",
-      title: "English 1",
-    },
+    document,
+    saved_document: document,
     notes: [],
     summary: {
       lineage_id: "lineage-1",
@@ -60,7 +62,12 @@ export function buildResponse(
 
 /** The response a save returns: the given document as the next version. */
 export function savedResponse(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
-  return { ...buildResponse(), document, summary: { ...buildResponse().summary, version: 2 } };
+  return {
+    ...buildResponse(),
+    document,
+    saved_document: document,
+    summary: { ...buildResponse().summary, version: 2 },
+  };
 }
 
 export async function openMatchingDocument(

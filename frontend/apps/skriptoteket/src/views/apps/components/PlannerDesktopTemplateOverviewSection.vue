@@ -11,6 +11,7 @@
 import { computed, type CSSProperties } from "vue";
 
 import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
@@ -173,39 +174,41 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
       v-if="showActions !== false"
       class="planner-overview-panel-footer"
     >
-      <button
-        type="button"
-        class="btn-primary planner-overview-panel-action"
+      <UiDenseActionButton
+        label="Nytt klassrum"
+        tone="primary"
         :disabled="Boolean(createDisabledReason)"
         :title="createDisabledReason ?? undefined"
         data-test="overview-create-template"
         @click="emit('create-template')"
       >
-        <IconPlus :size="14" />
-        Nytt klassrum
-      </button>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost planner-overview-panel-action"
+        <template #leading>
+          <IconPlus :size="14" />
+        </template>
+      </UiDenseActionButton>
+      <UiDenseActionButton
+        label="Redigera"
         :disabled="!selectedTemplate || Boolean(editDisabledReason)"
         :title="editDisabledReason ?? undefined"
         data-test="overview-edit-template"
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
-        <IconEdit :size="14" />
-        Redigera
-      </button>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
+        <template #leading>
+          <IconEdit :size="14" />
+        </template>
+      </UiDenseActionButton>
+      <UiDenseActionButton
+        label="Radera"
+        tone="danger"
         :disabled="!selectedTemplate || Boolean(deleteDisabledReason)"
         :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-template"
         @click="emit('delete-current-template')"
       >
-        <IconTrash :size="14" />
-        Radera
-      </button>
+        <template #leading>
+          <IconTrash :size="14" />
+        </template>
+      </UiDenseActionButton>
     </div>
   </section>
 </template>

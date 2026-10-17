@@ -12,6 +12,7 @@
  */
 
 import { IconX } from "../../../components/icons";
+import { UiDenseIconButton } from "../../../components/ui";
 
 defineProps<{
   students: Array<{ id: string; name: string }>;
@@ -38,7 +39,7 @@ const emit = defineEmits<{
       </h3>
       <button
         type="button"
-        class="planner-phone-link-button"
+        class="btn-inline-cancel"
         data-test="phone-rules-clear-selection"
         :disabled="students.length === 0"
         @click.stop="emit('clear-selection')"
@@ -57,14 +58,12 @@ const emit = defineEmits<{
         data-test="phone-rules-selected-student"
       >
         <span class="truncate">{{ student.name }}</span>
-        <button
-          type="button"
-          class="planner-row-remove-button"
-          :aria-label="`Ta bort ${student.name} från regeln`"
+        <UiDenseIconButton
+          :label="`Ta bort ${student.name} från regeln`"
           @click.stop="emit('remove-student', student.id)"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </div>
     </div>
   </div>

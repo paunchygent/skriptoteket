@@ -8,6 +8,7 @@
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
+import { UiDenseActionButton } from "../../../components/ui";
 import {
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
@@ -116,7 +117,7 @@ function ghostPlacementClass(canPlace: boolean, type: RoomTemplateGhostPlacement
   if (type === "seat") {
     return "border-action/70 bg-action/10";
   }
-  return "border-navy/40 bg-white/40";
+  return "border-navy/40 bg-panel/40";
 }
 
 function syncBuilderViewportSize(): void {
@@ -204,41 +205,44 @@ const shouldCenterSurface = computed(() => {
       <div class="flex flex-wrap items-center gap-2">
         <span
           data-test="builder-zoom-percent"
-          class="border border-navy/20 bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
+          class="border border-navy/20 bg-panel px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
         >
           {{ builderScalePercent }}%
         </span>
-        <button
-          type="button"
+        <UiDenseActionButton
+          icon-only
+          label="Zooma ut"
+          size="utility"
           data-test="builder-zoom-out"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-out')"
         >
-          −
-        </button>
-        <button
-          type="button"
+          <template #leading>
+            −
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          icon-only
+          label="Zooma in"
+          size="utility"
           data-test="builder-zoom-in"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-in')"
         >
-          +
-        </button>
-        <button
-          type="button"
+          <template #leading>
+            +
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          label="Anpassa"
           data-test="builder-zoom-fit"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-compact"
           @click="emit('zoom-fit')"
-        >
-          Anpassa
-        </button>
+        />
       </div>
     </div>
 
     <div
       ref="builderViewport"
       data-test="room-builder-viewport"
-      class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-white/70 p-3 lg:min-h-[640px]"
+      class="min-h-[560px] flex-1 overflow-auto border border-navy/20 bg-panel/70 p-3 lg:min-h-[640px]"
     >
       <div
         data-test="room-builder-scroll-frame"

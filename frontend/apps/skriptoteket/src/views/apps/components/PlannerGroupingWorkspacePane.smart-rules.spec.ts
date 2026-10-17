@@ -133,13 +133,16 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
   });
 
   it("keeps unassigned students visible while selecting phone group targets", async () => {
+    stateMocks.plannerState.groups.push({
+      id: "group-2", name: "Grupp 2", sort_order: 1, name_is_custom: false,
+    });
+    stateMocks.plannerState.studentsByGroupId["group-2"] = [];
     const wrapper = mount(PlannerGroupingWorkspacePane);
 
     expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="phone-grouping-active-card"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="phone-grouping-tab-group-1"]').classes()).toContain(
-      "planner-phone-tab-active",
-    );
+    expect(wrapper.get('[data-test="phone-grouping-tab-group-1"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="phone-grouping-tab-group-2"]').attributes("aria-pressed")).toBe("false");
     expect(wrapper.get('[data-test="phone-grouping-student-pool-scroll-body"]').classes()).toEqual(
       expect.arrayContaining([
         "min-h-0",
@@ -148,10 +151,15 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
       ]),
     );
 
-    await wrapper.get('[data-test="phone-grouping-tab-group-1"]').trigger("click");
+    await wrapper.get('[data-test="phone-grouping-tab-group-2"]').trigger("click");
 
-    expect(wrapper.find('[data-test="phone-grouping-student-pool"]').exists()).toBe(true);
-    expect(wrapper.get('[data-test="phone-grouping-active-card"]').text()).toContain("Ada Lovelace");
+    expect(wrapper.get('[data-test="phone-grouping-tab-group-1"]').attributes("aria-pressed")).toBe("false");
+    expect(wrapper.get('[data-test="phone-grouping-tab-group-2"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="phone-grouping-student-pool"]').text()).toContain("Alan Turing");
+    const activeCard = wrapper.get('[data-test="phone-grouping-active-card"]');
+    expect((activeCard.get('[data-test="group-name-input"]').element as HTMLInputElement).value).toBe("Grupp 2");
+    expect(activeCard.text()).not.toContain("Ada Lovelace");
+    wrapper.unmount();
   });
 
   it("keeps a stable phone group target while groups are temporarily unavailable", async () => {
@@ -175,8 +183,6 @@ describe("PlannerGroupingWorkspacePane smart-rule visibility", () => {
 
     expect(reloadedWrapper.find('[data-test="phone-grouping-target-placeholder"]').exists()).toBe(false);
     expect(reloadedWrapper.get('[data-test="phone-grouping-active-card"]').text()).toContain("Alan Turing");
-    expect(reloadedWrapper.get('[data-test="phone-grouping-tab-group-2"]').classes()).toContain(
-      "planner-phone-tab-active",
-    );
+    expect(reloadedWrapper.get('[data-test="phone-grouping-tab-group-2"]').attributes("aria-pressed")).toBe("true");
   });
 });

@@ -5447,8 +5447,10 @@ export interface components {
         };
         /**
          * ExamWorkspaceDocumentResponse
-         * @description One document revision, with the DOCX import that created its lineage.
+         * @description The teacher's working copy and the durable exam file it stands on.
          *
+         *     ``document`` includes the selected undo step; ``saved_document`` is the exam
+         *     file at ``summary.version``, the baseline for Spara and dirty state.
          *     ``conversion`` is read under the same lock as the document, so its units name exactly
          *     the placeholders this revision still holds; it is None for a lineage no import created.
          */
@@ -5465,6 +5467,7 @@ export interface components {
              * @default []
              */
             notes: string[];
+            saved_document: components["schemas"]["NativeExamDocument-Output"];
             summary: components["schemas"]["ExamWorkspaceDocumentSummary"];
         };
         /** ExamWorkspaceDocumentSummary */

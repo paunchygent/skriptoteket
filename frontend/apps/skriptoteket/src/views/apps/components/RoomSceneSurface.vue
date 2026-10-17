@@ -64,14 +64,14 @@ const hasWallOverlay = computed(() => Boolean(slots["wall-overlay"]));
     class="relative"
     :style="roomSurfaceStyle"
   >
-    <div class="absolute inset-0 border border-navy/40 bg-white" />
+    <div class="absolute inset-0 border border-navy/40 bg-panel" />
 
     <div
       class="absolute"
       :style="roomFloorLayerStyle"
     >
       <div class="relative h-full w-full">
-        <div class="absolute inset-0 border border-navy bg-white" />
+        <div class="absolute inset-0 border border-navy bg-panel" />
 
         <div
           v-if="showBackdropGrid"

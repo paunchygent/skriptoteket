@@ -124,6 +124,53 @@ describe("createClassroomPlannerShareFlow", () => {
     expect(flow.shares.value).toEqual([createdShare]);
   });
 
+  it("finishes creation with recoverable Swedish feedback when clipboard permission is denied", async () => {
+    const clipboardError = new DOMException("Write permission denied.", "NotAllowedError");
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(clipboardError) },
+    });
+    const share = makeShare({
+      id: "share-clipboard-denied",
+      publicUrl: "https://skriptoteket.hule.education/share/classroom/created/klass-7a",
+    });
+    const flow = createClassroomPlannerShareFlow({
+      plannerState: reactive({
+        draft: makeDraft(8),
+        prepareForExport: vi.fn().mockResolvedValue({ status: "saved", message: null }),
+      }),
+      draftKind: "grouping",
+      createShare: vi.fn().mockResolvedValue({
+        artifact: share,
+        public_path: share.public_path,
+        public_url: share.public_url,
+      }),
+      listShares: vi.fn().mockResolvedValue([]),
+      revokeShare: vi.fn(),
+      messages: {
+        missingDraftMessage: "missing",
+        scopeChangedMessage: "changed",
+        initialStatusLabel: "Skapar delningslänk…",
+        copiedMessage: "copied",
+        createFallbackMessage: "create failed",
+        listFallbackMessage: "list failed",
+        revokeFallbackMessage: "revoke failed",
+        copyUnavailableMessage: "copy unavailable",
+      },
+    });
+    await flushPromises();
+
+    await flow.startShare();
+
+    expect(flow.isBusy.value).toBe(false);
+    expect(flow.statusLabel.value).toBeNull();
+    expect(flow.shares.value).toEqual([share]);
+    expect(flow.copiedShareId.value).toBeNull();
+    expect(flow.errorMessage.value).toContain("Länken");
+    expect(flow.errorMessage.value).toContain("Kopiera");
+    expect(flow.errorMessage.value).not.toContain(clipboardError.message);
+  });
+
   it("copies and revokes listed owned shares", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {

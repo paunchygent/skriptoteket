@@ -11,6 +11,7 @@
 import { computed, ref } from "vue";
 
 import { IconTrash, IconX } from "../../../components/icons";
+import { UiDenseIconButton, UiDenseStatusPill } from "../../../components/ui";
 import type { PlanDraftSummary } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -78,25 +79,29 @@ function confirmDelete(draftId: string): void {
       @click="emit('close')"
     />
     <aside
-      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-modal shadow-md"
+      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy/20 bg-modal shadow-md"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="planner-history-title"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0">
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             Historik
           </p>
-          <h3 class="font-serif text-xl text-navy">
+          <h3
+            id="planner-history-title"
+            class="font-sans text-xl text-navy"
+          >
             {{ props.title }}
           </h3>
         </div>
-        <button
-          type="button"
-          class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-sm"
-          aria-label="Stäng historik"
+        <UiDenseIconButton
+          label="Stäng historik"
           @click="emit('close')"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </div>
 
       <div
@@ -154,9 +159,7 @@ function confirmDelete(draftId: string): void {
                   <p class="text-sm font-semibold text-navy">
                     {{ summary.template_name ?? "Utan klassrum" }}
                   </p>
-                  <span class="border border-navy/20 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
-                    {{ statusLabel(summary.status) }}
-                  </span>
+                  <UiDenseStatusPill :label="statusLabel(summary.status)" />
                 </div>
                 <p class="text-sm text-navy/70">
                   Revision {{ summary.revision }} · uppdaterad {{ formatTimestamp(summary.updated_at) }}
@@ -166,16 +169,15 @@ function confirmDelete(draftId: string): void {
                 </p>
               </button>
 
-              <button
+              <UiDenseIconButton
                 v-if="props.canDeleteSummaries"
-                type="button"
-                class="btn-ghost planner-btn-ghost-subtle planner-btn-icon-lg"
+                label="Ta bort historiskt utkast"
+                tone="danger"
                 :disabled="props.busySummaryId === summary.id"
-                aria-label="Ta bort historiskt utkast"
                 @click.stop="requestDelete(summary.id)"
               >
                 <IconTrash :size="14" />
-              </button>
+              </UiDenseIconButton>
             </div>
 
             <div
@@ -193,14 +195,14 @@ function confirmDelete(draftId: string): void {
               <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="btn-ghost planner-btn-danger-soft"
+                  class="btn-primary"
                   @click="confirmDelete(summary.id)"
                 >
                   Ta bort
                 </button>
                 <button
                   type="button"
-                  class="btn-ghost planner-btn-ghost-soft"
+                  class="btn-ghost"
                   @click="cancelDelete"
                 >
                   Avbryt

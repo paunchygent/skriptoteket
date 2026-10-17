@@ -80,13 +80,51 @@ describe("CreateRosterModal", () => {
     await flushPromises();
   }
 
-  it("uses the opaque modal surface while keeping deliberate white form fields", () => {
-    const wrapper = mount(CreateRosterModal);
+  it.each([
+    { roster: null, title: "Ny klasslista" },
+    { roster: { id: "roster-1", name: "SA24D", students: [] }, title: "Redigera klasslista" },
+  ])("labels the modal with its visible title: $title", ({ roster, title }) => {
+    const wrapper = mount(CreateRosterModal, { props: { roster } });
+    const dialog = wrapper.get('[role="dialog"]');
 
-    expect(wrapper.get("[data-test='roster-modal-shell']").classes()).toContain("bg-modal");
-    expect(wrapper.get("[data-test='roster-modal-footer']").classes()).toContain("bg-modal");
-    expect(wrapper.get("input[type='text']").classes()).toContain("bg-white");
-    expect(wrapper.get("textarea").classes()).toContain("bg-white");
+    expect(dialog.attributes("aria-modal")).toBe("true");
+    const titleId = dialog.attributes("aria-labelledby");
+    expect(titleId).toBeTruthy();
+    const heading = dialog.get("h2");
+    expect(heading.attributes("id")).toBe(titleId);
+    expect(heading.text()).toBe(title);
+    expect(heading.isVisible()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("closes from the named header icon without submitting or deleting", async () => {
+    const wrapper = mount(CreateRosterModal);
+    const closeButton = wrapper.get('[role="dialog"] button[aria-label="Stäng"]');
+    expect(closeButton.attributes("type")).toBe("button");
+    await closeButton.trigger("click");
+    expect(wrapper.emitted("close")).toEqual([[]]);
+    expect(clientMocks.apiPost).not.toHaveBeenCalled();
+    expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it("returns focus to import after dismissing its failed-upload announcement", async () => {
+    clientMocks.apiPost.mockRejectedValueOnce(new Error("Upload failed"));
+    const wrapper = mount(CreateRosterModal, { attachTo: document.body });
+    try {
+      await uploadImportFile(wrapper);
+      const alert = wrapper.get('[role="alert"]');
+      const dismissButton = alert.get('button[aria-label="Stäng"]');
+      (dismissButton.element as HTMLButtonElement).focus();
+      expect(document.activeElement).toBe(dismissButton.element);
+      await dismissButton.trigger("click");
+      await nextTick();
+      expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(wrapper.get('[data-test="roster-modal-import-trigger"]').element);
+      expect(wrapper.emitted("close")).toBeUndefined();
+    } finally {
+      wrapper.unmount();
+    }
   });
 
   it("imports a parsed class list directly into the create modal before save", async () => {
@@ -282,7 +320,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    await wrapper.get("button.planner-btn-danger").trigger("click");
+    await wrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
     await flushPromises();
 
     expect(wrapper.text()).toContain(
@@ -303,7 +341,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    const deleteButton = wrapper.get("button.planner-btn-danger");
+    const deleteButton = wrapper.findAll("button").find((button) => button.text() === "Radera")!;
 
     expect(deleteButton.text()).toBe("Radera");
     expect(deleteButton.find("svg").exists()).toBe(true);
@@ -356,7 +394,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    await editWrapper.get("button.planner-btn-danger").trigger("click");
+    await editWrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
     await flushPromises();
 
     expect(deleteRoster).toHaveBeenCalledWith("guest-roster-1");

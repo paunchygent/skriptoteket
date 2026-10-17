@@ -9,7 +9,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { IconArrow, IconLink2, IconX } from "../../../components/icons";
-import { UiDenseActionButton, denseMenuItemClass } from "../../../components/ui";
+import { UiDenseActionButton, UiDenseIconButton, denseMenuItemClass } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type {
   PlannerExportFileOption,
@@ -318,11 +318,11 @@ onUnmounted(() => {
       :class="[
         isInline
           ? 'planner-share-export-inline-panel flex w-full flex-col overflow-hidden border border-navy bg-canvas'
-          : 'fixed inset-x-0 bottom-0 z-[40] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,42rem)] md:w-[34rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-md',
+          : 'fixed inset-x-0 bottom-0 z-[40] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-xl border-t border-navy/20 bg-modal shadow-md pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,42rem)] md:w-[34rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-md',
       ]"
       :role="isInline ? undefined : 'dialog'"
       :aria-modal="isInline ? undefined : 'true'"
-      aria-label="Dela och exportera"
+      aria-labelledby="planner-share-export-title"
       tabindex="-1"
       :data-test="panelTestId"
       @keydown="handlePanelKeydown"
@@ -342,7 +342,10 @@ onUnmounted(() => {
         ]"
       >
         <div>
-          <h2 class="text-sm font-semibold leading-tight text-navy">
+          <h2
+            id="planner-share-export-title"
+            class="text-sm font-semibold leading-tight text-navy"
+          >
             Dela och exportera
           </h2>
           <p
@@ -352,16 +355,15 @@ onUnmounted(() => {
             Skapa länk eller spara en fil från det aktuella utkastet.
           </p>
         </div>
-        <button
+        <UiDenseIconButton
           v-if="!isInline"
-          type="button"
-          class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-navy/20 bg-transparent text-navy/55 md:hidden"
-          aria-label="Stäng dela och exportera"
+          label="Stäng dela och exportera"
+          class="shrink-0 md:hidden"
           data-test="planner-share-export-close"
           @click="() => closePanel()"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </header>
 
       <div

@@ -48,6 +48,7 @@ Command = Literal["create", "add", "delete", "reorder"]
 def document_response(document: NativeExamDocument) -> ExamWorkspaceDocumentResponse:
     return ExamWorkspaceDocumentResponse(
         document=document,
+        saved_document=document,
         history_cursor=uuid4(),
         summary=ExamWorkspaceDocumentSummary(
             lineage_id=document.document_id,

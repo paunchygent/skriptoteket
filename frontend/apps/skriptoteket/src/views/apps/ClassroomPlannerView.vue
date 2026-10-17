@@ -7,6 +7,7 @@
  * overview-first boot flow, shell transitions, and exit-to-origin behavior.
  */
 
+import { SystemMessage } from "../../components/ui";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
 import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
@@ -126,7 +127,7 @@ const {
     class="classroom-planner-stage w-full max-w-[90rem] self-center"
     :class="currentScreen === 'planner' ? 'flex flex-1 min-h-0 flex-col gap-6' : 'space-y-6'"
   >
-    <header class="border-b border-navy pb-4">
+    <header class="border-b border-navy/20 pb-4">
       <div>
         <h1 class="page-title">
           Klassrumskartan
@@ -136,28 +137,24 @@ const {
 
     <div
       v-if="isBootstrapping"
-      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
+      class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
     >
       Laddar planeringsmiljön...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="bootstrapError"
-      class="system-message system-message-error"
-    >
-      <div class="system-message-content">
-        {{ bootstrapError }}
-      </div>
-    </div>
+      :model-value="bootstrapError"
+      tone="failure"
+      role="alert"
+    />
 
-    <div
+    <SystemMessage
       v-else-if="plannerActionError"
-      class="system-message system-message-error"
-    >
-      <div class="system-message-content">
-        {{ plannerActionError }}
-      </div>
-    </div>
+      :model-value="plannerActionError"
+      tone="failure"
+      role="alert"
+    />
 
     <div
       class="relative"

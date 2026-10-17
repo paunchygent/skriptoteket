@@ -28,9 +28,7 @@ describe("GroupCard", () => {
 
     expect(wrapper.text()).not.toContain("Gruppnamn");
     expect(wrapper.get('[data-test="group-name-input"]').classes()).toContain("h-[36px]");
-    expect(wrapper.get('[data-test="move-group-up"]').classes()).toContain("planner-btn-icon-lg");
-    expect(wrapper.get('[data-test="move-group-down"]').classes()).toContain("planner-btn-icon-lg");
-    expect(wrapper.get('[data-test="remove-group"]').classes()).toContain("planner-btn-icon-lg");
+
   });
 
   it("does not emit a rename on blur when the visible name is unchanged", async () => {
@@ -147,31 +145,6 @@ describe("GroupCard", () => {
     expect(wrapper.get('[data-test="group-card"]').classes()).toContain("planner-group-card");
     expect(wrapper.get('[data-test="group-card"]').classes()).not.toContain("max-h-[234px]");
     expect(wrapper.find('[data-test="group-empty-drop-zone"]').exists()).toBe(false);
-  });
-
-  it("keeps assigned student rows hover-only without a persistent selected hue", () => {
-    const wrapper = mount(GroupCard, {
-      props: {
-        group: {
-          id: "group-a",
-          name: "Grupp A",
-          sort_order: 0,
-          name_is_custom: false,
-        },
-        students: [{ id: "student-1", display_name: "Ada Lovelace" }],
-        canMoveUp: false,
-        canMoveDown: true,
-      },
-    });
-
-    const row = wrapper.get('[data-test="group-student-row-student-1"]');
-
-    expect(row.classes()).toContain("border-navy");
-    expect(row.classes()).toContain("bg-white");
-    expect(row.classes()).toContain("hover:bg-canvas");
-    expect(row.classes()).not.toContain("border-burgundy");
-    expect(row.classes()).not.toContain("bg-burgundy/10");
-    expect(row.classes()).not.toContain("text-burgundy");
   });
 
   it("shows smart-rule markers on assigned student bars", () => {

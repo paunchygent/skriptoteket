@@ -34,6 +34,33 @@ function mountSidebar(selectedTool: "seat" | "whiteboard" | "erase" = "seat") {
 }
 
 describe("RoomTemplateEditorSidebar", () => {
+  it.each([
+    ["Minska bredd", "cols", -1],
+    ["Öka bredd", "cols", 1],
+    ["Minska höjd", "rows", -1],
+    ["Öka höjd", "rows", 1],
+  ] as const)("keeps %s labelled and emitting its resize payload", async (label, axis, delta) => {
+    const wrapper = mountSidebar();
+    const button = wrapper.get(`button[aria-label="${label}"]`);
+    expect(button.attributes("disabled")).toBeUndefined();
+    await button.trigger("click");
+    expect(wrapper.emitted("resize-room")).toEqual([[{ axis, delta }]]);
+    wrapper.unmount();
+  });
+
+  it.each([
+    ["Minska bredd", "canShrinkCols"],
+    ["Minska höjd", "canShrinkRows"],
+  ] as const)("disables %s when the room cannot shrink", async (label, prop) => {
+    const wrapper = mountSidebar();
+    await wrapper.setProps({ [prop]: false });
+    const button = wrapper.get(`button[aria-label="${label}"]`);
+    expect(button.attributes("disabled")).toBeDefined();
+    await button.trigger("click");
+    expect(wrapper.emitted("resize-room")).toBeUndefined();
+    wrapper.unmount();
+  });
+
   it("shows explicit active-tool feedback for the selected room-editor tool", async () => {
     const wrapper = mountSidebar("seat");
 
@@ -43,9 +70,8 @@ describe("RoomTemplateEditorSidebar", () => {
     expect(wrapper.get('[data-test="room-template-selected-tool-meta"]').text()).toContain(
       "Sittplats",
     );
-    expect(wrapper.get('[data-test="room-template-tool-seat"]').classes()).toContain(
-      "planner-choice-button-active",
-    );
+    expect(wrapper.get('[data-test="room-template-tool-seat"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').attributes("aria-pressed")).toBe("false");
 
     await wrapper.get('[data-test="room-template-tool-whiteboard"]').trigger("click");
     expect(wrapper.emitted("update:selectedTool")).toEqual([["whiteboard"]]);
@@ -55,9 +81,8 @@ describe("RoomTemplateEditorSidebar", () => {
       "Whiteboard",
     );
     expect(wrapper.get('[data-test="room-template-selected-tool-help"]').text()).toContain("vägg");
-    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').classes()).toContain(
-      "planner-choice-button-active",
-    );
+    expect(wrapper.get('[data-test="room-template-tool-whiteboard"]').attributes("aria-pressed")).toBe("true");
+    expect(wrapper.get('[data-test="room-template-tool-seat"]').attributes("aria-pressed")).toBe("false");
   });
 
   it("keeps clear-room as a separate action below the tool feedback", async () => {

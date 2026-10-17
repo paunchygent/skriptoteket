@@ -11,6 +11,7 @@
 import { computed } from "vue";
 
 import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { Roster } from "../classroomPlannerTypes";
 
 const CLASS_PREVIEW_NAME_LIMIT = 33;
@@ -160,39 +161,41 @@ const countLabel = computed(() => {
       v-if="showActions !== false"
       class="planner-overview-panel-footer"
     >
-      <button
-        type="button"
-        class="btn-primary planner-overview-panel-action"
+      <UiDenseActionButton
+        label="Ny klass"
+        tone="primary"
         :disabled="Boolean(createDisabledReason)"
         :title="createDisabledReason ?? undefined"
         data-test="overview-create-roster"
         @click="emit('create-roster')"
       >
-        <IconPlus :size="14" />
-        Ny klass
-      </button>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost planner-overview-panel-action"
+        <template #leading>
+          <IconPlus :size="14" />
+        </template>
+      </UiDenseActionButton>
+      <UiDenseActionButton
+        label="Redigera"
         :disabled="!selectedRoster || Boolean(editDisabledReason)"
         :title="editDisabledReason ?? undefined"
         data-test="overview-edit-roster"
         @click="emit('edit-roster')"
       >
-        <IconEdit :size="14" />
-        Redigera
-      </button>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost planner-btn-ghost-muted planner-overview-panel-action"
+        <template #leading>
+          <IconEdit :size="14" />
+        </template>
+      </UiDenseActionButton>
+      <UiDenseActionButton
+        label="Radera"
+        tone="danger"
         :disabled="!selectedRoster || Boolean(deleteDisabledReason)"
         :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-roster"
         @click="emit('delete-current-roster')"
       >
-        <IconTrash :size="14" />
-        Radera
-      </button>
+        <template #leading>
+          <IconTrash :size="14" />
+        </template>
+      </UiDenseActionButton>
     </div>
   </section>
 </template>

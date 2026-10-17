@@ -119,7 +119,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
     class="classroom-planner-stage w-full max-w-[90rem] self-center"
     :class="guestController.currentScreen.value === 'planner' ? 'flex flex-1 min-h-0 flex-col gap-6' : 'space-y-6'"
   >
-    <header class="border-b border-navy pb-4">
+    <header class="border-b border-navy/20 pb-4">
       <div>
         <h1 class="page-title">
           Klassrumskartan
@@ -150,19 +150,19 @@ async function startOverviewSeatingShareLink(): Promise<void> {
 
     <div
       v-if="guestController.isBootstrapping.value"
-      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
+      class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
     >
       Laddar planeringsmiljön...
     </div>
 
     <section
       v-else-if="guestController.guestAuthoringClosed.value"
-      class="border border-navy bg-panel px-4 py-8 md:px-6 md:py-10"
+      class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel px-4 py-8 md:px-6 md:py-10"
       data-test="public-guest-authoring-closed-state"
     >
       <div class="mx-auto flex max-w-3xl flex-col gap-4 text-center text-navy">
         <div class="space-y-2">
-          <h2 class="planner-shell-title">
+          <h2 class="min-h-[1.2em] font-sans text-lg font-semibold leading-[1.2] text-navy md:text-xl">
             Logga in för att fortsätta
           </h2>
           <p class="text-sm leading-relaxed text-navy/80">
@@ -185,7 +185,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
           </a>
           <a
             :href="registerUrl"
-            class="btn-ghost planner-btn-ghost public-guest-authoring-action"
+            class="btn-ghost public-guest-authoring-action"
             data-test="public-guest-authoring-closed-register"
           >
             Skapa konto
@@ -379,7 +379,6 @@ async function startOverviewSeatingShareLink(): Promise<void> {
 
 .public-guest-authoring-action {
   width: 100%;
-  min-height: calc(var(--huleedu-space-10) + var(--huleedu-space-1));
 }
 
 @media (min-width: 640px) {

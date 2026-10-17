@@ -9,7 +9,7 @@
 @media (max-width: 1023px) {
   .planner-top-panel {
     gap: var(--huleedu-space-2);
-    border-color: rgb(8 43 76 / 0.26);
+    border-color: var(--huleedu-panel-border);
     padding: var(--huleedu-space-3);
   }
 
@@ -32,8 +32,6 @@
   .planner-top-panel-exit {
     height: 2rem;
     width: 2rem;
-    border-color: rgb(8 43 76 / 0.24);
-    background-color: var(--huleedu-panel);
   }
 
   .planner-top-panel-exit svg {
@@ -49,30 +47,6 @@
 
   .planner-top-panel-status:has(.planner-top-panel-compact-status-message) .planner-top-panel-status-copy {
     display: none;
-  }
-
-  .planner-top-panel-status-pill {
-    height: 0.75rem;
-    width: 0.75rem;
-    justify-content: center;
-    gap: 0;
-    border: 0;
-    background: transparent;
-    padding: 0;
-  }
-
-  .planner-top-panel-status-pill > span:first-child {
-    height: 0.5rem;
-    width: 0.5rem;
-  }
-
-  .planner-top-panel-status-label-text {
-    position: absolute;
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 
   .planner-top-panel-status [data-test="planner-top-panel-status-message"],

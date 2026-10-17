@@ -8,10 +8,12 @@
  * affordances.
  */
 
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onUnmounted, watch } from "vue";
 
 import { useHelp } from "../../components/help/useHelp";
-import { useToast } from "../../composables/useToast";
+import { SystemMessage, UiDenseActionButton } from "../../components/ui";
+import { usePlannerWorkspaceFeedback } from "./usePlannerWorkspaceFeedback";
+import { usePlannerWorkspaceNavigation } from "./usePlannerWorkspaceNavigation";
 import type { RoomTemplate, Roster } from "./classroomPlannerTypes";
 import type { ClassroomPlannerShareArtifact } from "./classroomPlannerShareApi";
 import PlannerGroupingSettingsDrawer from "./components/PlannerGroupingSettingsDrawer.vue";
@@ -105,33 +107,41 @@ const emit = defineEmits<{
 }>();
 
 const plannerState = useClassroomState();
-const toast = useToast();
+usePlannerWorkspaceFeedback(plannerState);
 
 usePlannerUndoRedoShortcuts({
   plannerState,
 });
 
-function resolvePlannerView(requestedView: GuestPlannerView): GuestPlannerView {
-  if (requestedView === "rules") {
-    return "rules";
-  }
-  if (plannerState.draft?.draft_kind === "grouping") {
-    return "groups";
-  }
-  if (plannerState.draft?.draft_kind === "seating") {
-    return "seats";
-  }
-  return requestedView;
-}
-
-const currentView = ref<GuestPlannerView>(resolvePlannerView(props.initialView));
-const selectedStudentId = ref<string | null>(null);
-const isGroupingSettingsDrawerOpen = ref(false);
-const isSeatingSettingsDrawerOpen = ref(false);
-const pendingGroupingTemplateId = ref(plannerState.template?.id ?? props.selectedTemplateId ?? "");
-const pendingSeatingTemplateId = ref(plannerState.template?.id ?? props.selectedTemplateId ?? "");
-const lastGroupingSmartRunToast = ref<string | null>(null);
-const lastSeatingSmartRunToast = ref<string | null>(null);
+const {
+  currentView, selectedStudentId, isGroupingSettingsDrawerOpen, isSeatingSettingsDrawerOpen,
+  pendingGroupingTemplateId, pendingSeatingTemplateId, selectStudent,
+  openGroupingSettingsDrawer, closeGroupingSettingsDrawer,
+  openSeatingSettingsDrawer, closeSeatingSettingsDrawer,
+} = usePlannerWorkspaceNavigation({
+  plannerState,
+  initialView: () => props.initialView,
+  initialTemplateId: () => plannerState.template?.id ?? props.selectedTemplateId ?? "",
+  identityKey: (nextView) => {
+    const nextTemplateId = resolveGuestWorkspaceTemplateContext({
+      currentView: nextView,
+      selectedTemplateId: props.selectedTemplateId,
+      plannerTemplateId: plannerState.template?.id ?? null,
+    }) ?? "none";
+    return [
+      nextView,
+      plannerState.draft?.draft_kind ?? "none",
+      plannerState.template?.id ?? "none",
+      props.selectedTemplateId ?? "none",
+      nextTemplateId,
+    ].join(":");
+  },
+  resetTemplateId: (nextView) => resolveGuestWorkspaceTemplateContext({
+    currentView: nextView,
+    selectedTemplateId: props.selectedTemplateId,
+    plannerTemplateId: plannerState.template?.id ?? null,
+  }) ?? "",
+});
 
 const liveTemplateId = computed(() => {
   return resolveGuestWorkspaceTemplateContext({
@@ -165,21 +175,6 @@ const workspaceDisabledReasons = computed(() => {
     hasRoster: plannerState.roster !== null,
     hasTemplate: liveTemplateId.value !== null,
   });
-});
-const workspaceIdentityKey = computed(() => {
-  const nextView = resolvePlannerView(currentView.value);
-  const nextTemplateId = resolveGuestWorkspaceTemplateContext({
-    currentView: nextView,
-    selectedTemplateId: props.selectedTemplateId,
-    plannerTemplateId: plannerState.template?.id ?? null,
-  }) ?? "none";
-  return [
-    nextView,
-    plannerState.draft?.draft_kind ?? "none",
-    plannerState.template?.id ?? "none",
-    props.selectedTemplateId ?? "none",
-    nextTemplateId,
-  ].join(":");
 });
 const isSeatWorkspaceWithoutTemplate = computed(() => {
   return currentView.value === "seats" && selectedPlannerTemplate.value === null;
@@ -216,22 +211,6 @@ watch(
 );
 onUnmounted(() => clearHelpContext(`planner_${workspaceModeValue.value}`));
 
-function selectStudent(studentId: string): void {
-  if (currentView.value === "rules") {
-    if (plannerState.activeSeatingSmartTool) {
-      if (plannerState.isStudentInPendingRuleCandidates(studentId)) {
-        plannerState.removePendingRuleCandidate(studentId);
-        selectedStudentId.value = null;
-        return;
-      }
-      plannerState.handleSeatingSmartToolStudentSelection(studentId);
-    }
-    selectedStudentId.value = null;
-    return;
-  }
-  selectedStudentId.value = null;
-}
-
 async function reloadAfterConflict(): Promise<void> {
   await plannerState.reloadActiveWorkspace();
 }
@@ -260,22 +239,6 @@ function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
-function openGroupingSettingsDrawer(): void {
-  isGroupingSettingsDrawerOpen.value = true;
-}
-
-function closeGroupingSettingsDrawer(): void {
-  isGroupingSettingsDrawerOpen.value = false;
-}
-
-function openSeatingSettingsDrawer(): void {
-  isSeatingSettingsDrawerOpen.value = true;
-}
-
-function closeSeatingSettingsDrawer(): void {
-  isSeatingSettingsDrawerOpen.value = false;
-}
-
 function openRules(): void {
   emit("select-workspace-mode", "rules");
 }
@@ -284,106 +247,24 @@ function editCurrentTemplate(template: RoomTemplate): void {
   emit("edit-current-template", template);
 }
 
-function showSmartRunToast(options: {
-  message: string | null;
-  tone: "neutral" | "success" | "warning";
-  lastToastRef: { value: string | null };
-}): void {
-  const { message, tone, lastToastRef } = options;
-  if (!message) {
-    lastToastRef.value = null;
-    return;
-  }
-
-  const toastKey = `${tone}:${message}`;
-  if (toastKey === lastToastRef.value) {
-    return;
-  }
-
-  if (tone === "success") {
-    toast.success(message);
-  } else if (tone === "warning") {
-    toast.warning(message);
-  } else {
-    toast.info(message);
-  }
-  lastToastRef.value = toastKey;
-}
-
-watch(
-  () => props.initialView,
-  (nextView) => {
-    currentView.value = resolvePlannerView(nextView);
-    isGroupingSettingsDrawerOpen.value = false;
-    isSeatingSettingsDrawerOpen.value = false;
-    selectedStudentId.value = null;
-  },
-);
-
-watch(
-  workspaceIdentityKey,
-  () => {
-    const nextView = resolvePlannerView(currentView.value);
-    const nextTemplateId = resolveGuestWorkspaceTemplateContext({
-      currentView: nextView,
-      selectedTemplateId: props.selectedTemplateId,
-      plannerTemplateId: plannerState.template?.id ?? null,
-    }) ?? "";
-    currentView.value = nextView;
-    isGroupingSettingsDrawerOpen.value = false;
-    isSeatingSettingsDrawerOpen.value = false;
-    selectedStudentId.value = null;
-    pendingGroupingTemplateId.value = nextTemplateId;
-    pendingSeatingTemplateId.value = nextTemplateId;
-  },
-);
-
-watch(
-  () => ({
-    message: plannerState.smartGroupingRunMessage,
-    tone: plannerState.smartGroupingRunTone,
-  }),
-  ({ message, tone }) => {
-    showSmartRunToast({
-      message,
-      tone,
-      lastToastRef: lastGroupingSmartRunToast,
-    });
-  },
-);
-
-watch(
-  () => ({
-    message: plannerState.smartSeatingRunMessage,
-    tone: plannerState.smartSeatingRunTone,
-  }),
-  ({ message, tone }) => {
-    showSmartRunToast({
-      message,
-      tone,
-      lastToastRef: lastSeatingSmartRunToast,
-    });
-  },
-);
 </script>
 
 <template>
   <section :class="PLANNER_WORKSPACE_SHELL_CLASS">
-    <div
+    <SystemMessage
       v-if="plannerState.plannerConflictMessage"
-      class="system-message system-message-warning"
+      :model-value="plannerState.plannerConflictMessage"
+      tone="warning"
+      class="flex items-start gap-3"
     >
-      <div class="system-message-content">
+      <div class="break-words">
         {{ plannerState.plannerConflictMessage }}
       </div>
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost"
+      <UiDenseActionButton
+        label="Ladda om utkast"
         @click="void reloadAfterConflict()"
-      >
-        Ladda om utkast
-      </button>
-    </div>
+      />
+    </SystemMessage>
 
     <PlannerTopPanel
       :title="plannerTitle"

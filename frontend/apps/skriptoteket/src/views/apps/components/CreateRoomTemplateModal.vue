@@ -11,7 +11,7 @@ import { computed, nextTick, ref, toRef } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
 import { IconSave, IconTrash, IconX } from "../../../components/icons";
-import { SystemMessage } from "../../../components/ui";
+import { SystemMessage, UiDenseIconButton, UiGlyph } from "../../../components/ui";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
 import RoomTemplateBuilderSurface from "./RoomTemplateBuilderSurface.vue";
@@ -171,25 +171,33 @@ async function removeTemplate(): Promise<void> {
     <div class="room-template-modal-positioner relative flex min-h-full items-start justify-center py-4">
       <div
         class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-modal shadow-md 2xl:max-w-[1680px]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="room-template-modal-title"
         data-test="room-template-modal-panel"
       >
         <div class="room-template-modal-header flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
           <div class="space-y-1 px-6 pt-6 md:px-8 md:pt-8">
-            <h2 class="font-serif text-2xl text-navy">
+            <h2
+              id="room-template-modal-title"
+              class="font-sans text-2xl text-navy"
+            >
               {{ isEditing ? "Redigera klassrum" : "Nytt klassrum" }}
             </h2>
             <p class="max-w-[40rem] text-sm leading-relaxed text-navy/70">
               Placera ut sittplatser och möbler i klassrummet.
             </p>
           </div>
-          <button
-            type="button"
-            class="mr-6 mt-6 btn-ghost planner-btn-ghost-canvas planner-btn-icon-md shrink-0 md:mr-8 md:mt-8"
-            aria-label="Stäng modal"
+          <UiDenseIconButton
+            label="Stäng"
+            class="mr-6 mt-6 shrink-0 md:mr-8 md:mt-8"
             @click="emit('close')"
           >
-            ×
-          </button>
+            <UiGlyph
+              meaning="close"
+              :size="14"
+            />
+          </UiDenseIconButton>
         </div>
 
         <div class="room-template-modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 md:px-8 md:pb-8">
@@ -255,7 +263,7 @@ async function removeTemplate(): Promise<void> {
             <button
               v-if="isEditing"
               type="button"
-              class="room-template-modal-footer-button btn-ghost planner-btn-danger inline-flex items-center justify-center gap-2"
+              class="btn-ghost"
               data-test="room-template-delete-button"
               :disabled="isDeleting"
               @click="removeTemplate"
@@ -267,7 +275,7 @@ async function removeTemplate(): Promise<void> {
           <div class="room-template-modal-footer-actions flex flex-wrap justify-end gap-3">
             <button
               type="button"
-              class="room-template-modal-footer-button btn-ghost planner-btn-ghost-canvas inline-flex items-center justify-center gap-2"
+              class="btn-ghost"
               data-test="room-template-cancel-button"
               @click="emit('close')"
             >
@@ -276,7 +284,7 @@ async function removeTemplate(): Promise<void> {
             </button>
             <button
               type="button"
-              class="room-template-modal-footer-button btn-primary inline-flex items-center justify-center gap-2"
+              class="btn-primary"
               data-test="room-template-save-button"
               :disabled="isSubmitting"
               @click="submit"

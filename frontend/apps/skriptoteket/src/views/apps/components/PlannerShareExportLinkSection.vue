@@ -135,7 +135,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
     <div class="border-t border-navy/10 px-3.5 py-2 md:hidden">
       <button
         type="button"
-        class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-action/60 bg-canvas/40 px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-action transition-colors hover:border-action hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-50"
+        class="btn-primary w-full"
         :disabled="isCreateActionBusy"
         :data-test="createShareMobileTestId"
         :aria-busy="isCreateActionBusy ? 'true' : undefined"

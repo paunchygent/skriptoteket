@@ -1,14 +1,14 @@
 <script setup lang="ts">
 /**
  * Purpose:
- *     Provide an icon-only dense action button with stable 36px geometry.
+ *     Provide an icon-only dense action button with dense or touch geometry.
  *
  * Relationships:
  *     - Wraps UiDenseActionButton.
  *     - Reuses the shared dense-action primitive contract.
  */
 
-import type { DenseActionTone } from "../denseToolPrimitives";
+import type { DenseActionSize, DenseActionTone } from "../denseToolPrimitives";
 import UiDenseActionButton from "./UiDenseActionButton.vue";
 
 withDefaults(
@@ -17,6 +17,7 @@ withDefaults(
     title?: string;
     disabled?: boolean;
     tone?: DenseActionTone;
+    size?: Extract<DenseActionSize, "icon" | "touch">;
     active?: boolean;
     type?: "button" | "submit" | "reset";
   }>(),
@@ -24,6 +25,7 @@ withDefaults(
     title: undefined,
     disabled: false,
     tone: "default",
+    size: "icon",
     active: false,
     type: "button",
   },
@@ -38,7 +40,7 @@ withDefaults(
     :tone="tone"
     :active="active"
     :type="type"
-    size="icon"
+    :size="size"
     icon-only
   >
     <template #leading>

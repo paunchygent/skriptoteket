@@ -74,7 +74,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
     aria-labelledby="guest-upgrade-title"
     data-test="guest-upgrade-modal"
   >
-    <section class="w-full max-w-[34rem] border border-navy bg-modal p-6 shadow-md md:p-7">
+    <section class="w-full max-w-[34rem] rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-modal p-6 shadow-md md:p-7">
       <div class="space-y-3">
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-terracotta">
           Arbete från gästläge hittat
@@ -82,7 +82,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
         <div class="space-y-2">
           <h1
             id="guest-upgrade-title"
-            class="font-serif text-3xl text-navy"
+            class="font-sans text-3xl font-semibold text-navy"
           >
             Vill du importera det?
           </h1>
@@ -122,7 +122,7 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
         </button>
         <button
           type="button"
-          class="btn-ghost text-critical"
+          class="btn-ghost"
           data-test="guest-upgrade-discard-button"
           @click="$emit('discard')"
         >

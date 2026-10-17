@@ -12,7 +12,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { IconCopy, IconLink2, IconTrash, IconX } from "../../../components/icons";
-import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
+import { UiDenseActionButton, UiDenseIconButton, UiDenseSpinner } from "../../../components/ui";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
 const props = withDefaults(
@@ -159,9 +159,10 @@ onUnmounted(() => {
 
     <section
       v-if="isOpen"
-      class="fixed inset-x-0 bottom-0 z-[40] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,34rem)] md:w-[32rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-md"
+      class="fixed inset-x-0 bottom-0 z-[40] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t border-navy/20 bg-modal shadow-md pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,34rem)] md:w-[32rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-md"
       role="dialog"
-      aria-label="Delade länkar"
+      aria-modal="true"
+      aria-labelledby="planner-share-links-title"
       :data-test="panelTestId"
     >
       <div
@@ -173,7 +174,10 @@ onUnmounted(() => {
 
       <header class="flex items-start justify-between gap-3 border-b border-navy/15 px-3.5 pb-3 pt-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:px-4 md:pt-3.5">
         <div>
-          <h2 class="text-sm font-semibold leading-tight text-navy">
+          <h2
+            id="planner-share-links-title"
+            class="text-sm font-semibold leading-tight text-navy"
+          >
             Delade länkar
           </h2>
           <p class="mt-1 text-[11px] leading-snug text-navy/60">
@@ -197,21 +201,20 @@ onUnmounted(() => {
             </template>
           </UiDenseActionButton>
         </div>
-        <button
-          type="button"
-          class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-navy/20 bg-transparent text-navy/55 md:hidden"
-          aria-label="Stäng delade länkar"
+        <UiDenseIconButton
+          label="Stäng delade länkar"
+          class="shrink-0 md:hidden"
           data-test="planner-share-close"
           @click="closePanel"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
       </header>
 
       <div class="border-b border-navy/10 px-3.5 py-2 md:hidden">
         <button
           type="button"
-          class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[4px] border border-action/60 bg-canvas/40 px-3 text-[11px] font-semibold uppercase leading-none tracking-[var(--huleedu-tracking-label)] text-action transition-colors hover:border-action hover:bg-action/5 disabled:cursor-not-allowed disabled:opacity-50"
+          class="btn-primary w-full"
           :disabled="busy"
           data-test="planner-share-create-mobile"
           :aria-busy="busy ? 'true' : undefined"

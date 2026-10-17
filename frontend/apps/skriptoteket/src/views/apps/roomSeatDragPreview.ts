@@ -20,7 +20,7 @@ function createSeatDragPreview(studentName: string): HTMLDivElement {
     "justify-center",
     "rounded-full",
     "border",
-    "bg-white",
+    "bg-panel",
     "text-center",
     "text-navy",
     "shadow-md",

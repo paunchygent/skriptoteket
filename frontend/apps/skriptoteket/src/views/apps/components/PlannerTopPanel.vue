@@ -20,6 +20,8 @@ import {
   IconX,
 } from "../../../components/icons";
 import {
+  UiDenseIconButton,
+  UiDenseStatusPill,
   UiSegmentedToggle,
   type UiSegmentedToggleOption,
 } from "../../../components/ui";
@@ -145,31 +147,9 @@ const activeModeLabel = computed(() => {
   return activeModeOption.value?.label ?? "Översikt";
 });
 
-const statusToneClass = computed(() => {
-  switch (props.statusTone) {
-    case "success":
-      return "border-success/45 bg-success/10 text-success";
-    case "warning":
-      return "border-warning/50 bg-warning/15 text-navy";
-    case "danger":
-      return "border-error/40 bg-error/10 text-error";
-    default:
-      return "border-navy/15 bg-canvas text-navy/70";
-  }
-});
-
-const statusDotClass = computed(() => {
-  switch (props.statusTone) {
-    case "success":
-      return "bg-success";
-    case "warning":
-      return "bg-warning";
-    case "danger":
-      return "bg-error";
-    default:
-      return "bg-navy/35";
-  }
-});
+const sharedStatusTone = computed(() => (
+  props.statusTone === "danger" ? "error" : props.statusTone
+));
 
 function selectWorkspaceMode(value: string): void {
   if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
@@ -214,16 +194,15 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
         </p>
       </div>
 
-      <button
-        type="button"
-        class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md planner-top-panel-exit shrink-0"
-        :aria-label="exitLabel"
+      <UiDenseIconButton
+        :label="exitLabel"
+        class="planner-top-panel-exit shrink-0"
         :title="exitLabel"
         data-test="planner-exit"
         @click="emit('exit')"
       >
         <IconX :size="16" />
-      </button>
+      </UiDenseIconButton>
     </div>
 
     <div class="planner-desktop-mode-switch">
@@ -246,7 +225,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
     >
       <button
         type="button"
-        class="planner-phone-mode-active"
+        class="btn-primary"
         data-test="planner-phone-active-mode"
         @click="openModeSheet"
       >
@@ -254,7 +233,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
       </button>
       <button
         type="button"
-        class="planner-phone-mode-sheet-trigger"
+        class="btn-ghost min-w-20"
         data-test="planner-phone-mode-sheet-trigger"
         :aria-expanded="modeSheetOpen"
         aria-haspopup="dialog"
@@ -285,19 +264,17 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
         <div class="flex items-center justify-between gap-3 border-b border-navy/20 pb-3">
           <h2
             id="planner-phone-mode-sheet-title"
-            class="font-serif text-lg text-navy"
+            class="font-sans text-lg text-navy"
           >
             Byt läge
           </h2>
-          <button
-            type="button"
-            class="btn-ghost planner-btn-ghost-canvas planner-btn-icon-md"
-            aria-label="Stäng lägesväljaren"
+          <UiDenseIconButton
+            label="Stäng lägesväljaren"
             data-test="planner-phone-mode-sheet-close"
             @click="closeModeSheet"
           >
             <IconX :size="16" />
-          </button>
+          </UiDenseIconButton>
         </div>
 
         <div class="mt-3 grid gap-2">
@@ -307,6 +284,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
             type="button"
             class="planner-phone-mode-sheet-row"
             :class="modeValue === option.value ? 'planner-phone-mode-sheet-row-active' : ''"
+            :aria-pressed="modeValue === option.value"
             :disabled="option.disabled"
             :title="option.disabled ? option.title : undefined"
             :data-test="`planner-phone-mode-sheet-${option.value}`"
@@ -342,21 +320,25 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
     </Teleport>
 
     <div class="planner-top-panel-status flex min-h-[2rem] flex-wrap items-center gap-2 text-xs text-navy/65">
-      <span
-        v-if="statusLabel"
-        class="planner-top-panel-status-pill inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
-        :class="statusToneClass"
-        :title="statusLabel"
-        data-test="planner-top-panel-status-label"
-      >
-        <span
-          class="h-2 w-2 rounded-full"
-          :class="statusDotClass"
-        />
-        <span class="planner-top-panel-status-label-text">
-          {{ statusLabel }}
+      <template v-if="statusLabel">
+        <span class="contents lg:hidden">
+          <UiDenseStatusPill
+            :label="statusLabel"
+            :tone="sharedStatusTone"
+            :title="statusLabel"
+            compact
+            data-test="planner-top-panel-status-label"
+          />
         </span>
-      </span>
+        <span class="hidden lg:contents">
+          <UiDenseStatusPill
+            :label="statusLabel"
+            :tone="sharedStatusTone"
+            :title="statusLabel"
+            data-test="planner-top-panel-status-label"
+          />
+        </span>
+      </template>
       <span
         v-if="statusMessage"
         data-test="planner-top-panel-status-message"

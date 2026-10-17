@@ -22,6 +22,7 @@ import {
   IconTeacherAnchor,
   IconX,
 } from "../../../components/icons";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { SeatingSmartTool } from "../classroomPlannerTypes";
 
 const props = withDefaults(defineProps<{
@@ -138,28 +139,22 @@ const fixedSeatActionLabel = computed(() => {
     data-test="rules-tool-rail"
   >
     <div class="planner-tool-rail-stack">
-      <button
+      <UiDenseActionButton
         v-for="tool in toolButtons"
         :key="tool.id"
-        type="button"
-        class="planner-tool-rail-action"
-        :class="
-          activeTool === tool.id
-            ? 'planner-choice-button-active'
-            : 'planner-choice-button-idle'
-        "
+        :label="tool.label"
+        :active="activeTool === tool.id"
         :data-test="`rules-tool-${tool.id}`"
         :disabled="!canEdit"
         @click="emit('select-tool', tool.id)"
       >
-        <component
-          :is="tool.icon"
-          :size="16"
-        />
-        <span class="leading-none">
-          {{ tool.label }}
-        </span>
-      </button>
+        <template #leading>
+          <component
+            :is="tool.icon"
+            :size="16"
+          />
+        </template>
+      </UiDenseActionButton>
     </div>
 
     <div class="planner-tool-rail-section flex flex-1 flex-col">
@@ -188,7 +183,7 @@ const fixedSeatActionLabel = computed(() => {
               <div
                 v-for="student in pendingStudents"
                 :key="student.id"
-                class="inline-flex h-[26px] items-center gap-1 border border-navy/20 bg-white pl-2 pr-1 text-[11px] font-semibold text-navy"
+                class="inline-flex h-[26px] items-center gap-1 border border-navy/20 bg-panel pl-2 pr-1 text-[11px] font-semibold text-navy"
                 data-test="rules-pending-student-chip"
               >
                 <span class="min-w-0 truncate">{{ student.name }}</span>
@@ -236,7 +231,7 @@ const fixedSeatActionLabel = computed(() => {
               data-test="rules-fixed-seat-pending-binding"
             >
               <span
-                class="inline-flex min-h-[28px] w-full items-center border border-navy/20 bg-white px-2 text-[11px] font-semibold text-navy"
+                class="inline-flex min-h-[28px] w-full items-center border border-navy/20 bg-panel px-2 text-[11px] font-semibold text-navy"
                 data-test="rules-fixed-seat-pending-student"
               >
                 <span class="min-w-0 truncate">
@@ -252,7 +247,7 @@ const fixedSeatActionLabel = computed(() => {
               </span>
 
               <span
-                class="inline-flex min-h-[28px] w-full items-center border border-navy/20 bg-white px-2 text-[11px] font-semibold text-navy"
+                class="inline-flex min-h-[28px] w-full items-center border border-navy/20 bg-panel px-2 text-[11px] font-semibold text-navy"
                 data-test="rules-fixed-seat-pending-seat"
               >
                 <span class="min-w-0 truncate">
@@ -286,7 +281,7 @@ const fixedSeatActionLabel = computed(() => {
         <button
           v-if="hasPendingFlow"
           type="button"
-          class="btn-primary planner-btn-primary-sm w-full"
+          class="btn-inline-primary w-full"
           data-test="rules-commit-rule"
           :disabled="!canCommitPendingRelationshipRule"
           @click="emit('commit-pending')"
@@ -297,7 +292,7 @@ const fixedSeatActionLabel = computed(() => {
         <button
           v-else-if="fixedSeatToolActive"
           type="button"
-          class="btn-primary planner-btn-primary-sm w-full"
+          class="btn-inline-primary w-full"
           data-test="rules-commit-fixed-seat"
           :disabled="!canCommitPendingFixedSeatRule"
           @click="emit('commit-fixed-seat')"
@@ -307,7 +302,7 @@ const fixedSeatActionLabel = computed(() => {
 
         <button
           type="button"
-          class="btn-ghost planner-btn-ghost planner-btn-ghost-sm w-full"
+          class="btn-inline-cancel w-full"
           data-test="rules-clear-selection"
           :disabled="pendingSelectionCount === 0"
           @click.stop="emit('clear-selection')"
