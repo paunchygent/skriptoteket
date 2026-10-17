@@ -7,6 +7,7 @@ import type { components } from "../api/openapi";
 import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
+import { UiDenseSpinner, UiDenseStatusPill } from "../components/ui";
 
 type AppDetailResponse = components["schemas"]["AppDetailResponse"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
@@ -274,10 +275,7 @@ onUnmounted(() => {
           :disabled="isSubmittingAction || !canSubmitActions"
           @click="startApp"
         >
-          <span
-            v-if="isSubmittingAction"
-            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-          />
+          <UiDenseSpinner v-if="isSubmittingAction" />
           <span v-else>Starta</span>
         </button>
         <p
@@ -291,14 +289,12 @@ onUnmounted(() => {
       <!-- Unified result card -->
       <div
         v-else-if="run"
-        class="border border-navy bg-panel"
+        class="border border-navy/20 bg-panel"
       >
         <div class="p-4 space-y-4">
           <!-- Status row -->
           <div class="flex items-center gap-2 text-sm">
-            <span class="px-2 py-1 border border-navy font-semibold uppercase tracking-wide text-xs">
-              {{ statusLabel(run.status) }}
-            </span>
+            <UiDenseStatusPill :label="statusLabel(run.status)" />
             <span class="font-mono text-xs text-navy/50">
               {{ run.run_id.slice(0, 8) }}
             </span>
@@ -318,7 +314,7 @@ onUnmounted(() => {
             v-if="run.status === 'running' || run.status === 'queued'"
             class="flex items-center gap-2 text-navy/70 text-sm"
           >
-            <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <UiDenseSpinner :size="16" />
             <span>{{ run.status === "queued" ? "Köar..." : "Kör..." }}</span>
           </div>
 

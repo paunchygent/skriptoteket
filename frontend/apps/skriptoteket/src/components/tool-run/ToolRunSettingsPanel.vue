@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo, FileRefSource } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
-import { SystemMessage } from "../ui";
+import { SystemMessage, UiDenseActionButton, UiDenseSpinner } from "../ui";
 
 type ToolSettingsResponse = components["schemas"]["ToolSettingsResponse"];
 type SettingsField = NonNullable<ToolSettingsResponse["settings_schema"]>[number];
@@ -119,13 +119,10 @@ function onSave(): void {
       <button
         type="button"
         :disabled="isLoading || isSaving || isSaveDisabled"
-        class="btn-ghost px-3 py-2"
+        class="btn-ghost"
         @click="onSave"
       >
-        <span
-          v-if="isSaving"
-          class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-        />
+        <UiDenseSpinner v-if="isSaving" />
         <span v-else>Spara</span>
       </button>
     </div>
@@ -134,25 +131,20 @@ function onSave(): void {
       v-else
       class="flex items-center justify-end gap-2"
     >
-      <button
-        type="button"
+      <UiDenseActionButton
+        label="Spara"
         :disabled="isLoading || isSaving || isSaveDisabled"
-        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        :busy="isSaving"
+        reserve-busy-slot
         @click="onSave"
-      >
-        <span
-          v-if="isSaving"
-          class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-        />
-        <span v-else>Spara</span>
-      </button>
+      />
     </div>
 
     <div
       v-if="isLoading"
       :class="[isCompact ? 'flex items-center gap-2 text-[11px] text-navy/70' : 'flex items-center gap-2 text-sm text-navy/70']"
     >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <UiDenseSpinner :size="16" />
       <span>Laddar inställningar...</span>
     </div>
 

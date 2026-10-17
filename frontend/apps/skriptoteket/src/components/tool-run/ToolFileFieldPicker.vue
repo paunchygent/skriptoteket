@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { UiSegmentedToggle, type UiSegmentedToggleOption } from "../ui";
+import { UiDenseActionButton, UiSegmentedToggle, type UiSegmentedToggleOption } from "../ui";
 import VaultPickerModal from "../vault/VaultPickerModal.vue";
 
 import type {
@@ -228,7 +228,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
               <div v-if="selectionFor(field).mode === 'upload'">
                 <label
                   :class="[
-                    'group flex items-center gap-2 w-full border border-navy/30 bg-white px-2.5 py-1.5',
+                    'group flex items-center gap-2 w-full border border-navy/30 bg-panel px-2.5 py-1.5',
                     isCompact ? 'h-[28px]' : 'h-[36px]',
                     isReadOnly
                       ? 'opacity-60 cursor-not-allowed'
@@ -267,45 +267,22 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
               <div v-else>
                 <div :class="[isCompact ? 'space-y-2' : 'space-y-3']">
                   <div class="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
+                    <UiDenseActionButton
+                      label="Markera alla"
                       :disabled="isReadOnly"
-                      :class="[
-                        'btn-ghost border-navy/30 bg-canvas shadow-none',
-                        isCompact
-                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                      ]"
                       @click="onSelectAllRefs(field)"
-                    >
-                      Markera alla
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <UiDenseActionButton
+                      label="Avmarkera"
                       :disabled="isReadOnly"
-                      :class="[
-                        'btn-ghost border-navy/30 bg-white shadow-none',
-                        isCompact
-                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                      ]"
                       @click="onClearRefs(field)"
-                    >
-                      Avmarkera
-                    </button>
-                    <button
-                      type="button"
+                    />
+                    <UiDenseActionButton
+                      label="Ta bort markerade"
+                      tone="danger"
                       :disabled="!canDeleteSelected(field)"
-                      :class="[
-                        'btn-ghost border-critical/40 text-critical shadow-none',
-                        isCompact
-                          ? 'h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none'
-                          : 'h-[30px] px-3 py-1 text-xs font-semibold tracking-wide',
-                      ]"
                       @click="onDeleteSelectedRefs(field)"
-                    >
-                      Ta bort markerade
-                    </button>
+                    />
                   </div>
 
                   <div
@@ -319,7 +296,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       v-for="sessionRef in sessionRefsForField(field)"
                       :key="sessionRef.ref"
                       :class="[
-                        'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
+                        'flex items-start gap-2 border border-navy/20 bg-panel px-2.5 py-2',
                         isCompact ? 'text-[11px]' : 'text-sm',
                         isReadOnly ? 'opacity-60 pointer-events-none' : '',
                       ]"
@@ -353,7 +330,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       </p>
                       <button
                         type="button"
-                        class="btn-ghost border-navy/30 bg-canvas shadow-none"
+                        class="btn-ghost"
                         :disabled="isReadOnly || remainingVaultSlots(field) === 0"
                         @click="openVaultPicker(field)"
                       >
@@ -368,19 +345,17 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
                       <div
                         v-for="refValue in vaultRefsSelected(field)"
                         :key="refValue"
-                        class="flex items-center justify-between gap-3 border border-navy/20 bg-white px-2.5 py-2"
+                        class="flex items-center justify-between gap-3 border border-navy/20 bg-panel px-2.5 py-2"
                       >
                         <span class="font-mono text-navy truncate text-sm">
                           {{ fileNameForRef(refValue) }}
                         </span>
-                        <button
-                          type="button"
-                          class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-critical/40 text-critical bg-white leading-none"
+                        <UiDenseActionButton
+                          label="Ta bort"
+                          tone="danger"
                           :disabled="isReadOnly"
                           @click="emit('update:refs', { field: field.name, refs: selectionFor(field).refs.filter((value) => value !== refValue) })"
-                        >
-                          Ta bort
-                        </button>
+                        />
                       </div>
                     </div>
                     <p

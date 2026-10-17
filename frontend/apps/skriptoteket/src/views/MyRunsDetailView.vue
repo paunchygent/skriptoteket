@@ -215,7 +215,7 @@ onUnmounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
+      class="p-4 border border-navy/20 bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>

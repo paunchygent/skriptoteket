@@ -93,7 +93,7 @@ defineProps<{
   display: grid;
   grid-template-rows: 9rem minmax(0, 1fr);
   min-height: 18rem;
-  border: 1px solid var(--color-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
   background: var(--color-panel);
   color: inherit;
   font: inherit;

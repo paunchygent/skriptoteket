@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import ToolRunActions from "./ToolRunActions.vue";
 
 describe("ToolRunActions", () => {
-  it("prefills shared fields from action.prefill", async () => {
+  it.each(["default", "compact"] as const)("prefills shared fields through the %s action button", async (density) => {
     const actions: components["schemas"]["UiFormAction"][] = [
       {
         action_id: "confirm",
@@ -23,6 +23,7 @@ describe("ToolRunActions", () => {
       props: {
         actions,
         idBase: "test",
+        density,
       },
       global: {
         stubs: {

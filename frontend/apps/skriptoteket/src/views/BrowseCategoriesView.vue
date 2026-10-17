@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { UiDenseSpinner } from "../components/ui";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
@@ -80,7 +81,7 @@ watch(professionSlug, () => {
       v-if="isLoading"
       class="flex items-center gap-3 p-4 text-navy/60"
     >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <UiDenseSpinner :size="16" />
       <span>Laddar...</span>
     </div>
 
@@ -100,7 +101,7 @@ watch(professionSlug, () => {
 
     <ul
       v-else
-      class="list-none m-0 p-0 border border-navy bg-panel"
+      class="list-none m-0 p-0 border border-navy/20 bg-panel"
     >
       <li
         v-for="category in categories"

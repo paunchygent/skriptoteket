@@ -86,7 +86,7 @@ const panels = [
       />
     </div>
 
-    <div class="mt-10 grid divide-y-2 divide-navy border-2 border-navy bg-panel lg:grid-cols-3 lg:divide-x-2 lg:divide-y-0">
+    <div class="mt-10 grid divide-y divide-navy/20 border border-navy/20 bg-panel lg:grid-cols-3 lg:divide-x lg:divide-y-0">
       <article
         v-for="panel in panels"
         :key="panel.title"

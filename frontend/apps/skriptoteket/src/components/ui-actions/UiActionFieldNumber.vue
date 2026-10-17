@@ -36,7 +36,7 @@ function onInput(event: Event): void {
       inputmode="decimal"
       :value="modelValue"
       :class="[
-        'w-full bg-white text-navy placeholder:text-navy/40',
+        'w-full bg-panel text-navy placeholder:text-navy/40',
         isCompact
           ? 'h-[28px] border border-navy/30 px-2.5 text-[11px] shadow-none leading-none'
           : 'border border-navy px-3 py-2',

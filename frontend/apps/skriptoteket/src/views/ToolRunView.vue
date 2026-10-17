@@ -12,7 +12,7 @@ import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
 import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
-import { SystemMessage } from "../components/ui";
+import { SystemMessage, UiDenseSpinner, UiDenseStatusPill } from "../components/ui";
 import UiCollapse from "../components/ui/UiCollapse.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
 import { useToolSettings } from "../composables/tools/useToolSettings";
@@ -225,7 +225,7 @@ watch(hasSettingsSchema, (hasSchema) => {
 
     <div
       v-if="isLoadingTool"
-      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
+      class="p-4 border border-navy/20 bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>
@@ -243,7 +243,7 @@ watch(hasSettingsSchema, (hasSchema) => {
     <!-- UNIFIED TOOL CARD -->
     <div
       v-else-if="tool"
-      class="border border-navy bg-panel"
+      class="border border-navy/20 bg-panel"
     >
       <UsageInstructions
         v-if="tool.usage_instructions?.trim()"
@@ -340,7 +340,7 @@ watch(hasSettingsSchema, (hasSchema) => {
       <!-- Running state -->
       <UiCollapse :open="showRunningState">
         <div class="px-4 py-3 flex items-center gap-2 text-navy/70 text-sm">
-          <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+          <UiDenseSpinner :size="16" />
           <span>{{ displayedRun?.status === "queued" ? "Köar..." : "Kör..." }}</span>
         </div>
       </UiCollapse>
@@ -359,7 +359,7 @@ watch(hasSettingsSchema, (hasSchema) => {
             Visar resultat för {{ selectedStepRun.label }}.
             <button
               type="button"
-              class="underline hover:text-action"
+              class="btn-inline-edit"
               @click="selectedStepRun = null"
             >
               Visa aktuellt
@@ -368,9 +368,7 @@ watch(hasSettingsSchema, (hasSchema) => {
 
           <!-- Status row -->
           <div class="flex items-center gap-2 text-sm">
-            <span class="px-2 py-1 border border-navy font-semibold uppercase tracking-wide text-xs">
-              {{ statusLabel(displayedRun.status) }}
-            </span>
+            <UiDenseStatusPill :label="statusLabel(displayedRun.status)" />
             <span class="font-mono text-xs text-navy/50">
               {{ displayedRun.run_id.slice(0, 8) }}
             </span>

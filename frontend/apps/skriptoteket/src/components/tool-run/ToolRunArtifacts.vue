@@ -123,7 +123,7 @@ async function saveToVault(artifact: RunArtifact | ArtifactEntry): Promise<void>
         <button
           v-if="runId"
           type="button"
-          class="btn-ghost border-navy/30 bg-canvas shadow-none ml-auto"
+          class="btn-ghost ml-auto"
           :disabled="savingIds.has(artifact.artifact_id)"
           @click="void saveToVault(artifact)"
         >

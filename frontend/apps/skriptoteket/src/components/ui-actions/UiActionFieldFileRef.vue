@@ -9,6 +9,7 @@ import {
   getFileRefSource,
 } from "../../composables/tools/fileRefHelpers";
 import VaultPickerModal from "../vault/VaultPickerModal.vue";
+import { UiDenseActionButton } from "../ui";
 
 type UiFileRefField = components["schemas"]["UiFileRefField"];
 
@@ -148,7 +149,7 @@ function sourceLabel(ref: FileRefInfo): string {
           </p>
           <button
             type="button"
-            class="btn-ghost border-navy/30 bg-canvas shadow-none"
+            class="btn-ghost"
             :disabled="isReadOnly || remainingVaultSlots === 0"
             @click="openVaultPicker"
           >
@@ -163,19 +164,17 @@ function sourceLabel(ref: FileRefInfo): string {
           <div
             v-for="refValue in selectedVaultRefs"
             :key="refValue"
-            class="flex items-center justify-between gap-3 border border-navy/20 bg-white px-2.5 py-2"
+            class="flex items-center justify-between gap-3 border border-navy/20 bg-panel px-2.5 py-2"
           >
             <span class="font-mono text-navy truncate text-sm">
               {{ fileNameForRef(refValue) }}
             </span>
-            <button
-              type="button"
-              class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-critical/40 text-critical bg-white leading-none"
+            <UiDenseActionButton
+              label="Ta bort"
+              tone="danger"
               :disabled="isReadOnly"
               @click="removeVaultRef(refValue)"
-            >
-              Ta bort
-            </button>
+            />
           </div>
         </div>
         <p
@@ -209,7 +208,7 @@ function sourceLabel(ref: FileRefInfo): string {
             v-for="sessionRef in sessionRefs"
             :key="sessionRef.ref"
             :class="[
-              'flex items-start gap-2 border border-navy/20 bg-white px-2.5 py-2',
+              'flex items-start gap-2 border border-navy/20 bg-panel px-2.5 py-2',
               isCompact ? 'text-[11px]' : 'text-sm',
             ]"
           >

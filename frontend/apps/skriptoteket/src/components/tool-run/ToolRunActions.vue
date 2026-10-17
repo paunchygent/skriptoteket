@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
-import { SystemMessage } from "../ui";
+import { SystemMessage, UiDenseActionButton } from "../ui";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
 type UiActionField = NonNullable<UiFormAction["fields"]>[number];
@@ -323,20 +323,18 @@ watch(
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button
+        <component
+          :is="isCompact ? UiDenseActionButton : 'button'"
           v-for="action in actions"
           :key="action.action_id"
           type="button"
-          :class="[
-            isCompact
-              ? 'btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none'
-              : (action === actions[0] ? 'btn-cta' : 'btn-ghost'),
-          ]"
+          :label="isCompact ? action.label : undefined"
+          :class="isCompact ? undefined : (action === actions[0] ? 'btn-cta' : 'btn-ghost')"
           :disabled="disabled || hasFileRefErrors"
           @click="onSubmit(action)"
         >
           {{ action.label }}
-        </button>
+        </component>
       </div>
     </div>
   </div>
