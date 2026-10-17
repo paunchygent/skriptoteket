@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "03ef4adac01cdc20da5d8d90ee599ab817860f680bdf76e4fc75fe97abfb2cba",
+  "source_set_digest": "6bef3b1f597aad3275575d0c5ca8666afc70ee14152015463da8db4af49b88ae",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5408,7 +5408,7 @@
       "type": "task",
       "title": "Store a suggested type on converted questions",
       "path": "docs/backlog/tasks/task-skript-39-06-06-store-a-suggested-type-on-converted-questions.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5419,7 +5419,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 approved (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/TASK-SKRIPT-39-06-06/review-1.md). Unit tests tests/unit/application/curated_apps/handlers/test_exam_workspace_docx_retry_source_capture.py with the change-type domain tests: 317 passed at main 5eb299d5. Staging imports at 1f9e4367 produced no type conflict, so no stored suggested type could be shown live; the user ruled 2026-10-17 to close on tests. The change-type command it feeds is proven on staging and Exam.net (evidence/staging-proof-1f9e4367/proof.md, exam 5345261)."
       }
     },
     {

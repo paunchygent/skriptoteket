@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 approved (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/TASK-SKRIPT-39-06-06/review-1.md). Unit tests tests/unit/application/curated_apps/handlers/test_exam_workspace_docx_retry_source_capture.py with the change-type domain tests: 317 passed at main 5eb299d5. Staging imports at 1f9e4367 produced no type conflict, so no stored suggested type could be shown live; the user ruled 2026-10-17 to close on tests. The change-type command it feeds is proven on staging and Exam.net (evidence/staging-proof-1f9e4367/proof.md, exam 5345261).'
 task_kind: story
 acceptance_criteria:
   - A converted question whose labeler type (`retry_source.label_kind`) differs from its saved type carries a stored suggested type that the workspace API returns and that a type change to that suggestion consumes
