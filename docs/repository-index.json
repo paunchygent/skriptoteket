@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a7221f84fc6428633b18d8adbda06d0e91a6f982c8ea7f6d7379cb4868923a90",
+  "source_set_digest": "e5b9cacb2b2406592a7258fddaf2eb8c6891a4125a84fc2e7eaed08590617d73",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6575,6 +6575,24 @@
         "decided_at": "2026-10-17T00:10:00+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent Sol review .orchestration/context/sessions/01a146ac-4ce2-72db-8d74-98aef59f9a51/evidence/review-rep0041.md (changes requested, F1 timeout double) and rereview evidence/rereview-rep0041.md in the same root (approved, F1 resolved); merged to main as 23fc5cf0; focused 97 passed on main after the merge."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0042",
+      "type": "task",
+      "title": "Repair the two failing docker-suite tests in the DOCX background job proof",
+      "path": "docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

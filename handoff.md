@@ -32,10 +32,11 @@
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
-- Docker suite `test_exam_workspace_docx_background.py` (marker `docker`,
-  outside `pdm run test-parallel`): 2/9 fail on main and at `8bb83759`;
-  pre-existing, no owner or task yet. Evidence
-  `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
+- [TASK-SKRIPT-REP-0042](docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md)
+  `in_progress` 2026-10-17, owner Claude parent on the Mac (retained
+  `01a148db-64d7-7b40-9a2e-34373c3de59c`): docker suite
+  `test_exam_workspace_docx_background.py` 2/9 fail on main (formatting
+  diagnostics contract; bf26 `w2-10-01` replay). Next: Sol pair, Sol review.
 
 - [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
   `ready`: task 1 `done` 2026-10-16; tasks 2-4 contracted `ready`, next is
