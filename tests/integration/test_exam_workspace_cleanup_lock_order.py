@@ -26,6 +26,9 @@ from skriptoteket.cli.commands.cleanup_vault_files import (
     purge_expired_vault_files,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
+)
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
@@ -126,6 +129,7 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
             await RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(session),
                 vault_files=PostgreSQLUserVaultFileRepository(session),
+                index=PostgreSQLExamIndexRepository(session),
             ).handle(
                 actor=actor,
                 command=RenameVaultFileCommand(file_id=first_head.id, stem="Renamed exam"),

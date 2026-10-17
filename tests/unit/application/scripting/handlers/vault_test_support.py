@@ -371,6 +371,23 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None:
         return None
 
+    async def lock_lifecycle_rows(
+        self, *, user_id: UUID, file_id: UUID, document_lineage_id: UUID | None
+    ) -> list[VaultFile]:
+        return sorted(
+            (
+                file
+                for file in self._files.values()
+                if file.user_id == user_id
+                and (
+                    file.document_lineage_id == document_lineage_id
+                    if document_lineage_id is not None
+                    else file.id == file_id
+                )
+            ),
+            key=lambda file: file.id,
+        )
+
     async def rename_active(self, *, user_id: UUID, file_id: UUID, name: str) -> VaultFile | None:
         file = self._files.get(file_id)
         if file is None or file.user_id != user_id or file.deleted_at is not None:
