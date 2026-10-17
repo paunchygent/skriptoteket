@@ -117,7 +117,7 @@ watch(
       >
         {{ lifecycleCopy.eyebrow }}
       </p>
-      <h1 class="font-serif text-4xl font-semibold tracking-[-0.03em] text-navy">
+      <h1 class="font-serif text-4xl font-semibold tracking-normal text-navy">
         {{ lifecycleCopy.title }}
       </h1>
       <p class="text-sm leading-6 text-navy/70">
@@ -127,13 +127,13 @@ watch(
         Sidan öppnas automatiskt. Om inget händer kan du använda knappen.
       </p>
       <a
-        class="btn-primary inline-block"
+        class="btn-primary"
         :href="handoffUrl"
       >
         {{ lifecycleCopy.action }}
       </a>
       <RouterLink
-        class="block text-sm font-semibold text-navy underline decoration-navy/40 underline-offset-4"
+        class="block text-sm font-[var(--huleedu-link-weight)] text-[var(--huleedu-link-color)] underline underline-offset-4"
         :to="loginLocation"
       >
         Gå till inloggning
