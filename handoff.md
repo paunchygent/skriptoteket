@@ -88,7 +88,9 @@
   result `evidence/results/df1d5c3a-*.json`; next fresh review, merge, then field to 8445f6e1); Opus
   `8445f6e1` (ended, result `evidence/results/8445f6e1-*.json`) 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame; 10879f00 spec
   port; a1d89539 amber guidance; checks green; screenshots r2 at 375/768/1440 in its
-  `evidence/40-04-03-screens/r2/`; next: parent screenshot check, then review). It
+  `evidence/40-04-03-screens/r2/`; lead `f3523358` failed r2 on seven prototype
+  divergences (`evidence/40-04-03-screens/lead-check-r2.md`); builder `f6049157`
+  still running on them; then review). It
   confirmed the DXE export block independently. Desktop session
   "Profile: choosing a course adds and saves it" repairs Mina kurser (choosing adds,
   each change saves). Next lanes: 39-06-02 Exam.net probe, 39-07-03. Follow-ups:
