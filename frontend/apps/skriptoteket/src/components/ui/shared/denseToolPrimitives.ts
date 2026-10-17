@@ -69,11 +69,16 @@ function groupPositionClass(position: DenseActionGroupPosition): string {
 }
 
 function toneClass(tone: DenseActionTone, active: boolean, iconOnly: boolean): string {
-  // An icon-only delete action is its glyph alone; the border stays for geometry.
+  // An icon-only action is its glyph alone; the border stays for geometry.
   if (tone === "danger" && iconOnly) {
     return active
       ? "border-transparent bg-burgundy/10 text-burgundy"
       : "border-transparent bg-transparent text-burgundy hover:bg-burgundy/5";
+  }
+  if (tone === "default" && iconOnly) {
+    return active
+      ? "border-transparent bg-navy/10 text-navy"
+      : "border-transparent bg-transparent text-navy hover:bg-navy/5";
   }
   switch (tone) {
     case "primary":
