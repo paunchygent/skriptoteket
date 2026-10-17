@@ -12,6 +12,7 @@ import json
 import re
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
 from os.path import commonprefix
@@ -138,6 +139,7 @@ class _BulletParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.items: list[str] = []
         self.parts: list[str] | None = None
+        self.empty_bullets = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag == "li":
@@ -152,33 +154,52 @@ class _BulletParser(HTMLParser):
             self.parts.append(data)
 
     def handle_endtag(self, tag: str) -> None:
-        if tag == "li" and self.parts is not None:
+        if tag == "li":
+            if self.parts is None:
+                raise ValueError("Central-content bullet closes without opening")
             text = " ".join("".join(self.parts).split())
-            if not text:
-                raise ValueError("Empty central-content bullet")
-            self.items.append(text)
+            if text:
+                self.items.append(text)
+            else:
+                self.empty_bullets += 1
             self.parts = None
 
 
-def split_content_items(course_key: str, html: str) -> tuple[ExamContentItem, ...]:
+def _parse_content_items(course_key: str, html: str) -> tuple[tuple[ExamContentItem, ...], int]:
     parser = _BulletParser()
-    parser.feed(html)
-    parser.close()
-    if parser.parts is not None or not parser.items:
-        raise ValueError(f"Central content has no complete bullets: {course_key}")
+    try:
+        parser.feed(html)
+        parser.close()
+    except ValueError as error:
+        raise ValueError(f"Central content for {course_key}: {error}") from error
+    if parser.parts is not None:
+        raise ValueError(f"Central content has an unclosed bullet: {course_key}")
+    # Parent-approved source-gap policy (2026-10-17): a valid official text
+    # without bullet items is empty content, not invented curriculum material.
     unique: dict[str, ExamContentItem] = {}
     for text in parser.items:
         identifier = content_item_id(course_key, text)
         unique.setdefault(identifier, ExamContentItem(id=identifier, text=text))
-    return tuple(unique.values())
+    return tuple(unique.values()), parser.empty_bullets
+
+
+def split_content_items(course_key: str, html: str) -> tuple[ExamContentItem, ...]:
+    return _parse_content_items(course_key, html)[0]
+
+
+@dataclass(frozen=True)
+class ContentSnapshot:
+    items: dict[str, tuple[ExamContentItem, ...]]
+    ignored_empty_bullet_keys: tuple[str, ...]
 
 
 def map_content_catalog(
     courses: tuple[ExamCourse, ...],
     course_details: dict[str, CourseDetailResponse],
     subject_details: dict[str, SubjectDetailResponse],
-) -> dict[str, tuple[ExamContentItem, ...]]:
+) -> ContentSnapshot:
     result: dict[str, tuple[ExamContentItem, ...]] = {}
+    ignored_empty: list[str] = []
     for course in courses:
         if course.school_form == "gymnasiet":
             html = course_details[course.key].course.central_content.text
@@ -188,8 +209,11 @@ def map_content_catalog(
                 for content in subject_details[course.subject_code].subject.central_contents
                 if content.year == course.year_band
             )
-        result[course.key] = split_content_items(course.key, html)
-    return result
+        items, empty_bullets = _parse_content_items(course.key, html)
+        result[course.key] = items
+        if empty_bullets:
+            ignored_empty.append(course.key)
+    return ContentSnapshot(items=result, ignored_empty_bullet_keys=tuple(sorted(ignored_empty)))
 
 
 def _band_label(year: str, contents: list[CentralContent]) -> str:
@@ -290,7 +314,8 @@ def build_payloads(
         courses_response, subjects_gy_response, subjects_gr_response, subject_details, today=today
     )
     catalog = ExamCourseCatalog(generated_at=generated_at, source=SOURCE, courses=courses)
-    content = map_content_catalog(courses, course_details, subject_details)
+    snapshot = map_content_catalog(courses, course_details, subject_details)
+    content = snapshot.items
     urls = [*LIST_URLS.values()]
     urls.extend(f"{SOURCE}/v1/subjects/{code}" for code in sorted(subject_details))
     urls.extend(f"{SOURCE}/v1/courses/{code}" for code in sorted(course_details))
@@ -302,6 +327,12 @@ def build_payloads(
             sorted(Counter(course.reform or course.school_form for course in courses).items())
         ),
         "total": len(courses),
+        "source_gaps": {
+            "central_content_without_bullets": sorted(
+                key for key, items in content.items() if not items
+            ),
+            "ignored_empty_bullets": list(snapshot.ignored_empty_bullet_keys),
+        },
     }
     return {
         "catalog.json": _json_bytes(catalog.model_dump(mode="json")),
@@ -364,9 +395,10 @@ def main() -> None:
     codes = [entry.key for entry in catalog_entries if entry.school_form == "gymnasiet"]
 
     def read_course(code: str) -> tuple[str, CourseDetailResponse]:
-        return code, _read_response(
+        detail = _read_response(
             f"course-{code}.json", f"{SOURCE}/v1/courses/{code}", args.raw_dir, CourseDetailResponse
         )
+        return code, detail
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         course_details = dict(executor.map(read_course, codes))

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -199,6 +200,10 @@ def test_build_check_accepts_identical_mapping_and_detects_stale_or_missing_outp
         *recorded_inputs(), today=TODAY, generated_at=STAMP, course_details=course_details
     )
     assert set(payloads) == {"catalog.json", "BUILD.json", "content.json"}
+    assert json.loads(payloads["BUILD.json"])["source_gaps"] == {
+        "central_content_without_bullets": [],
+        "ignored_empty_bullets": [],
+    }
     catalog = ExamCourseCatalog.model_validate_json(payloads["catalog.json"])
     assert catalog.generated_at == STAMP
     assert catalog.courses == map_course_catalog(*recorded_inputs(), today=TODAY)
@@ -209,6 +214,30 @@ def test_build_check_accepts_identical_mapping_and_detects_stale_or_missing_outp
     assert check_payloads(tmp_path, payloads) == ["catalog.json"]
     (tmp_path / "BUILD.json").unlink()
     assert set(check_payloads(tmp_path, payloads)) == {"catalog.json", "BUILD.json"}
+
+
+def test_source_gap_notes_name_every_course_without_bullet_content() -> None:
+    inputs = recorded_inputs()
+    course_details = {
+        course.course_code: CourseDetailResponse.model_validate_json(
+            (FIXTURES / f"course-{course.course_code}.json").read_bytes()
+        )
+        for course in inputs[0].courses
+    }
+    # Source-gap mutation is synthetic; no replacement curriculum text is invented.
+    for key in ("SVESVE02", "ENGE1000X"):
+        course_details[key].course.central_content.text = "<p>Centralt innehåll:</p>"
+    course_details["ENGENG05"].course.central_content.text += "<ul><li></li></ul>"
+    payloads = build_payloads(
+        *inputs, today=TODAY, generated_at=STAMP, course_details=course_details
+    )
+    assert json.loads(payloads["BUILD.json"])["source_gaps"] == {
+        "central_content_without_bullets": ["ENGE1000X", "SVESVE02"],
+        "ignored_empty_bullets": ["ENGENG05"],
+    }
+    content = json.loads(payloads["content.json"])
+    assert content["SVESVE02"] == content["ENGE1000X"] == []
+    assert content["ENGENG05"]
 
 
 def test_committed_catalog_loads_once_with_real_reform_and_band_entries() -> None:
