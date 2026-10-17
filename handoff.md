@@ -62,7 +62,8 @@
   CSRF rotation breaks writes, no recovery) and U-2 (see-through course list),
   both with Hemma Sol repair agents; the trash check (exports follow their exam
   there and back) passed on d9c2b3bb; U2 walked into Exam.net on d9c2b3bb
-  (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass); defect U-4 (the
+  (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass, grading preview
+  passes); 39-06-01 `done` (closeout review approved); defect U-4 (the
   workspace Spara stays disabled after parent commands, export lacks them) is with a Hemma Sol
   agent with parent-authorised backend response change; 39-06-03 waits for its re-walk; then 39-04-10 starts; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02

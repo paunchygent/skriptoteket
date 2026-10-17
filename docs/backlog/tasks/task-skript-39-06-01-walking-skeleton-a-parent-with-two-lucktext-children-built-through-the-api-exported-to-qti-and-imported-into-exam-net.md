@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) fda5f37e approved the closeout of every criterion and deliverable (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-39-06-01/closeout-review.md) on main 7a0ff47c after the integration review u2-review-2; it reran the focused skeleton test on origin/main (1 passed). The Mac parent's staging walk on d9c2b3bb (evidence/staging-walk-u2-d9c2b3bb/) saved revision 2 with a parent of two teacher_created Lucktext children (2p, 3p), exported QTI with MAXSCORE 5, imported it into Exam.net as exam 5345126 task 11 (total 41p), and the grading preview scored 2/2, 0/3 and a case-insensitive 3/3. The parent authorized closure.
 task_kind: story
 acceptance_criteria:
   - A parent with a shared instruction and two Lucktext children, each with its own points, created and saved through the workspace API, exports as QTI 3.0 and imports into Exam.net through the teacher's browser with the parent total equal to the children's sum

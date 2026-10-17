@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9c1b2522169ba6a5452644957d0382bee6a2507ffa26b130ae34a731f212ab79",
+  "source_set_digest": "68894e413a6ad1a0f818b30043ee3a6b360eb7572d1cb98c7f06f715743aa954",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5278,7 +5278,7 @@
       "type": "task",
       "title": "Walking skeleton: a parent with two Lucktext children built through the API, exported to QTI and imported into Exam.net",
       "path": "docs/backlog/tasks/task-skript-39-06-01-walking-skeleton-a-parent-with-two-lucktext-children-built-through-the-api-exported-to-qti-and-imported-into-exam-net.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5289,7 +5289,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) fda5f37e approved the closeout of every criterion and deliverable (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-39-06-01/closeout-review.md) on main 7a0ff47c after the integration review u2-review-2; it reran the focused skeleton test on origin/main (1 passed). The Mac parent's staging walk on d9c2b3bb (evidence/staging-walk-u2-d9c2b3bb/) saved revision 2 with a parent of two teacher_created Lucktext children (2p, 3p), exported QTI with MAXSCORE 5, imported it into Exam.net as exam 5345126 task 11 (total 41p), and the grading preview scored 2/2, 0/3 and a case-insensitive 3/3. The parent authorized closure."
       }
     },
     {
