@@ -1796,6 +1796,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Exam Parent
+         * @description Delete only the instruction, leaving its questions standalone.
+         */
+        delete: operations["delete_exam_parent_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}/children": {
         parameters: {
             query?: never;
@@ -1842,6 +1862,26 @@ export interface paths {
         post?: never;
         /** Delete Exam Child */
         delete: operations["delete_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children__item_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}/with-children": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Exam Parent With Children
+         * @description Explicitly delete the instruction and every question it contains.
+         */
+        delete: operations["delete_exam_parent_with_children_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__with_children_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -5620,6 +5660,28 @@ export interface components {
             state: "converting" | "ready";
             /** Unit Id */
             unit_id: string;
+        };
+        /**
+         * ExamWorkspaceDeleteResponse
+         * @description One undoable deletion; names a removed instruction for an inline notice.
+         */
+        ExamWorkspaceDeleteResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
+            document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * History Cursor
+             * Format: uuid
+             */
+            history_cursor: string;
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            /** Removed Parent Id */
+            removed_parent_id: string | null;
+            saved_document: components["schemas"]["NativeExamDocument-Output"];
+            summary: components["schemas"]["ExamWorkspaceDocumentSummary"];
         };
         /** ExamWorkspaceDocumentGroup */
         ExamWorkspaceDocumentGroup: {
@@ -14239,6 +14301,42 @@ export interface operations {
             };
         };
     };
+    delete_exam_parent_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                parent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParentCommandRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children_post: {
         parameters: {
             query?: never;
@@ -14334,7 +14432,43 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                    "application/json": components["schemas"]["ExamWorkspaceDeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_exam_parent_with_children_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__with_children_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                parent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParentCommandRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDeleteResponse"];
                 };
             };
             /** @description Validation Error */

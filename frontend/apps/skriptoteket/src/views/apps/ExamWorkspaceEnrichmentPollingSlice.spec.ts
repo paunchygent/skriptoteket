@@ -125,8 +125,8 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     await saveDocument(wrapper);
     const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
     expect(saved?.answer_key.origin).toBe("machine_proposed");
-    expect(saved?.answer_key.correct_choice_ids).toEqual(["choice_c"]);
-    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_c"]);
+    expect(saved?.answer_key.correct_choice_ids).toEqual(["choice_003"]);
+    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_003"]);
     expect(saved?.review.state).toBe("review_required");
   });
 
@@ -152,7 +152,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
     await saveDocument(wrapper);
     const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
-    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_c"]);
+    expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_003"]);
   });
 
   it("shows the server message when no suggestions can be made", async () => {

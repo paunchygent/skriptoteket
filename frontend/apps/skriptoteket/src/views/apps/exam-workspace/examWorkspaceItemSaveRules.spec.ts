@@ -120,7 +120,7 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
 
     expect(
       examWorkspaceSaveRefusalCopy([
-        { ...item, answer_key: { ...item.answer_key, origin: "absent" } },
+        { ...item, points: 0, answer_key: { ...item.answer_key, origin: "absent" } },
       ]),
     ).toBeNull();
   });

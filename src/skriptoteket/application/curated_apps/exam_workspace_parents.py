@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 
@@ -12,6 +13,12 @@ class ParentCommandRequest(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     expected_cursor: UUID
+
+
+class ExamWorkspaceDeleteResponse(ExamWorkspaceDocumentResponse):
+    """One undoable deletion; names a removed instruction for an inline notice."""
+
+    removed_parent_id: str | None
 
 
 class NewParentChild(NativeExamItem):

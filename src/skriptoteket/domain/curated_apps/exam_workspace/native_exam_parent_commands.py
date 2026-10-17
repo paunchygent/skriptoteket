@@ -1,4 +1,4 @@
-"""Teacher parent commands over immutable documents (TASK-SKRIPT-39-06-03).
+"""Teacher parent commands over immutable documents (TASK-SKRIPT-39-06-03/07).
 
 Positions are zero-based insertion indexes: top-level units for a new parent,
 and children for additions. Existing parents are indivisible top-level units.
@@ -61,7 +61,7 @@ def _rebuild(
         )
         for tag in document.header.tags
     ]
-    # Removing a child removes only assets that no remaining body/source uses.
+    # Remove only assets that no surviving item, source or shared instruction uses.
     referenced = {
         asset_id
         for item in items
@@ -141,6 +141,40 @@ def add_child(
     return _rebuild(document, items, tuple(updated if p == parent else p for p in document.parents))
 
 
+def delete_parent(
+    document: NativeExamDocument,
+    *,
+    parent_id: str,
+) -> NativeExamDocument:
+    """Remove the shared instruction, leaving every child in place as a standalone."""
+    _parent(document, parent_id)
+    return _rebuild(
+        document,
+        list(document.items),
+        tuple(parent for parent in document.parents if parent.parent_id != parent_id),
+    )
+
+
+def delete_parent_with_children(
+    document: NativeExamDocument,
+    *,
+    parent_id: str,
+) -> NativeExamDocument:
+    """Remove the instruction and exactly the items it owns."""
+    parent = _parent(document, parent_id)
+    child_ids = set(parent.item_ids)
+    if len(child_ids) == len(document.items):
+        raise validation_error(
+            "Provet måste ha minst en fråga.",
+            details={"reason": "exam_requires_question", "parent_id": parent_id},
+        )
+    return _rebuild(
+        document,
+        [item for item in document.items if item.item_id not in child_ids],
+        tuple(parent for parent in document.parents if parent.parent_id != parent_id),
+    )
+
+
 def delete_child(
     document: NativeExamDocument,
     *,
@@ -155,10 +189,7 @@ def delete_child(
             details={"parent_id": parent_id, "item_id": item_id},
         )
     if len(parent.item_ids) == 1:
-        raise validation_error(
-            "Uppgiften måste ha minst en deluppgift.",
-            details={"reason": "parent_requires_child", "parent_id": parent_id},
-        )
+        return delete_parent_with_children(document, parent_id=parent_id)
     updated = NativeExamParent.model_validate(
         dict(
             parent.model_dump(),

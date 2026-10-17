@@ -68,7 +68,7 @@ export function buildUnkeyedResponse(
 }
 
 export const SUGGESTION: NativeAnswerKeySuggestion = {
-  correct_choice_ids: ["choice_c"],
+  correct_choice_ids: ["choice_003"],
   fingerprint: "a".repeat(64),
   gap_accepted_values: [],
   match_pairs: [],

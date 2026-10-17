@@ -41,25 +41,25 @@ export function buildDocument(): NativeExamDocument {
     buildFreeTextItem(1),
     {
       ...buildFreeTextItem(2),
-      answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "source_provided" },
+      answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "source_provided" },
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Avdunstning" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kondensation" }] }] },
-        { choice_id: "choice_c", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Nederbörd" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Avdunstning" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kondensation" }] }] },
+        { choice_id: "choice_003", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Nederbörd" }] }] },
       ],
       kind: "single_choice",
     },
     {
       ...buildFreeTextItem(3),
       answer_key: {
-        correct_choice_ids: ["choice_a", "choice_b"],
+        correct_choice_ids: ["choice_001", "choice_002"],
         match_pairs: [],
         origin: "machine_proposed",
       },
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kväve" }] }] },
-        { choice_id: "choice_c", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Argon" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Kväve" }] }] },
+        { choice_id: "choice_003", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Argon" }] }] },
       ],
       kind: "multiple_response",
       review: {
@@ -71,6 +71,7 @@ export function buildDocument(): NativeExamDocument {
     },
     {
       ...buildFreeTextItem(4),
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "machine_proposed" },
       body: [
         { heading_level: null, segments: [
             { kind: "text", marks: [], text: "Vatten kokar vid" },
@@ -96,14 +97,14 @@ export function buildDocument(): NativeExamDocument {
 
   return {
     assets: [],
-    document_id: "doc-1",
+    document_id: "00000000-0000-4000-8000-000000000001",
     instructions: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Besvara alla frågor." }] }],
     items,
     origin: {
       extractor_version: "docx-extractor-1",
       kind: "docx_import",
       source_filename: "NO_Prov_HT25.docx",
-      source_sha256: "abc123",
+      source_sha256: "a".repeat(64),
     },
     parents: [],
     revision: 1,

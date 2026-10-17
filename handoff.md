@@ -62,23 +62,20 @@
   export carries it), pending; 39-08-02 `done` (two-tab CSRF re-walk passed on
   02e6676c). Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`,
   `staging-walk-u2-d9c2b3bb/`, `staging-rewalk-fdc2973b/`, `staging-rewalk-02e6676c/`.
-  Wave 2 backend (Sol pairs on Hemma, shared worktree
-  `~/apps/skriptoteket-epic-skript-39-remote`, branch `codex/epic-skript-39-remote`,
-  never pushed; reviews in `evidence/reviews/` of the Hemma root copy). All six
-  approved after repair: 39-04-06 (review 3), 39-04-10, 39-06-04, 39-07-01 (zero
-  points allowed per user 2026-10-17; reconcile old positive-tick wording in its task
-  and story at closeout), 39-08-03 and 39-08-04; shared wiring 37288f10. 39-07-02
-  approved (review 1); 39-06-05 approved after repair dabffe8c (review 2). Frontend v5
-  fixture and type repair (ff139435, ce881d19, 6d3f1d98, fc6d6f04): rereview 3
-  `9a6d3eb1` running; shared `buildDocument` fixture repair `f0ed8bac` running.
-  Next: 39-06-06, the 39-06-02 Exam.net probe; integrate wave 2 into main, rebuild
-  staging, one exam-converter walk (with the 40-04-02 shell at three widths), then
+  Wave 2 (39-04-06, 39-04-10, 39-06-04, 39-06-05, 39-07-01, 39-07-02, 39-08-03,
+  39-08-04, frontend v5 repairs) all approved and on main bd4d706d (merge 989c912f;
+  14 backend regressions repaired in 1583be5a, `evidence/backend-repair-1583be5a.md`).
+  Staging rebuild bd4d706d running (`~/logs/skriptoteket-dev-bd4d706d.log`); then one
+  exam-converter walk with the 40-04-02 shell at three widths, then close wave 2
+  (39-07-01: reconcile positive-tick wording to the zero-point rule). 39-06-07 delete
+  instruction (user 2026-10-17) `ready`, Sol `d2cfe369` on
+  `codex/task-skript-39-06-07-remote`. Next: 39-06-06, the 39-06-02 Exam.net probe,
   39-07-03. Follow-ups: cleanup deletes payload files before its row commit (39-04-10
-  review), and `migrated_db` swallows migration-thread errors.
+  review); `migrated_db` swallows migration-thread errors.
   Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
   40-04-02 shell `in_progress`: review 3 approved, merged to main 1413f65a; closes
   after the staging walk (Flunk-Out Frenzy out of scope, user 2026-10-17); and
-  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); huleedu-integrated 0.1.29 (glyph
+  40-04-03 workspace `8445f6e1` (`...-40-04-03-remote`; logic 1d2fcadb, frame UI next); huleedu-integrated 0.1.29 (glyph
   meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
   Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
   Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on

@@ -128,6 +128,17 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             assert response.status_code == 200, response.text
             initial_step = ExamWorkspaceUndoStepResponse.model_validate(response.json())
             cursor = initial_step.history.cursor
+            # Spara changed the imported baseline. The next autosave retains that
+            # saved predecessor as well as the draft, so undo cannot skip it.
+            assert len(initial_step.history.step_ids) == 2
+            predecessor = await client.get(
+                path + "/history/" + str(initial_step.history.step_ids[0])
+            )
+            assert predecessor.status_code == 200, predecessor.text
+            assert (
+                ExamWorkspaceHistoryDocumentResponse.model_validate(predecessor.json()).document
+                == saved_initial.document
+            )
             saved_file = env.vault_files.files[imported.summary.vault_file_id]
             original_bytes = await env.store.load(actor=actor, vault_file=saved_file)
             templates = [
@@ -157,7 +168,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             assert created.history_cursor != cursor
             response_history = await client.get(path + "/history")
             history = ExamWorkspaceHistoryResponse.model_validate(response_history.json())
-            assert len(history.step_ids) == 2
+            assert history.step_ids == (*initial_step.history.step_ids, created.history_cursor)
             assert history.cursor == created.history_cursor
             assert await env.store.load(actor=actor, vault_file=saved_file) == original_bytes
             reopened_after_command = await client.get(path)
@@ -201,7 +212,10 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             response = await client.get(path)
             assert ExamWorkspaceDocumentResponse.model_validate(response.json()) == added
             response = await client.get(path + "/history")
-            assert len(ExamWorkspaceHistoryResponse.model_validate(response.json()).step_ids) == 3
+            assert ExamWorkspaceHistoryResponse.model_validate(response.json()).step_ids == (
+                *history.step_ids,
+                added.history_cursor,
+            )
             # The former revision-guarded payload is gone, with no compatibility route.
             response = await client.post(
                 path + f"/parents/{parent_id}/children",
@@ -252,7 +266,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             assert await env.store.load(actor=actor, vault_file=saved_file) == original_bytes
             response = await client.get(path + "/history")
             before_save_history = ExamWorkspaceHistoryResponse.model_validate(response.json())
-            assert len(before_save_history.step_ids) == 6
+            assert len(before_save_history.step_ids) == 7
             # Spara alone writes command results to the exam file.
             document = reduced.document.model_copy(update={"revision": 3})
             response = await client.put(
