@@ -34,7 +34,7 @@ const emit = defineEmits<{
     </p>
     <button
       type="button"
-      class="btn-secondary inline-flex min-h-10 items-center gap-2 px-3 py-2 text-sm"
+      class="btn-ghost"
       :disabled="disabled"
       data-test="exam-converter-advisory-retry-action"
       @click="emit('retry')"
