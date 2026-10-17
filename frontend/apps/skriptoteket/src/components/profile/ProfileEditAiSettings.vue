@@ -102,13 +102,13 @@ async function handleSubmit(): Promise<void> {
     <div class="p-4 space-y-4">
       <div
         v-if="!remoteProvidersEnabled"
-        class="panel-inset-canvas p-3 text-xs text-navy/70"
+        class="border border-[var(--huleedu-panel-border)] bg-panel p-3 text-xs text-navy/70 shadow-none"
       >
         Systemadministratören tillåter inte externa AI-modeller i den här miljön. Kontakta din administratör om du har
         frågor.
       </div>
 
-      <div class="panel-inset-canvas p-3 text-xs text-navy/70">
+      <div class="border border-[var(--huleedu-panel-border)] bg-panel p-3 text-xs text-navy/70 shadow-none">
         Externa AI-API:er kan skicka innehåll utanför servern. Aktivera eller stäng av externa AI-API:er.
       </div>
 

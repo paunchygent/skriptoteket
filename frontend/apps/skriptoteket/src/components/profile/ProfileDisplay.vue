@@ -28,8 +28,6 @@ const toast = useToast();
 const isEditingPersonal = ref(false);
 const isSaving = ref(false);
 
-// Ref to AI settings component
-const aiSettingsRef = ref<InstanceType<typeof ProfileAiSettingsInline> | null>(null);
 const isEditingAi = ref(false);
 
 // Edit form data for personal info section
@@ -101,16 +99,6 @@ async function savePersonalInfo(): Promise<void> {
     toast.failure(message);
   } finally {
     isSaving.value = false;
-  }
-}
-
-// Toggle AI settings editing - sync with child component
-function toggleEditingAi(): void {
-  isEditingAi.value = !isEditingAi.value;
-  if (isEditingAi.value) {
-    aiSettingsRef.value?.startEditing();
-  } else {
-    aiSettingsRef.value?.cancelEditing();
   }
 }
 
@@ -201,7 +189,7 @@ watch(() => props.profile, () => {
             id="edit-first-name"
             v-model="personalForm.first_name"
             type="text"
-            class="input-inline"
+            class="w-full max-w-xs border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-sm text-navy transition-colors placeholder:text-navy/40 focus:border-navy focus:outline-none disabled:opacity-60"
             :disabled="isSaving"
           >
         </div>
@@ -214,7 +202,7 @@ watch(() => props.profile, () => {
             id="edit-last-name"
             v-model="personalForm.last_name"
             type="text"
-            class="input-inline"
+            class="w-full max-w-xs border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-sm text-navy transition-colors placeholder:text-navy/40 focus:border-navy focus:outline-none disabled:opacity-60"
             :disabled="isSaving"
           >
         </div>
@@ -227,7 +215,7 @@ watch(() => props.profile, () => {
             id="edit-display-name"
             v-model="personalForm.display_name"
             type="text"
-            class="input-inline"
+            class="w-full max-w-xs border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-sm text-navy transition-colors placeholder:text-navy/40 focus:border-navy focus:outline-none disabled:opacity-60"
             placeholder="Valfritt"
             :disabled="isSaving"
           >
@@ -240,7 +228,7 @@ watch(() => props.profile, () => {
           <select
             id="edit-locale"
             v-model="personalForm.locale"
-            class="input-inline"
+            class="w-full max-w-xs border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-sm text-navy transition-colors placeholder:text-navy/40 focus:border-navy focus:outline-none disabled:opacity-60"
             :disabled="isSaving"
           >
             <option
@@ -307,7 +295,7 @@ watch(() => props.profile, () => {
         <button
           type="button"
           class="btn-inline-edit"
-          @click="toggleEditingAi"
+          @click="isEditingAi = !isEditingAi"
         >
           <UiGlyph
             meaning="edit"
@@ -318,7 +306,7 @@ watch(() => props.profile, () => {
       </div>
 
       <div class="px-4 pb-2">
-        <ProfileAiSettingsInline ref="aiSettingsRef" />
+        <ProfileAiSettingsInline v-model:editing="isEditingAi" />
       </div>
     </section>
   </div>

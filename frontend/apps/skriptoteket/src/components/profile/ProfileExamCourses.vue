@@ -198,6 +198,7 @@ async function save(): Promise<void> {
         </span>
         <UiDenseIconButton
           :label="`Ta bort ${row.name}`"
+          class="shrink-0"
           tone="danger"
           data-test="profile-course-remove"
           :aria-label="`Ta bort ${row.name}`"
