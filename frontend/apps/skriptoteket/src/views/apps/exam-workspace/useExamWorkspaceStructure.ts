@@ -47,6 +47,7 @@ import { newTeacherItem } from "./examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import {
   examWorkspaceChangeTypeNotice,
+  examWorkspaceIsOnlyQuestion,
   examWorkspaceNeighbourId,
   examWorkspaceUnitIndex,
   examWorkspaceUnits,
@@ -70,8 +71,8 @@ export type ExamWorkspaceStructureDeps = {
   ) => boolean;
   applyCommandResponse: (response: ExamWorkspaceDocumentResponse) => void;
   selectItem: (itemId: string) => void;
-  /** Store the pending edit, and an undone step as the newest one. */
-  flush: (settle: boolean) => Promise<void>;
+  /** Store the pending edit, and an undone step as the newest one; false when that failed. */
+  flush: (settle: boolean) => Promise<boolean>;
   onConflict: () => Promise<void>;
 };
 
@@ -80,6 +81,7 @@ export type ExamWorkspaceTypeNotice = { itemId: string; kind: NativeExamItemKind
 /** An inline outcome: a type change, an instruction removed with its last question, or a refused delete. */
 export type ExamWorkspaceNotice = { kind: "type" | "delete" | "refused"; text: string };
 
+const LAST_QUESTION_COPY = "Provet måste ha minst en fråga.";
 const HEADING_REMOVED_COPY = "Instruktionen hade inga frågor kvar och togs också bort.";
 
 /** The server's refusal of a delete that would leave the exam without a question. */
@@ -121,7 +123,10 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     running.value = true;
     deleteNotice.value = null;
     try {
-      await deps.flush(true);
+      // The response replaces the copy: without the pending edit stored, it would be lost.
+      if (!(await deps.flush(true))) {
+        return null;
+      }
       const lineageId = deps.lineageId();
       const cursor = deps.historyCursor.value;
       const before = new Set(deps.workspaceDocument.value?.items.map((item) => item.item_id) ?? []);
@@ -191,6 +196,11 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
       });
       return;
     }
+    if (examWorkspaceIsOnlyQuestion(document, itemId)) {
+      deleteNotice.value = { kind: "refused", text: LAST_QUESTION_COPY };
+      return;
+    }
+    deleteNotice.value = null;
     deps.editDocument(
       (current) => withoutStandaloneItem(current, itemId),
       examWorkspaceNeighbourId(document, itemId),

@@ -140,8 +140,12 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
       return gapChip(
         item.gaps.find((gap) => gap.accepted_values.length === 0 && gap.correct_option_id === null)?.gap_id,
       );
-    case "incomplete_match_key":
-      return '[data-test^="exam-workspace-match-tick-"]';
+    case "incomplete_match_key": {
+      const unticked = item.match_left.find(
+        (left) => !item.answer_key.match_pairs.some((pair) => pair.left_id === left.left_id),
+      );
+      return unticked ? `[data-test^="exam-workspace-match-tick-${unticked.left_id}-"]` : null;
+    }
     case "missing_points":
     case "negative_points":
     case "criteria_points_mismatch":

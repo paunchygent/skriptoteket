@@ -96,11 +96,14 @@ export type ExamWorkspaceOpening = { readonly lineageId: string };
 export type ExamWorkspaceDocumentOptions = {
   /** A teacher edit changed the copy; structural edits become an undo step at once. */
   onEdit?: (structural: boolean) => void;
+  /** An undo, redo or server command is about to replace the copy; editing waits for it. */
+  isReplacing?: () => boolean;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions = {}) {
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
+  const isReplacing = options.isReplacing ?? (() => false);
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
@@ -149,12 +152,14 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
-  const isBusy = computed(
+  const isOperationBusy = computed(
     () =>
       operationBusy.value ||
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
   );
+  /** No edit, save or reload may start: an operation runs or the copy is about to be replaced. */
+  const isBusy = computed(() => isOperationBusy.value || isReplacing());
 
   const selectedItem = computed<NativeExamItem | null>(() => {
     const current = workspaceDocument.value;
@@ -540,6 +545,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     importDocument,
     isBusy,
     isDirty,
+    isOperationBusy,
     isOpen,
     loadSavedDocuments,
     notes,

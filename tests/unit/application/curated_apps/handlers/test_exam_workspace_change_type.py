@@ -46,7 +46,7 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
     steps.handle.return_value = ExamWorkspaceUndoStepResponse(
         document=normalized,
         history=ExamWorkspaceHistoryResponse(
-            cursor=cursor, baseline_step_id=uuid4(), step_ids=(cursor,)
+            cursor=cursor, baseline_step_id=uuid4(), step_ids=(cursor,), position_step_id=cursor
         ),
     )
     handler = ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps)

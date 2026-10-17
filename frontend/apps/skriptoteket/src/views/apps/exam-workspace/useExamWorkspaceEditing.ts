@@ -18,14 +18,20 @@ import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 export function useExamWorkspaceEditing() {
   let noteEdit: (structural: boolean) => void = () => undefined;
-  const document = useExamWorkspaceDocument({ onEdit: (structural) => noteEdit(structural) });
+  let isReplacing: () => boolean = () => false;
+  const document = useExamWorkspaceDocument({
+    isReplacing: () => isReplacing(),
+    onEdit: (structural) => noteEdit(structural),
+  });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
 
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
     install: document.installDocument,
-    isBlocked: () => document.isBusy.value,
+    isCommandRunning: () => structure.running.value,
+    // Not `isBusy`: that includes the history's own navigation lock.
+    isBlocked: () => document.isOperationBusy.value,
     lineageId,
     onConflict: reload,
     savedRevision: () => document.savedRevision.value,
@@ -47,8 +53,13 @@ export function useExamWorkspaceEditing() {
     selectedItemId: document.selectedItemId,
     workspaceDocument: document.workspaceDocument,
   });
+  isReplacing = () => history.navigating.value || structure.running.value;
 
-  /** Spara: store the pending edit as an undo step, then overwrite the exam file. */
+  /**
+   * Spara: store the pending edit as an undo step, then overwrite the exam file.
+   * Spara writes the copy itself, so it proceeds when the step write failed; the
+   * server retains a saved copy no step holds before the next edit.
+   */
   async function save(): Promise<boolean> {
     await history.flush(false);
     return await document.saveDocument();

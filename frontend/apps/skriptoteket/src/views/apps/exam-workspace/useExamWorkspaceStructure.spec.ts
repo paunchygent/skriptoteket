@@ -81,6 +81,7 @@ function setup(selected: string | null = null) {
   const flush = vi.fn(async (settle: boolean) => {
     calls.push(`flush:${settle}`);
     historyCursor.value = "cursor-after-flush";
+    return true;
   });
   const onConflict = vi.fn(async () => undefined);
   const applied: ExamWorkspaceDocumentResponse[] = [];

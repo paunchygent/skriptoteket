@@ -19,9 +19,14 @@ import {
   getExamWorkspaceContentSuggestions,
   requestExamWorkspaceContentSuggestions,
 } from "../../../api/examWorkspace";
-import type { ExamWorkspaceContentSuggestions, NativeExamHeader } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceContentSuggestions,
+  NativeExamDocument,
+  NativeExamHeader,
+} from "../../../api/examWorkspace";
 import { isApiError } from "../../../api/client";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export const EXAM_WORKSPACE_CONTENT_POLL_MS = 1500;
 const FAILURE_COPY = "Det gick inte att föreslå innehåll. Försök igen.";
@@ -42,9 +47,19 @@ export function withSuggestedTags(tags: Tags, suggestions: Tags): Tags {
   return next;
 }
 
+const STALE_COPY = "Provet ändrades medan innehållet föreslogs. Föreslå innehåll igen.";
+
+/** What the job was asked about; the result applies only while all of it still holds. */
+type Request = {
+  readonly opening: ExamWorkspaceOpening;
+  readonly courseKey: string | null;
+};
+
 export function useExamWorkspaceContentSuggestions(deps: {
-  lineageId: () => string | null;
-  tags: () => Tags | null;
+  openExam: () => ExamWorkspaceOpening | null;
+  isOpen: (opening: ExamWorkspaceOpening) => boolean;
+  document: () => NativeExamDocument | null;
+  savedRevision: () => number | null;
   setTags: (tags: Tags) => void;
 }) {
   const toast = useToast();
@@ -59,46 +74,78 @@ export function useExamWorkspaceContentSuggestions(deps: {
     timer = null;
   }
 
-  function settle(lineageId: string, response: ExamWorkspaceContentSuggestions): void {
+  /** Keep the suggestions that still cite a question of the open copy. */
+  function citedPresent(suggestions: Tags, document: NativeExamDocument): Tags {
+    const present = new Set(document.items.map((item) => item.item_id));
+    return suggestions
+      .map((suggestion) => ({
+        ...suggestion,
+        question_ids: suggestion.question_ids.filter((id) => present.has(id)),
+      }))
+      .filter((suggestion) => suggestion.question_ids.length > 0);
+  }
+
+  function settle(request: Request, response: ExamWorkspaceContentSuggestions): void {
     busy.value = false;
-    if (deps.lineageId() !== lineageId) return;
+    if (!deps.isOpen(request.opening)) return;
     if (response.state === "failed") {
       toast.failure(response.message ?? FAILURE_COPY);
       return;
     }
-    const tags = deps.tags();
-    if (tags && response.suggestions.length > 0) {
-      deps.setTags(withSuggestedTags(tags, response.suggestions));
-    } else if (response.suggestions.length === 0) {
-      message.value = response.message ?? "Inget centralt innehåll kunde föreslås för provets frågor.";
-    }
-  }
-
-  function follow(lineageId: string, response: ExamWorkspaceContentSuggestions): void {
-    if (disposed) return;
-    if (response.state === "succeeded" || response.state === "failed") {
-      settle(lineageId, response);
+    const document = deps.document();
+    if (
+      !document ||
+      response.document_revision !== deps.savedRevision() ||
+      response.course_key !== (document.header.course?.key ?? null) ||
+      request.courseKey !== response.course_key
+    ) {
+      message.value = STALE_COPY;
       return;
     }
+    const suggestions = citedPresent(response.suggestions, document);
+    if (suggestions.length === 0) {
+      message.value = response.message ?? "Inget centralt innehåll kunde föreslås för provets frågor.";
+      return;
+    }
+    deps.setTags(withSuggestedTags(document.header.tags, suggestions));
+  }
+
+  function follow(request: Request, response: ExamWorkspaceContentSuggestions): void {
+    if (disposed) return;
+    if (!deps.isOpen(request.opening)) {
+      busy.value = false;
+      return;
+    }
+    if (response.state === "succeeded" || response.state === "failed") {
+      settle(request, response);
+      return;
+    }
+    const lineageId = request.opening.lineageId;
     timer = setTimeout(() => {
       void getExamWorkspaceContentSuggestions(lineageId, response.job_id)
-        .then((next) => follow(lineageId, next))
+        .then((next) => follow(request, next))
         .catch(() => {
           busy.value = false;
-          if (!disposed) toast.failure(FAILURE_COPY);
+          if (!disposed && deps.isOpen(request.opening)) toast.failure(FAILURE_COPY);
         });
     }, EXAM_WORKSPACE_CONTENT_POLL_MS);
   }
 
   async function suggest(): Promise<void> {
-    const lineageId = deps.lineageId();
-    if (!lineageId || busy.value) return;
+    const opening = deps.openExam();
+    if (!opening || busy.value) return;
+    const request: Request = {
+      opening,
+      courseKey: deps.document()?.header.course?.key ?? null,
+    };
     busy.value = true;
     message.value = null;
     try {
-      follow(lineageId, await requestExamWorkspaceContentSuggestions(lineageId));
+      const started = await requestExamWorkspaceContentSuggestions(opening.lineageId);
+      follow(request, started);
     } catch (error) {
       busy.value = false;
+      if (!deps.isOpen(opening)) return;
       toast.failure(isApiError(error) && error.status === 422 ? error.message : FAILURE_COPY);
     }
   }

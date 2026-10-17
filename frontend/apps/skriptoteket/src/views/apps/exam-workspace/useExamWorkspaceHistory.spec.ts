@@ -38,10 +38,16 @@ const MAX_STEPS = 10;
 function fakeServer(baseline: NativeExamDocument) {
   let counter = 0;
   const documents = new Map<string, NativeExamDocument>([["step-0", baseline]]);
-  const state = { baseline: "step-0", steps: [] as string[], cursor: "step-0" };
+  const state = {
+    baseline: "step-0",
+    steps: [] as string[],
+    cursor: "step-0",
+    position: "step-0" as string | null,
+  };
   const history = () => ({
     baseline_step_id: state.baseline,
     cursor: state.cursor,
+    position_step_id: state.position,
     step_ids: [...state.steps],
   });
   apiMocks.getExamWorkspaceHistory.mockImplementation(async () => history());
@@ -66,6 +72,7 @@ function fakeServer(baseline: NativeExamDocument) {
       documents.set(stepId, request.document);
       state.steps = [...steps, stepId].slice(-MAX_STEPS);
       state.cursor = stepId;
+      state.position = stepId;
       return { document: request.document, history: history() };
     },
   );
@@ -93,6 +100,7 @@ function setup(failFirstLoad = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
+      isCommandRunning: () => false,
       lineageId: () => "lineage-1",
       onConflict,
       savedRevision: () => baseline.revision,

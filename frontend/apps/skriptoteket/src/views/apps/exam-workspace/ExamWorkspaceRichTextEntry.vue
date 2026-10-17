@@ -40,6 +40,8 @@ const props = withDefaults(
     variant?: "paragraph" | "input";
     /** The item, surface and entry this body belongs to; a standalone entry keys on its paragraphs. */
     owner?: RichTextSurfaceOwner;
+    /** Picture URLs by asset id; an unmapped picture keeps its "Bild" placeholder. */
+    assetUrls?: Record<string, string>;
   }>(),
   {
     disabled: false,
@@ -48,6 +50,7 @@ const props = withDefaults(
     borderClass: "border-navy/35",
     variant: "input",
     owner: undefined,
+    assetUrls: () => ({}),
   },
 );
 
@@ -92,6 +95,7 @@ function handleHeading(paragraphIndex: number, headingLevel: RichTextHeadingLeve
       :aria-invalid="invalid ? 'true' : undefined"
       :aria-describedby="describedBy"
       :variant="variant"
+      :asset-urls="assetUrls"
       @update-segments="(segments) => handleSegments(paragraphIndex, segments)"
       @toggle-heading="(level) => handleHeading(paragraphIndex, level)"
       @focus-paragraph="emit('focusEntry')"

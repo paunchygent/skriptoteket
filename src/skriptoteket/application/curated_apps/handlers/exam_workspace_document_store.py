@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import 
     load_exam_course_catalog,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
@@ -215,12 +216,13 @@ class ExamWorkspaceDocumentStore:
                     lineage_id=lineage_id,
                     history=ExamWorkspaceHistoryState(
                         cursor=lineage_id,
-                        current_step_id=None,
+                        current_step_id=lineage_id,
                         baseline=ExamWorkspaceHistoryStep(step_id=lineage_id, content=content),
                     ),
                 )
             elif export_format is None:
                 history = await self.get_history(actor=actor, lineage_id=lineage_id)
+                assert document is not None
                 await self.put_history(
                     actor=actor,
                     lineage_id=lineage_id,
@@ -229,7 +231,7 @@ class ExamWorkspaceDocumentStore:
                             "cursor": uuid4(),
                             "current_step_id": history.current_step_id
                             if preserve_editor_position
-                            else None,
+                            else self._saved_position(history, document),
                         }
                     ),
                 )
@@ -239,6 +241,17 @@ class ExamWorkspaceDocumentStore:
                 usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
             )
         return vault_file
+
+    def _saved_position(
+        self, history: ExamWorkspaceHistoryState, document: NativeExamDocument
+    ) -> UUID | None:
+        """After Spara the editor stands on the newest snapshot when it holds the saved
+        document; otherwise on the saved document alone, which the next edit retains."""
+        newest = history.steps[-1] if history.steps else history.baseline
+        retained = self._codec.parse(content=newest.content).document
+        if retained.model_copy(update={"revision": document.revision}) == document:
+            return newest.step_id
+        return None
 
     def validate_size(self, content: bytes) -> None:
         if not content or len(content) > self._settings.VAULT_MAX_FILE_BYTES:

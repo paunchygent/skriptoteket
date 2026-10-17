@@ -5863,6 +5863,8 @@ export interface components {
              * Format: uuid
              */
             cursor: string;
+            /** Position Step Id */
+            position_step_id: string | null;
             /** Step Ids */
             step_ids: string[];
         };

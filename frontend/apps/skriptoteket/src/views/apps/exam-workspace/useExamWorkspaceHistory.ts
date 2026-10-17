@@ -9,7 +9,15 @@
  *   Spara. Undo and redo move between stored steps and install the step's
  *   document; a new edit after an undo branches after the current step,
  *   which drops the redo steps. Undo first stores any pending edit, so the
- *   pending edit itself can be redone.
+ *   pending edit itself can be redone; if that store fails, undo stops and
+ *   the pending edit stays in front of the teacher.
+ *
+ *   The history cursor is only a concurrency token: it rotates on every
+ *   write, Spara included, and need not name a step. The step the editor
+ *   stands on is the server's `position_step_id`; null means the editor
+ *   stands on a saved document no step holds, which the next store retains.
+ *   While undo or redo reads a step, editing is locked (`navigating`), so no
+ *   edit is typed into a copy the read is about to replace.
  *
  * Relationships:
  *   - Reads the working copy and the cursor the document composable installs;
@@ -17,7 +25,8 @@
  *     (open, reload, Spara som, parent and change-type commands) reloads
  *     the step list.
  *   - Spara and the structural commands call `flush` first, so the server's
- *     newest step is the editor's document.
+ *     newest step is the editor's document; `flush` resolves false when that
+ *     could not be established, and a replacing command must then not run.
  *   - Reports a failed undo or redo through the shared toast store, and an
  *     autosave the server could not store; a draft the save rules refuse
  *     shows its reason inline in the editor instead, never as a toast.
@@ -50,8 +59,10 @@ export type ExamWorkspaceHistoryDeps = {
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
-  /** True while an import or a save may not be interleaved with a step write. */
+  /** True while an import or a save may not be interleaved with a step write; excludes `navigating`. */
   isBlocked: () => boolean;
+  /** A server command is replacing the copy; undo and redo wait for it. */
+  isCommandRunning: () => boolean;
   /** Put a stored step's document in front of the teacher. */
   install: (document: NativeExamDocument) => void;
   /** Another tab moved the history; reload the exam. */
@@ -70,7 +81,9 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   const toast = useToast();
   const baselineId = ref<string | null>(null);
   const stepIds = ref<string[]>([]);
-  /** The stored step the editor stands on. */
+  /** The step list is loaded and `position` is the server's. */
+  const loaded = ref(false);
+  /** The stored step the editor stands on; null on a saved document no step holds. */
   const position = ref<string | null>(null);
   /** That step's document; a working copy that differs from it is a pending edit. */
   const stepDocument = shallowRef<NativeExamDocument | null>(null);
@@ -78,7 +91,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   const storing = ref(false);
   let ownCursor: string | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let chain: Promise<void> = Promise.resolve();
+  let chain: Promise<boolean> = Promise.resolve(true);
   let loadToken = 0;
 
   const ids = computed(() => (baselineId.value ? [baselineId.value, ...stepIds.value] : []));
@@ -89,7 +102,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       stepDocument.value !== null &&
       !sameContent(deps.workspaceDocument.value, stepDocument.value),
   );
-  const ready = computed(() => position.value !== null && !navigating.value);
+  const newestId = computed(() => ids.value[ids.value.length - 1] ?? null);
+  const ready = computed(() => loaded.value && !navigating.value);
   const canUndo = computed(() => ready.value && (pending.value || index.value > 0));
   const canRedo = computed(
     () => ready.value && !pending.value && index.value >= 0 && index.value < ids.value.length - 1,
@@ -106,11 +120,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     clearTimer();
     baselineId.value = null;
     stepIds.value = [];
+    loaded.value = false;
     position.value = null;
     stepDocument.value = null;
   }
 
-  async function load(lineageId: string, cursor: string): Promise<void> {
+  async function load(lineageId: string): Promise<void> {
     const token = ++loadToken;
     const base = deps.serverDocument.value;
     try {
@@ -120,7 +135,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       }
       baselineId.value = history.baseline_step_id;
       stepIds.value = [...history.step_ids];
-      position.value = cursor;
+      position.value = history.position_step_id;
+      loaded.value = true;
       stepDocument.value = base;
     } catch {
       if (token === loadToken) {
@@ -147,47 +163,49 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         deps.historyCursor.value = ownCursor;
         return;
       }
-      void load(lineageId, cursor);
+      void load(lineageId);
     },
     { immediate: true },
   );
 
-  async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<void> {
+  /** Resolves whether the server's newest step now holds `document` (or nothing needed storing). */
+  async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<boolean> {
     clearTimer();
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
-    if (lineageId && cursor && position.value === null) {
+    if (lineageId && cursor && !loaded.value) {
       // The step list failed to load earlier; without it no step can be stored.
-      await load(lineageId, cursor);
+      await load(lineageId);
     }
     const document = snapshot ?? deps.workspaceDocument.value;
-    const undone = position.value !== null && position.value !== cursor;
-    if (!lineageId || !cursor || !document || position.value === null) {
-      return;
+    if (!lineageId || !cursor || !document || !loaded.value) {
+      return false;
     }
+    const undone = position.value !== null && position.value !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
-      return;
+      return true;
     }
     if (deps.isBlocked()) {
       schedule();
-      return;
+      return false;
     }
     storing.value = true;
     try {
       const response = await storeExamWorkspaceUndoStep(lineageId, {
-        afterStepId: position.value === cursor ? null : position.value,
+        afterStepId: position.value,
         document,
         expectedCursor: cursor,
       });
       if (deps.lineageId() !== lineageId) {
-        return;
+        return false;
       }
       ownCursor = response.history.cursor;
       deps.historyCursor.value = response.history.cursor;
       baselineId.value = response.history.baseline_step_id;
       stepIds.value = [...response.history.step_ids];
-      position.value = response.history.cursor;
+      position.value = response.history.position_step_id;
       stepDocument.value = document;
+      return true;
     } catch (error) {
       if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
@@ -200,17 +218,19 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       } else {
         toast.failure(AUTOSAVE_FAILURE_COPY);
       }
+      return false;
     } finally {
       storing.value = false;
     }
   }
 
   /**
-   * Store the pending edit now; resolves after every earlier write. `settle`
+   * Store the pending edit now; resolves after every earlier write, with
+   * whether the server's newest step holds the editor's document. `settle`
    * also stores an undone step as the newest one, because the server's
    * commands (parents, Byt frågetyp) apply to its newest step.
    */
-  function flush(settle = false, snapshot: NativeExamDocument | null = null): Promise<void> {
+  function flush(settle = false, snapshot: NativeExamDocument | null = null): Promise<boolean> {
     const run = () => store(settle, snapshot);
     chain = chain.then(run, run);
     return chain;
@@ -237,12 +257,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
   }
 
+  /** Read and install one step; the caller holds `navigating`. */
   async function goTo(stepId: string, failureCopy: string): Promise<void> {
     const lineageId = deps.lineageId();
     if (!lineageId) {
       return;
     }
-    navigating.value = true;
     try {
       const response = await getExamWorkspaceHistoryStep(lineageId, stepId);
       if (deps.lineageId() !== lineageId) {
@@ -255,30 +275,42 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       position.value = stepId;
     } catch {
       toast.failure(failureCopy);
+    }
+  }
+
+  async function undo(): Promise<void> {
+    if (!canUndo.value || deps.isBlocked() || deps.isCommandRunning()) {
+      return;
+    }
+    // Locked from before the pending edit is stored, so nothing typed meanwhile is replaced.
+    navigating.value = true;
+    try {
+      if (!(await flush())) {
+        return;
+      }
+      const at = index.value;
+      const target = at > 0 ? ids.value[at - 1] : undefined;
+      if (target) {
+        await goTo(target, UNDO_FAILURE_COPY);
+      }
     } finally {
       navigating.value = false;
     }
   }
 
-  async function undo(): Promise<void> {
-    if (!canUndo.value || deps.isBlocked()) {
-      return;
-    }
-    await flush();
-    const at = index.value;
-    const target = at > 0 ? ids.value[at - 1] : undefined;
-    if (target) {
-      await goTo(target, UNDO_FAILURE_COPY);
-    }
-  }
-
   async function redo(): Promise<void> {
-    if (!canRedo.value || deps.isBlocked()) {
+    if (!canRedo.value || deps.isBlocked() || deps.isCommandRunning()) {
       return;
     }
     const target = ids.value[index.value + 1];
-    if (target) {
+    if (!target) {
+      return;
+    }
+    navigating.value = true;
+    try {
       await goTo(target, REDO_FAILURE_COPY);
+    } finally {
+      navigating.value = false;
     }
   }
 
@@ -288,6 +320,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     canRedo,
     canUndo,
     flush,
+    navigating: computed(() => navigating.value),
     noteEdit,
     pending,
     redo,

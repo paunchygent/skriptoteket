@@ -120,6 +120,10 @@ const isGrid = computed(() => props.item.kind === "matching");
 const hasCriteria = computed(() => props.item.criteria.length > 0);
 const pointsMissing = computed(() => props.item.points === null);
 const pointsNegative = computed(() => hasNegativePoints(props.item));
+/** Points the import spread from the section total; shown as a nonblocking cue until the teacher sets them. */
+const pointsEstimated = computed(
+  () => props.item.points_estimated && !pointsMissing.value && !pointsNegative.value && !isGrid.value && !hasCriteria.value,
+);
 const showFields = computed(() => !props.converting && !unbuilt.value);
 
 /** Where the answer key came from, with the key text the file printed. */
@@ -352,7 +356,7 @@ function handleTickPointsInput(event: Event): void {
         :readonly="isGrid || hasCriteria"
         :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
         :aria-invalid="pointsMissing || pointsNegative || undefined"
-        :aria-describedby="pointsMissing || pointsNegative ? pointsMessageId : undefined"
+        :aria-describedby="pointsMissing || pointsNegative || pointsEstimated ? pointsMessageId : undefined"
         data-test="exam-workspace-item-points-input"
         @input="handlePointsInput"
       >
@@ -374,6 +378,15 @@ function handleTickPointsInput(event: Event): void {
         meaning="blocker"
         :size="16"
       />Saknas</span>
+      <span
+        v-else-if="pointsEstimated && !converting"
+        :id="pointsMessageId"
+        class="xw-hint pts__msg"
+        data-test="exam-workspace-points-estimated"
+      ><UiGlyph
+        meaning="info"
+        :size="16"
+      />Uppskattad utifrån avsnittets totalpoäng</span>
     </div>
   </section>
 </template>

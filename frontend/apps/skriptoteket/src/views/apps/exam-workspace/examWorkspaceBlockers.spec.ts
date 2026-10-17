@@ -5,6 +5,7 @@ import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import { examWorkspaceBlockerEntries, withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { reviewed } from "./examWorkspaceItemEdits";
+import { buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
 import { buildGap, choiceItem } from "./examWorkspaceKeyedItems.specSupport";
 import { examWorkspaceListEntries } from "./examWorkspaceListEntries";
 import { plainBody } from "./examWorkspaceRichText";
@@ -188,5 +189,23 @@ describe("export blocker fixes", () => {
       item.gaps[0]!.options.map((option) => option.body[0]!.segments),
     );
     expect(examWorkspaceItemReadiness(fixed)).toEqual([]);
+  });
+
+  describe("incomplete_match_key focus", () => {
+    const focusOf = (pairs: Array<[number, number]>) => {
+      const [entry] = rows([buildMatchingItemWithPairs(pairs)]);
+      expect(entry?.reason).toBe("incomplete_match_key");
+      return entry!.focus!;
+    };
+
+    it("targets the ticks of the row without a tick, not the first row", () => {
+      const focus = focusOf([[1, 2]]);
+      expect(focus).toBe('[data-test^="exam-workspace-match-tick-left_002-"]');
+      expect(focus).not.toContain("left_001");
+    });
+
+    it("targets the first row when that is the unticked one", () => {
+      expect(focusOf([[2, 1], [3, 3]])).toBe('[data-test^="exam-workspace-match-tick-left_001-"]');
+    });
   });
 });

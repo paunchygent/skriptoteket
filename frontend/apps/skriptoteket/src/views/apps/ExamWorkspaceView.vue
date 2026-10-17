@@ -139,9 +139,11 @@ const enrichment = useExamWorkspaceEnrichment({
   savedRevision,
 });
 const content = useExamWorkspaceContentSuggestions({
-  lineageId: () => summary.value?.lineage_id ?? null,
+  document: () => workspaceDocument.value,
+  isOpen,
+  openExam: () => openExam.value,
+  savedRevision: () => savedRevision.value,
   setTags,
-  tags: () => workspaceDocument.value?.header.tags ?? null,
 });
 
 const isPhone = computed(() => layout.value === "phone");
@@ -644,6 +646,7 @@ onBeforeUnmount(() => {
             :printed-total="selectedParentEntry.printedTotal"
             :disabled="disabled"
             :notice="structure.deleteNotice.value"
+            :asset-urls="assetUrls"
             @update-instruction="(body) => setParentInstruction(selectedParent!.parent_id, body)"
             @goto-child="selectEntry"
             @move-child="(itemId, delta) => structure.moveChild(selectedParent!.parent_id, itemId, delta)"

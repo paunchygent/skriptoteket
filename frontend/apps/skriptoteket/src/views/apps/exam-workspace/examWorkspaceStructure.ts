@@ -13,7 +13,7 @@
  *     change-type commands themselves run on the server.
  */
 
-import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamBodyParagraph, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 
@@ -76,12 +76,51 @@ export function withItemAfterUnit(
   return { ...document, items: resequenced(items) };
 }
 
-/** Remove a standalone question; a child leaves through its parent's server command. */
+function bodyAssetIds(body: NativeExamBodyParagraph[]): string[] {
+  return body.flatMap((paragraph) =>
+    paragraph.segments.flatMap((segment) => (segment.kind === "asset" ? [segment.asset_id] : [])),
+  );
+}
+
+/** Pictures an item's body or its stored retry source references (mirrors the server's `_rebuild`). */
+function itemAssetIds(item: NativeExamItem): string[] {
+  const source = item.retry_source;
+  const records = source ? [...source.chunks, ...source.key_chunks, ...source.context_chunks] : [];
+  return [...bodyAssetIds(item.body), ...records.flatMap((record) => record.images.map((image) => image.asset_id))];
+}
+
+/** Whether removing the question would leave the exam without one. */
+export function examWorkspaceIsOnlyQuestion(document: NativeExamDocument, itemId: string): boolean {
+  return document.items.every((item) => item.item_id === itemId);
+}
+
+/**
+ * Remove a standalone question; a child leaves through its parent's server command.
+ * Content tags stop citing it and only still-referenced pictures stay, as on the server.
+ */
 export function withoutStandaloneItem(document: NativeExamDocument, itemId: string): NativeExamDocument {
   if (document.parents.some((parent) => parent.item_ids.includes(itemId))) {
     return document;
   }
-  return { ...document, items: resequenced(document.items.filter((item) => item.item_id !== itemId)) };
+  const items = resequenced(document.items.filter((item) => item.item_id !== itemId));
+  const surviving = new Set(items.map((item) => item.item_id));
+  const referenced = new Set<string>([
+    ...items.flatMap(itemAssetIds),
+    ...bodyAssetIds(document.instructions),
+    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
+  ]);
+  return {
+    ...document,
+    assets: document.assets.filter((asset) => referenced.has(asset.asset_id)),
+    header: {
+      ...document.header,
+      tags: document.header.tags.map((tag) => ({
+        ...tag,
+        question_ids: tag.question_ids.filter((id) => surviving.has(id)),
+      })),
+    },
+    items,
+  };
 }
 
 /** The item to select after `itemId` leaves: the next one, else the previous one. */

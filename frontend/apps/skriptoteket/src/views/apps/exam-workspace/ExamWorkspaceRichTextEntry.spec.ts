@@ -62,4 +62,33 @@ describe("ExamWorkspaceRichTextEntry", () => {
 
     expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
+
+  describe("pictures", () => {
+    const body: NativeExamBodyParagraph[] = [
+      {
+        heading_level: null,
+        segments: [
+          { kind: "text", text: "Se ", marks: [] },
+          { kind: "asset", asset_id: "asset_001" },
+        ],
+      },
+    ];
+    const url = "https://gateway.test/assets/asset_001";
+
+    it("renders a mapped picture inside the fixed atom", () => {
+      const wrapper = mount(ExamWorkspaceRichTextEntry, {
+        props: { body, label: "Instruktion", testId: "entry", assetUrls: { asset_001: url } },
+      });
+
+      expect(wrapper.get('[data-asset-id="asset_001"] img').attributes("src")).toBe(url);
+      expect(wrapper.get('[data-asset-id="asset_001"]').attributes("contenteditable")).toBe("false");
+    });
+
+    it("keeps the placeholder without a mapped URL", () => {
+      const wrapper = mountEntry(body);
+
+      expect(wrapper.find("img").exists()).toBe(false);
+      expect(wrapper.find('[data-asset-id="asset_001"]').exists()).toBe(true);
+    });
+  });
 });

@@ -49,6 +49,8 @@ const props = defineProps<{
   disabled: boolean;
   /** The last command's inline outcome, e.g. a refused delete. */
   notice: ExamWorkspaceNotice | null;
+  /** Picture URLs by asset id, so a declared picture in the instruction renders. */
+  assetUrls?: Record<string, string>;
 }>();
 
 const emit = defineEmits<{
@@ -142,6 +144,7 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         test-id="exam-workspace-instruction-text"
         :owner="owner"
         variant="paragraph"
+        :asset-urls="assetUrls"
         @update-body="emit('updateInstruction', $event)"
       />
     </div>
