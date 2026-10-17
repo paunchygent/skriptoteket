@@ -7,6 +7,7 @@ from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDo
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
     CreateExamParentRequest,
+    ExamWorkspaceDeleteResponse,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
 )
@@ -31,6 +32,24 @@ class ExamWorkspaceParentsHandlerProtocol(Protocol):
         request: AddExamChildRequest,
     ) -> ExamWorkspaceDocumentResponse: ...
 
+    async def delete_parent(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        parent_id: str,
+        request: ParentCommandRequest,
+    ) -> ExamWorkspaceDeleteResponse: ...
+
+    async def delete_parent_with_children(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        parent_id: str,
+        request: ParentCommandRequest,
+    ) -> ExamWorkspaceDeleteResponse: ...
+
     async def delete_child(
         self,
         *,
@@ -39,7 +58,7 @@ class ExamWorkspaceParentsHandlerProtocol(Protocol):
         parent_id: str,
         item_id: str,
         request: ParentCommandRequest,
-    ) -> ExamWorkspaceDocumentResponse: ...
+    ) -> ExamWorkspaceDeleteResponse: ...
 
     async def reorder_children(
         self,
