@@ -128,6 +128,10 @@
 
 ## Recent
 
+- [TASK-SKRIPT-40-03-10](docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
+  `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
+  edit controls glyph-only, roomier Mina kurser school forms; main `fb782f13`.
+
 - 2026-10-17 hooks: `precommit-install` now runs the package installer
   `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
   so an install from a task worktree keeps the shared hook on the primary
@@ -162,9 +166,6 @@
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;
   last proofs Exam.net 5339805 (formatting) and 5339836 (section headings);
   follow-up 26c56a03.
-
-- 2026-10-13 `done`: TASK-SKRIPT-39-04-09 (main `c018ae9e`), 39-04-07 (`838baea9`),
-  39-05-07 (`ebc2a9c7`); walk records are cited in each task's closeout.
 
 - Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
   (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
