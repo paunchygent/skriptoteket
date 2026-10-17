@@ -46,6 +46,7 @@ const saveState = ref<"idle" | "saving" | "saved">("idle");
 let lastSaved: ExamCourses = { school_forms: [], course_keys: [] };
 let isSaving = false;
 let hasUnsavedChange = false;
+let hasLocalChange = false;
 
 const statusText = computed(() =>
   saveState.value === "saving" ? "Sparar…" : saveState.value === "saved" ? "Sparat" : "",
@@ -72,8 +73,10 @@ function applyValue(value: ExamCourses): void {
 }
 
 function syncFromProfile(): void {
-  // Local changes being saved own the value until the queue drains.
-  if (isSaving || hasUnsavedChange) return;
+  // This section is the only writer of the value on the page. After its first
+  // change it holds the acknowledged value, and a profile reload that started
+  // before a save could carry an older one.
+  if (hasLocalChange) return;
   lastSaved = {
     school_forms: [...(props.examCourses?.school_forms ?? [])],
     course_keys: [...(props.examCourses?.course_keys ?? [])],
@@ -112,6 +115,7 @@ function saveFailureMessage(error: unknown): string {
 
 /** Saves the current draft; a change made during a save is saved after it. */
 async function save(): Promise<void> {
+  hasLocalChange = true;
   hasUnsavedChange = true;
   if (isSaving) return;
   isSaving = true;

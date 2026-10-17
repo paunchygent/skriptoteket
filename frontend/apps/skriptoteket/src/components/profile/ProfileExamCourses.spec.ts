@@ -173,6 +173,29 @@ it("waits for a running save, then saves every later change in one request with 
   wrapper.unmount();
 });
 
+it("keeps the acknowledged list when a profile reload that started before the save lands after it", async () => {
+  const wrapper = await mountCourses({ school_forms: [], course_keys: [] });
+
+  await choose(wrapper, "Svenska 1");
+  await flushPromises();
+  expect(wrapper.get('[data-test="profile-courses-status"]').text()).toBe("Sparat");
+
+  // The late reload carries the value read before the course was saved.
+  await wrapper.setProps({ examCourses: { school_forms: [], course_keys: [] } });
+  expect(wrapper.findAll("ol li").map((row) => row.text())).toEqual([expect.stringContaining("Svenska 1")]);
+
+  await wrapper.get('[data-test="profile-school-form-gymnasiet"] input').setValue(true);
+  await flushPromises();
+  expect(updateExamCourses).toHaveBeenLastCalledWith({ school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] });
+
+  // A failed save after the late reload rolls back to the acknowledged value, not the stale one.
+  updateExamCourses.mockRejectedValueOnce(new Error("Network unavailable"));
+  await wrapper.get('[aria-label="Ta bort Svenska 1"]').trigger("click");
+  await flushPromises();
+  expect(wrapper.findAll("ol li").map((row) => row.text())).toEqual([expect.stringContaining("Svenska 1")]);
+  wrapper.unmount();
+});
+
 it("rolls back changes queued behind a failed save and does not send them", async () => {
   const wrapper = await mountCourses({ school_forms: [], course_keys: ["ENGENG05", "SVESVE01"] });
   const first = deferred();
