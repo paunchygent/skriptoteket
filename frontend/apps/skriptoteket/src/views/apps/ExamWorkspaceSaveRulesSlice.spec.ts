@@ -27,7 +27,12 @@ import {
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -73,6 +78,7 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

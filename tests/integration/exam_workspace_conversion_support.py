@@ -131,6 +131,9 @@ class ConversionWorld:
             request=SaveExamWorkspaceDocumentRequest(
                 expected_revision=document.revision,
                 document=document.model_copy(update={"revision": document.revision + 1}),
+                position_step_id=(
+                    await self.store.get_history(actor=actor, lineage_id=document.document_id)
+                ).current_step_id,
             ),
         )
 

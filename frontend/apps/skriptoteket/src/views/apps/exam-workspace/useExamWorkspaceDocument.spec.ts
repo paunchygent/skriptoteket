@@ -118,7 +118,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
 
     expect(currentItem(state).answer_key.origin).toBe("absent");
     expect(currentItem(state).answer_key.match_pairs).toEqual([]);
-    await expect(state.saveDocument()).resolves.toBe(true);
+    await expect(state.saveDocument("position-1")).resolves.toBe(true);
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
@@ -130,7 +130,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
       { left_id: "left_002", right_id: "right_002" },
     ]);
 
-    await expect(state.saveDocument()).resolves.toBe(false);
+    await expect(state.saveDocument("position-1")).resolves.toBe(false);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
   });
 
@@ -139,7 +139,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
 
     state.updateItemMatchEntryBody("item_001", "right", "right_001", plainBody(""));
 
-    await expect(state.saveDocument()).resolves.toBe(false);
+    await expect(state.saveDocument("position-1")).resolves.toBe(false);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
   });
 });

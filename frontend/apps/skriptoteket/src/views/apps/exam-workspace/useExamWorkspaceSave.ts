@@ -98,10 +98,19 @@ export function useExamWorkspaceSave(state: SaveState) {
     }
   }
 
-  async function saveDocument(afterConversionConflict = false): Promise<boolean> {
+  /** Spara at `positionStepId`, the history snapshot the editor stands on (null: history unread). */
+  async function saveDocument(
+    positionStepId: string | null,
+    afterConversionConflict = false,
+  ): Promise<boolean> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || (state.isBusy.value && !afterConversionConflict)) {
+      return false;
+    }
+    if (positionStepId === null) {
+      // Without the editor's position the server cannot keep the saved copy in its history.
+      toast.failure(SAVE_FAILURE_COPY);
       return false;
     }
     if (!current.title.trim()) {
@@ -116,14 +125,15 @@ export function useExamWorkspaceSave(state: SaveState) {
     const expectedRevision = current.revision;
     const payload: NativeExamDocument = { ...current, revision: expectedRevision + 1 };
     const payloadMark = arrivals.payloadMark();
-    const openedArrivals = arrivals.beginSave();
+    const openedArrivals = arrivals.beginHold();
     const keyingMark = keying.payloadMark();
-    const openedKeying = keying.beginSave();
+    const openedKeying = keying.beginHold();
     operationBusy.value = true;
     try {
       const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
+        positionStepId,
       });
       state.applyResponse(response);
       // The response holds the payload; arrivals that landed after it was read run again on it.
@@ -139,7 +149,7 @@ export function useExamWorkspaceSave(state: SaveState) {
       const conflict = isApiError(error) && error.status === 409;
       const sync = conflict ? await state.syncAfterConflict(expectedRevision) : "unrelated";
       if (sync === "merged") {
-        return await saveDocument(true);
+        return await saveDocument(positionStepId, true);
       }
       if (refusedPlaceholderChange(error)) {
         // The server names the converting questions the save changed; the copy stays.
@@ -160,8 +170,8 @@ export function useExamWorkspaceSave(state: SaveState) {
       // Every other failure left the teacher's copy, and each arrival's single effect, in place.
       return false;
     } finally {
-      arrivals.endSave(openedArrivals);
-      keying.endSave(openedKeying);
+      arrivals.endHold(openedArrivals);
+      keying.endHold(openedKeying);
       operationBusy.value = false;
     }
   }

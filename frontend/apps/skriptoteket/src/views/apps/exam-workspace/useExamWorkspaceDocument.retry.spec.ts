@@ -239,7 +239,7 @@ describe("retryItem", () => {
     await state.retryItem("item_001", "free_text");
 
     expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
-    await expect(state.saveDocument()).resolves.toBe(false);
+    await expect(state.saveDocument("position-1")).resolves.toBe(false);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
 
     pending.resolve({ lineage_id: "lineage-1", item: convertedItem() });

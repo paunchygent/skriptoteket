@@ -36,7 +36,12 @@ import {
 } from "./ExamWorkspaceExportsSlice.specSupport";
 import { saveDocument, selectItemRow, type ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -59,6 +64,7 @@ vi.mock("./exam-converter/browserDownload", () => downloadMocks);
 
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, download: downloadMocks });
+  arrangeStepHistory(apiMocks);
 });
 
 afterEach(unmountWrappers);

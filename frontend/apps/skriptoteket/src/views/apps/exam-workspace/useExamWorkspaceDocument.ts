@@ -61,14 +61,11 @@ export type ExamWorkspaceOpening = { readonly lineageId: string };
 export type ExamWorkspaceDocumentOptions = {
   /** A teacher edit changed the copy; structural edits become an undo step at once. */
   onEdit?: (structural: boolean) => void;
-  /** An undo, redo or server command is about to replace the copy; editing waits for it. */
-  isReplacing?: () => boolean;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions = {}) {
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
-  const isReplacing = options.isReplacing ?? (() => false);
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
@@ -122,8 +119,12 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
   );
+  /** An undo, redo or server command is reading the document that replaces the copy. */
+  const replacing = ref(false);
+  /** The arrival marks a replacing read was started at; null while none runs. */
+  let held: { arrivals: number; keying: number } | null = null;
   /** No edit, save or reload may start: an operation runs or the copy is about to be replaced. */
-  const isBusy = computed(() => isOperationBusy.value || isReplacing());
+  const isBusy = computed(() => isOperationBusy.value || replacing.value);
 
   const selectedItem = computed<NativeExamItem | null>(() => {
     const current = workspaceDocument.value;
@@ -213,6 +214,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       const response = reconcile(await getExamWorkspaceDocument(currentSummary.lineage_id));
       applyResponse(response);
       keying.invalidateCopy();
+      if (held) {
+        // A conflict inside a replacing read: its suggestions run again on the reloaded exam.
+        arrivals.replayAfterResponse(held.arrivals);
+      }
       conflictNotice.value = null;
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
@@ -360,17 +365,47 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     }
   }
 
+  /**
+   * Run an undo, redo or server command that replaces the copy. Editing is
+   * locked meanwhile, and AI suggestions and spelling replies that arrive
+   * during its read run again on the document it installs, so a delivered
+   * result is never overwritten. Replies whose question or gap the document
+   * no longer holds do not apply, as everywhere else.
+   */
+  async function replaceCopy<T>(run: () => Promise<T>): Promise<T> {
+    replacing.value = true;
+    const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
+    const openedArrivals = arrivals.beginHold();
+    const openedKeying = keying.beginHold();
+    held = marks;
+    try {
+      return await run();
+    } finally {
+      held = null;
+      arrivals.endHold(openedArrivals);
+      keying.endHold(openedKeying);
+      replacing.value = false;
+    }
+  }
+
+  function replayHeld(): void {
+    if (held) {
+      arrivals.replayAfterResponse(held.arrivals);
+      keying.replayAfterResponse(held.keying);
+    }
+  }
+
   /** Put an undo step's document in front of the teacher; not an edit. */
   function installDocument(document: NativeExamDocument): void {
     workspaceDocument.value = document;
-    keying.invalidateCopy();
     keepSelection(document);
+    replayHeld();
   }
 
   /** A server command (parent, change type) stored a new step; show its document. */
   function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
     applyResponse(response);
-    keying.invalidateCopy();
+    replayHeld();
   }
 
   return {
@@ -395,6 +430,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     isBusy,
     isDirty,
     isOperationBusy,
+    isReplacing: computed(() => replacing.value),
+    replaceCopy,
     isOpen,
     loadSavedDocuments,
     notes,

@@ -6,7 +6,7 @@
  * leaves the teacher's copy intact.
  */
 import { flushPromises } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { ApiError } from "../../api/client";
 import type { ExamWorkspaceConversionStatus, NativeExamItem } from "../../api/examWorkspace";
@@ -24,7 +24,12 @@ import {
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -39,6 +44,9 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 installProgressiveConversionLifecycle(apiMocks);
+beforeEach(() => {
+  arrangeStepHistory(apiMocks);
+});
 
 describe("Exam workspace progressive conversion save conflicts", () => {
   it("saves again on the newer revision when conversion saved one during the teacher's save", async () => {

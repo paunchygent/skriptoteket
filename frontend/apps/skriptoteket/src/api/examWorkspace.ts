@@ -112,6 +112,8 @@ export type ExamWorkspaceExportChecklistResponse =
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
   document: NativeExamDocument;
+  /** The history snapshot the editor stands on; the server keeps the saved copy there. */
+  positionStepId: string;
 };
 
 function documentPath(lineageId: string): string {
@@ -177,6 +179,7 @@ export async function saveExamWorkspaceDocument(
   const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
     document: params.document,
     expected_revision: params.expectedRevision,
+    position_step_id: params.positionStepId,
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
 }

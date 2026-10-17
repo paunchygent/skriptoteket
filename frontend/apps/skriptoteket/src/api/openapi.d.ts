@@ -5863,8 +5863,11 @@ export interface components {
              * Format: uuid
              */
             cursor: string;
-            /** Position Step Id */
-            position_step_id: string | null;
+            /**
+             * Position Step Id
+             * Format: uuid
+             */
+            position_step_id: string;
             /** Step Ids */
             step_ids: string[];
         };
@@ -9283,6 +9286,11 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Input"];
             /** Expected Revision */
             expected_revision: number;
+            /**
+             * Position Step Id
+             * Format: uuid
+             */
+            position_step_id: string;
         };
         /** SaveResult */
         SaveResult: {

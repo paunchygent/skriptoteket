@@ -18,22 +18,19 @@ import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 export function useExamWorkspaceEditing() {
   let noteEdit: (structural: boolean) => void = () => undefined;
-  let isReplacing: () => boolean = () => false;
-  const document = useExamWorkspaceDocument({
-    isReplacing: () => isReplacing(),
-    onEdit: (structural) => noteEdit(structural),
-  });
+  const document = useExamWorkspaceDocument({ onEdit: (structural) => noteEdit(structural) });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
 
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
     install: document.installDocument,
-    isCommandRunning: () => structure.running.value,
-    // Not `isBusy`: that includes the history's own navigation lock.
+    isReplacing: () => document.isReplacing.value,
+    // Not `isBusy`: that includes the replacing lock the history's own reads hold.
     isBlocked: () => document.isOperationBusy.value,
     lineageId,
     onConflict: reload,
+    replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     serverDocument: document.serverDocument,
     workspaceDocument: document.workspaceDocument,
@@ -48,21 +45,22 @@ export function useExamWorkspaceEditing() {
     isBusy: () => document.isBusy.value || history.storing.value,
     lineageId,
     onConflict: reload,
+    replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     selectItem: document.selectItem,
     selectedItemId: document.selectedItemId,
     workspaceDocument: document.workspaceDocument,
   });
-  isReplacing = () => history.navigating.value || structure.running.value;
 
   /**
    * Spara: store the pending edit as an undo step, then overwrite the exam file.
-   * Spara writes the copy itself, so it proceeds when the step write failed; the
-   * server retains a saved copy no step holds before the next edit.
+   * Spara writes the copy itself, so it proceeds when the step write failed: it
+   * sends the editor's position, and the server retains the saved copy as the
+   * step after it, so undo and redo stay available at once.
    */
   async function save(): Promise<boolean> {
     await history.flush(false);
-    return await document.saveDocument();
+    return await document.saveDocument(history.position.value);
   }
 
   /** Spara som: store the pending edit, then copy the working exam under `name`. */

@@ -14,10 +14,12 @@
  *
  *   The history cursor is only a concurrency token: it rotates on every
  *   write, Spara included, and need not name a step. The step the editor
- *   stands on is the server's `position_step_id`; null means the editor
- *   stands on a saved document no step holds, which the next store retains.
- *   While undo or redo reads a step, editing is locked (`navigating`), so no
- *   edit is typed into a copy the read is about to replace.
+ *   stands on is the server's `position_step_id`, the baseline or a step;
+ *   Spara sends it, and the server keeps the saved copy retained there, so
+ *   history stays navigable after any Spara. While undo or redo reads a
+ *   step, editing is locked through the document owner's `replaceCopy`, so
+ *   no edit is typed into a copy the read is about to replace, and AI
+ *   arrivals that land meanwhile run again on the step.
  *
  * Relationships:
  *   - Reads the working copy and the cursor the document composable installs;
@@ -59,10 +61,12 @@ export type ExamWorkspaceHistoryDeps = {
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
-  /** True while an import or a save may not be interleaved with a step write; excludes `navigating`. */
+  /** True while an import or a save may not be interleaved with a step write; excludes the replacing lock. */
   isBlocked: () => boolean;
-  /** A server command is replacing the copy; undo and redo wait for it. */
-  isCommandRunning: () => boolean;
+  /** Another undo, redo or server command is replacing the copy; undo and redo wait for it. */
+  isReplacing: () => boolean;
+  /** Run a read that replaces the copy: locks editing and keeps arrivals that land meanwhile. */
+  replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Put a stored step's document in front of the teacher. */
   install: (document: NativeExamDocument) => void;
   /** Another tab moved the history; reload the exam. */
@@ -81,9 +85,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   const toast = useToast();
   const baselineId = ref<string | null>(null);
   const stepIds = ref<string[]>([]);
-  /** The step list is loaded and `position` is the server's. */
-  const loaded = ref(false);
-  /** The stored step the editor stands on; null on a saved document no step holds. */
+  /** The stored snapshot the editor stands on; null until the step list is loaded. */
   const position = ref<string | null>(null);
   /** That step's document; a working copy that differs from it is a pending edit. */
   const stepDocument = shallowRef<NativeExamDocument | null>(null);
@@ -103,7 +105,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       !sameContent(deps.workspaceDocument.value, stepDocument.value),
   );
   const newestId = computed(() => ids.value[ids.value.length - 1] ?? null);
-  const ready = computed(() => loaded.value && !navigating.value);
+  const ready = computed(() => position.value !== null && !navigating.value);
   const canUndo = computed(() => ready.value && (pending.value || index.value > 0));
   const canRedo = computed(
     () => ready.value && !pending.value && index.value >= 0 && index.value < ids.value.length - 1,
@@ -120,7 +122,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     clearTimer();
     baselineId.value = null;
     stepIds.value = [];
-    loaded.value = false;
     position.value = null;
     stepDocument.value = null;
   }
@@ -136,7 +137,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       baselineId.value = history.baseline_step_id;
       stepIds.value = [...history.step_ids];
       position.value = history.position_step_id;
-      loaded.value = true;
       stepDocument.value = base;
     } catch {
       if (token === loadToken) {
@@ -173,15 +173,16 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     clearTimer();
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
-    if (lineageId && cursor && !loaded.value) {
+    if (lineageId && cursor && position.value === null) {
       // The step list failed to load earlier; without it no step can be stored.
       await load(lineageId);
     }
     const document = snapshot ?? deps.workspaceDocument.value;
-    if (!lineageId || !cursor || !document || !loaded.value) {
+    const after = position.value;
+    if (!lineageId || !cursor || !document || after === null) {
       return false;
     }
-    const undone = position.value !== null && position.value !== newestId.value;
+    const undone = after !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
       return true;
     }
@@ -192,7 +193,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     storing.value = true;
     try {
       const response = await storeExamWorkspaceUndoStep(lineageId, {
-        afterStepId: position.value,
+        afterStepId: after,
         document,
         expectedCursor: cursor,
       });
@@ -257,7 +258,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
   }
 
-  /** Read and install one step; the caller holds `navigating`. */
+  /** Read and install one step; the caller holds `navigating` and the replacing lock. */
   async function goTo(stepId: string, failureCopy: string): Promise<void> {
     const lineageId = deps.lineageId();
     if (!lineageId) {
@@ -279,27 +280,29 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   }
 
   async function undo(): Promise<void> {
-    if (!canUndo.value || deps.isBlocked() || deps.isCommandRunning()) {
+    if (!canUndo.value || deps.isBlocked() || deps.isReplacing()) {
       return;
     }
     // Locked from before the pending edit is stored, so nothing typed meanwhile is replaced.
     navigating.value = true;
     try {
-      if (!(await flush())) {
-        return;
-      }
-      const at = index.value;
-      const target = at > 0 ? ids.value[at - 1] : undefined;
-      if (target) {
-        await goTo(target, UNDO_FAILURE_COPY);
-      }
+      await deps.replaceCopy(async () => {
+        if (!(await flush())) {
+          return;
+        }
+        const at = index.value;
+        const target = at > 0 ? ids.value[at - 1] : undefined;
+        if (target) {
+          await goTo(target, UNDO_FAILURE_COPY);
+        }
+      });
     } finally {
       navigating.value = false;
     }
   }
 
   async function redo(): Promise<void> {
-    if (!canRedo.value || deps.isBlocked() || deps.isCommandRunning()) {
+    if (!canRedo.value || deps.isBlocked() || deps.isReplacing()) {
       return;
     }
     const target = ids.value[index.value + 1];
@@ -308,7 +311,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     navigating.value = true;
     try {
-      await goTo(target, REDO_FAILURE_COPY);
+      await deps.replaceCopy(() => goTo(target, REDO_FAILURE_COPY));
     } finally {
       navigating.value = false;
     }
@@ -321,6 +324,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     canUndo,
     flush,
     navigating: computed(() => navigating.value),
+    /** The snapshot Spara keeps the saved copy at; null until the step list is loaded. */
+    position: computed(() => position.value),
     noteEdit,
     pending,
     redo,

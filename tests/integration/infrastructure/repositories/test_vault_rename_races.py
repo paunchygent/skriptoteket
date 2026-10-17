@@ -65,6 +65,21 @@ pytestmark = [
 ]
 
 
+def _seed_container(lineage: UUID) -> bytes:
+    """The imported exam the baseline holds; Spara compares the saved copy with it."""
+    return ExamWorkspaceContainerCodec().build(
+        content=ExamWorkspaceContainerContent(
+            document=NativeExamDocument(
+                document_id=lineage,
+                revision=1,
+                title="Original exam",
+                items=(placeholder("p:1", "A question"),),
+                origin=NativeExamDocumentOrigin(kind="created"),
+            )
+        )
+    )
+
+
 async def _seed(
     factory: async_sessionmaker[AsyncSession], *, lineage: UUID | None = None
 ) -> tuple[UUID, list[VaultFile]]:
@@ -92,8 +107,10 @@ async def _seed(
                 document_lineage_id=lineage,
                 content=ExamWorkspaceHistoryState(
                     cursor=lineage,
-                    current_step_id=None,
-                    baseline=ExamWorkspaceHistoryStep(step_id=lineage, content=b"seed-container"),
+                    current_step_id=lineage,
+                    baseline=ExamWorkspaceHistoryStep(
+                        step_id=lineage, content=_seed_container(lineage)
+                    ),
                 )
                 .model_dump_json()
                 .encode(),
@@ -343,6 +360,7 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
+                editor_step_id=lineage,
             )
 
         async def rename_document() -> None:

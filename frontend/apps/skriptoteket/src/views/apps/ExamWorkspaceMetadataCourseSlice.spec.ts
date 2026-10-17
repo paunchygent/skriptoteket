@@ -7,7 +7,12 @@ import {
   buildResponse, mountExamWorkspace, saveDocument, type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const api = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -54,6 +59,7 @@ async function choose(wrapper: ViewWrapper, query: string) {
 
 beforeEach(() => {
   for (const mock of Object.values(api)) mock.mockReset();
+  arrangeStepHistory(api);
   rename.mockReset();
   original = buildResponse({ version: 1 });
   original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] };

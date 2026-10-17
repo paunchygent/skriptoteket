@@ -101,6 +101,7 @@ function setup(selected: string | null = null) {
       isBusy: () => false,
       lineageId: () => "lineage-1",
       onConflict,
+      replaceCopy: (run) => run(),
       savedRevision: () => 7,
       selectItem: (itemId) => {
         selectedItemId.value = itemId;

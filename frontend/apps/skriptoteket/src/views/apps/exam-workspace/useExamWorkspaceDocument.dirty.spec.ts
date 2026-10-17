@@ -110,7 +110,7 @@ async function saveWhileArrivalsLand(first: Pairs, second: Pairs) {
   const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
   apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
   state.updateItemTickPoints("item_001", CHANGED_TICK_POINTS);
-  const saving = state.saveDocument();
+  const saving = state.saveDocument("position-1");
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(first) }]);
   state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(second) }]);
   return { pendingSave, saving, state };
@@ -179,7 +179,7 @@ describe("arrivals replayed after a save's outcome", () => {
     const state = await openFollowingMachineKey();
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion: suggestion(OTHER_PAIRS) }]);
 
     pendingSave.resolve(savedResponse(sentDocument()));
@@ -194,7 +194,7 @@ describe("arrivals replayed after a save's outcome", () => {
     apiMocks.saveExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
     state.updateItemTickPoints("item_001", CHANGED_TICK_POINTS);
 
-    expect(await state.saveDocument()).toBe(false);
+    expect(await state.saveDocument("position-1")).toBe(false);
 
     expect(state.isDirty.value).toBe(true);
   });

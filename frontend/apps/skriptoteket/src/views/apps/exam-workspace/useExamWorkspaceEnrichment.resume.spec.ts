@@ -370,7 +370,7 @@ describe("the answer is admitted only when it lands on the opening that asked", 
   it("C8: the copy was saved to a newer version while the lookup was in flight", async () => {
     const { document, enrichment, lookup } = await openAWithLookupHeld();
     apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(examResponse("lineage-a", 2));
-    await document.saveDocument();
+    await document.saveDocument("position-1");
     expect(document.savedRevision.value).toBe(2);
 
     lookup.resolve(jobStatus("succeeded", { withSuggestion: true }));
@@ -474,7 +474,7 @@ describe("which openings ask", () => {
     lookup.resolve(jobStatus("running"));
     await flushPromises();
     apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(examResponse("lineage-a", 2));
-    await document.saveDocument();
+    await document.saveDocument("position-1");
 
     apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
       jobStatus("succeeded", { withSuggestion: true }),

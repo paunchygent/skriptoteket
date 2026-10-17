@@ -80,6 +80,7 @@ function setup(initial: NativeExamDocument) {
       isBusy: () => false,
       lineageId: () => "lineage-1",
       onConflict: vi.fn(async () => undefined),
+      replaceCopy: (run) => run(),
       savedRevision: () => 1,
       selectItem: vi.fn(),
       selectedItemId,

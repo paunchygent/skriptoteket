@@ -112,7 +112,12 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
         ) as client:
             reviewed = _reviewed(imported.document).model_copy(update={"revision": 2})
             response = await client.put(
-                path, json={"expected_revision": 1, "document": reviewed.model_dump(mode="json")}
+                path,
+                json={
+                    "expected_revision": 1,
+                    "document": reviewed.model_dump(mode="json"),
+                    "position_step_id": str(lineage_id),
+                },
             )
             assert response.status_code == 200, response.text
             saved_initial = ExamWorkspaceDocumentResponse.model_validate(response.json())
@@ -270,7 +275,12 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             # Spara alone writes command results to the exam file.
             document = reduced.document.model_copy(update={"revision": 3})
             response = await client.put(
-                path, json={"expected_revision": 2, "document": document.model_dump(mode="json")}
+                path,
+                json={
+                    "expected_revision": 2,
+                    "document": document.model_dump(mode="json"),
+                    "position_step_id": str(before_save_history.position_step_id),
+                },
             )
             assert response.status_code == 200, response.text
             saved = ExamWorkspaceDocumentResponse.model_validate(response.json())

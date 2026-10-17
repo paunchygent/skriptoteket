@@ -86,7 +86,9 @@ async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=reviewed),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=reviewed, position_step_id=imported.summary.lineage_id
+        ),
     )
     return actor, imported.summary.lineage_id
 
@@ -118,7 +120,9 @@ async def _imported_and_reviewed_with_losses(env: _Env) -> tuple[User, UUID]:
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=document),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=document, position_step_id=imported.summary.lineage_id
+        ),
     )
     return actor, imported.summary.lineage_id
 
@@ -156,7 +160,9 @@ async def test_heading_dropdown_refuses_export_and_checklist_with_question_numbe
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=document),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=document, position_step_id=imported.summary.lineage_id
+        ),
     )
     handler = _export_handler(env)
     with pytest.raises(DomainError) as exc_info:
@@ -267,7 +273,13 @@ async def test_intervening_save_refuses_checklist_for_the_downloaded_revision(en
     await env.save_handler.handle(
         actor=actor,
         lineage_id=lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=2, document=changed),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=2,
+            document=changed,
+            position_step_id=(
+                await env.save_handler.history(actor=actor, lineage_id=lineage_id)
+            ).position_step_id,
+        ),
     )
     with ZipFile(BytesIO(downloaded.content)) as package:
         roots = [

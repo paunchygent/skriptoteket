@@ -100,7 +100,8 @@ function setup(failFirstLoad = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      isCommandRunning: () => false,
+      isReplacing: () => false,
+      replaceCopy: (run) => run(),
       lineageId: () => "lineage-1",
       onConflict,
       savedRevision: () => baseline.revision,

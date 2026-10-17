@@ -24,6 +24,8 @@ import {
   unmountViews,
 } from "./ExamWorkspaceView.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
   copyExamWorkspaceDocument: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
@@ -48,6 +50,7 @@ afterEach(unmountViews);
 
 beforeEach(() => {
   arrangeViewApis(apiMocks);
+  arrangeStepHistory(apiMocks);
 });
 
 describe("ExamWorkspaceView keyboard shortcuts", () => {

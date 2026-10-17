@@ -92,7 +92,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", marks: [], text: "Edited." }]);
     state.markItemReviewed("item_002");
 
-    await expect(state.saveDocument()).resolves.toBe(true);
+    await expect(state.saveDocument("position-1")).resolves.toBe(true);
 
     const sent = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document as NativeExamDocument;
     expect(sent.parents).toEqual(original.parents);

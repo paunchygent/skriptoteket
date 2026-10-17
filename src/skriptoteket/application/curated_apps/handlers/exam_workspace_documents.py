@@ -287,9 +287,11 @@ class GetExamWorkspaceDocumentHandler:
                 details={"lineage_id": str(lineage_id)},
             )
         current = next(
-            (step for step in history.steps if step.step_id == history.current_step_id), None
+            step
+            for step in (history.baseline, *history.steps)
+            if step.step_id == history.current_step_id
         )
-        latest = container if current is None else self._codec.parse(content=current.content)
+        latest = self._codec.parse(content=current.content)
         document = latest.document.model_copy(update={"revision": head.document_version})
         return ExamWorkspaceDocumentResponse(
             document=document,
@@ -391,6 +393,7 @@ class SaveExamWorkspaceDocumentHandler:
             lineage_id=lineage_id,
             version=document.revision,
             expected_revision=request.expected_revision,
+            editor_step_id=request.position_step_id,
         )
         history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
         assert history is not None

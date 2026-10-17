@@ -17,7 +17,8 @@
  *
  *   A reply merged while a save is in flight is re-applied when that save's
  *   response or conflict reload installs a document the payload was read
- *   without. A reply the payload already held is never replayed, so a
+ *   without; likewise for an undo, redo or server command, whose document
+ *   must still hold the gap's keyed values for the reply to apply. A reply the payload already held is never replayed, so a
  *   teacher-removed spelling never returns from an earlier reply. A failed
  *   request that still stands reports Swedish copy.
  *
@@ -221,8 +222,8 @@ export function useExamWorkspaceGapKeying(binding: ExamWorkspaceGapKeyingBinding
     binding.patchItem(itemId, (item) => withoutAutomaticValue(item, gapId, value));
   }
 
-  /** Start listing replies for the teacher's save; false when one is already open. */
-  function beginSave(): boolean {
+  /** Start listing replies for a save or a replacing read; false when one is already open. */
+  function beginHold(): boolean {
     if (duringSave !== null) {
       return false;
     }
@@ -235,20 +236,20 @@ export function useExamWorkspaceGapKeying(binding: ExamWorkspaceGapKeyingBinding
     return delivered;
   }
 
-  /** After a save response: re-apply the replies its payload was read without. */
+  /** After a save response or a replacing read: re-apply the replies it was read without. */
   function replayAfterResponse(mark: number): void {
     for (const reply of (duringSave ?? []).filter((entry) => entry.sequence > mark)) {
       writeReply(reply);
     }
   }
 
-  function endSave(opened: boolean): void {
+  function endHold(opened: boolean): void {
     if (opened) {
       duringSave = null;
     }
   }
 
-  /** A reload, reopen or reconversion replaced the copy: every in-flight reply is stale. */
+  /** A reload, reopen or Spara som replaced the copy: every in-flight reply is stale. */
   function invalidateCopy(): void {
     copyGeneration += 1;
     pendingValues.clear();
@@ -265,8 +266,8 @@ export function useExamWorkspaceGapKeying(binding: ExamWorkspaceGapKeyingBinding
   }
 
   return {
-    beginSave,
-    endSave,
+    beginHold,
+    endHold,
     invalidateCopy,
     invalidateItem,
     payloadMark,

@@ -138,6 +138,7 @@ async def _save_document(
             lineage_id=lineage_id,
             version=version,
             expected_revision=expected_revision,
+            editor_step_id=None if expected_revision is None else lineage_id,
         )
 
 

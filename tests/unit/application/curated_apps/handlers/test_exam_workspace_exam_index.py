@@ -193,7 +193,9 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     response = await env.save_handler.handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=changed),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=changed, position_step_id=document.document_id
+        ),
     )
     listed = await env.list_handler.handle(actor=actor)
     assert len(env.index.entries) == 1
@@ -209,7 +211,13 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     response = await env.save_handler.handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=2, document=cleared),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=2,
+            document=cleared,
+            position_step_id=(
+                await env.save_handler.history(actor=actor, lineage_id=document.document_id)
+            ).position_step_id,
+        ),
     )
     assert response.summary.course_key is None
     listed = await env.list_handler.handle(actor=actor)

@@ -12,7 +12,9 @@
  *   its mark, or every arrival since the teacher's save for a conflict
  *   reload. A failed save leaves the copy, so nothing runs again. Whether an
  *   arrival runs again depends on when it arrived, never on the values the
- *   replacing document holds. Every write, first delivery and replay alike,
+ *   replacing document holds. Undo, redo and the server commands hold
+ *   arrivals the same way, so a suggestion that lands while their document
+ *   is read runs again on that document instead of being overwritten. Every write, first delivery and replay alike,
  *   checks at that moment that the exam opening the arrival was requested
  *   for is still open, so a job of another exam never writes into this one.
  *
@@ -48,7 +50,7 @@ type SaveArrivalsBinding = {
 
 export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
   let delivered = 0;
-  // Arrivals written since the teacher's save began; null while no save runs.
+  // Arrivals written since a save or a replacing read began; null while none runs.
   let duringSave: NumberedArrival[] | null = null;
 
   /**
@@ -97,11 +99,11 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
   }
 
   /**
-   * Start listing arrivals for the teacher's save. Returns whether this call
-   * opened the list; the recursive save after a conversion merge joins the
-   * list its outer save opened.
+   * Start listing arrivals for a save or a replacing read. Returns whether
+   * this call opened the list; the recursive save after a conversion merge
+   * joins the list its outer save opened.
    */
-  function beginSave(): boolean {
+  function beginHold(): boolean {
     if (duringSave !== null) {
       return false;
     }
@@ -120,7 +122,7 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
     }
   }
 
-  /** After a save response: replay the arrivals its payload was read without. */
+  /** After a save response or a replacing read: replay the arrivals it was read without. */
   function replayAfterResponse(mark: number): void {
     replay((duringSave ?? []).filter((arrival) => arrival.sequence > mark));
   }
@@ -130,7 +132,7 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
     replay(duringSave ?? []);
   }
 
-  function endSave(opened: boolean): void {
+  function endHold(opened: boolean): void {
     if (opened) {
       duringSave = null;
     }
@@ -138,8 +140,8 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
 
   return {
     applyArrivingSuggestions,
-    beginSave,
-    endSave,
+    beginHold,
+    endHold,
     payloadMark,
     replayAfterReload,
     replayAfterResponse,

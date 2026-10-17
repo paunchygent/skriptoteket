@@ -37,7 +37,7 @@ describe("document conversion-key actions", () => {
     expect(currentItem(state).facit_text).toBe("Stockholm och Oslo");
     const copy = currentDocument(state);
     api.saveExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
-    expect(await state.saveDocument()).toBe(true);
+    expect(await state.saveDocument("position-1")).toBe(true);
     const payload = api.saveExamWorkspaceDocument.mock.calls[0]?.[1].document;
     expect(payload.items[0].answer_key.origin).toBe("absent");
     expect(payload.items[0].gaps.every((gap: { automatic_values: string[] }) => gap.automatic_values.length === 0)).toBe(true);
@@ -65,7 +65,7 @@ describe("document conversion-key actions", () => {
       expect(state.isDirty.value).toBe(true);
       const copy = currentDocument(state);
       api.saveExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
-      expect(await state.saveDocument()).toBe(true);
+      expect(await state.saveDocument("position-1")).toBe(true);
       const payload = api.saveExamWorkspaceDocument.mock.calls[0]?.[1].document;
       expect(payload.items[0].answer_key.origin).toBe(origin);
       expect(payload.items[0].gaps).toEqual(currentItem(state).gaps);

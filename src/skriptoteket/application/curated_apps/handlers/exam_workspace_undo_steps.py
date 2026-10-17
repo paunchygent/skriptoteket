@@ -80,29 +80,15 @@ class StoreExamWorkspaceUndoStepHandler:
                 store=self._store,
             )
             refuse_placeholder_changes(job=job, base=saved.document, saved=document)
-            steps = history.steps
-            if request.after_step_id is not None:
-                ids = (history.baseline.step_id, *(step.step_id for step in steps))
-                if request.after_step_id not in ids:
-                    raise DomainError(
-                        code=ErrorCode.CONFLICT, message="Ångrasteget finns inte längre."
-                    )
-                steps = steps[: ids.index(request.after_step_id)]
-            elif history.current_step_id is None:
-                # Spara deliberately leaves history untouched. Retain its working
-                # document before the next edit so undo cannot skip saved changes.
-                predecessor = steps[-1] if steps else history.baseline
-                previous_document = self._codec.parse(content=predecessor.content).document
-                previous_document = previous_document.model_copy(
-                    update={"revision": head.document_version}
-                )
-                if previous_document != saved.document:
-                    steps = (
-                        *steps,
-                        ExamWorkspaceHistoryStep(
-                            step_id=self._ids.new_uuid(), content=self._codec.build(content=saved)
-                        ),
-                    )
+            # A new step follows the snapshot the editor stands on and drops its redo steps;
+            # the server's commands send no position and follow the current one.
+            after = (
+                history.current_step_id if request.after_step_id is None else request.after_step_id
+            )
+            ids = (history.baseline.step_id, *(step.step_id for step in history.steps))
+            if after not in ids:
+                raise DomainError(code=ErrorCode.CONFLICT, message="Ångrasteget finns inte längre.")
+            steps = history.steps[: ids.index(after)]
             step_id = self._ids.new_uuid()
             steps = (*steps, ExamWorkspaceHistoryStep(step_id=step_id, content=content))[-10:]
             history = history.model_copy(

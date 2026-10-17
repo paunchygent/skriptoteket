@@ -74,6 +74,8 @@ export type ExamWorkspaceStructureDeps = {
   /** Store the pending edit, and an undone step as the newest one; false when that failed. */
   flush: (settle: boolean) => Promise<boolean>;
   onConflict: () => Promise<void>;
+  /** Run a command whose response replaces the copy: locks editing and keeps arrivals. */
+  replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
 };
 
 export type ExamWorkspaceTypeNotice = { itemId: string; kind: NativeExamItemKind; text: string };
@@ -123,6 +125,16 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     running.value = true;
     deleteNotice.value = null;
     try {
+      return await deps.replaceCopy(() => commandOutcome(command));
+    } finally {
+      running.value = false;
+    }
+  }
+
+  async function commandOutcome<Response extends ExamWorkspaceDocumentResponse>(
+    command: (lineageId: string, cursor: string) => Promise<Response>,
+  ): Promise<Response | null> {
+    try {
       // The response replaces the copy: without the pending edit stored, it would be lost.
       if (!(await deps.flush(true))) {
         return null;
@@ -154,8 +166,6 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
         toast.failure(COMMAND_FAILURE_COPY);
       }
       return null;
-    } finally {
-      running.value = false;
     }
   }
 

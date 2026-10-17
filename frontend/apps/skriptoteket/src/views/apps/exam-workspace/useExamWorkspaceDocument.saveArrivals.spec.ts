@@ -101,7 +101,7 @@ describe("arriving suggestions during a save", () => {
     const suggestion = matchingSuggestion([["left_001", "right_001"]]);
 
     state.updateItemPoints("item_001", 7);
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     expect(currentItem(state).ai_suggestion).toEqual(suggestion);
 
@@ -120,7 +120,7 @@ describe("arriving suggestions during a save", () => {
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new Error("network down"));
     await saving;
@@ -137,7 +137,7 @@ describe("arriving suggestions during a save", () => {
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     const sent = sentDocument();
     pendingSave.resolve(
@@ -175,7 +175,7 @@ describe("arriving suggestions during a save", () => {
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(FIRST_PAIRS) },
     ]);
@@ -239,7 +239,7 @@ describe("arriving suggestions during a save", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
     const suggestion = matchingSuggestion([["left_001", "right_001"]]);
 
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new ApiError({ code: "CONFLICT", message: "Konflikt", status: 409 }));
     await saving;
@@ -274,7 +274,7 @@ describe("a newly promoted key survives a revision that stores an equal older su
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
     state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SOURCE_PAIRS) },
     ]);
