@@ -32,19 +32,10 @@
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
-- [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-  reopened `in_progress` 2026-10-16 (user; story ST-SKRIPT-39-05 stays `ready`;
-  retained `01a144e3-b8c4-7ea5-bee6-6dfc5e242786`). Owner: Claude parent on the
-  Mac. Walk and Exam.net 5344745 passed (`evidence/staging-walk-39-05-14b/`);
-  next: Sol pair repairs five main test failures, Sol review, then closure.
-  Still failing on main `212ce386` (lead 39-08-01, 2026-10-16), introduced by
-  this task's merges: `test_exam_workspace_source_formatting.py` 2 failed
-  (Svenska 2 `Fråga 17` missing after replay; morpheme alignment), 2 QTI
-  reference mismatches in `test_exam_conversion_parity.py` and, since
-  `827c301a`, `test_exam_workspace_docx_grid_points_review.py` (MATCHING vs
-  FREE_TEXT). Pre-existing and unowned: docker suite
-  `test_exam_workspace_docx_background.py` 2/9 fail on main and at `8bb83759`.
-  Evidence `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
+- Docker suite `test_exam_workspace_docx_background.py` (marker `docker`,
+  outside `pdm run test-parallel`): 2/9 fail on main and at `8bb83759`;
+  pre-existing, no owner or task yet. Evidence
+  `01a145b6.../evidence/lead/*-on-main-2026-10-16.md`.
 
 - [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
   `ready`: task 1 `done` 2026-10-16; tasks 2-4 contracted `ready`, next is
@@ -129,6 +120,13 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
+  and [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
+  `done` 2026-10-17 (user closure): the five main test failures are repaired
+  (R1, R1F, R1G; D15 split-question review; rereview2 approved), main
+  `d92b828e`; staging walk and Exam.net 5344901 passed; retained
+  `01a144e3.../evidence/staging-walk-39-05-14c/`; worktree retired.
 
 - [TASK-SKRIPT-REP-0041](docs/backlog/tasks/task-skript-rep-0041-repair-ten-main-test-failures-in-worker-healthchecks-the-compose-contract-and-alignment-timing.md)
   `done` 2026-10-17 (approved review): healthcheck tests use the real

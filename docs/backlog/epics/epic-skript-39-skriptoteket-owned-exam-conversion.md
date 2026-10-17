@@ -124,7 +124,8 @@ closes the epic and is not on the critical path.
     suggestion on its question in the saved exam; a suggestion becomes the
     key only when the question has none or follows an unreviewed earlier
     suggestion, and never when it no longer fits the question.
-05. Word/DOCX ingestion breadth (`ST-SKRIPT-39-05`, `ready`): AI-first conversion where code only segments the DOCX into
+05. Word/DOCX ingestion breadth (`ST-SKRIPT-39-05`, `done` 2026-10-17, user
+    closure): AI-first conversion where code only segments the DOCX into
     chunks and batched Decisions and Responses calls build contract-validated
     native items, proven against a user-confirmed gold corpus of eight real
     exams; adds a matching kind. Replaces the deterministic-first framing by
@@ -136,9 +137,9 @@ closes the epic and is not on the critical path.
     (course, exam, part and question totals) are document metadata, never
     exam text, and a question's printed points set its points. Last corpus
     replay 307/316 items match gold; Svenska 2 kursavslutande converts to 24
-    items with 0 review items and imports into Exam.net (5344745) with no
-    header text. Open: TASK-SKRIPT-39-05-14 repairs five main test failures
-    from its merges before the story closes.
+    items with 0 review items and imports into Exam.net (5344901, at
+    `d92b828e`) with no header text. A split question whose part cannot
+    carry its share of the printed points becomes one source-review item.
 06. PDF ingestion: digital PDFs with embedded text parse locally; scanned
     or layout-hard handling is deferred (undecided) while the Sir generic
     extraction capability is preserved as-is without selecting a

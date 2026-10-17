@@ -7,10 +7,13 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-17'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User asked on 2026-10-17 to close the story after the 39-05-14 repair ("Reopen TASK-SKRIPT-39-05-14 (and keep ST-SKRIPT-39-05 open), repair the five failing tests through a Sol pair and reviewer, then close both"). Tasks 39-05-01 to 39-05-14 are done (39-05-14 closed the same day after its repair merged at d92b828e). Last corpus replay 307/316 items match gold (TASK-SKRIPT-39-05-13, best-effort target per the acceptance criterion); staging walk at d92b828e converted Svenska 2 kursavslutande to 24 items with 0 review items and judge 24/24 gold, and Exam.net import 5344901 shows three parts, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14c/walk-report.md).'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
 - Each eval run aims for every item of every corpus exam to match its hand-checked
@@ -124,7 +127,7 @@ Planned order; each task is scaffolded and contracted before work starts.
    shared core plus one section per item kind; a chunk the grouping lists as
    a question's facit is its answer key unless the item holds it; batches hold
    16 question families (307/316 items match gold vs 298/316 at 1).
-11. `TASK-SKRIPT-39-05-14`: exam header lines become document metadata
+11. `TASK-SKRIPT-39-05-14` (done 2026-10-17): exam header lines become document metadata
    (course hint, printed totals checked against item points) and never exam
    text; numbered or pointed question headings open their question or parent.
 

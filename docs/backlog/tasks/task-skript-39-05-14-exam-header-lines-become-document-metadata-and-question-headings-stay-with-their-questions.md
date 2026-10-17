@@ -8,10 +8,13 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-16'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-17'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User asked on 2026-10-17 to repair the five main test failures and then close the task ("Reopen TASK-SKRIPT-39-05-14 (and keep ST-SKRIPT-39-05 open), repair the five failing tests through a Sol pair and reviewer, then close both"). Repair units R1, R1F and R1G passed independent Sol review; second rereview approved with no open findings (evidence/rereview2-R1.md, D15 user decision recorded in b421b5f2). Merged to main d92b828e; domain tests pass (evidence/merged-main-d92b828e-domain.log). Staging walk at d92b828e converted Svenska 2 kursavslutande to 24 items, 0 review items, judge 24/24 gold, and Exam.net import 5344901 shows three parts, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14c/walk-report.md).'
 task_kind: story
 acceptance_criteria:
 - A converted DOCX exam shows no header line (course line, exam total, part totals)
