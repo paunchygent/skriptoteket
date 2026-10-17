@@ -356,7 +356,9 @@ async def test_duplicate_version_insert_maps_to_conflict(env: _Env, fixture_byte
             actor=actor,
             file_id=uuid4(),
             name="x.provdokument.zip",
-            content=b"payload",
+            content=env.codec.build(
+                content=ExamWorkspaceContainerContent(document=imported.document)
+            ),
             lineage_id=imported.summary.lineage_id,
             version=1,
         )
