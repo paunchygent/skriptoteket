@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ArrowUp,
   Bookmark,
+  BookOpen,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -23,7 +24,9 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronUp,
+  CircleAlert,
   CircleCheck,
+  ClipboardCheck,
   CirclePlus,
   CircleQuestionMark,
   CircleUserRound,
@@ -38,21 +41,31 @@ import {
   FileMinus,
   FileSpreadsheet,
   FileText,
+  Folder,
   FolderInput,
+  FolderOpen,
   Fullscreen,
   Globe,
+  Heading1,
+  Heading2,
+  Heading3,
   History,
   Image,
   Info,
   Italic,
+  LayoutDashboard,
   Library,
+  Lightbulb,
   Link2,
   List,
+  ListChecks,
   LoaderCircle,
   LogOut,
+  Maximize2,
   Menu,
   Minus,
   OctagonAlert,
+  PanelLeft,
   Pencil,
   PencilLine,
   Play,
@@ -60,21 +73,29 @@ import {
   Power,
   Redo2,
   RefreshCw,
+  Replace,
   RotateCw,
   Save,
   Search,
+  SendHorizontal,
   Settings,
   Shuffle,
   SlidersHorizontal,
   Sparkles,
+  Square,
+  SquareCheck,
+  Subscript,
+  Superscript,
   TextAlignCenter,
   TextAlignStart,
   Trash2,
   TriangleAlert,
+  Underline,
   Undo2,
   Upload,
   UserMinus,
   Users,
+  Wrench,
   X,
   ZoomIn,
   ZoomOut,
@@ -93,7 +114,12 @@ export type UiGlyphNavigationMeaning =
   | "navigation-menu"
   | "first-page"
   | "last-page"
-  | "open-detail";
+  | "open-detail"
+  | "nav-files"
+  | "nav-my-tools"
+  | "nav-suggest-tool"
+  | "nav-review-suggestions"
+  | "nav-users";
 
 export type UiGlyphActionMeaning =
   | "upload"
@@ -133,7 +159,11 @@ export type UiGlyphActionMeaning =
   | "spreadsheet-file"
   | "archive-file"
   | "image-file"
-  | "code-file";
+  | "code-file"
+  | "open-files"
+  | "convert-type"
+  | "export-checklist"
+  | "send";
 
 export type UiGlyphUtilityMeaning =
   | "info"
@@ -162,7 +192,14 @@ export type UiGlyphUtilityMeaning =
   | "preview"
   | "zoom-in"
   | "zoom-out"
-  | "fit-view";
+  | "fit-view"
+  | "toggle-sidebar"
+  | "instruction"
+  | "blocker"
+  | "checkbox-on"
+  | "checkbox-off"
+  | "focus-mode"
+  | "overview";
 
 export type UiGlyphEditorToolbarMeaning =
   | "bold"
@@ -171,7 +208,13 @@ export type UiGlyphEditorToolbarMeaning =
   | "align-left"
   | "align-center"
   | "info-box"
-  | "more-actions";
+  | "more-actions"
+  | "underline"
+  | "subscript"
+  | "superscript"
+  | "heading-1"
+  | "heading-2"
+  | "heading-3";
 
 export type UiGlyphMeaning =
   | UiGlyphNavigationMeaning
@@ -212,6 +255,11 @@ const navigationGlyphs: Record<UiGlyphNavigationMeaning, UiGlyphSource> = {
   "first-page": lucide(ChevronsLeft),
   "last-page": lucide(ChevronsRight),
   "open-detail": lucide(ChevronRight),
+  "nav-files": lucide(Folder),
+  "nav-my-tools": lucide(Wrench),
+  "nav-suggest-tool": lucide(Lightbulb),
+  "nav-review-suggestions": lucide(ClipboardCheck),
+  "nav-users": lucide(Users),
 };
 
 const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
@@ -256,6 +304,10 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   "archive-file": lucide(FileArchive),
   "image-file": lucide(Image),
   "code-file": lucide(Code),
+  "open-files": lucide(FolderOpen),
+  "convert-type": lucide(Replace),
+  "export-checklist": lucide(ListChecks),
+  send: lucide(SendHorizontal),
 };
 
 const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {
@@ -286,6 +338,13 @@ const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {
   "zoom-in": lucide(ZoomIn),
   "zoom-out": lucide(ZoomOut),
   "fit-view": lucide(Fullscreen),
+  "toggle-sidebar": lucide(PanelLeft),
+  instruction: lucide(BookOpen),
+  blocker: lucide(CircleAlert),
+  "checkbox-on": lucide(SquareCheck),
+  "checkbox-off": lucide(Square),
+  "focus-mode": lucide(Maximize2),
+  overview: lucide(LayoutDashboard),
 };
 
 const editorToolbarGlyphs: Record<UiGlyphEditorToolbarMeaning, UiGlyphSource> = {
@@ -299,6 +358,12 @@ const editorToolbarGlyphs: Record<UiGlyphEditorToolbarMeaning, UiGlyphSource> = 
     paths: ["M7 10h10M7 14h6"],
   }),
   "more-actions": lucide(EllipsisVertical),
+  underline: lucide(Underline),
+  subscript: lucide(Subscript),
+  superscript: lucide(Superscript),
+  "heading-1": lucide(Heading1),
+  "heading-2": lucide(Heading2),
+  "heading-3": lucide(Heading3),
 };
 
 export const UI_GLYPHS: Readonly<Record<UiGlyphMeaning, UiGlyphSource>> = {

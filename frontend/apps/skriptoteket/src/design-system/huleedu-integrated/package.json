@@ -1,6 +1,6 @@
 {
   "name": "@huleedu/integrated-frontend-design-system",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "private": true,
   "type": "module",
   "description": "Shared HuleEdu and Skriptoteket frontend design-system runtime resources.",
