@@ -55,7 +55,7 @@ describe("AdminToolsView failure feedback", () => {
         await title.setValue("Nytt verktyg");
 
         if (action === "Escape") {
-          await title.trigger("keydown", { key: "Escape" });
+          await wrapper.get('[role="dialog"] input[type="text"]').trigger("keydown", { key: "Escape" });
         } else {
           await dialog.findAll("button").find((button) => button.text() === action)!.trigger("click");
         }
@@ -97,9 +97,9 @@ describe("AdminToolsView failure feedback", () => {
       expect(wrapper.get('[role="alert"]').text()).toContain("Verktyget kunde inte skapas");
       expect(title.element.value).toBe("Behåll mitt utkast");
       expect(document.activeElement).not.toBe(trigger.element);
-      await title.trigger("keydown", { key: "ArrowLeft" });
+      await wrapper.get('[role="dialog"] input[type="text"]').trigger("keydown", { key: "ArrowLeft" });
       expect(wrapper.find('[role="dialog"]').exists()).toBe(true);
-      await title.trigger("keydown", { key: "Escape" });
+      await wrapper.get('[role="dialog"] input[type="text"]').trigger("keydown", { key: "Escape" });
       await flushPromises();
       expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
       expect(document.activeElement).toBe(trigger.element);

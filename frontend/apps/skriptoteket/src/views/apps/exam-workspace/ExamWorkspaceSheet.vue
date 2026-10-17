@@ -11,13 +11,13 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` only in the phone layout, holding the
  *     question list behind the "Fråga N av M" picker.
- *   - Keyboard and focus handling comes from `useExamWorkspaceDialogFocus`.
+ *   - Keyboard and focus handling comes from `useDialogFocus`.
  */
 
 import { ref } from "vue";
 
 import { IconX } from "../../../components/icons";
-import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
+import { useDialogFocus } from "../../../composables/useDialogFocus";
 
 defineProps<{
   title: string;
@@ -29,7 +29,7 @@ const emit = defineEmits<{
 
 const panel = ref<HTMLElement | null>(null);
 
-useExamWorkspaceDialogFocus(panel, {
+useDialogFocus(panel, {
   modal: () => true,
   onClose: () => emit("close"),
   takesFocus: () => true,

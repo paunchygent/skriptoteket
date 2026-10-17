@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useId, watch } from "vue";
+import { ref, useId } from "vue";
 
 import { IconX } from "../../../components/icons";
 import { SystemMessage, UiDenseIconButton, UiMarkdown } from "../../../components/ui";
+import { useDialogFocus } from "../../../composables/useDialogFocus";
 
 const props = withDefaults(defineProps<{
   isOpen: boolean;
@@ -25,24 +26,13 @@ const emit = defineEmits<{
 }>();
 
 const titleId = useId();
+const dialog = ref<HTMLElement | null>(null);
 
-watch(() => props.isOpen, (isOpen, _previous, onCleanup) => {
-  if (!isOpen) return;
-
-  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  function handleEscape(event: KeyboardEvent): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      emit("close");
-    }
-  }
-
-  document.addEventListener("keydown", handleEscape);
-  onCleanup(() => {
-    document.removeEventListener("keydown", handleEscape);
-    if (opener?.isConnected) opener.focus();
-  });
-}, { immediate: true, flush: "post" });
+useDialogFocus(dialog, {
+  modal: () => true,
+  takesFocus: () => true,
+  onClose: () => emit("close"),
+});
 </script>
 
 <template>
@@ -54,8 +44,10 @@ watch(() => props.isOpen, (isOpen, _previous, onCleanup) => {
         @click.self="emit('close')"
       >
         <div
+          ref="dialog"
           class="relative w-full max-w-4xl mx-4 p-6 rounded-[var(--huleedu-panel-radius)] bg-modal border border-navy/20 shadow-md"
           role="dialog"
+          tabindex="-1"
           aria-modal="true"
           :aria-labelledby="titleId"
         >

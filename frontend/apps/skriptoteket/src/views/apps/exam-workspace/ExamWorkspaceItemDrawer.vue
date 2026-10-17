@@ -21,7 +21,7 @@
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` with the current layout.
- *   - Keyboard and focus handling comes from `useExamWorkspaceDialogFocus`.
+ *   - Keyboard and focus handling comes from `useDialogFocus`.
  */
 
 import { computed, ref, useId, watch } from "vue";
@@ -30,7 +30,7 @@ import { IconX } from "../../../components/icons";
 import type { NativeExamItem, NativeExamItemKind, NativeExamParseOrigin } from "../../../api/examWorkspace";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
-import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
+import { useDialogFocus } from "../../../composables/useDialogFocus";
 
 const PARSE_ORIGIN_LABELS: Record<NativeExamParseOrigin, string> = {
   deterministic: "Läst direkt ur provfilen.",
@@ -101,7 +101,7 @@ const reasonsHeading = computed(() =>
   props.item.review.state === "review_required" ? "Att granska" : "Anteckningar från inläsningen",
 );
 
-useExamWorkspaceDialogFocus(frame, {
+useDialogFocus(frame, {
   modal: () => isModal.value,
   fallbackFocus: () => document.querySelector<HTMLElement>(DETAILS_TOGGLE_SELECTOR),
   onClose: () => emit("close"),

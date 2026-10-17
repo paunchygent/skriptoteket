@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { ref } from "vue";
 
+import { useDialogFocus } from "../../composables/useDialogFocus";
 import { SystemMessage, UiDenseIconButton } from "../ui";
 
 type CreateDraftToolModalProps = {
@@ -11,7 +12,7 @@ type CreateDraftToolModalProps = {
   isSubmitting: boolean;
 };
 
-const props = defineProps<CreateDraftToolModalProps>();
+defineProps<CreateDraftToolModalProps>();
 
 const emit = defineEmits<{
   (event: "close"): void;
@@ -22,25 +23,14 @@ const emit = defineEmits<{
 }>();
 
 const titleInputRef = ref<HTMLInputElement | null>(null);
-let returnFocusTo: HTMLElement | null = null;
+const dialog = ref<HTMLElement | null>(null);
 
-watch(
-  () => props.isOpen,
-  async (isOpen) => {
-    if (isOpen) {
-      returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      await nextTick();
-      if (props.isOpen) titleInputRef.value?.focus();
-      return;
-    }
-
-    await nextTick();
-    if (!props.isOpen) {
-      returnFocusTo?.focus();
-      returnFocusTo = null;
-    }
-  },
-);
+useDialogFocus(dialog, {
+  modal: () => true,
+  takesFocus: () => true,
+  initialFocus: () => titleInputRef.value?.disabled ? null : titleInputRef.value,
+  onClose: () => emit("close"),
+});
 </script>
 
 <template>
@@ -48,13 +38,14 @@ watch(
     <Transition name="fade">
       <div
         v-if="isOpen"
+        ref="dialog"
+        tabindex="-1"
         class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-tool-dialog-title"
         :aria-describedby="error ? 'create-tool-dialog-error' : undefined"
         @click.self="emit('close')"
-        @keydown.esc.stop.prevent="emit('close')"
       >
         <div class="relative w-full max-w-lg mx-4 p-6 bg-modal rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] shadow-md">
           <UiDenseIconButton
