@@ -200,11 +200,40 @@ describe("VaultPanel saved exports", () => {
 
     expect(wrapper.find('[aria-label="Sparade exporter"]').exists()).toBe(false);
 
-    await wrapper.find('button[aria-label="Filåtgärder"]').trigger("click");
+    await wrapper.find('button[aria-label="Filåtgärder för Prov v.42"]').trigger("click");
     const menu = wrapper.find('[role="menu"]');
     expect(menu.exists()).toBe(true);
     expect(menu.text()).toContain("Ladda ned");
     expect(menu.text()).toContain("Ta bort");
+  });
+
+  it.each(["manage", "picker"] as const)("names each file menu in %s mode and opens the matching row", async (mode) => {
+    if (!vaultMocks.refs) throw new Error("Vault refs were not initialized.");
+    const first = examFile();
+    const second = savedExport("file-second", 'Svenska & engelska "omprov".docx');
+    first.exports = [savedExport("export-qti", "Prov v.42-qti.zip")];
+    vaultMocks.refs.files.value = [first, second];
+
+    const wrapper = mountPanel(mode);
+
+    for (const file of [first, second]) {
+      const name = `Filåtgärder för ${file.name}`;
+      const trigger = wrapper.findAll("button").find((button) => button.attributes("aria-label") === name);
+      expect(trigger, `Menu trigger for ${file.name}`).toBeDefined();
+      await trigger!.trigger("click");
+
+      const menu = wrapper.get('[role="menu"]');
+      expect(menu.attributes("aria-label")).toBe(name);
+      expect(trigger!.attributes("aria-controls")).toBe(menu.attributes("id"));
+      expect(trigger!.attributes("aria-expanded")).toBe("true");
+      await menu.findAll('[role="menuitem"]')[0]!.trigger("click");
+      expect(apiMocks.apiFetchBlob).toHaveBeenLastCalledWith(`/api/v1/vault/files/${file.id}/download`);
+    }
+
+    if (mode === "manage") {
+      await wrapper.get('button[aria-label="Ladda ned Prov v.42-qti.zip"]').trigger("click");
+      expect(apiMocks.apiFetchBlob).toHaveBeenLastCalledWith("/api/v1/vault/files/export-qti/download");
+    }
   });
 
   it("does not select the exam file when a saved export row is used", async () => {

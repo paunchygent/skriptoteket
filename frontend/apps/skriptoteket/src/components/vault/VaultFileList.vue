@@ -179,7 +179,7 @@ function formatDate(value: string | null | undefined): string {
               :disabled="isMutating"
               :aria-expanded="openMenuForFileId === file.id"
               :aria-controls="`vault-file-actions-${file.id}`"
-              aria-label="Filåtgärder"
+              :aria-label="`Filåtgärder för ${file.name}`"
               @click.stop="emit('toggle-menu', file.id)"
             >
               <IconMoreVertical :size="16" />
@@ -191,7 +191,7 @@ function formatDate(value: string | null | undefined): string {
                 :id="`vault-file-actions-${file.id}`"
                 class="absolute right-0 mt-2 w-48 border border-navy bg-modal shadow-md z-50"
                 role="menu"
-                aria-label="Filåtgärder"
+                :aria-label="`Filåtgärder för ${file.name}`"
                 @click.stop
               >
                 <button
