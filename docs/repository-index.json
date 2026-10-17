@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6e8cc4192d08f1df74e7bcfb32dfc67e79322a546db3bbf561a7546cc36443b5",
+  "source_set_digest": "004eff4d28fc56442dd0fab3e74a7a58d1f47d1a119cbabea0c4df59777de35e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5780,7 +5780,7 @@
       "type": "task",
       "title": "Adopt the shared action buttons",
       "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5791,7 +5791,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the rereview of c37b4718 and the review of the btn-* guard follow-up 66a7c2c2 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-01-03/); merged and pushed to main 2017d223 and d6b537c1 on huleedu-integrated 0.1.26 (TASK-SKILL-REP-0324 done). The Mac parent's staging walk on 1c133433 on 2026-10-17 passed at 1440, 768 and 375 widths (evidence/staging-walk-batch1-1c133433/walk.md), and the parent authorized closure."
       }
     },
     {

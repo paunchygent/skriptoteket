@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-27'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) approved the rereview of c37b4718 and the review of the btn-* guard follow-up 66a7c2c2 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-01-03/); merged and pushed to main 2017d223 and d6b537c1 on huleedu-integrated 0.1.26 (TASK-SKILL-REP-0324 done). The Mac parent's staging walk on 1c133433 on 2026-10-17 passed at 1440, 768 and 375 widths (evidence/staging-walk-batch1-1c133433/walk.md), and the parent authorized closure.
 task_kind: story
 acceptance_criteria:
   - action-buttons is adopted through sync, main.css carries no .btn-* rules, and every button class renders from the package file

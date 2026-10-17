@@ -64,9 +64,9 @@
   merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
   `done` added segmented-toggle keyboard operation; Sol rereview approved
   `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`); `done` after
-  the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). Batch 1 (40-01-03, 40-03-01,
-  40-03-03) on main 2017d223, staging rebuilt there; next: the Mac parent's
-  combined walk (needs the user's proof-admin sign-in). 40-03-05 and 40-03-06
+  the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `done` (walk
+  passed on 1c133433). 40-03-01 and 40-03-03 on main; walk repairs in progress
+  (Hemma Sol pairs), then a parent re-walk. 40-03-05 and 40-03-06
   (rereviews approved) merged to main for a Mac parent walk; 40-03-04 waits for
   huleedu-integrated 0.1.27 (TASK-SKILL-REP-0325, user 2026-10-17) and its F7 split. Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
   (prototype approved by the user 2026-10-17, decisions T6-T29,
