@@ -108,9 +108,6 @@ function closeModal(): void {
             v-model="formError"
             tone="failure"
             dismissible
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
           />
 
           <div class="mt-6 space-y-5">
@@ -166,9 +163,6 @@ function closeModal(): void {
                 :model-value="importError"
                 tone="failure"
                 dismissible
-                role="alert"
-                aria-live="assertive"
-                aria-atomic="true"
                 @update:model-value="updateImportError"
               />
 

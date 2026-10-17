@@ -146,14 +146,12 @@ const {
       v-else-if="bootstrapError"
       :model-value="bootstrapError"
       tone="failure"
-      role="alert"
     />
 
     <SystemMessage
       v-else-if="plannerActionError"
       :model-value="plannerActionError"
       tone="failure"
-      role="alert"
     />
 
     <div
