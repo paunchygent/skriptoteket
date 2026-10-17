@@ -40,7 +40,7 @@ const mounted: ViewWrapper[] = [];
 function documentWithTotals(printed: number | null, points: (number | null)[]): NativeExamDocument {
   return {
     ...buildDocument(),
-    header: { course_hint: "Svenska 2", printed_total: printed },
+    header: { course_hint: "Svenska 2", printed_total: printed, tags: [] },
     items: points.map((value, index) => ({ ...buildFreeTextItem(index + 1), points: value })),
   };
 }

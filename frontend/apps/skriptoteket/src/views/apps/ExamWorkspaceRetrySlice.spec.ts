@@ -64,6 +64,7 @@ function retrySource(labelKind: NativeExamItemKind): NonNullable<NativeExamItem[
 function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
+    import_record: null,
     facit_text: null,
     criteria: [],
     printed_label: null,

@@ -13,14 +13,12 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamGap } from "../../../api/examWorkspace";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 
 function gapWithAutomaticValues(): NativeExamGap {
-  return {
-    accepted_values: ["hundra"],
+  return buildGap("gap_001", ["hundra"], {
     automatic_values: ["hundraa", "hundar"],
-    excluded_automatic_values: [],
-    gap_id: "gap_001",
-  };
+  });
 }
 
 function mountPopover(gap: NativeExamGap | null, gapCount = 2) {
@@ -68,12 +66,7 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
   });
 
   it("shows no automatic section when the gap has none", () => {
-    const wrapper = mountPopover({
-      accepted_values: ["100"],
-      automatic_values: [],
-      excluded_automatic_values: [],
-      gap_id: "gap_001",
-    });
+    const wrapper = mountPopover(buildGap("gap_001", ["100"]));
 
     expect(wrapper.find('[data-test="exam-workspace-gap-automatic-values"]').exists()).toBe(false);
     wrapper.unmount();

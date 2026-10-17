@@ -27,6 +27,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
@@ -73,8 +74,8 @@ function buildDocument(
     origin: { kind: "docx_import" },
     parents: [],
     revision,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "Prov",
     ...overrides,
   };

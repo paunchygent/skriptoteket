@@ -91,6 +91,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },

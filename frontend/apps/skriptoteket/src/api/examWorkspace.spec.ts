@@ -10,6 +10,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
+import { buildFreeTextItem } from "../test/examWorkspaceFixtures";
 import { apiFetchBlobResponse, apiGet, apiPost } from "./client";
 import {
   downloadExamWorkspaceExport,
@@ -47,32 +48,9 @@ function buildDocument(revision: number): NativeExamDocument {
       { heading_level: null, segments: [{ kind: "text", marks: [], text: "Besvara alla frågor." }] },
     ],
     items: [
-      {
-        ai_suggestion: null,
-        facit_text: null,
-        criteria: [],
-        printed_label: null,
-        retry_source: null,
-        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      buildFreeTextItem(1, {
         body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv vattnets kretslopp." }] }],
-        choices: [],
-        gaps: [],
-        match_left: [],
-        match_right: [],
-        item_id: "item_001",
-        kind: "free_text",
-        points: 2,
-        points_estimated: false,
-        review: {
-          confidence: 0.9,
-          parse_origin: "deterministic",
-          reasons: [],
-          state: "review_complete",
-        },
-        sequence: 1,
-        source_anchor: null,
-        tick_points: null,
-      },
+      }),
     ],
     origin: {
       extractor_version: "docx-extractor-1",
@@ -82,8 +60,8 @@ function buildDocument(revision: number): NativeExamDocument {
     },
     parents: [],
     revision,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "NO-prov HT25",
   };
 }

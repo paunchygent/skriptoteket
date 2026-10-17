@@ -57,8 +57,8 @@ export function buildResponse(
     },
     parents: [],
     revision: 1,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "English 1",
   };
   return {

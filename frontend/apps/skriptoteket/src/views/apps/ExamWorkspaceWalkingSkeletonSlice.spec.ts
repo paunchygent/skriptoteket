@@ -85,8 +85,8 @@ function buildTwoGapResponse(
                 },
               ],
               gaps: [
-                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001", options: [], correct_option_id: null },
+                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002", options: [], correct_option_id: null },
               ],
             }
           : item,

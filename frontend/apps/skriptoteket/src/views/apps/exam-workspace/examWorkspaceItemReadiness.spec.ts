@@ -18,6 +18,7 @@ import {
   examWorkspaceItemReadiness,
   examWorkspaceReadinessByItemId,
 } from "./examWorkspaceItemReadiness";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import {
   CRITERIA_POINTS_MISMATCH_GUIDANCE,
   INVALID_CRITERION_POINTS_GUIDANCE,
@@ -34,6 +35,7 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
@@ -153,8 +155,8 @@ describe("examWorkspaceItemReadiness", () => {
     const item = buildChoiceItem({
       choices: [],
       gaps: [
-        { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-        { accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+        buildGap("gap_001", ["100"]),
+        buildGap("gap_002"),
       ],
       kind: "gap_fill",
       match_left: [],
@@ -198,7 +200,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     const ready = buildChoiceItem();
     const partial = buildChoiceItem({
       choices: [],
-      gaps: [{ accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" }],
+      gaps: [buildGap("gap_001")],
       item_id: "item_002",
       kind: "gap_fill",
       match_left: [],

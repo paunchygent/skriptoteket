@@ -14,6 +14,7 @@
 import { describe, expect, it } from "vitest";
 
 import { PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildGapItem, mountEditor, paragraph } from "./ExamWorkspaceBodyEditor.specSupport";
 
 describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
@@ -163,7 +164,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await wrapper.setProps({
       item: {
         ...item,
-        gaps: [item.gaps[0]!, { accepted_values: ["0", "noll"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" }],
+        gaps: [item.gaps[0]!, buildGap("gap_002", ["0", "noll"])],
       },
     });
 
