@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "cd7a00433c2f3fe30b907523c3a366c025eac0a1914435576ed8fa4f820486a9",
+  "source_set_digest": "a562c5e69a6ab4ca0e21804b56369c1c6d3909374b45e94fd08e3248e47d83e3",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5470,6 +5470,25 @@
         "decided_at": "2026-10-17",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Implementation review 1 approved with no findings (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd on Hemma worktree skriptoteket-task-skript-39-06-07-remote, evidence/reviews/TASK-SKRIPT-39-06-07/review-1.md, commit 4341e0b3). Proof at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (heading-only delete keeps all 24 items and points, history step before the delete keeps the parent, with-children delete, last-child delete returns removed_parent_id, QTI export 200, Exam.net exam 5345261 shows the former Del 2 questions standing alone)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-08",
+      "type": "task",
+      "title": "Teachers author ordering questions that export to Exam.net as all-or-nothing line matching",
+      "path": "docs/backlog/tasks/task-skript-39-06-08-teachers-author-ordering-questions-that-export-to-exam-net-as-all-or-nothing-line-matching.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

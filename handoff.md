@@ -59,15 +59,15 @@
   review plus unit tests. Wave 2 is closed (Recent).
   2026-10-18 on main: TASK-SKRIPT-40-04-03 `done` (merge 10eef9fd, staging walk
   passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
-  `done` (user: build ordering, new 39-06 task with P3/P21 still to plan); tutorial
+  `done`; ordering TASK-SKRIPT-39-06-08 `ready` (root 01a14c27, D1-D7 + P3/P21); tutorial
   video focus fix 39230851.
   TASK-SKRIPT-39-04-11 on `codex/task-skript-39-04-11-remote` (Hemma, lead
   `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): review-1 changes_requested
   (two high, two medium); lead repairing all four (user 2026-10-18: headings may
   carry the exam total, section-start lines never do). Next: rereview by `15716f77`,
   merge, one Svenska 2 staging import.
-  Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); ordering
-  task planning; stories 39-04, 39-06, 39-07 await closeout.
+  Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
+  39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Follow-ups: backend for the export filename field; W14 dropdown option editor.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
