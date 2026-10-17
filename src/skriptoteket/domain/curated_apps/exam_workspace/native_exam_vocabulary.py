@@ -32,6 +32,11 @@ class NativeExamItemKind(StrEnum):
     GAP_FILL = "gap_fill"
     INLINE_CHOICE = "inline_choice"
     MATCHING = "matching"
+    ORDERING = "ordering"
+
+
+IMPORTABLE_ITEM_KINDS = frozenset(NativeExamItemKind) - {NativeExamItemKind.ORDERING}
+"""The kinds an import or a retry may produce; teachers author ordering only (39-06-08 D3)."""
 
 
 class NativeParseOrigin(StrEnum):
