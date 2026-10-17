@@ -26,7 +26,7 @@ describe("PlannerPhoneOverviewSetupPanel", () => {
     expect(actions).toHaveLength(6);
     for (const action of actions) {
       expect(action.props("size")).toBe("touch");
-      expect(action.text()).toBeTruthy();
+      expect(action.text() || action.attributes("aria-label")).toBeTruthy();
     }
   });
 

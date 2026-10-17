@@ -237,7 +237,7 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
               <button
                 v-if="showRevokeAction"
                 type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-critical/30 bg-canvas/40 text-critical transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-transparent bg-transparent text-critical md:border-critical/30 md:bg-canvas/40 transition-colors hover:bg-critical/5 disabled:cursor-not-allowed disabled:opacity-40 md:h-[26px] md:w-auto md:gap-1 md:px-2 md:text-[10px] md:font-semibold md:uppercase md:tracking-[var(--huleedu-tracking-label)]"
                 :disabled="revokingShareId === share.id"
                 :data-test="`planner-share-revoke-${share.id}`"
                 title="Återkalla länken"

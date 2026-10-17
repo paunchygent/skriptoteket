@@ -176,7 +176,7 @@ function isEmptyText(criterion: NativeExamCriterion): boolean {
       >
       <button
         type="button"
-        class="inline-flex h-10 w-10 items-center justify-center border border-navy/35 bg-panel text-navy hover:bg-canvas disabled:opacity-50"
+        class="inline-flex h-10 w-10 items-center justify-center border border-transparent text-burgundy hover:bg-burgundy/5 disabled:opacity-50"
         :disabled="disabled"
         :title="`Ta bort kriterium ${index + 1}`"
         :aria-label="`Ta bort kriterium ${index + 1}`"

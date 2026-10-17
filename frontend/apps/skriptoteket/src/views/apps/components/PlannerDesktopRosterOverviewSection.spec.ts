@@ -33,7 +33,8 @@ describe("PlannerDesktopRosterOverviewSection", () => {
     });
 
     expect(wrapper.text()).toContain("Ny klass");
-    expect(wrapper.text()).toContain("Redigera");
+    expect(wrapper.find('[aria-label="Ändra klasslistan"]').exists()).toBe(true);
+    expect(wrapper.find('[aria-label="Radera klasslistan"]').exists()).toBe(true);
     expect(wrapper.text()).not.toContain("Importera från fil");
   });
 

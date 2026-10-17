@@ -162,7 +162,8 @@ function selectTemplate(event: Event): void {
       >
         <UiDenseActionButton
           size="touch"
-          label="Ändra"
+          label="Ändra klasslistan"
+          icon-only
           :data-test="editRosterTestId"
           :disabled="isRosterEditDisabled"
           :title="rosterEditDisabledReason ?? undefined"
@@ -195,7 +196,8 @@ function selectTemplate(event: Event): void {
         <UiDenseActionButton
           size="touch"
           tone="danger"
-          label="Radera"
+          label="Radera klasslistan"
+          icon-only
           :data-test="deleteRosterTestId"
           :disabled="isRosterDeleteDisabled"
           :title="rosterDeleteDisabledReason ?? undefined"
@@ -251,7 +253,8 @@ function selectTemplate(event: Event): void {
       >
         <UiDenseActionButton
           size="touch"
-          label="Ändra"
+          label="Ändra klassrummet"
+          icon-only
           :data-test="editTemplateTestId"
           :disabled="isTemplateEditDisabled"
           :title="templateEditDisabledReason ?? undefined"
@@ -284,7 +287,8 @@ function selectTemplate(event: Event): void {
         <UiDenseActionButton
           size="touch"
           tone="danger"
-          label="Radera"
+          label="Radera klassrummet"
+          icon-only
           :data-test="deleteTemplateTestId"
           :disabled="isTemplateDeleteDisabled"
           :title="templateDeleteDisabledReason ?? undefined"

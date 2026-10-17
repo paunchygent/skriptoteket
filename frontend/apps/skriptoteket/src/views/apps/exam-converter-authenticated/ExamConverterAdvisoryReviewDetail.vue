@@ -299,6 +299,8 @@ watch(
         class="btn-ghost min-w-0 shadow-none"
         :disabled="disabled"
         :data-test="editing ? 'exam-converter-cancel-advisory-edit-bottom-action' : 'exam-converter-edit-advisory-answer-key-bottom-action'"
+        :aria-label="editing ? 'Avbryt ändringen' : 'Ändra facit'"
+        :title="editing ? 'Avbryt ändringen' : 'Ändra facit'"
         @click="editing ? cancelEdit() : emit('edit')"
       >
         <IconX
@@ -311,7 +313,6 @@ watch(
           :size="16"
           class="h-4 w-4 shrink-0"
         />
-        {{ editing ? "Avbryt" : "Ändra" }}
       </button>
     </footer>
   </article>

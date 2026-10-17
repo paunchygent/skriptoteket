@@ -1,0 +1,79 @@
+---
+type: task
+id: TASK-SKRIPT-40-03-10
+title: Adopt huleedu-integrated 0.1.30 and make delete and edit actions glyph-only
+  across Skriptoteket
+repository: skriptoteket
+owners:
+- kind: service
+  id: skriptoteket
+created: '2026-10-17'
+status: in_progress
+closeout_review:
+  record: inline
+  status: not_started
+task_kind: story
+acceptance_criteria:
+  - Every delete glyph action in Skriptoteket shows the glyph without a border or background square, except the worded Radera commits in the two planner modal footers
+  - Every edit action in Skriptoteket is the edit glyph alone, with its tooltip and accessible name saying what it edits, and a toggle shows its open form through aria-expanded
+  - The Mina kurser school-form checkboxes sit with clear space below the Skolformer label and above the course search box
+story: ST-SKRIPT-40-03
+backlog_document_profile: contract-derived
+---
+
+## Implementation Contract
+
+User decisions 2026-10-17, made while reviewing the profile page on staging:
+
+- Delete glyphs never sit in a bordered square; the glyph alone is visible
+  enough. This applies everywhere.
+- The `Ändra` word beside the edit glyph is pointless; an edit action is the
+  glyph alone, everywhere in Skriptoteket.
+- The Mina kurser school-form checkboxes are too cramped against the
+  `Skolformer` label and the search box below.
+
+This task delivers:
+
+- Adoption of huleedu-integrated 0.1.30 (TASK-SKILL-REP-0328), where an
+  icon-only `danger` action has a transparent border and background.
+- Delete actions: the document converter's remove-file buttons take the
+  `danger` tone; the exam-workspace criterion remove button and the planner
+  share-link revoke button (icon-only on phones) lose their border; the
+  Klassrumskartan overview `Radera` buttons (desktop and phone) become icon-only
+  `Radera klasslistan` / `Radera klassrummet`.
+- Edit actions: the profile section toggles become glyph-only with
+  `aria-expanded`; the Klassrumskartan overview edit buttons become icon-only
+  `Ändra klasslistan` / `Ändra klassrummet`; the exam converter's advisory edit
+  button becomes glyph-only (`Ändra facit`, `Avbryt ändringen`).
+- Mina kurser: the fieldset no longer cancels the section's vertical gap, and
+  the checkbox row gets more space below the label.
+- `ProfileAiSettingsPanel.vue`, which nothing imports, is deleted.
+
+## Contract Inputs
+
+- TASK-SKILL-REP-0328 (huleedu-integrated 0.1.30 and the recorded decisions in
+  `huleedu-ui-design`).
+
+## Core Vertical And Performance
+
+Presentation only; no behaviour or API changes.
+
+## Validation
+
+- Focused Vitest for the touched areas, frontend typecheck, ESLint, build and
+  `pdm run design-system-validate`.
+- Independent review covering this task and TASK-SKILL-REP-0328.
+- A look at the profile page on staging after the merge.
+
+## Stop Conditions
+
+- None beyond the shared review gates.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term |
+| --- | --------------------- |
+| D1  | Delete glyph actions have no border or background square anywhere (user 2026-10-17). The worded `Radera` buttons in the two planner modal footers stay, because they commit a destructive action beside Spara and Avbryt. |
+| D2  | Edit actions are the edit glyph alone, everywhere in Skriptoteket (user 2026-10-17). |
+| D3  | The Mina kurser school-form checkboxes get more, but not much more, space above and below (user 2026-10-17). |
+| D4  | Non-delete icon-only buttons keep their current border until the user decides otherwise. |

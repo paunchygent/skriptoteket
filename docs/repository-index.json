@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e3fc0b2167fb831bf6a5c86336cdc9ffe0eaa6500a2fbc15506d05b7e2c7787c",
+  "source_set_digest": "db4428919c62ab654b5667b6628fedf1df9f51f80fda9e451e6d56d1f3db81b0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6087,6 +6087,25 @@
         "decided_at": "2026-10-17",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-09/: review afcdc94a (changes requested, F1 codemap rule-045 authority, F2 dead runbook paths), rereview a9a1bca3 (F2 cleared, F1 open on proposed ADR-0017), rereview 707c6992 approved. Shared-skill half merged to skill-repository main 4139f6d9. Accepted exceptions, accepted by the parent: 16 historical docs keep their rule references, the generated index quotes the task title, the .gitignore entry for the ignored rule-080 file stays until the user deletes that file, and the private rule-094 server values stay withheld as a user decision. The parent authorized closure."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-10",
+      "type": "task",
+      "title": "Adopt huleedu-integrated 0.1.30 and make delete and edit actions glyph-only across Skriptoteket",
+      "path": "docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

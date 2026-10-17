@@ -141,14 +141,16 @@ watch(() => props.profile, () => {
         <h3 class="section-title">Personlig information</h3>
         <button
           type="button"
-          class="btn-inline-edit"
+          class="btn-inline-edit btn-inline-edit--glyph"
+          aria-label="Ändra personlig information"
+          title="Ändra personlig information"
+          :aria-expanded="isEditingPersonal"
           @click="toggleEditingPersonal"
         >
           <UiGlyph
             meaning="edit"
             :size="12"
           />
-          {{ isEditingPersonal ? 'Stäng' : 'Ändra' }}
         </button>
       </div>
 
@@ -293,14 +295,16 @@ watch(() => props.profile, () => {
         <h3 class="section-title">AI-inställningar</h3>
         <button
           type="button"
-          class="btn-inline-edit"
+          class="btn-inline-edit btn-inline-edit--glyph"
+          aria-label="Ändra AI-inställningar"
+          title="Ändra AI-inställningar"
+          :aria-expanded="isEditingAi"
           @click="isEditingAi = !isEditingAi"
         >
           <UiGlyph
             meaning="edit"
             :size="12"
           />
-          {{ isEditingAi ? 'Stäng' : 'Ändra' }}
         </button>
       </div>
 
