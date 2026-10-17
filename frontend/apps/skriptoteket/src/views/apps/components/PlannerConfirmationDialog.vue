@@ -60,9 +60,6 @@ const emit = defineEmits<{
           :model-value="errorMessage ?? null"
           tone="failure"
           dismissible
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
           @update:model-value="emit('dismiss-error')"
         />
 

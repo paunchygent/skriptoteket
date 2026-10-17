@@ -19,12 +19,14 @@ const form = defineModel<ReagentPrepChefFormState>("form", { required: true });
 const selectedChemicalKey = defineModel<string>("selectedChemicalKey", { required: true });
 const chemicalQuery = defineModel<string>("chemicalQuery", { required: true });
 const suggestionsDismissed = ref(false);
+const formulaInput = ref<HTMLInputElement | null>(null);
 
 watch(chemicalQuery, () => { suggestionsDismissed.value = false; });
 
 function selectChemical(item: ReagentPrepChefChemicalOption): void {
   suggestionsDismissed.value = true;
   emit("selectChemical", item);
+  formulaInput.value?.focus();
 }
 
 function chemicalLabel(item: ReagentPrepChefChemicalOption): string {
@@ -89,10 +91,7 @@ const emit = defineEmits<{
                       class="w-full text-left px-3 py-2 hover:bg-canvas transition-colors"
                       @click="selectChemical(item)"
                     >
-                      <div class="flex items-baseline justify-between gap-2">
-                        <span class="text-sm font-semibold text-navy">{{ item.display_name }}</span>
-                        <span class="font-mono text-xs text-navy/60">{{ item.key }}</span>
-                      </div>
+                      <span class="text-sm font-semibold text-navy">{{ chemicalLabel(item) }}</span>
                     </button>
                   </li>
                 </ul>
@@ -126,6 +125,7 @@ const emit = defineEmits<{
           >Kemisk formel</label>
           <input
             id="rpc-formula"
+            ref="formulaInput"
             v-model="form.chemicalFormula"
             type="text"
             placeholder="CuSO4·5H2O"
