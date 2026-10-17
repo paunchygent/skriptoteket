@@ -8,7 +8,7 @@
  */
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 
-import { IconHelp, IconX } from "../icons";
+import { UiGlyph } from "../ui/shared";
 import UiDenseIconButton from "../ui/shared/components/UiDenseIconButton.vue";
 
 const props = withDefaults(
@@ -91,7 +91,10 @@ onUnmounted(() => {
       :aria-controls="panelId"
       @click.stop="toggle"
     >
-      <IconHelp :size="16" />
+      <UiGlyph
+        meaning="help"
+        :size="16"
+      />
     </button>
 
     <Transition name="micro-help-popover">
@@ -108,7 +111,10 @@ onUnmounted(() => {
           label="Stäng hjälp"
           @click="close()"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+          />
         </UiDenseIconButton>
 
         <span

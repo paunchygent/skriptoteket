@@ -11,7 +11,6 @@ export { default as IconCheck } from "./IconCheck.vue";
 export { default as IconClipboardList } from "./IconClipboardList.vue";
 export { default as IconEdit } from "./IconEdit.vue";
 export { default as IconGroupsWorkspace } from "./IconGroupsWorkspace.vue";
-export { default as IconHelp } from "./IconHelp.vue";
 export { default as IconInfo } from "./IconInfo.vue";
 export { default as IconKeepApart } from "./IconKeepApart.vue";
 export { default as IconKeepNear } from "./IconKeepNear.vue";
