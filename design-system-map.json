@@ -1,6 +1,6 @@
 {
   "exports": {
-    "action-buttons": null,
+    "action-buttons": "frontend/apps/skriptoteket/src/styles/action-buttons.css",
     "auth-lifecycle": null,
     "brand": null,
     "dense-tool-primitives": "frontend/apps/skriptoteket/src/components/ui/shared/denseToolPrimitives.ts",

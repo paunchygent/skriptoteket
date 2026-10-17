@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7c76ea23249f419a0247db55f6f782de29028a07724f55aed87d72414c009918",
+  "source_set_digest": "756e8d9fbfdca67db186b5008e489d877b904b1057fdce0dd5dfd6c6143792b6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5757,7 +5757,7 @@
       "type": "task",
       "title": "Adopt the shared action buttons",
       "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
