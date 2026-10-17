@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
 
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type MaintainerSummary = components["schemas"]["MaintainerSummary"];
 type ApiRole = components["schemas"]["Role"];
@@ -85,7 +85,7 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
     :class="[
       isPanel
         ? 'relative w-full panel-inset flex flex-col min-h-0'
-        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-md flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
     :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
@@ -135,7 +135,11 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
       <SystemMessage
         v-if="error"
         :model-value="error"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         @update:model-value="emit('update:error', $event)"
       />
 

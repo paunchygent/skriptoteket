@@ -37,7 +37,7 @@ function onInput(event: Event): void {
         'w-full bg-white text-navy placeholder:text-navy/40',
         isCompact
           ? 'border border-navy/30 px-2.5 py-1.5 text-[11px] shadow-none leading-snug'
-          : 'border border-navy px-3 py-2 shadow-brutal-sm',
+          : 'border border-navy px-3 py-2',
       ]"
       @input="onInput"
     />

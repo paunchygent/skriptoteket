@@ -10,6 +10,7 @@ import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { UiSegmentedToggle } from "../../../components/ui";
 import PlannerRulesMapCanvas from "./PlannerRulesMapCanvas.vue";
 
 class ResizeObserverMock {
@@ -78,13 +79,8 @@ describe("PlannerRulesMapCanvas", () => {
     expect(wrapper.findAll('button[data-test^="rules-unplaced-student-"]')).toHaveLength(2);
     expect(wrapper.get('[data-test="rules-map-view-planning"]').text()).toContain("Planeringskarta");
     expect(wrapper.get('[data-test="rules-map-view-seating"]').text()).toContain("Klassrumsvy");
-    expect(wrapper.get('[data-test="rules-map-view-planning"]').attributes("style")).toContain(
-      "min-width:",
-    );
-    expect(wrapper.get('[data-test="rules-map-view-seating"]').attributes("style")).toContain(
-      "min-width:",
-    );
-    expect(wrapper.findAll('[data-ui-option="segmented-toggle-option"] button').map((button) =>
+    expect(wrapper.findComponent(UiSegmentedToggle).props("equalizeOptionWidth")).toBe(true);
+    expect(wrapper.findAll('[data-ui="segmented-toggle"] [role="radio"]').map((button) =>
       button.text(),
     )).toEqual(["Klassrumsvy", "Planeringskarta"]);
     expect(wrapper.get('[data-test="rules-unplaced-student-student-1"]').text()).toContain(

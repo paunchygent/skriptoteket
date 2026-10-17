@@ -1,10 +1,12 @@
 <script setup lang="ts">
 /**
- * Shared dense action button for planner and editor toolbars.
+ * Purpose:
+ *     Provide the shared dense action button primitive.
  *
  * Relationships:
- * - base primitive for icon-first, icon-led, and compact text-visible tool actions
- * - consumed by `UiDenseIconButton`, `UiDenseMenuButton`, and local toolbar/menu wrappers
+ *     - Uses denseActionButtonClass from the shared primitive contract.
+ *     - Renders UiDenseSpinner while busy or when reserving the busy slot.
+ *     - Forms the base for icon, menu, and compact toolbar actions.
  */
 
 import { computed, ref, useAttrs } from "vue";
@@ -14,12 +16,8 @@ import {
   type DenseActionGroupPosition,
   type DenseActionSize,
   type DenseActionTone,
-} from "./denseToolPrimitives";
+} from "../denseToolPrimitives";
 import UiDenseSpinner from "./UiDenseSpinner.vue";
-
-defineOptions({
-  inheritAttrs: false,
-});
 
 const props = withDefaults(
   defineProps<{
@@ -57,18 +55,22 @@ const props = withDefaults(
   },
 );
 
-const attrs = useAttrs();
-const buttonRef = ref<HTMLButtonElement | null>(null);
+defineOptions({
+  inheritAttrs: false,
+});
 
-const buttonClass = computed(() => {
-  return denseActionButtonClass({
+const attrs = useAttrs();
+const buttonRef = ref<null | { focus: () => void }>(null);
+
+const buttonClass = computed(() =>
+  denseActionButtonClass({
     tone: props.tone,
     size: props.size,
     active: props.active || Boolean(props.expanded),
     iconOnly: props.iconOnly,
     groupPosition: props.groupPosition,
-  });
-});
+  }),
+);
 
 const resolvedAriaLabel = computed(() => {
   if (props.busy && props.busyLabel) {
@@ -134,7 +136,7 @@ defineExpose({
       class="shrink-0"
       aria-hidden="true"
     >
-      <slot name="leading" />
+      <slot name="leading"></slot>
     </span>
     <span v-if="!iconOnly">{{ label }}</span>
     <span
@@ -142,7 +144,7 @@ defineExpose({
       class="shrink-0"
       aria-hidden="true"
     >
-      <slot name="trailing" />
+      <slot name="trailing"></slot>
     </span>
   </button>
 </template>

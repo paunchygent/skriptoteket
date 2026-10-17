@@ -168,7 +168,6 @@ onMounted(async () => {
                 Öppna Klassrumskartan
                 <IconArrow
                   :size="18"
-                  class="transition-transform duration-150 group-hover:translate-x-1"
                 />
               </RouterLink>
             </div>
@@ -255,7 +254,7 @@ onMounted(async () => {
                   </div>
                   <IconArrow
                     :size="16"
-                    class="mt-1 shrink-0 text-navy/55 transition-transform duration-150 group-hover:translate-x-1 group-hover:text-action"
+                    class="mt-1 shrink-0 text-navy/55 transition-colors duration-150 group-hover:text-action"
                     aria-hidden="true"
                   />
                 </RouterLink>

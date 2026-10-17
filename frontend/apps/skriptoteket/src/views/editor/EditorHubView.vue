@@ -5,7 +5,7 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import { apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
-import SystemMessage from "../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../components/ui";
 import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
 import { useAdminToolsIndex } from "../../composables/admin/useAdminToolsIndex";
 import {
@@ -299,7 +299,7 @@ watch(
 
           <div
             v-if="isSearchOpen && toolSearch.normalizedQuery"
-            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] border border-navy bg-panel shadow-brutal-sm z-[var(--huleedu-z-tooltip)]"
+            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] border border-navy bg-panel shadow-md z-[var(--huleedu-z-tooltip)]"
           >
             <div class="p-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]">
               <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
@@ -375,12 +375,16 @@ watch(
 
     <SystemMessage
       v-model="redirectError"
-      variant="warning"
+      tone="warning"
+      dismissible
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     />
 
     <div
       v-if="isRedirecting"
-      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy bg-panel text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Öppnar senaste verktyg…</span>
@@ -391,7 +395,7 @@ watch(
       class="grid gap-[var(--huleedu-space-6)] lg:grid-cols-2"
     >
       <section
-        class="border border-navy bg-panel shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="border border-navy bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -435,7 +439,7 @@ watch(
       </section>
 
       <section
-        class="border border-navy bg-panel shadow-brutal-sm p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="border border-navy bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -458,7 +462,11 @@ watch(
 
         <SystemMessage
           v-model="myToolsError"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
         />
 
         <div

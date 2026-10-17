@@ -12,7 +12,7 @@ import { computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
-import SystemMessage from "../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../components/ui";
 import CreateRosterModal from "./components/CreateRosterModal.vue";
 import PlannerConfirmationDialog from "./components/PlannerConfirmationDialog.vue";
 import PlannerClassWorkspace from "./components/PlannerClassWorkspace.vue";
@@ -132,7 +132,10 @@ async function startOverviewSeatingShareLink(): Promise<void> {
       id="classroom-planner-public-guest-message"
       :dismissible="false"
       model-value="guest-message"
-      variant="info"
+      tone="info"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       data-test="public-guest-system-message"
     >
       Vissa funktioner kräver att du registrerar ett konto. Tryck
@@ -147,14 +150,14 @@ async function startOverviewSeatingShareLink(): Promise<void> {
 
     <div
       v-if="guestController.isBootstrapping.value"
-      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
+      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
     >
       Laddar planeringsmiljön...
     </div>
 
     <section
       v-else-if="guestController.guestAuthoringClosed.value"
-      class="border border-navy bg-panel px-4 py-8 shadow-brutal-sm md:px-6 md:py-10"
+      class="border border-navy bg-panel px-4 py-8 md:px-6 md:py-10"
       data-test="public-guest-authoring-closed-state"
     >
       <div class="mx-auto flex max-w-3xl flex-col gap-4 text-center text-navy">
@@ -195,14 +198,20 @@ async function startOverviewSeatingShareLink(): Promise<void> {
       v-else-if="guestController.bootstrapError.value"
       :dismissible="false"
       :model-value="guestController.bootstrapError.value"
-      variant="error"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <SystemMessage
       v-else-if="guestController.plannerActionError.value"
       :dismissible="false"
       :model-value="guestController.plannerActionError.value"
-      variant="error"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <div

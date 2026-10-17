@@ -9,7 +9,8 @@ import noTemplateRefValue from "../../eslint-rules/no-template-ref-value.js";
 
 export default tseslint.config(
   {
-    ignores: ["*.d.ts", "**/coverage/**", "**/dist/**"],
+    // components/ui/shared holds synced huleedu-integrated bytes; design-system-validate owns them.
+    ignores: ["*.d.ts", "**/coverage/**", "**/dist/**", "src/components/ui/shared/**"],
   },
   {
     files: ["src/**/*.{ts,vue}"],

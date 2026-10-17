@@ -101,7 +101,6 @@ const primaryRecoveryPath = computed(() => {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--huleedu-sand) 45%, white) 0%, white 100%);
-  box-shadow: var(--huleedu-shadow-brutal);
 }
 
 .route-recovery__eyebrow {

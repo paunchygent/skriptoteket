@@ -1,10 +1,11 @@
 /**
- * Dense-tool primitive class contract for shared planner/editor controls.
+ * Purpose:
+ *     Define dense-tool primitive class builders for shared planner, editor,
+ *     and auth-support controls.
  *
  * Relationships:
- * - consumed by `UiDense*` components and toolbar/menu wrappers
- * - encodes the PR-0157 size tiers, disabled-state rules, and quiet dense-action styling
- * - freezes a hard small-radius corner language (`4px`) so dense controls stay blocky, not soft
+ *     - Consumed by shared UiDense* Vue components.
+ *     - Frozen by manifest primitive metadata for consumer drift checks.
  */
 
 export type DenseActionTone = "default" | "primary" | "secondary" | "danger";
@@ -12,7 +13,7 @@ export type DenseActionSize = "icon" | "utility";
 export type DenseActionGroupPosition = "single" | "start" | "middle" | "end";
 export type DenseStatusTone = "neutral" | "success" | "warning" | "error";
 
-type DenseActionClassOptions = {
+export type DenseActionClassOptions = {
   tone?: DenseActionTone;
   size?: DenseActionSize;
   active?: boolean;
@@ -20,35 +21,38 @@ type DenseActionClassOptions = {
   groupPosition?: DenseActionGroupPosition;
 };
 
-type DenseStatusPillClassOptions = {
+export type DenseStatusPillClassOptions = {
   tone?: DenseStatusTone;
   interactive?: boolean;
   active?: boolean;
 };
 
-type DenseActionValueClassOptions = {
+export type DenseActionValueClassOptions = {
   groupPosition?: DenseActionGroupPosition;
 };
 
 export const DENSE_MENU_ITEM_SELECTOR = '[role="menuitem"]:not([disabled])';
-
 export const DENSE_MENU_PANEL_CLASS =
-  "border border-navy bg-modal shadow-brutal-sm outline-none z-[var(--huleedu-z-tooltip)]";
+  "border border-navy bg-white shadow-[var(--huleedu-shadow-md)] outline-none z-[var(--huleedu-z-tooltip)]";
 export const DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]";
-export const DENSE_SEGMENTED_SHELL_CLASS = `${DENSE_ACTION_RADIUS_CLASS} border border-navy/15 bg-canvas/50 p-0.5`;
+export const DENSE_ICON_SIZE_CLASS = "h-9 w-9";
+export const DENSE_TEXT_HEIGHT_CLASS = "h-[28px]";
+export const DENSE_COMPACT_SEGMENT_HEIGHT_CLASS = "h-6";
+export const DENSE_MODAL_SURFACE_CLASS = "bg-modal";
+export const DENSE_PANEL_SURFACE_CLASS = "bg-panel";
+export const DENSE_PANEL_MUTED_SURFACE_CLASS = "bg-panel-muted";
+export const DENSE_SEGMENTED_SHELL_CLASS =
+  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/15 bg-canvas/50 p-0.5`;
 export const DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS =
   `${DENSE_ACTION_RADIUS_CLASS} border border-navy/20 bg-canvas/60 p-px`;
 export const DENSE_SEGMENTED_WORKSPACE_SHELL_CLASS =
-  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-panel-muted p-[2px]`;
-
+  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-white p-[2px]`;
 export const DENSE_MENU_ITEM_BASE_CLASS =
   "flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-snug transition-colors focus-visible:outline-none focus:bg-canvas hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50";
-
 export const DENSE_MENU_SECTION_LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-wide text-navy/60";
-
 export const DENSE_FORM_INPUT_CLASS =
-  `w-full h-[28px] ${DENSE_ACTION_RADIUS_CLASS} border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none`;
+  `w-full ${DENSE_TEXT_HEIGHT_CLASS} ${DENSE_ACTION_RADIUS_CLASS} border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none`;
 
 function groupPositionClass(position: DenseActionGroupPosition): string {
   switch (position) {
@@ -67,20 +71,20 @@ function toneClass(tone: DenseActionTone, active: boolean): string {
   switch (tone) {
     case "primary":
       return active
-        ? "border-action bg-action text-button-primary-text"
-        : "border-action bg-action text-button-primary-text hover:bg-action/90";
+        ? "border-navy bg-navy/90 text-canvas"
+        : "border-navy bg-navy text-canvas hover:bg-navy/90";
     case "secondary":
       return active
         ? "border-action bg-action/10 text-action"
         : "border-action/60 bg-canvas/40 text-action hover:border-action hover:bg-action/5";
     case "danger":
       return active
-        ? "border-critical/40 bg-critical/10 text-critical"
-        : "border-critical/30 bg-panel text-critical hover:bg-critical/5";
+        ? "border-burgundy/40 bg-burgundy/10 text-burgundy"
+        : "border-burgundy/30 bg-white text-burgundy hover:bg-burgundy/5";
     default:
       return active
-        ? "border-action/45 bg-action/10 text-action"
-        : "border-navy/20 bg-panel text-navy hover:bg-action/5";
+        ? "border-navy/25 bg-canvas text-navy"
+        : "border-navy/20 bg-white text-navy hover:bg-canvas/70";
   }
 }
 
@@ -119,11 +123,11 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
   } = options;
 
   const base =
-    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-1.5 border font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2 disabled:cursor-not-allowed";
   const sizeClass =
     size === "icon"
-      ? "h-9 w-9 p-0 text-[12px]"
-      : "h-[28px] px-2.5 py-1 text-[10px]";
+      ? `${DENSE_ICON_SIZE_CLASS} p-0 text-[12px]`
+      : `${DENSE_TEXT_HEIGHT_CLASS} px-2.5 py-1 text-[10px]`;
   const disabledClass = iconOnly ? "disabled:opacity-40" : "disabled:opacity-50";
 
   return [
@@ -136,16 +140,15 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
 }
 
 export function denseMenuItemClass(tone: DenseActionTone = "default"): string {
-  return `${DENSE_MENU_ITEM_BASE_CLASS} ${tone === "danger" ? "text-critical" : "text-navy"}`;
+  return `${DENSE_MENU_ITEM_BASE_CLASS} ${tone === "danger" ? "text-burgundy" : "text-navy"}`;
 }
 
 export function denseStatusPillClass(options: DenseStatusPillClassOptions = {}): string {
   const { tone = "neutral", interactive = false, active = false } = options;
-
   const base =
     "inline-flex h-[28px] items-center justify-center rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide leading-none";
   const interactiveClass = interactive
-    ? "cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
+    ? "cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-2"
     : "";
 
   return [base, interactiveClass, statusToneClass(tone, active, interactive)].join(" ").trim();

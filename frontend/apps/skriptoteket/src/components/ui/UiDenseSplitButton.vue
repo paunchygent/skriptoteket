@@ -10,8 +10,8 @@
 import { computed, ref } from "vue";
 
 import { IconArrow } from "../icons";
-import { DENSE_MENU_PANEL_CLASS, denseMenuItemClass } from "./denseToolPrimitives";
-import UiDenseActionButton from "./UiDenseActionButton.vue";
+import { DENSE_MENU_PANEL_CLASS, denseMenuItemClass } from "./shared/denseToolPrimitives";
+import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 import { useDenseMenuSurface } from "./useDenseMenuSurface";
 
 export type UiDenseSplitButtonItem = {

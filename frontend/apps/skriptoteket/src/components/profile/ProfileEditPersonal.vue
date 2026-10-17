@@ -5,7 +5,7 @@ import { isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useProfile } from "../../composables/useProfile";
 import { useToast } from "../../composables/useToast";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type UserProfile = components["schemas"]["UserProfile"];
 
@@ -76,7 +76,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="expand-left-40 border border-navy bg-panel shadow-brutal-sm">
+  <section class="expand-left-40 border border-navy bg-panel">
     <div class="border-b border-navy px-4 py-3">
       <h2 class="text-sm font-semibold text-navy">Redigera personlig information</h2>
       <p class="text-xs text-navy/70">Uppdatera namn och visningsnamn</p>
@@ -85,7 +85,11 @@ onMounted(() => {
     <div class="p-4">
       <SystemMessage
         v-model="error"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         class="mb-4"
       />
 
@@ -104,7 +108,7 @@ onMounted(() => {
               v-model="firstName"
               type="text"
               required
-              class="w-full border border-navy bg-white px-3 py-2 text-navy shadow-brutal-sm"
+              class="w-full border border-navy bg-white px-3 py-2 text-navy"
               :disabled="isSaving"
             >
           </div>
@@ -118,7 +122,7 @@ onMounted(() => {
               v-model="lastName"
               type="text"
               required
-              class="w-full border border-navy bg-white px-3 py-2 text-navy shadow-brutal-sm"
+              class="w-full border border-navy bg-white px-3 py-2 text-navy"
               :disabled="isSaving"
             >
           </div>
@@ -134,7 +138,7 @@ onMounted(() => {
             v-model="displayName"
             type="text"
             placeholder="Valfritt"
-            class="w-full border border-navy bg-white px-3 py-2 text-navy shadow-brutal-sm"
+            class="w-full border border-navy bg-white px-3 py-2 text-navy"
             :disabled="isSaving"
           >
         </div>
@@ -147,7 +151,7 @@ onMounted(() => {
           <select
             id="edit-locale"
             v-model="locale"
-            class="w-full border border-navy bg-white px-3 py-2 text-navy shadow-brutal-sm"
+            class="w-full border border-navy bg-white px-3 py-2 text-navy"
             :disabled="isSaving"
           >
             <option value="sv-SE">Svenska (sv-SE)</option>

@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
 type UiActionField = NonNullable<UiFormAction["fields"]>[number];
@@ -297,7 +297,11 @@ watch(
     <div :class="[isCompact ? 'p-3 space-y-3' : 'space-y-4']">
       <SystemMessage
         :model-value="errorMessage"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         @update:model-value="emit('update:errorMessage', $event)"
       />
 

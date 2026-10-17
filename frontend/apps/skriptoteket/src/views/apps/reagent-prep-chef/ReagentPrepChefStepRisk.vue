@@ -38,7 +38,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel shadow-brutal-sm">
+  <section class="border border-navy bg-panel">
     <div class="p-4 space-y-4">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-1">
@@ -73,7 +73,7 @@ const emit = defineEmits<{
 
       <div
         v-else-if="props.riskErrorMessage"
-        class="p-3 border border-error bg-panel shadow-brutal-sm text-error text-sm"
+        class="p-3 border border-error bg-panel text-error text-sm"
       >
         {{ props.riskErrorMessage }}
       </div>

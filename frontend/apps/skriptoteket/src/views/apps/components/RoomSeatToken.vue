@@ -26,16 +26,16 @@ const displaySeatId = computed(() => props.seatId.replace(/^seat-/i, "plats-"));
 <template>
   <div
     data-test="room-seat-token"
-    class="flex h-full w-full items-center justify-center rounded-full border text-center transition-transform transition-shadow"
+    class="flex h-full w-full items-center justify-center rounded-full border text-center transition-colors"
     :class="[
       ghost
         ? 'border-2 border-dashed border-navy/60 bg-white/55 text-navy/50'
         : '',
       !ghost && selected
-        ? 'border-action bg-action/10 text-action shadow-brutal'
+        ? 'border-action bg-action/10 text-action'
         : '',
       !ghost && studentName && !selected
-        ? 'bg-white text-navy shadow-brutal-sm'
+        ? 'bg-white text-navy'
         : '',
       !ghost && !studentName && !selected
         ? 'border-navy/30 border-dashed bg-white/75 text-navy/45'

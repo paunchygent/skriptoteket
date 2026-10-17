@@ -20,7 +20,7 @@ defineEmits<{
     @click="$emit('update:modelValue', !modelValue)"
   >
     <span
-      class="pointer-events-none inline-block h-4 w-4 transform rounded-sm shadow-brutal-sm transition-transform mt-0.5 ml-0.5"
+      class="pointer-events-none inline-block h-4 w-4 transform rounded-sm border border-navy/30 transition-transform mt-0.5 ml-0.5"
       :class="[
         modelValue ? 'translate-x-5 bg-action' : 'translate-x-0 bg-navy/30',
       ]"

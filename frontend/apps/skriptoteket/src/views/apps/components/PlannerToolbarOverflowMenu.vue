@@ -12,7 +12,7 @@ import { computed, ref, useSlots, type Component } from "vue";
 import { IconMoreVertical } from "../../../components/icons";
 import {
   DENSE_MENU_PANEL_CLASS,
-  UiDenseIconButton,
+  UiDenseActionButton,
   denseMenuItemClass,
 } from "../../../components/ui";
 import { useDenseMenuSurface } from "../../../components/ui/useDenseMenuSurface";
@@ -94,19 +94,22 @@ function handleMenuKeydown(event: KeyboardEvent): void {
     ref="containerRef"
     class="relative"
   >
-    <UiDenseIconButton
+    <UiDenseActionButton
       ref="triggerRef"
+      icon-only
       :label="label"
       size="utility"
-      :aria-expanded="isOpen"
+      :expanded="isOpen"
       has-popup="menu"
       :data-test="testId"
       :disabled="!hasMenuContent"
       @click.stop="toggleMenu"
       @keydown="onTriggerKeydown"
     >
-      <IconMoreVertical :size="16" />
-    </UiDenseIconButton>
+      <template #leading>
+        <IconMoreVertical :size="16" />
+      </template>
+    </UiDenseActionButton>
 
     <Transition name="popover">
       <div

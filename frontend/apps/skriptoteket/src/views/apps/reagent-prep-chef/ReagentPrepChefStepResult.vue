@@ -25,7 +25,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel shadow-brutal-sm">
+  <section class="border border-navy bg-panel">
     <div class="p-4 space-y-4">
       <h2 class="text-lg font-semibold text-navy">Resultat</h2>
 

@@ -159,7 +159,7 @@ onUnmounted(() => {
 
     <section
       v-if="isOpen"
-      class="fixed inset-x-0 bottom-0 z-[40] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,34rem)] md:w-[32rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-brutal-sm"
+      class="fixed inset-x-0 bottom-0 z-[40] flex max-h-[85vh] flex-col overflow-hidden rounded-t-xl border-t-2 border-navy bg-modal pb-[env(safe-area-inset-bottom)] md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-[calc(100%+0.375rem)] md:z-[50] md:max-h-[min(70vh,34rem)] md:w-[32rem] md:rounded-none md:border md:border-navy md:pb-0 md:shadow-md"
       role="dialog"
       aria-label="Delade länkar"
       :data-test="panelTestId"

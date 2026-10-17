@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type WorkflowActionMeta = {
   title: string;
@@ -49,7 +49,7 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
         :aria-describedby="error ? 'workflow-modal-error' : undefined"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-brutal">
+        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-md">
           <button
             type="button"
             class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
@@ -77,7 +77,11 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
             id="workflow-modal-error"
             class="mt-4"
             :model-value="error"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             @update:model-value="emit('update:error', $event)"
           />
 

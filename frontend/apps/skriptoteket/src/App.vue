@@ -12,7 +12,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
-import ToastHost from "./components/ui/ToastHost.vue";
+import SkriptoteketToastHost from "./components/ui/SkriptoteketToastHost.vue";
 import {
   buildProtectedAuthEntryLocationFromCurrentRoute,
 } from "./composables/auth/authEntryNavigation";
@@ -199,7 +199,7 @@ async function onLogout(): Promise<void> {
 
     <HelpPanel v-if="helpPanelEnabled" />
 
-    <ToastHost />
+    <SkriptoteketToastHost />
   </div>
 </template>
 

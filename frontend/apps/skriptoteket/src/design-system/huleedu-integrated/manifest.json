@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,13 +16,13 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "df57769b5a15b6973533055c9a8d7b203a437248a11f317bc21da6e7d5ee9ea6"
+      "sha256": "bb80898fcd507c86067b6fff503ba1b7e308b0436da292483a55cab8d89ad4af"
     },
     {
       "id": "tailwind-theme",
       "kind": "css.tailwind-theme",
       "path": "src/css/tailwind-theme.css",
-      "sha256": "af00ab8a5f0fb2d7a367b6d3dd9c121431a3418e3ec48b095152b4db462889d7"
+      "sha256": "57a10bded9cc32d12f7b60fd63f0371facf83fb804c4521a2bf62b38e51b3568"
     },
     {
       "id": "brand",
@@ -34,7 +34,7 @@
       "id": "action-buttons",
       "kind": "css.component",
       "path": "src/css/action-buttons.css",
-      "sha256": "1923e249b6912031bcbce3ef356b15e15e4beccb86b3b5d608d17209a1f0228d"
+      "sha256": "b95c14d8461b2593e6756d83e59afff577a50e589b1dd2dcc52349f8c908df8e"
     },
     {
       "id": "auth-lifecycle",
@@ -52,7 +52,7 @@
       "id": "dense-tool-primitives",
       "kind": "typescript.primitive",
       "path": "src/vue/denseToolPrimitives.ts",
-      "sha256": "a84205f50c75f1d74501b37f5195d3ba2de58b00e42b1b8ac88608e3416b6ec8"
+      "sha256": "fa18d02f857f759dbf999f76986d62625268f3089a28a7744828291f7d03f432"
     },
     {
       "id": "ui-glyphs",
@@ -88,7 +88,7 @@
       "id": "ui-segmented-toggle",
       "kind": "vue.component",
       "path": "src/vue/components/UiSegmentedToggle.vue",
-      "sha256": "b4e47f83bc83046d0d3865b4075896afa07acb4861edd62774de248a4585cb56"
+      "sha256": "bec97c0d1aad57a999e362f9c18dfd8e3652a960c64ebf27577bce5969cab399"
     },
     {
       "id": "ui-glyph",
@@ -118,37 +118,14 @@
       "id": "vue-barrel",
       "kind": "typescript.barrel",
       "path": "src/vue/index.ts",
-      "sha256": "dbd4653d0e404802a94617a9ddb8132e83c7e99b346de3ead3d459e589ef5009"
+      "sha256": "9cc607b2937cb8e3395d14af8959e519e33da1f2df0af29ab0b189ac0d292400"
     }
   ],
-  "frozen_primitives": {
-    "dense_action_radius_class": "rounded-[4px]",
-    "dense_icon_size_class": "h-9 w-9",
-    "dense_text_height_class": "h-[28px]",
-    "dense_compact_segment_height_class": "h-6",
-    "dense_press_translation": "translate(1px, 1px)",
-    "dense_hover_lift": "translate(-2px, -2px)",
-    "action_button_radius": "var(--huleedu-radius-md)",
-    "action_button_press_translation": "translate(4px, 4px)",
-    "action_button_shadow": "var(--huleedu-shadow-brutal)",
-    "action_button_cta_background": "var(--button-primary-bg)",
-    "action_button_primary_background": "var(--button-primary-bg)",
-    "action_button_tap_highlight": "-webkit-tap-highlight-color: transparent",
-    "action_button_text_case": "letter-spacing: 0",
-    "quiet_action_control_height": "var(--huleedu-action-control-height)",
-    "quiet_ghost_hover_background": "var(--huleedu-navy-05)",
-    "quiet_ghost_focus_outline": "var(--huleedu-action)",
-    "quiet_ghost_active_transform": "none",
-    "huleedu_wordmark_font": "var(--huleedu-font-serif)",
-    "huleedu_wordmark_size": "var(--huleedu-text-2xl)",
-    "huleedu_wordmark_weight": "var(--huleedu-font-bold)",
-    "huleedu_wordmark_letter_spacing": "letter-spacing: 0"
-  },
   "consumer_validation": [
     "Validate manifest schema and exported file SHA-256 digests before sync.",
     "Import Tailwind first, then token CSS, then tailwind-theme.css, then brand.css, then action-buttons.css.",
     "Import auth-lifecycle.css only for product-context auth lifecycle pages.",
-    "Validate reusable HuleEdu wordmark typography and CTA/action-button radius, press, shadow, typography, token roles, and transparent tap-highlight behavior against frozen_primitives.",
+    "Run the shared design-system validator; configure stylesheet, palette-scan-roots and component-directory in tool.repository-governance.design-system so it also checks shared CSS import order, default Tailwind palette leakage and the adopted component directory.",
     "Use @reference to access shared theme utilities inside scoped Vue style blocks.",
     "Reject broad runtime adoption when copied files drift from manifest digests.",
     "Install the @lucide/vue 1.47.0 peer dependency before syncing UiGlyph, uiGlyphs.ts, UiSymbol, UiDenseSpinner, UiDenseActionButton, UiDenseIconButton, ToastHost, or the Vue barrel.",
