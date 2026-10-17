@@ -60,8 +60,8 @@
   `u2-review-2.md`, `u3-review-6.md` approve); U1/U3 walked on 1b417b64
   (`evidence/staging-walk-u1-u3-1b417b64/`): pass except U-1 (a second tab's
   CSRF rotation breaks writes, no recovery) and U-2 (see-through course list),
-  both with Hemma Sol repair agents; the exports-follow-exam trash check awaits
-  the user; U2 walked into Exam.net on d9c2b3bb
+  both with Hemma Sol repair agents; the trash check (exports follow their exam
+  there and back) passed on d9c2b3bb; U2 walked into Exam.net on d9c2b3bb
   (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass); defect U-4 (the
   workspace Spara stays disabled after parent commands, export lacks them) is with a Hemma Sol
   agent with parent-authorised backend response change; 39-06-03 waits for its re-walk; then 39-04-10 starts; Opus prototype
