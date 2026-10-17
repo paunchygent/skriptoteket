@@ -39,6 +39,7 @@ product workflow, or command-wrapper context.
 | Testing strategy, test implementation, test repair, or test-quality audits                                 | `.codex/skills/skriptoteket-testing/SKILL.md`; `test-qc-runner` for governed QC runs                                  |
 | Local dev, DB setup, dev stack, command wrappers, local logs                                               | `local-devops` plus its Skriptoteket reference                                                                        |
 | Hemma deploys, remote operations, shared host runtime, GPU/offload lanes                                   | `hemma-devops` plus its Skriptoteket reference                                                                        |
+| Presentation, visual design, user-facing copy | `huleedu-ui-design` |
 | SPA, curated-app UI, auth continuation, dense workspaces, frontend tests                                   | `integrated-frontend-stack` plus its Skriptoteket reference                                                           |
 | Flunk-Out Frenzy pinball playfield geometry, donor table semantics, board underlays, physics-wall carriers | `.codex/skills/pinball-board-authoring/SKILL.md`                                                                      |
 | Logs, metrics, traces, dashboards, public-edge logging policy                                              | `observability-stack` plus its Skriptoteket reference                                                                 |

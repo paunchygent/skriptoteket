@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b498845f54a3a0923f138bcb58b708b97b3134afbd10e4ff0617a82d5bae0398",
+  "source_set_digest": "dd1b8d81ec293a0ae953039482b9e1930495de436c2bf4f19b2af9f270837704",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6018,7 +6018,7 @@
       "type": "task",
       "title": "Fold the remaining .codex/rules facts into their owning skills and route agent instruction through skills only",
       "path": "docs/backlog/tasks/task-skript-40-03-09-fold-the-remaining-codex-rules-facts-into-their-owning-skills-and-route-agent-instruction-through-skills-only.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -6029,7 +6029,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-09/: review afcdc94a (changes requested, F1 codemap rule-045 authority, F2 dead runbook paths), rereview a9a1bca3 (F2 cleared, F1 open on proposed ADR-0017), rereview 707c6992 approved. Shared-skill half merged to skill-repository main 4139f6d9. Accepted exceptions, accepted by the parent: 16 historical docs keep their rule references, the generated index quotes the task title, the .gitignore entry for the ignored rule-080 file stays until the user deletes that file, and the private rule-094 server values stay withheld as a user decision. The parent authorized closure."
       }
     },
     {

@@ -121,7 +121,11 @@ None.
 
 ## Verification
 
-- Static review against `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/020`, `025`, `040`, `042`, `048`, `050`, `070`, `096`, `ruthless-code-review`, `testing`, `skriptoteket-testing`, and `skriptoteket-backend-dev`.
+- Static review against `AGENTS.md`, `.codex/handoff.md`, `ruthless-code-review`,
+  `testing`, `skriptoteket-testing`, and `skriptoteket-backend-dev`.
+  Retired rule citations are omitted; backend contracts now route through
+  `skriptoteket-backend-dev`, testing through `skriptoteket-testing`, and review
+  through `ruthless-code-review` and `agent-docs-governance`.
 - `pdm run test tests/unit/cli/test_cleanup_document_converter_project_previews.py`
   Passed: `1 passed`.
 - `pdm run test tests/unit/infrastructure/documents/test_document_converter_project_previews.py`

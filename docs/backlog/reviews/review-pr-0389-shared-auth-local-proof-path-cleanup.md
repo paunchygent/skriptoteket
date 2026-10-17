@@ -105,8 +105,7 @@ None.
 
 ## Verification
 
-- Reviewed `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/070-testing-standards.md`,
-  `.codex/rules/096-review-workflow.md`, `docs/index.md`, the routed
+- Reviewed `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`, the routed
   `ruthless-code-review`, `testing`, `skriptoteket-testing`,
   `skriptoteket-backend-dev`, and `local-devops` guidance, plus the governing
   `PR-0389` doc.
@@ -137,10 +136,9 @@ None.
 
 **Reviewer:** `codex-independent-reviewer`
 **Date:** `2026-06-26`
-**Scope:** External shared-skill cleanup only:
-`/Users/olofs_mba/Documents/Repos/skill-repository/skills/local-devops/references/skriptoteket.md`
-and
-`/Users/olofs_mba/Documents/Repos/skill-repository/skills/local-devops/references/huleedu.md`.
+**Scope:** External shared-skill cleanup only: the `local-devops`
+Skriptoteket (`references/skriptoteket.md`) and HuleEdu
+(`references/huleedu.md`) references.
 
 ### Addendum Findings
 
@@ -158,16 +156,15 @@ command-wrapping drift, or provider/consumer path mismatch.
   no remaining matches, and the only current local proof export references are
   the expected `local-shared-verify-export.json` entries in the two reviewed
   `local-devops` files.
-- `git -C /Users/olofs_mba/Documents/Repos/skill-repository diff -- skills/local-devops/references/skriptoteket.md skills/local-devops/references/huleedu.md`
+- Historical diff inspection of the two `local-devops` references
+  (machine-specific command omitted).
   Confirmed the worker changed only the obsolete export reference in the
   provider/consumer instructions plus adjacent shared-auth Docker proof notes
   in `skriptoteket.md`; no unrelated command-surface drift appeared in the
   reviewed scope.
-- Reviewed
-  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/local-devops/references/huleedu.md:182`
-  through `:185` and
-  `/Users/olofs_mba/Documents/Repos/skill-repository/skills/local-devops/references/skriptoteket.md:99`
-  through `:102`.
+- Reviewed the historical `local-devops` reference ranges:
+  `references/huleedu.md:182` through `:185` and
+  `references/skriptoteket.md:99` through `:102`.
   Verified the HuleEdu provider instruction now writes
   `local-shared-verify-export.json`, and the Skriptoteket consumer/preflight
   instructions read that same current artifact path.

@@ -162,9 +162,7 @@ No remaining blocking findings were identified in the repaired scope.
 
 ## Verification
 
-- Reviewed `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/025-curated-apps.md`,
-  `.codex/rules/045-huleedu-design-system.md`, `.codex/rules/070-testing-standards.md`,
-  `.codex/rules/075-browser-automation.md`, `.codex/rules/096-review-workflow.md`,
+- Reviewed `AGENTS.md`, `.codex/handoff.md`,
   `docs/index.md`, `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`,
   `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/copy-approval/swedish-copy-v4.md`,
   and the routed `ruthless-code-review`, `testing`, `agent-docs-governance`,

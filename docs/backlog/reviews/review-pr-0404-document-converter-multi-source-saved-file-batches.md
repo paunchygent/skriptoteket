@@ -289,29 +289,19 @@ pre-closes `PR-0404` before independent review acceptance.
 
 ## Verification Commands
 
+Historical machine-specific shared-skill read commands are omitted. They named
+`ruthless-code-review` and its `references/forbidden-patterns.md`, the then-used
+`testing` skill, `integrated-frontend-stack`, and the retired `playwright-testing`
+skill. Current browser proof uses `staging-walk` (Skriptoteket reference); no
+replacement command execution is claimed.
+
 - `sed -n '1,260p' AGENTS.md`
 - `sed -n '1,260p' docs/reference/ref-review-workflow.md`
-- `sed -n '1,260p' .codex/rules/096-review-workflow.md`
 - `sed -n '1,260p' docs/backlog/prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md`
 - `sed -n '1,300p' docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`
 - `sed -n '1,280p' docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/ruthless-code-review/SKILL.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/testing/SKILL.md`
 - `sed -n '1,260p' .codex/skills/skriptoteket-testing/SKILL.md`
 - `sed -n '1,260p' .codex/skills/skriptoteket-backend-dev/SKILL.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/playwright-testing/SKILL.md`
-- `sed -n '1,280p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/ruthless-code-review/references/forbidden-patterns.md`
-- `sed -n '1,260p' .codex/rules/000-rule-index.md`
-- `sed -n '1,260p' .codex/rules/010-foundational-principles.md`
-- `sed -n '1,280p' .codex/rules/020-monolith-architecture.md`
-- `sed -n '1,260p' .codex/rules/025-curated-apps.md`
-- `sed -n '1,280p' .codex/rules/040-fastapi-blueprint.md`
-- `sed -n '1,260p' .codex/rules/042-async-di-patterns.md`
-- `sed -n '1,260p' .codex/rules/048-error-handling.md`
-- `sed -n '1,260p' .codex/rules/050-python-standards.md`
-- `sed -n '1,280p' .codex/rules/070-testing-standards.md`
-- `sed -n '1,260p' .codex/rules/075-browser-automation.md`
 - `sed -n '1,260p' docs/runbooks/runbook-testing.md`
 - `git status --short`
 - `git diff --stat`
