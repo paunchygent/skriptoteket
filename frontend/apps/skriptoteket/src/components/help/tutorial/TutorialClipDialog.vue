@@ -62,6 +62,9 @@ function play(): void {
     return;
   }
   hasStarted.value = true;
+  // The play control unmounts once playback starts; move focus to the video so
+  // keyboard control and the focus ring stay inside the dialog.
+  video.focus({ preventScroll: true });
   const result = video.play() as Promise<void> | undefined;
   result?.catch(() => undefined);
 }
@@ -203,6 +206,7 @@ onBeforeUnmount(() => {
               ref="videoRef"
               class="absolute inset-0 h-full w-full"
               controls
+              tabindex="0"
               playsinline
               preload="none"
               :poster="resolveTutorialMediaUrl(currentClip.poster)"

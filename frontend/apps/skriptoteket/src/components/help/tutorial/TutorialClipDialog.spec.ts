@@ -93,6 +93,20 @@ describe("TutorialClipDialog", () => {
     play.mockRestore();
   });
 
+  it("keeps focus on the playing video, not the page, once the play control is gone", async () => {
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, "play")
+      .mockImplementation(() => Promise.resolve());
+    await mountDialog();
+
+    query<HTMLButtonElement>("[data-test='tutorial-clip-play']")?.click();
+    await nextTick();
+
+    expect(document.activeElement).toBe(query("[data-test='tutorial-clip-video']"));
+    expect(document.activeElement).not.toBe(document.body);
+    play.mockRestore();
+  });
+
   it("shows the load-error line on a video error while the poster stays", async () => {
     await mountDialog();
     const video = query<HTMLVideoElement>("[data-test='tutorial-clip-video']");
