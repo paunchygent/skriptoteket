@@ -6929,10 +6929,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v5
+             * @default native_exam_document_v6
              * @constant
              */
-            schema_version: "native_exam_document_v5";
+            schema_version: "native_exam_document_v6";
             /** Title */
             title: string;
         };
@@ -6971,10 +6971,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v5
+             * @default native_exam_document_v6
              * @constant
              */
-            schema_version: "native_exam_document_v5";
+            schema_version: "native_exam_document_v6";
             /** Title */
             title: string;
         };
@@ -7082,6 +7082,7 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
+            suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;
         };
@@ -7137,6 +7138,7 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor: string | null;
+            suggested_kind: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points: string | null;
         };
@@ -7616,6 +7618,7 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
+            suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;
         };

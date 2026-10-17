@@ -85,6 +85,8 @@ def change_item_type(
     drop("tick_points", item.tick_points is not None)
     drop("ai_suggestion", item.ai_suggestion is not None)
     data.update(kind=target_kind, choices=(), gaps=(), tick_points=None, ai_suggestion=None)
+    if target_kind == item.suggested_kind:
+        data["suggested_kind"] = None
     key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)
     if target_kind in _CHOICE:
         data["choices"] = item.choices if keep_choices else _empty_choices()

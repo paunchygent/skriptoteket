@@ -1,12 +1,5 @@
 ## Current
 
-- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
-  `in_progress`, owner Claude side session of the 2026-10-17 parent: Mina kurser
-  adds a chosen course at once and autosaves (no `+`, no Spara, no success
-  toast). Contract on `claude/gallant-greider-598de1` (worktree
-  `Skriptoteket-worktrees/gallant-greider-598de1`, HEAD `6b1e860f`). Next:
-  component, spec, checks, review, staging walk at 375/1440 px, merge.
-
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
@@ -83,9 +76,12 @@
   suggestions plus review. API writes need header `X-CSRF-Token` from cookie
   `huleedu_csrf`. Then closeout frontmatter (`agent-overseer:approved-review-closeout`)
   for the wave-2 tasks, 40-04-02 and 39-06-07; U-4 check closes 39-04-08 and 39-06-03.
-  Running children (agent-mcp, host hemma): Sol `df1d5c3a` 39-06-06 suggested type on
-  `codex/task-skript-39-06-06-remote` (ended; committed `6a9825c4`, gates green, not pushed;
-  result `evidence/results/df1d5c3a-*.json`; next fresh review, merge, then field to 8445f6e1); Opus
+  Running children (agent-mcp, host hemma): 39-06-06 approved (review-1 no findings, retained
+  `evidence/reviews/TASK-SKRIPT-39-06-06/review-1.md`) and on main `d60740ef`;
+  `in_progress` until the staging proof. DXE export-block fixer Sol `efc35c9e` on
+  `codex/task-skript-39-07-01-remote` adds `NativeParseOrigin.SOURCE_FALLBACK`
+  inside v6 (drawer label "Kunde inte konverteras. Visas som i provfilen."); next:
+  merge, rebuild staging, run the proofs. Opus
   `8445f6e1` (ended, result `evidence/results/8445f6e1-*.json`) 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame; 10879f00 spec
   port; a1d89539 amber guidance; checks green; screenshots r2 at 375/768/1440 in its
   `evidence/40-04-03-screens/r2/`; lead `f3523358` failed r2 on seven prototype
@@ -131,6 +127,12 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
+  `done` 2026-10-17: Mina kurser adds a chosen course at once and autosaves (no
+  `+`, no Spara, no success toast). Pi review F1 (late reload) repaired
+  `ab5e7e10`; review in retained `01a149c9-...`
+  `evidence/reviews/task-skript-39-08-05-c1992027.md`. No staging walk (rule).
 
 - 2026-10-17 hooks: `precommit-install` now runs the package installer
   `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),

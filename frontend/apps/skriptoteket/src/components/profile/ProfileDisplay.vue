@@ -283,7 +283,6 @@ watch(() => props.profile, () => {
       <div class="px-4 py-4">
         <ProfileExamCoursesSection
           :exam-courses="profile?.exam_courses ?? null"
-          @profile-updated="emit('profileUpdated')"
         />
       </div>
     </section>

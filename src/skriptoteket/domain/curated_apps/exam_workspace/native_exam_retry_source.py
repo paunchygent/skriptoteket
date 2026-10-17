@@ -178,7 +178,12 @@ def source_missing_picture_reasons(source: NativeExamRetrySource) -> tuple[str, 
 
 
 def _attach_source(item: NativeExamItem, source: NativeExamRetrySource) -> NativeExamItem:
-    update = item.model_copy(update={"retry_source": source})
+    update = item.model_copy(
+        update={
+            "retry_source": source,
+            "suggested_kind": source.label_kind if source.label_kind != item.kind else None,
+        }
+    )
     missing = source_missing_picture_reasons(source)
     if not missing:
         return update
@@ -340,16 +345,18 @@ def replacement_item(*, original: NativeExamItem, produced: NativeExamItem) -> N
     replaces the rest. A stale answer-key suggestion never survives: after a kind change its
     key may be invalid, so the teacher's retry starts without it.
     """
-    return produced.model_copy(
+    replacement = produced.model_copy(
         update={
             "item_id": original.item_id,
             "sequence": original.sequence,
             "source_anchor": original.source_anchor,
-            "retry_source": original.retry_source,
             "import_record": original.import_record,
             "ai_suggestion": None,
         }
     )
+    if original.retry_source is None:
+        return replacement.model_copy(update={"retry_source": None, "suggested_kind": None})
+    return _attach_source(replacement, original.retry_source)
 
 
 def source_review_item(
@@ -362,13 +369,15 @@ def source_review_item(
 ) -> NativeExamItem:
     """The question's source text as a review item that keeps the original's identity."""
     review = review_source_item(own_chunks(source, assets=assets, payloads=payloads), reason)
-    return review.model_copy(
-        update={
-            "item_id": original.item_id,
-            "sequence": original.sequence,
-            "source_anchor": original.source_anchor,
-            "retry_source": original.retry_source,
-            "import_record": original.import_record,
-            "ai_suggestion": None,
-        }
+    return _attach_source(
+        review.model_copy(
+            update={
+                "item_id": original.item_id,
+                "sequence": original.sequence,
+                "source_anchor": original.source_anchor,
+                "import_record": original.import_record,
+                "ai_suggestion": None,
+            }
+        ),
+        source,
     )

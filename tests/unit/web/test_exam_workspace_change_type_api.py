@@ -11,6 +11,9 @@ from dishka import Provider, Scope, from_context, make_async_container
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace_change_type import (
@@ -21,6 +24,9 @@ from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_change_ty
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.identity_fixtures import make_user
+from tests.unit.application.curated_apps.handlers.exam_workspace_docx_retry_fixtures import (
+    source as make_source,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_parent_commands import (
     document_response,
 )
@@ -70,11 +76,22 @@ def _body() -> dict:
     }
 
 
-async def test_http_forwards_command_and_serializes_document_and_loss_names() -> None:
+@pytest.mark.parametrize("suggested_kind", [None, NativeExamItemKind.GAP_FILL])
+async def test_http_forwards_command_and_serializes_document_and_loss_names(
+    suggested_kind: NativeExamItemKind | None,
+) -> None:
     actor = make_user()
     handler = AsyncMock(spec=ChangeExamWorkspaceItemTypeHandlerProtocol)
+    item = make_free_text_item()
+    if suggested_kind is not None:
+        item = item.model_copy(
+            update={
+                "retry_source": make_source(label_kind=suggested_kind),
+                "suggested_kind": suggested_kind,
+            }
+        )
     expected = ChangeExamWorkspaceItemTypeResponse(
-        **document_response(make_document(make_free_text_item())).model_dump(),
+        **document_response(make_document(item)).model_dump(),
         dropped_content=("gaps", "accepted_values"),
     )
     handler.handle.return_value = expected
@@ -84,6 +101,7 @@ async def test_http_forwards_command_and_serializes_document_and_loss_names() ->
         response = await client.post(_BASE + str(lineage) + "/change-type", json=body)
     assert response.status_code == 200, response.text
     assert response.json() == expected.model_dump(mode="json")
+    assert response.json()["document"]["items"][0]["suggested_kind"] == suggested_kind
     handler.handle.assert_awaited_once()
     call = handler.handle.call_args.kwargs
     assert call["actor"] == actor

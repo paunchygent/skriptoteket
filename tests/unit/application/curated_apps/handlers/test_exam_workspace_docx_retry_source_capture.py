@@ -33,6 +33,10 @@ async def test_every_document_item_carries_its_questions_retry_source():
     for item in document.items:
         assert item.retry_source is not None, item.item_id
         assert item.retry_source.chunks, item.item_id
+        expected = (
+            item.retry_source.label_kind if item.retry_source.label_kind != item.kind else None
+        )
+        assert item.suggested_kind is expected, item.item_id
         own = {record.anchor for record in item.retry_source.chunks}
         keys = {record.anchor for record in item.retry_source.key_chunks}
         context = {record.anchor for record in item.retry_source.context_chunks}
@@ -40,6 +44,7 @@ async def test_every_document_item_carries_its_questions_retry_source():
         assert not own & context, item.item_id
         assert not keys & context, item.item_id
         assert not own & keys, item.item_id
+    assert any(item.suggested_kind is None for item in document.items)
 
 
 async def test_provisional_updates_carry_sources_for_still_converting_placeholders():
@@ -73,3 +78,6 @@ async def test_a_refused_reply_keeps_the_labelers_kind_in_its_retry_source():
     assert item.retry_source.label_kind is NativeExamItemKind.GAP_FILL, (
         "the stored source must keep the labeler's type"
     )
+    assert item.suggested_kind is NativeExamItemKind.GAP_FILL
+    reopened = NativeExamDocument.model_validate_json(outcome.update.document.model_dump_json())
+    assert reopened.item_by_id(item.item_id).suggested_kind is NativeExamItemKind.GAP_FILL

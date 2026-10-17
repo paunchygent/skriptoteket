@@ -87,6 +87,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     retry_source: retrySource("gap_fill"),
     sequence: 1,
     source_anchor: "body:0001",
+    suggested_kind: null,
     tick_points: null,
     ...overrides,
   };
