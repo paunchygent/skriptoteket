@@ -6,6 +6,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Pr
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import NativeExamCriterion
 
 
+class InvalidTickValue(ValueError):
+    """A printed total cannot represent a positive uniform native tick."""
+
+
 def matching_score(points: int | float | None, ticks: int) -> tuple[Decimal, float, bool]:
     """One grid's uniform tick value, derived total and estimate flag (Q10, R11-R12).
 
@@ -23,7 +27,9 @@ def matching_score(points: int | float | None, ticks: int) -> tuple[Decimal, flo
     stated = Decimal(str(points))
     tick = (stated / ticks).quantize(Decimal("0.01"), rounding=ROUND_FLOOR)
     if tick == 0:
-        raise ValueError(f"points {points} cannot give a positive tick value over {ticks} ticks")
+        raise InvalidTickValue(
+            f"points {points} cannot give a positive tick value over {ticks} ticks"
+        )
     total = tick * ticks
     return tick, float(total), total != stated
 

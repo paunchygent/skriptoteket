@@ -119,10 +119,23 @@ async def test_request_route_delegates_the_editor_sent_document() -> None:
                         "item_id": "item_001",
                         "sequence": 1,
                         "kind": "single_choice",
-                        "body": [{"segments": [{"kind": "text", "text": "Fråga?"}]}],
+                        "body": [
+                            {
+                                "heading_level": None,
+                                "segments": [{"kind": "text", "text": "Fråga?", "marks": []}],
+                            }
+                        ],
                         "choices": [
-                            {"choice_id": "choice_001", "text": "Ett"},
-                            {"choice_id": "choice_002", "text": "Två"},
+                            {
+                                "choice_id": choice_id,
+                                "body": [
+                                    {
+                                        "heading_level": None,
+                                        "segments": [{"kind": "text", "text": text, "marks": []}],
+                                    }
+                                ],
+                            }
+                            for choice_id, text in (("choice_001", "Ett"), ("choice_002", "Två"))
                         ],
                         "answer_key": {"origin": "absent"},
                         "review": {

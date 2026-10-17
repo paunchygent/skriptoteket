@@ -337,7 +337,7 @@ class DocxBuildState:
             title=self.title,
             instructions=instructions,
             governed=governed,
-            questions=questions,
+            questions=questions or self.questions,
             events=tuple(self.events),
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,

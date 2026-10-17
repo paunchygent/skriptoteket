@@ -246,7 +246,7 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
     admitted = tuple(item for item, _ in state.accepted)
     document = apply_header(
         state.result(questions=questions).document, manifest, chunks, course_key=None, courses=()
-    )
+    ).document
     NativeExamDocument.model_validate(document.model_dump())
     assert len(document.items) == len(prompts)
     assert tuple(item.points for item in document.items) == case.expected

@@ -75,7 +75,7 @@ def _produced(anchor: str, prompt: str) -> dict[str, JsonValue]:
         HeadingCase("Poäng: 15 poäng", 1, (), item_points=15, header_total=15, metadata_only=True),
         HeadingCase("2. Tempus (3 p)", 1, ("Tempus",), label="2", item_points=3),
         HeadingCase("2. (3 p)", 1, (), label="2", item_points=3),
-        HeadingCase("Fråga 2 (3 p)", 1, (), label="2", item_points=3),
+        HeadingCase("Fråga 2 (3 p)", 1, (), label="Fråga 2", item_points=3),
         HeadingCase("2. (3 p)", 2, (), item_points=(2, 1)),
         HeadingCase("Tempus", 1, ("Tempus",), instruction=True),
         HeadingCase("2. Tempus (3 p)", 1, ("Tempus",), label="2", item_points=3, rubric=True),
@@ -190,7 +190,7 @@ def test_heading_family_keeps_structure_metadata_and_native_scores_coherent(
         duplicate_anchors=(),
         unplaced_anchors=(),
     )
-    document = apply_header(document, manifest, chunks, course_key=None, courses=())
+    document = apply_header(document, manifest, chunks, course_key=None, courses=()).document
     # model_copy does not validate: enforce the final persisted native contract.
     NativeExamDocument.model_validate(document.model_dump())
 
