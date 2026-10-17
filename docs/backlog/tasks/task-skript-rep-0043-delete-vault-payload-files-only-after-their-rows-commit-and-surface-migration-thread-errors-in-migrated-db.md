@@ -1,21 +1,19 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0043
-title: Delete vault payload files only after their rows commit and surface migration-thread
-  errors in migrated_db
+title: Delete vault payload files only after their rows commit and surface migration-thread errors in migrated_db
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- A purge whose row commit fails leaves every payload file in place, and a migration
-  error inside the migrated_db fixture fails the test setup with that error
+  - A purge whose row commit fails leaves every payload file in place, and a migration error inside the migrated_db fixture fails the test setup with that error
 backlog_document_profile: contract-derived
 ---
 
@@ -66,7 +64,7 @@ performance concern: the same work runs in a different order.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1 | A purge group deletes payload files only after its row deletion commits; a failed file deletion is logged and leaves an orphaned file, never a row without a file. |
-| D2 | `migrated_db` re-raises the migration thread's exception after join. |
+| ID  | Decided contract term                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | A purge group deletes payload files only after its row deletion commits; a failed file deletion is logged and leaves an orphaned file, never a row without a file. |
+| D2  | `migrated_db` re-raises the migration thread's exception after join.                                                                                               |
