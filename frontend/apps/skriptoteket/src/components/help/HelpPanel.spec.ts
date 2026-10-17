@@ -44,6 +44,7 @@ describe("HelpPanel", () => {
     help.isOpen.value = true;
     help.activeTopic.value = null;
     help.setHelpContext(null);
+    help.setSuspended(false);
   });
 
   it("renders the generated planner overview help from planner context", async () => {
@@ -211,6 +212,42 @@ describe("HelpPanel", () => {
 
     wrapper.unmount();
     opener.remove();
+  });
+
+  it("takes focus again when help is opened while it is already open", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+
+    const elsewhere = document.createElement("button");
+    document.body.appendChild(elsewhere);
+    elsewhere.focus();
+    help.open(elsewhere);
+    await flushPromises();
+
+    expect(document.activeElement).toBe(panel);
+
+    wrapper.unmount();
+    elsewhere.remove();
+  });
+
+  it("is inert while a covering layer suspends help, and only then", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel")!;
+    expect(panel.hasAttribute("inert")).toBe(false);
+
+    help.setSuspended(true);
+    await flushPromises();
+    expect(panel.hasAttribute("inert")).toBe(true);
+
+    help.setSuspended(false);
+    await flushPromises();
+    expect(panel.hasAttribute("inert")).toBe(false);
+
+    wrapper.unmount();
   });
 
   it("renders no scrim: the page behind the non-modal panel stays usable", async () => {

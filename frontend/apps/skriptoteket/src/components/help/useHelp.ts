@@ -5,6 +5,10 @@
  * Route-level help is resolved here, while nested shells like Klassrumskartan
  * can temporarily override the route via `helpContext` without introducing a
  * second help surface.
+ *
+ * Every `open` raises `entryRequest`, so the panel takes focus on each entry,
+ * also when help is already open. A layer that covers help, such as the phone
+ * navigation drawer, sets `isSuspended` so the panel goes inert under it.
  */
 import { nextTick, ref } from "vue";
 import type { HelpTopicId } from "./helpTopicCatalog";
@@ -15,6 +19,8 @@ const isOpen = ref(false);
 const activeTopic = ref<HelpTopicId | null>(null);
 const helpContext = ref<string | null>(null);
 const openerElement = ref<HTMLElement | null>(null);
+const entryRequest = ref(0);
+const isSuspended = ref(false);
 let focusRestoreGeneration = 0;
 
 type CloseHelpOptions = {
@@ -54,6 +60,7 @@ export function useHelp() {
   function open(opener?: HTMLElement | null): void {
     rememberOpener(opener);
     isOpen.value = true;
+    entryRequest.value += 1;
   }
 
   function close(options: CloseHelpOptions = {}): void {
@@ -83,6 +90,10 @@ export function useHelp() {
     activeTopic.value = topic;
   }
 
+  function setSuspended(suspended: boolean): void {
+    isSuspended.value = suspended;
+  }
+
   function setHelpContext(ctx: string | null): void {
     helpContext.value = ctx;
   }
@@ -98,11 +109,14 @@ export function useHelp() {
     isOpen,
     activeTopic,
     helpContext,
+    entryRequest,
+    isSuspended,
     open,
     close,
     toggle,
     showIndex,
     showTopic,
+    setSuspended,
     setHelpContext,
     clearHelpContext,
   };

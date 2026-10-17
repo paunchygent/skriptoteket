@@ -6,8 +6,9 @@
  * - one CSS grid owns the shell geometry at every width: desktop (>= 1280 px)
  *   shows the 240 px sidebar or the 64 px rail, tablet always the rail, phone
  *   (< 768 px) a single column with the navigation in a Meny drawer
- * - owns the drawer state; while the phone drawer is open the top bar and the
- *   page are inert, so only the drawer takes focus and pointer input
+ * - owns the drawer state; while the phone drawer is open the top bar, the page
+ *   and an already open help panel are inert, so only the drawer takes focus
+ *   and pointer input
  * - reads focus mode and the rail state from the
  *   per-user layout store; focus mode hides the sidebar at 768 px and wider and
  *   keeps the top bar
@@ -47,7 +48,7 @@ const emit = defineEmits<{
 
 const layout = useLayoutStore();
 const { focusMode, sidebarCollapsed } = storeToRefs(layout);
-const { open: openHelp } = useHelp();
+const { open: openHelp, setSuspended: setHelpSuspended } = useHelp();
 const route = useRoute();
 const IMMERSIVE_CURATED_APP_IDS = new Set(["games.flunk_out_frenzy"]);
 
@@ -147,6 +148,9 @@ onMounted(() => {
   phoneMedia.addEventListener("change", onPhoneMediaChange);
 });
 
+/* Synchronous, so help is no longer inert when its entry focus runs. */
+watch(sidebarOpen, (open) => setHelpSuspended(open), { flush: "sync" });
+
 watch(
   () => props.user?.id ?? null,
   (userId) => {
@@ -165,6 +169,7 @@ watchEffect(() => {
 
 onBeforeUnmount(() => {
   phoneMedia?.removeEventListener("change", onPhoneMediaChange);
+  setHelpSuspended(false);
   if (typeof document !== "undefined") {
     document.body.classList.remove("app-shell-game-mode");
   }

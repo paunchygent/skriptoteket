@@ -6,9 +6,10 @@
  * route and nested workspace context, while keeping the signed-out public
  * landing page on the logged-out index instead of authenticated dashboard help.
  *
- * The panel is non-modal and has no scrim: the page behind stays usable. Opening
- * moves focus into the panel; Escape inside the panel closes it, and `useHelp`
- * returns focus to the opener.
+ * The panel is non-modal and has no scrim: the page behind stays usable. Every
+ * entry, including one while help is already open, moves focus into the panel;
+ * Escape inside the panel closes it, and `useHelp` returns focus to the opener.
+ * While a covering layer suspends help, the panel is inert.
  */
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
@@ -20,7 +21,10 @@ import { useAuthStore } from "../../stores/auth";
 
 const route = useRoute();
 const auth = useAuthStore();
-const { isOpen, activeTopic, helpContext, close, showIndex, showTopic } = useHelp();
+const { isOpen, activeTopic, helpContext, entryRequest, isSuspended, close, showIndex, showTopic } =
+  useHelp();
+/** `undefined` removes the attribute; `inert="false"` would still be inert. */
+const panelInert = computed(() => (isSuspended.value ? true : undefined));
 const hasPrefetched = ref(false);
 const panelRef = ref<HTMLElement | null>(null);
 
@@ -61,12 +65,12 @@ async function focusPanel(): Promise<void> {
 function onOpened(): void {
   syncToRoute();
   prefetchDefaultTopics();
-  void focusPanel();
 }
 
 onMounted(() => {
   if (isOpen.value) {
     onOpened();
+    void focusPanel();
   }
 });
 
@@ -78,6 +82,12 @@ watch(
     }
   },
 );
+
+watch(entryRequest, () => {
+  if (isOpen.value) {
+    void focusPanel();
+  }
+});
 
 watch(
   () => route.fullPath,
@@ -106,6 +116,7 @@ watch(
         id="help-panel"
         ref="panelRef"
         tabindex="-1"
+        :inert="panelInert"
         class="help-panel border border-navy shadow-md flex flex-col text-navy"
         role="dialog"
         aria-modal="false"
